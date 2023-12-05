@@ -7,20 +7,22 @@
 
 #include "upb/mem/arena.h"
 
+#include <stddef.h>
+
 #include <array>
 #include <atomic>
 #include <thread>
 #include <vector>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
 #include "absl/synchronization/notification.h"
-
-// Must be last.
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "upb/mem/alloc.h"
+
+// Must be last.
 #include "upb/port/def.inc"
 
 namespace {
@@ -181,11 +183,11 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
 
 TEST(ArenaTest, ArenaIncRef) {
   upb_Arena* arena1 = upb_Arena_New();
-  EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 1);
+  EXPECT_EQ(UPB_PRIVATE(_upb_Arena_DebugRefCount)(arena1), 1);
   upb_Arena_IncRefFor(arena1, nullptr);
-  EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 2);
+  EXPECT_EQ(UPB_PRIVATE(_upb_Arena_DebugRefCount)(arena1), 2);
   upb_Arena_DecRefFor(arena1, nullptr);
-  EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 1);
+  EXPECT_EQ(UPB_PRIVATE(_upb_Arena_DebugRefCount)(arena1), 1);
   upb_Arena_Free(arena1);
 }
 

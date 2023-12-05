@@ -8,88 +8,106 @@
 #ifndef UPB_MEM_INTERNAL_ARENA_H_
 #define UPB_MEM_INTERNAL_ARENA_H_
 
-#include "upb/mem/arena.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/mem/alloc.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-typedef struct _upb_MemBlock _upb_MemBlock;
+#define UPB_ARENA_SPAN(x) ((x) + UPB_ASAN_GUARD_SIZE)
 
-// LINT.IfChange(struct_definition)
+// LINT.IfChange(upb_Arena)
+
 struct upb_Arena {
-  _upb_ArenaHead head;
-
-  // upb_alloc* together with a low bit which signals if there is an initial
-  // block.
-  uintptr_t block_alloc;
-
-  // When multiple arenas are fused together, each arena points to a parent
-  // arena (root points to itself). The root tracks how many live arenas
-  // reference it.
-
-  // The low bit is tagged:
-  //   0: pointer to parent
-  //   1: count, left shifted by one
-  UPB_ATOMIC(uintptr_t) parent_or_count;
-
-  // All nodes that are fused together are in a singly-linked list.
-  UPB_ATOMIC(upb_Arena*) next;  // NULL at end of list.
-
-  // The last element of the linked list.  This is present only as an
-  // optimization, so that we do not have to iterate over all members for every
-  // fuse.  Only significant for an arena root.  In other cases it is ignored.
-  UPB_ATOMIC(upb_Arena*) tail;  // == self when no other list members.
-
-  // Linked list of blocks to free/cleanup.  Atomic only for the benefit of
-  // upb_Arena_SpaceAllocated().
-  UPB_ATOMIC(_upb_MemBlock*) blocks;
+  char* UPB_ONLYBITS(ptr);
+  char* UPB_ONLYBITS(end);
+  struct upb_ArenaInternal* internal;  // No need to make this UPB_PRIVATE()
 };
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts)
 
-UPB_INLINE bool _upb_Arena_IsTaggedRefcount(uintptr_t parent_or_count) {
-  return (parent_or_count & 1) == 1;
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Array)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool UPB_PRIVATE(_upb_Arena_AllocBlock)(struct upb_Arena* a, size_t size);
+uint32_t UPB_PRIVATE(_upb_Arena_DebugRefCount)(struct upb_Arena* a);
+
+UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(struct upb_Arena* a) {
+  const size_t ptr = (size_t)a->UPB_ONLYBITS(ptr);
+  const size_t end = (size_t)a->UPB_ONLYBITS(end);
+  UPB_ASSERT(end >= ptr);
+  return end - ptr;
 }
 
-UPB_INLINE bool _upb_Arena_IsTaggedPointer(uintptr_t parent_or_count) {
-  return (parent_or_count & 1) == 0;
+UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Malloc)(struct upb_Arena* a,
+                                                size_t size) {
+  const size_t aligned_size = UPB_ALIGN_MALLOC(size);
+  const size_t span = UPB_ARENA_SPAN(aligned_size);
+
+  if (UPB_PRIVATE(_upb_ArenaHas)(a) < span) {
+    if (!UPB_PRIVATE(_upb_Arena_AllocBlock)(a, span)) return NULL;  // OOM
+  }
+
+  // We have enough space to do a fast malloc.
+  void* const out = a->UPB_ONLYBITS(ptr);
+  UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)out) == (uintptr_t)out);
+  UPB_UNPOISON_MEMORY_REGION(out, aligned_size);
+  a->UPB_ONLYBITS(ptr) += span;
+
+  return out;
 }
 
-UPB_INLINE uintptr_t _upb_Arena_RefCountFromTagged(uintptr_t parent_or_count) {
-  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
-  return parent_or_count >> 1;
+// Returns whether ['ptr', 'size'] was the most recent allocation on 'a'.
+// 'size` must already have been aligned with UPB_ALIGN_MALLOC()
+UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsMostRecent)(const struct upb_Arena* a,
+                                                     void* ptr, size_t size) {
+  UPB_ASSERT(size == UPB_ALIGN_MALLOC(size));
+  return (char*)ptr + UPB_ARENA_SPAN(size) == a->UPB_ONLYBITS(ptr);
 }
 
-UPB_INLINE uintptr_t _upb_Arena_TaggedFromRefcount(uintptr_t refcount) {
-  uintptr_t parent_or_count = (refcount << 1) | 1;
-  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(parent_or_count));
-  return parent_or_count;
+UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
+                                                 size_t oldsize, size_t size) {
+  const size_t aligned_oldsize = UPB_ALIGN_MALLOC(oldsize);
+  const size_t aligned_newsize = UPB_ALIGN_MALLOC(size);
+  if (UPB_UNLIKELY(aligned_newsize <= aligned_oldsize)) return ptr;
+
+  const bool recent =
+      UPB_PRIVATE(_upb_Arena_IsMostRecent)(a, ptr, aligned_oldsize);
+
+  if (recent) {
+    size_t diff = aligned_newsize - aligned_oldsize;
+    if (UPB_PRIVATE(_upb_ArenaHas)(a) >= diff) {
+      a->UPB_ONLYBITS(ptr) += diff;
+      return ptr;
+    }
+  }
+
+  void* out = UPB_PRIVATE(_upb_Arena_Malloc)(a, size);
+  if (out) memcpy(out, ptr, oldsize);
+  return out;
 }
 
-UPB_INLINE upb_Arena* _upb_Arena_PointerFromTagged(uintptr_t parent_or_count) {
-  UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
-  return (upb_Arena*)parent_or_count;
+UPB_INLINE void UPB_PRIVATE(_upb_Arena_ShrinkLast)(struct upb_Arena* a,
+                                                   void* ptr, size_t oldsize,
+                                                   size_t size) {
+  const size_t aligned_oldsize = UPB_ALIGN_MALLOC(oldsize);
+  const size_t aligned_newsize = UPB_ALIGN_MALLOC(size);
+
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsMostRecent)(a, ptr, aligned_oldsize));
+  UPB_ASSERT(aligned_newsize <= aligned_oldsize);
+
+  a->UPB_ONLYBITS(ptr) -= aligned_oldsize - aligned_newsize;
 }
 
-UPB_INLINE uintptr_t _upb_Arena_TaggedFromPointer(upb_Arena* a) {
-  uintptr_t parent_or_count = (uintptr_t)a;
-  UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
-  return parent_or_count;
-}
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-UPB_INLINE upb_alloc* upb_Arena_BlockAlloc(upb_Arena* arena) {
-  return (upb_alloc*)(arena->block_alloc & ~0x1);
-}
-
-UPB_INLINE uintptr_t upb_Arena_MakeBlockAlloc(upb_alloc* alloc,
-                                              bool has_initial) {
-  uintptr_t alloc_uint = (uintptr_t)alloc;
-  UPB_ASSERT((alloc_uint & 1) == 0);
-  return alloc_uint | (has_initial ? 1 : 0);
-}
-
-UPB_INLINE bool upb_Arena_HasInitialBlock(upb_Arena* arena) {
-  return arena->block_alloc & 0x1;
-}
+#undef UPB_ARENA_SPAN
 
 #include "upb/port/undef.inc"
 
