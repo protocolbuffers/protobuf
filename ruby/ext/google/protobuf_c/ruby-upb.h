@@ -1413,7 +1413,7 @@ struct upb_MiniTable {
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
   // unknown fields, extension dict, pointer to msglayout, etc.
-  uint16_t size;
+  uint16_t UPB_PRIVATE(size);
 
   uint16_t UPB_ONLYBITS(field_count);
 
@@ -2358,7 +2358,7 @@ struct upb_Message_InternalData {
 };
 
 UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
-  return m->size + sizeof(upb_Message_Internal);
+  return m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
 }
 
 // Inline version upb_Message_New(), for internal use.
@@ -12185,9 +12185,12 @@ extern "C" {
 #endif
 
 // Deep clones a message using the provided target arena.
-upb_Message* upb_Message_DeepClone(const upb_Message* message,
-                                   const upb_MiniTable* mini_table,
-                                   upb_Arena* arena);
+upb_Message* upb_Message_DeepClone(const upb_Message* msg,
+                                   const upb_MiniTable* m, upb_Arena* arena);
+
+// Shallow clones a message using the provided target arena.
+upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
+                                      const upb_MiniTable* m, upb_Arena* arena);
 
 // Deep clones array contents.
 upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
@@ -12201,7 +12204,11 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
 
 // Deep copies the message from src to dst.
 bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
-                          const upb_MiniTable* mini_table, upb_Arena* arena);
+                          const upb_MiniTable* m, upb_Arena* arena);
+
+// Shallow copies the message from src to dst.
+void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                             const upb_MiniTable* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
