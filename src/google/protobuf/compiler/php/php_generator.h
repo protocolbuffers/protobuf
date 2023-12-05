@@ -8,12 +8,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/php/names.h"
-#include "google/protobuf/descriptor.h"
-
+#include <cstdint>
 #include <string>
 
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
