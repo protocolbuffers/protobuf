@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
@@ -22,10 +21,11 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/php/names.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -537,8 +537,20 @@ void Outdent(io::Printer* printer) {
   printer->Outdent();
 }
 
-void GenerateField(const FieldDescriptor* field, io::Printer* printer,
-                   const Options& options) {
+bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
+                   const Options& options, std::string* error) {
+  if (field->is_required()) {
+    *error = absl::StrCat("Can't generate PHP code for required field ",
+                          field->full_name(), ".\n");
+    return false;
+  }
+  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+    *error = absl::StrCat("Can't generate PHP code for group field ",
+                          field->full_name(),
+                          ".  Use regular message encoding instead.\n");
+    return false;
+  }
+
   if (field->is_repeated()) {
     GenerateFieldDocComment(printer, field, options, kFieldProperty);
     printer->Print(
@@ -546,7 +558,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
         "name", field->name());
   } else if (field->real_containing_oneof()) {
     // Oneof fields are handled by GenerateOneofField.
-    return;
+    return true;
   } else {
     std::string initial_value =
         field->has_presence() ? "null" : DefaultForField(field);
@@ -556,6 +568,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
         "name", field->name(),
         "initial_value", initial_value);
   }
+  return true;
 }
 
 void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
@@ -1270,9 +1283,17 @@ void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
       "fullname", classname);
 }
 
-void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
+bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
-                      GeneratorContext* generator_context) {
+                      GeneratorContext* generator_context, std::string* error) {
+  if (en->is_closed()) {
+    *error = absl::StrCat("Can't generate PHP code for closed enum ",
+                          en->full_name(),
+                          ".  Please use either proto3 or editions without "
+                          "`enum_type = CLOSED`.\n");
+    return false;
+  }
+
   std::string filename = GeneratedClassFileName(en, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
@@ -1403,15 +1424,18 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "old", en->name());
     LegacyReadOnlyGenerateClassFile(file, en, options, generator_context);
   }
+
+  return true;
 }
 
-void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
+bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
                          const Options& options,
-                         GeneratorContext* generator_context) {
+                         GeneratorContext* generator_context,
+                         std::string* error) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
   if (message->options().map_entry()) {
-    return;
+    return true;
   }
 
   std::string filename = GeneratedClassFileName(message, options);
@@ -1461,7 +1485,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Field and oneof definitions.
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    GenerateField(field, &printer, options);
+    if (!GenerateField(field, &printer, options, error)) {
+      return false;
+    }
   }
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
@@ -1533,12 +1559,18 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
-    GenerateMessageFile(file, message->nested_type(i), options,
-                        generator_context);
+    if (!GenerateMessageFile(file, message->nested_type(i), options,
+                             generator_context, error)) {
+      return false;
+    }
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
-    GenerateEnumFile(file, message->enum_type(i), options, generator_context);
+    if (!GenerateEnumFile(file, message->enum_type(i), options,
+                          generator_context, error)) {
+      return false;
+    }
   }
+  return true;
 }
 
 void GenerateServiceFile(
@@ -1588,22 +1620,29 @@ void GenerateServiceFile(
   printer.Print("}\n\n");
 }
 
-void GenerateFile(const FileDescriptor* file, const Options& options,
-                  GeneratorContext* generator_context) {
+bool GenerateFile(const FileDescriptor* file, const Options& options,
+                  GeneratorContext* generator_context, std::string* error) {
   GenerateMetadataFile(file, options, generator_context);
 
   for (int i = 0; i < file->message_type_count(); i++) {
-    GenerateMessageFile(file, file->message_type(i), options,
-                        generator_context);
+    if (!GenerateMessageFile(file, file->message_type(i), options,
+                             generator_context, error)) {
+      return false;
+    }
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
-    GenerateEnumFile(file, file->enum_type(i), options, generator_context);
+    if (!GenerateEnumFile(file, file->enum_type(i), options, generator_context,
+                          error)) {
+      return false;
+    }
   }
   if (file->options().php_generic_services()) {
     for (int i = 0; i < file->service_count(); i++) {
       GenerateServiceFile(file, file->service(i), options, generator_context);
     }
   }
+
+  return true;
 }
 
 static std::string EscapePhpdoc(absl::string_view input) {
@@ -2283,18 +2322,7 @@ bool Generator::Generate(const FileDescriptor* file, const Options& options,
     return false;
   }
 
-  if (!options.is_descriptor &&
-      FileDescriptorLegacy(file).syntax() !=
-          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
-    *error =
-        "Can only generate PHP code for proto3 .proto files.\n"
-        "Please add 'syntax = \"proto3\";' to the top of your .proto file.\n";
-    return false;
-  }
-
-  GenerateFile(file, options, generator_context);
-
-  return true;
+  return GenerateFile(file, options, generator_context, error);
 }
 
 bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
