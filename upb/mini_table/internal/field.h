@@ -130,6 +130,20 @@ UPB_PRIVATE(_upb_MiniTableField_CType)(const struct upb_MiniTableField* f) {
   return upb_FieldType_CType(UPB_PRIVATE(_upb_MiniTableField_Type)(f));
 }
 
+UPB_INLINE char _upb_MiniTableField_HasbitMask(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(f->presence > 0);
+  const size_t index = f->presence;
+  return 1 << (index % 8);
+}
+
+UPB_INLINE size_t
+_upb_MiniTableField_HasbitOffset(const struct upb_MiniTableField* f) {
+  UPB_ASSERT(f->presence > 0);
+  const size_t index = f->presence;
+  return index / 8;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsClosedEnum)(
     const struct upb_MiniTableField* f) {
   return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;

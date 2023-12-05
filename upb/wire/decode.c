@@ -689,7 +689,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
 
   /* Set presence if necessary. */
   if (field->presence > 0) {
-    _upb_Message_SetHasbitByField(msg, field);
+    UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
   } else if (field->presence < 0) {
     /* Oneof case */
     uint32_t* oneof_case = _upb_Message_OneofCasePtr(msg, field);

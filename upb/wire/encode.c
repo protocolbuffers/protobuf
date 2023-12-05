@@ -493,7 +493,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
     }
   } else if (f->presence > 0) {
     // Proto2 presence: hasbit.
-    return _upb_Message_GetHasbitByField(msg, f);
+    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {
     // Field is in a oneof.
     return _upb_Message_GetOneofCase(msg, f) == f->UPB_PRIVATE(number);
