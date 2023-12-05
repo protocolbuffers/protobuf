@@ -318,7 +318,7 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
       // cross-file sub-message parsing if we are comfortable requiring that
       // users compile all messages at the same time.
       const upb_MiniTable* sub_mt = pools.GetMiniTable64(field.message_type());
-      size = sub_mt->size + 8;
+      size = sub_mt->UPB_PRIVATE(size) + 8;
     }
     std::vector<size_t> breaks = {64, 128, 192, 256};
     for (auto brk : breaks) {
@@ -474,7 +474,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   output("  $0,\n", submsgs_array_ref);
   output("  $0,\n", fields_array_ref);
   output("  $0, $1, $2, $3, UPB_FASTTABLE_MASK($4), $5,\n",
-         ArchDependentSize(mt_32->size, mt_64->size),
+         ArchDependentSize(mt_32->UPB_PRIVATE(size), mt_64->UPB_PRIVATE(size)),
          mt_64->UPB_PRIVATE(field_count), msgext,
          mt_64->UPB_PRIVATE(dense_below), table_mask,
          mt_64->UPB_PRIVATE(required_count));

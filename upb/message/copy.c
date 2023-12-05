@@ -195,7 +195,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                upb_Arena* arena) {
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
-  memcpy(dst, src, mini_table->size);
+  memcpy(dst, src, mini_table->UPB_PRIVATE(size));
   for (size_t i = 0; i < mini_table->UPB_PRIVATE(field_count); ++i) {
     const upb_MiniTableField* field = &mini_table->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_IsScalar(field)) {
@@ -304,9 +304,23 @@ bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
 // Deep clones a message using the provided target arena.
 //
 // Returns NULL on failure.
-upb_Message* upb_Message_DeepClone(const upb_Message* message,
-                                   const upb_MiniTable* mini_table,
-                                   upb_Arena* arena) {
-  upb_Message* clone = upb_Message_New(mini_table, arena);
-  return _upb_Message_Copy(clone, message, mini_table, arena);
+upb_Message* upb_Message_DeepClone(const upb_Message* msg,
+                                   const upb_MiniTable* m, upb_Arena* arena) {
+  upb_Message* clone = upb_Message_New(m, arena);
+  return _upb_Message_Copy(clone, msg, m, arena);
+}
+
+// Performs a shallow copy. TODO: Extend to handle unknown fields.
+void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                             const upb_MiniTable* m) {
+  memcpy(dst, src, m->UPB_PRIVATE(size));
+}
+
+// Performs a shallow clone. Ignores unknown fields.
+upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
+                                      const upb_MiniTable* m,
+                                      upb_Arena* arena) {
+  upb_Message* clone = upb_Message_New(m, arena);
+  upb_Message_ShallowCopy(clone, msg, m);
+  return clone;
 }

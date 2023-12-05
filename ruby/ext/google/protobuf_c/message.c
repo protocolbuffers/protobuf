@@ -660,11 +660,8 @@ static VALUE Message_dup(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   Message* new_msg_self = ruby_to_Message(new_msg);
-  size_t size = upb_MessageDef_MiniTable(self->msgdef)->size;
-
-  // TODO
-  // TODO
-  memcpy((upb_Message*)new_msg_self->msg, self->msg, size);
+  const upb_MiniTable* m = upb_MessageDef_MiniTable(self->msgdef);
+  upb_Message_ShallowCopy((upb_Message*)new_msg_self->msg, self->msg, m);
   Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
   return new_msg;
 }
