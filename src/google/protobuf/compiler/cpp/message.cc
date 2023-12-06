@@ -4458,6 +4458,28 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         if (cached_has_word_index != HasWordIndex(fields.front())) {
           cached_has_word_index = HasWordIndex(fields.front());
           format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
+          // Prefetch 5 64-byte cache line starting from 7 cache ahead.
+          // Constants are somewhat arbitrary and pretty agresive, but were
+          // chosen to give a better benchmark results. E.g. this is ~20%
+          // faster, single cache line prefetch is ~12% faster, increasing
+          // decreasing distance makes results 2-4% worse. Important note,
+          // prefetch doesn't reuire a valid address, so it is ok to prefetch
+          // past the end of message/valid memory.
+          format(
+              "absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) "
+              "+ 448);\n");
+          format(
+              "absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) "
+              "+ 512);\n");
+          format(
+              "absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) "
+              "+ 576);\n");
+          format(
+              "absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) "
+              "+ 640);\n");
+          format(
+              "absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) "
+              "+ 704);\n");
         }
         format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
         format.Indent();

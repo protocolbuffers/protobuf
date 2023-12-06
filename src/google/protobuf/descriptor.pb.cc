@@ -2976,6 +2976,11 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
     total_size += tag_size + data_size;
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000003fu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -3324,6 +3329,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000007u) {
     // optional .google.protobuf.ExtensionRangeOptions options = 3;
     if (cached_has_bits & 0x00000001u) {
@@ -3566,6 +3576,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -4010,6 +4025,11 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
         _internal_reserved_name().Get(i));
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -4358,6 +4378,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000001fu) {
     // optional string full_name = 2;
     if (cached_has_bits & 0x00000001u) {
@@ -4689,6 +4714,11 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.FeatureSet features = 50;
     if (cached_has_bits & 0x00000001u) {
@@ -5136,6 +5166,11 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x000000ffu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -5483,6 +5518,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -5714,6 +5754,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -6035,6 +6080,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
         _internal_reserved_name().Get(i));
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -6320,6 +6370,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000007u) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -6613,6 +6668,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -6957,6 +7017,11 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000003fu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -7638,6 +7703,11 @@ constexpr ::_pbi::TcParseTable<5, 22, 3, 202, 12> FileOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x000000ffu) {
     // optional string java_package = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -8175,6 +8245,11 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000003fu) {
     // optional .google.protobuf.FeatureSet features = 12;
     if (cached_has_bits & 0x00000001u) {
@@ -8464,6 +8539,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_tab
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string value = 2;
     if (cached_has_bits & 0x00000001u) {
@@ -8911,6 +8991,11 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x000000ffu) {
     // optional .google.protobuf.FeatureSet features = 21;
     if (cached_has_bits & 0x00000001u) {
@@ -9577,6 +9662,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000000fu) {
     // optional .google.protobuf.FeatureSet features = 7;
     if (cached_has_bits & 0x00000001u) {
@@ -9913,6 +10003,11 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000007u) {
     // optional .google.protobuf.FeatureSet features = 2;
     if (cached_has_bits & 0x00000001u) {
@@ -10218,6 +10313,11 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.FeatureSet features = 34;
     if (cached_has_bits & 0x00000001u) {
@@ -10542,6 +10642,11 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000007u) {
     // optional .google.protobuf.FeatureSet features = 35;
     if (cached_has_bits & 0x00000001u) {
@@ -10811,6 +10916,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // required string name_part = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -11155,6 +11265,11 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000003fu) {
     // optional string identifier_value = 3;
     if (cached_has_bits & 0x00000001u) {
@@ -11511,6 +11626,11 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000003fu) {
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (cached_has_bits & 0x00000001u) {
@@ -11794,6 +11914,11 @@ constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditi
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.FeatureSet features = 2;
     if (cached_has_bits & 0x00000001u) {
@@ -12069,6 +12194,11 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.Edition minimum_edition = 4;
     if (cached_has_bits & 0x00000001u) {
@@ -12412,6 +12542,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
         _internal_leading_detached_comments().Get(i));
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string leading_comments = 3;
     if (cached_has_bits & 0x00000001u) {
@@ -12917,6 +13052,11 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
     total_size += tag_size + data_size;
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000000fu) {
     // optional string source_file = 2;
     if (cached_has_bits & 0x00000001u) {

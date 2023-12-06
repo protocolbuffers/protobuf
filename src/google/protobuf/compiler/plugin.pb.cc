@@ -521,6 +521,11 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000000fu) {
     // optional string suffix = 4;
     if (cached_has_bits & 0x00000001u) {
@@ -870,6 +875,11 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional string parameter = 2;
     if (cached_has_bits & 0x00000001u) {
@@ -1181,6 +1191,11 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000000fu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
@@ -1512,6 +1527,11 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
       ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x0000000fu) {
     // optional string error = 1;
     if (cached_has_bits & 0x00000001u) {

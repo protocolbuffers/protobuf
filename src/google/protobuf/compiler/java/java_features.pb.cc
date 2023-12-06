@@ -302,6 +302,11 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 448);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 512);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 576);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 640);
+  absl::PrefetchToLocalCache(reinterpret_cast<const char*>(this) + 704);
   if (cached_has_bits & 0x00000003u) {
     // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (cached_has_bits & 0x00000001u) {
