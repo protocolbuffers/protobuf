@@ -112,6 +112,24 @@ UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
       m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
 }
 
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(_upb_MiniTable_MapKey)(
+    const struct upb_MiniTable* m) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_FieldCount)(m) == 2);
+  const struct upb_MiniTableField* f =
+      UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, 0);
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Number)(f) == 1);
+  return f;
+}
+
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTable_MapValue)(const struct upb_MiniTable* m) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_FieldCount)(m) == 2);
+  const struct upb_MiniTableField* f =
+      UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, 1);
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Number)(f) == 2);
+  return f;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
     const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f) != NULL;
