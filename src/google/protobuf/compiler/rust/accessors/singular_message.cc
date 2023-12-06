@@ -27,7 +27,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
           {"prefix", prefix},
           {"field", field.desc().name()},
           {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "mutable")},
+          {"getter_mut_thunk", Thunk(field, "get_mut")},
           {"clearer_thunk", Thunk(field, "clear")},
           {
               "view_body",
@@ -91,7 +91,7 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
   field.Emit(
       {
           {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "mutable")},
+          {"getter_mut_thunk", Thunk(field, "get_mut")},
           {"clearer_thunk", Thunk(field, "clear")},
           {"getter_mut",
            [&] {
@@ -130,7 +130,7 @@ void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
   field.Emit({{"QualifiedMsg",
                cpp::QualifiedClassName(field.desc().containing_type())},
               {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "mutable")},
+              {"getter_mut_thunk", Thunk(field, "get_mut")},
               {"clearer_thunk", Thunk(field, "clear")},
               {"field", cpp::FieldName(&field.desc())}},
              R"cc(
