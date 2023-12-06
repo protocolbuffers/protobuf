@@ -18,6 +18,7 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
@@ -41,7 +42,7 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     int decode_options, upb_Arena* arena) {
   upb_UnknownToMessageRet ret;
   ret.message =
-      base_message ? base_message : upb_Message_New(mini_table, arena);
+      base_message ? base_message : _upb_Message_New(mini_table, arena);
   if (!ret.message) {
     ret.status = kUpb_UnknownToMessage_OutOfMemory;
     return ret;

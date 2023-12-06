@@ -13,24 +13,23 @@
 #include <cstdlib>
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/match.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
-#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
-#include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
+#include "upb/wire/types.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 #include "upb_generator/names.h"
@@ -74,7 +73,7 @@ std::string EnumMiniTableRef(upb::EnumDefPtr descriptor,
 }
 
 std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
-  UPB_ASSERT(ext.is_extension());
+  assert(ext.is_extension());
   if (ext.extension_scope()) {
     return MessageName(ext.extension_scope());
   } else {
@@ -319,7 +318,7 @@ void GenerateMessageFunctionsInHeader(upb::MessageDefPtr message,
   output(
       R"cc(
         UPB_INLINE $0* $0_new(upb_Arena* arena) {
-          return ($0*)upb_Message_New($1, arena);
+          return ($0*)_upb_Message_New($1, arena);
         }
         UPB_INLINE $0* $0_parse(const char* buf, size_t size, upb_Arena* arena) {
           $0* ret = $0_new(arena);
@@ -691,7 +690,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
               return NULL;
             }
-            struct $0* sub = (struct $0*)upb_Message_New($3, arena);
+            struct $0* sub = (struct $0*)_upb_Message_New($3, arena);
             if (!arr || !sub) return NULL;
             UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
             return sub;
@@ -759,7 +758,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
           UPB_INLINE struct $0* $1_mutable_$2($1* msg, upb_Arena* arena) {
             struct $0* sub = (struct $0*)$1_$2(msg);
             if (sub == NULL) {
-              sub = (struct $0*)upb_Message_New($3, arena);
+              sub = (struct $0*)_upb_Message_New($3, arena);
               if (sub) $1_set_$2(msg, sub);
             }
             return sub;

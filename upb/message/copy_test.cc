@@ -25,6 +25,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
@@ -300,7 +301,7 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
   std::string unknown_data(data, len);
   // Add unknown data.
-  upb_Message_AddUnknown(msg, data, len, source_arena);
+  _upb_Message_AddUnknown(msg, data, len, source_arena);
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =

@@ -29,6 +29,7 @@
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
@@ -324,7 +325,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   // If we parse without allowing unlinked objects, the parse will fail.
   // TODO: re-enable this test once the old method of tree shaking is
   // removed
-  // upb_Message* fail_msg = upb_Message_New(mini_table, arena.ptr());
+  // upb_Message* fail_msg = _upb_Message_New(mini_table, arena.ptr());
   // decode_status =
   //     upb_Decode(serialized, serialized_size, fail_msg, mini_table, nullptr,
   //     0,
@@ -332,7 +333,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   // EXPECT_EQ(decode_status, kUpb_DecodeStatus_UnlinkedSubMessage);
 
   // if we parse while allowing unlinked objects, the parse will succeed.
-  upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
+  upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
   decode_status =
       upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
                  kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
@@ -398,7 +399,7 @@ TEST(GeneratedCode, ReparseUnlinked) {
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena.ptr());
 
   // Parse twice without linking the MiniTable.
-  upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
+  upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
   upb_DecodeStatus decode_status =
       upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
                  kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
@@ -453,7 +454,7 @@ TEST(GeneratedCode, PromoteInParser) {
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena.ptr());
 
   // Parse once without linking the MiniTable.
-  upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
+  upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
   upb_DecodeStatus decode_status =
       upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
                  kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
@@ -511,7 +512,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
   // If we parse without allowing unlinked objects, the parse will fail.
   // TODO: re-enable this test once the old method of tree shaking is
   // removed
-  // upb_Message* fail_msg = upb_Message_New(mini_table, arena.ptr());
+  // upb_Message* fail_msg = _upb_Message_New(mini_table, arena.ptr());
   // decode_status =
   //     upb_Decode(serialized, serialized_size, fail_msg, mini_table, nullptr,
   //     0,
@@ -519,7 +520,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
   // EXPECT_EQ(decode_status, kUpb_DecodeStatus_UnlinkedSubMessage);
 
   // if we parse while allowing unlinked objects, the parse will succeed.
-  upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
+  upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
   decode_status =
       upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
                  kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
@@ -585,14 +586,14 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
       CreateMiniTableWithEmptySubTablesForMaps(arena.ptr());
 
   // If we parse without allowing unlinked objects, the parse will fail.
-  upb_Message* fail_msg1 = upb_Message_New(mini_table, arena.ptr());
+  upb_Message* fail_msg1 = _upb_Message_New(mini_table, arena.ptr());
   upb_DecodeStatus decode_status =
       upb_Decode(serialized, serialized_size, fail_msg1, mini_table, nullptr, 0,
                  arena.ptr());
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_UnlinkedSubMessage);
 
   // if we parse while allowing unlinked objects, the parse will succeed.
-  upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
+  upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
   decode_status =
       upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
                  kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
@@ -699,7 +700,7 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
                                                              &serialized_size);
 
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTablesOld(arena);
-  upb_Message* msg = upb_Message_New(mini_table, arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
   upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
                                               mini_table, nullptr, 0, arena);
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
@@ -746,7 +747,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
                                                              &serialized_size);
 
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTablesOld(arena);
-  upb_Message* msg = upb_Message_New(mini_table, arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
   upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
                                               mini_table, nullptr, 0, arena);
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
@@ -804,7 +805,7 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   upb_MiniTable* mini_table =
       CreateMiniTableWithEmptySubTablesForMapsOld(arena);
   upb_MiniTable* map_entry_mini_table = CreateMapEntryMiniTableOld(arena);
-  upb_Message* msg = upb_Message_New(mini_table, arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
   const int decode_options = upb_DecodeOptions_MaxDepth(0);
   upb_DecodeStatus decode_status =
       upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,

@@ -14,7 +14,7 @@
 #define UPB_WIRE_INTERNAL_DECODE_H_
 
 #include "upb/mem/internal/arena.h"
-#include "upb/message/message.h"
+#include "upb/message/internal/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "utf8_range.h"
@@ -106,8 +106,8 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
   if (!old_end) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
 
   if (d->unknown) {
-    if (!upb_Message_AddUnknown(d->unknown_msg, d->unknown,
-                                old_end - d->unknown, &d->arena)) {
+    if (!_upb_Message_AddUnknown(d->unknown_msg, d->unknown,
+                                 old_end - d->unknown, &d->arena)) {
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     d->unknown = new_start;

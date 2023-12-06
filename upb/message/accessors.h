@@ -369,7 +369,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
         mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
-    sub_message = upb_Message_New(sub_mini_table, arena);
+    sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   }
