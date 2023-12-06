@@ -421,7 +421,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertRaisesRegex(ValueError, 'year (0 )?is out of range',
                            message.FromJsonString, '0000-01-01T00:00:00Z')
     message.seconds = 253402300800
-    self.assertRaisesRegex(OverflowError, 'date value out of range',
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
                            message.ToJsonString)
 
   def testInvalidDuration(self):
