@@ -118,32 +118,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 struct ImplicitWeakMessageDefaultType;
 extern ImplicitWeakMessageDefaultType implicit_weak_message_default_instance;
 
-// A type handler for use with implicit weak repeated message fields.
-template <typename ImplicitWeakType>
-class ImplicitWeakTypeHandler {
- public:
-  typedef MessageLite Type;
-  static constexpr bool Moveable = false;
-
-  static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
-                                              Arena* arena = nullptr) {
-    return prototype->New(arena);
-  }
-
-  static inline void Delete(MessageLite* value, Arena* arena) {
-    if (arena == nullptr) {
-      delete value;
-    }
-  }
-  static inline Arena* GetArena(MessageLite* value) {
-    return value->GetArena();
-  }
-  static inline void Clear(MessageLite* value) { value->Clear(); }
-  static void Merge(const MessageLite& from, MessageLite* to) {
-    to->CheckTypeAndMergeFrom(from);
-  }
-};
-
 }  // namespace internal
 
 template <typename T>
@@ -151,7 +125,7 @@ struct WeakRepeatedPtrField {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
+  using TypeHandler = internal::GenericTypeHandler<MessageLite>;
 
   constexpr WeakRepeatedPtrField() : weak() {}
   WeakRepeatedPtrField(const WeakRepeatedPtrField& rhs)
@@ -201,14 +175,15 @@ struct WeakRepeatedPtrField {
     return const_pointer_iterator(base().raw_data() + base().size());
   }
 
-  T* Add() { return weak.Add(); }
-  void Clear() { base().template Clear<TypeHandler>(); }
+  T* Add() {
+    return static_cast<T*>(base().AddMessage(&T::default_instance()));
+  }
+  void Clear() { weak.Clear(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
-    if (other.empty()) return;
-    base().template MergeFrom<MessageLite>(other.base());
+    weak.MergeFrom(other.weak);
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
-    base().InternalSwap(&other->base());
+    weak.InternalSwap(&other->weak);
   }
 
   const internal::RepeatedPtrFieldBase& base() const { return weak; }
