@@ -272,11 +272,10 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
       size_t size;
       upb_TaggedMessagePtr submsg = *(upb_TaggedMessagePtr*)field_mem;
       const upb_MiniTable* subm =
-          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
-      if (submsg == 0) {
-        return;
-      }
+          UPB_PRIVATE(_upb_MiniTableSubs_Message)(subs, f);
+      if (submsg == 0) return;
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+
       encode_tag(e, f->UPB_PRIVATE(number), kUpb_WireType_EndGroup);
       encode_TaggedMessagePtr(e, submsg, subm, &size);
       wire_type = kUpb_WireType_StartGroup;
@@ -287,11 +286,10 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
       size_t size;
       upb_TaggedMessagePtr submsg = *(upb_TaggedMessagePtr*)field_mem;
       const upb_MiniTable* subm =
-          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
-      if (submsg == 0) {
-        return;
-      }
+          UPB_PRIVATE(_upb_MiniTableSubs_Message)(subs, f);
+      if (submsg == 0) return;
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+
       encode_TaggedMessagePtr(e, submsg, subm, &size);
       encode_varint(e, size);
       wire_type = kUpb_WireType_Delimited;
@@ -378,7 +376,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
       const upb_TaggedMessagePtr* ptr = start + arr->size;
       const upb_MiniTable* subm =
-          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
+          UPB_PRIVATE(_upb_MiniTableSubs_Message)(subs, f);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -394,7 +392,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
       const upb_TaggedMessagePtr* ptr = start + arr->size;
       const upb_MiniTable* subm =
-          upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
+          UPB_PRIVATE(_upb_MiniTableSubs_Message)(subs, f);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -434,7 +432,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
   const upb_MiniTable* layout =
-      upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
+      UPB_PRIVATE(_upb_MiniTableSubs_Message)(subs, f);
   UPB_ASSERT(layout->UPB_PRIVATE(field_count) == 2);
 
   if (map == NULL) return;

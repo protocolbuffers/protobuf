@@ -8,6 +8,8 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
 #define UPB_MINI_TABLE_INTERNAL_SUB_H_
 
+#include "upb/mini_table/internal/field.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -42,6 +44,26 @@ UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableSub_Enum)(
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
     const union upb_MiniTableSub sub) {
   return sub.UPB_PRIVATE(submsg);
+}
+
+// Returns the MiniTableEnum corresponding to a given MiniTableField
+// from an array of MiniTableSubs. Note: NOT an array of pointers -
+// an array of upb_MiniTableSub objects all laid out sequentially in memory.
+
+UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableSubs_Enum)(
+    const union upb_MiniTableSub* subs, const struct upb_MiniTableField* f) {
+  const union upb_MiniTableSub sub = subs[f->UPB_PRIVATE(submsg_index)];
+  return UPB_PRIVATE(_upb_MiniTableSub_Enum)(sub);
+}
+
+// Returns the MiniTable corresponding to a given MiniTableField
+// from an array of MiniTableSubs. Note: NOT an array of pointers -
+// an array of upb_MiniTableSub objects all laid out sequentially in memory.
+
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSubs_Message)(
+    const union upb_MiniTableSub* subs, const struct upb_MiniTableField* f) {
+  const union upb_MiniTableSub sub = subs[f->UPB_PRIVATE(submsg_index)];
+  return UPB_PRIVATE(_upb_MiniTableSub_Message)(sub);
 }
 
 #ifdef __cplusplus
