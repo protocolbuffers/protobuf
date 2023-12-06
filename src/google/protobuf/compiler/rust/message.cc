@@ -9,7 +9,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_cat.h"
+#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -173,8 +173,50 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
   // If we're dealing with a Mut, the getter must be supplied
   // self.inner.msg() whereas a View has to be supplied self.msg
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
-  auto rsType = PrimitiveRsTypeName(field.desc());
+  if (fieldType == FieldDescriptor::TYPE_MESSAGE) {
+    Context<Descriptor> d = field.WithDesc(field.desc().message_type());
+    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
+    // TODO: investigate imports breaking submsg accessors
+    if (absl::StrContains(prefix, "import")) {
+      return;
+    }
+    field.Emit(
+        {
+            {"prefix", prefix},
+            {"field", fieldName},
+            {"self", self},
+            {"getter_thunk", getter_thunk},
+            // TODO: dedupe with singular_message.cc
+            {
+                "view_body",
+                [&] {
+                  if (field.is_upb()) {
+                    field.Emit({}, R"rs(
+                      let submsg = unsafe { $getter_thunk$($self$) };
+                      match submsg {
+                        None => $prefix$View::new($pbi$::Private,
+                          $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
+                        Some(field) => $prefix$View::new($pbi$::Private, field),
+                      }
+                )rs");
+                  } else {
+                    field.Emit({}, R"rs(
+                      let submsg = unsafe { $getter_thunk$($self$) };
+                      $prefix$View::new($pbi$::Private, submsg)
+                )rs");
+                  }
+                },
+            },
+        },
+        R"rs(
+              pub fn r#$field$(&self) -> $prefix$View {
+                $view_body$
+              }
+            )rs");
+    return;
+  }
 
+  auto rsType = PrimitiveRsTypeName(field.desc());
   if (fieldType == FieldDescriptor::TYPE_STRING) {
     field.Emit(
         {
@@ -250,8 +292,7 @@ void AccessorsForViewOrMut(Context<Descriptor> msg, bool is_mut) {
     // TODO - add cord support
     if (field.desc().options().has_ctype()) continue;
     // TODO
-    if (field.desc().type() == FieldDescriptor::TYPE_MESSAGE ||
-        field.desc().type() == FieldDescriptor::TYPE_ENUM ||
+    if (field.desc().type() == FieldDescriptor::TYPE_ENUM ||
         field.desc().type() == FieldDescriptor::TYPE_GROUP)
       continue;
     GetterForViewOrMut(field, is_mut);

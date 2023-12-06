@@ -39,6 +39,7 @@ fn test_nested_views() {
     assert_that!(inner_msg.bool(), eq(false));
     assert_that!(*inner_msg.string().as_bytes(), empty());
     assert_that!(*inner_msg.bytes(), empty());
+    assert_that!(inner_msg.innersubmsg().flag(), eq(false));
 }
 
 #[test]
@@ -95,4 +96,21 @@ fn test_nested_muts() {
 
     );
     // TODO: add mutation tests for strings and bytes
+}
+
+#[test]
+fn test_msg_from_outside() {
+    // let's make sure that we're not just working for messages nested inside
+    // messages, messages from without and within should work
+    let outer = nested_proto::nest::Outer::new();
+    assert_that!(outer.notinside().num(), eq(0));
+}
+
+#[test]
+fn test_recursive_msg() {
+    let rec = nested_proto::nest::Recursive::new();
+    assert_that!(rec.num(), eq(0));
+    assert_that!(rec.rec().num(), eq(0));
+    assert_that!(rec.rec().rec().num(), eq(0)); // turtles all the way down...
+    assert_that!(rec.rec().rec().rec().num(), eq(0)); // ... ad infinitum
 }
