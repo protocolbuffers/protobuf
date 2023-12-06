@@ -1499,6 +1499,24 @@ UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
       m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
 }
 
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(_upb_MiniTable_MapKey)(
+    const struct upb_MiniTable* m) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_FieldCount)(m) == 2);
+  const struct upb_MiniTableField* f =
+      UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, 0);
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Number)(f) == 1);
+  return f;
+}
+
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTable_MapValue)(const struct upb_MiniTable* m) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_FieldCount)(m) == 2);
+  const struct upb_MiniTableField* f =
+      UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, 1);
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Number)(f) == 2);
+  return f;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
     const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f) != NULL;
@@ -1556,19 +1574,24 @@ UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
   return UPB_PRIVATE(_upb_MiniTable_GetSubEnumTable)(m, f);
 }
 
+// Returns the MiniTableField for the key of a map.
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapKey(
+    const upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTable_MapKey)(m);
+}
+
+// Returns the MiniTableField for the value of a map.
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapValue(
+    const upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTable_MapValue)(m);
+}
+
 // Returns true if this MiniTable field is linked to a MiniTable for the
 // sub-message.
 UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
     const upb_MiniTable* m, const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(m, f);
 }
-
-// TODO: Implement convenience getters for map entries:
-//
-// upb_MiniTable_GetMapKey()
-// upb_MiniTable_GetMapValue()
-// These could also assert that this is indeed a map entry (well, as best we
-// can. We can assert that there are two fields with field numbers 1 and 2).
 
 // If this field is in a oneof, returns the first field in the oneof.
 //
