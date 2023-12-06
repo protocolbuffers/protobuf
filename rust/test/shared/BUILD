@@ -281,6 +281,46 @@ rust_test(
 )
 
 rust_test(
+    name = "accessors_repeated_cpp_test",
+    srcs = ["accessors_repeated_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "accessors_repeated_upb_test",
+    srcs = ["accessors_repeated_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
+)
+
+rust_test(
     name = "accessors_map_cpp_test",
     srcs = ["accessors_map_test.rs"],
     proc_macro_deps = [
