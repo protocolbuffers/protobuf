@@ -3617,6 +3617,8 @@ struct MetadataOwner {
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
+void AddDescriptors(const DescriptorTable* table);
+
 void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   // Ensure the file descriptor is added to the pool.
   {
@@ -3704,6 +3706,16 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   MessageFactory::InternalRegisterGeneratedFile(table);
 }
 
+void AddDescriptors(const DescriptorTable* table) {
+  // AddDescriptors is not thread safe. Callers need to ensure calls are
+  // properly serialized. This function is only called pre-main by global
+  // descriptors and we can assume single threaded access or it's called
+  // by AssignDescriptorImpl which uses a mutex to sequence calls.
+  if (table->is_initialized) return;
+  table->is_initialized = true;
+  AddDescriptorsImpl(table);
+}
+
 }  // namespace
 
 // Separate function because it needs to be a friend of
@@ -3718,16 +3730,6 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 }
 
 namespace internal {
-
-void AddDescriptors(const DescriptorTable* table) {
-  // AddDescriptors is not thread safe. Callers need to ensure calls are
-  // properly serialized. This function is only called pre-main by global
-  // descriptors and we can assume single threaded access or it's called
-  // by AssignDescriptorImpl which uses a mutex to sequence calls.
-  if (table->is_initialized) return;
-  table->is_initialized = true;
-  AddDescriptorsImpl(table);
-}
 
 Metadata AssignDescriptors(const DescriptorTable* (*table)(),
                            absl::once_flag* once, const Metadata& metadata) {
