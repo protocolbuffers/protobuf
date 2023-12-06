@@ -5711,7 +5711,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   if (unknown_size != 0) {
     UPB_ASSERT(ptr);
     // Make a copy into destination arena.
-    if (!upb_Message_AddUnknown(dst, ptr, unknown_size, arena)) {
+    if (!_upb_Message_AddUnknown(dst, ptr, unknown_size, arena)) {
       return NULL;
     }
   }
@@ -6209,8 +6209,13 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 static const size_t message_overhead = sizeof(upb_Message_InternalData);
 
-bool upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                            upb_Arena* arena) {
+upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
+                             upb_Arena* arena) {
+  return _upb_Message_New(mini_table, arena);
+}
+
+bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                             upb_Arena* arena) {
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
@@ -12351,7 +12356,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
                                                upb_TaggedMessagePtr* target) {
   const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
   UPB_ASSERT(subl);
-  upb_Message* msg = upb_Message_New(subl, &d->arena);
+  upb_Message* msg = _upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
 
   // Extensions should not be unlinked. A message extension should not be
@@ -12479,7 +12484,7 @@ static void _upb_Decoder_AddUnknownVarints(upb_Decoder* d, upb_Message* msg,
   end = upb_Decoder_EncodeVarint32(val1, end);
   end = upb_Decoder_EncodeVarint32(val2, end);
 
-  if (!upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
+  if (!_upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -12765,7 +12770,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     _upb_Decoder_AddUnknownVarints(d, msg, tag, size);
-    if (!upb_Message_AddUnknown(msg, buf, size, &d->arena)) {
+    if (!_upb_Message_AddUnknown(msg, buf, size, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else {
@@ -12943,9 +12948,9 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
   ptr = upb_Decoder_EncodeVarint32(kEndItemTag, ptr);
   char* end = ptr;
 
-  if (!upb_Message_AddUnknown(msg, buf, split - buf, &d->arena) ||
-      !upb_Message_AddUnknown(msg, message_data, message_size, &d->arena) ||
-      !upb_Message_AddUnknown(msg, split, end - split, &d->arena)) {
+  if (!_upb_Message_AddUnknown(msg, buf, split - buf, &d->arena) ||
+      !_upb_Message_AddUnknown(msg, message_data, message_size, &d->arena) ||
+      !_upb_Message_AddUnknown(msg, split, end - split, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -13330,7 +13335,7 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
       start = d->unknown;
       d->unknown = NULL;
     }
-    if (!upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
+    if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == kUpb_WireType_StartGroup) {
