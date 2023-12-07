@@ -132,6 +132,10 @@ class Context {
   const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
 };
+
+bool IsInCurrentlyGeneratingCrate(Context<FileDescriptor> file);
+bool IsInCurrentlyGeneratingCrate(Context<Descriptor> message);
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
