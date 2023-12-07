@@ -116,7 +116,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_legacy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_visitor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/dynamic_message.h
@@ -513,6 +512,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_legacy.h
 )
 
 # @//src/google/protobuf:well_known_type_protos
