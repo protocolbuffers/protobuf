@@ -30,7 +30,8 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                [&] {
                  if (field.is_upb()) {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$(&self) -> $pb$::MapView<'_, $Key$, $Value$> {
+                    pub fn r#$field$(&self)
+                      -> $pb$::View<'_, $pb$::Map<$Key$, $Value$>> {
                       let inner = unsafe {
                         $getter_thunk$(self.inner.msg)
                       }.map_or_else(|| unsafe {$pbr$::empty_map()}, |raw| {
@@ -45,7 +46,8 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                     })rs");
                  } else {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$(&self) -> $pb$::MapView<'_, $Key$, $Value$> {
+                    pub fn r#$field$(&self)
+                      -> $pb$::View<'_, $pb$::Map<$Key$, $Value$>> {
                       let inner = $pbr$::MapInner {
                         raw: unsafe { $getter_thunk$(self.inner.msg) },
                         _phantom_key: std::marker::PhantomData,
@@ -59,9 +61,11 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                [&] {
                  if (field.is_upb()) {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self) -> $pb$::MapMut<'_, $Key$, $Value$> {
+                    pub fn r#$field$_mut(&mut self)
+                      -> $pb$::Mut<'_, $pb$::Map<$Key$, $Value$>> {
                       let raw = unsafe {
-                        $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
+                        $getter_mut_thunk$(self.inner.msg,
+                                           self.inner.arena.raw())
                       };
                       let inner = $pbr$::MapInner{
                         raw,
@@ -73,7 +77,8 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                     })rs");
                  } else {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self) -> $pb$::MapMut<'_, $Key$, $Value$> {
+                    pub fn r#$field$_mut(&mut self)
+                      -> $pb$::Mut<'_, $pb$::Map<$Key$, $Value$>> {
                       let inner = $pbr$::MapInner {
                         raw: unsafe { $getter_mut_thunk$(self.inner.msg) },
                         _phantom_key: std::marker::PhantomData,

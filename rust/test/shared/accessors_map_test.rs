@@ -41,3 +41,15 @@ generate_map_primitives_tests!(
     (i32, f64, int32, double),
     (bool, bool, bool, bool)
 );
+
+#[test]
+fn test_string_maps() {
+    let mut msg = TestMap::new();
+    msg.map_string_string_mut().insert("hello", "world".into());
+    msg.map_string_string_mut().insert("fizz", "buzz".into());
+    assert_that!(msg.map_string_string().len(), eq(2));
+    assert_that!(msg.map_string_string().get("fizz").unwrap(), eq("buzz"));
+    assert_that!(msg.map_string_string().get("not found"), eq(None));
+    msg.map_string_string_mut().clear();
+    assert_that!(msg.map_string_string().len(), eq(0));
+}

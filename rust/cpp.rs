@@ -7,11 +7,13 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::ProtoStr;
+use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use core::fmt::Debug;
 use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
+use std::convert::identity;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
@@ -327,9 +329,6 @@ pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
     pub _phantom_value: PhantomData<&'msg mut V>,
 }
 
-// These use manual impls instead of derives to avoid unnecessary bounds on `K`
-// and `V`. This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
 impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
     fn clone(&self) -> MapInner<'msg, K, V> {
@@ -337,78 +336,22 @@ impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
     }
 }
 
-macro_rules! impl_scalar_map_values {
-    ($kt:ty, $trait:ident for $($t:ty),*) => {
-        paste! { $(
-            extern "C" {
-                fn [< __pb_rust_Map_ $kt _ $t _new >]() -> RawMap;
-                fn [< __pb_rust_Map_ $kt _ $t _clear >](m: RawMap);
-                fn [< __pb_rust_Map_ $kt _ $t _size >](m: RawMap) -> usize;
-                fn [< __pb_rust_Map_ $kt _ $t _insert >](m: RawMap, key: $kt, value: $t);
-                fn [< __pb_rust_Map_ $kt _ $t _get >](m: RawMap, key: $kt, value: *mut $t) -> bool;
-                fn [< __pb_rust_Map_ $kt _ $t _remove >](m: RawMap, key: $kt, value: *mut $t) -> bool;
-            }
-            impl $trait for $t {
-                fn new_map() -> RawMap {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _new >]() }
-                }
+macro_rules! generate_map_with_key_ops_traits {
+    ($($t:ty, $sized_t:ty;)*) => {
+        paste! {
+            $(
+                pub trait [< MapWith $t:camel KeyOps >] {
+                    type Value<'a>: Sized;
 
-                fn clear(m: RawMap) {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _clear >](m) }
-                }
-
-                fn size(m: RawMap) -> usize {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _size >](m) }
-                }
-
-                fn insert(m: RawMap, key: $kt, value: $t) {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _insert >](m, key, value) }
-                }
-
-                fn get(m: RawMap, key: $kt) -> Option<$t> {
-                    let mut val: $t = Default::default();
-                    let found = unsafe { [< __pb_rust_Map_ $kt _ $t _get >](m, key, &mut val) };
-                    if !found {
-                        return None;
-                    }
-                    Some(val)
-                }
-
-                fn remove(m: RawMap, key: $kt) -> Option<$t> {
-                    let mut val: $t = Default::default();
-                    let removed =
-                        unsafe { [< __pb_rust_Map_ $kt _ $t _remove >](m, key, &mut val) };
-                    if !removed {
-                        return None;
-                    }
-                    Some(val)
-                }
-            }
-         )* }
-    }
-}
-
-macro_rules! impl_scalar_maps {
-    ($($t:ty),*) => {
-        paste! { $(
-                pub trait [< MapWith $t:camel KeyOps >] : Sync + Send + Copy + Clone + Debug {
                     fn new_map() -> RawMap;
                     fn clear(m: RawMap);
                     fn size(m: RawMap) -> usize;
-                    fn insert(m: RawMap, key: $t, value: Self);
-                    fn get(m: RawMap, key: $t) -> Option<Self>
-                    where
-                        Self: Sized;
-                    fn remove(m: RawMap, key: $t) -> Option<Self>
-                    where
-                        Self: Sized;
+                    fn insert(m: RawMap, key: $sized_t, value: Self::Value<'_>) -> bool;
+                    fn get<'a>(m: RawMap, key: $sized_t) -> Option<Self::Value<'a>>;
+                    fn remove<'a>(m: RawMap, key: $sized_t) -> bool;
                 }
 
-                impl_scalar_map_values!(
-                    $t, [< MapWith $t:camel KeyOps >] for i32, u32, f32, f64, bool, u64, i64
-                );
-
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> Default for MapInner<'msg, $t, V> {
+                impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> Default for MapInner<'msg, $t, V> {
                     fn default() -> Self {
                         MapInner {
                             raw: V::new_map(),
@@ -418,7 +361,7 @@ macro_rules! impl_scalar_maps {
                     }
                 }
 
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> MapInner<'msg, $t, V> {
+                impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> MapInner<'msg, $t, V> {
                     pub fn size(&self) -> usize {
                         V::size(self.raw)
                     }
@@ -427,27 +370,129 @@ macro_rules! impl_scalar_maps {
                         V::clear(self.raw)
                     }
 
-                    pub fn get(&self, key: $t) -> Option<V> {
+                    pub fn get<'a>(&self, key: $sized_t) -> Option<V::Value<'a>> {
                         V::get(self.raw, key)
                     }
 
-                    pub fn remove(&mut self, key: $t) -> Option<V> {
+                    pub fn remove<'a>(&mut self, key: $sized_t) -> bool {
                         V::remove(self.raw, key)
                     }
 
-                    pub fn insert(&mut self, key: $t, value: V) -> bool {
+                    pub fn insert(&mut self, key: $sized_t, value: V::Value<'_>) -> bool {
                         V::insert(self.raw, key, value);
                         true
                     }
                 }
-        )* }
+            )*
+        }
     }
 }
 
-impl_scalar_maps!(i32, u32, bool, u64, i64);
+generate_map_with_key_ops_traits!(
+    i32, i32;
+    u32, u32;
+    i64, i64;
+    u64, u64;
+    bool, bool;
+    ProtoStr, &ProtoStr;
+);
+
+macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
+    ($key_t:ty, $sized_key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, $trait:ident for $($t:ty, $sized_t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr, $zero_val:literal;)*) => {
+        paste! { $(
+            extern "C" {
+                fn [< __pb_rust_Map_ $key_t _ $t _new >]() -> RawMap;
+                fn [< __pb_rust_Map_ $key_t _ $t _clear >](m: RawMap);
+                fn [< __pb_rust_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
+                fn [< __pb_rust_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t);
+                fn [< __pb_rust_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< __pb_rust_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+            }
+            impl $trait for $t {
+                type Value<'a> = $sized_t;
+
+                fn new_map() -> RawMap {
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _new >]() }
+                }
+
+                fn clear(m: RawMap) {
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _clear >](m) }
+                }
+
+                fn size(m: RawMap) -> usize {
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _size >](m) }
+                }
+
+                fn insert(m: RawMap, key: $sized_key_t, value: Self::Value<'_>) -> bool {
+                    let ffi_key = $to_ffi_key(key);
+                    let ffi_value = $to_ffi_value(value);
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _insert >](m, ffi_key, ffi_value) }
+                    true
+                }
+
+                fn get<'a>(m: RawMap, key: $sized_key_t) -> Option<Self::Value<'a>> {
+                    let ffi_key = $to_ffi_key(key);
+                    let mut ffi_value = $to_ffi_value($zero_val);
+                    let found = unsafe { [< __pb_rust_Map_ $key_t _ $t _get >](m, ffi_key, &mut ffi_value) };
+                    if !found {
+                        return None;
+                    }
+                    Some($from_ffi_value(ffi_value))
+                }
+
+                fn remove<'a>(m: RawMap, key: $sized_key_t) -> bool {
+                    let ffi_key = $to_ffi_key(key);
+                    let mut ffi_value = $to_ffi_value($zero_val);
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _remove >](m, ffi_key, &mut ffi_value) }
+                }
+            }
+         )* }
+    }
+}
+
+fn str_to_ptrlen<'a>(val: impl Into<&'a ProtoStr>) -> PtrAndLen {
+    val.into().as_bytes().into()
+}
+
+fn ptrlen_to_str<'a>(val: PtrAndLen) -> &'a ProtoStr {
+    unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
+}
+
+macro_rules! impl_map_with_key_ops_for_scalar_values {
+    ($($t:ty, $t_sized:ty, $ffi_t:ty, $to_ffi_key:expr;)*) => {
+        paste! {
+            $(
+                impl_scalar_map_with_key_op_for_scalar_values!($t, $t_sized, $ffi_t, $to_ffi_key, [< MapWith $t:camel KeyOps >] for
+                    f32, f32, f32, identity, identity, 0f32;
+                    f64, f64, f64, identity, identity, 0f64;
+                    i32, i32, i32, identity, identity, 0i32;
+                    u32, u32, u32, identity, identity, 0u32;
+                    i64, i64, i64, identity, identity, 0i64;
+                    u64, u64, u64, identity, identity, 0u64;
+                    bool, bool, bool, identity, identity, false;
+                    ProtoStr, &'a ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str, "";
+                );
+            )*
+        }
+    }
+}
+
+impl_map_with_key_ops_for_scalar_values!(
+    i32, i32, i32, identity;
+    u32, u32, u32, identity;
+    i64, i64, i64, identity;
+    u64, u64, u64, identity;
+    bool, bool, bool, identity;
+    ProtoStr, &ProtoStr, PtrAndLen, str_to_ptrlen;
+);
 
 #[cfg(test)]
-pub(crate) fn new_map_inner() -> MapInner<'static, i32, i64> {
+pub(crate) fn new_map_i32_i64() -> MapInner<'static, i32, i64> {
+    Default::default()
+}
+
+#[cfg(test)]
+pub(crate) fn new_map_str_str() -> MapInner<'static, ProtoStr, ProtoStr> {
     Default::default()
 }
 
@@ -505,9 +550,9 @@ mod tests {
         assert_that!(map.get(3), eq(None));
         assert_that!(map.size(), eq(1));
 
-        assert_that!(map.remove(1), eq(Some(2)));
+        assert_that!(map.remove(1), eq(true));
         assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(None));
+        assert_that!(map.remove(1), eq(false));
 
         assert_that!(map.insert(4, 5), eq(true));
         assert_that!(map.insert(6, 7), eq(true));
@@ -525,13 +570,61 @@ mod tests {
         assert_that!(map.get(3), eq(None));
         assert_that!(map.size(), eq(1));
 
-        assert_that!(map.remove(1), eq(Some(2.5)));
+        assert_that!(map.remove(1), eq(true));
         assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(None));
+        assert_that!(map.remove(1), eq(false));
 
         assert_that!(map.insert(4, 5.1), eq(true));
         assert_that!(map.insert(6, 7.2), eq(true));
         map.clear();
         assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn str_str_map() {
+        let mut map = MapInner::<'_, ProtoStr, ProtoStr>::default();
+        assert_that!(map.size(), eq(0));
+
+        map.insert("fizz".into(), "buzz".into());
+        assert_that!(map.size(), eq(1));
+        assert_that!(map.remove("fizz".into()), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn u64_str_map() {
+        let mut map = MapInner::<'_, u64, ProtoStr>::default();
+        assert_that!(map.size(), eq(0));
+
+        map.insert(1, "fizz".into());
+        map.insert(2, "buzz".into());
+        assert_that!(map.size(), eq(2));
+        assert_that!(map.remove(1), eq(true));
+        assert_that!(map.get(1), eq(None));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn test_all_maps_can_be_constructed() {
+        macro_rules! gen_proto_values {
+            ($key_t:ty, $($value_t:ty),*) => {
+                $(
+                    let map = MapInner::<'_, $key_t, $value_t>::default();
+                    assert_that!(map.size(), eq(0));
+                )*
+            }
+        }
+
+        macro_rules! gen_proto_keys {
+            ($($key_t:ty),*) => {
+                $(
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr);
+                )*
+            }
+        }
+
+        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
     }
 }

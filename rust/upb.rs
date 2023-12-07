@@ -7,6 +7,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
+use crate::ProtoStr;
 use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use core::fmt::Debug;
 use paste::paste;
@@ -502,9 +503,6 @@ pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
     pub _phantom_value: PhantomData<&'msg mut V>,
 }
 
-// These use manual impls instead of derives to avoid unnecessary bounds on `K`
-// and `V`. This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
 impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
     fn clone(&self) -> MapInner<'msg, K, V> {
@@ -512,86 +510,27 @@ impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
     }
 }
 
-macro_rules! impl_scalar_map_for_key_type {
-    ($key_t:ty, $key_ufield:ident, $key_upb_tag:expr, $trait:ident for $($t:ty, $ufield:ident, $upb_tag:expr, $zero_val:literal;)*) => {
-        paste! { $(
-            impl $trait for $t {
-                fn new_map(a: RawArena) -> RawMap {
-                    unsafe { upb_Map_New(a, $key_upb_tag, $upb_tag) }
-                }
+macro_rules! generate_map_key_ops_traits {
+    ($($t:ty, $sized_t:ty;)*) => {
+        paste! {
+            $(
+                pub trait [< MapWith $t:camel KeyOps >] {
+                    type Value<'a>: Sized;
 
-                fn clear(m: RawMap) {
-                    unsafe { upb_Map_Clear(m) }
-                }
-
-                fn size(m: RawMap) -> usize {
-                    unsafe { upb_Map_Size(m) }
-                }
-
-                fn insert(m: RawMap, a: RawArena, key: $key_t, value: $t) -> bool {
-                    unsafe {
-                        upb_Map_Set(
-                            m,
-                            upb_MessageValue { $key_ufield: key },
-                            upb_MessageValue { $ufield: value},
-                            a
-                        )
-                    }
-                }
-
-                fn get(m: RawMap, key: $key_t) -> Option<$t> {
-                    let mut val = upb_MessageValue { $ufield: $zero_val };
-                    let found = unsafe {
-                        upb_Map_Get(m, upb_MessageValue { $key_ufield: key }, &mut val)
-                    };
-                    if !found {
-                        return None;
-                    }
-                    Some(unsafe { val.$ufield })
-                }
-
-                fn remove(m: RawMap, key: $key_t) -> Option<$t> {
-                    let mut val = upb_MessageValue { $ufield: $zero_val };
-                    let removed = unsafe {
-                        upb_Map_Delete(m, upb_MessageValue { $key_ufield: key }, &mut val)
-                    };
-                    if !removed {
-                        return None;
-                    }
-                    Some(unsafe { val.$ufield })
-                }
-            }
-         )* }
-    }
-}
-
-macro_rules! impl_scalar_map_for_key_types {
-    ($($t:ty, $ufield:ident, $upb_tag:expr;)*) => {
-        paste! { $(
-                pub trait [< MapWith $t:camel KeyOps >] : Sync + Send + Copy + Clone + Debug {
                     fn new_map(a: RawArena) -> RawMap;
-                    fn clear(m: RawMap);
-                    fn size(m: RawMap) -> usize;
-                    fn insert(m: RawMap, a: RawArena, key: $t, value: Self) -> bool;
-                    fn get(m: RawMap, key: $t) -> Option<Self>
-                    where
-                        Self: Sized;
-                    fn remove(m: RawMap, key: $t) -> Option<Self>
-                    where
-                        Self: Sized;
+                    fn clear(m: RawMap) {
+                        unsafe { upb_Map_Clear(m) }
+                    }
+                    fn size(m: RawMap) -> usize {
+                        unsafe { upb_Map_Size(m) }
+                    }
+                    fn insert(m: RawMap, a: RawArena, key: $sized_t, value: Self::Value<'_>) -> bool;
+                    fn get<'a>(m: RawMap, key: $sized_t) -> Option<Self::Value<'a>>;
+                    fn remove<'a>(m: RawMap, key: $sized_t) -> bool;
                 }
 
-                impl_scalar_map_for_key_type!($t, $ufield, $upb_tag, [< MapWith $t:camel KeyOps >] for
-                    f32, float_val, UpbCType::Float, 0f32;
-                    f64, double_val, UpbCType::Double, 0f64;
-                    i32, int32_val, UpbCType::Int32, 0i32;
-                    u32, uint32_val, UpbCType::UInt32, 0u32;
-                    i64, int64_val, UpbCType::Int64, 0i64;
-                    u64, uint64_val, UpbCType::UInt64, 0u64;
-                    bool, bool_val, UpbCType::Bool, false;
-                );
+                impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> MapInner<'msg, $t, V> {
 
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> MapInner<'msg, $t, V> {
                     pub fn new(arena: &'msg mut Arena) -> Self {
                         MapInner {
                             raw: V::new_map(arena.raw()),
@@ -609,28 +548,121 @@ macro_rules! impl_scalar_map_for_key_types {
                         V::clear(self.raw)
                     }
 
-                    pub fn get(&self, key: $t) -> Option<V> {
+                    pub fn get<'a>(&self, key: $sized_t) -> Option<V::Value<'a>> {
                         V::get(self.raw, key)
                     }
 
-                    pub fn remove(&mut self, key: $t) -> Option<V> {
+                    pub fn remove<'a>(&mut self, key: $sized_t) -> bool {
                         V::remove(self.raw, key)
                     }
 
-                    pub fn insert(&mut self, key: $t, value: V) -> bool {
+                    pub fn insert(&mut self, key: $sized_t, value: V::Value<'_>) -> bool {
                         V::insert(self.raw, self.arena.raw(), key, value)
                     }
                 }
-        )* }
+            )*
+        }
     }
 }
 
-impl_scalar_map_for_key_types!(
-    i32, int32_val, UpbCType::Int32;
-    u32, uint32_val, UpbCType::UInt32;
-    i64, int64_val, UpbCType::Int64;
-    u64, uint64_val, UpbCType::UInt64;
-    bool, bool_val, UpbCType::Bool;
+generate_map_key_ops_traits!(
+    i32, i32;
+    u32, u32;
+    i64, i64;
+    u64, u64;
+    bool, bool;
+    ProtoStr, &ProtoStr;
+);
+
+macro_rules! impl_scalar_map_key_op_for_scalar_values {
+    ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, $trait:ident for $($t:ty, $sized_t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
+         $(
+            impl $trait for $t {
+                type Value<'a> = $sized_t;
+
+                fn new_map(a: RawArena) -> RawMap {
+                    unsafe { upb_Map_New(a, $key_upb_tag, $upb_tag) }
+                }
+
+                fn insert(m: RawMap, a: RawArena, key: $key_t, value: Self::Value<'_>) -> bool {
+                    unsafe {
+                        upb_Map_Set(
+                            m,
+                            $key_msg_val(key),
+                            $msg_val(value),
+                            a
+                        )
+                    }
+                }
+
+                fn get<'a>(m: RawMap, key: $key_t) -> Option<Self::Value<'a>> {
+                    let mut val = $msg_val($zero_val);
+                    let found = unsafe {
+                        upb_Map_Get(m, $key_msg_val(key), &mut val)
+                    };
+                    if !found {
+                        return None;
+                    }
+                    Some($from_msg_val(val))
+                }
+
+                fn remove<'a>(m: RawMap, key: $key_t) -> bool {
+                    let mut val = $msg_val($zero_val);
+                    unsafe {
+                        upb_Map_Delete(m, $key_msg_val(key), &mut val)
+                    }
+                }
+            }
+         )*
+    }
+}
+
+macro_rules! scalar_to_msg {
+    ($ufield:ident) => {
+        |val| upb_MessageValue { $ufield: val }
+    };
+}
+
+macro_rules! scalar_from_msg {
+    ($ufield:ident) => {
+        |msg: upb_MessageValue| unsafe { msg.$ufield }
+    };
+}
+
+fn str_to_msg<'a>(val: impl Into<&'a ProtoStr>) -> upb_MessageValue {
+    upb_MessageValue { str_val: val.into().as_bytes().into() }
+}
+
+fn msg_to_str<'a>(msg: upb_MessageValue) -> &'a ProtoStr {
+    unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
+}
+
+macro_rules! impl_map_key_ops_for_scalar_values {
+    ($($t:ty, $t_sized:ty, $key_msg_val:expr, $upb_tag:expr;)*) => {
+        paste! {
+            $(
+                impl_scalar_map_key_op_for_scalar_values!($t_sized, $key_msg_val, $upb_tag, [< MapWith $t:camel KeyOps >] for
+                    f32, f32, scalar_to_msg!(float_val), scalar_from_msg!(float_val),  UpbCType::Float, 0f32;
+                    f64, f64, scalar_to_msg!(double_val), scalar_from_msg!(double_val),  UpbCType::Double, 0f64;
+                    i32, i32, scalar_to_msg!(int32_val), scalar_from_msg!(int32_val),  UpbCType::Int32, 0i32;
+                    u32, u32, scalar_to_msg!(uint32_val), scalar_from_msg!(uint32_val), UpbCType::UInt32, 0u32;
+                    i64, i64, scalar_to_msg!(int64_val), scalar_from_msg!(int64_val), UpbCType::Int64, 0i64;
+                    u64, u64, scalar_to_msg!(uint64_val), scalar_from_msg!(uint64_val), UpbCType::UInt64, 0u64;
+                    bool, bool, scalar_to_msg!(bool_val), scalar_from_msg!(bool_val), UpbCType::Bool, false;
+                    ProtoStr, &'a ProtoStr, str_to_msg, msg_to_str, UpbCType::String, "";
+                );
+            )*
+        }
+    }
+}
+
+impl_map_key_ops_for_scalar_values!(
+    i32, i32, scalar_to_msg!(int32_val), UpbCType::Int32;
+    u32, u32, scalar_to_msg!(uint32_val), UpbCType::UInt32;
+    i64, i64, scalar_to_msg!(int64_val), UpbCType::Int64;
+    u64, u64, scalar_to_msg!(uint64_val), UpbCType::UInt64;
+    bool, bool, scalar_to_msg!(bool_val), UpbCType::Bool;
+    ProtoStr, &ProtoStr, |val: &ProtoStr| upb_MessageValue { str_val: val.as_bytes().into() }, UpbCType::String;
 );
 
 extern "C" {
@@ -652,9 +684,15 @@ extern "C" {
 }
 
 #[cfg(test)]
-pub(crate) fn new_map_inner() -> MapInner<'static, i32, i64> {
+pub(crate) fn new_map_i32_i64() -> MapInner<'static, i32, i64> {
     let arena = Box::leak::<'static>(Box::new(Arena::new()));
     MapInner::<'static, i32, i64>::new(arena)
+}
+
+#[cfg(test)]
+pub(crate) fn new_map_str_str() -> MapInner<'static, ProtoStr, ProtoStr> {
+    let arena = Box::leak::<'static>(Box::new(Arena::new()));
+    MapInner::<'static, ProtoStr, ProtoStr>::new(arena)
 }
 
 #[cfg(test)]
@@ -726,9 +764,9 @@ mod tests {
         assert_that!(map.get(3), eq(None));
         assert_that!(map.size(), eq(1));
 
-        assert_that!(map.remove(1), eq(Some(2)));
+        assert_that!(map.remove(1), eq(true));
         assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(None));
+        assert_that!(map.remove(1), eq(false));
 
         assert_that!(map.insert(4, 5), eq(true));
         assert_that!(map.insert(6, 7), eq(true));
@@ -747,13 +785,63 @@ mod tests {
         assert_that!(map.get(3), eq(None));
         assert_that!(map.size(), eq(1));
 
-        assert_that!(map.remove(1), eq(Some(2.5)));
+        assert_that!(map.remove(1), eq(true));
         assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(None));
+        assert_that!(map.remove(1), eq(false));
 
         assert_that!(map.insert(4, 5.1), eq(true));
         assert_that!(map.insert(6, 7.2), eq(true));
         map.clear();
         assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn str_str_map() {
+        let mut arena = Arena::new();
+        let mut map = MapInner::<'_, ProtoStr, ProtoStr>::new(&mut arena);
+        assert_that!(map.size(), eq(0));
+
+        map.insert("fizz".into(), "buzz".into());
+        assert_that!(map.size(), eq(1));
+        assert_that!(map.remove("fizz".into()), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn u64_str_map() {
+        let mut arena = Arena::new();
+        let mut map = MapInner::<'_, u64, ProtoStr>::new(&mut arena);
+        assert_that!(map.size(), eq(0));
+
+        map.insert(1, "fizz".into());
+        map.insert(2, "buzz".into());
+        assert_that!(map.size(), eq(2));
+        assert_that!(map.remove(1), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn test_all_maps_can_be_constructed() {
+        macro_rules! gen_proto_values {
+            ($key_t:ty, $($value_t:ty),*) => {
+                let mut arena = Arena::new();
+                $(
+                    let map = MapInner::<'_, $key_t, $value_t>::new(&mut arena);
+                    assert_that!(map.size(), eq(0));
+                )*
+            }
+        }
+
+        macro_rules! gen_proto_keys {
+            ($($key_t:ty),*) => {
+                $(
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr);
+                )*
+            }
+        }
+
+        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
     }
 }

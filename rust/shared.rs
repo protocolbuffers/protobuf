@@ -17,7 +17,7 @@ use std::fmt;
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
-    pub use crate::map::{MapMut, MapView};
+    pub use crate::map::{Map, MapMut, MapView};
     pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
     pub use crate::primitive::{PrimitiveMut, SingularPrimitiveMut};
     pub use crate::proxied::{
