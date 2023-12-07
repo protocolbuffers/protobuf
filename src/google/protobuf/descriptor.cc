@@ -3125,6 +3125,7 @@ bool FormatLineOptions(int depth, const Message& options,
   return !all_options.empty();
 }
 
+
 class SourceLocationCommentPrinter {
  public:
   template <typename DescType>

@@ -14,6 +14,7 @@
 #include "google/protobuf/descriptor.h"
 
 #include <cstdlib>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -4018,7 +4019,7 @@ class ValidationErrorTest : public testing::Test {
   }
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
-  const FileDescriptor* BuildFile(const std::string& file_text) {
+  const FileDescriptor* BuildFile(absl::string_view file_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
@@ -10493,6 +10494,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 json_format: ALLOW
               )pb"));
 }
+
 
 
 
