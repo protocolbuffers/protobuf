@@ -9,7 +9,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -175,11 +174,11 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
   if (fieldType == FieldDescriptor::TYPE_MESSAGE) {
     Context<Descriptor> d = field.WithDesc(field.desc().message_type());
-    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
-    // TODO: investigate imports breaking submsg accessors
-    if (absl::StrContains(prefix, "import")) {
+    // TODO: support messages which are defined in other crates.
+    if (!IsInCurrentlyGeneratingCrate(d)) {
       return;
     }
+    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
     field.Emit(
         {
             {"prefix", prefix},
