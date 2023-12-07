@@ -7,10 +7,12 @@
 
 #include "google/protobuf/map_field.h"
 
+#include <atomic>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/port.h"
@@ -594,6 +596,14 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(
     }
   }
   return size;
+}
+
+const Message* GetMapEntryPrototype(absl::string_view name,
+                                    std::atomic<const Message*>& cache) {
+  auto* msg = MessageFactory::generated_factory()->GetPrototype(
+      DescriptorPool::generated_pool()->FindMessageTypeByName(name));
+  cache.store(msg, std::memory_order_release);
+  return msg;
 }
 
 }  // namespace internal

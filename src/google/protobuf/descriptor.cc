@@ -5303,6 +5303,17 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
   }
 }
 
+// PtrIs<T>(x) returns x if x is T*, or nullptr otherwise.
+// Useful for pre-c++17 subtitute for `if constexpr`
+template <typename T>
+T* PtrIs(std::enable_if_t<true, T>* t) {
+  return t;
+}
+template <typename T>
+T* PtrIs(void*) {
+  return nullptr;
+}
+
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
     const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
@@ -5333,6 +5344,16 @@ void DescriptorBuilder::ResolveFeaturesImpl(
     }
     InferLegacyProtoFeatures(proto, *options, GetDescriptorEdition(descriptor),
                              base_features);
+  }
+
+  // We force map entries to have explicit field presence.
+  // This matches the legacy behavior of the codegen map entries even in proto3
+  // mode.
+  if (auto* field = PtrIs<FieldDescriptor>(descriptor)) {
+    if (field->containing_type()->options().map_entry() &&
+        parent_features.field_presence() == FeatureSet::IMPLICIT) {
+      base_features.set_field_presence(FeatureSet::EXPLICIT);
+    }
   }
 
   if (base_features.ByteSizeLong() == 0 && !force_merge) {

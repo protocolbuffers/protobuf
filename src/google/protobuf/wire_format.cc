@@ -1019,13 +1019,18 @@ const char* WireFormat::_InternalParseAndMergeField(
       // For map entries, if the value is an unknown enum we have to push it
       // into the unknown field set and remove it from the list.
       if (ptr != nullptr && field->is_map()) {
-        auto* value_field = field->message_type()->map_value();
-        auto* enum_type = value_field->enum_type();
-        if (enum_type != nullptr &&
-            !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
-            enum_type->FindValueByNumber(
-                sub_message->GetReflection()->GetEnumValue(
-                    *sub_message, value_field)) == nullptr) {
+        const auto has_unknown_enum = [&] {
+          auto* value_field = field->message_type()->map_value();
+          auto* enum_type = value_field->enum_type();
+          if (enum_type == nullptr) return false;
+          if (internal::cpp::HasPreservingUnknownEnumSemantics(value_field))
+            return false;
+          const auto* sub_reflection = sub_message->GetReflection();
+          // If the field is set, it means the enum is valid.
+          return !sub_reflection->HasField(*sub_message, value_field);
+        };
+
+        if (has_unknown_enum()) {
           reflection->MutableUnknownFields(msg)->AddLengthDelimited(
               field->number(), sub_message->SerializeAsString());
           reflection->RemoveLast(msg, field);

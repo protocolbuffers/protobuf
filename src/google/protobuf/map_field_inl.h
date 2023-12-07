@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -16,6 +17,7 @@
 #include <type_traits>
 
 #include "absl/base/casts.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_type_handler.h"
@@ -184,7 +186,11 @@ template <typename Derived, typename Key, typename T,
 const Message*
 MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::GetPrototypeImpl(
     const MapFieldBase&) {
-  return Derived::internal_default_instance();
+  static std::atomic<const Message*> cache{};
+  if (auto* m = cache.load(std::memory_order_acquire)) {
+    return m;
+  }
+  return GetMapEntryPrototype(Derived::GetTypeName(), cache);
 }
 
 }  // namespace internal

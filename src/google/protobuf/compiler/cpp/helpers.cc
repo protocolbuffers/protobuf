@@ -1905,8 +1905,7 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
 }
 
 bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
-  return !IsMapEntryMessage(descriptor) ||
-         HasDescriptorMethods(descriptor->file(), options);
+  return !IsMapEntryMessage(descriptor);
 }
 
 }  // namespace cpp

@@ -2319,26 +2319,6 @@ TEST_F(MapFieldReflectionTest, UninitializedEntry) {
   EXPECT_FALSE(message.IsInitialized());
 }
 
-class MyMapEntry
-    : public internal::MapEntry<MyMapEntry, ::int32_t, ::int32_t,
-                                internal::WireFormatLite::TYPE_INT32,
-                                internal::WireFormatLite::TYPE_INT32> {
- public:
-  constexpr MyMapEntry() {}
-  using MyMapEntry::MapEntry::MapEntry;
-  Metadata GetMetadata() const override { ABSL_CHECK(false); }
-  static bool ValidateKey(void*) { return true; }
-  static bool ValidateValue(void*) { return true; }
-};
-
-TEST(MapEntryTest, ConstInit) {
-  // This verifies that `MapEntry` can be constant initialized.
-  PROTOBUF_CONSTINIT static MyMapEntry entry{};
-  // Use the object in some way to make sure the vtable is there.
-  const google::protobuf::Message* volatile m = &entry;
-  delete m->New();
-}
-
 // Generated Message Test ===========================================
 
 TEST(GeneratedMapFieldTest, Accessors) {
