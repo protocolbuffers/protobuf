@@ -30,7 +30,6 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -1008,7 +1007,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     const FieldDescriptor* field;
   };
 
-  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   uint32_t oneof_case_lhs = GetOneofCase(*lhs, oneof_descriptor);
   uint32_t oneof_case_rhs = GetOneofCase(*rhs, oneof_descriptor);
 
@@ -1230,12 +1229,10 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   if (schema_.IsSplit()) {
     std::swap(*MutableSplitField(lhs), *MutableSplitField(rhs));
   }
-  const int oneof_decl_count = descriptor_->oneof_decl_count();
+  const int oneof_decl_count = descriptor_->real_oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
-    if (!OneofDescriptorLegacy(oneof).is_synthetic()) {
-      SwapOneofField<true>(lhs, rhs, oneof);
-    }
+    const OneofDescriptor* oneof = descriptor_->real_oneof_decl(i);
+    SwapOneofField<true>(lhs, rhs, oneof);
   }
 
   // Swapping bits need to happen after swapping fields, because the latter may
@@ -2574,7 +2571,7 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
 
 const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
+  if (oneof_descriptor->is_synthetic()) {
     const FieldDescriptor* field = oneof_descriptor->field(0);
     return HasField(message, field) ? field : nullptr;
   }
@@ -2754,14 +2751,14 @@ uint32_t* Reflection::MutableHasBits(Message* message) const {
 
 uint32_t Reflection::GetOneofCase(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return internal::GetConstRefAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 uint32_t* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
-  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return GetPointerAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -2955,7 +2952,7 @@ void Reflection::SwapBit(Message* message1, Message* message2,
 
 bool Reflection::HasOneof(const Message& message,
                           const OneofDescriptor* oneof_descriptor) const {
-  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
+  if (oneof_descriptor->is_synthetic()) {
     return HasField(message, oneof_descriptor->field(0));
   }
   return (GetOneofCase(message, oneof_descriptor) > 0);
@@ -2975,7 +2972,7 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
-  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
+  if (oneof_descriptor->is_synthetic()) {
     ClearField(message, oneof_descriptor->field(0));
     return;
   }

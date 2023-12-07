@@ -47,7 +47,6 @@
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_database.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -473,32 +472,30 @@ TEST_F(FileDescriptorTest, BuildAgainWithSyntax) {
   EXPECT_EQ(proto3_descriptor, pool_.BuildFile(proto_syntax3));
 }
 
-TEST_F(FileDescriptorTest, Syntax) {
+TEST_F(FileDescriptorTest, Edition) {
   FileDescriptorProto proto;
   proto.set_name("foo");
-  // Enable the test when we also populate the syntax for proto2.
-#if 0
   {
     proto.set_syntax("proto2");
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO2, FileDescriptorLegacy(file).syntax());
+    EXPECT_EQ(file->edition(), Edition::EDITION_PROTO2);
     FileDescriptorProto other;
     file->CopyTo(&other);
-    EXPECT_EQ("proto2", other.syntax());
+    EXPECT_EQ("", other.syntax());
+    EXPECT_FALSE(other.has_edition());
   }
-#endif
   {
     proto.set_syntax("proto3");
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO3,
-              FileDescriptorLegacy(file).syntax());
+    EXPECT_EQ(file->edition(), Edition::EDITION_PROTO3);
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("proto3", other.syntax());
+    EXPECT_FALSE(other.has_edition());
   }
   {
     proto.set_syntax("editions");
@@ -506,8 +503,7 @@ TEST_F(FileDescriptorTest, Syntax) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS,
-              FileDescriptorLegacy(file).syntax());
+    EXPECT_EQ(file->edition(), Edition::EDITION_2023);
     EXPECT_EQ(file->edition(), EDITION_2023);
     FileDescriptorProto other;
     file->CopyTo(&other);

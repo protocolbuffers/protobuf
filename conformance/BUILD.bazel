@@ -144,7 +144,6 @@ cc_library(
     includes = ["."],
     deps = [
         ":conformance_cc_proto",
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver_util",

@@ -486,7 +486,6 @@ cc_library(
         "descriptor.h",
         "descriptor.pb.h",
         "descriptor_database.h",
-        "descriptor_legacy.h",
         "descriptor_visitor.h",
         "dynamic_message.h",
         "feature_resolver.h",
