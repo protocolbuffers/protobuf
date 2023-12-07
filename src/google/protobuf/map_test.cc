@@ -10,6 +10,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -168,6 +169,48 @@ TEST(MapTest, CopyConstructMessagesWithArena) {
   EXPECT_EQ(map1["1"].GetArena(), &arena);
   EXPECT_EQ(map1["2"].optional_int32(), 2);
   EXPECT_EQ(map1["2"].GetArena(), &arena);
+}
+
+TEST(MapTest, AlwaysSerializesBothEntries) {
+  for (const Message* prototype :
+       {static_cast<const Message*>(
+            &protobuf_unittest::TestI32StrMap::default_instance()),
+        static_cast<const Message*>(
+            &proto3_unittest::TestI32StrMap::default_instance())}) {
+    const FieldDescriptor* map_field =
+        prototype->GetDescriptor()->FindFieldByName("m_32_str");
+    const FieldDescriptor* map_key = map_field->message_type()->map_key();
+    const FieldDescriptor* map_value = map_field->message_type()->map_value();
+    for (bool add_key : {true, false}) {
+      for (bool add_value : {true, false}) {
+        std::unique_ptr<Message> message(prototype->New());
+        Message* entry_message =
+            message->GetReflection()->AddMessage(message.get(), map_field);
+        // Add the fields, but leave them as the default to make it easier to
+        // match.
+        if (add_key) {
+          entry_message->GetReflection()->SetInt32(entry_message, map_key, 0);
+        }
+        if (add_value) {
+          entry_message->GetReflection()->SetString(entry_message, map_value,
+                                                    "");
+        }
+        ASSERT_EQ(4, entry_message->ByteSizeLong());
+        EXPECT_EQ(entry_message->SerializeAsString(),
+                  std::string({
+                      '\010', '\0',  // key, VARINT, value=0
+                      '\022', '\0',  // value, LEN, size=0
+                  }));
+        ASSERT_EQ(6, message->ByteSizeLong());
+        EXPECT_EQ(message->SerializeAsString(),
+                  std::string({
+                      '\012', '\04',  // field=1, LEN, size=4
+                      '\010', '\0',   // key, VARINT, value=0
+                      '\022', '\0',   // value, LEN, size=0
+                  }));
+      }
+    }
+  }
 }
 
 TEST(MapTest, LoadFactorCalculationWorks) {

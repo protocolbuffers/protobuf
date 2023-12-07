@@ -262,7 +262,13 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   std::vector<const FieldDescriptor*> fields;
   // Should be safe to skip stripped fields because required fields are not
   // stripped.
-  reflection->ListFields(message, &fields);
+  if (descriptor->options().map_entry()) {
+    // MapEntry objects always check the value regardless of has bit.
+    // We don't need to bother with the key.
+    fields = {descriptor->map_value()};
+  } else {
+    reflection->ListFields(message, &fields);
+  }
   for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 

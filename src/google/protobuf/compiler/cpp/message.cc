@@ -1160,19 +1160,18 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
   Formatter format(p);
   absl::flat_hash_map<absl::string_view, std::string> vars;
   CollectMapInfo(options_, descriptor_, &vars);
-  vars["lite"] =
-      HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
+  ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
   auto v = p->WithVars(std::move(vars));
   // Templatize constexpr constructor as a workaround for a bug in gcc 12
   // (warning in gcc 13).
   p->Emit(R"cc(
     class $classname$ final
-        : public ::$proto_ns$::internal::MapEntry$lite$<
+        : public ::$proto_ns$::internal::MapEntry<
               $classname$, $key_cpp$, $val_cpp$,
               ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
               ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {
      public:
-      using SuperType = ::$proto_ns$::internal::MapEntry$lite$<
+      using SuperType = ::$proto_ns$::internal::MapEntry<
           $classname$, $key_cpp$, $val_cpp$,
           ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
           ::$proto_ns$::internal::WireFormatLite::$val_wire_type$>;
