@@ -22,7 +22,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/feature_resolver.h"
 
@@ -979,7 +978,8 @@ namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (FieldDescriptorLegacy(desc->field(i)).has_optional_keyword()) {
+    if (desc->field(i)->real_containing_oneof() == nullptr &&
+        desc->field(i)->containing_oneof() != nullptr) {
       return true;
     }
   }

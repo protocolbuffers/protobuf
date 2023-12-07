@@ -37,7 +37,6 @@ cc_library(
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":java_features_bootstrap",
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:versions",
@@ -130,7 +129,6 @@ cc_library(
         ":names",
         ":names_internal",
         "//src/google/protobuf:arena",
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
