@@ -9,7 +9,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -174,15 +173,14 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
   // self.inner.msg() whereas a View has to be supplied self.msg
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
   if (fieldType == FieldDescriptor::TYPE_MESSAGE) {
-    Context<Descriptor> d = field.WithDesc(field.desc().message_type());
-    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
     // TODO: investigate imports breaking submsg accessors
-    if (absl::StrContains(prefix, "import")) {
+    if (!field.generator_context().is_file_in_current_crate(
+            field.desc().message_type()->file())) {
       return;
     }
     field.Emit(
         {
-            {"prefix", prefix},
+            {"view_type", ViewTypeName(field)},
             {"field", fieldName},
             {"self", self},
             {"getter_thunk", getter_thunk},
@@ -194,39 +192,38 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                     field.Emit({}, R"rs(
                       let submsg = unsafe { $getter_thunk$($self$) };
                       match submsg {
-                        None => $prefix$View::new($pbi$::Private,
+                        None => $view_type$::new($pbi$::Private,
                           $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
-                        Some(field) => $prefix$View::new($pbi$::Private, field),
+                        Some(field) => $view_type$::new($pbi$::Private, field),
                       }
                 )rs");
                   } else {
                     field.Emit({}, R"rs(
                       let submsg = unsafe { $getter_thunk$($self$) };
-                      $prefix$View::new($pbi$::Private, submsg)
+                      $view_type$::new($pbi$::Private, submsg)
                 )rs");
                   }
                 },
             },
         },
         R"rs(
-              pub fn r#$field$(&self) -> $prefix$View {
+              pub fn r#$field$(&self) -> $view_type$ {
                 $view_body$
               }
             )rs");
     return;
   }
 
-  auto rsType = PrimitiveRsTypeName(field.desc());
   if (fieldType == FieldDescriptor::TYPE_STRING) {
     field.Emit(
         {
             {"field", fieldName},
             {"self", self},
             {"getter_thunk", getter_thunk},
-            {"RsType", rsType},
+            {"view_type", ViewTypeName(field)},
         },
         R"rs(
-              pub fn r#$field$(&self) -> &$RsType$ {
+              pub fn r#$field$(&self) -> $view_type$ {
                 let s = unsafe { $getter_thunk$($self$).as_ref() };
                 unsafe { __pb::ProtoStr::from_utf8_unchecked(s) }
               }
@@ -237,10 +234,10 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
             {"field", fieldName},
             {"self", self},
             {"getter_thunk", getter_thunk},
-            {"RsType", rsType},
+            {"view_type", ViewTypeName(field)},
         },
         R"rs(
-              pub fn r#$field$(&self) -> &$RsType$ {
+              pub fn r#$field$(&self) -> $view_type$ {
                 unsafe { $getter_thunk$($self$).as_ref() }
               }
             )rs");
@@ -250,7 +247,9 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                 {"setter_thunk", setter_thunk},
                 {"clearer_thunk", clearer_thunk},
                 {"self", self},
-                {"RsType", rsType},
+                {"primitive_type", PrimitiveRsTypeName(field.desc())},
+                {"view_type", ViewTypeName(field)},
+                {"mut_type", MutTypeName(field)},
                 {"maybe_mutator",
                  [&] {
                    // TODO: once the rust public api is accessible,
@@ -258,8 +257,8 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                    // mutational pathway
                    if (is_mut && fieldType) {
                      field.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
-                      static VTABLE: $pbi$::PrimitiveVTable<$RsType$> =
+                    pub fn r#$field$_mut(&self) -> $mut_type$ {
+                      static VTABLE: $pbi$::PrimitiveVTable<$primitive_type$> =
                         $pbi$::PrimitiveVTable::new(
                           $pbi$::Private,
                           $getter_thunk$,
@@ -276,7 +275,7 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                    }
                  }}},
                R"rs(
-            pub fn r#$field$(&self) -> $RsType$ {
+            pub fn r#$field$(&self) -> $view_type$ {
               unsafe { $getter_thunk$($self$) }
             }
 

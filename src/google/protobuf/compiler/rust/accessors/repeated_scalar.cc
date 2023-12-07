@@ -19,14 +19,15 @@ namespace rust {
 
 void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
   field.Emit({{"field", field.desc().name()},
-              {"Scalar", PrimitiveRsTypeName(field.desc())},
+              {"view_type", ViewTypeName(field)},
+              {"mut_type", MutTypeName(field)},
               {"getter_thunk", Thunk(field, "get")},
               {"getter_mut_thunk", Thunk(field, "get_mut")},
               {"getter",
                [&] {
                  if (field.is_upb()) {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
+                    pub fn r#$field$(&self) -> $view_type$ {
                       let inner = unsafe {
                         $getter_thunk$(
                           self.inner.msg,
@@ -40,7 +41,7 @@ void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                   )rs");
                  } else {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
+                    pub fn r#$field$(&self) -> $view_type$ {
                       $pb$::RepeatedView::from_inner(
                         $pbi$::Private,
                         $pbr$::RepeatedFieldInner{
@@ -57,7 +58,7 @@ void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                [&] {
                  if (field.is_upb()) {
                    field.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                    pub fn r#$field$_mut(&mut self) -> $mut_type$ {
                       $pb$::RepeatedMut::from_inner(
                         $pbi$::Private,
                         $pbr$::RepeatedFieldInner{
@@ -73,7 +74,7 @@ void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                   )rs");
                  } else {
                    field.Emit({}, R"rs(
-                      pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                      pub fn r#$field$_mut(&mut self) -> $mut_type$ {
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::RepeatedFieldInner{

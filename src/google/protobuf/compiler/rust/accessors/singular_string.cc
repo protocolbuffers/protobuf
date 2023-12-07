@@ -24,7 +24,6 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
   std::string hazzer_thunk = Thunk(field, "has");
   std::string getter_thunk = Thunk(field, "get");
   std::string setter_thunk = Thunk(field, "set");
-  std::string proxied_type = PrimitiveRsTypeName(field.desc());
   auto transform_view = [&] {
     if (field.desc().type() == FieldDescriptor::TYPE_STRING) {
       field.Emit(R"rs(
@@ -41,7 +40,8 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
           {"hazzer_thunk", hazzer_thunk},
           {"getter_thunk", getter_thunk},
           {"setter_thunk", setter_thunk},
-          {"proxied_type", proxied_type},
+          {"view_type", ViewTypeName(field)},
+          {"mut_type", MutTypeName(field)},
           {"transform_view", transform_view},
           {"field_optional_getter",
            [&] {
@@ -51,7 +51,7 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                          {"getter_thunk", getter_thunk},
                          {"transform_view", transform_view}},
                         R"rs(
-            pub fn $field$_opt(&self) -> $pb$::Optional<&$proxied_type$> {
+            pub fn $field$_opt(&self) -> $pb$::Optional<$view_type$> {
                 let view = unsafe { $getter_thunk$(self.inner.msg).as_ref() };
                 $pb$::Optional::new(
                   $transform_view$ ,
@@ -66,9 +66,8 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                field.Emit(
                    {
                        {"field", field.desc().name()},
-                       {"proxied_type", proxied_type},
                        {"default_val", DefaultValue(field)},
-                       {"view_type", proxied_type},
+                       {"field_entry_type", FieldEntryTypeName(field)},
                        {"transform_field_entry",
                         [&] {
                           if (field.desc().type() ==
@@ -88,7 +87,7 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                        {"clearer_thunk", Thunk(field, "clear")},
                    },
                    R"rs(
-            pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
+            pub fn $field$_mut(&mut self) -> $field_entry_type$ {
               static VTABLE: $pbi$::BytesOptionalMutVTable = unsafe {
                 $pbi$::BytesOptionalMutVTable::new(
                   $pbi$::Private,
@@ -113,11 +112,10 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
           )rs");
              } else {
                field.Emit({{"field", field.desc().name()},
-                           {"proxied_type", proxied_type},
                            {"getter_thunk", getter_thunk},
                            {"setter_thunk", setter_thunk}},
                           R"rs(
-              pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
+              pub fn $field$_mut(&mut self) -> $mut_type$ {
                 static VTABLE: $pbi$::BytesMutVTable = unsafe {
                   $pbi$::BytesMutVTable::new(
                     $pbi$::Private,
@@ -126,7 +124,7 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
                   )
                 };
                 unsafe {
-                  <$pb$::Mut<$proxied_type$>>::from_inner(
+                  <$mut_type$>::from_inner(
                     $pbi$::Private,
                     $pbi$::RawVTableMutator::new(
                       $pbi$::Private,
@@ -142,7 +140,7 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
            }},
       },
       R"rs(
-        pub fn r#$field$(&self) -> &$proxied_type$ {
+        pub fn r#$field$(&self) -> $view_type$ {
           let view = unsafe { $getter_thunk$(self.inner.msg).as_ref() };
           $transform_view$
         }

@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -46,14 +45,14 @@ namespace rust {
 // pub mod SomeMsg_ {
 //   // The 'view' struct (no suffix on the name)
 //   pub enum SomeOneof<'msg> {
-//     FieldA(View<'msg, i32>) = 7,
-//     FieldB(View<'msg, u32>) = 9,
-//     not_set = 0
+//     FieldA(i32) = 7,
+//     FieldB(u32) = 9,
+//     not_set(std::marker::PhantomData<&'msg ()>)
 //   }
 //   pub enum SomeOneofMut<'msg> {
 //     FieldA(Mut<'msg, i32>) = 7,
 //     FieldB(Mut<'msg, u32>) = 9,
-//     not_set = 0
+//     not_set(std::marker::PhantomData<&'msg ()>)
 //   }
 // }
 // impl SomeMsg {
@@ -91,37 +90,11 @@ std::string oneofCaseEnumName(const OneofDescriptor& desc) {
   return ToCamelCase(desc.name()) + "Case";
 }
 
-// TODO: Promote up to naming.h once all types can be spelled.
-std::string RsTypeName(Context<FieldDescriptor> field) {
-  const auto& desc = field.desc();
-
+bool isSupportedOneofField(const FieldDescriptor& desc) {
   // TODO: Fields with a ctype set not supported in v0.6 api.
-  if (desc.options().has_ctype()) {
-    return "";
-  }
-
-  switch (desc.type()) {
-    case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat("crate::", GetCrateRelativeQualifiedPath(
-                                         field.WithDesc(desc.message_type())));
-    case FieldDescriptor::TYPE_ENUM:
-    case FieldDescriptor::TYPE_GROUP:
-      return "";
-    default:
-      return PrimitiveRsTypeName(desc);
-  }
-}
-
-std::string RsTypeNameView(Context<FieldDescriptor> field) {
-  std::string type = RsTypeName(field);
-  if (type.empty()) return "";
-  return absl::StrCat("::__pb::View<'msg, ", type, ">");
-}
-
-std::string RsTypeNameMut(Context<FieldDescriptor> field) {
-  std::string type = RsTypeName(field);
-  if (type.empty()) return "";
-  return absl::StrCat("::__pb::Mut<'msg, ", type, ">");
+  return !desc.options().has_ctype() &&
+         desc.type() != FieldDescriptor::TYPE_ENUM &&
+         desc.type() != FieldDescriptor::TYPE_GROUP;
 }
 
 }  // namespace
@@ -136,14 +109,14 @@ void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
             const auto& field = *desc.field(i);
-            std::string rs_type = RsTypeNameView(oneof.WithDesc(field));
-            if (rs_type.empty()) {
+            if (!isSupportedOneofField(field)) {
               continue;
             }
             oneof.Emit({{"name", ToCamelCase(field.name())},
-                        {"type", rs_type},
+                        {"view_type", ViewTypeName(oneof.WithDesc(field),
+                                                   /* lifetime */ "msg")},
                         {"number", std::to_string(field.number())}},
-                       R"rs($name$($type$) = $number$,
+                       R"rs($name$($view_type$) = $number$,
                 )rs");
           }
         }},
@@ -151,14 +124,14 @@ void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
             const auto& field = *desc.field(i);
-            std::string rs_type = RsTypeNameMut(oneof.WithDesc(field));
-            if (rs_type.empty()) {
+            if (!isSupportedOneofField(field)) {
               continue;
             }
             oneof.Emit({{"name", ToCamelCase(field.name())},
-                        {"type", rs_type},
+                        {"mut_type", MutTypeName(oneof.WithDesc(field),
+                                                 /* lifetime */ "msg")},
                         {"number", std::to_string(field.number())}},
-                       R"rs($name$($type$) = $number$,
+                       R"rs($name$($mut_type$) = $number$,
                 )rs");
           }
         }}},
@@ -229,15 +202,13 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
             const auto& field = *desc.field(i);
-            std::string rs_type = RsTypeNameView(oneof.WithDesc(field));
-            if (rs_type.empty()) {
+            if (!isSupportedOneofField(field)) {
               continue;
             }
             oneof.Emit(
                 {
                     {"case", ToCamelCase(field.name())},
                     {"rs_getter", field.name()},
-                    {"type", rs_type},
                 },
                 R"rs($Msg$_::$case_enum_name$::$case$ => $Msg$_::$view_enum_name$::$case$(self.$rs_getter$()),
                 )rs");
@@ -247,14 +218,12 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
             const auto& field = *desc.field(i);
-            std::string rs_type = RsTypeNameMut(oneof.WithDesc(field));
-            if (rs_type.empty()) {
+            if (!isSupportedOneofField(field)) {
               continue;
             }
             oneof.Emit(
                 {{"case", ToCamelCase(field.name())},
                  {"rs_mut_getter", field.name() + "_mut"},
-                 {"type", rs_type},
 
                  // Any extra behavior needed to map the mut getter into the
                  // unwrapped Mut<>. Right now Message's _mut already returns

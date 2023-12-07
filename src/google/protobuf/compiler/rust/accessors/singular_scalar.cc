@@ -23,12 +23,14 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
       {
           {"field", field.desc().name()},
           {"Scalar", PrimitiveRsTypeName(field.desc())},
+          {"view_type", ViewTypeName(field)},
+          {"mut_type", MutTypeName(field)},
           {"hazzer_thunk", Thunk(field, "has")},
           {"default_value", DefaultValue(field)},
           {"getter",
            [&] {
              field.Emit({}, R"rs(
-                  pub fn r#$field$(&self) -> $Scalar$ {
+                  pub fn r#$field$(&self) -> $view_type$ {
                     unsafe { $getter_thunk$(self.inner.msg) }
                   }
                 )rs");
@@ -38,7 +40,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
              if (!field.desc().is_optional()) return;
              if (!field.desc().has_presence()) return;
              field.Emit({}, R"rs(
-                  pub fn r#$field$_opt(&self) -> $pb$::Optional<$Scalar$> {
+                  pub fn r#$field$_opt(&self) -> $pb$::Optional<$view_type$> {
                     if !unsafe { $hazzer_thunk$(self.inner.msg) } {
                       return $pb$::Optional::Unset($default_value$);
                     }
@@ -66,8 +68,9 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"field_mutator_getter",
            [&] {
              if (field.desc().has_presence()) {
-               field.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
+               field.Emit({{"field_entry_type", FieldEntryTypeName(field)}},
+                          R"rs(
+                  pub fn r#$field$_mut(&mut self) -> $field_entry_type$ {
                     static VTABLE: $pbi$::PrimitiveOptionalMutVTable<$Scalar$> =
                       $pbi$::PrimitiveOptionalMutVTable::new(
                         $pbi$::Private,
@@ -90,7 +93,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                 )rs");
              } else {
                field.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
+                  pub fn r#$field$_mut(&mut self) -> $mut_type$ {
                     static VTABLE: $pbi$::PrimitiveVTable<$Scalar$> =
                       $pbi$::PrimitiveVTable::new(
                         $pbi$::Private,

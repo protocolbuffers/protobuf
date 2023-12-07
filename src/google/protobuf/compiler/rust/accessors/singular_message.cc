@@ -18,14 +18,11 @@ namespace compiler {
 namespace rust {
 
 void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
-  Context<Descriptor> d = field.WithDesc(field.desc().message_type());
-
-  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
-
   field.Emit(
       {
-          {"prefix", prefix},
           {"field", field.desc().name()},
+          {"view_type", ViewTypeName(field)},
+          {"mut_type", MutTypeName(field)},
           {"getter_thunk", Thunk(field, "get")},
           {"getter_mut_thunk", Thunk(field, "get_mut")},
           {"clearer_thunk", Thunk(field, "clear")},
@@ -40,9 +37,9 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
               // Note that a nullptr received from upb manifests as Option::None
               match submsg {
                 // TODO:(b/304357029)
-                None => $prefix$View::new($pbi$::Private,
+                None => $view_type$::new($pbi$::Private,
                         $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
-                Some(field) => $prefix$View::new($pbi$::Private, field),
+                Some(field) => $view_type$::new($pbi$::Private, field),
               }
         )rs");
                 } else {
@@ -50,7 +47,7 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
               // For C++ kernel, getters automatically return the
               // default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-              $prefix$View::new($pbi$::Private, submsg)
+              $view_type$::new($pbi$::Private, submsg)
         )rs");
                 }
               },
@@ -62,22 +59,22 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
                  let submsg = unsafe {
                    $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
                  };
-                 $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                 $mut_type$::new($pbi$::Private, &mut self.inner, submsg)
                  )rs");
              } else {
                field.Emit({}, R"rs(
                     let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
-                    $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                    $mut_type$::new($pbi$::Private, &mut self.inner, submsg)
                   )rs");
              }
            }},
       },
       R"rs(
-            pub fn r#$field$(&self) -> $prefix$View {
+            pub fn r#$field$(&self) -> $view_type$ {
               $view_body$
             }
 
-            pub fn $field$_mut(&mut self) -> $prefix$Mut {
+            pub fn $field$_mut(&mut self) -> $mut_type$ {
               $submessage_mut$
             }
 

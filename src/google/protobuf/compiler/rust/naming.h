@@ -39,6 +39,16 @@ std::string RustInternalModuleName(Context<FileDescriptor> file);
 
 std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
 
+// These functions return the 'simplest' spelling of the View/Mut type for the
+// given given field. For example, "View<'msg, i32>" is an alias for "i32" and
+// i32 is the preferred way to spell that type.
+std::string ViewTypeName(Context<FieldDescriptor> field,
+                         absl::string_view lifetime = "_");
+std::string MutTypeName(Context<FieldDescriptor> field,
+                        absl::string_view lifetime = "_");
+std::string FieldEntryTypeName(Context<FieldDescriptor> field,
+                               absl::string_view lifetime = "_");
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

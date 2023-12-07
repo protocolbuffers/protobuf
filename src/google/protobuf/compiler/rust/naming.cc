@@ -12,6 +12,7 @@
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
@@ -238,6 +239,80 @@ std::string FieldInfoComment(Context<FieldDescriptor> field) {
   }
 
   return comment;
+}
+
+std::string ViewTypeName(Context<FieldDescriptor> field,
+                         absl::string_view lifetime) {
+  const FieldDescriptor& desc = field.desc();
+
+  if (desc.is_map()) {
+    std::string key_type = PrimitiveRsTypeName(*desc.message_type()->map_key());
+    std::string value_type =
+        PrimitiveRsTypeName(*desc.message_type()->map_value());
+    return absl::StrFormat("::__pb::MapView<'%s, %s, %s>", lifetime, key_type,
+                           value_type);
+  }
+
+  if (desc.is_repeated()) {
+    return absl::StrFormat("::__pb::RepeatedView<'%s, %s>", lifetime,
+                           PrimitiveRsTypeName(desc));
+  }
+
+  switch (desc.type()) {
+    case FieldDescriptor::TYPE_BYTES:
+      return absl::StrFormat("&'%s [u8]", lifetime);
+    case FieldDescriptor::TYPE_STRING:
+      return absl::StrFormat("&'%s ::__pb::ProtoStr", lifetime);
+    case FieldDescriptor::TYPE_MESSAGE: {
+      auto msg_type = field.WithDesc(desc.message_type());
+      return absl::StrFormat("crate::%sView::<'%s>",
+                             GetCrateRelativeQualifiedPath(msg_type), lifetime);
+    }
+    default:
+      return PrimitiveRsTypeName(desc);
+  }
+}
+
+std::string MutTypeName(Context<FieldDescriptor> field,
+                        absl::string_view lifetime) {
+  const FieldDescriptor& desc = field.desc();
+
+  if (desc.is_map()) {
+    std::string key_type = PrimitiveRsTypeName(*desc.message_type()->map_key());
+    std::string value_type =
+        PrimitiveRsTypeName(*desc.message_type()->map_value());
+    return absl::StrFormat("::__pb::MapMut<'%s, %s, %s>", lifetime, key_type,
+                           value_type);
+  }
+
+  if (desc.is_repeated()) {
+    return absl::StrFormat("::__pb::RepeatedMut<'%s, %s>", lifetime,
+                           PrimitiveRsTypeName(desc));
+  }
+
+  if (desc.type() == FieldDescriptor::TYPE_MESSAGE) {
+    auto msg_type = field.WithDesc(desc.message_type());
+    return absl::StrFormat("crate::%sMut::<'%s>",
+                           GetCrateRelativeQualifiedPath(msg_type), lifetime);
+  }
+
+  return absl::StrFormat("::__pb::Mut<'%s, %s>", lifetime,
+                         PrimitiveRsTypeName(desc));
+}
+
+std::string FieldEntryTypeName(Context<FieldDescriptor> field,
+                               absl::string_view lifetime) {
+  const FieldDescriptor& desc = field.desc();
+
+  if (!desc.has_presence()) {
+    ABSL_LOG(FATAL) << "FieldEntry is only defined for with-presence fields, "
+                       "cannot provide one for "
+                    << field.desc().name();
+    return "";
+  }
+
+  return absl::StrFormat("::__pb::FieldEntry<'%s, %s>", lifetime,
+                         PrimitiveRsTypeName(desc));
 }
 
 }  // namespace rust
