@@ -69,13 +69,13 @@ TEST(GeneratedCode, FindUnknown) {
                                                 arena);
 
   upb_FindUnknownRet result = upb_Message_FindUnknown(
-      base_msg,
+      (upb_Message*)base_msg,
       upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
   result = upb_Message_FindUnknown(
-      base_msg,
+      (upb_Message*)base_msg,
       upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
@@ -129,7 +129,8 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 1
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension1_model_ext_ext, 0, arena, &upb_ext2);
+      (upb_Message*)msg, &upb_test_ModelExtension1_model_ext_ext, 0, arena,
+      &upb_ext2);
   ext1 = (upb_test_ModelExtension1*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
@@ -137,35 +138,40 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 2
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+      (upb_Message*)msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena,
+      &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 3
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension2_model_ext_2_ext, 0, arena, &upb_ext2);
+      (upb_Message*)msg, &upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
+      &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 4
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension2_model_ext_3_ext, 0, arena, &upb_ext2);
+      (upb_Message*)msg, &upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
+      &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 5
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension2_model_ext_4_ext, 0, arena, &upb_ext2);
+      (upb_Message*)msg, &upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
+      &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 6
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension2_model_ext_5_ext, 0, arena, &upb_ext2);
+      (upb_Message*)msg, &upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
+      &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
@@ -176,13 +182,14 @@ TEST(GeneratedCode, Extensions) {
 
   // Get unknown extension bytes before promotion.
   size_t start_len;
-  upb_Message_GetUnknown(base_msg, &start_len);
+  upb_Message_GetUnknown((upb_Message*)base_msg, &start_len);
   EXPECT_GT(start_len, 0);
-  EXPECT_EQ(0, upb_Message_ExtensionCount(base_msg));
+  EXPECT_EQ(0, upb_Message_ExtensionCount((upb_Message*)base_msg));
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension1_model_ext_ext, 0, arena, &upb_ext2);
+      (upb_Message*)base_msg, &upb_test_ModelExtension1_model_ext_ext, 0, arena,
+      &upb_ext2);
   ext1 = (upb_test_ModelExtension1*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
@@ -190,43 +197,48 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+      (upb_Message*)base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena,
+      &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension2_model_ext_2_ext, 0, arena, &upb_ext2);
+      (upb_Message*)base_msg, &upb_test_ModelExtension2_model_ext_2_ext, 0,
+      arena, &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension2_model_ext_3_ext, 0, arena, &upb_ext2);
+      (upb_Message*)base_msg, &upb_test_ModelExtension2_model_ext_3_ext, 0,
+      arena, &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension2_model_ext_4_ext, 0, arena, &upb_ext2);
+      (upb_Message*)base_msg, &upb_test_ModelExtension2_model_ext_4_ext, 0,
+      arena, &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension2_model_ext_5_ext, 0, arena, &upb_ext2);
+      (upb_Message*)base_msg, &upb_test_ModelExtension2_model_ext_5_ext, 0,
+      arena, &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
 
   size_t end_len;
-  upb_Message_GetUnknown(base_msg, &end_len);
+  upb_Message_GetUnknown((upb_Message*)base_msg, &end_len);
   EXPECT_LT(end_len, start_len);
-  EXPECT_EQ(6, upb_Message_ExtensionCount(base_msg));
+  EXPECT_EQ(6, upb_Message_ExtensionCount((upb_Message*)base_msg));
 
   upb_Arena_Free(arena);
 }
@@ -377,7 +389,8 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
                                  arena.ptr(), (upb_Message**)&promoted);
   EXPECT_EQ(promote_result, kUpb_DecodeStatus_Ok);
   EXPECT_NE(nullptr, promoted);
-  EXPECT_EQ(promoted, upb_Message_GetMessage(msg, submsg_field, nullptr));
+  EXPECT_EQ((upb_Message*)promoted,
+            upb_Message_GetMessage((upb_Message*)msg, submsg_field, nullptr));
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(promoted), 12);
 }
 
@@ -400,14 +413,14 @@ TEST(GeneratedCode, ReparseUnlinked) {
 
   // Parse twice without linking the MiniTable.
   upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
-  upb_DecodeStatus decode_status =
-      upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
-                 kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
+  upb_DecodeStatus decode_status = upb_Decode(
+      serialized, serialized_size, (upb_Message*)msg, mini_table, nullptr,
+      kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
 
-  decode_status =
-      upb_Decode(serialized, serialized_size, msg, mini_table, nullptr,
-                 kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
+  decode_status = upb_Decode(
+      serialized, serialized_size, (upb_Message*)msg, mini_table, nullptr,
+      kUpb_DecodeOption_ExperimentalAllowUnlinked, arena.ptr());
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -420,12 +433,13 @@ TEST(GeneratedCode, ReparseUnlinked) {
   const int decode_options =
       upb_DecodeOptions_MaxDepth(0);  // UPB_DECODE_ALIAS disabled.
   upb_test_ModelWithExtensions* promoted;
-  upb_DecodeStatus promote_result =
-      upb_Message_PromoteMessage(msg, mini_table, submsg_field, decode_options,
-                                 arena.ptr(), (upb_Message**)&promoted);
+  upb_DecodeStatus promote_result = upb_Message_PromoteMessage(
+      (upb_Message*)msg, mini_table, submsg_field, decode_options, arena.ptr(),
+      (upb_Message**)&promoted);
   EXPECT_EQ(promote_result, kUpb_DecodeStatus_Ok);
   EXPECT_NE(nullptr, promoted);
-  EXPECT_EQ(promoted, upb_Message_GetMessage(msg, submsg_field, nullptr));
+  EXPECT_EQ((upb_Message*)promoted,
+            upb_Message_GetMessage(msg, submsg_field, nullptr));
 
   // The repeated field should have two entries for the two parses.
   size_t repeated_size;
@@ -478,7 +492,8 @@ TEST(GeneratedCode, PromoteInParser) {
                                                             nullptr);
 
   EXPECT_NE(nullptr, promoted);
-  EXPECT_EQ(promoted, upb_Message_GetMessage(msg, submsg_field, nullptr));
+  EXPECT_EQ((upb_Message*)promoted,
+            upb_Message_GetMessage(msg, submsg_field, nullptr));
 
   // The repeated field should have two entries for the two parses.
   size_t repeated_size;
@@ -624,15 +639,15 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
   upb_MessageValue val;
   key.int32_val = 111;
   EXPECT_TRUE(upb_Map_Get(map, key, &val));
-  EXPECT_EQ(123,
-            upb_test_ModelWithExtensions_random_int32(
-                static_cast<const upb_test_ModelWithExtensions*>(val.msg_val)));
+  EXPECT_EQ(123, upb_test_ModelWithExtensions_random_int32(
+                     static_cast<const upb_test_ModelWithExtensions*>(
+                         (void*)(val.msg_val))));
 
   key.int32_val = 222;
   EXPECT_TRUE(upb_Map_Get(map, key, &val));
-  EXPECT_EQ(456,
-            upb_test_ModelWithExtensions_random_int32(
-                static_cast<const upb_test_ModelWithExtensions*>(val.msg_val)));
+  EXPECT_EQ(456, upb_test_ModelWithExtensions_random_int32(
+                     static_cast<const upb_test_ModelWithExtensions*>(
+                         (void*)(val.msg_val))));
 }
 
 }  // namespace

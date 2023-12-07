@@ -72,8 +72,9 @@ TEST(MessageTest, Extensions) {
   }
   )json";
   upb::Status status;
-  EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), ext_msg, m.ptr(),
-                             defpool.ptr(), 0, arena.ptr(), status.ptr()))
+  EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), (upb_Message*)ext_msg,
+                             m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                             status.ptr()))
       << status.error_message();
 
   VerifyMessage(ext_msg);
@@ -91,15 +92,16 @@ TEST(MessageTest, Extensions) {
   VerifyMessage(ext_msg2);
 
   // Test round-trip through JSON format.
-  size_t json_size = upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, nullptr,
-                                    0, status.ptr());
+  size_t json_size = upb_JsonEncode((upb_Message*)ext_msg, m.ptr(),
+                                    defpool.ptr(), 0, nullptr, 0, status.ptr());
   char* json_buf =
       static_cast<char*>(upb_Arena_Malloc(arena.ptr(), json_size + 1));
-  upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, json_buf, json_size + 1,
-                 status.ptr());
+  upb_JsonEncode((upb_Message*)ext_msg, m.ptr(), defpool.ptr(), 0, json_buf,
+                 json_size + 1, status.ptr());
   upb_test_TestExtensions* ext_msg3 = upb_test_TestExtensions_new(arena.ptr());
-  EXPECT_TRUE(upb_JsonDecode(json_buf, json_size, ext_msg3, m.ptr(),
-                             defpool.ptr(), 0, arena.ptr(), status.ptr()))
+  EXPECT_TRUE(upb_JsonDecode(json_buf, json_size, (upb_Message*)ext_msg3,
+                             m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                             status.ptr()))
       << status.error_message();
   VerifyMessage(ext_msg3);
 }
@@ -132,8 +134,9 @@ TEST(MessageTest, MessageSet) {
   }
   )json";
   upb::Status status;
-  EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), ext_msg, m.ptr(),
-                             defpool.ptr(), 0, arena.ptr(), status.ptr()))
+  EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), (upb_Message*)ext_msg,
+                             m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                             status.ptr()))
       << status.error_message();
 
   VerifyMessageSet(ext_msg);
@@ -151,15 +154,16 @@ TEST(MessageTest, MessageSet) {
   VerifyMessageSet(ext_msg2);
 
   // Test round-trip through JSON format.
-  size_t json_size = upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, nullptr,
-                                    0, status.ptr());
+  size_t json_size = upb_JsonEncode((upb_Message*)ext_msg, m.ptr(),
+                                    defpool.ptr(), 0, nullptr, 0, status.ptr());
   char* json_buf =
       static_cast<char*>(upb_Arena_Malloc(arena.ptr(), json_size + 1));
-  upb_JsonEncode(ext_msg, m.ptr(), defpool.ptr(), 0, json_buf, json_size + 1,
-                 status.ptr());
+  upb_JsonEncode((upb_Message*)ext_msg, m.ptr(), defpool.ptr(), 0, json_buf,
+                 json_size + 1, status.ptr());
   upb_test_TestMessageSet* ext_msg3 = upb_test_TestMessageSet_new(arena.ptr());
-  EXPECT_TRUE(upb_JsonDecode(json_buf, json_size, ext_msg3, m.ptr(),
-                             defpool.ptr(), 0, arena.ptr(), status.ptr()))
+  EXPECT_TRUE(upb_JsonDecode(json_buf, json_size, (upb_Message*)ext_msg3,
+                             m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                             status.ptr()))
       << status.error_message();
   VerifyMessageSet(ext_msg3);
 }
@@ -311,10 +315,10 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   EXPECT_NE(nullptr, test_msg);
 
   // Fails, because required fields are missing.
-  EXPECT_EQ(
-      kUpb_DecodeStatus_MissingRequired,
-      upb_Decode(nullptr, 0, test_msg, &upb_0test__TestRequiredFields_msg_init,
-                 nullptr, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+  EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
+            upb_Decode(nullptr, 0, (upb_Message*)test_msg,
+                       &upb_0test__TestRequiredFields_msg_init, nullptr,
+                       kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
   size_t size;
@@ -326,7 +330,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   // Fails, but the code path is slightly different because the serialized
   // payload is not empty.
   EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
-            upb_Decode(serialized, size, test_msg,
+            upb_Decode(serialized, size, (upb_Message*)test_msg,
                        &upb_0test__TestRequiredFields_msg_init, nullptr,
                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
@@ -336,10 +340,10 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
 
   // Succeeds, because required fields are present (though not in the input).
-  EXPECT_EQ(
-      kUpb_DecodeStatus_Ok,
-      upb_Decode(nullptr, 0, test_msg, &upb_0test__TestRequiredFields_msg_init,
-                 nullptr, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+  EXPECT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(nullptr, 0, (upb_Message*)test_msg,
+                       &upb_0test__TestRequiredFields_msg_init, nullptr,
+                       kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   // Serialize a complete payload.
   serialized =
@@ -356,7 +360,7 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   upb_test_TestRequiredFields_set_optional_message(
       test_msg2, upb_test_TestRequiredFields_new(arena.ptr()));
   EXPECT_EQ(kUpb_DecodeStatus_Ok,
-            upb_Decode(serialized, size, test_msg2,
+            upb_Decode(serialized, size, (upb_Message*)test_msg2,
                        &upb_0test__TestRequiredFields_msg_init, nullptr,
                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }
@@ -450,7 +454,8 @@ TEST(MessageTest, MaxRequiredFields) {
   for (int i = 1; i <= 61; i++) {
     upb::FieldDefPtr f = m.FindFieldByNumber(i);
     ASSERT_TRUE(f);
-    upb_Message_SetFieldByDef(test_msg, f.ptr(), val, arena.ptr());
+    upb_Message_SetFieldByDef((upb_Message*)test_msg, f.ptr(), val,
+                              arena.ptr());
   }
 
   // Fails, field 63 still isn't set.
@@ -461,7 +466,7 @@ TEST(MessageTest, MaxRequiredFields) {
   // Succeeds, all required fields are set.
   upb::FieldDefPtr f = m.FindFieldByNumber(62);
   ASSERT_TRUE(f);
-  upb_Message_SetFieldByDef(test_msg, f.ptr(), val, arena.ptr());
+  upb_Message_SetFieldByDef((upb_Message*)test_msg, f.ptr(), val, arena.ptr());
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
       test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);

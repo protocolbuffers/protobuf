@@ -291,9 +291,9 @@ bool DoTestIo(upb_DefPool* symtab) {
   test_count++;
 
   if (verbose) {
-    debug_print("Request", c.request,
+    debug_print("Request", (upb_Message*)c.request,
                 conformance_ConformanceRequest_getmsgdef(symtab), &c);
-    debug_print("Response", c.response,
+    debug_print("Response", (upb_Message*)c.response,
                 conformance_ConformanceResponse_getmsgdef(symtab), &c);
     fprintf(stderr, "\n");
   }

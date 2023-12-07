@@ -53,13 +53,14 @@ class RequiredFieldsTest : public testing::Test {
     auto* test_msg = T::NewMessage(arena.ptr());
     upb::MessageDefPtr m = T::GetMessageDef(defpool.ptr());
     upb::Status status;
-    EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), test_msg, m.ptr(),
-                               defpool.ptr(), 0, arena.ptr(), status.ptr()))
+    EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), (upb_Message*)test_msg,
+                               m.ptr(), defpool.ptr(), 0, arena.ptr(),
+                               status.ptr()))
         << status.error_message();
     upb_FieldPathEntry* entries = nullptr;
-    EXPECT_EQ(
-        !missing.empty(),
-        upb_util_HasUnsetRequired(test_msg, m.ptr(), defpool.ptr(), &entries));
+    EXPECT_EQ(!missing.empty(),
+              upb_util_HasUnsetRequired((upb_Message*)test_msg, m.ptr(),
+                                        defpool.ptr(), &entries));
     if (entries) {
       EXPECT_EQ(missing, PathsToText(entries));
       free(entries);
@@ -67,8 +68,9 @@ class RequiredFieldsTest : public testing::Test {
 
     // Verify that we can pass a NULL pointer to entries when we don't care
     // about them.
-    EXPECT_EQ(!missing.empty(), upb_util_HasUnsetRequired(
-                                    test_msg, m.ptr(), defpool.ptr(), nullptr));
+    EXPECT_EQ(!missing.empty(),
+              upb_util_HasUnsetRequired((upb_Message*)test_msg, m.ptr(),
+                                        defpool.ptr(), nullptr));
   }
 };
 

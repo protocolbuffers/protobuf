@@ -10,6 +10,6 @@
 
 // This typedef is in a leaf header to resolve a circular dependency between
 // messages and mini tables.
-typedef void upb_Message;
+typedef struct upb_Message upb_Message;
 
 #endif /* UPB_MESSAGE_TYPES_H_ */

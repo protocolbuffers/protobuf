@@ -58,31 +58,34 @@ TEST(GeneratedCode, DeepCloneMessageScalarAndString) {
       find_proto2_field(kFieldOptionalInt32);
   const upb_MiniTableField* optional_string_field =
       find_proto2_field(kFieldOptionalString);
-  upb_Message_SetInt32(msg, optional_int32_field, kTestInt32, nullptr);
+  upb_Message_SetInt32((upb_Message*)msg, optional_int32_field, kTestInt32,
+                       nullptr);
   char* string_in_arena =
       (char*)upb_Arena_Malloc(source_arena, sizeof(kTestStr1));
   memcpy(string_in_arena, kTestStr1, sizeof(kTestStr1));
   upb_Message_SetString(
-      msg, optional_string_field,
+      (upb_Message*)msg, optional_string_field,
       upb_StringView_FromDataAndSize(string_in_arena, sizeof(kTestStr1) - 1),
       source_arena);
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
-          msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          (upb_Message*)msg,
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
           arena);
   // After cloning overwrite values and destroy source arena for MSAN.
   memset(string_in_arena, 0, sizeof(kTestStr1));
   upb_Arena_Free(source_arena);
-  EXPECT_TRUE(upb_Message_HasField(clone, optional_int32_field));
-  EXPECT_EQ(upb_Message_GetInt32(clone, optional_int32_field, 0), kTestInt32);
-  EXPECT_TRUE(upb_Message_HasField(clone, optional_string_field));
-  EXPECT_EQ(upb_Message_GetString(clone, optional_string_field,
+  EXPECT_TRUE(upb_Message_HasField((upb_Message*)clone, optional_int32_field));
+  EXPECT_EQ(upb_Message_GetInt32((upb_Message*)clone, optional_int32_field, 0),
+            kTestInt32);
+  EXPECT_TRUE(upb_Message_HasField((upb_Message*)clone, optional_string_field));
+  EXPECT_EQ(upb_Message_GetString((upb_Message*)clone, optional_string_field,
                                   upb_StringView_FromDataAndSize(nullptr, 0))
                 .size,
             sizeof(kTestStr1) - 1);
   EXPECT_TRUE(upb_StringView_IsEqual(
-      upb_Message_GetString(clone, optional_string_field,
+      upb_Message_GetString((upb_Message*)clone, optional_string_field,
                             upb_StringView_FromDataAndSize(nullptr, 0)),
       upb_StringView_FromString(kTestStr1)));
   upb_Arena_Free(arena);
@@ -100,22 +103,25 @@ TEST(GeneratedCode, DeepCloneMessageSubMessage) {
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
       nested, kTestNestedInt32);
   upb_Message_SetMessage(
-      msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      nested_message_field, nested);
+      (upb_Message*)msg,
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+      nested_message_field, (upb_Message*)nested);
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
-          msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          (upb_Message*)msg,
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
           arena);
   // After cloning overwrite values and destroy source arena for MSAN.
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(nested,
                                                                        0);
   upb_Arena_Free(source_arena);
-  EXPECT_TRUE(upb_Message_HasField(clone, nested_message_field));
+  EXPECT_TRUE(upb_Message_HasField((upb_Message*)clone, nested_message_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*
       cloned_nested =
           (protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*)
-              upb_Message_GetMessage(clone, nested_message_field, nullptr);
+              upb_Message_GetMessage((upb_Message*)clone, nested_message_field,
+                                     nullptr);
   EXPECT_EQ(protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_a(
                 cloned_nested),
             kTestNestedInt32);
@@ -135,7 +141,8 @@ TEST(GeneratedCode, DeepCloneMessageArrayField) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
-          msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          (upb_Message*)msg,
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
           arena);
   protobuf_test_messages_proto2_TestAllTypesProto2_clear_repeated_sint32(msg);
   upb_Arena_Free(source_arena);
@@ -174,7 +181,8 @@ TEST(GeneratedCode, DeepCloneMessageMapField) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
-          msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          (upb_Message*)msg,
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
           arena);
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(nested,
                                                                        0);
@@ -250,7 +258,7 @@ TEST(GeneratedCode, DeepCloneMessageExtensions) {
   protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect*)
           upb_Message_DeepClone(
-              msg,
+              (upb_Message*)msg,
               &protobuf_0test_0messages__proto2__TestAllTypesProto2__MessageSetCorrect_msg_init,
               arena);
 
@@ -295,18 +303,19 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   char* data;
   upb_Arena* encode_arena = upb_Arena_New();
   upb_EncodeStatus status = upb_Encode(
-      unknown_source,
+      (upb_Message*)unknown_source,
       &protobuf_0test_0messages__proto2__UnknownToTestAllTypes_msg_init,
       kUpb_EncodeOption_CheckRequired, encode_arena, &data, &len);
   ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
   std::string unknown_data(data, len);
   // Add unknown data.
-  _upb_Message_AddUnknown(msg, data, len, source_arena);
+  _upb_Message_AddUnknown((upb_Message*)msg, data, len, source_arena);
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
-          msg, &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+          (upb_Message*)msg,
+          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
           clone_arena);
   upb_Arena_Free(source_arena);
   upb_Arena_Free(unknown_arena);
@@ -314,7 +323,7 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   // Read unknown data from clone and verify.
   size_t cloned_length;
   const char* cloned_unknown_data =
-      upb_Message_GetUnknown(clone, &cloned_length);
+      upb_Message_GetUnknown((upb_Message*)clone, &cloned_length);
   EXPECT_EQ(cloned_length, len);
   EXPECT_EQ(memcmp(cloned_unknown_data, unknown_data.c_str(), cloned_length),
             0);

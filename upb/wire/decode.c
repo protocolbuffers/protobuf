@@ -644,11 +644,11 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
     ent.data.v.val = upb_value_uintptr(msg);
   }
 
-  ptr =
-      _upb_Decoder_DecodeSubMessage(d, ptr, &ent.data, subs, field, val->size);
+  ptr = _upb_Decoder_DecodeSubMessage(d, ptr, (upb_Message*)&ent.data, subs,
+                                      field, val->size);
   // check if ent had any unknown fields
   size_t size;
-  upb_Message_GetUnknown(&ent.data, &size);
+  upb_Message_GetUnknown((upb_Message*)&ent.data, &size);
   if (size != 0) {
     char* buf;
     size_t size;
@@ -1155,7 +1155,7 @@ static const char* _upb_Decoder_DecodeKnownField(
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     d->unknown_msg = msg;
-    msg = &ext->data;
+    msg = (upb_Message*)&ext->data;
     subs = &ext->ext->UPB_PRIVATE(sub);
   }
 
@@ -1347,7 +1347,7 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
   return decoder->status;
 }
 
-upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
+upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                             const upb_MiniTable* l,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {

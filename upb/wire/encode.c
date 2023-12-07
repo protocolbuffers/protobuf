@@ -537,7 +537,7 @@ static void encode_ext(upb_encstate* e, const upb_Message_Extension* ext,
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
   } else {
-    encode_field(e, &ext->data, &ext->ext->UPB_PRIVATE(sub),
+    encode_field(e, (upb_Message*)&ext->data, &ext->ext->UPB_PRIVATE(sub),
                  &ext->ext->UPB_PRIVATE(field));
   }
 }

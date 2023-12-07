@@ -367,8 +367,8 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
     return false;
   }
 
-  *set =
-      upb_Message_DeepClone(parent, UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
+  *set = (UPB_DESC(FeatureSet*))upb_Message_DeepClone(
+      (upb_Message*)parent, UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
   if (!*set) _upb_DefBuilder_OomErr(ctx);
 
   v = upb_value_ptr(*set);
@@ -405,7 +405,7 @@ const UPB_DESC(FeatureSet*)
   }
 
   upb_DecodeStatus dec_status =
-      upb_Decode(child_bytes, child_size, resolved,
+      upb_Decode(child_bytes, child_size, (upb_Message*)resolved,
                  UPB_DESC_MINITABLE(FeatureSet), NULL, 0, ctx->arena);
   if (dec_status != kUpb_DecodeStatus_Ok) _upb_DefBuilder_OomErr(ctx);
 

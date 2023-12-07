@@ -54,8 +54,9 @@ std::unique_ptr<google::protobuf::Message> ToProto(
       factory->GetPrototype(desc)->New());
   char* buf;
   size_t size;
-  upb_EncodeStatus status = upb_Encode(msg, upb_MessageDef_MiniTable(msgdef), 0,
-                                       arena.ptr(), &buf, &size);
+  upb_EncodeStatus status =
+      upb_Encode((upb_Message*)msg, upb_MessageDef_MiniTable(msgdef), 0,
+                 arena.ptr(), &buf, &size);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   google_msg->ParseFromArray(buf, size);
   return google_msg;
@@ -75,9 +76,9 @@ MATCHER_P2(EqualsUpbProto, proto, msgdef_func,
       AddMessageDescriptor(msgdef, &pool);
   EXPECT_TRUE(desc != nullptr);
   std::unique_ptr<google::protobuf::Message> m1(
-      ToProto(proto, msgdef.ptr(), desc, &factory));
+      ToProto((upb_Message*)proto, msgdef.ptr(), desc, &factory));
   std::unique_ptr<google::protobuf::Message> m2(
-      ToProto(arg, msgdef.ptr(), desc, &factory));
+      ToProto((upb_Message*)arg, msgdef.ptr(), desc, &factory));
   std::string differences;
   google::protobuf::util::MessageDifferencer differencer;
   differencer.ReportDifferencesToString(&differences);

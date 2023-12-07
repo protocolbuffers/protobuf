@@ -46,9 +46,9 @@ TEST(Utf8Test, Proto3FieldValidates) {
   upb_test_TestUtf8Proto3String* msg =
       upb_test_TestUtf8Proto3String_new(arena.ptr());
 
-  upb_DecodeStatus status =
-      upb_Decode(data, size, msg, &upb_0test__TestUtf8Proto3String_msg_init,
-                 nullptr, 0, arena.ptr());
+  upb_DecodeStatus status = upb_Decode(
+      data, size, (upb_Message*)msg, &upb_0test__TestUtf8Proto3String_msg_init,
+      nullptr, 0, arena.ptr());
 
   // Parse fails, because proto3 string fields validate UTF-8.
   ASSERT_EQ(kUpb_DecodeStatus_BadUtf8, status);
@@ -62,9 +62,10 @@ TEST(Utf8Test, RepeatedProto3FieldValidates) {
   upb_test_TestUtf8RepeatedProto3String* msg =
       upb_test_TestUtf8RepeatedProto3String_new(arena.ptr());
 
-  upb_DecodeStatus status = upb_Decode(
-      data, size, msg, &upb_0test__TestUtf8RepeatedProto3String_msg_init,
-      nullptr, 0, arena.ptr());
+  upb_DecodeStatus status =
+      upb_Decode(data, size, (upb_Message*)msg,
+                 &upb_0test__TestUtf8RepeatedProto3String_msg_init, nullptr, 0,
+                 arena.ptr());
 
   // Parse fails, because proto3 string fields validate UTF-8.
   ASSERT_EQ(kUpb_DecodeStatus_BadUtf8, status);
@@ -80,8 +81,8 @@ TEST(Utf8Test, RepeatedProto3FieldValidates) {
 //       upb_test_TestUtf8Proto3StringMixed_new(arena.ptr());
 //
 //   upb_DecodeStatus status = upb_Decode(
-//       data, size, msg, &upb_0test__TestUtf8Proto3StringMixed_msg_init, nullptr,
-//       0, arena.ptr());
+//       data, size, (upb_Message*)msg,
+//       &upb_0test__TestUtf8Proto3StringMixed_msg_init, nullptr, 0, arena.ptr());
 //
 //   // Parse fails, because proto3 string fields validate UTF-8.
 //   ASSERT_EQ(kUpb_DecodeStatus_BadUtf8, status);

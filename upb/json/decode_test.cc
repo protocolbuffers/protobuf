@@ -27,8 +27,8 @@ static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
 
   upb_test_Box* box = upb_test_Box_new(a);
   int options = 0;
-  bool ok = upb_JsonDecode(json, strlen(json), box, m.ptr(), defpool.ptr(),
-                           options, a, status.ptr());
+  bool ok = upb_JsonDecode(json, strlen(json), (upb_Message*)box, m.ptr(),
+                           defpool.ptr(), options, a, status.ptr());
   return ok ? box : nullptr;
 }
 
