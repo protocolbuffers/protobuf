@@ -67,12 +67,6 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
-// Portable fallback for Clang's __has_warning macro:
-#ifndef __has_warning
-#define __has_warning(x) 0
-#define PROTOBUF_has_warning_DEFINED_
-#endif
-
 // Portable PROTOBUF_BUILTIN_BSWAPxx definitions
 // Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
 #ifdef PROTOBUF_BUILTIN_BSWAP16
@@ -92,11 +86,6 @@
 #endif
 #if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
 #define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
-#endif
-
-// Portable check for __builtin_mul_overflow.
-#if ABSL_HAVE_BUILTIN(__builtin_mul_overflow)
-#define PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW 1
 #endif
 
 // Portable check for gcc-style atomic built-ins
@@ -512,11 +501,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_ALIGNAS(byte_alignment) alignas(byte_alignment)
 #endif
 
-#ifdef PROTOBUF_FINAL
-#error PROTOBUF_FINAL was previously defined
-#endif
-#define PROTOBUF_FINAL final
-
 #ifdef PROTOBUF_THREAD_LOCAL
 #error PROTOBUF_THREAD_LOCAL was previously defined
 #endif
@@ -577,21 +561,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY [[clang::no_destroy]]
 #else
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY
-#endif
-
-// Force clang to always emit complete debug info for a type.
-// Clang uses constructor homing to determine when to emit debug info for a
-// type. If the constructor of a type is never used, which can happen in some
-// cases where member variables are constructed in place for optimization
-// purposes (see b/208803175 for an example), the type will have incomplete
-// debug info unless this attribute is used.
-#ifdef PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
-#error PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG was previously defined
-#endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::standalone_debug)
-#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG [[clang::standalone_debug]]
-#else
-#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
 #endif
 
 // Protobuf extensions and reflection require registration of the protos linked
@@ -1070,10 +1039,3 @@ namespace internal {
 #endif  // !NDEBUG
 #endif  // has_builtin(__builtin_assume)
 
-// We don't want code outside port_def doing complex testing, so
-// remove our portable condition test macros to nudge folks away from
-// using it themselves.
-#ifdef PROTOBUF_has_warning_DEFINED_
-#  undef __has_warning
-#  undef PROTOBUF_has_warning_DEFINED_
-#endif
