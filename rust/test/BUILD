@@ -181,6 +181,32 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "edition2023_proto",
+    testonly = True,
+    srcs = ["edition2023.proto"],
+)
+
+cc_proto_library(
+    name = "edition2023_cc_proto",
+    testonly = True,
+    deps = [":edition2023_proto"],
+)
+
+rust_cc_proto_library(
+    name = "edition2023_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "edition2023_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_proto"],
+)
+
+proto_library(
     name = "no_package_import_proto",
     testonly = True,
     srcs = ["no_package_import.proto"],
