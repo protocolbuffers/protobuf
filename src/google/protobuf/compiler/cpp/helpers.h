@@ -772,9 +772,13 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // their codegen.
 // LITE messages do not participate at all in this feature.
 //
-// For extensions, the identifiers currently pin both the extended and extendee
-// messages. This is the status quo, but not the desired end state which should
-// change in a future update to the feature.
+// For extensions, the identifiers currently pin the extendee. The extended is
+// assumed to by pinned elsewhere since we already have an instance of it when
+// we call `.GetExtension` et al. The extension identifier itself is not
+// automatically pinned, so it has to be used to participate in the graph.
+// Registration of the extensions do not pin the extended or the extendee. At
+// registration time we will eagerly create a prototype object if one is
+// missing to insert in the extension table in ExtensionSet.
 //
 // For services, the TU unconditionally pins the request/response objects.
 // This is the status quo for simplicitly to avoid modifying the RPC layer. It

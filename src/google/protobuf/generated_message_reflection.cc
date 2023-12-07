@@ -39,6 +39,7 @@
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -3817,6 +3818,24 @@ bool IsDescendant(Message& root, const Message& message) {
 
 bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
   return field->is_repeated();
+}
+
+const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
+                                             int index) {
+  // First, make sure we inject the surviving default instances.
+  InitProtobufDefaults();
+
+  // Now check if the table has it. If so, return it.
+  if (const auto* msg = table->default_instances[index]) {
+    return msg;
+  }
+
+  // Fallback to dynamic messages.
+  // Register the dep and generate the prototype via the generated pool.
+  AssignDescriptors(table);
+  ABSL_CHECK(table->file_level_metadata[index].descriptor != nullptr);
+  return MessageFactory::generated_factory()->GetPrototype(
+      table->file_level_metadata[index].descriptor);
 }
 
 }  // namespace internal

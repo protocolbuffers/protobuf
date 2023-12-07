@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/cpp/extension.h"
 
 #include <string>
+#include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -188,35 +189,58 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
                     $repeated$, $packed$, $enum_name$_IsValid),
               )cc");
       break;
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      p->Emit({{"verify",
-                [&] {
-                  const bool should_verify =
-                      // Only verify msgs.
-                      descriptor_->cpp_type() ==
-                          FieldDescriptor::CPPTYPE_MESSAGE &&
-                      // Options say to verify.
-                      ShouldVerify(descriptor_->message_type(), options_,
-                                   scc_analyzer_) &&
-                      ShouldVerify(descriptor_->containing_type(), options_,
-                                   scc_analyzer_);
-                  if (should_verify) {
-                    p->Emit("&$message_type$::InternalVerify,");
-                  } else {
-                    p->Emit("nullptr,");
-                  }
-                }},
-               {"message_type", FieldMessageTypeName(descriptor_, options_)},
-               {"lazy", descriptor_->options().has_lazy()
-                            ? descriptor_->options().lazy() ? "kLazy" : "kEager"
-                            : "kUndefined"}},
-              R"cc(
-                ::_pbi::ExtensionSet::RegisterMessageExtension(
-                    &$extendee$::default_instance(), $number$, $field_type$,
-                    $repeated$, $packed$, &$message_type$::default_instance(),
-                    $verify$, ::_pbi::LazyAnnotation::$lazy$),
-              )cc");
+    case FieldDescriptor::CPPTYPE_MESSAGE: {
+      const bool should_verify =
+          // Only verify msgs.
+          descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+          // Options say to verify.
+          ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
+          ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_);
+      const auto message_type = FieldMessageTypeName(descriptor_, options_);
+      auto v = p->WithVars(
+          {{"verify", should_verify
+                          ? absl::StrCat("&", message_type, "::InternalVerify")
+                          : "nullptr"},
+           {"message_type", message_type},
+           {"lazy", descriptor_->options().has_lazy()
+                        ? descriptor_->options().lazy() ? "kLazy" : "kEager"
+                        : "kUndefined"}});
+      if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+        const auto find_index = [](auto* desc) {
+          const std::vector<const Descriptor*> msgs =
+              FlattenMessagesInFile(desc->file());
+          return absl::c_find(msgs, desc) - msgs.begin();
+        };
+        p->Emit(
+            {
+                {"extendee_table",
+                 DescriptorTableName(descriptor_->containing_type()->file(),
+                                     options_)},
+                {"extendee_index", find_index(descriptor_->containing_type())},
+                {"extension_table",
+                 DescriptorTableName(descriptor_->message_type()->file(),
+                                     options_)},
+                {"extension_index", find_index(descriptor_->message_type())},
+            },
+            R"cc(
+              ::_pbi::ExtensionSet::RegisterMessageExtension(
+                  ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
+                                                        $extendee_index$),
+                  $number$, $field_type$, $repeated$, $packed$,
+                  ::_pbi::GetPrototypeForWeakDescriptor(&$extension_table$,
+                                                        $extension_index$),
+                  $verify$, ::_pbi::LazyAnnotation::$lazy$),
+            )cc");
+      } else {
+        p->Emit(R"cc(
+          ::_pbi::ExtensionSet::RegisterMessageExtension(
+              &$extendee$::default_instance(), $number$, $field_type$,
+              $repeated$, $packed$, &$message_type$::default_instance(),
+              $verify$, ::_pbi::LazyAnnotation::$lazy$),
+        )cc");
+      }
       break;
+    }
     default:
       p->Emit(
           R"cc(
