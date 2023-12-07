@@ -30,6 +30,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/meta/type_traits.h"
@@ -768,7 +769,7 @@ inline UntypedMapIterator::UntypedMapIterator(const UntypedMapBase* m) : m_(m) {
   } else {
     bucket_index_ = m_->index_of_first_non_null_;
     TableEntryPtr entry = m_->table_[bucket_index_];
-    node_ = PROTOBUF_PREDICT_TRUE(TableEntryIsList(entry))
+    node_ = ABSL_PREDICT_TRUE(TableEntryIsList(entry))
                 ? TableEntryToNode(entry)
                 : TableEntryToTree(entry)->begin()->second;
     PROTOBUF_ASSUME(node_ != nullptr);
@@ -782,7 +783,7 @@ inline void UntypedMapIterator::SearchFrom(map_index_t start_bucket) {
     TableEntryPtr entry = m_->table_[i];
     if (entry == TableEntryPtr{}) continue;
     bucket_index_ = i;
-    if (PROTOBUF_PREDICT_TRUE(TableEntryIsList(entry))) {
+    if (ABSL_PREDICT_TRUE(TableEntryIsList(entry))) {
       node_ = TableEntryToNode(entry);
     } else {
       TreeForMap* tree = TableEntryToTree(entry);
@@ -904,7 +905,7 @@ class KeyMapBase : public UntypedMapBase {
       EraseFromTree(b, tree_it);
     }
     --num_elements_;
-    if (PROTOBUF_PREDICT_FALSE(b == index_of_first_non_null_)) {
+    if (ABSL_PREDICT_FALSE(b == index_of_first_non_null_)) {
       while (index_of_first_non_null_ < num_buckets_ &&
              TableEntryIsEmpty(index_of_first_non_null_)) {
         ++index_of_first_non_null_;
@@ -1002,13 +1003,13 @@ class KeyMapBase : public UntypedMapBase {
     // We don't care how many elements are in trees.  If a lot are,
     // we may resize even though there are many empty buckets.  In
     // practice, this seems fine.
-    if (PROTOBUF_PREDICT_FALSE(new_size > hi_cutoff)) {
+    if (ABSL_PREDICT_FALSE(new_size > hi_cutoff)) {
       if (num_buckets_ <= max_size() / 2) {
         Resize(num_buckets_ * 2);
         return true;
       }
-    } else if (PROTOBUF_PREDICT_FALSE(new_size <= lo_cutoff &&
-                                      num_buckets_ > kMinTableSize)) {
+    } else if (ABSL_PREDICT_FALSE(new_size <= lo_cutoff &&
+                                  num_buckets_ > kMinTableSize)) {
       size_type lg2_of_size_reduction_factor = 1;
       // It's possible we want to shrink a lot here... size() could even be 0.
       // So, estimate how much to shrink by making sure we don't shrink so

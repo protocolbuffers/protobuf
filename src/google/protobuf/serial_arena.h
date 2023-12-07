@@ -107,12 +107,12 @@ class PROTOBUF_EXPORT SerialArena {
 
   // See comments on `cached_blocks_` member for details.
   PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
-    if (PROTOBUF_PREDICT_FALSE(size < 16)) return nullptr;
+    if (ABSL_PREDICT_FALSE(size < 16)) return nullptr;
     // We round up to the next larger block in case the memory doesn't match
     // the pattern we are looking for.
     const size_t index = absl::bit_width(size - 1) - 4;
 
-    if (PROTOBUF_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
+    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
     auto& cached_head = cached_blocks_[index];
     if (cached_head == nullptr) return nullptr;
 
@@ -141,7 +141,7 @@ class PROTOBUF_EXPORT SerialArena {
     }
 
     void* ptr;
-    if (PROTOBUF_PREDICT_TRUE(MaybeAllocateAligned(n, &ptr))) {
+    if (ABSL_PREDICT_TRUE(MaybeAllocateAligned(n, &ptr))) {
       return ptr;
     }
     return AllocateAlignedFallback(n);
@@ -170,7 +170,7 @@ class PROTOBUF_EXPORT SerialArena {
     // In 64-bit platforms the minimum allocation size from Repeated*Field will
     // be 16 guaranteed.
     if (sizeof(void*) < 8) {
-      if (PROTOBUF_PREDICT_FALSE(size < 16)) return;
+      if (ABSL_PREDICT_FALSE(size < 16)) return;
     } else {
       PROTOBUF_ASSUME(size >= 16);
     }
@@ -180,7 +180,7 @@ class PROTOBUF_EXPORT SerialArena {
     // on the repeated field.
     const size_t index = absl::bit_width(size) - 5;
 
-    if (PROTOBUF_PREDICT_FALSE(index >= cached_block_length_)) {
+    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) {
       // We can't put this object on the freelist so make this object the
       // freelist. It is guaranteed it is larger than the one we have, and
       // large enough to hold another allocation of `size`.
@@ -224,7 +224,7 @@ class PROTOBUF_EXPORT SerialArena {
     // Both computations have undefined behavior when done on pointers,
     // so do them on uintptr_t instead.
     uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
-    if (PROTOBUF_PREDICT_FALSE(next > reinterpret_cast<uintptr_t>(limit_))) {
+    if (ABSL_PREDICT_FALSE(next > reinterpret_cast<uintptr_t>(limit_))) {
       return false;
     }
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
@@ -249,8 +249,8 @@ class PROTOBUF_EXPORT SerialArena {
     char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.
     uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
-    if (PROTOBUF_PREDICT_FALSE(next + cleanup::Size(destructor) >
-                               reinterpret_cast<uintptr_t>(limit_))) {
+    if (ABSL_PREDICT_FALSE(next + cleanup::Size(destructor) >
+                           reinterpret_cast<uintptr_t>(limit_))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
@@ -265,7 +265,7 @@ class PROTOBUF_EXPORT SerialArena {
   void AddCleanup(void* elem, void (*destructor)(void*)) {
     size_t required = cleanup::Size(destructor);
     size_t has = static_cast<size_t>(limit_ - ptr());
-    if (PROTOBUF_PREDICT_FALSE(required > has)) {
+    if (ABSL_PREDICT_FALSE(required > has)) {
       return AddCleanupFallback(elem, destructor);
     }
     AddCleanupFromExisting(elem, destructor);
@@ -316,9 +316,9 @@ class PROTOBUF_EXPORT SerialArena {
   void MaybePrefetchForwards(const char* next) {
     ABSL_DCHECK(static_cast<const void*>(prefetch_ptr_) == nullptr ||
                 static_cast<const void*>(prefetch_ptr_) >= head());
-    if (PROTOBUF_PREDICT_TRUE(prefetch_ptr_ - next > kPrefetchForwardsDegree))
+    if (ABSL_PREDICT_TRUE(prefetch_ptr_ - next > kPrefetchForwardsDegree))
       return;
-    if (PROTOBUF_PREDICT_TRUE(prefetch_ptr_ < prefetch_limit_)) {
+    if (ABSL_PREDICT_TRUE(prefetch_ptr_ < prefetch_limit_)) {
       const char* prefetch_ptr = std::max(next, prefetch_ptr_);
       ABSL_DCHECK(prefetch_ptr != nullptr);
       const char* end =
@@ -338,10 +338,9 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK(prefetch_limit_ == nullptr ||
                 static_cast<const void*>(prefetch_limit_) <=
                     static_cast<const void*>(head()->Limit()));
-    if (PROTOBUF_PREDICT_TRUE(limit - prefetch_limit_ >
-                              kPrefetchBackwardsDegree))
+    if (ABSL_PREDICT_TRUE(limit - prefetch_limit_ > kPrefetchBackwardsDegree))
       return;
-    if (PROTOBUF_PREDICT_TRUE(prefetch_limit_ > prefetch_ptr_)) {
+    if (ABSL_PREDICT_TRUE(prefetch_limit_ > prefetch_ptr_)) {
       const char* prefetch_limit = std::min(limit, prefetch_limit_);
       ABSL_DCHECK_NE(prefetch_limit, nullptr);
       const char* end =
@@ -442,7 +441,7 @@ class PROTOBUF_EXPORT SerialArena {
 inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
   // Check how many unused instances are in the current block.
   size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-  if (PROTOBUF_PREDICT_TRUE(unused_bytes != 0)) {
+  if (ABSL_PREDICT_TRUE(unused_bytes != 0)) {
     unused_bytes -= sizeof(std::string);
     string_block_unused_.store(unused_bytes, std::memory_order_relaxed);
     p = string_block_.load(std::memory_order_relaxed)->AtOffset(unused_bytes);

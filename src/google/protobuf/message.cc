@@ -15,6 +15,7 @@
 #include <stack>
 
 #include "absl/base/casts.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -164,7 +165,7 @@ size_t Message::ComputeUnknownFieldsSize(
 
 size_t Message::MaybeComputeUnknownFieldsSize(
     size_t total_size, internal::CachedSize* cached_size) const {
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+  if (ABSL_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ComputeUnknownFieldsSize(total_size, cached_size);
   }
   cached_size->Set(internal::ToCachedSize(total_size));
@@ -173,7 +174,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 
 size_t Message::SpaceUsedLong() const {
   auto* reflection = GetReflection();
-  if (PROTOBUF_PREDICT_TRUE(reflection != nullptr)) {
+  if (ABSL_PREDICT_TRUE(reflection != nullptr)) {
     return reflection->SpaceUsedLong(*this);
   }
   // The only case that does not have reflection is RawMessage.

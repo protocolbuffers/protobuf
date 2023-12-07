@@ -7,6 +7,7 @@
 
 #include "google/protobuf/generated_message_bases.h"
 
+#include "absl/base/optimization.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -40,9 +41,9 @@ size_t ZeroFieldsBase::ByteSizeLong() const {
 
 const char* ZeroFieldsBase::_InternalParse(const char* ptr,
                                            internal::ParseContext* ctx) {
-#define CHK_(x)                       \
-  if (PROTOBUF_PREDICT_FALSE(!(x))) { \
-    goto failure;                     \
+#define CHK_(x)                   \
+  if (ABSL_PREDICT_FALSE(!(x))) { \
+    goto failure;                 \
   }
 
   while (!ctx->Done(&ptr)) {
@@ -68,7 +69,7 @@ failure:
 
 ::uint8_t* ZeroFieldsBase::_InternalSerialize(
     ::uint8_t* target, io::EpsCopyOutputStream* stream) const {
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+  if (ABSL_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<UnknownFieldSet>(
             UnknownFieldSet::default_instance),

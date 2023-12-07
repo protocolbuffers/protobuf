@@ -465,7 +465,7 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
           }
         }}},
       R"cc(
-        if (PROTOBUF_PREDICT_FALSE($cond$)) {
+        if (ABSL_PREDICT_FALSE($cond$)) {
       )cc");
   p->Indent();
   return true;
@@ -1098,7 +1098,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 // TODO: figure out if early return breaks tracking
                 if (ShouldSplit(field, options_)) {
                   p->Emit(R"cc(
-                    if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault()))
+                    if (ABSL_PREDICT_TRUE(IsSplitMessageDefault()))
                       return;
                   )cc");
                 }
@@ -2206,7 +2206,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   if (ShouldSplit(descriptor_, options_)) {
     format(
         "void $classname$::PrepareSplitMessageForWrite() {\n"
-        "  if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault())) {\n"
+        "  if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {\n"
         "    void* chunk = $pbi$::CreateSplitMessageGeneric("
         "GetArena(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
@@ -2621,7 +2621,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (PROTOBUF_PREDICT_FALSE(!IsSplitMessageDefault())) {
+                   if (ABSL_PREDICT_FALSE(!IsSplitMessageDefault())) {
                      auto* $cached_split_ptr$ = $split$;
                      $split_field_dtors_impl$;
                      delete $cached_split_ptr$;
@@ -2710,8 +2710,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (PROTOBUF_PREDICT_FALSE(
-                           !_this->IsSplitMessageDefault())) {
+                   if (ABSL_PREDICT_FALSE(!_this->IsSplitMessageDefault())) {
                      $split_field_dtors_impl$;
                    }
                  )cc");
@@ -2959,7 +2958,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit({{"copy_split_fields", generate_copy_split_fields}},
             R"cc(
-              if (PROTOBUF_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
+              if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
                 PrepareSplitMessageForWrite();
                 $copy_split_fields$;
               }
@@ -3643,7 +3642,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
   if (ShouldSplit(descriptor_, options_)) {
     format(
-        "if (PROTOBUF_PREDICT_FALSE(!from.IsSplitMessageDefault())) {\n"
+        "if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {\n"
         "  _this->PrepareSplitMessageForWrite();\n"
         "}\n");
   }
@@ -4262,7 +4261,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
         (void)cached_has_bits;
 
         $handle_lazy_fields$;
-        if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {
+        if (ABSL_PREDICT_FALSE($have_unknown_fields$)) {
           $handle_unknown_fields$;
         }
       )cc");
@@ -4356,7 +4355,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
             }
           }
         }
-        if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {
+        if (ABSL_PREDICT_FALSE($have_unknown_fields$)) {
           $handle_unknown_fields$;
         }
       )cc");
@@ -4548,7 +4547,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format(
         "return MaybeComputeUnknownFieldsSize(total_size, &$cached_size$);\n");
   } else {
-    format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
+    format("if (ABSL_PREDICT_FALSE($have_unknown_fields$)) {\n");
     format("  total_size += $unknown_fields$.size();\n");
     format("}\n");
 

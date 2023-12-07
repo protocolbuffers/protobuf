@@ -22,6 +22,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"

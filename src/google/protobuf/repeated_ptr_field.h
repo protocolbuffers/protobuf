@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
 #include "google/protobuf/arena.h"
@@ -223,7 +224,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // TODO: arena check is redundant once all `RepeatedPtrField`s
     // with non-null arena are owned by the arena.
     return tagged_rep_or_elem_ != nullptr &&
-           PROTOBUF_PREDICT_FALSE(arena_ == nullptr);
+           ABSL_PREDICT_FALSE(arena_ == nullptr);
   }
   void DestroyProtos();  // implemented in the cc file
 

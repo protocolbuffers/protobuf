@@ -27,6 +27,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/internal_visibility.h"
@@ -738,7 +739,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void Erase(int key);
 
   size_t Size() const {
-    return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
   // Similar to std::for_each.
@@ -754,7 +755,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
   KeyValueFunctor ForEach(KeyValueFunctor func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
     }
     return ForEach(flat_begin(), flat_end(), std::move(func));
@@ -763,7 +764,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Applies a functor to the <int, const Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
   KeyValueFunctor ForEach(KeyValueFunctor func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
     }
     return ForEach(flat_begin(), flat_end(), std::move(func));

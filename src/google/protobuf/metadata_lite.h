@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "absl/base/optimization.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 
@@ -63,7 +64,7 @@ class PROTOBUF_EXPORT InternalMetadata {
   }
 
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
-    if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<ContainerBase>()->arena;
     } else {
       return PtrValue<Arena>();
@@ -81,7 +82,7 @@ class PROTOBUF_EXPORT InternalMetadata {
   template <typename T>
   PROTOBUF_NDEBUG_INLINE const T& unknown_fields(
       const T& (*default_instance)()) const {
-    if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<Container<T>>()->unknown_fields;
     } else {
       return default_instance();
@@ -90,7 +91,7 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   template <typename T>
   PROTOBUF_NDEBUG_INLINE T* mutable_unknown_fields() {
-    if (PROTOBUF_PREDICT_TRUE(have_unknown_fields())) {
+    if (ABSL_PREDICT_TRUE(have_unknown_fields())) {
       return &PtrValue<Container<T>>()->unknown_fields;
     } else {
       return mutable_unknown_fields_slow<T>();

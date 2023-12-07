@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 
@@ -473,7 +474,7 @@ void OutOfRangeError(PyObject* arg) {
 
 template<class RangeType, class ValueType>
 bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
-  if (PROTOBUF_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
+  if (ABSL_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
     if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
       // Replace it with the same ValueError as pure python protos instead of
       // the default one.
@@ -482,7 +483,7 @@ bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
     }  // Otherwise propagate existing error.
     return false;
   }
-  if (PROTOBUF_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
+  if (ABSL_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
     OutOfRangeError(arg);
     return false;
   }
@@ -496,7 +497,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   // This definition includes everything with a valid __index__() implementation
   // and shouldn't cast the net too wide.
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
-      PROTOBUF_PREDICT_FALSE(!PyIndex_Check(arg))) {
+      ABSL_PREDICT_FALSE(!PyIndex_Check(arg))) {
     FormatTypeError(arg, "int");
     return false;
   }
@@ -540,7 +541,7 @@ template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
-      PROTOBUF_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
+      ABSL_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
     FormatTypeError(arg, "int, float");
     return false;
   }

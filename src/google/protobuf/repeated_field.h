@@ -913,7 +913,7 @@ inline int CalculateReserveSize(int total_size, int new_size) {
   }
   constexpr int kMaxSizeBeforeClamp =
       (std::numeric_limits<int>::max() - kRepHeaderSize) / 2;
-  if (PROTOBUF_PREDICT_FALSE(total_size > kMaxSizeBeforeClamp)) {
+  if (ABSL_PREDICT_FALSE(total_size > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
   // We want to double the number of bytes, not the number of elements, to try
