@@ -65,6 +65,8 @@ bootstrap_cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:message_value",
+        "//upb:mini_descriptor",
+        "//upb:mini_table",
         "//upb:port",
     ],
 )

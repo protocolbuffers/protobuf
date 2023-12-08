@@ -8,13 +8,20 @@
 #ifndef UPB_REFLECTION_DEF_HPP_
 #define UPB_REFLECTION_DEF_HPP_
 
+#include <stdint.h>
+
 #include <cstring>
 #include <memory>
 #include <string>
-#include <vector>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
@@ -554,9 +561,6 @@ class DefPool {
  private:
   std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
-
-// TODO: This typedef is deprecated. Delete it.
-using SymbolTable = DefPool;
 
 inline FileDefPtr FieldDefPtr::file() const {
   return FileDefPtr(upb_FieldDef_File(ptr_));
