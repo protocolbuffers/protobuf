@@ -9,6 +9,10 @@ syntax = "proto3";
 
 package protobuf_editions_test.proto3;
 
+// copybara:strip_begin(Go opaque API not yet open sourced)
+option go_api_flag = "OPAQUE_V0";
+// copybara:end
+
 message Proto3Implicit {
   int32 int32_field = 1;
 
