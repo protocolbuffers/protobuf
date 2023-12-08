@@ -57,6 +57,7 @@
 #define PROTOBUF_JAVA_VERSION_STRING "3.26.0-dev"
 #define PROTOBUF_PYTHON_VERSION_STRING "4.26.0-dev"
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
