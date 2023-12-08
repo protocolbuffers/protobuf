@@ -3,6 +3,7 @@
 // source: google/protobuf/duration.proto
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
+#import "GPBWellKnownTypes.h"
 #import "GPBDuration.pbobjc.h"
 
 #if GOOGLE_PROTOBUF_OBJC_VERSION < 30007
@@ -38,6 +39,13 @@ static GPBFileDescription GPBDurationRoot_FileDescription = {
   .prefix = "GPB",
   .syntax = GPBFileSyntaxProto3
 };
+
+// This is to help make sure that the GPBWellKnownTypes.* categories get linked and
+// developers do not have to use the `-ObjC` linker flag. More information
+// here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
+__attribute__((used)) static NSString* duration_importCategories () {
+  return GPBWellKnownTypesErrorDomain;
+}
 
 #pragma mark - GPBDuration
 

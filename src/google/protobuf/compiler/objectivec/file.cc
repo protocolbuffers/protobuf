@@ -22,6 +22,8 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -137,6 +139,27 @@ void MakeDescriptors(
                     extension_generators, message_generators,
                     generation_options);
   }
+}
+
+void EmitLinkWKTs(absl::string_view name, io::Printer* p) {
+  absl::string_view::size_type last_slash = name.rfind('/');
+  std::string basename;
+  if (last_slash == absl::string_view::npos) {
+    basename = std::string(name);
+  } else {
+    basename = std::string(name.substr(last_slash + 1));
+  }
+
+  p->Emit({{"basename", StripProto(basename)}},
+          R"objc(
+            // This is to help make sure that the GPBWellKnownTypes.* categories get linked and
+            // developers do not have to use the `-ObjC` linker flag. More information
+            // here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
+            __attribute__((used)) static NSString* $basename$_importCategories () {
+              return GPBWellKnownTypesErrorDomain;
+            }
+          )objc");
+  p->Emit("\n");
 }
 
 void EmitSourceFwdDecls(const absl::btree_set<std::string>& fwd_decls,
@@ -385,6 +408,10 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
     EmitRootImplementation(p, deps_with_extensions);
     EmitFileDescription(p);
 
+    if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
+      EmitLinkWKTs(file_->name(), p);
+    }
+
     for (const auto& generator : enum_generators_) {
       generator->GenerateSource(p);
     }
@@ -395,6 +422,8 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
@@ -416,6 +445,8 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   // Enum implementation uses atomic in the generated code.
   GeneratedFileOptions file_options;
   file_options.extra_system_headers.push_back("stdatomic.h");
@@ -428,6 +459,8 @@ void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   const auto& generator = message_generators_[idx];
 
   absl::btree_set<std::string> fwd_decls;
@@ -485,6 +518,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       break;
     case GeneratedFileType::kSource:
       import_writer.AddRuntimeImport("GPBProtocolBuffers_RuntimeSupport.h");
+      if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
+        import_writer.AddRuntimeImport("GPBWellKnownTypes.h");
+      }
       import_writer.AddFile(file_, header_extension);
       if (HeadersUseForwardDeclarations()) {
         if (generation_options_.generate_minimal_imports) {
