@@ -141,7 +141,7 @@ impl fmt::Debug for SerializedData {
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'a, T> = crate::vtable::RawVTableMutator<'a, T>;
+pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -187,10 +187,10 @@ impl<'msg> MutatorMessageRef<'msg> {
     }
 }
 
-pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
-    _msg_ref: MutatorMessageRef<'a>,
-    val: &'a [u8],
-) -> &'a [u8] {
+pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
+    _msg_ref: MutatorMessageRef<'msg>,
+    val: &'msg [u8],
+) -> &'msg [u8] {
     // Nothing to do, the message manages its own string memory for C++.
     val
 }
@@ -341,14 +341,14 @@ macro_rules! generate_map_with_key_ops_traits {
         paste! {
             $(
                 pub trait [< MapWith $t:camel KeyOps >] {
-                    type Value<'a>: Sized;
+                    type Value<'msg>: Sized;
 
                     fn new_map() -> RawMap;
                     fn clear(m: RawMap);
                     fn size(m: RawMap) -> usize;
                     fn insert(m: RawMap, key: $sized_t, value: Self::Value<'_>) -> bool;
-                    fn get<'a>(m: RawMap, key: $sized_t) -> Option<Self::Value<'a>>;
-                    fn remove<'a>(m: RawMap, key: $sized_t) -> bool;
+                    fn get<'msg>(m: RawMap, key: $sized_t) -> Option<Self::Value<'msg>>;
+                    fn remove(m: RawMap, key: $sized_t) -> bool;
                 }
 
                 impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> Default for MapInner<'msg, $t, V> {
@@ -374,7 +374,7 @@ macro_rules! generate_map_with_key_ops_traits {
                         V::get(self.raw, key)
                     }
 
-                    pub fn remove<'a>(&mut self, key: $sized_t) -> bool {
+                    pub fn remove(&mut self, key: $sized_t) -> bool {
                         V::remove(self.raw, key)
                     }
 
@@ -409,7 +409,7 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
                 fn [< __pb_rust_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
             impl $trait for $t {
-                type Value<'a> = $sized_t;
+                type Value<'msg> = $sized_t;
 
                 fn new_map() -> RawMap {
                     unsafe { [< __pb_rust_Map_ $key_t _ $t _new >]() }
@@ -430,7 +430,7 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
                     true
                 }
 
-                fn get<'a>(m: RawMap, key: $sized_key_t) -> Option<Self::Value<'a>> {
+                fn get<'msg>(m: RawMap, key: $sized_key_t) -> Option<Self::Value<'msg>> {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
                     let found = unsafe { [< __pb_rust_Map_ $key_t _ $t _get >](m, ffi_key, &mut ffi_value) };
@@ -440,7 +440,7 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
                     Some($from_ffi_value(ffi_value))
                 }
 
-                fn remove<'a>(m: RawMap, key: $sized_key_t) -> bool {
+                fn remove(m: RawMap, key: $sized_key_t) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
                     unsafe { [< __pb_rust_Map_ $key_t _ $t _remove >](m, ffi_key, &mut ffi_value) }
@@ -450,11 +450,11 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
     }
 }
 
-fn str_to_ptrlen<'a>(val: impl Into<&'a ProtoStr>) -> PtrAndLen {
+fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
     val.into().as_bytes().into()
 }
 
-fn ptrlen_to_str<'a>(val: PtrAndLen) -> &'a ProtoStr {
+fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
     unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
 }
 
@@ -470,7 +470,7 @@ macro_rules! impl_map_with_key_ops_for_scalar_values {
                     i64, i64, i64, identity, identity, 0i64;
                     u64, u64, u64, identity, identity, 0u64;
                     bool, bool, bool, identity, identity, false;
-                    ProtoStr, &'a ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str, "";
+                    ProtoStr, &'msg ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str, "";
                 );
             )*
         }

@@ -128,15 +128,11 @@ impl ProxiedWithPresence for [u8] {
     type PresentMutData<'msg> = BytesPresentMutData<'msg>;
     type AbsentMutData<'msg> = BytesAbsentMutData<'msg>;
 
-    fn clear_present_field<'a>(
-        present_mutator: Self::PresentMutData<'a>,
-    ) -> Self::AbsentMutData<'a> {
+    fn clear_present_field(present_mutator: Self::PresentMutData<'_>) -> Self::AbsentMutData<'_> {
         present_mutator.clear()
     }
 
-    fn set_absent_to_default<'a>(
-        absent_mutator: Self::AbsentMutData<'a>,
-    ) -> Self::PresentMutData<'a> {
+    fn set_absent_to_default(absent_mutator: Self::AbsentMutData<'_>) -> Self::PresentMutData<'_> {
         absent_mutator.set_absent_to_default()
     }
 }
@@ -185,9 +181,9 @@ impl<'msg> MutProxy<'msg> for BytesMut<'msg> {
 }
 
 impl SettableValue<[u8]> for &'_ [u8] {
-    fn set_on<'a>(self, _private: Private, mutator: Mut<'a, [u8]>)
+    fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, [u8]>)
     where
-        [u8]: 'a,
+        [u8]: 'msg,
     {
         // SAFETY: this is a `bytes` field with no restriction on UTF-8.
         unsafe { mutator.inner.set(self) }

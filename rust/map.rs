@@ -17,27 +17,27 @@ use paste::paste;
 use std::marker::PhantomData;
 
 #[repr(transparent)]
-pub struct MapView<'a, K: ?Sized, V: ?Sized> {
-    inner: MapInner<'a, K, V>,
+pub struct MapView<'msg, K: ?Sized, V: ?Sized> {
+    inner: MapInner<'msg, K, V>,
 }
 
-impl<'a, K: ?Sized, V: ?Sized> MapView<'a, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'a, K, V>) -> Self {
+impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
+    pub fn from_inner(_private: Private, inner: MapInner<'msg, K, V>) -> Self {
         Self { inner }
     }
 }
 
-impl<'a, K: ?Sized, V: ?Sized> Copy for MapView<'a, K, V> {}
-impl<'a, K: ?Sized, V: ?Sized> Clone for MapView<'a, K, V> {
+impl<'msg, K: ?Sized, V: ?Sized> Copy for MapView<'msg, K, V> {}
+impl<'msg, K: ?Sized, V: ?Sized> Clone for MapView<'msg, K, V> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-unsafe impl<'a, K: ?Sized, V: ?Sized> Sync for MapView<'a, K, V> {}
-unsafe impl<'a, K: ?Sized, V: ?Sized> Send for MapView<'a, K, V> {}
+unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapView<'msg, K, V> {}
+unsafe impl<'msg, K: ?Sized, V: ?Sized> Send for MapView<'msg, K, V> {}
 
-impl<'a, K: ?Sized, V: ?Sized> std::fmt::Debug for MapView<'a, K, V> {
+impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapView<'msg, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("MapView")
             .field(&std::any::type_name::<K>())
@@ -47,19 +47,19 @@ impl<'a, K: ?Sized, V: ?Sized> std::fmt::Debug for MapView<'a, K, V> {
 }
 
 #[repr(transparent)]
-pub struct MapMut<'a, K: ?Sized, V: ?Sized> {
-    inner: MapInner<'a, K, V>,
+pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
+    inner: MapInner<'msg, K, V>,
 }
 
-impl<'a, K: ?Sized, V: ?Sized> MapMut<'a, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'a, K, V>) -> Self {
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    pub fn from_inner(_private: Private, inner: MapInner<'msg, K, V>) -> Self {
         Self { inner }
     }
 }
 
-unsafe impl<'a, K: ?Sized, V: ?Sized> Sync for MapMut<'a, K, V> {}
+unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapMut<'msg, K, V> {}
 
-impl<'a, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'a, K, V> {
+impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("MapMut")
             .field(&std::any::type_name::<K>())
@@ -68,14 +68,14 @@ impl<'a, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'a, K, V> {
     }
 }
 
-impl<'a, K: ?Sized, V: ?Sized> std::ops::Deref for MapMut<'a, K, V> {
-    type Target = MapView<'a, K, V>;
+impl<'msg, K: ?Sized, V: ?Sized> std::ops::Deref for MapMut<'msg, K, V> {
+    type Target = MapView<'msg, K, V>;
     fn deref(&self) -> &Self::Target {
         // SAFETY:
-        //   - `Map{View,Mut}<'a, T>` are both `#[repr(transparent)]` over `MapInner<'a,
-        //     T>`.
+        //   - `Map{View,Mut}<'msg, T>` are both `#[repr(transparent)]` over
+        //     `MapInner<'msg, T>`.
         //   - `MapInner` is a type alias for `NonNull`.
-        unsafe { &*(self as *const Self as *const MapView<'a, K, V>) }
+        unsafe { &*(self as *const Self as *const MapView<'msg, K, V>) }
     }
 }
 
@@ -87,11 +87,11 @@ macro_rules! impl_proxied_for_map_keys {
   ($(key_type $t:ty;)*) => {
     paste! { $(
       impl<V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized> Proxied for Map<$t, V>{
-        type View<'a> = MapView<'a, $t, V> where V: 'a;
-        type Mut<'a> = MapMut<'a, $t, V> where V: 'a;
+        type View<'msg> = MapView<'msg, $t, V> where V: 'msg;
+        type Mut<'msg> = MapMut<'msg, $t, V> where V: 'msg;
       }
 
-      impl<'a, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'a> SettableValue<Map<$t, V>> for MapView<'a, $t, V> {
+      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> SettableValue<Map<$t, V>> for MapView<'msg, $t, V> {
         fn set_on<'b>(self, _private: Private, mut mutator: Mut<'b, Map<$t, V>>)
         where
           Map<$t, V>: 'b {
@@ -99,7 +99,7 @@ macro_rules! impl_proxied_for_map_keys {
         }
       }
 
-      impl<'a, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'a> ViewProxy<'a> for MapView<'a, $t, V> {
+      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> ViewProxy<'msg> for MapView<'msg, $t, V> {
         type Proxied = Map<$t, V>;
 
         fn as_view(&self) -> View<'_, Self::Proxied> {
@@ -107,13 +107,13 @@ macro_rules! impl_proxied_for_map_keys {
         }
 
         fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-        where 'a: 'shorter,
+        where 'msg: 'shorter,
         {
             MapView { inner: self.inner }
         }
       }
 
-      impl<'a, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'a> ViewProxy<'a> for MapMut<'a, $t, V> {
+      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> ViewProxy<'msg> for MapMut<'msg, $t, V> {
         type Proxied = Map<$t, V>;
 
         fn as_view(&self) -> View<'_, Self::Proxied> {
@@ -121,19 +121,19 @@ macro_rules! impl_proxied_for_map_keys {
         }
 
         fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-        where 'a: 'shorter,
+        where 'msg: 'shorter,
         {
           *self.into_mut::<'shorter>()
         }
       }
 
-      impl<'a, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'a> MutProxy<'a> for MapMut<'a, $t, V> {
+      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MutProxy<'msg> for MapMut<'msg, $t, V> {
         fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
             MapMut { inner: self.inner }
         }
 
         fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-        where 'a: 'shorter,
+        where 'msg: 'shorter,
         {
             MapMut { inner: self.inner }
         }
@@ -154,7 +154,7 @@ impl_proxied_for_map_keys!(
 macro_rules! impl_scalar_map_keys {
   ($(key_type $t:ty;)*) => {
       paste! { $(
-        impl<'a, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'a> MapView<'a, $t, V> {
+        impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MapView<'msg, $t, V> {
           pub fn get<'b>(&self, key: $t) -> Option<V::Value<'b>> {
             self.inner.get(key)
           }
@@ -168,7 +168,7 @@ macro_rules! impl_scalar_map_keys {
           }
         }
 
-        impl<'a, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'a> MapMut<'a, $t, V> {
+        impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MapMut<'msg, $t, V> {
           pub fn insert(&mut self, key: $t, value: V::Value<'_>) -> bool {
             self.inner.insert(key, value)
           }
@@ -197,8 +197,8 @@ impl_scalar_map_keys!(
   key_type bool;
 );
 
-impl<'a, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'a> MapView<'a, ProtoStr, V> {
-    pub fn get(&self, key: impl Into<&'a ProtoStr>) -> Option<V::Value<'_>> {
+impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapView<'msg, ProtoStr, V> {
+    pub fn get(&self, key: impl Into<&'msg ProtoStr>) -> Option<V::Value<'_>> {
         self.inner.get(key.into())
     }
 
@@ -211,12 +211,12 @@ impl<'a, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'a> MapView<'a, ProtoStr,
     }
 }
 
-impl<'a, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'a> MapMut<'a, ProtoStr, V> {
-    pub fn insert(&mut self, key: impl Into<&'a ProtoStr>, value: V::Value<'_>) -> bool {
+impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapMut<'msg, ProtoStr, V> {
+    pub fn insert(&mut self, key: impl Into<&'msg ProtoStr>, value: V::Value<'_>) -> bool {
         self.inner.insert(key.into(), value)
     }
 
-    pub fn remove(&mut self, key: impl Into<&'a ProtoStr>) -> bool {
+    pub fn remove(&mut self, key: impl Into<&'msg ProtoStr>) -> bool {
         self.inner.remove(key.into())
     }
 

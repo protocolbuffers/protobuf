@@ -217,7 +217,7 @@ impl fmt::Debug for SerializedData {
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'a, T> = crate::vtable::RawVTableMutator<'a, T>;
+pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -277,10 +277,10 @@ impl<'msg> MutatorMessageRef<'msg> {
     }
 }
 
-pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
-    msg_ref: MutatorMessageRef<'a>,
-    val: &'a [u8],
-) -> &'a [u8] {
+pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
+    msg_ref: MutatorMessageRef<'msg>,
+    val: &'msg [u8],
+) -> &'msg [u8] {
     // SAFETY: the alignment of `[u8]` is less than `UPB_MALLOC_ALIGN`.
     let new_alloc = unsafe { msg_ref.arena.alloc(Layout::for_value(val)) };
     debug_assert_eq!(new_alloc.len(), val.len());
@@ -515,7 +515,7 @@ macro_rules! generate_map_key_ops_traits {
         paste! {
             $(
                 pub trait [< MapWith $t:camel KeyOps >] {
-                    type Value<'a>: Sized;
+                    type Value<'msg>: Sized;
 
                     fn new_map(a: RawArena) -> RawMap;
                     fn clear(m: RawMap) {
@@ -525,8 +525,8 @@ macro_rules! generate_map_key_ops_traits {
                         unsafe { upb_Map_Size(m) }
                     }
                     fn insert(m: RawMap, a: RawArena, key: $sized_t, value: Self::Value<'_>) -> bool;
-                    fn get<'a>(m: RawMap, key: $sized_t) -> Option<Self::Value<'a>>;
-                    fn remove<'a>(m: RawMap, key: $sized_t) -> bool;
+                    fn get<'msg>(m: RawMap, key: $sized_t) -> Option<Self::Value<'msg>>;
+                    fn remove(m: RawMap, key: $sized_t) -> bool;
                 }
 
                 impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> MapInner<'msg, $t, V> {
@@ -552,7 +552,7 @@ macro_rules! generate_map_key_ops_traits {
                         V::get(self.raw, key)
                     }
 
-                    pub fn remove<'a>(&mut self, key: $sized_t) -> bool {
+                    pub fn remove(&mut self, key: $sized_t) -> bool {
                         V::remove(self.raw, key)
                     }
 
@@ -578,7 +578,7 @@ macro_rules! impl_scalar_map_key_op_for_scalar_values {
     ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, $trait:ident for $($t:ty, $sized_t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
          $(
             impl $trait for $t {
-                type Value<'a> = $sized_t;
+                type Value<'msg> = $sized_t;
 
                 fn new_map(a: RawArena) -> RawMap {
                     unsafe { upb_Map_New(a, $key_upb_tag, $upb_tag) }
@@ -595,7 +595,7 @@ macro_rules! impl_scalar_map_key_op_for_scalar_values {
                     }
                 }
 
-                fn get<'a>(m: RawMap, key: $key_t) -> Option<Self::Value<'a>> {
+                fn get<'msg>(m: RawMap, key: $key_t) -> Option<Self::Value<'msg>> {
                     let mut val = $msg_val($zero_val);
                     let found = unsafe {
                         upb_Map_Get(m, $key_msg_val(key), &mut val)
@@ -606,7 +606,7 @@ macro_rules! impl_scalar_map_key_op_for_scalar_values {
                     Some($from_msg_val(val))
                 }
 
-                fn remove<'a>(m: RawMap, key: $key_t) -> bool {
+                fn remove(m: RawMap, key: $key_t) -> bool {
                     let mut val = $msg_val($zero_val);
                     unsafe {
                         upb_Map_Delete(m, $key_msg_val(key), &mut val)
@@ -629,11 +629,11 @@ macro_rules! scalar_from_msg {
     };
 }
 
-fn str_to_msg<'a>(val: impl Into<&'a ProtoStr>) -> upb_MessageValue {
+fn str_to_msg<'msg>(val: impl Into<&'msg ProtoStr>) -> upb_MessageValue {
     upb_MessageValue { str_val: val.into().as_bytes().into() }
 }
 
-fn msg_to_str<'a>(msg: upb_MessageValue) -> &'a ProtoStr {
+fn msg_to_str<'msg>(msg: upb_MessageValue) -> &'msg ProtoStr {
     unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
 }
 
@@ -649,7 +649,7 @@ macro_rules! impl_map_key_ops_for_scalar_values {
                     i64, i64, scalar_to_msg!(int64_val), scalar_from_msg!(int64_val), UpbCType::Int64, 0i64;
                     u64, u64, scalar_to_msg!(uint64_val), scalar_from_msg!(uint64_val), UpbCType::UInt64, 0u64;
                     bool, bool, scalar_to_msg!(bool_val), scalar_from_msg!(bool_val), UpbCType::Bool, false;
-                    ProtoStr, &'a ProtoStr, str_to_msg, msg_to_str, UpbCType::String, "";
+                    ProtoStr, &'msg ProtoStr, str_to_msg, msg_to_str, UpbCType::String, "";
                 );
             )*
         }

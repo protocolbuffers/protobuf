@@ -14,28 +14,28 @@ use crate::vtable::{
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 
 #[derive(Debug)]
-pub struct PrimitiveMut<'a, T: ProxiedWithRawVTable> {
-    inner: InnerPrimitiveMut<'a, T>,
+pub struct PrimitiveMut<'msg, T: ProxiedWithRawVTable> {
+    inner: InnerPrimitiveMut<'msg, T>,
 }
 
-impl<'a, T: ProxiedWithRawVTable> PrimitiveMut<'a, T> {
+impl<'msg, T: ProxiedWithRawVTable> PrimitiveMut<'msg, T> {
     #[doc(hidden)]
-    pub fn from_inner(_private: Private, inner: InnerPrimitiveMut<'a, T>) -> Self {
+    pub fn from_inner(_private: Private, inner: InnerPrimitiveMut<'msg, T>) -> Self {
         Self { inner }
     }
 }
 
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for PrimitiveMut<'a, T> {}
+unsafe impl<'msg, T: ProxiedWithRawVTable> Sync for PrimitiveMut<'msg, T> {}
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
       $(
           impl Proxied for $t {
-              type View<'a> = $t;
-              type Mut<'a> = PrimitiveMut<'a, $t>;
+              type View<'msg> = $t;
+              type Mut<'msg> = PrimitiveMut<'msg, $t>;
           }
 
-          impl<'a> ViewProxy<'a> for $t {
+          impl<'msg> ViewProxy<'msg> for $t {
               type Proxied = $t;
 
               fn as_view(&self) -> View<'_, Self::Proxied> {
@@ -47,7 +47,7 @@ macro_rules! impl_singular_primitives {
               }
           }
 
-          impl<'a> PrimitiveMut<'a, $t> {
+          impl<'msg> PrimitiveMut<'msg, $t> {
               pub fn get(&self) -> View<'_, $t> {
                   self.inner.get()
               }
@@ -57,7 +57,7 @@ macro_rules! impl_singular_primitives {
               }
           }
 
-          impl<'a> ViewProxy<'a> for PrimitiveMut<'a, $t> {
+          impl<'msg> ViewProxy<'msg> for PrimitiveMut<'msg, $t> {
               type Proxied = $t;
 
               fn as_view(&self) -> View<'_, Self::Proxied> {
@@ -69,21 +69,21 @@ macro_rules! impl_singular_primitives {
               }
           }
 
-          impl<'a> MutProxy<'a> for PrimitiveMut<'a, $t> {
+          impl<'msg> MutProxy<'msg> for PrimitiveMut<'msg, $t> {
               fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
                   PrimitiveMut { inner: self.inner }
               }
 
               fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-              where 'a: 'shorter,
+              where 'msg: 'shorter,
               {
                   self
               }
           }
 
           impl SettableValue<$t> for $t {
-              fn set_on<'a>(self, _private: Private, mutator: Mut<'a, $t>) where $t: 'a {
-                // SAFETY: the raw mutator is valid for `'a` as enforced by `Mut`
+              fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, $t>) where $t: 'msg {
+                // SAFETY: the raw mutator is valid for `'msg` as enforced by `Mut`
                 unsafe { mutator.inner.set(self) }
               }
           }
@@ -104,8 +104,8 @@ macro_rules! impl_singular_primitives {
           }
 
           impl ProxiedWithPresence for $t {
-            type PresentMutData<'a> = RawVTableOptionalMutatorData<'a, $t>;
-            type AbsentMutData<'a> = RawVTableOptionalMutatorData<'a, $t>;
+            type PresentMutData<'msg> = RawVTableOptionalMutatorData<'msg, $t>;
+            type AbsentMutData<'msg> = RawVTableOptionalMutatorData<'msg, $t>;
 
             fn clear_present_field(
                 present_mutator: Self::PresentMutData<'_>,
