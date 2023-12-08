@@ -2739,6 +2739,7 @@ FileDescriptor::FileDescriptor() {}
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   CopyHeadingTo(proto);
 
+
   for (int i = 0; i < dependency_count(); i++) {
     proto->add_dependency(dependency(i)->name());
   }
