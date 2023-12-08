@@ -338,7 +338,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {
   switch (function) {
     case GeneratorFunction::kMergeFrom:
-      return !should_split();
+      return true;
   }
   return false;
 }
@@ -354,8 +354,12 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
         )cc");
   } else if (should_split()) {
     p->Emit(
-        "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
-        "    from._internal_$name$());\n");
+        R"cc(
+          if (_this->$field_$ == nullptr) {
+            _this->$field_$ = from.$field_$->New(arena);
+          }
+          _this->$field_$->MergeFrom(*from.$field_$);
+        )cc");
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
     // where people assign root values to child values or vice versa which
@@ -850,20 +854,17 @@ void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  // TODO: experiment with simplifying this to be
-  // `if (!from.empty()) { body(); }` for both split and non-split cases.
-  auto body = [&] {
+  if (!should_split()) {
     p->Emit(R"cc(
       _this->_internal_mutable$_weak$_$name$()->MergeFrom(
           from._internal$_weak$_$name$());
     )cc");
-  };
-  if (!should_split()) {
-    body();
   } else {
-    p->Emit({{"body", body}}, R"cc(
+    p->Emit(R"cc(
       if (!from.$field_$.IsDefault()) {
-        $body$;
+        ::$proto_ns$::MessageLite::MergeRepeatedPtrFieldGeneric(
+            *_this->_internal_mutable$_weak$_$name$(),
+            from._internal$_weak$_$name$());
       }
     )cc");
   }

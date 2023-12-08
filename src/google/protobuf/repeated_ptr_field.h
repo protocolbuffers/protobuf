@@ -62,16 +62,10 @@ class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 
 
-}  // namespace internal
-
-namespace internal {
 template <typename It>
 class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
-}  // namespace internal
-
-namespace internal {
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -1231,6 +1225,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   using DestructorSkippable_ = void;
 
   friend class Arena;
+  friend class MessageLite;
 
   friend class internal::TcParser;
 

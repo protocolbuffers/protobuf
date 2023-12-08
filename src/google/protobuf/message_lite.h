@@ -514,6 +514,16 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
+  // Use the generic base class implementation to save on binary size for
+  // callers that don't need the performance of the full CopyConstruct.
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static void MergeRepeatedPtrFieldGeneric(
+      T& lhs, const T& rhs) {
+    static_assert(std::is_base_of<MessageLite, typename T::value_type>::value,
+                  "");
+    lhs.RepeatedPtrFieldBase::template MergeFrom<MessageLite>(rhs);
+  }
+
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
