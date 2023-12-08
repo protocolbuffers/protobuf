@@ -658,6 +658,66 @@ TEST_F(ParseMessageTest, FieldOptionsSupportLargeDecimalLiteral) {
       "}");
 }
 
+TEST_F(ParseMessageTest, FieldOptionsSupportInfAndNan) {
+  // decimal integer literal > uint64 max
+  ExpectParsesTo(
+      "import \"google/protobuf/descriptor.proto\";\n"
+      "extend google.protobuf.FieldOptions {\n"
+      "  optional double f = 10101;\n"
+      "}\n"
+      "message TestMessage {\n"
+      "  optional double a = 1 [(f) = inf];\n"
+      "  optional double b = 2 [(f) = -inf];\n"
+      "  optional double c = 3 [(f) = nan];\n"
+      "  optional double d = 4 [(f) = -nan];\n"
+      "}\n",
+
+      "dependency: \"google/protobuf/descriptor.proto\""
+      "extension {"
+      "  name: \"f\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 10101"
+      "  extendee: \"google.protobuf.FieldOptions\""
+      "}"
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field {"
+      "    name: \"a\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 1"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        identifier_value: \"inf\""
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"b\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 2"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: -infinity"
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"c\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 3"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        identifier_value: \"nan\""
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"d\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 4"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: nan"
+      "      }"
+      "    }"
+      "  }"
+      "}");
+}
+
 TEST_F(ParseMessageTest, Oneof) {
   ExpectParsesTo(
       "message TestMessage {\n"
