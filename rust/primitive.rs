@@ -55,12 +55,6 @@ macro_rules! impl_singular_primitives {
               pub fn set(&mut self, val: impl SettableValue<$t>) {
                   val.set_on(Private, self.as_mut());
               }
-
-              pub fn clear(&mut self) {
-                  // The default value for a boolean field is false and 0 for numerical types. It
-                  // matches the Rust default values for corresponding types. Let's use this fact.
-                  SettableValue::<$t>::set_on(<$t>::default(), Private, MutProxy::as_mut(self));
-              }
           }
 
           impl<'a> ViewProxy<'a> for PrimitiveMut<'a, $t> {

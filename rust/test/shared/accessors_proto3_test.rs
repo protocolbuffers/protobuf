@@ -23,7 +23,7 @@ fn test_fixed32_accessors() {
     assert_that!(msg.optional_fixed32_mut().get(), eq(42));
     assert_that!(msg.optional_fixed32(), eq(42));
 
-    msg.optional_fixed32_mut().clear();
+    msg.optional_fixed32_mut().set(u32::default());
     assert_that!(msg.optional_fixed32(), eq(0));
     assert_that!(msg.optional_fixed32_mut().get(), eq(0));
 }
@@ -38,7 +38,7 @@ fn test_bool_accessors() {
     assert_that!(msg.optional_bool(), eq(true));
     assert_that!(msg.optional_bool_mut().get(), eq(true));
 
-    msg.optional_bool_mut().clear();
+    msg.optional_bool_mut().set(bool::default());
     assert_that!(msg.optional_bool(), eq(false));
     assert_that!(msg.optional_bool_mut().get(), eq(false));
 }
