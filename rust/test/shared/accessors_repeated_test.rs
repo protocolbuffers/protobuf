@@ -27,12 +27,9 @@ macro_rules! generate_repeated_numeric_test {
               mutator.push(1 as $t);
 
               mutator.push(3 as $t);
-              assert_that!(mutator.get_mut(2).is_some(), eq(true));
-              let mut mut_elem = mutator.get_mut(2).unwrap();
-              mut_elem.set(4 as $t);
-              assert_that!(mut_elem.get(), eq(4 as $t));
-              mut_elem.clear();
-              assert_that!(mut_elem.get(), eq(0 as $t));
+              mutator.set(2, 4 as $t);
+              assert_that!(mutator.get(2), some(eq(4 as $t)));
+              mutator.set(2, 0 as $t);
 
               assert_that!(
                   mutator.iter().collect::<Vec<_>>(),
@@ -43,8 +40,8 @@ macro_rules! generate_repeated_numeric_test {
                   eq(vec![2 as $t, 1 as $t, 0 as $t])
               );
 
-              for mut mutable_elem in msg.[<repeated_ $field _mut >]() {
-                  mutable_elem.set(0 as $t);
+              for i in 0..mutator.len() {
+                  mutator.set(i, 0 as $t);
               }
               assert_that!(
                   msg.[<repeated_ $field _mut >]().iter().all(|v| v == (0 as $t)),
@@ -96,18 +93,16 @@ fn test_repeated_bool_accessors() {
     mutator.push(true);
 
     mutator.push(false);
-    assert_that!(mutator.get_mut(2), pat!(Some(_)));
-    let mut mut_elem = mutator.get_mut(2).unwrap();
-    mut_elem.set(true);
-    assert_that!(mut_elem.get(), eq(true));
-    mut_elem.clear();
-    assert_that!(mut_elem.get(), eq(false));
+    mutator.set(2, true);
+    assert_that!(mutator.get(2), some(eq(true)));
+    mutator.set(2, false);
+    assert_that!(mutator.get(2), some(eq(false)));
 
     assert_that!(mutator.iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
     assert_that!((*mutator).into_iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
 
-    for mut mutable_elem in msg.repeated_bool_mut() {
-        mutable_elem.set(false);
+    for i in 0..mutator.len() {
+        mutator.set(i, false);
     }
     assert_that!(msg.repeated_bool().iter().all(|v| v), eq(false));
 }

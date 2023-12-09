@@ -7,7 +7,6 @@
 
 use crate::__internal::Private;
 use crate::__runtime::InnerPrimitiveMut;
-use crate::repeated::RepeatedMut;
 use crate::vtable::{
     PrimitiveOptionalMutVTable, PrimitiveVTable, ProxiedWithRawOptionalVTable,
     ProxiedWithRawVTable, RawVTableOptionalMutatorData,
@@ -15,31 +14,18 @@ use crate::vtable::{
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 
 #[derive(Debug)]
-pub struct SingularPrimitiveMut<'a, T: ProxiedWithRawVTable> {
+pub struct PrimitiveMut<'a, T: ProxiedWithRawVTable> {
     inner: InnerPrimitiveMut<'a, T>,
 }
 
-#[derive(Debug)]
-pub enum PrimitiveMut<'a, T: ProxiedWithRawVTable> {
-    Singular(SingularPrimitiveMut<'a, T>),
-    Repeated(RepeatedMut<'a, T>, usize),
-}
-
 impl<'a, T: ProxiedWithRawVTable> PrimitiveMut<'a, T> {
-    #[doc(hidden)]
-    pub fn from_singular(_private: Private, inner: InnerPrimitiveMut<'a, T>) -> Self {
-        PrimitiveMut::Singular(SingularPrimitiveMut::from_inner(_private, inner))
-    }
-}
-
-impl<'a, T: ProxiedWithRawVTable> SingularPrimitiveMut<'a, T> {
     #[doc(hidden)]
     pub fn from_inner(_private: Private, inner: InnerPrimitiveMut<'a, T>) -> Self {
         Self { inner }
     }
 }
 
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for SingularPrimitiveMut<'a, T> {}
+unsafe impl<'a, T: ProxiedWithRawVTable> Sync for PrimitiveMut<'a, T> {}
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
@@ -63,14 +49,7 @@ macro_rules! impl_singular_primitives {
 
           impl<'a> PrimitiveMut<'a, $t> {
               pub fn get(&self) -> View<'_, $t> {
-                  match self {
-                      PrimitiveMut::Singular(s) => {
-                          s.get()
-                      }
-                      PrimitiveMut::Repeated(r, i) => {
-                          r.get().get(*i).unwrap()
-                      }
-                  }
+                  self.inner.get()
               }
 
               pub fn set(&mut self, val: impl SettableValue<$t>) {
@@ -98,14 +77,7 @@ macro_rules! impl_singular_primitives {
 
           impl<'a> MutProxy<'a> for PrimitiveMut<'a, $t> {
               fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-                  match self {
-                      PrimitiveMut::Singular(s) => {
-                          PrimitiveMut::Singular(s.as_mut())
-                      }
-                      PrimitiveMut::Repeated(r, i) => {
-                          PrimitiveMut::Repeated(r.as_mut(), *i)
-                      }
-                  }
+                  PrimitiveMut { inner: self.inner }
               }
 
               fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
@@ -117,23 +89,8 @@ macro_rules! impl_singular_primitives {
 
           impl SettableValue<$t> for $t {
               fn set_on<'a>(self, _private: Private, mutator: Mut<'a, $t>) where $t: 'a {
-                match mutator {
-                  PrimitiveMut::Singular(s) => {
-                      unsafe { (s.inner).set(self) };
-                  }
-                  PrimitiveMut::Repeated(mut r, i) => {
-                      r.set(i, self);
-                  }
-                }
-              }
-          }
-
-          impl<'a> SingularPrimitiveMut<'a, $t> {
-              pub fn get(&self) -> $t {
-                  self.inner.get()
-              }
-              pub fn as_mut(&mut self) -> SingularPrimitiveMut<'_, $t> {
-                  SingularPrimitiveMut::from_inner(Private, self.inner)
+                // SAFETY: the raw mutator is valid for `'a` as enforced by `Mut`
+                unsafe { mutator.inner.set(self) }
               }
           }
 
@@ -148,7 +105,7 @@ macro_rules! impl_singular_primitives {
             }
 
             fn make_mut(_private: Private, inner: InnerPrimitiveMut<'_, Self>) -> Mut<'_, Self> {
-                PrimitiveMut::Singular(SingularPrimitiveMut::from_inner(Private, inner))
+                PrimitiveMut::from_inner(Private, inner)
             }
           }
 

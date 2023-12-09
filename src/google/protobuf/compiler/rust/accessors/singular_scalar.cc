@@ -98,7 +98,7 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                         $setter_thunk$,
                       );
 
-                      $pb$::PrimitiveMut::from_singular(
+                      $pb$::PrimitiveMut::from_inner(
                         $pbi$::Private,
                         unsafe {
                           $pbi$::RawVTableMutator::new(

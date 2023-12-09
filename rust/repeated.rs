@@ -15,7 +15,6 @@ use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::{Private, RawRepeatedField},
     __runtime::{RepeatedField, RepeatedFieldInner},
-    primitive::PrimitiveMut,
     vtable::ProxiedWithRawVTable,
 };
 
@@ -80,11 +79,6 @@ impl<'a, T> std::ops::Deref for RepeatedMut<'a, T> {
         //   - `RepeatedField` is a type alias for `NonNull`.
         unsafe { &*(self as *const Self as *const RepeatedView<'a, T>) }
     }
-}
-
-pub struct RepeatedFieldIterMut<'a, T> {
-    inner: RepeatedMut<'a, T>,
-    current_index: usize,
 }
 
 pub struct Repeated<T>(PhantomData<T>);
@@ -167,17 +161,8 @@ macro_rules! impl_repeated_primitives {
                 pub fn set(&mut self, index: usize, val: $t) {
                     self.inner.set(index, val)
                 }
-                pub fn get_mut(&mut self, index: usize) -> Option<Mut<'_, $t>> {
-                    if index >= self.len() {
-                        return None;
-                    }
-                    Some(PrimitiveMut::Repeated(self.as_mut(), index))
-                }
                 pub fn iter(&self) -> RepeatedFieldIter<'_, $t> {
                     self.as_view().into_iter()
-                }
-                pub fn iter_mut(&mut self) -> RepeatedFieldIterMut<'_, $t> {
-                    self.as_mut().into_iter()
                 }
                 pub fn copy_from(&mut self, src: RepeatedView<'_, $t>) {
                     self.inner.copy_from(&src.inner);
@@ -200,32 +185,6 @@ macro_rules! impl_repeated_primitives {
                 type IntoIter = RepeatedFieldIter<'a, $t>;
                 fn into_iter(self) -> Self::IntoIter {
                     RepeatedFieldIter { inner: self.inner, current_index: 0 }
-                }
-            }
-
-            impl <'a> std::iter::Iterator for RepeatedFieldIterMut<'a, $t> {
-                type Item = Mut<'a, $t>;
-                fn next(&mut self) -> Option<Self::Item> {
-                    if self.current_index >= self.inner.len() {
-                        return None;
-                    }
-                    let elem = PrimitiveMut::Repeated(
-                        // While this appears to allow mutable aliasing
-                        // (multiple `Self::Item`s can co-exist), each `Item`
-                        // only references a specific unique index.
-                        RepeatedMut{ inner: self.inner.inner },
-                        self.current_index,
-                    );
-                    self.current_index += 1;
-                    Some(elem)
-                }
-            }
-
-            impl<'a> std::iter::IntoIterator for RepeatedMut<'a, $t> {
-                type Item = Mut<'a, $t>;
-                type IntoIter = RepeatedFieldIterMut<'a, $t>;
-                fn into_iter(self) -> Self::IntoIter {
-                    RepeatedFieldIterMut { inner: self, current_index: 0 }
                 }
             }
         )*
