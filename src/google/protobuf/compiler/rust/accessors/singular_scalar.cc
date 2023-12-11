@@ -61,6 +61,12 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                     }
                   }
                 )rs");
+             } else {
+               field.Emit({}, R"rs(
+                 pub fn r#$field$_set(&mut self, val: $Scalar$) {
+                   unsafe { $setter_thunk$(self.inner.msg, val) }
+                 }
+               )rs");
              }
            }},
           {"field_mutator_getter",
