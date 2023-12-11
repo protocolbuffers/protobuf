@@ -80,6 +80,7 @@ fn test_nested_muts() {
             bool(): eq(false)
         })
     );
+    assert_that!(inner_msg.string_mut().get(), eq(""));
 
     set_and_test_mut!(inner_msg =>
         double_mut, 543.21;
@@ -93,9 +94,9 @@ fn test_nested_muts() {
         fixed32_mut, 77;
         fixed64_mut, 999;
         bool_mut, true;
-
+        string_mut, "hi";
     );
-    // TODO: add mutation tests for strings and bytes
+    // TODO: add mutation test for bytes
 }
 
 #[test]

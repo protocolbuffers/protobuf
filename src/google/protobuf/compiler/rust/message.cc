@@ -172,6 +172,7 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
   // If we're dealing with a Mut, the getter must be supplied
   // self.inner.msg() whereas a View has to be supplied self.msg
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
+
   if (fieldType == FieldDescriptor::TYPE_MESSAGE) {
     Context<Descriptor> d = field.WithDesc(field.desc().message_type());
     // TODO: support messages which are defined in other crates.
@@ -217,18 +218,44 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
 
   auto rsType = PrimitiveRsTypeName(field.desc());
   if (fieldType == FieldDescriptor::TYPE_STRING) {
-    field.Emit(
-        {
-            {"field", fieldName},
-            {"self", self},
-            {"getter_thunk", getter_thunk},
-            {"RsType", rsType},
-        },
-        R"rs(
-              pub fn r#$field$(&self) -> &$RsType$ {
+    field.Emit({{"field", fieldName},
+                {"self", self},
+                {"getter_thunk", getter_thunk},
+                {"setter_thunk", setter_thunk},
+                {"RsType", rsType},
+                {"maybe_mutator",
+                 [&] {
+                   if (is_mut) {
+                     field.Emit({}, R"rs(
+                    pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
+                       static VTABLE: $pbi$::BytesMutVTable = 
+                        $pbi$::BytesMutVTable::new(
+                          $pbi$::Private,
+                          $getter_thunk$,
+                          $setter_thunk$,
+                        );
+
+                       unsafe {
+                        <$pb$::Mut<$RsType$>>::from_inner(
+                          $pbi$::Private,
+                          $pbi$::RawVTableMutator::new(
+                            $pbi$::Private,
+                            self.inner,
+                            &VTABLE,
+                           )
+                        )
+                      }
+                    }
+                    )rs");
+                   }
+                 }}},
+               R"rs(
+              pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
                 let s = unsafe { $getter_thunk$($self$).as_ref() };
                 unsafe { __pb::ProtoStr::from_utf8_unchecked(s) }
               }
+
+              $maybe_mutator$
             )rs");
   } else if (fieldType == FieldDescriptor::TYPE_BYTES) {
     field.Emit(
@@ -239,7 +266,7 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
             {"RsType", rsType},
         },
         R"rs(
-              pub fn r#$field$(&self) -> &$RsType$ {
+              pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
                 unsafe { $getter_thunk$($self$).as_ref() }
               }
             )rs");
@@ -275,7 +302,7 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                    }
                  }}},
                R"rs(
-            pub fn r#$field$(&self) -> $RsType$ {
+            pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
               unsafe { $getter_thunk$($self$) }
             }
 
