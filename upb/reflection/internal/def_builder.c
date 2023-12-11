@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "upb/base/internal/log2.h"
+#include "upb/mem/alloc.h"
 #include "upb/message/copy.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
@@ -116,15 +117,15 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
   if (sym.size == 0) goto notfound;
   upb_value v;
   if (sym.data[0] == '.') {
-    /* Symbols starting with '.' are absolute, so we do a single lookup.
-     * Slice to omit the leading '.' */
+    // Symbols starting with '.' are absolute, so we do a single lookup.
+    // Slice to omit the leading '.'
     if (!_upb_DefPool_LookupSym(ctx->symtab, sym.data + 1, sym.size - 1, &v)) {
       goto notfound;
     }
   } else {
-    /* Remove components from base until we find an entry or run out. */
+    // Remove components from base until we find an entry or run out.
     size_t baselen = base ? strlen(base) : 0;
-    char* tmp = malloc(sym.size + baselen + 1);
+    char* tmp = upb_gmalloc(sym.size + baselen + 1);
     while (1) {
       char* p = tmp;
       if (baselen) {
@@ -138,11 +139,11 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
         break;
       }
       if (!remove_component(tmp, &baselen)) {
-        free(tmp);
+        upb_gfree(tmp);
         goto notfound;
       }
     }
-    free(tmp);
+    upb_gfree(tmp);
   }
 
   *type = _upb_DefType_Type(v);

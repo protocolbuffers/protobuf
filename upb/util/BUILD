@@ -98,6 +98,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
+        "//upb:mem",
         "//upb:message",
         "//upb:port",
         "//upb:reflection",
@@ -149,6 +150,7 @@ cc_library(
     deps = [
         "//upb:base",
         "//upb:eps_copy_input_stream",
+        "//upb:mem",
         "//upb:port",
         "//upb:wire_reader",
         "//upb:wire_types",
