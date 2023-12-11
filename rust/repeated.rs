@@ -19,22 +19,22 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
-pub struct RepeatedFieldRef<'a> {
+pub struct RepeatedFieldRef<'msg> {
     pub repeated_field: RawRepeatedField,
-    pub _phantom: PhantomData<&'a mut ()>,
+    pub _phantom: PhantomData<&'msg mut ()>,
 }
 
-unsafe impl<'a> Send for RepeatedFieldRef<'a> {}
-unsafe impl<'a> Sync for RepeatedFieldRef<'a> {}
+unsafe impl<'msg> Send for RepeatedFieldRef<'msg> {}
+unsafe impl<'msg> Sync for RepeatedFieldRef<'msg> {}
 
 #[derive(Clone, Copy)]
 #[repr(transparent)]
-pub struct RepeatedView<'a, T: ?Sized> {
-    inner: RepeatedField<'a, T>,
+pub struct RepeatedView<'msg, T: ?Sized> {
+    inner: RepeatedField<'msg, T>,
 }
 
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for RepeatedView<'a, T> {}
-unsafe impl<'a, T: ProxiedWithRawVTable> Send for RepeatedView<'a, T> {}
+unsafe impl<'msg, T: ProxiedWithRawVTable> Sync for RepeatedView<'msg, T> {}
+unsafe impl<'msg, T: ProxiedWithRawVTable> Send for RepeatedView<'msg, T> {}
 
 impl<'msg, T: ?Sized> RepeatedView<'msg, T> {
     pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
@@ -42,12 +42,12 @@ impl<'msg, T: ?Sized> RepeatedView<'msg, T> {
     }
 }
 
-pub struct RepeatedFieldIter<'a, T> {
-    inner: RepeatedField<'a, T>,
+pub struct RepeatedFieldIter<'msg, T> {
+    inner: RepeatedField<'msg, T>,
     current_index: usize,
 }
 
-impl<'a, T> std::fmt::Debug for RepeatedView<'a, T> {
+impl<'msg, T> std::fmt::Debug for RepeatedView<'msg, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("RepeatedView").finish()
     }
@@ -55,11 +55,11 @@ impl<'a, T> std::fmt::Debug for RepeatedView<'a, T> {
 
 #[repr(transparent)]
 #[derive(Debug)]
-pub struct RepeatedMut<'a, T: ?Sized> {
-    inner: RepeatedField<'a, T>,
+pub struct RepeatedMut<'msg, T: ?Sized> {
+    inner: RepeatedField<'msg, T>,
 }
 
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for RepeatedMut<'a, T> {}
+unsafe impl<'msg, T: ProxiedWithRawVTable> Sync for RepeatedMut<'msg, T> {}
 
 impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
     pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
@@ -70,14 +70,14 @@ impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
     }
 }
 
-impl<'a, T> std::ops::Deref for RepeatedMut<'a, T> {
-    type Target = RepeatedView<'a, T>;
+impl<'msg, T> std::ops::Deref for RepeatedMut<'msg, T> {
+    type Target = RepeatedView<'msg, T>;
     fn deref(&self) -> &Self::Target {
         // SAFETY:
-        //   - `Repeated{View,Mut}<'a, T>` are both `#[repr(transparent)]` over
-        //     `RepeatedField<'a, T>`.
+        //   - `Repeated{View,Mut}<'msg, T>` are both `#[repr(transparent)]` over
+        //     `RepeatedField<'msg, T>`.
         //   - `RepeatedField` is a type alias for `NonNull`.
-        unsafe { &*(self as *const Self as *const RepeatedView<'a, T>) }
+        unsafe { &*(self as *const Self as *const RepeatedView<'msg, T>) }
     }
 }
 
@@ -87,11 +87,11 @@ macro_rules! impl_repeated_primitives {
     ($($t:ty),*) => {
         $(
             impl Proxied for Repeated<$t> {
-                type View<'a> = RepeatedView<'a, $t>;
-                type Mut<'a> = RepeatedMut<'a, $t>;
+                type View<'msg> = RepeatedView<'msg, $t>;
+                type Mut<'msg> = RepeatedMut<'msg, $t>;
             }
 
-            impl<'a> ViewProxy<'a> for RepeatedView<'a, $t> {
+            impl<'msg> ViewProxy<'msg> for RepeatedView<'msg, $t> {
                 type Proxied = Repeated<$t>;
 
                 fn as_view(&self) -> View<'_, Self::Proxied> {
@@ -99,13 +99,13 @@ macro_rules! impl_repeated_primitives {
                 }
 
                 fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-                where 'a: 'shorter,
+                where 'msg: 'shorter,
                 {
                     RepeatedView { inner: self.inner }
                 }
             }
 
-            impl<'a> ViewProxy<'a> for RepeatedMut<'a, $t> {
+            impl<'msg> ViewProxy<'msg> for RepeatedMut<'msg, $t> {
                 type Proxied = Repeated<$t>;
 
                 fn as_view(&self) -> View<'_, Self::Proxied> {
@@ -113,25 +113,25 @@ macro_rules! impl_repeated_primitives {
                 }
 
                 fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-                where 'a: 'shorter,
+                where 'msg: 'shorter,
                 {
                     *self.into_mut::<'shorter>()
                 }
             }
 
-            impl<'a> MutProxy<'a> for RepeatedMut<'a, $t> {
+            impl<'msg> MutProxy<'msg> for RepeatedMut<'msg, $t> {
                 fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
                     RepeatedMut { inner: self.inner }
                 }
 
                 fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-                where 'a: 'shorter,
+                where 'msg: 'shorter,
                 {
                     RepeatedMut { inner: self.inner }
                 }
             }
 
-            impl <'a> SettableValue<Repeated<$t>> for RepeatedView<'a, $t> {
+            impl <'msg> SettableValue<Repeated<$t>> for RepeatedView<'msg, $t> {
                 fn set_on<'b> (self, _private: Private, mut mutator: Mut<'b, Repeated<$t>>)
                 where
                     Repeated<$t>: 'b {
@@ -139,7 +139,7 @@ macro_rules! impl_repeated_primitives {
                 }
             }
 
-            impl<'a> RepeatedView<'a, $t> {
+            impl<'msg> RepeatedView<'msg, $t> {
                 pub fn len(&self) -> usize {
                     self.inner.len()
                 }
@@ -154,7 +154,7 @@ macro_rules! impl_repeated_primitives {
                 }
             }
 
-            impl<'a> RepeatedMut<'a, $t> {
+            impl<'msg> RepeatedMut<'msg, $t> {
                 pub fn push(&mut self, val: $t) {
                     self.inner.push(val)
                 }
@@ -169,7 +169,7 @@ macro_rules! impl_repeated_primitives {
                 }
             }
 
-            impl<'a> std::iter::Iterator for RepeatedFieldIter<'a, $t> {
+            impl<'msg> std::iter::Iterator for RepeatedFieldIter<'msg, $t> {
                 type Item = $t;
                 fn next(&mut self) -> Option<Self::Item> {
                     let val = self.inner.get(self.current_index);
@@ -180,9 +180,9 @@ macro_rules! impl_repeated_primitives {
                 }
             }
 
-            impl<'a> std::iter::IntoIterator for RepeatedView<'a, $t> {
+            impl<'msg> std::iter::IntoIterator for RepeatedView<'msg, $t> {
                 type Item = $t;
-                type IntoIter = RepeatedFieldIter<'a, $t>;
+                type IntoIter = RepeatedFieldIter<'msg, $t>;
                 fn into_iter(self) -> Self::IntoIter {
                     RepeatedFieldIter { inner: self.inner, current_index: 0 }
                 }
