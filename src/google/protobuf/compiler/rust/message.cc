@@ -163,37 +163,142 @@ void MessageDrop(Context<Descriptor> msg) {
   )rs");
 }
 
-// TODO: deferring on strings and bytes for now, eventually this
-// check will go away as we support more than just simple scalars
-bool IsSimpleScalar(FieldDescriptor::Type type) {
-  return type == FieldDescriptor::TYPE_DOUBLE ||
-         type == FieldDescriptor::TYPE_FLOAT ||
-         type == FieldDescriptor::TYPE_INT32 ||
-         type == FieldDescriptor::TYPE_INT64 ||
-         type == FieldDescriptor::TYPE_UINT32 ||
-         type == FieldDescriptor::TYPE_UINT64 ||
-         type == FieldDescriptor::TYPE_SINT32 ||
-         type == FieldDescriptor::TYPE_SINT64 ||
-         type == FieldDescriptor::TYPE_FIXED32 ||
-         type == FieldDescriptor::TYPE_FIXED64 ||
-         type == FieldDescriptor::TYPE_SFIXED32 ||
-         type == FieldDescriptor::TYPE_SFIXED64 ||
-         type == FieldDescriptor::TYPE_BOOL;
+void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
+  auto fieldName = field.desc().name();
+  auto fieldType = field.desc().type();
+  auto getter_thunk = Thunk(field, "get");
+  auto setter_thunk = Thunk(field, "set");
+  auto clearer_thunk = Thunk(field, "clear");
+  // If we're dealing with a Mut, the getter must be supplied
+  // self.inner.msg() whereas a View has to be supplied self.msg
+  auto self = is_mut ? "self.inner.msg()" : "self.msg";
+  if (fieldType == FieldDescriptor::TYPE_MESSAGE) {
+    Context<Descriptor> d = field.WithDesc(field.desc().message_type());
+    // TODO: support messages which are defined in other crates.
+    if (!IsInCurrentlyGeneratingCrate(d)) {
+      return;
+    }
+    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
+    field.Emit(
+        {
+            {"prefix", prefix},
+            {"field", fieldName},
+            {"self", self},
+            {"getter_thunk", getter_thunk},
+            // TODO: dedupe with singular_message.cc
+            {
+                "view_body",
+                [&] {
+                  if (field.is_upb()) {
+                    field.Emit({}, R"rs(
+                      let submsg = unsafe { $getter_thunk$($self$) };
+                      match submsg {
+                        None => $prefix$View::new($pbi$::Private,
+                          $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
+                        Some(field) => $prefix$View::new($pbi$::Private, field),
+                      }
+                )rs");
+                  } else {
+                    field.Emit({}, R"rs(
+                      let submsg = unsafe { $getter_thunk$($self$) };
+                      $prefix$View::new($pbi$::Private, submsg)
+                )rs");
+                  }
+                },
+            },
+        },
+        R"rs(
+              pub fn r#$field$(&self) -> $prefix$View {
+                $view_body$
+              }
+            )rs");
+    return;
+  }
+
+  auto rsType = PrimitiveRsTypeName(field.desc());
+  if (fieldType == FieldDescriptor::TYPE_STRING) {
+    field.Emit(
+        {
+            {"field", fieldName},
+            {"self", self},
+            {"getter_thunk", getter_thunk},
+            {"RsType", rsType},
+        },
+        R"rs(
+              pub fn r#$field$(&self) -> &$RsType$ {
+                let s = unsafe { $getter_thunk$($self$).as_ref() };
+                unsafe { __pb::ProtoStr::from_utf8_unchecked(s) }
+              }
+            )rs");
+  } else if (fieldType == FieldDescriptor::TYPE_BYTES) {
+    field.Emit(
+        {
+            {"field", fieldName},
+            {"self", self},
+            {"getter_thunk", getter_thunk},
+            {"RsType", rsType},
+        },
+        R"rs(
+              pub fn r#$field$(&self) -> &$RsType$ {
+                unsafe { $getter_thunk$($self$).as_ref() }
+              }
+            )rs");
+  } else {
+    field.Emit({{"field", fieldName},
+                {"getter_thunk", getter_thunk},
+                {"setter_thunk", setter_thunk},
+                {"clearer_thunk", clearer_thunk},
+                {"self", self},
+                {"RsType", rsType},
+                {"maybe_mutator",
+                 [&] {
+                   // TODO: once the rust public api is accessible,
+                   // by tooling, ensure that this only appears for the
+                   // mutational pathway
+                   if (is_mut && fieldType) {
+                     field.Emit({}, R"rs(
+                    pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
+                      static VTABLE: $pbi$::PrimitiveVTable<$RsType$> =
+                        $pbi$::PrimitiveVTable::new(
+                          $pbi$::Private,
+                          $getter_thunk$,
+                          $setter_thunk$);
+                      $pb$::PrimitiveMut::from_inner(
+                        $pbi$::Private,
+                        unsafe {
+                          $pbi$::RawVTableMutator::new($pbi$::Private,
+                          self.inner,
+                          &VTABLE)
+                        })
+                    }
+                    )rs");
+                   }
+                 }}},
+               R"rs(
+            pub fn r#$field$(&self) -> $RsType$ {
+              unsafe { $getter_thunk$($self$) }
+            }
+
+            $maybe_mutator$
+          )rs");
+  }
 }
 
-void GenerateSubView(Context<FieldDescriptor> field) {
-  field.Emit(
-      {
-          {"field", field.desc().name()},
-          {"getter_thunk", Thunk(field, "get")},
-          {"Scalar", PrimitiveRsTypeName(field.desc())},
-      },
-      R"rs(
-      pub fn r#$field$(&self) -> $Scalar$ { unsafe {
-        $getter_thunk$(self.msg)
-      } }
-    )rs");
+void AccessorsForViewOrMut(Context<Descriptor> msg, bool is_mut) {
+  for (int i = 0; i < msg.desc().field_count(); ++i) {
+    auto field = msg.WithDesc(*msg.desc().field(i));
+    if (field.desc().is_repeated()) continue;
+    // TODO - add cord support
+    if (field.desc().options().has_ctype()) continue;
+    // TODO
+    if (field.desc().type() == FieldDescriptor::TYPE_ENUM ||
+        field.desc().type() == FieldDescriptor::TYPE_GROUP)
+      continue;
+    GetterForViewOrMut(field, is_mut);
+    msg.printer().PrintRaw("\n");
+  }
 }
+
 }  // namespace
 
 void GenerateRs(Context<Descriptor> msg) {
@@ -202,74 +307,70 @@ void GenerateRs(Context<Descriptor> msg) {
     return;
   }
   msg.Emit(
-      {
-          {"Msg", msg.desc().name()},
-          {"Msg::new", [&] { MessageNew(msg); }},
-          {"Msg::serialize", [&] { MessageSerialize(msg); }},
-          {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
-          {"Msg::drop", [&] { MessageDrop(msg); }},
-          {"Msg_externs", [&] { MessageExterns(msg); }},
-          {"accessor_fns",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto field = msg.WithDesc(*msg.desc().field(i));
-               msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
+      {{"Msg", msg.desc().name()},
+       {"Msg::new", [&] { MessageNew(msg); }},
+       {"Msg::serialize", [&] { MessageSerialize(msg); }},
+       {"Msg::deserialize", [&] { MessageDeserialize(msg); }},
+       {"Msg::drop", [&] { MessageDrop(msg); }},
+       {"Msg_externs", [&] { MessageExterns(msg); }},
+       {"accessor_fns",
+        [&] {
+          for (int i = 0; i < msg.desc().field_count(); ++i) {
+            auto field = msg.WithDesc(*msg.desc().field(i));
+            msg.Emit({{"comment", FieldInfoComment(field)}}, R"rs(
                  // $comment$
                )rs");
-               GenerateAccessorMsgImpl(field);
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"oneof_accessor_fns",
-           [&] {
-             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
-               GenerateOneofAccessors(
-                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"accessor_externs",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"oneof_externs",
-           [&] {
-             for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
-               GenerateOneofExternC(
-                   msg.WithDesc(*msg.desc().real_oneof_decl(i)));
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-          {"nested_msgs",
-           [&] {
-             // If we have no nested types or oneofs, bail out without emitting
-             // an empty mod SomeMsg_.
-             if (msg.desc().nested_type_count() == 0 &&
-                 msg.desc().real_oneof_decl_count() == 0) {
-               return;
-             }
-             msg.Emit({{"Msg", msg.desc().name()},
-                       {"nested_msgs",
-                        [&] {
-                          for (int i = 0; i < msg.desc().nested_type_count();
-                               ++i) {
-                            auto nested_msg =
-                                msg.WithDesc(msg.desc().nested_type(i));
-                            GenerateRs(nested_msg);
-                          }
-                        }},
-                       {"oneofs",
-                        [&] {
-                          for (int i = 0;
-                               i < msg.desc().real_oneof_decl_count(); ++i) {
-                            GenerateOneofDefinition(
-                                msg.WithDesc(*msg.desc().real_oneof_decl(i)));
-                          }
-                        }}},
-                      R"rs(
+            GenerateAccessorMsgImpl(field);
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"oneof_accessor_fns",
+        [&] {
+          for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+            GenerateOneofAccessors(
+                msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"accessor_externs",
+        [&] {
+          for (int i = 0; i < msg.desc().field_count(); ++i) {
+            GenerateAccessorExternC(msg.WithDesc(*msg.desc().field(i)));
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"oneof_externs",
+        [&] {
+          for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+            GenerateOneofExternC(msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+            msg.printer().PrintRaw("\n");
+          }
+        }},
+       {"nested_msgs",
+        [&] {
+          // If we have no nested types or oneofs, bail out without emitting
+          // an empty mod SomeMsg_.
+          if (msg.desc().nested_type_count() == 0 &&
+              msg.desc().real_oneof_decl_count() == 0) {
+            return;
+          }
+          msg.Emit(
+              {{"Msg", msg.desc().name()},
+               {"nested_msgs",
+                [&] {
+                  for (int i = 0; i < msg.desc().nested_type_count(); ++i) {
+                    auto nested_msg = msg.WithDesc(msg.desc().nested_type(i));
+                    GenerateRs(nested_msg);
+                  }
+                }},
+               {"oneofs",
+                [&] {
+                  for (int i = 0; i < msg.desc().real_oneof_decl_count(); ++i) {
+                    GenerateOneofDefinition(
+                        msg.WithDesc(*msg.desc().real_oneof_decl(i)));
+                  }
+                }}},
+              R"rs(
                  #[allow(non_snake_case)]
                  pub mod $Msg$_ {
                    $nested_msgs$
@@ -277,18 +378,9 @@ void GenerateRs(Context<Descriptor> msg) {
                    $oneofs$
                  }  // mod $Msg$_
                 )rs");
-           }},
-          {"subviews",
-           [&] {
-             for (int i = 0; i < msg.desc().field_count(); ++i) {
-               auto field = msg.WithDesc(*msg.desc().field(i));
-               if (field.desc().is_repeated()) continue;
-               if (!IsSimpleScalar(field.desc().type())) continue;
-               GenerateSubView(field);
-               msg.printer().PrintRaw("\n");
-             }
-           }},
-      },
+        }},
+       {"accessor_fns_for_views", [&] { AccessorsForViewOrMut(msg, false); }},
+       {"accessor_fns_for_muts", [&] { AccessorsForViewOrMut(msg, true); }}},
       R"rs(
         #[allow(non_camel_case_types)]
         // TODO: Implement support for debug redaction
@@ -321,7 +413,7 @@ void GenerateRs(Context<Descriptor> msg) {
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
             Self { msg, _phantom: std::marker::PhantomData }
           }
-          $subviews$
+          $accessor_fns_for_views$
         }
 
         // SAFETY:
@@ -345,15 +437,32 @@ void GenerateRs(Context<Descriptor> msg) {
         }
 
         impl<'a> $pb$::SettableValue<$Msg$> for $Msg$View<'a> {
-          fn set_on(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<$Msg$>) {
+          fn set_on<'b>(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<'b, $Msg$>)
+          where
+            $Msg$: 'b {
             todo!()
           }
         }
 
         #[derive(Debug)]
         #[allow(dead_code)]
+        #[allow(non_camel_case_types)]
         pub struct $Msg$Mut<'a> {
           inner: $pbr$::MutatorMessageRef<'a>,
+        }
+
+        impl<'a> $Msg$Mut<'a> {
+          #[doc(hidden)]
+          pub fn new(_private: $pbi$::Private,
+                     parent: &'a mut $pbr$::MessageInner,
+                     msg: $pbi$::RawMessage)
+            -> Self {
+            Self {
+              inner: $pbr$::MutatorMessageRef::from_parent(
+                       $pbi$::Private, parent, msg)
+            }
+          }
+          $accessor_fns_for_muts$
         }
 
         // SAFETY:

@@ -238,9 +238,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto =
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fapi_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fapi_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto(&descriptor_table_google_2fprotobuf_2fapi_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -250,15 +247,8 @@ class Api::_Internal {
   using HasBits = decltype(std::declval<Api>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
-  static const ::google::protobuf::SourceContext& source_context(const Api* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::SourceContext& Api::_Internal::source_context(const Api* msg) {
-  return *msg->_impl_.source_context_;
-}
 void Api::clear_options() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.options_.Clear();
@@ -493,8 +483,7 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, _Internal::source_context(this),
-        _Internal::source_context(this).GetCachedSize(), target, stream);
+        5, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.Mixin mixins = 6;
@@ -576,7 +565,7 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
 }
 
 
-void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Api*>(&to_msg);
   auto& from = static_cast<const Api&>(from_msg);
   ::google::protobuf::Arena* arena = _this->GetArena();
@@ -597,7 +586,8 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
   if (!from._internal_version().empty()) {
     _this->_internal_set_version(from._internal_version());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
       _this->_impl_.source_context_ =
@@ -605,11 +595,11 @@ void Api::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobu
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -644,9 +634,9 @@ void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Api::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fapi_2eproto_getter, &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fapi_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fapi_2eproto[0]);
 }
 // ===================================================================
 
@@ -953,7 +943,7 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
 }
 
 
-void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Method*>(&to_msg);
   auto& from = static_cast<const Method&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Method)
@@ -973,13 +963,13 @@ void Method::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
     _this->_internal_set_response_type_url(from._internal_response_type_url());
   }
   if (from._internal_request_streaming() != 0) {
-    _this->_internal_set_request_streaming(from._internal_request_streaming());
+    _this->_impl_.request_streaming_ = from._impl_.request_streaming_;
   }
   if (from._internal_response_streaming() != 0) {
-    _this->_internal_set_response_streaming(from._internal_response_streaming());
+    _this->_impl_.response_streaming_ = from._impl_.response_streaming_;
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1013,9 +1003,9 @@ void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Method::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fapi_2eproto_getter, &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fapi_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fapi_2eproto[1]);
 }
 // ===================================================================
 
@@ -1198,7 +1188,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
 }
 
 
-void Mixin::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Mixin*>(&to_msg);
   auto& from = static_cast<const Mixin&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Mixin)
@@ -1236,9 +1226,9 @@ void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Mixin::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fapi_2eproto_getter, &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fapi_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fapi_2eproto[2]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -1248,4 +1238,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

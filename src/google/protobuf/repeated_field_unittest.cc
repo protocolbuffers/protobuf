@@ -33,6 +33,7 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "absl/random/random.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
@@ -58,6 +59,74 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
 using ::testing::Le;
+
+TEST(RepeatedFieldIterator, Traits) {
+  using It = RepeatedField<absl::Cord>::iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, absl::Cord>::value));
+  EXPECT_TRUE((std::is_same<It::reference, absl::Cord&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, absl::Cord*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(ConstRepeatedFieldIterator, Traits) {
+  using It = RepeatedField<absl::Cord>::const_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, absl::Cord>::value));
+  EXPECT_TRUE((std::is_same<It::reference, const absl::Cord&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, const absl::Cord*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(RepeatedPtrOverPtrsIterator, Traits) {
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, std::string*>::value));
+  EXPECT_TRUE((std::is_same<It::reference, std::string*&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, std::string**>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
+  using It = RepeatedPtrField<std::string>::const_pointer_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, const std::string*>::value));
+  EXPECT_TRUE((std::is_same<It::reference, const std::string* const&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, const std::string* const*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
 
 TEST(RepeatedField, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
@@ -450,7 +519,7 @@ TEST(RepeatedField, ReserveLarge) {
 }
 
 TEST(RepeatedField, ReserveHuge) {
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
+#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN)
   GTEST_SKIP() << "Disabled because sanitizer is active";
 #endif
   // Largest value that does not clamp to the large limit:
@@ -1172,17 +1241,17 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
-#if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
-                                      defined(ABSL_HAVE_MEMORY_SANITIZER))
+#if defined(GTEST_HAS_DEATH_TEST) && \
+    (defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN))
 
 // This function verifies that the code dies under ASAN or MSAN trying to both
 // read and write the reserved element directly beyond the last element.
 void VerifyDeathOnWriteAndReadAccessBeyondEnd(RepeatedField<int64_t>& field) {
   auto* end = field.Mutable(field.size() - 1) + 1;
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#if defined(PROTOBUF_ASAN)
   EXPECT_DEATH(*end = 1, "container-overflow");
   EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
-#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+#elif defined(PROTOBUF_MSAN)
   EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
 #endif
 

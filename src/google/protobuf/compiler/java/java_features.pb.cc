@@ -123,9 +123,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fja
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
 namespace pb {
 const ::google::protobuf::EnumDescriptor* JavaFeatures_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto);
@@ -155,12 +152,6 @@ class JavaFeatures::_Internal {
   using HasBits = decltype(std::declval<JavaFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
-  static void set_has_legacy_closed_enum(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_utf8_validation(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
 };
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
@@ -328,7 +319,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
 }
 
 
-void JavaFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<JavaFeatures*>(&to_msg);
   auto& from = static_cast<const JavaFeatures&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.JavaFeatures)
@@ -344,8 +335,8 @@ void JavaFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google
     if (cached_has_bits & 0x00000002u) {
       _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
-    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -373,14 +364,15 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata JavaFeatures::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[0]);
 }
-PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-    ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >,
-                        11, false>
-        java(kJavaFieldNumber, ::pb::JavaFeatures::default_instance());
+PROTOBUF_CONSTINIT PROTOC_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+        ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >,
+                            11, false>
+            java(kJavaFieldNumber, &::pb::_JavaFeatures_default_instance_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {
@@ -388,4 +380,12 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto),
+    ::_pbi::ExtensionSet::RegisterMessageExtension(
+        &::google::protobuf::FeatureSet::default_instance(), 1001, 11,
+        false, false, &::pb::JavaFeatures::default_instance(),
+        nullptr, ::_pbi::LazyAnnotation::kUndefined),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

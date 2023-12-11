@@ -21,6 +21,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -48,10 +49,32 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+extern "C" {
+// We add a single dummy writer to guarantee the section is never empty.
+WeakDefaultWriter dummy_writer
+    __attribute__((section("pb_defaults"))) = {&dummy_writer.source, nullptr};
+// When using --descriptor_implicit_weak_messages we expect the writer objects
+// to live in the `pb_defaults` section. We load them all using the
+// __start/__end symbols provided by the linker.
+extern const WeakDefaultWriter __start_pb_defaults;
+extern const WeakDefaultWriter __stop_pb_defaults;
+}
+static void InitWeakDefaults() {
+  StrongPointer(&dummy_writer);  // force link the dummy writer.
+  for (auto it = &__start_pb_defaults; it != &__stop_pb_defaults; ++it) {
+    *it->destination = it->source;
+  }
+}
+#else
+void InitWeakDefaults() {}
+#endif
+
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
   fixed_address_empty_string.DefaultConstruct();
   OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  InitWeakDefaults();
 
 
   init_protobuf_defaults_state.store(true, std::memory_order_release);

@@ -36,7 +36,6 @@ cc_library(
         "//upb:message",
         "//upb:message_copy",
         "//upb:message_types",
-        "//upb:port",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
     ],

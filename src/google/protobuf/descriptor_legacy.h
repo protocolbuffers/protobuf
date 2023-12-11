@@ -46,7 +46,7 @@ namespace protobuf {
 PROTOBUF_IGNORE_DEPRECATION_START
 
 // Wraps FileDescriptor.
-class PROTOBUF_EXPORT FileDescriptorLegacy {
+class FileDescriptorLegacy {
  public:
   explicit FileDescriptorLegacy(const FileDescriptor* desc) : desc_(desc) {}
 
@@ -68,7 +68,7 @@ class PROTOBUF_EXPORT FileDescriptorLegacy {
   const FileDescriptor* desc_;
 };
 
-class PROTOBUF_EXPORT FieldDescriptorLegacy {
+class FieldDescriptorLegacy {
  public:
   explicit FieldDescriptorLegacy(const FieldDescriptor* desc) : desc_(desc) {}
 
@@ -78,7 +78,7 @@ class PROTOBUF_EXPORT FieldDescriptorLegacy {
   const FieldDescriptor* desc_;
 };
 
-class PROTOBUF_EXPORT OneofDescriptorLegacy {
+class OneofDescriptorLegacy {
  public:
   explicit OneofDescriptorLegacy(const OneofDescriptor* desc) : desc_(desc) {}
 

@@ -74,7 +74,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
+      _this->$field_$ = from.$field_$;
     )cc");
   }
 
@@ -169,33 +169,37 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline void $Msg$::set_$name$($Enum$ value) {
-      $PrepareSplitMessageForWrite$;
-      _internal_set_$name$(value);
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-    }
   )cc");
 
   if (is_oneof()) {
     p->Emit(R"cc(
-      inline $Enum$ $Msg$::_internal_$name$() const {
-        if ($has_field$) {
-          return static_cast<$Enum$>($field_$);
-        }
-        return static_cast<$Enum$>($kDefault$);
-      }
-      inline void $Msg$::_internal_set_$name$($Enum$ value) {
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $PrepareSplitMessageForWrite$;
         $assert_valid$;
         if ($not_has_field$) {
           clear_$oneof_name$();
           set_has_$name$();
         }
         $field_$ = value;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
+      inline $Enum$ $Msg$::_internal_$name$() const {
+        if ($has_field$) {
+          return static_cast<$Enum$>($field_$);
+        }
+        return static_cast<$Enum$>($kDefault$);
       }
     )cc");
   } else {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name$(value);
+        $set_hasbit$;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Enum$ $Msg$::_internal_$name$() const {
         $TsanDetectConcurrentRead$;
         return static_cast<$Enum$>($field_$);
@@ -203,7 +207,6 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline void $Msg$::_internal_set_$name$($Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
-        $set_hasbit$;
         $field_$ = value;
       }
     )cc");

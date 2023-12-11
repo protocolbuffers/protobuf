@@ -239,7 +239,9 @@ where
 {
     /// Consumes `self` to set the given mutator to its value.
     #[doc(hidden)]
-    fn set_on(self, _private: Private, mutator: Mut<'_, T>);
+    fn set_on<'a>(self, _private: Private, mutator: Mut<'a, T>)
+    where
+        T: 'a;
 
     /// Consumes `self` and `absent_mutator` to set the given empty field to
     /// a value.
@@ -352,25 +354,37 @@ mod tests {
     }
 
     impl SettableValue<MyProxied> for MyProxiedView<'_> {
-        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, MyProxied>)
+        where
+            MyProxied: 'a,
+        {
             mutator.my_proxied_ref.val = self.my_proxied_ref.val.clone();
         }
     }
 
     impl SettableValue<MyProxied> for String {
-        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, MyProxied>)
+        where
+            MyProxied: 'a,
+        {
             mutator.my_proxied_ref.val = self;
         }
     }
 
     impl SettableValue<MyProxied> for &'_ str {
-        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, MyProxied>)
+        where
+            MyProxied: 'a,
+        {
             mutator.my_proxied_ref.val.replace_range(.., self);
         }
     }
 
     impl SettableValue<MyProxied> for Cow<'_, str> {
-        fn set_on(self, _private: Private, mutator: Mut<MyProxied>) {
+        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, MyProxied>)
+        where
+            MyProxied: 'a,
+        {
             match self {
                 Cow::Owned(x) => <String as SettableValue<MyProxied>>::set_on(x, Private, mutator),
                 Cow::Borrowed(x) => <&str as SettableValue<MyProxied>>::set_on(x, Private, mutator),

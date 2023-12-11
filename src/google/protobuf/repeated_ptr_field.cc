@@ -19,7 +19,6 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -88,20 +87,7 @@ void RepeatedPtrFieldBase::Reserve(int capacity) {
 }
 
 void RepeatedPtrFieldBase::DestroyProtos() {
-  ABSL_DCHECK(tagged_rep_or_elem_);
-  ABSL_DCHECK(arena_ == nullptr);
-  if (using_sso()) {
-    delete static_cast<MessageLite*>(tagged_rep_or_elem_);
-  } else {
-    Rep* r = rep();
-    int n = r->allocated_size;
-    void* const* elements = r->elements;
-    for (int i = 0; i < n; i++) {
-      delete static_cast<MessageLite*>(elements[i]);
-    }
-    const size_t size = Capacity() * sizeof(elements[0]) + kRepHeaderSize;
-    internal::SizedDelete(r, size);
-  }
+  PROTOBUF_ALWAYS_INLINE_CALL Destroy<GenericTypeHandler<MessageLite>>();
 
   // TODO:  Eliminate this store when invoked from the destructor,
   // since it is dead.
@@ -110,10 +96,11 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 
 template <typename F>
 auto* RepeatedPtrFieldBase::AddInternal(F factory) {
-  using Result = decltype(factory(GetArena()));
+  Arena* const arena = GetArena();
+  using Result = decltype(factory(arena));
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
-    tagged_rep_or_elem_ = factory(GetArena());
+    tagged_rep_or_elem_ = factory(arena);
     return static_cast<Result>(tagged_rep_or_elem_);
   }
   if (using_sso()) {
@@ -135,7 +122,7 @@ auto* RepeatedPtrFieldBase::AddInternal(F factory) {
   Rep* r = rep();
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
-  result = factory(GetArena());
+  result = factory(arena);
   return static_cast<Result>(result);
 }
 

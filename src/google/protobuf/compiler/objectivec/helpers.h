@@ -148,6 +148,11 @@ std::string GetOptionalDeprecatedAttribute(
   }
 }
 
+// Helpers to identify the WellKnownType files/messages that get an Objective-C
+// category within the runtime to add helpers.
+bool HasWKTWithObjCCategory(const FileDescriptor* file);
+bool IsWKTWithObjCCategory(const Descriptor* descriptor);
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

@@ -118,6 +118,7 @@ class ParserTest : public testing::Test {
     // We don't cover SourceCodeInfo in these tests.
     actual.clear_source_code_info();
 
+
     // Parse the ASCII representation in order to canonicalize it.  We could
     // just compare directly to actual.DebugString(), but that would require
     // that the caller precisely match the formatting that DebugString()

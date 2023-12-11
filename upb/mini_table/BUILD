@@ -66,6 +66,7 @@ cc_library(
         "internal/field.h",
         "internal/file.h",
         "internal/message.h",
+        "internal/size_log2.h",
         "internal/sub.h",
     ],
     visibility = ["//visibility:public"],

@@ -7,42 +7,42 @@
 
 #include "upb/message/accessors.h"
 
+#include <string.h>
+
+#include "upb/mem/arena.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
-#include "upb/wire/decode.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 #include "upb/wire/encode.h"
-#include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/reader.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
                                                const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* field,
+                                               const upb_MiniTableField* f,
                                                upb_Message* map_entry_message,
                                                upb_Arena* arena) {
-  const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
+  const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
+      mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(map_entry_mini_table);
-  UPB_ASSERT(map_entry_mini_table->field_count == 2);
+  UPB_ASSERT(map_entry_mini_table->UPB_PRIVATE(field_count) == 2);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->fields[0];
+      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->fields[1];
+      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
   // Map key/value cannot have explicit defaults,
   // hence assuming a zero default is valid.
   upb_MessageValue default_val;
   memset(&default_val, 0, sizeof(upb_MessageValue));
-  upb_MessageValue map_entry_key;
-  upb_MessageValue map_entry_value;
-  _upb_Message_GetField(map_entry_message, map_entry_key_field, &default_val,
-                        &map_entry_key);
-  _upb_Message_GetField(map_entry_message, map_entry_value_field, &default_val,
-                        &map_entry_value);
+  upb_MessageValue map_entry_key =
+      upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
+  upb_MessageValue map_entry_value = upb_Message_GetField(
+      map_entry_message, map_entry_value_field, default_val);
   return upb_Map_Insert(map, map_entry_key, map_entry_value, arena);
 }
 

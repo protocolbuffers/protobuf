@@ -98,6 +98,7 @@ void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
                         pub use crate::$mod$::$Msg$;
                         // TODO Address use for imported crates
                         pub use crate::$mod$::$Msg$View;
+                        pub use crate::$mod$::$Msg$Mut;
                       )rs");
   }
 }
@@ -133,9 +134,10 @@ void EmitPublicImports(Context<FileDescriptor>& primary_file) {
     // TODO: Handle the case where a non-primary src with the same
     // declared package as the primary src publicly imports a file that the
     // primary doesn't.
-    if (primary_file.generator_context().is_file_in_current_crate(dep_file))
-      continue;
     auto dep = primary_file.WithDesc(dep_file);
+    if (IsInCurrentlyGeneratingCrate(dep)) {
+      return;
+    }
     EmitPubUseForImportedMessages(primary_file, dep);
   }
 }

@@ -81,6 +81,11 @@ enum Edition {
   EDITION_99997_TEST_ONLY = 99997;
   EDITION_99998_TEST_ONLY = 99998;
   EDITION_99999_TEST_ONLY = 99999;
+
+  // Placeholder for specifying unbounded edition support.  This should only
+  // ever be used by plugins that can expect to never require any changes to
+  // support a new edition.
+  EDITION_MAX = 0x7FFFFFFF;
 }
 
 // Describes a complete .proto file.
@@ -202,7 +207,8 @@ message ExtensionRangeOptions {
   // The verification state of the range.
   // TODO: flip the default to DECLARATION once all empty ranges
   // are marked as UNVERIFIED.
-  optional VerificationState verification = 3 [default = UNVERIFIED];
+  optional VerificationState verification = 3
+      [default = UNVERIFIED, retention = RETENTION_SOURCE];
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
@@ -294,12 +300,12 @@ message FieldDescriptorProto {
   // If true, this is a proto3 "optional". When a proto3 field is optional, it
   // tracks presence regardless of field type.
   //
-  // When proto3_optional is true, this field must be belong to a oneof to
-  // signal to old proto3 clients that presence is tracked for this field. This
-  // oneof is known as a "synthetic" oneof, and this field must be its sole
-  // member (each proto3 optional field gets its own synthetic oneof). Synthetic
-  // oneofs exist in the descriptor only, and do not generate any API. Synthetic
-  // oneofs must be ordered after all "real" oneofs.
+  // When proto3_optional is true, this field must belong to a oneof to signal
+  // to old proto3 clients that presence is tracked for this field. This oneof
+  // is known as a "synthetic" oneof, and this field must be its sole member
+  // (each proto3 optional field gets its own synthetic oneof). Synthetic oneofs
+  // exist in the descriptor only, and do not generate any API. Synthetic oneofs
+  // must be ordered after all "real" oneofs.
   //
   // For message fields, proto3_optional doesn't create any semantic change,
   // since non-repeated message fields always track presence. However it still
@@ -974,8 +980,8 @@ message FeatureSet {
 
   enum Utf8Validation {
     UTF8_VALIDATION_UNKNOWN = 0;
-    NONE = 1;
     VERIFY = 2;
+    NONE = 3;
   }
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,

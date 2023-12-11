@@ -124,9 +124,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto =
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fany_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fany_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fany_2eproto(&descriptor_table_google_2fprotobuf_2fany_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -322,7 +319,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
 }
 
 
-void Any::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);
   auto& from = static_cast<const Any&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
@@ -360,9 +357,9 @@ void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fany_2eproto_getter, &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fany_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -375,4 +372,8 @@ namespace protobuf {
 #if defined(__llvm__)
 #pragma clang diagnostic pop
 #endif  // __llvm__
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fany_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

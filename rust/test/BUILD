@@ -49,7 +49,7 @@ rust_proto_library(
     name = "unittest_proto3_rust_proto",
     testonly = True,
     visibility = [
-        "//rust/test/shared:__subpackages__",
+        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
     ],
     deps = [
         UNITTEST_PROTO3_TARGET,
@@ -59,20 +59,14 @@ rust_proto_library(
 rust_cc_proto_library(
     name = "unittest_proto3_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_CC_TARGET],
 )
 
 rust_upb_proto_library(
     name = "unittest_proto3_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_TARGET],
 )
 
@@ -187,6 +181,32 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "edition2023_proto",
+    testonly = True,
+    srcs = ["edition2023.proto"],
+)
+
+cc_proto_library(
+    name = "edition2023_cc_proto",
+    testonly = True,
+    deps = [":edition2023_proto"],
+)
+
+rust_cc_proto_library(
+    name = "edition2023_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "edition2023_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_proto"],
+)
+
+proto_library(
     name = "no_package_import_proto",
     testonly = True,
     srcs = ["no_package_import.proto"],
@@ -250,20 +270,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "package_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":package_cc_proto"],
 )
 
 rust_upb_proto_library(
     name = "package_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":package_proto"],
 )
 
@@ -282,20 +296,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "reserved_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":reserved_cc_proto"],
 )
 
 rust_upb_proto_library(
     name = "reserved_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":reserved_proto"],
 )
 
@@ -329,6 +337,21 @@ rust_upb_proto_library(
         "//rust/test/upb:__subpackages__",
     ],
     deps = [":nested_proto"],
+)
+
+cc_proto_library(
+    name = "map_unittest_cc_proto",
+    testonly = True,
+    deps = ["//src/google/protobuf:map_unittest_proto"],
+)
+
+rust_cc_proto_library(
+    name = "map_unittest_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":map_unittest_cc_proto"],
 )
 
 rust_upb_proto_library(

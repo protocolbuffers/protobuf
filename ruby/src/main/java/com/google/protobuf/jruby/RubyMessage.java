@@ -42,6 +42,7 @@ import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyOneofDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import com.google.protobuf.util.JsonFormat;
@@ -634,7 +635,7 @@ public class RubyMessage extends RubyObject {
   public static IRubyObject decodeBytes(
       ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
     try {
-      ret.builder.mergeFrom(input);
+      ret.builder.mergeFrom(input, RubyDescriptorPool.registry);
     } catch (Exception e) {
       throw RaiseException.from(
           context.runtime,
@@ -965,6 +966,12 @@ public class RubyMessage extends RubyObject {
     return setFieldInternal(context, fieldDescriptor, value);
   }
 
+  protected IRubyObject setField(
+      ThreadContext context, RubyFieldDescriptor fieldDescriptor, IRubyObject value) {
+    validateMessageType(context, fieldDescriptor.getDescriptor(), "set");
+    return setFieldInternal(context, fieldDescriptor.getDescriptor(), fieldDescriptor, value);
+  }
+
   private RubyRepeatedField getRepeatedField(
       ThreadContext context, FieldDescriptor fieldDescriptor) {
     if (fields.containsKey(fieldDescriptor)) {
@@ -1275,6 +1282,14 @@ public class RubyMessage extends RubyObject {
 
   private IRubyObject setFieldInternal(
       ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
+    return setFieldInternal(context, fieldDescriptor, null, value);
+  }
+
+  private IRubyObject setFieldInternal(
+      ThreadContext context,
+      FieldDescriptor fieldDescriptor,
+      RubyFieldDescriptor rubyFieldDescriptor,
+      IRubyObject value) {
     testFrozen("can't modify frozen " + getMetaClass());
 
     if (fieldDescriptor.isMapField()) {
@@ -1299,8 +1314,12 @@ public class RubyMessage extends RubyObject {
       // Determine the typeclass, if any
       IRubyObject typeClass = context.runtime.getObject();
       if (fieldType == FieldDescriptor.Type.MESSAGE) {
-        typeClass =
-            ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+        if (rubyFieldDescriptor != null) {
+          typeClass = ((RubyDescriptor) rubyFieldDescriptor.getSubtype(context)).msgclass(context);
+        } else {
+          typeClass =
+              ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+        }
         if (value.isNil()) {
           addValue = false;
         }
@@ -1322,7 +1341,7 @@ public class RubyMessage extends RubyObject {
         // Keep track of what Oneofs are set
         if (value.isNil()) {
           oneofCases.remove(oneofDescriptor);
-          if (!oneofDescriptor.isSynthetic()) {
+          if (!LegacyOneofDescriptor.isSynthetic(oneofDescriptor)) {
             addValue = false;
           }
         } else {

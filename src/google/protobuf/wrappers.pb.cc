@@ -363,9 +363,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2epr
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fwrappers_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fwrappers_2eproto(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -515,7 +512,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
 }
 
 
-void DoubleValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
@@ -529,7 +526,7 @@ void DoubleValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint64_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -552,9 +549,9 @@ void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata DoubleValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[0]);
 }
 // ===================================================================
 
@@ -703,7 +700,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
 }
 
 
-void FloatValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
@@ -717,7 +714,7 @@ void FloatValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::
   ::uint32_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -740,9 +737,9 @@ void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata FloatValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[1]);
 }
 // ===================================================================
 
@@ -882,7 +879,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
 }
 
 
-void Int64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
@@ -891,7 +888,7 @@ void Int64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -914,9 +911,9 @@ void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Int64Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[2]);
 }
 // ===================================================================
 
@@ -1056,7 +1053,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
 }
 
 
-void UInt64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
@@ -1065,7 +1062,7 @@ void UInt64Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1088,9 +1085,9 @@ void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata UInt64Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[3]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[3]);
 }
 // ===================================================================
 
@@ -1230,7 +1227,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
 }
 
 
-void Int32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
@@ -1239,7 +1236,7 @@ void Int32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1262,9 +1259,9 @@ void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Int32Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[4]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[4]);
 }
 // ===================================================================
 
@@ -1404,7 +1401,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
 }
 
 
-void UInt32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
@@ -1413,7 +1410,7 @@ void UInt32Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1436,9 +1433,9 @@ void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata UInt32Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[5]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[5]);
 }
 // ===================================================================
 
@@ -1577,7 +1574,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
 }
 
 
-void BoolValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
@@ -1586,7 +1583,7 @@ void BoolValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::p
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _this->_internal_set_value(from._internal_value());
+    _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1609,9 +1606,9 @@ void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata BoolValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[6]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[6]);
 }
 // ===================================================================
 
@@ -1769,7 +1766,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
 }
 
 
-void StringValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
@@ -1803,9 +1800,9 @@ void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata StringValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[7]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[7]);
 }
 // ===================================================================
 
@@ -1958,7 +1955,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
 }
 
 
-void BytesValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);
   auto& from = static_cast<const BytesValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
@@ -1992,9 +1989,9 @@ void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata BytesValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[8]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[8]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -2004,4 +2001,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

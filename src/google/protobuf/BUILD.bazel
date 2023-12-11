@@ -239,6 +239,7 @@ cc_test(
     deps = [
         ":port_def",
         ":varint_shuffle",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -337,6 +338,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/utility:if_constexpr",
     ],
 )
 
@@ -439,6 +441,7 @@ cc_library(
         "//src/google/protobuf/stubs:lite",
         "//third_party/utf8_range:utf8_validity",
         "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/hash",
@@ -483,7 +486,6 @@ cc_library(
         "descriptor.h",
         "descriptor.pb.h",
         "descriptor_database.h",
-        "descriptor_legacy.h",
         "descriptor_visitor.h",
         "dynamic_message.h",
         "feature_resolver.h",
@@ -796,6 +798,7 @@ exports_files(
     visibility = [
         "//:__pkg__",
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 
@@ -887,6 +890,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":cc_lite_test_protos",
+        ":port_def",
         ":test_util2",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
@@ -1424,6 +1428,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/random",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1560,6 +1565,30 @@ cc_test(
         ":protobuf",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "unredacted_debug_format_for_test",
+    testonly = True,
+    srcs = ["unredacted_debug_format_for_test.cc"],
+    hdrs = ["unredacted_debug_format_for_test.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+    ],
+)
+
+cc_test(
+    name = "unredacted_debug_format_for_test_test",
+    srcs = ["unredacted_debug_format_for_test_test.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":protobuf",
+        ":unredacted_debug_format_for_test",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -809,6 +809,23 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   )cc");
 }
 
+void FileGenerator::GenerateStaticInitializer(io::Printer* p) {
+  if (static_initializers_.empty()) return;
+  p->Emit({{"expr",
+            [&] {
+              for (auto& init : static_initializers_) {
+                init(p);
+              }
+            }}},
+          R"cc(
+            PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+            static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+                ($expr$, ::std::false_type{});
+          )cc");
+  // Reset the vector because we might be generating many files.
+  static_initializers_.clear();
+}
+
 void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
   auto v = p->WithVars(FileVars(file_, options_));
   GenerateSourceIncludes(p);
@@ -816,6 +833,10 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* p) {
 
   NamespaceOpener ns(Namespace(file_, options_), p);
   extension_generators_[idx]->GenerateDefinition(p);
+  static_initializers_.push_back([this, idx](auto* p) {
+    extension_generators_[idx]->GenerateRegistration(p);
+  });
+  GenerateStaticInitializer(p);
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) {
@@ -895,8 +916,14 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     }
 
     // Define extensions.
+    const auto is_lazily_init = IsLazilyInitializedFile(file_->name());
     for (int i = 0; i < extension_generators_.size(); ++i) {
       extension_generators_[i]->GenerateDefinition(p);
+      if (!is_lazily_init) {
+        static_initializers_.push_back([&, i](auto* p) {
+          extension_generators_[i]->GenerateRegistration(p);
+        });
+      }
     }
 
     p->Emit(R"cc(
@@ -919,7 +946,29 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     UnmuteWuninitialized(p);
   }
 
+  GenerateStaticInitializer(p);
+
   IncludeFile("third_party/protobuf/port_undef.inc", p);
+}
+
+static std::vector<const Descriptor*>
+GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
+  std::vector<const Descriptor*> out;
+
+  // For simplicity we force pin request/response messages for all
+  // services. The current implementation of services might not do
+  // the pin itself, so it is simpler.
+  // This is a place for improvement in the future.
+  for (int i = 0; i < file->service_count(); ++i) {
+    auto* service = file->service(i);
+    for (int j = 0; j < service->method_count(); ++j) {
+      auto* method = service->method(j);
+      out.push_back(method->input_type());
+      out.push_back(method->output_type());
+    }
+  }
+
+  return out;
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
@@ -955,6 +1004,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
     std::vector<std::pair<size_t, size_t>> offsets;
     offsets.reserve(message_generators_.size());
+    bool has_implicit_weak_descriptors =
+        UsingImplicitWeakDescriptor(file_, options_);
 
     p->Emit(
         {
@@ -973,19 +1024,50 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                  offset += offsets[i].first;
                }
              }},
-            {"defaults",
+            {"weak_defaults",
              [&] {
+               if (!has_implicit_weak_descriptors) return;
+               int index = 0;
                for (auto& gen : message_generators_) {
                  p->Emit(
                      {
+                         {"index", index++},
                          {"ns", Namespace(gen->descriptor(), options_)},
                          {"class", ClassName(gen->descriptor())},
+                         {"section", WeakDefaultWriterSection(gen->descriptor(),
+                                                              options_)},
                      },
                      R"cc(
-                       &$ns$::_$class$_default_instance_._instance,
+                       constexpr ::_pbi::WeakDefaultWriter pb_$index$_weak_
+                           __attribute__((__nodebug__))
+                           __attribute__((section("$section$"))) = {
+                               file_default_instances + $index$,
+                               &$ns$::_$class$_default_instance_._instance};
                      )cc");
                }
              }},
+            {"defaults",
+             [&] {
+               for (auto& gen : message_generators_) {
+                 if (has_implicit_weak_descriptors) {
+                   p->Emit(R"cc(
+                     nullptr,
+                   )cc");
+                 } else {
+                   p->Emit(
+                       {
+                           {"ns", Namespace(gen->descriptor(), options_)},
+                           {"class", ClassName(gen->descriptor())},
+                       },
+                       R"cc(
+                         &$ns$::_$class$_default_instance_._instance,
+                       )cc");
+                 }
+               }
+             }},
+            // When we have implicit weak descriptors we make the array mutable
+            // for dynamic initialization.
+            {"const", has_implicit_weak_descriptors ? "" : "const"},
         },
         R"cc(
           const ::uint32_t
@@ -999,9 +1081,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                   $schemas$,
           };
 
-          static const ::_pb::Message* const file_default_instances[] = {
+          static const ::_pb::Message* $const $file_default_instances[] = {
               $defaults$,
           };
+          $weak_defaults$;
         )cc");
   } else {
     // Ee still need these symbols to exist.
@@ -1169,12 +1252,24 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   // pull in a lot of unnecessary code that can't be stripped by --gc-sections.
   // Descriptor initialization will still be performed lazily when it's needed.
   if (!IsLazilyInitializedFile(file_->name())) {
-    p->Emit({{"dummy", UniqueName("dynamic_init_dummy", file_, options_)}},
-            R"cc(
-              // Force running AddDescriptors() at dynamic initialization time.
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-              static ::_pbi::AddDescriptorsRunner $dummy$(&$desc_table$);
-            )cc");
+    if (UsingImplicitWeakDescriptor(file_, options_)) {
+      for (auto* pinned : GetMessagesToPinGloballyForWeakDescriptors(file_)) {
+        static_initializers_.push_back([this, pinned](auto* p) {
+          p->Emit(
+              {
+                  {"default", QualifiedDefaultInstanceName(pinned, options_)},
+              },
+              R"cc(
+                ::_pbi::StrongPointer(&$default$),
+              )cc");
+        });
+      }
+    }
+    static_initializers_.push_back([](auto* p) {
+      p->Emit(R"cc(
+        ::_pbi::AddDescriptors(&$desc_table$),
+      )cc");
+    });
   }
 
   // However, we must provide a way to force initialize the default instances
@@ -1375,21 +1470,14 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/port_def.inc", p);
     p->Emit(
         {
-            {"min_version", PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC},
             {"version", PROTOBUF_VERSION},
         },
         R"(
-        #if PROTOBUF_VERSION < $min_version$
-        #error "This file was generated by a newer version of protoc which is"
-        #error "incompatible with your Protocol Buffer headers. Please update"
-        #error "your headers."
-        #endif  // PROTOBUF_VERSION
-
-        #if $version$ < PROTOBUF_MIN_PROTOC_VERSION
-        #error "This file was generated by an older version of protoc which is"
-        #error "incompatible with your Protocol Buffer headers. Please"
-        #error "regenerate this file with a newer version of protoc."
-        #endif  // PROTOBUF_MIN_PROTOC_VERSION
+      #if PROTOBUF_VERSION != $version$
+      #error "Protobuf C++ gencode is built with an incompatible version of"
+      #error "Protobuf C++ headers/runtime. See"
+      #error "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
+      #endif
     )");
     IncludeFile("third_party/protobuf/port_undef.inc", p);
   }

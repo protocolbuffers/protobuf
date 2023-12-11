@@ -139,12 +139,6 @@ class MapEntry : public MapEntryBase {
 
   // accessors ======================================================
 
-  inline const auto& key() const {
-    return KeyTypeHandler::GetExternalReference(key_);
-  }
-  inline const auto& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(value_);
-  }
   inline auto* mutable_key() {
     _has_bits_[0] |= 0x00000001u;
     return KeyTypeHandler::EnsureMutable(&key_, GetArena());
@@ -153,7 +147,6 @@ class MapEntry : public MapEntryBase {
     _has_bits_[0] |= 0x00000002u;
     return ValueTypeHandler::EnsureMutable(&value_, GetArena());
   }
-
   // TODO: These methods currently differ in behavior from the ones
   // implemented via reflection. This means that a MapEntry does not behave the
   // same as an equivalent object made via DynamicMessage.
@@ -183,24 +176,6 @@ class MapEntry : public MapEntryBase {
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }
     return ptr;
-  }
-
-  size_t ByteSizeLong() const final {
-    size_t size = 0;
-    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
-    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
-    _cached_size_.Set(ToCachedSize(size));
-    return size;
-  }
-
-  ::uint8_t* _InternalSerialize(::uint8_t* ptr,
-                                io::EpsCopyOutputStream* stream) const final {
-    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
-    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
-  }
-
-  bool IsInitialized() const final {
-    return ValueTypeHandler::IsInitialized(value_);
   }
 
   Message* New(Arena* arena) const final {

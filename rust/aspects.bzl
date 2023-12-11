@@ -323,7 +323,6 @@ def _make_proto_library_aspect(is_upb):
             ),
         },
         fragments = ["cpp"],
-        host_fragments = ["cpp"],
         toolchains = [
             "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",

@@ -121,10 +121,6 @@ class FieldGeneratorBase {
 
   virtual void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {}
 
-  virtual void GenerateInternalAccessorDefinitions(io::Printer* p) const {}
-
-  virtual void GenerateInternalAccessorDeclarations(io::Printer* p) const {}
-
   virtual void GenerateClearingCode(io::Printer* p) const = 0;
 
   virtual void GenerateMessageClearingCode(io::Printer* p) const {
@@ -332,18 +328,6 @@ class FieldGenerator {
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateNonInlineAccessorDefinitions(p);
-  }
-
-  // Generates declarations of accessors that are for internal purposes only.
-  void GenerateInternalAccessorDefinitions(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateInternalAccessorDefinitions(p);
-  }
-
-  // Generates definitions of accessors that are for internal purposes only.
-  void GenerateInternalAccessorDeclarations(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateInternalAccessorDeclarations(p);
   }
 
   // Generates statements which clear the field.

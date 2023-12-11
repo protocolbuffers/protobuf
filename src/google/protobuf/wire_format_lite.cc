@@ -685,11 +685,13 @@ static size_t VarintSize64(const T* data, const int n) {
   return sum;
 }
 
-// GCC does not recognize the vectorization opportunity
-// and other platforms are untested, in those cases using the optimized
-// varint size routine for each element is faster.
-// Hence we enable it only for clang
-#if (defined(__SSE__) || defined(__aarch64__)) && defined(__clang__)
+// On machines without a vector count-leading-zeros instruction such as SVE CLZ
+// on arm or VPLZCNT on x86, SSE or AVX2 instructions can allow vectorization of
+// the size calculation loop. GCC does not detect this autovectorization
+// opportunity, so only enable for clang.
+// When last tested, AVX512-vectorized lzcnt was slower than the SSE/AVX2
+// implementation, so __AVX512CD__ is not checked.
+#if defined(__SSE__) && defined(__clang__)
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
@@ -707,7 +709,7 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
 
-#else  // !((defined(__SSE__) || defined(__aarch64__) && defined(__clang__))
+#else  // !(defined(__SSE__) && defined(__clang__))
 
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   size_t out = 0;

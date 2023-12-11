@@ -185,6 +185,12 @@ Error, UINTPTR_MAX is undefined
 
 #define UPB_PRIVATE(x) x##_dont_copy_me__upb_internal_use_only
 
+#ifdef UPB_ALLOW_PRIVATE_ACCESS__FOR_BITS_ONLY
+#define UPB_ONLYBITS(x) x
+#else
+#define UPB_ONLYBITS(x) UPB_PRIVATE(x)
+#endif
+
 /* Configure whether fasttable is switched on or not. *************************/
 
 #ifdef __has_attribute

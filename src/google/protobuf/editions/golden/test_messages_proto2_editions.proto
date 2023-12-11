@@ -9,7 +9,7 @@
 //
 // - conformance tests
 
-// LINT:ALLOW_GROUPS
+// LINT: ALLOW_GROUPS
 
 edition = "2023";
 
@@ -264,11 +264,11 @@ message TestAllTypesProto2 {
   ];
 
   float default_float = 251 [
-    default = 9.0E9
+    default = 9e9
   ];
 
   double default_double = 252 [
-    default = 7.0E22
+    default = 7e22
   ];
 
   bool default_bool = 253 [
@@ -567,12 +567,12 @@ message TestAllRequiredTypesProto2 {
 
   float default_float = 251 [
     features.field_presence = LEGACY_REQUIRED,
-    default = 9.0E9
+    default = 9e9
   ];
 
   double default_double = 252 [
     features.field_presence = LEGACY_REQUIRED,
-    default = 7.0E22
+    default = 7e22
   ];
 
   bool default_bool = 253 [

@@ -215,9 +215,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eprot
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fstruct_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fstruct_2eproto(&descriptor_table_google_2fprotobuf_2fstruct_2eproto);
 namespace google {
 namespace protobuf {
 const ::google::protobuf::EnumDescriptor* NullValue_descriptor() {
@@ -235,9 +232,9 @@ Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() {}
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena)
     : SuperType(arena) {}
 ::google::protobuf::Metadata Struct_FieldsEntry_DoNotUse::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[0]);
 }
 // ===================================================================
 
@@ -416,7 +413,7 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
 }
 
 
-void Struct::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Struct*>(&to_msg);
   auto& from = static_cast<const Struct&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
@@ -446,9 +443,9 @@ void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Struct::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
 }
 // ===================================================================
 
@@ -456,16 +453,8 @@ class Value::_Internal {
  public:
   static constexpr ::int32_t kOneofCaseOffset =
     PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_);
-  static const ::google::protobuf::Struct& struct_value(const Value* msg);
-  static const ::google::protobuf::ListValue& list_value(const Value* msg);
 };
 
-const ::google::protobuf::Struct& Value::_Internal::struct_value(const Value* msg) {
-  return *msg->_impl_.kind_.struct_value_;
-}
-const ::google::protobuf::ListValue& Value::_Internal::list_value(const Value* msg) {
-  return *msg->_impl_.kind_.list_value_;
-}
 void Value::set_allocated_struct_value(::google::protobuf::Struct* struct_value) {
   ::google::protobuf::Arena* message_arena = GetArena();
   clear_kind();
@@ -715,14 +704,12 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
     }
     case kStructValue: {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          5, _Internal::struct_value(this),
-          _Internal::struct_value(this).GetCachedSize(), target, stream);
+          5, *_impl_.kind_.struct_value_, _impl_.kind_.struct_value_->GetCachedSize(), target, stream);
       break;
     }
     case kListValue: {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          6, _Internal::list_value(this),
-          _Internal::list_value(this).GetCachedSize(), target, stream);
+          6, *_impl_.kind_.list_value_, _impl_.kind_.list_value_->GetCachedSize(), target, stream);
       break;
     }
     default:
@@ -788,43 +775,65 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
 }
 
 
-void Value::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  switch (from.kind_case()) {
-    case kNullValue: {
-      _this->_internal_set_null_value(from._internal_null_value());
-      break;
+  if (const uint32_t oneof_from_case = from._impl_._oneof_case_[0]) {
+    const uint32_t oneof_to_case = _this->_impl_._oneof_case_[0];
+    const bool oneof_needs_init = oneof_to_case != oneof_from_case;
+    if (oneof_needs_init) {
+      if (oneof_to_case != 0) {
+        _this->clear_kind();
+      }
+      _this->_impl_._oneof_case_[0] = oneof_from_case;
     }
-    case kNumberValue: {
-      _this->_internal_set_number_value(from._internal_number_value());
-      break;
-    }
-    case kStringValue: {
-      _this->_internal_set_string_value(from._internal_string_value());
-      break;
-    }
-    case kBoolValue: {
-      _this->_internal_set_bool_value(from._internal_bool_value());
-      break;
-    }
-    case kStructValue: {
-      _this->_internal_mutable_struct_value()->::google::protobuf::Struct::MergeFrom(
-          from._internal_struct_value());
-      break;
-    }
-    case kListValue: {
-      _this->_internal_mutable_list_value()->::google::protobuf::ListValue::MergeFrom(
-          from._internal_list_value());
-      break;
-    }
-    case KIND_NOT_SET: {
-      break;
+
+    switch (oneof_from_case) {
+      case kNullValue: {
+        _this->_impl_.kind_.null_value_ = from._impl_.kind_.null_value_;
+        break;
+      }
+      case kNumberValue: {
+        _this->_impl_.kind_.number_value_ = from._impl_.kind_.number_value_;
+        break;
+      }
+      case kStringValue: {
+        if (oneof_needs_init) {
+          _this->_impl_.kind_.string_value_.InitDefault();
+        }
+        _this->_impl_.kind_.string_value_.Set(from._internal_string_value(), arena);
+        break;
+      }
+      case kBoolValue: {
+        _this->_impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
+        break;
+      }
+      case kStructValue: {
+        if (oneof_needs_init) {
+          _this->_impl_.kind_.struct_value_ =
+              ::google::protobuf::Message::CopyConstruct<::google::protobuf::Struct>(arena, *from._impl_.kind_.struct_value_);
+        } else {
+          _this->_impl_.kind_.struct_value_->MergeFrom(from._internal_struct_value());
+        }
+        break;
+      }
+      case kListValue: {
+        if (oneof_needs_init) {
+          _this->_impl_.kind_.list_value_ =
+              ::google::protobuf::Message::CopyConstruct<::google::protobuf::ListValue>(arena, *from._impl_.kind_.list_value_);
+        } else {
+          _this->_impl_.kind_.list_value_->MergeFrom(from._internal_list_value());
+        }
+        break;
+      }
+      case KIND_NOT_SET:
+        break;
     }
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -849,9 +858,9 @@ void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
 }
 // ===================================================================
 
@@ -1005,7 +1014,7 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
 }
 
 
-void ListValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<ListValue*>(&to_msg);
   auto& from = static_cast<const ListValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
@@ -1036,9 +1045,9 @@ void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata ListValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -1048,4 +1057,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

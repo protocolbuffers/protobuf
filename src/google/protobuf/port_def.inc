@@ -67,21 +67,6 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
-// Portable fallback for Clang's __has_warning macro:
-#ifndef __has_warning
-#define __has_warning(x) 0
-#define PROTOBUF_has_warning_DEFINED_
-#endif
-
-#ifdef ADDRESS_SANITIZER
-#include <sanitizer/asan_interface.h>
-#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
-#else  // ADDRESS_SANITIZER
-#define PROTOBUF_POISON_MEMORY_REGION(p, n)
-#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
-#endif  // ADDRESS_SANITIZER
-
 // Portable PROTOBUF_BUILTIN_BSWAPxx definitions
 // Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
 #ifdef PROTOBUF_BUILTIN_BSWAP16
@@ -101,11 +86,6 @@
 #endif
 #if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
 #define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
-#endif
-
-// Portable check for __builtin_mul_overflow.
-#if ABSL_HAVE_BUILTIN(__builtin_mul_overflow)
-#define PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW 1
 #endif
 
 // Portable check for gcc-style atomic built-ins
@@ -201,20 +181,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
+// Defines the Protobuf C++ Version for checking version compatibility at
+// compilation time.
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 4025000
-
-#ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
-#error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
-#endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 4025000
-
-#ifdef PROTOBUF_MIN_PROTOC_VERSION
-#error PROTOBUF_MIN_PROTOC_VERSION was previously defined
-#endif
-#define PROTOBUF_MIN_PROTOC_VERSION 4025000
+#define PROTOBUF_VERSION 4026000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -327,10 +299,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_IGNORE_DEPRECATION_START
 #define PROTOBUF_IGNORE_DEPRECATION_STOP
 #endif
-
-// The minimum library version which works with the current version of the
-// headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 4025000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -533,11 +501,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_ALIGNAS(byte_alignment) alignas(byte_alignment)
 #endif
 
-#ifdef PROTOBUF_FINAL
-#error PROTOBUF_FINAL was previously defined
-#endif
-#define PROTOBUF_FINAL final
-
 #ifdef PROTOBUF_THREAD_LOCAL
 #error PROTOBUF_THREAD_LOCAL was previously defined
 #endif
@@ -598,21 +561,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY [[clang::no_destroy]]
 #else
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY
-#endif
-
-// Force clang to always emit complete debug info for a type.
-// Clang uses constructor homing to determine when to emit debug info for a
-// type. If the constructor of a type is never used, which can happen in some
-// cases where member variables are constructed in place for optimization
-// purposes (see b/208803175 for an example), the type will have incomplete
-// debug info unless this attribute is used.
-#ifdef PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
-#error PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG was previously defined
-#endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::standalone_debug)
-#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG [[clang::standalone_debug]]
-#else
-#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
 #endif
 
 // Protobuf extensions and reflection require registration of the protos linked
@@ -692,7 +640,21 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #    define PROTOBUF_TSAN 1
 #  endif
 #  endif
+#  ifdef __SANITIZE_MEMORY__
+#  if    __SANITIZE_MEMORY__
+#    define PROTOBUF_ASAN 1
+#  endif
+#  endif
 #endif
+
+#ifdef PROTOBUF_ASAN
+#include <sanitizer/asan_interface.h>
+#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
+#else  // PROTOBUF_ASAN
+#define PROTOBUF_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
+#endif  // PROTOBUF_ASAN
 
 #ifdef PROTOBUF_TSAN_READ
 #error PROTOBUF_TSAN_READ was previously defined
@@ -789,6 +751,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_BUILTIN_CONSTANT_P(x) false
 #endif
 
+// Determines the platforms where descriptor weak messages can be used.
+#ifdef PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
+#error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined
+#endif
+#if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
+    !defined(_MSC_VER)
+#define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
+#endif
+
 
 // TODO: Enable the feature by default and remove this flag.
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -796,6 +767,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
+
+// noreturn is defined as a macro in C's stdnoreturn.h
+#ifdef noreturn
+#define PROTOBUF_DID_UNDEF_noreturn
+#pragma push_macro("noreturn")
+#undef noreturn
+#endif
 
 // autoheader defines this in some circumstances
 #ifdef PACKAGE
@@ -1025,8 +1003,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 namespace google {
 namespace protobuf {
 namespace internal {
-PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
-                                                const char *file, int line);
+[[noreturn]] PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
+                                                             const char *file,
+                                                             int line);
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -1060,10 +1039,3 @@ PROTOBUF_EXPORT void protobuf_assumption_failed(const char *pred,
 #endif  // !NDEBUG
 #endif  // has_builtin(__builtin_assume)
 
-// We don't want code outside port_def doing complex testing, so
-// remove our portable condition test macros to nudge folks away from
-// using it themselves.
-#ifdef PROTOBUF_has_warning_DEFINED_
-#  undef __has_warning
-#  undef PROTOBUF_has_warning_DEFINED_
-#endif
