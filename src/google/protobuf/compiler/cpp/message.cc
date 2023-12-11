@@ -2063,22 +2063,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
             R"cc(
               ::_pbi::StrongPointer(&pb_$index$_weak_);
             )cc");
-
-    // For CODE_SIZE types, we need to pin the submessages too.
-    // SPEED types will pin them via the TcParse table automatically.
-    if (HasGeneratedMethods(descriptor_->file(), options_)) return;
-    for (int i = 0; i < descriptor_->field_count(); ++i) {
-      auto* field = descriptor_->field(i);
-      if (field->type() != field->TYPE_MESSAGE) continue;
-      p->Emit(
-          {
-              {"sub_default_name",
-               QualifiedDefaultInstanceName(field->message_type(), options_)},
-          },
-          R"cc(
-            ::_pbi::StrongPointer(&$sub_default_name$);
-          )cc");
-    }
   };
 
   if (IsMapEntryMessage(descriptor_)) {
@@ -3062,7 +3046,8 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       )cc");
 
   // Generate the copy constructor.
-  if (UsingImplicitWeakFields(descriptor_->file(), options_)) {
+  if (UsingImplicitWeakFields(descriptor_->file(), options_) ||
+      !HasGeneratedMethods(descriptor_->file(), options_)) {
     // If we are in lite mode and using implicit weak fields, we generate a
     // one-liner copy constructor that delegates to MergeFrom. This saves some
     // code size and also cuts down on the complexity of implicit weak fields.

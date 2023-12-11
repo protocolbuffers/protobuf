@@ -1514,7 +1514,9 @@ bool UsingImplicitWeakFields(const FileDescriptor* file,
 
 bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
                          MessageSCCAnalyzer* scc_analyzer) {
-  return UsingImplicitWeakFields(field->file(), options) &&
+  return (UsingImplicitWeakFields(field->file(), options) ||
+          (UsingImplicitWeakDescriptor(field->file(), options) &&
+           !HasGeneratedMethods(field->file(), options))) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          !field->is_required() && !field->is_map() && !field->is_extension() &&
          !IsWellKnownMessage(field->message_type()->file()) &&

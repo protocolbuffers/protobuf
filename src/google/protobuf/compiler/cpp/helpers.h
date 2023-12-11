@@ -765,11 +765,11 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // The vtable pins the `WeakDefaultWriter` by having a StrongPointer into it
 // from any of the virtual functions.
 //
-// All parent messages pin their children.
-// SPEED messages do this implicitly via the TcParseTable, which contain
-// pointers to the submessages.
-// CODE_SIZE messages explicitly add a pin via `StrongPointer` somewhere in
-// their codegen.
+// SPEED parents automatically pin their children via the TcParseTable, which
+// contain pointers to the submessages.
+// CODE_SIZE messages use the implicit weak field feature and do not pin their
+// children automatically. Using accessors will pin the accessed child via a
+// StrongPointer.
 // LITE messages do not participate at all in this feature.
 //
 // For extensions, the identifiers currently pin the extendee. The extended is
