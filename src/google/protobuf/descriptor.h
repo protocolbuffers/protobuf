@@ -497,10 +497,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // Never nullptr.
     const Descriptor* containing_type() const { return containing_type_; }
 
-#ifdef PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS
-
    private:
-#endif
     int start_;
     int end_;
     const ExtensionRangeOptions* options_;

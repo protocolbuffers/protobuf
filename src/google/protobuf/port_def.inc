@@ -167,10 +167,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: ezb@
 #define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
 
-// Used to make ExtensionRange into a fully-fledged descriptor class.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS 1
-
 // Used to lock down wrong ctype usages in proto file.
 // Owner: jieluo@
 #define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
