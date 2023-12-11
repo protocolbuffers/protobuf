@@ -159,10 +159,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
 
-// Used to remove the manipulation of cleared elements in RepeatedPtrField.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
-
 // Used for descriptor proto extension declarations.
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
