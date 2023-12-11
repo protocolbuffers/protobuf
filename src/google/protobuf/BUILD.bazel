@@ -581,20 +581,6 @@ cc_library(
 )
 
 cc_library(
-    name = "descriptor_legacy",
-    hdrs = ["descriptor_legacy.h"],
-    copts = COPTS,
-    linkopts = LINK_OPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":port_def",
-        ":protobuf_nowkt",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_library(
     name = "descriptor_visitor",
     hdrs = ["descriptor_visitor.h"],
     copts = COPTS,
@@ -1043,7 +1029,6 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":descriptor_legacy",
         ":protobuf",
         ":test_textproto",
         "//src/google/protobuf/compiler:importer",
@@ -1339,7 +1324,6 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":descriptor_legacy",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",

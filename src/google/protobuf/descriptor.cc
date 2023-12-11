@@ -810,21 +810,6 @@ const char* const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {
     "repeated",  // LABEL_REPEATED
 };
 
-const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
-  switch (syntax) {
-    case SYNTAX_PROTO2:
-      return "proto2";
-    case SYNTAX_PROTO3:
-      return "proto3";
-    case SYNTAX_EDITIONS:
-      return "editions";
-    case SYNTAX_UNKNOWN:
-      return "unknown";
-  }
-  ABSL_LOG(FATAL) << "can't reach here.";
-  return nullptr;
-}
-
 static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
 
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)
@@ -3802,6 +3787,11 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
           enum_type()->is_closed());
 }
 
+bool FieldDescriptor::has_optional_keyword() const {
+  return proto3_optional_ || (file()->edition() == Edition::EDITION_PROTO2 &&
+                              is_optional() && !containing_oneof());
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -5070,7 +5060,6 @@ FileDescriptor* DescriptorPool::NewPlaceholderFileWithMutexHeld(
   placeholder->tables_ = &FileDescriptorTables::GetEmptyInstance();
   placeholder->source_code_info_ = &SourceCodeInfo::default_instance();
   placeholder->is_placeholder_ = true;
-  placeholder->syntax_ = FileDescriptor::SYNTAX_UNKNOWN;
   placeholder->finished_building_ = true;
   // All other fields are zero or nullptr.
 
@@ -5682,16 +5671,12 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // TODO: Report error when the syntax is empty after all the protos
   // have added the syntax statement.
   if (proto.syntax().empty() || proto.syntax() == "proto2") {
-    file_->syntax_ = FileDescriptor::SYNTAX_PROTO2;
     file_->edition_ = Edition::EDITION_PROTO2;
   } else if (proto.syntax() == "proto3") {
-    file_->syntax_ = FileDescriptor::SYNTAX_PROTO3;
     file_->edition_ = Edition::EDITION_PROTO3;
   } else if (proto.syntax() == "editions") {
-    file_->syntax_ = FileDescriptor::SYNTAX_EDITIONS;
     file_->edition_ = proto.edition();
   } else {
-    file_->syntax_ = FileDescriptor::SYNTAX_UNKNOWN;
     file_->edition_ = Edition::EDITION_UNKNOWN;
     AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER, [&] {
       return absl::StrCat("Unrecognized syntax: ", proto.syntax());
