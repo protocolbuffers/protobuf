@@ -133,6 +133,7 @@ cc_library(
         ":code_generator",
         ":importer",
         ":retention",
+        ":versions",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler/allowlists",
         "@com_google_absl//absl/algorithm",
