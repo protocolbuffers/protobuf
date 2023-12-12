@@ -787,4 +787,24 @@ module BasicTest
     assert_respond_to msg, :has_d?
     refute msg.has_d?
   end
+
+  def test_repeated_field_each_without_block
+    Google::Protobuf::DescriptorPool.generated_pool.build do
+      add_file("repeated_string.proto", :syntax => :proto3) do
+        add_message "RepeatedString" do
+          repeated :things, :string, 1
+        end
+      end
+    end
+
+    repeated_string = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("RepeatedString").msgclass
+
+    proto = repeated_string.new
+    proto.things << "a"
+    proto.things << "b"
+    proto.things << "c"
+
+    # should not throw.
+    proto.things.each.with_index { |item, index| puts(item, index) }
+  end
 end
