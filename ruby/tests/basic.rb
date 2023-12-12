@@ -788,7 +788,7 @@ module BasicTest
     refute msg.has_d?
   end
 
-  def test_repeated_field_each_without_block
+  def test_repeated_field_each_without_block # regression test for issue 5999
     Google::Protobuf::DescriptorPool.generated_pool.build do
       add_file("repeated_string.proto", :syntax => :proto3) do
         add_message "RepeatedString" do
@@ -797,9 +797,7 @@ module BasicTest
       end
     end
 
-    repeated_string = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("RepeatedString").msgclass
-
-    proto = repeated_string.new
+    proto = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("RepeatedString").msgclass.new
     proto.things << "a"
     proto.things << "b"
     proto.things << "c"
