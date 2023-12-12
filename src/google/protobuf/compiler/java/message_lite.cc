@@ -180,6 +180,14 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Annotate("{", "}", descriptor_);
   printer->Indent();
 
+  if (context_->options().opensource_runtime) {
+    printer->Print("static {\n");
+    printer->Indent();
+    PrintGencodeVersionValidator(printer, /*lite=*/true);
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+
   GenerateConstructor(printer);
 
   // Nested types
