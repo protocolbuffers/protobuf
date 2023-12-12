@@ -207,6 +207,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void Destroy() {
     ABSL_DCHECK(NeedsDestroy());
+
+    // TODO: arena check is redundant once all `RepeatedPtrField`s
+    // with non-null arena are owned by the arena.
+    if (PROTOBUF_PREDICT_FALSE(arena_ != nullptr)) return;
+
     using H = CommonHandler<TypeHandler>;
     int n = allocated_size();
     void** elems = elements();
@@ -219,13 +224,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
-  bool NeedsDestroy() const {
-    // TODO: arena check is redundant once all `RepeatedPtrField`s
-    // with non-null arena are owned by the arena.
-    return tagged_rep_or_elem_ != nullptr &&
-           PROTOBUF_PREDICT_FALSE(arena_ == nullptr);
+  inline bool NeedsDestroy() const {
+    // Either there is an allocated element in SSO buffer or there is an
+    // allocated Rep.
+    return tagged_rep_or_elem_ != nullptr;
   }
-  void DestroyProtos();  // implemented in the cc file
+  void DestroyProtos();
 
  public:
   // The next few methods are public so that they can be called from generated
