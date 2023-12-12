@@ -84,7 +84,7 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     GenerateDescriptors(printer.get());
     if (options_.opensource_runtime) {
-      PrintGencodeVersionValidator(printer.get());
+      PrintGencodeVersionValidator(printer.get(), /*lite=*/false);
     }
     printer->Outdent();
     printer->Outdent();

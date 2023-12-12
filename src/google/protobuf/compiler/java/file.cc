@@ -276,7 +276,7 @@ void FileGenerator::Generate(io::Printer* printer) {
   if (options_.opensource_runtime) {
     printer->Print("static {\n");
     printer->Indent();
-    PrintGencodeVersionValidator(printer);
+    PrintGencodeVersionValidator(printer, context_->EnforceLite());
     printer->Outdent();
     printer->Print("}\n");
   }

@@ -85,16 +85,18 @@ void PrintEnumVerifierLogic(
                  absl::StrCat(enum_verifier_string, terminating_string));
 }
 
-void PrintGencodeVersionValidator(io::Printer* printer) {
+void PrintGencodeVersionValidator(io::Printer* printer, bool lite) {
   const auto& version = GetProtobufJavaVersion();
   printer->Print(
-      "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "com.google.protobuf.RuntimeVersion.validateProtobuf$lite$GencodeVersion("
+      "\n"
       "  com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,\n"
       "  $major$,\n"
       "  $minor$,\n"
       "  $patch$,\n"
       "  $suffix$);\n",
-      "major", absl::StrCat("/* major= */ ", version.major()), "minor",
+      "lite", lite ? "Lite" : "", "major",
+      absl::StrCat("/* major= */ ", version.major()), "minor",
       absl::StrCat("/* minor= */ ", version.minor()), "patch",
       absl::StrCat("/* patch= */ ", version.patch()), "suffix",
       absl::StrCat("/* suffix= */ \"", version.suffix(), "\""));
