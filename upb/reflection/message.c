@@ -131,7 +131,8 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
           if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
           break;
         case kUpb_FieldMode_Scalar:
-          if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
+          if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, &val))
+            continue;
           break;
       }
     }
