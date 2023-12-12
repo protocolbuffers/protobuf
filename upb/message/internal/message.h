@@ -89,8 +89,8 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance.
-bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                             upb_Arena* arena);
+bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
+                                          size_t len, upb_Arena* arena);
 
 bool UPB_PRIVATE(_upb_Message_Realloc)(upb_Message* msg, size_t need,
                                        upb_Arena* arena);

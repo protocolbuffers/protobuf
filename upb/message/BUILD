@@ -310,6 +310,7 @@ cc_test(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
+        "//upb:port",
         "//upb:wire",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",

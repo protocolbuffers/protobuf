@@ -7,21 +7,26 @@
 
 #include "upb/message/message.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/mem/arena.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 static const size_t message_overhead = sizeof(upb_Message_InternalData);
 
-upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
-                             upb_Arena* arena) {
-  return _upb_Message_New(mini_table, arena);
+upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena) {
+  return _upb_Message_New(m, arena);
 }
 
-bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                             upb_Arena* arena) {
+bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
+                                          size_t len, upb_Arena* arena) {
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
