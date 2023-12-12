@@ -394,51 +394,47 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void AddAllocated(Value<TypeHandler>* value) {
     ABSL_DCHECK_NE(value, nullptr);
-    Arena* element_arena = TypeHandler::GetArena(value);
+    using H = CommonHandler<TypeHandler>;
+    Arena* element_arena = H::GetArena(value);
     Arena* arena = GetArena();
-    if (arena != element_arena || AllocatedSizeAtCapacity()) {
-      AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
-      return;
+    Value<H>* v = value;
+    if (PROTOBUF_PREDICT_FALSE(arena != element_arena)) {
+      v = OwnOrCopy<H>(v, element_arena, arena);
     }
-    // Fast path: underlying arena representation (tagged pointer) is equal to
-    // our arena pointer, and we can add to array without resizing it (at
-    // least one slot that is not allocated).
-    void** elems = elements();
-    if (current_size_ < allocated_size()) {
-      // Make space at [current] by moving first allocated element to end of
-      // allocated list.
-      elems[allocated_size()] = elems[current_size_];
-    }
-    elems[ExchangeCurrentSize(current_size_ + 1)] = value;
-    if (!using_sso()) ++rep()->allocated_size;
+    UnsafeArenaAddAllocated<H>(v);
   }
 
   template <typename TypeHandler>
   void UnsafeArenaAddAllocated(Value<TypeHandler>* value) {
     ABSL_DCHECK_NE(value, nullptr);
-    // Make room for the new pointer.
+    if (tagged_rep_or_elem_ == nullptr) {
+      tagged_rep_or_elem_ = value;
+      ExchangeCurrentSize(1);
+      return;
+    }
+    if (PROTOBUF_PREDICT_TRUE(!AllocatedSizeAtCapacity())) {
+      // Enough room for the pointer.
+      // If we have unused allocated objects, move first one to the end.
+      Rep* r = rep();
+      r->elements[r->allocated_size++] = r->elements[current_size_];
+      r->elements[current_size_] = value;
+      ExchangeCurrentSize(current_size_ + 1);
+      return;
+    }
     if (SizeAtCapacity()) {
       // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1);
+      *InternalExtend(1) = value;
       ++rep()->allocated_size;
-    } else if (AllocatedSizeAtCapacity()) {
-      // There is no more space in the pointer array because it contains some
-      // cleared objects awaiting reuse.  We don't want to grow the array in
-      // this case because otherwise a loop calling AddAllocated() followed by
-      // Clear() would leak memory.
-      using H = CommonHandler<TypeHandler>;
-      Delete<H>(element_at(current_size_), arena_);
-    } else if (current_size_ < allocated_size()) {
-      // We have some cleared objects.  We don't care about their order, so we
-      // can just move the first one to the end to make space.
-      element_at(allocated_size()) = element_at(current_size_);
-      ++rep()->allocated_size;
-    } else {
-      // There are no cleared objects.
-      if (!using_sso()) ++rep()->allocated_size;
+      ExchangeCurrentSize(current_size_ + 1);
+      return;
     }
-
-    element_at(ExchangeCurrentSize(current_size_ + 1)) = value;
+    // There is no more space in the pointer array because it contains some
+    // cleared objects awaiting reuse.  We don't want to grow the array in
+    // this case because otherwise a loop calling AddAllocated() followed by
+    // Clear() would leak memory.
+    void* cleared = std::exchange(element_at(current_size_), value);
+    ExchangeCurrentSize(current_size_ + 1);
+    Delete<CommonHandler<TypeHandler>>(cleared, GetArena());
   }
 
   template <typename TypeHandler>
@@ -507,28 +503,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     } else {
       return cast<TypeHandler>(element_at(--rep()->allocated_size));
     }
-  }
-
-  // Slowpath handles all cases, copying if necessary.
-  template <typename TypeHandler>
-  PROTOBUF_NOINLINE void AddAllocatedSlowWithCopy(
-      // Pass value_arena and my_arena to avoid duplicate virtual call (value)
-      // or load (mine).
-      Value<TypeHandler>* value, Arena* value_arena, Arena* my_arena) {
-    // Ensure that either the value is in the same arena, or if not, we do the
-    // appropriate thing: Own() it (if it's on heap and we're in an arena) or
-    // copy it to our arena/heap (otherwise).
-    if (my_arena != nullptr && value_arena == nullptr) {
-      my_arena->Own(value);
-    } else if (my_arena != value_arena) {
-      auto* new_value = TypeHandler::NewFromPrototype(value, my_arena);
-      using H = CommonHandler<TypeHandler>;
-      H::Merge(*value, new_value);
-      H::Delete(value, value_arena);
-      value = new_value;
-    }
-
-    UnsafeArenaAddAllocated<TypeHandler>(value);
   }
 
   template <typename TypeHandler>
@@ -613,6 +587,27 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   };
 
   static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
+
+  // Either transfers ownership of `value` to `my_arena` or makes a copy of it.
+  //
+  // Pre-condition: `value` is owned by `value_arena` and `my_arena` !=
+  //                `value_arena`.
+  template <typename TypeHandler>
+  static PROTOBUF_NOINLINE Value<TypeHandler>* OwnOrCopy(
+      // Pass value_arena and my_arena to avoid duplicate virtual call (value)
+      // or load (mine).
+      Value<TypeHandler>* value, Arena* value_arena, Arena* my_arena) {
+    ABSL_DCHECK(value_arena != my_arena);
+    ABSL_DCHECK(TypeHandler::GetArena(value) == value_arena);
+    if (value_arena == nullptr) {
+      my_arena->Own(value);
+      return value;
+    }
+    auto* new_value = TypeHandler::NewFromPrototype(value, my_arena);
+    TypeHandler::Merge(*value, new_value);
+    // No need to destroy `value` because it is owned by non null `value_arena`.
+    return new_value;
+  }
 
   // Replaces current_size_ with new_size and returns the previous value of
   // current_size_. This function is intended to be the only place where
