@@ -328,6 +328,8 @@ objc_library(
         ":conformance_objc_proto",
         "//:test_messages_proto2_objc_proto",
         "//:test_messages_proto3_objc_proto",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_objc_proto",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_objc_proto",
     ],
 )
 

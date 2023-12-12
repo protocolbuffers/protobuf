@@ -10,6 +10,8 @@
 #import "Conformance.pbobjc.h"
 #import "google/protobuf/TestMessagesProto2.pbobjc.h"
 #import "google/protobuf/TestMessagesProto3.pbobjc.h"
+#import "google/protobuf/editions/golden/TestMessagesProto2Editions.pbobjc.h"
+#import "google/protobuf/editions/golden/TestMessagesProto3Editions.pbobjc.h"
 
 static void Die(NSString *format, ...) __dead2;
 
@@ -49,22 +51,25 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       break;
 
     case ConformanceRequest_Payload_OneOfCase_ProtobufPayload: {
-      Class msgClass = nil;
-      if ([request.messageType isEqual:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
-        msgClass = [Proto3TestAllTypesProto3 class];
-      } else if ([request.messageType
-                     isEqual:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
-        msgClass = [Proto2TestAllTypesProto2 class];
+      NSDictionary *mappings = @{
+        @"protobuf_test_messages.proto2.TestAllTypesProto2" : [Proto2TestAllTypesProto2 class],
+        @"protobuf_test_messages.proto3.TestAllTypesProto3" : [Proto3TestAllTypesProto3 class],
+        @"protobuf_test_messages.editions.proto2.TestAllTypesProto2" :
+            [EditionsProto2TestAllTypesProto2 class],
+        @"protobuf_test_messages.editions.proto3.TestAllTypesProto3" :
+            [EditionsProto3TestAllTypesProto3 class],
+      };
+      Class msgClass = mappings[request.messageType];
+      if (msgClass) {
+        NSError *error = nil;
+        testMessage = [msgClass parseFromData:request.protobufPayload error:&error];
+        if (!testMessage) {
+          response.parseError = [NSString stringWithFormat:@"Parse error: %@", error];
+        }
       } else {
         response.runtimeError =
             [NSString stringWithFormat:@"Protobuf request had an unknown message_type: %@",
                                        request.messageType];
-        break;
-      }
-      NSError *error = nil;
-      testMessage = [msgClass parseFromData:request.protobufPayload error:&error];
-      if (!testMessage) {
-        response.parseError = [NSString stringWithFormat:@"Parse error: %@", error];
       }
       break;
     }
