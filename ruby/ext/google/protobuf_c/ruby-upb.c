@@ -5711,7 +5711,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   if (unknown_size != 0) {
     UPB_ASSERT(ptr);
     // Make a copy into destination arena.
-    if (!_upb_Message_AddUnknown(dst, ptr, unknown_size, arena)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, ptr, unknown_size, arena)) {
       return NULL;
     }
   }
@@ -6066,6 +6066,9 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
 }
 
 
+#include <stdint.h>
+#include <string.h>
+
 
 // Must be last.
 
@@ -6147,8 +6150,10 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
   sorted->end = sorted->start + size;
 
   if (sorted->end > s->cap) {
+    const int oldsize = s->cap * sizeof(*s->entries);
     s->cap = upb_Log2CeilingSize(sorted->end);
-    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
+    const int newsize = s->cap * sizeof(*s->entries);
+    s->entries = upb_grealloc(s->entries, oldsize, newsize);
     if (!s->entries) return false;
   }
 
@@ -6204,18 +6209,21 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 }
 
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 
 // Must be last.
 
 static const size_t message_overhead = sizeof(upb_Message_InternalData);
 
-upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
-                             upb_Arena* arena) {
-  return _upb_Message_New(mini_table, arena);
+upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena) {
+  return _upb_Message_New(m, arena);
 }
 
-bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                             upb_Arena* arena) {
+bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
+                                          size_t len, upb_Arena* arena) {
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
@@ -8341,7 +8349,7 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
     const upb_FieldDef* f = upb_value_getconstptr(val);
     if (upb_FieldDef_ContainingType(f) == m) n++;
   }
-  const upb_FieldDef** exts = malloc(n * sizeof(*exts));
+  const upb_FieldDef** exts = upb_gmalloc(n * sizeof(*exts));
   iter = UPB_INTTABLE_BEGIN;
   size_t i = 0;
   while (upb_inttable_next(&s->exts, &key, &val, &iter)) {
@@ -10433,15 +10441,15 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
   if (sym.size == 0) goto notfound;
   upb_value v;
   if (sym.data[0] == '.') {
-    /* Symbols starting with '.' are absolute, so we do a single lookup.
-     * Slice to omit the leading '.' */
+    // Symbols starting with '.' are absolute, so we do a single lookup.
+    // Slice to omit the leading '.'
     if (!_upb_DefPool_LookupSym(ctx->symtab, sym.data + 1, sym.size - 1, &v)) {
       goto notfound;
     }
   } else {
-    /* Remove components from base until we find an entry or run out. */
+    // Remove components from base until we find an entry or run out.
     size_t baselen = base ? strlen(base) : 0;
-    char* tmp = malloc(sym.size + baselen + 1);
+    char* tmp = upb_gmalloc(sym.size + baselen + 1);
     while (1) {
       char* p = tmp;
       if (baselen) {
@@ -10455,11 +10463,11 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
         break;
       }
       if (!remove_component(tmp, &baselen)) {
-        free(tmp);
+        upb_gfree(tmp);
         goto notfound;
       }
     }
-    free(tmp);
+    upb_gfree(tmp);
   }
 
   *type = _upb_DefType_Type(v);
@@ -10863,7 +10871,8 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
           if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
           break;
         case kUpb_FieldMode_Scalar:
-          if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
+          if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, &val))
+            continue;
           break;
       }
     }
@@ -12484,7 +12493,7 @@ static void _upb_Decoder_AddUnknownVarints(upb_Decoder* d, upb_Message* msg,
   end = upb_Decoder_EncodeVarint32(val1, end);
   end = upb_Decoder_EncodeVarint32(val2, end);
 
-  if (!_upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -12770,7 +12779,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     _upb_Decoder_AddUnknownVarints(d, msg, tag, size);
-    if (!_upb_Message_AddUnknown(msg, buf, size, &d->arena)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, size, &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else {
@@ -12948,9 +12957,11 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
   ptr = upb_Decoder_EncodeVarint32(kEndItemTag, ptr);
   char* end = ptr;
 
-  if (!_upb_Message_AddUnknown(msg, buf, split - buf, &d->arena) ||
-      !_upb_Message_AddUnknown(msg, message_data, message_size, &d->arena) ||
-      !_upb_Message_AddUnknown(msg, split, end - split, &d->arena)) {
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, split - buf, &d->arena) ||
+      !UPB_PRIVATE(_upb_Message_AddUnknown)(msg, message_data, message_size,
+                                            &d->arena) ||
+      !UPB_PRIVATE(_upb_Message_AddUnknown)(msg, split, end - split,
+                                            &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -13335,7 +13346,8 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
       start = d->unknown;
       d->unknown = NULL;
     }
-    if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, start, ptr - start,
+                                              &d->arena)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == kUpb_WireType_StartGroup) {
