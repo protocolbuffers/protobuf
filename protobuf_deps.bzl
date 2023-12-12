@@ -72,8 +72,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_cc",
             repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "818289e5613731ae410efb54218a4077fb9dbb03",
-            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610",
+            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",  # 0.0.9
+            sha256 = "5f862a44bbd032e1b48ed53c9c211ba2a1da60e10c5baa01c97369c249299ecb",
         )
 
     if not native.existing_rule("rules_java"):
