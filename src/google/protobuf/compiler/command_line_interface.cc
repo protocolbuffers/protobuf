@@ -1771,16 +1771,16 @@ bool CommandLineInterface::ExpandArgumentFile(
 #ifdef _MSC_VER
   // Convert the file name to wide chars.
   int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), NULL, 0);
-  std::wstring fileStr;
-  fileStr.resize(size);
-  MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), &fileStr[0], fileStr.size());
+  std::wstring file_str;
+  file_str.resize(size);
+  MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), &file_str[0], file_str.size());
 #else
-  std::string fileStr(file);
+  std::string file_str(file);
 #endif
 
   // The argument file is searched in the working directory only. We don't
   // use the proto import path here.
-  std::ifstream file_stream(fileStr.c_str());
+  std::ifstream file_stream(file_str.c_str());
   if (!file_stream.is_open()) {
     return false;
   }
