@@ -43,11 +43,11 @@ fn test_optional_fixed32_accessors() {
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 
-    msg.optional_fixed32_set(Some(99));
+    msg.optional_fixed32_mut().set(99);
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(99)));
     assert_that!(msg.optional_fixed32(), eq(99));
 
-    msg.optional_fixed32_set(None);
+    msg.optional_fixed32_mut().clear();
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 }
@@ -85,11 +85,11 @@ fn test_optional_fixed64_accessors() {
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed64(), eq(0));
 
-    msg.optional_fixed64_set(Some(2000));
+    msg.optional_fixed64_mut().set(2000);
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Set(2000)));
     assert_that!(msg.optional_fixed64(), eq(2000));
 
-    msg.optional_fixed64_set(None);
+    msg.optional_fixed64_mut().clear();
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed64(), eq(0));
 }
@@ -127,11 +127,11 @@ fn test_optional_int32_accessors() {
     assert_that!(msg.optional_int32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int32(), eq(0));
 
-    msg.optional_int32_set(Some(1));
+    msg.optional_int32_mut().set(1);
     assert_that!(msg.optional_int32_opt(), eq(Optional::Set(1)));
     assert_that!(msg.optional_int32(), eq(1));
 
-    msg.optional_int32_set(None);
+    msg.optional_int32_mut().clear();
     assert_that!(msg.optional_int32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int32(), eq(0));
 }
@@ -169,11 +169,11 @@ fn test_optional_int64_accessors() {
     assert_that!(msg.optional_int64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int64(), eq(0));
 
-    msg.optional_int64_set(Some(42));
+    msg.optional_int64_mut().set(42);
     assert_that!(msg.optional_int64_opt(), eq(Optional::Set(42)));
     assert_that!(msg.optional_int64(), eq(42));
 
-    msg.optional_int64_set(None);
+    msg.optional_int64_mut().clear();
     assert_that!(msg.optional_int64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int64(), eq(0));
 }
@@ -211,11 +211,11 @@ fn test_optional_sint32_accessors() {
     assert_that!(msg.optional_sint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint32(), eq(0));
 
-    msg.optional_sint32_set(Some(-22));
+    msg.optional_sint32_mut().set(-22);
     assert_that!(msg.optional_sint32_opt(), eq(Optional::Set(-22)));
     assert_that!(msg.optional_sint32(), eq(-22));
 
-    msg.optional_sint32_set(None);
+    msg.optional_sint32_mut().clear();
     assert_that!(msg.optional_sint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint32(), eq(0));
 }
@@ -253,11 +253,11 @@ fn test_optional_sint64_accessors() {
     assert_that!(msg.optional_sint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint64(), eq(0));
 
-    msg.optional_sint64_set(Some(7000));
+    msg.optional_sint64_mut().set(7000);
     assert_that!(msg.optional_sint64_opt(), eq(Optional::Set(7000)));
     assert_that!(msg.optional_sint64(), eq(7000));
 
-    msg.optional_sint64_set(None);
+    msg.optional_sint64_mut().clear();
     assert_that!(msg.optional_sint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint64(), eq(0));
 }
@@ -295,11 +295,11 @@ fn test_optional_uint32_accessors() {
     assert_that!(msg.optional_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint32(), eq(0));
 
-    msg.optional_uint32_set(Some(9001));
+    msg.optional_uint32_mut().set(9001);
     assert_that!(msg.optional_uint32_opt(), eq(Optional::Set(9001)));
     assert_that!(msg.optional_uint32(), eq(9001));
 
-    msg.optional_uint32_set(None);
+    msg.optional_uint32_mut().clear();
     assert_that!(msg.optional_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint32(), eq(0));
 }
@@ -337,11 +337,11 @@ fn test_optional_uint64_accessors() {
     assert_that!(msg.optional_uint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint64(), eq(0));
 
-    msg.optional_uint64_set(Some(42));
+    msg.optional_uint64_mut().set(42);
     assert_that!(msg.optional_uint64_opt(), eq(Optional::Set(42)));
     assert_that!(msg.optional_uint64(), eq(42));
 
-    msg.optional_uint64_set(None);
+    msg.optional_uint64_mut().clear();
     assert_that!(msg.optional_uint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint64(), eq(0));
 }
@@ -379,11 +379,11 @@ fn test_optional_float_accessors() {
     assert_that!(msg.optional_float_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_float(), eq(0.0));
 
-    msg.optional_float_set(Some(std::f32::consts::PI));
+    msg.optional_float_mut().set(std::f32::consts::PI);
     assert_that!(msg.optional_float_opt(), eq(Optional::Set(std::f32::consts::PI)));
     assert_that!(msg.optional_float(), eq(std::f32::consts::PI));
 
-    msg.optional_float_set(None);
+    msg.optional_float_mut().clear();
     assert_that!(msg.optional_float_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_float(), eq(0.0));
 }
@@ -421,11 +421,11 @@ fn test_optional_double_accessors() {
     assert_that!(msg.optional_double_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_double(), eq(0.0));
 
-    msg.optional_double_set(Some(-10.99));
+    msg.optional_double_mut().set(-10.99);
     assert_that!(msg.optional_double_opt(), eq(Optional::Set(-10.99)));
     assert_that!(msg.optional_double(), eq(-10.99));
 
-    msg.optional_double_set(None);
+    msg.optional_double_mut().clear();
     assert_that!(msg.optional_double_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_double(), eq(0.0));
 }
@@ -462,10 +462,10 @@ fn test_optional_bool_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_bool_opt(), eq(Optional::Unset(false)));
 
-    msg.optional_bool_set(Some(true));
+    msg.optional_bool_mut().set(true);
     assert_that!(msg.optional_bool_opt(), eq(Optional::Set(true)));
 
-    msg.optional_bool_set(None);
+    msg.optional_bool_mut().clear();
     assert_that!(msg.optional_bool_opt(), eq(Optional::Unset(false)));
 }
 
@@ -687,15 +687,15 @@ fn test_oneof_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
 
@@ -709,7 +709,7 @@ fn test_oneof_mut_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
 
     match msg.oneof_field_mut() {
         OneofUint32(mut v) => {
@@ -728,10 +728,10 @@ fn test_oneof_mut_accessors() {
         matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
     );
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
 }

@@ -50,25 +50,6 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"getter_thunk", Thunk(field, "get")},
           {"setter_thunk", Thunk(field, "set")},
           {"clearer_thunk", Thunk(field, "clear")},
-          {"field_setter",
-           [&] {
-             if (field.desc().has_presence()) {
-               field.Emit({}, R"rs(
-                  pub fn r#$field$_set(&mut self, val: Option<$Scalar$>) {
-                    match val {
-                      Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
-                      None => unsafe { $clearer_thunk$(self.inner.msg) },
-                    }
-                  }
-                )rs");
-             } else {
-               field.Emit({}, R"rs(
-                 pub fn r#$field$_set(&mut self, val: $Scalar$) {
-                   unsafe { $setter_thunk$(self.inner.msg, val) }
-                 }
-               )rs");
-             }
-           }},
           {"field_mutator_getter",
            [&] {
              if (field.desc().has_presence()) {
@@ -124,7 +105,6 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
       R"rs(
           $getter$
           $getter_opt$
-          $field_setter$
           $field_mutator_getter$
         )rs");
 }

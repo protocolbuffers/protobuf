@@ -26,10 +26,6 @@ fn test_fixed32_accessors() {
     msg.optional_fixed32_mut().set(u32::default());
     assert_that!(msg.optional_fixed32(), eq(0));
     assert_that!(msg.optional_fixed32_mut().get(), eq(0));
-
-    msg.optional_fixed32_set(43);
-    assert_that!(msg.optional_fixed32(), eq(43));
-    assert_that!(msg.optional_fixed32_mut().get(), eq(43));
 }
 
 #[test]
@@ -45,10 +41,6 @@ fn test_bool_accessors() {
     msg.optional_bool_mut().set(bool::default());
     assert_that!(msg.optional_bool(), eq(false));
     assert_that!(msg.optional_bool_mut().get(), eq(false));
-
-    msg.optional_bool_set(true);
-    assert_that!(msg.optional_bool(), eq(true));
-    assert_that!(msg.optional_bool_mut().get(), eq(true));
 }
 
 #[test]
@@ -199,11 +191,11 @@ fn test_oneof_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
@@ -217,7 +209,7 @@ fn test_oneof_accessors() {
     // eq(Optional::Unset(_))); assert_that!(msg.oneof_field(),
     // matches_pattern!(OneofNestedMessage(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
@@ -233,7 +225,7 @@ fn test_oneof_mut_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
 
     match msg.oneof_field_mut() {
         OneofUint32(mut v) => {
@@ -252,10 +244,10 @@ fn test_oneof_mut_accessors() {
         matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
     );
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
 }
