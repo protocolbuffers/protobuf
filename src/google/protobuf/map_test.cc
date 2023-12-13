@@ -22,6 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/internal_visibility_for_testing.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
