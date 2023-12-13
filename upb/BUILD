@@ -202,12 +202,6 @@ alias(
 )
 
 alias(
-    name = "mem_internal",
-    actual = "//upb/mem:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "message",
     actual = "//upb/message",
     visibility = ["//visibility:public"],
@@ -403,7 +397,6 @@ upb_amalgamation(
         ":hash",
         ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
         ":message_accessors",
         ":message_copy",
@@ -454,7 +447,6 @@ upb_amalgamation(
         ":json",
         ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
         ":message_accessors",
         ":message_copy",
@@ -505,7 +497,6 @@ upb_amalgamation(
         ":json",
         ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
         ":message_accessors",
         ":message_copy",

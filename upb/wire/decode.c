@@ -1343,10 +1343,10 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
     UPB_ASSERT(decoder->status != kUpb_DecodeStatus_Ok);
   }
 
-  _upb_MemBlock* blocks =
-      upb_Atomic_Load(&decoder->arena.blocks, memory_order_relaxed);
-  arena->head = decoder->arena.head;
-  upb_Atomic_Store(&arena->blocks, blocks, memory_order_relaxed);
+  arena->UPB_PRIVATE(ptr) = decoder->arena.UPB_PRIVATE(ptr);
+  arena->UPB_PRIVATE(end) = decoder->arena.UPB_PRIVATE(end);
+  // Note: We don't need to restore arena->internal here since it is unchanged.
+
   return decoder->status;
 }
 
@@ -1373,10 +1373,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
   // done.  The temporary arena only needs to be able to handle allocation,
   // not fuse or free, so it does not need many of the members to be initialized
   // (particularly parent_or_count).
-  _upb_MemBlock* blocks = upb_Atomic_Load(&arena->blocks, memory_order_relaxed);
-  decoder.arena.head = arena->head;
-  decoder.arena.block_alloc = arena->block_alloc;
-  upb_Atomic_Init(&decoder.arena.blocks, blocks);
+  decoder.arena = *arena;
 
   return upb_Decoder_Decode(&decoder, buf, msg, l, arena);
 }
