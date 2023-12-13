@@ -13,6 +13,11 @@
 
 use std::fmt;
 
+// There are a number of manual `Debug` and similar impls instead of using their
+// derives, in order to to avoid unnecessary bounds on a generic `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+
 /// Everything in `__public` is re-exported in `protobuf.rs`.
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]

@@ -229,9 +229,6 @@ impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
     }
 }
 
-// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
-// This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
 impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
     fn clone(&self) -> RepeatedField<'msg, T> {
