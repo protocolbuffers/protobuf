@@ -5442,6 +5442,25 @@ void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner) {
 }
 
 
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+const upb_Message_Extension* upb_Message_FindExtensionByNumber(
+    const upb_Message* msg, uint32_t field_number) {
+  size_t count = 0;
+  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+
+  while (count--) {
+    if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;
+    ext++;
+  }
+  return NULL;
+}
+
+
 #include <string.h>
 
 

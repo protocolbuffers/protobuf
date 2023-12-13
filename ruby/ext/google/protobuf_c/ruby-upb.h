@@ -1627,6 +1627,8 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
 
 // Must be last.
 
+typedef struct upb_Message_Extension upb_Message_Extension;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1749,14 +1751,14 @@ UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+struct upb_Message_Extension {
   const upb_MiniTableExtension* ext;
   union {
     upb_StringView str;
     void* ptr;
     char scalar_data[8];
   } data;
-} upb_Message_Extension;
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -12154,6 +12156,34 @@ UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
 
 
 #endif  // UPB_PORT_ATOMIC_H_
+
+#ifndef UPB_MESSAGE_COMPAT_H_
+#define UPB_MESSAGE_COMPAT_H_
+
+#include <stdint.h>
+
+
+// Must be last.
+
+// upb does not support mixing minitables from different sources but these
+// functions are still used by some existing users so for now we make them
+// available here. This may or may not change in the future so do not add
+// them to new code.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns the extension with the given field number, or NULL on failure.
+const upb_Message_Extension* upb_Message_FindExtensionByNumber(
+    const upb_Message* msg, uint32_t field_number);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_COMPAT_H_ */
 
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
