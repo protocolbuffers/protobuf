@@ -66,9 +66,14 @@ module Google
       # acts like an ordinary Ruby sequence.
       def each &block
         each_msg_val do |element|
-          yield(convert_upb_to_ruby(element, type, descriptor, arena))
+          yield convert_upb_to_ruby(element, type, descriptor, arena) if block_given?
         end
-        self
+        if block_given?
+          self
+        else
+          # If no block was given, we're chaining, so return an enumerator that can be used to chain.
+          self.map
+        end
       end
 
       def [](*args)
