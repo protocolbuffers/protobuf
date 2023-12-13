@@ -16,8 +16,8 @@ namespace compiler {
 namespace rust {
 
 void UnsupportedField::InMsgImpl(Context<FieldDescriptor> field) const {
-  field.Emit(R"rs(
-    // Unsupported! :(
+  field.Emit({{"reason", reason_}}, R"rs(
+    // Unsupported! :( Reason: $reason$
     )rs");
   field.printer().PrintRaw("\n");
 }

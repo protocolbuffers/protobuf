@@ -15,7 +15,8 @@
 #include "upb/port/def.inc"
 
 struct upb_MethodDef {
-  const UPB_DESC(MethodOptions) * opts;
+  const UPB_DESC(MethodOptions*) opts;
+  const UPB_DESC(FeatureSet*) resolved_features;
   upb_ServiceDef* service;
   const char* full_name;
   const upb_MessageDef* input_type;
@@ -39,6 +40,11 @@ const UPB_DESC(MethodOptions) * upb_MethodDef_Options(const upb_MethodDef* m) {
 
 bool upb_MethodDef_HasOptions(const upb_MethodDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
+}
+
+const UPB_DESC(FeatureSet) *
+    upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m) {
+  return m->resolved_features;
 }
 
 const char* upb_MethodDef_FullName(const upb_MethodDef* m) {
@@ -68,8 +74,14 @@ bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m) {
 }
 
 static void create_method(upb_DefBuilder* ctx,
-                          const UPB_DESC(MethodDescriptorProto) * method_proto,
+                          const UPB_DESC(MethodDescriptorProto*) method_proto,
+                          const UPB_DESC(FeatureSet*) parent_features,
                           upb_ServiceDef* s, upb_MethodDef* m) {
+  UPB_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
+                      method_proto);
+  m->resolved_features = _upb_DefBuilder_ResolveFeatures(
+      ctx, parent_features, UPB_DESC(MethodOptions_features)(m->opts));
+
   upb_StringView name = UPB_DESC(MethodDescriptorProto_name)(method_proto);
 
   m->service = s;
@@ -87,18 +99,17 @@ static void create_method(upb_DefBuilder* ctx,
       ctx, m->full_name, m->full_name,
       UPB_DESC(MethodDescriptorProto_output_type)(method_proto),
       UPB_DEFTYPE_MSG);
-
-  UPB_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
-                      method_proto);
 }
 
 // Allocate and initialize an array of |n| method defs belonging to |s|.
-upb_MethodDef* _upb_MethodDefs_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(MethodDescriptorProto) * const* protos, upb_ServiceDef* s) {
+upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
+                                   const UPB_DESC(MethodDescriptorProto*)
+                                       const* protos,
+                                   const UPB_DESC(FeatureSet*) parent_features,
+                                   upb_ServiceDef* s) {
   upb_MethodDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MethodDef) * n);
   for (int i = 0; i < n; i++) {
-    create_method(ctx, protos[i], s, &m[i]);
+    create_method(ctx, protos[i], parent_features, s, &m[i]);
     m[i].index = i;
   }
   return m;

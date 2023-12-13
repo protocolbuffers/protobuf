@@ -185,6 +185,12 @@ Error, UINTPTR_MAX is undefined
 
 #define UPB_PRIVATE(x) x##_dont_copy_me__upb_internal_use_only
 
+#ifdef UPB_ALLOW_PRIVATE_ACCESS__FOR_BITS_ONLY
+#define UPB_ONLYBITS(x) x
+#else
+#define UPB_ONLYBITS(x) UPB_PRIVATE(x)
+#endif
+
 /* Configure whether fasttable is switched on or not. *************************/
 
 #ifdef __has_attribute
@@ -323,6 +329,11 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 #if defined(UPB_IS_GOOGLE3) && !defined(UPB_BOOTSTRAP_STAGE0)
 #define UPB_DESC(sym) proto2_##sym
+#define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
+#elif defined(UPB_BOOTSTRAP_STAGE0)
+#define UPB_DESC(sym) google_protobuf_##sym
+#define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
 #define UPB_DESC(sym) google_protobuf_##sym
+#define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif

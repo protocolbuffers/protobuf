@@ -16,8 +16,11 @@
 #include <string_view>
 #include <vector>
 
+#include "google/protobuf/testing/fileenums.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/path.h"
+#include "file/util/fileyielder.h"
 #include "google/protobuf/compiler/access_info_map.h"
 #include "google/protobuf/compiler/split_map.h"
 #include "google/protobuf/compiler/profile_bootstrap.pb.h"
@@ -26,6 +29,8 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
@@ -42,15 +47,19 @@ namespace tools {
 
 namespace {
 
-enum PDProtoScale { kNever, kRarely, kDefault, kLikely };
+enum PDProtoScale { kInvalid, kNever, kRarely, kDefault, kLikely };
 
 struct PDProtoAnalysis {
   PDProtoScale presence = PDProtoScale::kDefault;
   PDProtoScale usage = PDProtoScale::kDefault;
+  uint64_t presence_count = 0;
+  uint64_t usage_count = 0;
 };
 
 std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
   switch (scale) {
+    case PDProtoScale::kInvalid:
+      return s << "INVALID";
     case PDProtoScale::kNever:
       return s << "NEVER";
     case PDProtoScale::kRarely:
@@ -106,18 +115,26 @@ class PDProtoAnalyzer {
   PDProtoAnalysis AnalyzeField(const FieldDescriptor* field) {
     PDProtoAnalysis analysis;
 
-    if (info_map_.InProfile(field)) {
-      if (IsLikelyPresent(field)) {
-        analysis.presence = PDProtoScale::kLikely;
-      } else if (IsRarelyPresent(field)) {
-        analysis.presence = PDProtoScale::kRarely;
-      }
+    if (!info_map_.InProfile(field)) {
+      return analysis;
     }
 
-    if (info_map_.InProfile(field) &&
-        info_map_.AccessCount(field, AccessInfoMap::kReadWriteOther) <=
-            info_map_.GetUnlikelyUsedThreshold()) {
-      analysis.usage = PDProtoScale::kRarely;
+    if (IsLikelyPresent(field)) {
+      analysis.presence = PDProtoScale::kLikely;
+    } else if (IsRarelyPresent(field)) {
+      analysis.presence = PDProtoScale::kRarely;
+    }
+    analysis.presence_count =
+        info_map_.AccessCount(field, AccessInfoMap::kReadWrite);
+
+    if (!info_map_.HasUsage(field)) {
+      analysis.usage = PDProtoScale ::kInvalid;
+    } else {
+      analysis.usage_count =
+          info_map_.AccessCount(field, AccessInfoMap::kReadWriteOther);
+      if (analysis.usage_count <= info_map_.GetUnlikelyUsedThreshold()) {
+        analysis.usage = PDProtoScale::kRarely;
+      }
     }
 
     return analysis;
@@ -273,9 +290,102 @@ std::vector<const MessageAccessInfo*> SortMessages(
   return sorted;
 }
 
+struct Stats {
+  uint64_t singular_total_pcount = 0;
+  uint64_t repeated_total_pcount = 0;
+  uint64_t singular_lazy_pcount = 0;
+  uint64_t singular_lazy_0usage_pcount = 0;
+  uint64_t repeated_lazy_pcount = 0;
+  uint64_t singular_lazy_num = 0;
+  uint64_t singular_lazy_0usage_num = 0;
+  uint64_t repeated_lazy_num = 0;
+  uint64_t max_pcount = 0;
+  uint64_t max_ucount = 0;
+};
+
+void Aggregate(const FieldDescriptor* field, const PDProtoAnalysis& analysis,
+               const PDProtoOptimization& optimized, Stats& stats) {
+  if (stats.max_pcount < analysis.presence_count) {
+    stats.max_pcount = analysis.presence_count;
+  }
+  if (stats.max_ucount < analysis.usage_count) {
+    stats.max_ucount = analysis.usage_count;
+  }
+  if (field->type() == FieldDescriptor::TYPE_MESSAGE) {
+    if (field->is_repeated()) {
+      stats.repeated_total_pcount += analysis.presence_count;
+    } else {
+      stats.singular_total_pcount += analysis.presence_count;
+    }
+  }
+  if (optimized == kLazy) {
+    if (field->is_repeated()) {
+      stats.repeated_lazy_num++;
+      stats.repeated_lazy_pcount += analysis.presence_count;
+    } else {
+      stats.singular_lazy_num++;
+      stats.singular_lazy_pcount += analysis.presence_count;
+      if (analysis.usage_count == 0) {
+        stats.singular_lazy_0usage_num++;
+        stats.singular_lazy_0usage_pcount += analysis.presence_count;
+      }
+    }
+  }
+}
+
+void Aggregate(const Stats& in, Stats& out) {
+  out.singular_total_pcount += in.singular_total_pcount;
+  out.repeated_total_pcount += in.repeated_total_pcount;
+  out.singular_lazy_num += in.singular_lazy_num;
+  out.singular_lazy_0usage_num += in.singular_lazy_0usage_num;
+  out.repeated_lazy_num += in.repeated_lazy_num;
+  out.singular_lazy_pcount += in.singular_lazy_pcount;
+  out.singular_lazy_0usage_pcount += in.singular_lazy_0usage_pcount;
+  out.repeated_lazy_pcount += in.repeated_lazy_pcount;
+  out.max_pcount = std::max(out.max_pcount, in.max_pcount);
+  out.max_ucount = std::max(out.max_ucount, in.max_ucount);
+}
+
+std::ostream& operator<<(std::ostream& s, Stats stats) {
+  s << "========" << std::endl
+    << "singular_lazy_num=" << stats.singular_lazy_num << std::endl
+    << "singular_lazy_0usage_num=" << stats.singular_lazy_0usage_num
+    << std::endl
+    << "repeated_lazy_num=" << stats.repeated_lazy_num << std::endl
+    << "singular_total_pcount=" << stats.singular_total_pcount << std::endl
+    << "repeated_total_pcount=" << stats.repeated_total_pcount << std::endl
+    << "singular_lazy_pcount=" << stats.singular_lazy_pcount << std::endl
+    << "singular_lazy_0usage_pcount=" << stats.singular_lazy_0usage_pcount
+    << std::endl
+    << "repeated_lazy_pcount=" << stats.repeated_lazy_pcount << std::endl
+    << "max_pcount=" << stats.max_pcount << std::endl
+    << "max_ucount=" << stats.max_ucount << std::endl
+    << "repeated_lazy_num/singular_lazy_num="
+    << static_cast<double>(stats.repeated_lazy_num) /
+           static_cast<double>(stats.singular_lazy_num)
+    << std::endl
+    << "repeated_lazy_pcount/singular_lazy_pcount="
+    << static_cast<double>(stats.repeated_lazy_pcount) /
+           static_cast<double>(stats.singular_lazy_pcount)
+    << std::endl
+    << "singular_lazy_pcount/singular_total_pcount="
+    << static_cast<double>(stats.singular_lazy_pcount) /
+           static_cast<double>(stats.singular_total_pcount)
+    << std::endl
+    << "singular_lazy_0usage_pcount/singular_total_pcount="
+    << static_cast<double>(stats.singular_lazy_0usage_pcount) /
+           static_cast<double>(stats.singular_total_pcount)
+    << std::endl
+    << "repeated_lazy_pcount/repeated_total_pcount="
+    << static_cast<double>(stats.repeated_lazy_pcount) /
+           static_cast<double>(stats.repeated_total_pcount)
+    << std::endl;
+  return s;
+}
+
 }  // namespace
 
-absl::Status AnalyzeProfileProtoToText(
+static absl::StatusOr<Stats> AnalyzeProfileProto(
     std::ostream& stream, absl::string_view proto_profile,
     const AnalyzeProfileProtoOptions& options) {
   if (options.pool == nullptr) {
@@ -300,6 +410,7 @@ absl::Status AnalyzeProfileProtoToText(
            << "-----------------------------------------\n";
   }
 
+  Stats stats;
   for (const MessageAccessInfo* message : SortMessages(*access_info)) {
     if (RE2::PartialMatch(message->name(), regex)) {
       if (const Descriptor* descriptor =
@@ -311,8 +422,10 @@ absl::Status AnalyzeProfileProtoToText(
             const FieldDescriptor* field = descriptor->field(i);
             PDProtoAnalysis analysis = analyzer.AnalyzeField(field);
             PDProtoOptimization optimized = analyzer.OptimizeField(field);
+            Aggregate(field, analysis, optimized, stats);
             if (options.print_all_fields || options.print_analysis ||
-                optimized != PDProtoOptimization::kNone) {
+                (options.print_optimized &&
+                 (optimized != PDProtoOptimization::kNone))) {
               if (!message_header) {
                 message_header = true;
                 stream << "Message "
@@ -340,6 +453,39 @@ absl::Status AnalyzeProfileProtoToText(
       }
     }
   }
+  if (options.print_analysis) {
+    stream << stats;
+  }
+  return stats;
+}
+
+absl::Status AnalyzeProfileProtoToText(
+    std::ostream& stream, absl::string_view proto_profile,
+    const AnalyzeProfileProtoOptions& options) {
+  return AnalyzeProfileProto(stream, proto_profile, options).status();
+}
+
+absl::Status AnalyzeAndAggregateProfileProtosToText(
+    std::ostream& stream, absl::string_view root,
+    const AnalyzeProfileProtoOptions& options) {
+  FileYielder yielder;
+  int errors = 0;
+  yielder.Start({file::JoinPath(root, "*")}, file::MATCH_DEFAULT,
+                /*recursively_expand=*/true, &errors);
+  if (errors > 0) {
+    return absl::InternalError(absl::StrCat("Failed to traverse path: ", root));
+  }
+  Stats merged;
+  for (; !yielder.Done(); yielder.Next()) {
+    const std::string& full_path = yielder.FullPathName();
+    if (!absl::EndsWith(full_path, "proto.profile")) {
+      continue;
+    }
+    stream << full_path << std::endl;
+    auto stats = *AnalyzeProfileProto(stream, full_path, options);
+    Aggregate(stats, merged);
+  }
+  stream << merged;
   return absl::OkStatus();
 }
 

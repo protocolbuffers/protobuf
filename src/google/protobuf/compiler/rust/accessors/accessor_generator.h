@@ -9,6 +9,8 @@
 #define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSOR_GENERATOR_H__
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -96,8 +98,20 @@ class RepeatedScalar final : public AccessorGenerator {
 
 class UnsupportedField final : public AccessorGenerator {
  public:
+  explicit UnsupportedField(std::string reason) : reason_(std::move(reason)) {}
   ~UnsupportedField() override = default;
   void InMsgImpl(Context<FieldDescriptor> field) const override;
+
+ private:
+  std::string reason_;
+};
+
+class Map final : public AccessorGenerator {
+ public:
+  ~Map() override = default;
+  void InMsgImpl(Context<FieldDescriptor> field) const override;
+  void InExternC(Context<FieldDescriptor> field) const override;
+  void InThunkCc(Context<FieldDescriptor> field) const override;
 };
 
 }  // namespace rust

@@ -51,7 +51,6 @@ cc_library(
         "//upb:base",
         "//upb:hash",
         "//upb:mem",
-        "//upb:message_types",
         "//upb:port",
     ],
 )
@@ -67,6 +66,7 @@ cc_library(
         "internal/field.h",
         "internal/file.h",
         "internal/message.h",
+        "internal/size_log2.h",
         "internal/sub.h",
     ],
     visibility = ["//visibility:public"],

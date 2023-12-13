@@ -38,4 +38,7 @@ extern VALUE cMap;
 // Call at startup to register all types in this module.
 void Map_register(VALUE module);
 
+// Recursively freeze map
+VALUE Map_internal_deep_freeze(VALUE _self);
+
 #endif  // RUBY_PROTOBUF_MAP_H_

@@ -7,6 +7,9 @@
 
 #include "upb/reflection/internal/extension_range.h"
 
+#include <stdint.h>
+
+#include "upb/reflection/extension_range.h"
 #include "upb/reflection/field_def.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/message_def.h"
@@ -15,7 +18,8 @@
 #include "upb/port/def.inc"
 
 struct upb_ExtensionRange {
-  const UPB_DESC(ExtensionRangeOptions) * opts;
+  const UPB_DESC(ExtensionRangeOptions*) opts;
+  const UPB_DESC(FeatureSet*) resolved_features;
   int32_t start;
   int32_t end;
 };
@@ -41,12 +45,18 @@ int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r) { return r->end; }
 
 upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ExtensionRange) * const* protos,
-    const upb_MessageDef* m) {
+    const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
+    const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m) {
   upb_ExtensionRange* r =
       _upb_DefBuilder_Alloc(ctx, sizeof(upb_ExtensionRange) * n);
 
   for (int i = 0; i < n; i++) {
+    UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
+                        ExtensionRangeOptions, protos[i]);
+    r[i].resolved_features = _upb_DefBuilder_ResolveFeatures(
+        ctx, parent_features,
+        UPB_DESC(ExtensionRangeOptions_features)(r[i].opts));
+
     const int32_t start =
         UPB_DESC(DescriptorProto_ExtensionRange_start)(protos[i]);
     const int32_t end = UPB_DESC(DescriptorProto_ExtensionRange_end)(protos[i]);
@@ -66,8 +76,6 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 
     r[i].start = start;
     r[i].end = end;
-    UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
-                        ExtensionRangeOptions, protos[i]);
   }
 
   return r;

@@ -8,9 +8,22 @@
 #ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 #define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/types.h"
+#include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/message/tagged_ptr.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 
 // Must be last.
@@ -42,60 +55,48 @@ extern "C" {
 
 // Hasbit access ///////////////////////////////////////////////////////////////
 
-UPB_INLINE size_t _upb_hasbit_ofs(size_t idx) { return idx / 8; }
-
-UPB_INLINE char _upb_hasbit_mask(size_t idx) { return 1 << (idx % 8); }
-
-UPB_INLINE bool _upb_hasbit(const upb_Message* msg, size_t idx) {
-  return (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), const char) &
-          _upb_hasbit_mask(idx)) != 0;
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
+    const upb_Message* msg, const upb_MiniTableField* f) {
+  const size_t offset = _upb_MiniTableField_HasbitOffset(f);
+  const char mask = _upb_MiniTableField_HasbitMask(f);
+  return (*UPB_PTR_AT(msg, offset, const char) & mask) != 0;
 }
 
-UPB_INLINE void _upb_sethas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) |= _upb_hasbit_mask(idx);
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
+    const upb_Message* msg, const upb_MiniTableField* f) {
+  const size_t offset = _upb_MiniTableField_HasbitOffset(f);
+  const char mask = _upb_MiniTableField_HasbitMask(f);
+  (*UPB_PTR_AT(msg, offset, char)) |= mask;
 }
 
-UPB_INLINE void _upb_clearhas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) &= ~_upb_hasbit_mask(idx);
-}
-
-UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTableField* f) {
-  UPB_ASSERT(f->presence > 0);
-  return f->presence;
-}
-
-UPB_INLINE bool _upb_hasbit_field(const upb_Message* msg,
-                                  const upb_MiniTableField* f) {
-  return _upb_hasbit(msg, _upb_Message_Hasidx(f));
-}
-
-UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
-                                  const upb_MiniTableField* f) {
-  _upb_sethas(msg, _upb_Message_Hasidx(f));
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
+    const upb_Message* msg, const upb_MiniTableField* f) {
+  const size_t offset = _upb_MiniTableField_HasbitOffset(f);
+  const char mask = _upb_MiniTableField_HasbitMask(f);
+  (*UPB_PTR_AT(msg, offset, char)) &= ~mask;
 }
 
 // Oneof case access ///////////////////////////////////////////////////////////
 
-UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
-  UPB_ASSERT(f->presence < 0);
-  return ~(ptrdiff_t)f->presence;
+UPB_INLINE uint32_t* UPB_PRIVATE(_upb_Message_OneofCasePtr)(
+    upb_Message* msg, const upb_MiniTableField* f) {
+  return UPB_PTR_AT(msg, _upb_MiniTableField_OneofOffset(f), uint32_t);
 }
 
-UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
-                                          const upb_MiniTableField* f) {
-  return UPB_PTR_AT(msg, _upb_oneofcase_ofs(f), uint32_t);
+UPB_INLINE uint32_t UPB_PRIVATE(_upb_Message_GetOneofCase)(
+    const upb_Message* msg, const upb_MiniTableField* f) {
+  return *UPB_PRIVATE(_upb_Message_OneofCasePtr)((upb_Message*)msg, f);
 }
 
-UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
-                                            const upb_MiniTableField* f) {
-  return *_upb_oneofcase_field((upb_Message*)msg, f);
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetOneofCase)(
+    upb_Message* msg, const upb_MiniTableField* f) {
+  *UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, f) =
+      upb_MiniTableField_Number(f);
 }
+
+// TODO: implement _upb_Message_ClearOneofCase()
 
 // LINT.ThenChange(GoogleInternalName2)
-
-UPB_INLINE bool _upb_MiniTableField_InOneOf(const upb_MiniTableField* field) {
-  return field->presence < 0;
-}
 
 UPB_INLINE void* _upb_MiniTableField_GetPtr(upb_Message* msg,
                                             const upb_MiniTableField* field) {
@@ -107,36 +108,42 @@ UPB_INLINE const void* _upb_MiniTableField_GetConstPtr(
   return (char*)msg + field->offset;
 }
 
-UPB_INLINE void _upb_Message_SetPresence(upb_Message* msg,
-                                         const upb_MiniTableField* field) {
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
+    upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_sethas_field(msg, field);
-  } else if (_upb_MiniTableField_InOneOf(field)) {
-    *_upb_oneofcase_field(msg, field) = field->number;
+    UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
+  } else if (upb_MiniTableField_IsInOneof(field)) {
+    UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, field);
   }
 }
 
-UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
-                                              const upb_MiniTableField* field) {
-  char zero[16] = {0};
-  switch (_upb_MiniTableField_GetRep(field)) {
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
+    const upb_MiniTableField* field, const void* a, const void* b) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(field)) {
     case kUpb_FieldRep_1Byte:
-      return memcmp(&zero, default_val, 1) != 0;
+      return memcmp(a, b, 1) == 0;
     case kUpb_FieldRep_4Byte:
-      return memcmp(&zero, default_val, 4) != 0;
+      return memcmp(a, b, 4) == 0;
     case kUpb_FieldRep_8Byte:
-      return memcmp(&zero, default_val, 8) != 0;
+      return memcmp(a, b, 8) == 0;
     case kUpb_FieldRep_StringView: {
-      const upb_StringView* sv = (const upb_StringView*)default_val;
-      return sv->size != 0;
+      const upb_StringView sa = *(const upb_StringView*)a;
+      const upb_StringView sb = *(const upb_StringView*)b;
+      return upb_StringView_IsEqual(sa, sb);
     }
   }
   UPB_UNREACHABLE();
 }
 
-UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
-                                             const upb_MiniTableField* field) {
-  switch (_upb_MiniTableField_GetRep(field)) {
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
+    const upb_MiniTableField* field, const void* val) {
+  const char zero[16] = {0};
+  return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(field, val, zero);
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
+    const upb_MiniTableField* field, void* to, const void* from) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(field)) {
     case kUpb_FieldRep_1Byte:
       memcpy(to, from, 1);
       return;
@@ -152,32 +159,6 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
     }
   }
   UPB_UNREACHABLE();
-}
-
-UPB_INLINE size_t
-_upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
-  const unsigned char table[] = {
-      0,
-      3,               // kUpb_FieldType_Double = 1,
-      2,               // kUpb_FieldType_Float = 2,
-      3,               // kUpb_FieldType_Int64 = 3,
-      3,               // kUpb_FieldType_UInt64 = 4,
-      2,               // kUpb_FieldType_Int32 = 5,
-      3,               // kUpb_FieldType_Fixed64 = 6,
-      2,               // kUpb_FieldType_Fixed32 = 7,
-      0,               // kUpb_FieldType_Bool = 8,
-      UPB_SIZE(3, 4),  // kUpb_FieldType_String = 9,
-      UPB_SIZE(2, 3),  // kUpb_FieldType_Group = 10,
-      UPB_SIZE(2, 3),  // kUpb_FieldType_Message = 11,
-      UPB_SIZE(3, 4),  // kUpb_FieldType_Bytes = 12,
-      2,               // kUpb_FieldType_UInt32 = 13,
-      2,               // kUpb_FieldType_Enum = 14,
-      2,               // kUpb_FieldType_SFixed32 = 15,
-      3,               // kUpb_FieldType_SFixed64 = 16,
-      2,               // kUpb_FieldType_SInt32 = 17,
-      3,               // kUpb_FieldType_SInt64 = 18,
-  };
-  return table[field->UPB_PRIVATE(descriptortype)];
 }
 
 // Here we define universal getter/setter functions for message fields.
@@ -198,9 +179,10 @@ _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
 //                                       const upb_MiniTableField* field,
 //                                       bool value, upb_Arena* a) {
 //     UPB_ASSUME(field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bool);
-//     UPB_ASSUME(!upb_IsRepeatedOrMap(field));
-//     UPB_ASSUME(_upb_MiniTableField_GetRep(field) == kUpb_FieldRep_1Byte);
-//     _upb_Message_SetField(msg, field, &value, a);
+//     UPB_ASSUME(upb_MiniTableField_IsScalar(field));
+//     UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(field) ==
+//                kUpb_FieldRep_1Byte);
+//     upb_Message_SetField(msg, field, &value, a);
 //   }
 //
 // As a result, we can use these universal getters/setters for *all* message
@@ -214,7 +196,7 @@ _upb_MiniTable_ElementSizeLg2(const upb_MiniTableField* field) {
 
 UPB_INLINE bool _upb_Message_HasExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* ext) {
-  UPB_ASSERT(upb_MiniTableField_HasPresence(&ext->field));
+  UPB_ASSERT(upb_MiniTableField_HasPresence(&ext->UPB_PRIVATE(field)));
   return _upb_Message_Getext(msg, ext) != NULL;
 }
 
@@ -222,10 +204,11 @@ UPB_INLINE bool _upb_Message_HasNonExtensionField(
     const upb_Message* msg, const upb_MiniTableField* field) {
   UPB_ASSERT(upb_MiniTableField_HasPresence(field));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
-  if (_upb_MiniTableField_InOneOf(field)) {
-    return _upb_getoneofcase_field(msg, field) == field->number;
+  if (upb_MiniTableField_IsInOneof(field)) {
+    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, field) ==
+           upb_MiniTableField_Number(field);
   } else {
-    return _upb_hasbit_field(msg, field);
+    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, field);
   }
 }
 
@@ -233,45 +216,63 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
     const upb_Message* msg, const upb_MiniTableField* field,
     const void* default_val, void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
-  if ((_upb_MiniTableField_InOneOf(field) ||
-       _upb_MiniTable_ValueIsNonZero(default_val, field)) &&
+  if ((upb_MiniTableField_IsInOneof(field) ||
+       !UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, default_val)) &&
       !_upb_Message_HasNonExtensionField(msg, field)) {
-    _upb_MiniTable_CopyFieldData(val, default_val, field);
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(field, val, default_val);
     return;
   }
-  _upb_MiniTable_CopyFieldData(val, _upb_MiniTableField_GetConstPtr(msg, field),
-                               field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (field, val, _upb_MiniTableField_GetConstPtr(msg, field));
 }
 
 UPB_INLINE void _upb_Message_GetExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  UPB_ASSUME(upb_MiniTableField_IsExtension(&mt_ext->field));
   const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
+  const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
+  UPB_ASSUME(upb_MiniTableField_IsExtension(f));
+
   if (ext) {
-    _upb_MiniTable_CopyFieldData(val, &ext->data, &mt_ext->field);
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &ext->data);
   } else {
-    _upb_MiniTable_CopyFieldData(val, default_val, &mt_ext->field);
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, default_val);
   }
 }
 
-UPB_INLINE void _upb_Message_GetField(const upb_Message* msg,
-                                      const upb_MiniTableField* field,
-                                      const void* default_val, void* val) {
+// Gets a mutable Array, Map or Message field.
+// NOTE: For repeated/map fields, the resulting upb_Array*/upb_Map* can
+// be NULL if a upb_Array/upb_Map has not been allocated yet. Array/map
+// fields do not have presence, so this is semantically identical to a
+// pointer to an empty array/map, and must be treated the same for all
+// semantic purposes.
+//
+// For message fields, the pointer is guaranteed to be NULL iff the field
+// is unset (as message fields do have presence).
+UPB_INLINE upb_MutableMessageValue _upb_Message_GetMutableField(
+    const upb_Message* msg, const upb_MiniTableField* field) {
+  UPB_ASSUME(!upb_MiniTableField_IsScalar(field) ||
+             upb_MiniTableField_IsSubMessage(field));
+
+  upb_MutableMessageValue default_val;
+  default_val.msg = NULL;
+
+  upb_MutableMessageValue ret;
   if (upb_MiniTableField_IsExtension(field)) {
     _upb_Message_GetExtensionField(msg, (upb_MiniTableExtension*)field,
-                                   default_val, val);
+                                   &default_val, &ret);
   } else {
-    _upb_Message_GetNonExtensionField(msg, field, default_val, val);
+    _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   }
+  return ret;
 }
 
 UPB_INLINE void _upb_Message_SetNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field, const void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
-  _upb_Message_SetPresence(msg, field);
-  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), val,
-                               field);
+  UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (field, _upb_MiniTableField_GetPtr(msg, field), val);
 }
 
 UPB_INLINE bool _upb_Message_SetExtensionField(
@@ -281,20 +282,9 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   upb_Message_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
-  _upb_MiniTable_CopyFieldData(&ext->data, val, &mt_ext->field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (&mt_ext->UPB_PRIVATE(field), &ext->data, val);
   return true;
-}
-
-UPB_INLINE bool _upb_Message_SetField(upb_Message* msg,
-                                      const upb_MiniTableField* field,
-                                      const void* val, upb_Arena* a) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    return _upb_Message_SetExtensionField(msg, ext, val, a);
-  } else {
-    _upb_Message_SetNonExtensionField(msg, field, val);
-    return true;
-  }
 }
 
 UPB_INLINE void _upb_Message_ClearExtensionField(
@@ -314,21 +304,21 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
 UPB_INLINE void _upb_Message_ClearNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_clearhas(msg, _upb_Message_Hasidx(field));
-  } else if (_upb_MiniTableField_InOneOf(field)) {
-    uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
-    if (*oneof_case != field->number) return;
-    *oneof_case = 0;
+    UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, field);
+  } else if (upb_MiniTableField_IsInOneof(field)) {
+    uint32_t* ptr = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
+    if (*ptr != upb_MiniTableField_Number(field)) return;
+    *ptr = 0;
   }
   const char zeros[16] = {0};
-  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), zeros,
-                               field);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (field, _upb_MiniTableField_GetPtr(msg, field), zeros);
 }
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
     const upb_Message* msg, const upb_MiniTableField* field) {
   UPB_UNUSED(msg);
-  _upb_MiniTableField_CheckIsMap(field);
+  UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
 #ifndef NDEBUG
   upb_TaggedMessagePtr default_val = 0;
   upb_TaggedMessagePtr tagged;
@@ -340,7 +330,7 @@ UPB_INLINE void _upb_Message_AssertMapIsUntagged(
 UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
-  _upb_MiniTableField_CheckIsMap(field);
+  UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
   _upb_Message_AssertMapIsUntagged(msg, field);
   upb_Map* map = NULL;
   upb_Map* default_map_value = NULL;
@@ -348,7 +338,7 @@ UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
   if (!map) {
     map = _upb_Map_New(arena, key_size, val_size);
     // Check again due to: https://godbolt.org/z/7WfaoKG1r
-    _upb_MiniTableField_CheckIsMap(field);
+    UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
     _upb_Message_SetNonExtensionField(msg, field, &map);
   }
   return map;

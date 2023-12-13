@@ -2346,16 +2346,11 @@ static PyObject* GetExtensionDict(CMessage* self, void *closure) {
 }
 
 static PyObject* GetUnknownFields(CMessage* self) {
-  PyErr_Warn(nullptr,
-             "message.UnknownFields() is deprecated. Please use the "
-             "add one feature unknown_fields.UnknownFieldSet(message) in "
-             "unknown_fields.py instead.");
-  if (self->unknown_field_set == nullptr) {
-    self->unknown_field_set = unknown_fields::NewPyUnknownFields(self);
-  } else {
-    Py_INCREF(self->unknown_field_set);
-  }
-  return self->unknown_field_set;
+  PyErr_Format(PyExc_NotImplementedError,
+               "Please use the add-on feature "
+               "unknown_fields.UnknownFieldSet(message) in "
+               "unknown_fields.py instead.");
+  return nullptr;
 }
 
 static PyGetSetDef Getters[] = {

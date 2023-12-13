@@ -19,7 +19,6 @@
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -40,7 +39,7 @@ void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer);
 std::string DefaultValueForField(const FieldDescriptor* field);
 
-template<class numeric_type>
+template <class numeric_type>
 std::string NumberToString(numeric_type value) {
   std::ostringstream os;
   os << value;
@@ -64,7 +63,6 @@ bool IsUpper(char ch) { return ch >= 'A' && ch <= 'Z'; }
 bool IsAlpha(char ch) { return IsLower(ch) || IsUpper(ch); }
 
 char UpperChar(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
-
 
 // Package names in protobuf are snake_case by convention, but Ruby module
 // names must be PascalCased.
@@ -123,14 +121,12 @@ void GenerateMessageAssignment(absl::string_view prefix,
     return;
   }
 
+  printer->Print("$prefix$$name$ = ", "prefix", prefix, "name",
+                 RubifyConstant(message->name()));
   printer->Print(
-    "$prefix$$name$ = ",
-    "prefix", prefix,
-    "name", RubifyConstant(message->name()));
-  printer->Print(
-    "::Google::Protobuf::DescriptorPool.generated_pool."
-    "lookup(\"$full_name$\").msgclass\n",
-    "full_name", message->full_name());
+      "::Google::Protobuf::DescriptorPool.generated_pool."
+      "lookup(\"$full_name$\").msgclass\n",
+      "full_name", message->full_name());
 
   std::string nested_prefix =
       absl::StrCat(prefix, RubifyConstant(message->name()), "::");
@@ -144,14 +140,12 @@ void GenerateMessageAssignment(absl::string_view prefix,
 
 void GenerateEnumAssignment(absl::string_view prefix, const EnumDescriptor* en,
                             io::Printer* printer) {
+  printer->Print("$prefix$$name$ = ", "prefix", prefix, "name",
+                 RubifyConstant(en->name()));
   printer->Print(
-    "$prefix$$name$ = ",
-    "prefix", prefix,
-    "name", RubifyConstant(en->name()));
-  printer->Print(
-    "::Google::Protobuf::DescriptorPool.generated_pool."
-    "lookup(\"$full_name$\").enummodule\n",
-    "full_name", en->full_name());
+      "::Google::Protobuf::DescriptorPool.generated_pool."
+      "lookup(\"$full_name$\").enummodule\n",
+      "full_name", en->full_name());
 }
 
 int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
@@ -197,9 +191,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     if (need_change_to_module) {
       component = PackageToModule(component);
     }
-    printer->Print(
-      "module $name$\n",
-      "name", component);
+    printer->Print("module $name$\n", "name", component);
     printer->Indent();
     levels++;
   }
@@ -210,8 +202,7 @@ void EndPackageModules(int levels, io::Printer* printer) {
   while (levels > 0) {
     levels--;
     printer->Outdent();
-    printer->Print(
-      "end\n");
+    printer->Print("end\n");
   }
 }
 
@@ -304,14 +295,10 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
 
   if (file->dependency_count() != 0) {
     for (int i = 0; i < file->dependency_count(); i++) {
-      printer->Print("require '$name$'\n", "name", GetRequireName(file->dependency(i)->name()));
+      printer->Print("require '$name$'\n", "name",
+                     GetRequireName(file->dependency(i)->name()));
     }
     printer->Print("\n");
-  }
-
-  // TODO: Remove this when ruby supports extensions.
-  if (file->extension_count() > 0) {
-    ABSL_LOG(WARNING) << "Extensions are not yet supported in Ruby.";
   }
 
   GenerateBinaryDescriptor(file, printer, error);
@@ -328,17 +315,10 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   return true;
 }
 
-bool Generator::Generate(
-    const FileDescriptor* file,
-    const std::string& parameter,
-    GeneratorContext* generator_context,
-    std::string* error) const {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN) {
-    *error = "Invalid or unsupported proto syntax";
-    return false;
-  }
-
+bool Generator::Generate(const FileDescriptor* file,
+                         const std::string& parameter,
+                         GeneratorContext* generator_context,
+                         std::string* error) const {
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(GetOutputFilename(file->name())));
   io::Printer printer(output.get(), '$');

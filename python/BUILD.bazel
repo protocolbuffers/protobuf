@@ -203,5 +203,6 @@ py_extension(
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
+        "//third_party/utf8_range",
     ],
 )

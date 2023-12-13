@@ -5,8 +5,8 @@
 # https://opensource.org/licenses/MIT.
 
 DEFAULT_VISIBILITY = [
-    "//third_party/protobuf:__subpackages__",
-    "//:__subpackages__",
+    "//src/google/protobuf:__subpackages__",
+    "//third_party/utf8_range:__subpackages__",
     "//util/utf8/internal:__subpackages__",
 ]
 
@@ -14,9 +14,12 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "rules_fuzzing.patch",
+])
 
-# TODO(b/252876197) Remove this once callers have been Bazelified.
+# TODO Remove this once callers have been Bazelified.
 filegroup(
     name = "utf8_range_srcs",
     srcs = [
@@ -25,10 +28,7 @@ filegroup(
         "range2-sse.c",
         "utf8_range.h",
     ],
-    visibility = [
-        "@com_google_protobuf//:__subpackages__",
-        "@upb//:__subpackages__",
-    ],
+    visibility = ["//:__subpackages__"],
 )
 
 cc_library(
@@ -39,12 +39,14 @@ cc_library(
         "range2-sse.c",
     ],
     hdrs = ["utf8_range.h"],
+    strip_include_prefix = "/third_party/utf8_range",
 )
 
 cc_library(
     name = "utf8_validity",
     srcs = ["utf8_validity.cc"],
     hdrs = ["utf8_validity.h"],
+    strip_include_prefix = "/third_party/utf8_range",
     deps = [
         "@com_google_absl//absl/strings",
     ],

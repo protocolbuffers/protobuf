@@ -18,7 +18,7 @@ visibility([
 ])
 
 def rust_proto_library(name, deps, visibility = [], **args):
-    """Declares all the boilerplate needed to use Rust protobufs conveniently. 
+    """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
 

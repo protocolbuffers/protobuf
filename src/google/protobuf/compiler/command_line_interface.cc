@@ -17,11 +17,11 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/feature_resolver.h"
 
@@ -978,7 +978,8 @@ namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (FieldDescriptorLegacy(desc->field(i)).has_optional_keyword()) {
+    if (desc->field(i)->real_containing_oneof() == nullptr &&
+        desc->field(i)->containing_oneof() != nullptr) {
       return true;
     }
   }
@@ -991,8 +992,7 @@ bool ContainsProto3Optional(const Descriptor* desc) {
 }
 
 bool ContainsProto3Optional(const FileDescriptor* file) {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
+  if (file->edition() == Edition::EDITION_PROTO3) {
     for (int i = 0; i < file->message_type_count(); i++) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;
@@ -1556,7 +1556,8 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
     ABSL_LOG(ERROR) << defaults.status();
     return false;
   }
-  pool.SetFeatureSetDefaults(std::move(defaults).value());
+  absl::Status status = pool.SetFeatureSetDefaults(std::move(defaults).value());
+  ABSL_CHECK(status.ok()) << status.message();
   return true;
 }
 
@@ -1596,9 +1597,10 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
-    if (!experimental_editions_ && !IsEarlyEditionsFile(parsed_file->name())) {
-      if (FileDescriptorLegacy(parsed_file).syntax() ==
-          FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
+    if (!experimental_editions_ &&
+        !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
+        !absl::StartsWith(parsed_file->name(), "upb/")) {
+      if (parsed_file->edition() >= Edition::EDITION_2023) {
         std::cerr
             << parsed_file->name()
             << ": This file uses editions, but --experimental_editions has not "
@@ -2549,29 +2551,44 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
 
 bool CommandLineInterface::EnforceEditionsSupport(
     const std::string& codegen_name, uint64_t supported_features,
+    Edition minimum_edition, Edition maximum_edition,
     const std::vector<const FileDescriptor*>& parsed_files) const {
-  if (supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) {
-    // This generator explicitly supports editions.
-    return true;
-  }
   if (experimental_editions_) {
     // The user has explicitly specified the experimental flag.
     return true;
   }
   for (const auto* fd : parsed_files) {
-    // Skip enforcement for allowlisted files.
-    if (IsEarlyEditionsFile(fd->name())) continue;
+    if (fd->edition() < Edition::EDITION_2023) {
+      // Legacy proto2/proto3 files don't need any checks.
+      continue;
+    }
 
-    if (FileDescriptorLegacy(fd).syntax() ==
-        FileDescriptorLegacy::SYNTAX_EDITIONS) {
-      std::cerr
-          << fd->name() << ": is an editions file, but code generator "
-          << codegen_name
-          << " hasn't been updated to support editions yet.  Please ask "
-             "the owner of this code generator to add support or "
-             "switch back to proto2/proto3.\n\nSee "
-             "https://protobuf.dev/editions/overview/ for more information."
-          << std::endl;
+    if (absl::StartsWith(fd->name(), "google/protobuf/") ||
+        absl::StartsWith(fd->name(), "upb/")) {
+      continue;
+    }
+    if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+      std::cerr << absl::Substitute(
+          "$0: is an editions file, but code generator $1 hasn't been "
+          "updated to support editions yet.  Please ask the owner of this code "
+          "generator to add support or switch back to proto2/proto3.\n\nSee "
+          "https://protobuf.dev/editions/overview/ for more information.",
+          fd->name(), codegen_name);
+      return false;
+    }
+    if (fd->edition() < minimum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please upgrade your file to at least edition $3.",
+          fd->name(), codegen_name, fd->edition(), minimum_edition);
+      return false;
+    }
+    if (fd->edition() > maximum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please ask the owner of this code generator to add "
+          "support or switch back to a maximum of edition $3.",
+          fd->name(), codegen_name, fd->edition(), maximum_edition);
       return false;
     }
   }
@@ -2620,7 +2637,9 @@ bool CommandLineInterface::GenerateOutput(
 
     if (!EnforceEditionsSupport(
             output_directive.name,
-            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+            output_directive.generator->GetSupportedFeatures(),
+            output_directive.generator->GetMinimumEdition(),
+            output_directive.generator->GetMaximumEdition(), parsed_files)) {
       return false;
     }
 
@@ -2824,11 +2843,15 @@ bool CommandLineInterface::GeneratePluginOutput(
     // Generator returned an error.
     *error = response.error();
     return false;
-  } else if (!EnforceProto3OptionalSupport(
-                 plugin_name, response.supported_features(), parsed_files)) {
+  }
+  if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
+                                    parsed_files)) {
     return false;
-  } else if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
-                                     parsed_files)) {
+  }
+  if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
+                              static_cast<Edition>(response.minimum_edition()),
+                              static_cast<Edition>(response.maximum_edition()),
+                              parsed_files)) {
     return false;
   }
 

@@ -162,7 +162,8 @@ class RepeatedField final
   RepeatedField& operator=(const RepeatedField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  RepeatedField(RepeatedField&& other) noexcept;
+  RepeatedField(RepeatedField&& rhs) noexcept
+      : RepeatedField(nullptr, std::move(rhs)) {}
   RepeatedField& operator=(RepeatedField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -329,6 +330,7 @@ class RepeatedField final
   static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
+  RepeatedField(Arena* arena, RepeatedField&& rhs);
 
 
   // Swaps entire contents with "other". Should be called only if the caller can
@@ -515,18 +517,17 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 }
 
 template <typename Element>
-inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
-    : RepeatedField() {
+inline RepeatedField<Element>::RepeatedField(Arena* arena, RepeatedField&& rhs)
+    : RepeatedField(arena) {
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-  CopyFrom(other);
+  CopyFrom(rhs);
 #else   // PROTOBUF_FORCE_COPY_IN_MOVE
-  // We don't just call Swap(&other) here because it would perform 3 copies if
-  // other is on an arena. This field can't be on an arena because arena
-  // construction always uses the Arena* accepting constructor.
-  if (other.GetArena()) {
-    CopyFrom(other);
+  // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
+  // is on a different arena.
+  if (arena != rhs.GetArena()) {
+    CopyFrom(rhs);
   } else {
-    InternalSwap(&other);
+    InternalSwap(&rhs);
   }
 #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
@@ -1034,14 +1035,18 @@ namespace internal {
 // the compiler isn't allowed to inline them.
 template <typename Element>
 class RepeatedIterator {
+ private:
+  using traits =
+      std::iterator_traits<typename std::remove_const<Element>::type*>;
+
  public:
-  using iterator_category = std::random_access_iterator_tag;
-  // Note: remove_const is necessary for std::partial_sum, which uses value_type
-  // to determine the summation variable type.
-  using value_type = typename std::remove_const<Element>::type;
-  using difference_type = std::ptrdiff_t;
+  // Note: value_type is never cv-qualified.
+  using value_type = typename traits::value_type;
+  using difference_type = typename traits::difference_type;
   using pointer = Element*;
   using reference = Element&;
+  using iterator_category = typename traits::iterator_category;
+  using iterator_concept = typename IteratorConceptSupport<traits>::tag;
 
   constexpr RepeatedIterator() noexcept : it_(nullptr) {}
 
@@ -1141,10 +1146,10 @@ class RepeatedIterator {
 
   // Allow construction from RepeatedField.
   friend class RepeatedField<value_type>;
-  explicit RepeatedIterator(Element* it) noexcept : it_(it) {}
+  explicit RepeatedIterator(pointer it) noexcept : it_(it) {}
 
   // The internal iterator.
-  Element* it_;
+  pointer it_;
 };
 
 // A back inserter for RepeatedField objects.

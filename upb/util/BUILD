@@ -98,8 +98,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
+        "//upb:mem",
         "//upb:message",
-        "//upb:message_types",
         "//upb:port",
         "//upb:reflection",
     ],
@@ -107,7 +107,10 @@ cc_library(
 
 proto_library(
     name = "required_fields_test_proto",
-    srcs = ["required_fields_test.proto"],
+    srcs = [
+        "required_fields_editions_test.proto",
+        "required_fields_test.proto",
+    ],
 )
 
 upb_c_proto_library(
@@ -132,6 +135,7 @@ cc_test(
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",
+        "//upb:reflection_internal",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -146,6 +150,7 @@ cc_library(
     deps = [
         "//upb:base",
         "//upb:eps_copy_input_stream",
+        "//upb:mem",
         "//upb:port",
         "//upb:wire_reader",
         "//upb:wire_types",

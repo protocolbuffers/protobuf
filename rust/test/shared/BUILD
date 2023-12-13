@@ -23,7 +23,7 @@ rust_library(
         "//rust:protobuf_upb": "protobuf",
     },
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust:protobuf_upb",
     ],
 )
@@ -35,7 +35,7 @@ rust_library(
         "//rust:protobuf_cpp": "protobuf",
     },
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
     ],
 )
@@ -48,7 +48,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust/test:child_upb_rust_proto",
         "//rust/test:parent_upb_rust_proto",
     ],
@@ -62,9 +62,35 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust/test:child_cc_rust_proto",
         "//rust/test:parent_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "edition2023_cpp_test",
+    srcs = ["edition2023_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:edition2023_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "edition2023_upb_test",
+    srcs = ["edition2023_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:edition2023_upb_rust_proto",
     ],
 )
 
@@ -104,7 +130,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust/test:reserved_cc_rust_proto",
         "//rust/test:unittest_cc_rust_proto",
     ],
@@ -118,7 +144,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust/test:reserved_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
     ],
@@ -159,7 +185,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
         "//rust/test/shared:matchers_cpp",
@@ -181,7 +207,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
         "//rust/test/shared:matchers_upb",
@@ -200,7 +226,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_proto3_cc_rust_proto",
         "//rust/test:unittest_proto3_optional_cc_rust_proto",
@@ -220,7 +246,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
@@ -236,7 +262,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust/test:unittest_upb_rust_proto",
     ],
 )
@@ -249,7 +275,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "//third_party/gtest_rust/googletest",
+        "@crate_index//:googletest",
         "//rust/test:unittest_cc_rust_proto",
     ],
 )
@@ -257,11 +283,97 @@ rust_test(
 rust_test(
     name = "simple_nested_cpp_test",
     srcs = ["simple_nested_test.rs"],
-    deps = ["//rust/test:nested_cc_rust_proto"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:nested_cc_rust_proto",
+    ],
 )
 
 rust_test(
     name = "simple_nested_upb_test",
     srcs = ["simple_nested_test.rs"],
-    deps = ["//rust/test:nested_upb_rust_proto"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:nested_upb_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "accessors_repeated_cpp_test",
+    srcs = ["accessors_repeated_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "accessors_repeated_upb_test",
+    srcs = ["accessors_repeated_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "accessors_map_cpp_test",
+    srcs = ["accessors_map_test.rs"],
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:map_unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "accessors_map_upb_test",
+    srcs = ["accessors_map_test.rs"],
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust/test:map_unittest_upb_rust_proto",
+    ],
 )

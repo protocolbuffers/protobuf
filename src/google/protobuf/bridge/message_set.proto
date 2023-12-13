@@ -72,5 +72,5 @@ option objc_class_prefix = "GPB";
 message MessageSet {
   option message_set_wire_format = true;
 
-  extensions 4 to max;
+  extensions 4 to max [verification = UNVERIFIED];
 }

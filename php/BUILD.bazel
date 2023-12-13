@@ -4,10 +4,10 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("//upb/cmake:build_defs.bzl", "staleness_test")
+load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
-load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 filegroup(
     name = "source_files",
@@ -32,7 +32,7 @@ inline_sh_binary(
     name = "build_extension",
     cmd = """
         mkdir -p php/ext/google/protobuf/third_party/utf8_range
-        cp external/utf8_range/* php/ext/google/protobuf/third_party/utf8_range
+        cp third_party/utf8_range/* php/ext/google/protobuf/third_party/utf8_range
 
         pushd  php/ext/google/protobuf
         phpize
@@ -46,7 +46,7 @@ genrule(
     name = "extension",
     srcs = [
         ":source_files",
-        "@utf8_range//:utf8_range_srcs",
+        "//third_party/utf8_range:utf8_range_srcs",
     ],
     outs = ["protobuf.so"],
     cmd = """
@@ -157,8 +157,8 @@ pkg_files(
 pkg_files(
     name = "utf8_range_files",
     srcs = [
-        "@utf8_range//:LICENSE",
-        "@utf8_range//:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
     ],
     prefix = "third_party/utf8_range",
 )

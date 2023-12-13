@@ -505,19 +505,19 @@ class PROTOBUF_EXPORT MessageLite {
   }
 
   template <typename T>
-  static T* CreateMaybeMessage(Arena* arena) {
-    return Arena::CreateMaybeMessage<T>(arena);
+  PROTOBUF_ALWAYS_INLINE static T* DefaultConstruct(Arena* arena) {
+    return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
   template <typename T>
-  static T* CreateMaybeMessage(Arena* arena, const T& from) {
-    return Arena::CreateMaybeMessage<T>(arena, from);
+  PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
+    return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
-  // does not growth with the number of descriptor methods. This avoids extra
+  // does not grow with the number of descriptor methods. This avoids extra
   // costs in MessageLite.
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
@@ -527,11 +527,25 @@ class PROTOBUF_EXPORT MessageLite {
     // Note: The order of arguments in the functions is chosen so that it has
     // the same ABI as the member function that calls them. Eg the `this`
     // pointer becomes the first argument in the free function.
-    void (*merge_to_from)(Message& to, const Message& from_msg);
+    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     // LITE objects (ie !descriptor_methods) collocate their name as a
     // char[] just beyond the ClassData.
     const DescriptorMethods* descriptor_methods;
+
+    // Offset of the CachedSize member.
+    uint32_t cached_size_offset;
+
+    constexpr ClassData(void (*merge_to_from)(MessageLite& to,
+                                              const MessageLite&),
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
+                                                              Arena&),
+                        const DescriptorMethods* descriptor_methods,
+                        uint32_t cached_size_offset)
+        : merge_to_from(merge_to_from),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          descriptor_methods(descriptor_methods),
+          cached_size_offset(cached_size_offset) {}
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -545,9 +559,9 @@ class PROTOBUF_EXPORT MessageLite {
 
   internal::InternalMetadata _internal_metadata_;
 
-  // The default implementation means there is no cached size and ByteSize
-  // should be called instead.
-  virtual internal::CachedSize* AccessCachedSize() const;
+  // Return the cached size object as described by
+  // ClassData::cached_size_offset.
+  internal::CachedSize& AccessCachedSize() const;
 
  public:
   enum ParseFlags {
@@ -603,22 +617,22 @@ namespace internal {
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
                    MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<false>(absl::string_view input,
-                                          MessageLite* msg,
-                                          MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<true>(absl::string_view input,
-                                         MessageLite* msg,
-                                         MessageLite::ParseFlags parse_flags);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
+    absl::string_view input, MessageLite* msg,
+    MessageLite::ParseFlags parse_flags);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
+    absl::string_view input, MessageLite* msg,
+    MessageLite::ParseFlags parse_flags);
 
 template <bool alias>
 bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
                    MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<false>(io::ZeroCopyInputStream* input,
-                                          MessageLite* msg,
-                                          MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<true>(io::ZeroCopyInputStream* input,
-                                         MessageLite* msg,
-                                         MessageLite::ParseFlags parse_flags);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
+    io::ZeroCopyInputStream* input, MessageLite* msg,
+    MessageLite::ParseFlags parse_flags);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
+    io::ZeroCopyInputStream* input, MessageLite* msg,
+    MessageLite::ParseFlags parse_flags);
 
 struct BoundedZCIS {
   io::ZeroCopyInputStream* zcis;
@@ -628,10 +642,10 @@ struct BoundedZCIS {
 template <bool alias>
 bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
                    MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<false>(BoundedZCIS input, MessageLite* msg,
-                                          MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
-                                         MessageLite::ParseFlags parse_flags);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
+    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
+    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
 
 template <typename T>
 struct SourceWrapper;

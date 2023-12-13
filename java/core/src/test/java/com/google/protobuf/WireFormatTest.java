@@ -25,6 +25,7 @@ import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,6 +39,13 @@ public class WireFormatTest {
   private static final int TYPE_ID_2 =
       TestMessageSetExtension2.getDescriptor().getExtensions().get(0).getNumber();
   private static final int UNKNOWN_TYPE_ID = 1550055;
+
+  @After
+  public void tearDown() {
+    // Whether to parse message sets eagerly is stored in a global static. Since some tests modify
+    // the value, make sure to reset it between test runs.
+    ExtensionRegistryLite.setEagerlyParseMessageSets(false);
+  }
 
   @Test
   public void testSerialization() throws Exception {

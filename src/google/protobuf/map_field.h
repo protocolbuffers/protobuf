@@ -436,7 +436,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   // thread calls either ConstAccess() or MutableAccess(), on the same
   // MapFieldBase-derived object, and there is no synchronization going
   // on between them, tsan will alert.
-#if defined(__SANITIZE_THREAD__) || defined(THREAD_SANITIZER)
+#if defined(PROTOBUF_TSAN)
   void ConstAccess() const { ABSL_CHECK_EQ(seq1_, seq2_); }
   void MutableAccess() {
     if (seq1_ & 1) {
@@ -678,7 +678,7 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType_,
           WireFormatLite::FieldType kValueFieldType_>
-constexpr MapFieldBase::VTable
+PROTOBUF_CONSTINIT const MapFieldBase::VTable
     MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>::kVTable =
         MapField::template MakeVTable<MapField>();
 

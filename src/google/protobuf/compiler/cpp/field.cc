@@ -262,8 +262,8 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
 void HasBitVars(const FieldDescriptor* field, const Options& opts,
                 absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!idx.has_value()) {
-    vars.emplace_back("set_hasbit", "");
-    vars.emplace_back("clear_hasbit", "");
+    vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
+    vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
     return;
   }
 
@@ -293,7 +293,7 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
   }
 
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  ABSL_CHECK_GT(*idx, 0)
+  ABSL_CHECK_GT(*idx, 0u)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
 
   int32_t index = *idx / 32;

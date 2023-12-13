@@ -85,6 +85,24 @@ upb_c_proto_library(
 )
 
 proto_library(
+    name = "editions_test_proto",
+    testonly = 1,
+    srcs = ["editions_test.proto"],
+)
+
+upb_c_proto_library(
+    name = "editions_test_upb_c_proto",
+    testonly = 1,
+    deps = [":editions_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "editions_test_upb_proto_reflection",
+    testonly = 1,
+    deps = [":editions_test_proto"],
+)
+
+proto_library(
     name = "test_cpp_proto",
     srcs = ["test_cpp.proto"],
     deps = ["//:timestamp_proto"],
@@ -146,6 +164,7 @@ cc_library(
     visibility = ["//upb:__subpackages__"],
     deps = [
         "//upb:base",
+        "//upb:mem",
         "//upb:message",
         "//upb:mini_descriptor",
         "//upb:mini_table",
@@ -162,6 +181,20 @@ cc_test(
         ":proto3_test_upb_proto",
         ":proto3_test_upb_proto_reflection",
         "@com_google_googletest//:gtest_main",
+        "//upb:reflection",
+    ],
+)
+
+cc_test(
+    name = "editions_test",
+    srcs = ["editions_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":editions_test_upb_c_proto",
+        ":editions_test_upb_proto_reflection",
+        "@com_google_googletest//:gtest_main",
+        "//upb:base",
+        "//upb:mem",
         "//upb:reflection",
     ],
 )
@@ -207,11 +240,11 @@ cc_test(
     ],
     deps = [
         ":empty_upb_proto_reflection",
+        ":proto3_test_upb_proto",
         ":test_messages_proto2_upb_minitable",
         ":test_upb_proto",
         "@com_google_googletest//:gtest_main",
         "//upb:mini_table",
-        "//upb:port",
     ],
 )
 

@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -91,29 +92,36 @@ std::string oneofCaseEnumName(const OneofDescriptor& desc) {
 }
 
 // TODO: Promote up to naming.h once all types can be spelled.
-std::string RsTypeName(const FieldDescriptor& desc) {
+std::string RsTypeName(Context<FieldDescriptor> field) {
+  const auto& desc = field.desc();
+
+  // TODO: Fields with a ctype set not supported in v0.6 api.
+  if (desc.options().has_ctype()) {
+    return "";
+  }
+
   switch (desc.type()) {
     case FieldDescriptor::TYPE_MESSAGE:
+      return absl::StrCat("crate::", GetCrateRelativeQualifiedPath(
+                                         field.WithDesc(desc.message_type())));
     case FieldDescriptor::TYPE_ENUM:
     case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
       return "";
     default:
       return PrimitiveRsTypeName(desc);
   }
 }
 
-std::string RsTypeNameView(const FieldDescriptor& desc) {
-  std::string type = RsTypeName(desc);
+std::string RsTypeNameView(Context<FieldDescriptor> field) {
+  std::string type = RsTypeName(field);
   if (type.empty()) return "";
-  return "View<'msg, " + type + ">";
+  return absl::StrCat("::__pb::View<'msg, ", type, ">");
 }
 
-std::string RsTypeNameMut(const FieldDescriptor& desc) {
-  std::string type = RsTypeName(desc);
+std::string RsTypeNameMut(Context<FieldDescriptor> field) {
+  std::string type = RsTypeName(field);
   if (type.empty()) return "";
-  return "Mut<'msg, " + type + ">";
+  return absl::StrCat("::__pb::Mut<'msg, ", type, ">");
 }
 
 }  // namespace
@@ -127,30 +135,30 @@ void GenerateOneofDefinition(Context<OneofDescriptor> oneof) {
        {"view_fields",
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
-            const auto& field = desc.field(i);
-            std::string rs_type = RsTypeNameView(*field);
+            const auto& field = *desc.field(i);
+            std::string rs_type = RsTypeNameView(oneof.WithDesc(field));
             if (rs_type.empty()) {
               continue;
             }
-            oneof.Emit({{"name", ToCamelCase(field->name())},
+            oneof.Emit({{"name", ToCamelCase(field.name())},
                         {"type", rs_type},
-                        {"number", std::to_string(field->number())}},
-                       R"rs($name$($pb$::$type$) = $number$,
+                        {"number", std::to_string(field.number())}},
+                       R"rs($name$($type$) = $number$,
                 )rs");
           }
         }},
        {"mut_fields",
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
-            const auto& field = desc.field(i);
-            std::string rs_type = RsTypeNameMut(*field);
+            const auto& field = *desc.field(i);
+            std::string rs_type = RsTypeNameMut(oneof.WithDesc(field));
             if (rs_type.empty()) {
               continue;
             }
-            oneof.Emit({{"name", ToCamelCase(field->name())},
+            oneof.Emit({{"name", ToCamelCase(field.name())},
                         {"type", rs_type},
-                        {"number", std::to_string(field->number())}},
-                       R"rs($name$($pb$::$type$) = $number$,
+                        {"number", std::to_string(field.number())}},
+                       R"rs($name$($type$) = $number$,
                 )rs");
           }
         }}},
@@ -220,15 +228,15 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
        {"view_cases",
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
-            const auto& field = desc.field(i);
-            std::string rs_type = RsTypeNameView(*field);
+            const auto& field = *desc.field(i);
+            std::string rs_type = RsTypeNameView(oneof.WithDesc(field));
             if (rs_type.empty()) {
               continue;
             }
             oneof.Emit(
                 {
-                    {"case", ToCamelCase(field->name())},
-                    {"rs_getter", field->name()},
+                    {"case", ToCamelCase(field.name())},
+                    {"rs_getter", field.name()},
                     {"type", rs_type},
                 },
                 R"rs($Msg$_::$case_enum_name$::$case$ => $Msg$_::$view_enum_name$::$case$(self.$rs_getter$()),
@@ -238,21 +246,36 @@ void GenerateOneofAccessors(Context<OneofDescriptor> oneof) {
        {"mut_cases",
         [&] {
           for (int i = 0; i < desc.field_count(); ++i) {
-            const auto& field = desc.field(i);
-            std::string rs_type = RsTypeNameMut(*field);
+            const auto& field = *desc.field(i);
+            std::string rs_type = RsTypeNameMut(oneof.WithDesc(field));
             if (rs_type.empty()) {
               continue;
             }
-            // TODO: Uncomment this to allow mut once
-            // _mut() on singular fields with presence is implemented.
-            /*oneof.Emit({
-                    {"case", ToCamelCase(field->name())},
-                    {"rs_getter", field->name() + "_mut"},
-                    {"type", rs_type},
-                },
+            oneof.Emit(
+                {{"case", ToCamelCase(field.name())},
+                 {"rs_mut_getter", field.name() + "_mut"},
+                 {"type", rs_type},
+
+                 // Any extra behavior needed to map the mut getter into the
+                 // unwrapped Mut<>. Right now Message's _mut already returns
+                 // the Mut directly, but for scalars the accessor will return
+                 // an Optional which we then grab the mut by doing
+                 // .try_into_mut().unwrap().
+                 //
+                 // Note that this unwrap() is safe because the flow is:
+                 // 1) Find out which oneof field is already set (if any)
+                 // 2) If a field is set, call the corresponding field's _mut()
+                 // and wrap the result in the SomeOneofMut enum.
+                 // The unwrap() will only ever panic if the which oneof enum
+                 // disagrees with the corresponding field presence which.
+                 // TODO: If the message _mut accessor returns
+                 // Optional<> then this conditional behavior should be removed.
+                 {"into_mut_transform",
+                  field.type() == FieldDescriptor::TYPE_MESSAGE
+                      ? ""
+                      : ".try_into_mut().unwrap()"}},
                 R"rs($Msg$_::$case_enum_name$::$case$ =>
-               $Msg$_::$mut_enum_name$::$case$(self.$rs_getter$()), )rs");
-            */
+               $Msg$_::$mut_enum_name$::$case$(self.$rs_mut_getter$()$into_mut_transform$), )rs");
           }
         }},
        {"case_thunk", Thunk(oneof, "case")}},

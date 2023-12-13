@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "python/map.h"
 
@@ -179,7 +156,7 @@ int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
   const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   upb_MessageValue u_key, u_val;
-  if (!PyUpb_PyToUpb(key, key_f, &u_key, arena)) return -1;
+  if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return -1;
 
   if (val) {
     if (!PyUpb_PyToUpb(val, val_f, &u_val, arena)) return -1;
@@ -200,9 +177,8 @@ PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
   const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
-  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   upb_MessageValue u_key, u_val;
-  if (!PyUpb_PyToUpb(key, key_f, &u_key, arena)) return NULL;
+  if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
   if (!map || !upb_Map_Get(map, u_key, &u_val)) {
     map = PyUpb_MapContainer_EnsureReified(_self);
     upb_Arena* arena = PyUpb_Arena_Get(self->arena);
@@ -256,9 +232,8 @@ static PyObject* PyUpb_MapContainer_Get(PyObject* _self, PyObject* args,
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
   const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
-  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   upb_MessageValue u_key, u_val;
-  if (!PyUpb_PyToUpb(key, key_f, &u_key, arena)) return NULL;
+  if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
   if (map && upb_Map_Get(map, u_key, &u_val)) {
     return PyUpb_UpbToPy(u_val, val_f, self->arena);
   }

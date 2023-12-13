@@ -60,7 +60,7 @@ cc_library(
         "//upb:mini_table",
         "//upb:mini_table_internal",
         "//upb:port",
-        "@utf8_range",
+        "//third_party/utf8_range",
     ],
 )
 

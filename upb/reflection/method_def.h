@@ -26,6 +26,8 @@ int upb_MethodDef_Index(const upb_MethodDef* m);
 const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
 const char* upb_MethodDef_Name(const upb_MethodDef* m);
 const UPB_DESC(MethodOptions) * upb_MethodDef_Options(const upb_MethodDef* m);
+const UPB_DESC(FeatureSet) *
+    upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m);
 const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
 bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
 const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);

@@ -695,6 +695,82 @@ module BasicTest
         msg.map_string_int32_as_value = :boom
       end
     end
+
+    def test_file_descriptor_options
+      file_descriptor = TestMessage.descriptor.file_descriptor
+
+      assert_instance_of Google::Protobuf::FileOptions, file_descriptor.options
+      assert file_descriptor.options.deprecated
+    end
+
+    def test_field_descriptor_options
+      field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
+
+      assert_instance_of Google::Protobuf::FieldOptions, field_descriptor.options
+      assert field_descriptor.options.deprecated
+    end
+
+    def test_descriptor_options
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_instance_of Google::Protobuf::MessageOptions, descriptor.options
+      assert descriptor.options.deprecated
+    end
+
+    def test_enum_descriptor_options
+      enum_descriptor = TestDeprecatedEnum.descriptor
+
+      assert_instance_of Google::Protobuf::EnumOptions, enum_descriptor.options
+      assert enum_descriptor.options.deprecated
+    end
+
+    def test_oneof_descriptor_options
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
+      test_top_level_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.test_top_level_option'
+      assert_instance_of Google::Protobuf::FieldDescriptor, test_top_level_option
+      assert_equal "Custom option value", test_top_level_option.get(oneof_descriptor.options)
+    end
+
+    def test_nested_extension
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
+      test_nested_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.TestDeprecatedMessage.test_nested_option'
+      assert_instance_of Google::Protobuf::FieldDescriptor, test_nested_option
+      assert_equal "Another custom option value", test_nested_option.get(oneof_descriptor.options)
+    end
+
+    def test_options_deep_freeze
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_raise FrozenError do
+        descriptor.options.uninterpreted_option.push \
+          Google::Protobuf::UninterpretedOption.new
+      end
+    end
+
+    def test_message_deep_freeze
+      message = TestDeprecatedMessage.new
+      omit(":internal_deep_freeze only exists under FFI") unless message.respond_to? :internal_deep_freeze, true
+      nested_message_2 = TestMessage2.new
+
+      message.map_string_msg["message"] = TestMessage2.new
+      message.repeated_msg.push(TestMessage2.new)
+
+      message.send(:internal_deep_freeze)
+
+      assert_raise FrozenError do
+        message.map_string_msg["message"].foo = "bar"
+      end
+
+      assert_raise FrozenError do
+        message.repeated_msg[0].foo = "bar"
+      end
+    end
   end
 
   def test_oneof_fields_respond_to? # regression test for issue 9202

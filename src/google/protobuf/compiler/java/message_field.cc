@@ -19,7 +19,6 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 
@@ -62,11 +61,7 @@ void SetMessageVariables(
            : ""});
   (*variables)["on_changed"] = "onChanged();";
   (*variables)["ver"] = GeneratedCodeVersionSuffix();
-  (*variables)["get_parser"] =
-      ExposePublicParser(descriptor->message_type()->file()) &&
-              context->options().opensource_runtime
-          ? "PARSER"
-          : "parser()";
+  (*variables)["get_parser"] = "parser()";
 
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -342,7 +337,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // FieldOrBuilder getFieldOrBuilder()
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -411,7 +406,8 @@ void ImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
 }
 
 void ImmutableMessageFieldGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
-  if (FieldDescriptorLegacy(descriptor_).has_optional_keyword()) {
+  if (descriptor_->has_presence() &&
+      descriptor_->real_containing_oneof() == nullptr) {
     printer->Print(variables_,
                    "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
                    "  get() = $kt_dsl_builder$.$name$OrNull\n");
@@ -692,7 +688,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
                  "${$get$capitalized_name$Builder$}$() {\n"
                  "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
@@ -730,7 +726,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "  $on_changed$\n"
       "  return $name$Builder_;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
@@ -1148,7 +1144,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "    int index) {\n"
       "  return get$capitalized_name$FieldBuilder().getBuilder(index);\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // FieldOrBuilder getRepeatedFieldOrBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -1222,7 +1218,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return $name$Builder_;\n"
       "}\n");
-  printer->Annotate("{", "}", descriptor_);
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutableMessageFieldGenerator::

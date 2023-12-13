@@ -16,6 +16,9 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 
@@ -31,7 +34,12 @@ void TestParseCorruptedString(const T& message) {
     out.SetSerializationDeterministic(true);
     message.SerializePartialToCodedStream(&out);
   }
+#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_TSAN) || defined(PROTOBUF_MSAN)
+  // Make the test smaller in sanitizer mode.
+  const int kMaxIters = 200;
+#else
   const int kMaxIters = 900;
+#endif
   const int stride = s.size() <= kMaxIters ? 1 : s.size() / kMaxIters;
   const int start = stride == 1 || use_arena ? 0 : (stride + 1) / 2;
   for (int i = start; i < s.size(); i += stride) {
@@ -62,6 +70,11 @@ struct ArenaTestPeer {
   static auto PeekCleanupListForTesting(Arena* arena) {
     return arena->PeekCleanupListForTesting();
   }
+  template <typename T, typename... U>
+  static constexpr auto GetConstructType() {
+    return Arena::GetConstructType<T, U...>();
+  }
+  using ConstructType = Arena::ConstructType;
 };
 
 struct CleanupGrowthInfo {
@@ -129,5 +142,7 @@ class ArenaHolder {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__

@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_MINI_TABLE_TYPES_H_
-#define UPB_MINI_TABLE_TYPES_H_
+#ifndef UPB_MINI_TABLE_TAGGED_PTR_H_
+#define UPB_MINI_TABLE_TAGGED_PTR_H_
 
 #include <stdint.h>
 
@@ -14,10 +14,6 @@
 
 // Must be last.
 #include "upb/port/def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // When a upb_Message* is stored in a message, array, or map, it is stored in a
 // tagged form.  If the tag bit is set, the referenced upb_Message is of type
@@ -27,7 +23,12 @@ extern "C" {
 //
 // See the documentation for kUpb_DecodeOption_ExperimentalAllowUnlinked for
 // more information.
+
 typedef uintptr_t upb_TaggedMessagePtr;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Internal-only because empty messages cannot be created by the user.
 UPB_INLINE upb_TaggedMessagePtr _upb_TaggedMessagePtr_Pack(upb_Message* ptr,
@@ -66,4 +67,4 @@ UPB_INLINE upb_Message* _upb_TaggedMessagePtr_GetEmptyMessage(
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MINI_TABLE_TYPES_H_ */
+#endif /* UPB_MINI_TABLE_TAGGED_PTR_H_ */
