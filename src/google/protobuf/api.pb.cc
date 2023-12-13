@@ -325,12 +325,15 @@ inline void Api::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Api::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Api::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
+              false,
+          },
+          &Api::MergeImpl,
+          &Api::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -714,12 +717,15 @@ inline void Method::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Method::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Method::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
+              false,
+          },
+          &Method::MergeImpl,
+          &Method::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1061,12 +1067,15 @@ inline void Mixin::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Mixin::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Mixin::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
+              false,
+          },
+          &Mixin::MergeImpl,
+          &Mixin::kDescriptorMethods,
       };
   return &_data_;
 }
