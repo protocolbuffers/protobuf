@@ -24,14 +24,14 @@
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+struct upb_Message_Extension {
   const upb_MiniTableExtension* ext;
   union {
     upb_StringView str;
     void* ptr;
     char scalar_data[8];
   } data;
-} upb_Message_Extension;
+};
 
 #ifdef __cplusplus
 extern "C" {

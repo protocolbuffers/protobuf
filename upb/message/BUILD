@@ -140,8 +140,12 @@ cc_library(
 
 cc_library(
     name = "message",
+    srcs = [
+        "compat.c",
+    ],
     hdrs = [
         "array.h",
+        "compat.h",
         "map.h",
         "message.h",
     ],
