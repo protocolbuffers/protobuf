@@ -258,17 +258,43 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
               $maybe_mutator$
             )rs");
   } else if (fieldType == FieldDescriptor::TYPE_BYTES) {
-    field.Emit(
-        {
-            {"field", fieldName},
-            {"self", self},
-            {"getter_thunk", getter_thunk},
-            {"RsType", rsType},
-        },
-        R"rs(
+    field.Emit({{"field", fieldName},
+                {"self", self},
+                {"getter_thunk", getter_thunk},
+                {"setter_thunk", setter_thunk},
+                {"RsType", rsType},
+                {"maybe_mutator",
+                 [&] {
+                   if (is_mut) {
+                     field.Emit({}, R"rs(
+                    pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
+                       static VTABLE: $pbi$::BytesMutVTable =
+                        $pbi$::BytesMutVTable::new(
+                          $pbi$::Private,
+                          $getter_thunk$,
+                          $setter_thunk$,
+                        );
+
+                       unsafe {
+                        <$pb$::Mut<$RsType$>>::from_inner(
+                          $pbi$::Private,
+                          $pbi$::RawVTableMutator::new(
+                            $pbi$::Private,
+                            self.inner,
+                            &VTABLE,
+                           )
+                        )
+                      }
+                    }
+                    )rs");
+                   }
+                 }}},
+               R"rs(
               pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
                 unsafe { $getter_thunk$($self$).as_ref() }
               }
+
+              $maybe_mutator$
             )rs");
   } else {
     field.Emit({{"field", fieldName},
