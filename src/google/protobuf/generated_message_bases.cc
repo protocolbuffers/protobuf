@@ -98,11 +98,14 @@ void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
 }
 
 const Message::ClassData* ZeroFieldsBase::GetClassData() const {
-  ABSL_CONST_INIT static const ClassData data = {
+  ABSL_CONST_INIT static const ClassDataFull data = {
+      {
+          nullptr,  // on_demand_register_arena_dtor
+          PROTOBUF_FIELD_OFFSET(ZeroFieldsBase, _cached_size_),
+          false,
+      },
       &MergeImpl,
-      nullptr,  // on_demand_register_arena_dtor
       &kDescriptorMethods,
-      PROTOBUF_FIELD_OFFSET(ZeroFieldsBase, _cached_size_),
   };
   return &data;
 }

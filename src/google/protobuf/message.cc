@@ -73,7 +73,7 @@ void Message::MergeFrom(const Message& from) {
   if (class_to == nullptr || class_to != class_from) {
     ReflectionOps::Merge(from, this);
   } else {
-    class_to->merge_to_from(*this, from);
+    class_to->full().merge_to_from(*this, from);
   }
 }
 
@@ -92,7 +92,7 @@ void Message::CopyFrom(const Message& from) {
     ABSL_DCHECK(!internal::IsDescendant(*this, from))
         << "Source of CopyFrom cannot be a descendant of the target.";
     Clear();
-    class_to->merge_to_from(*this, from);
+    class_to->full().merge_to_from(*this, from);
   } else {
     const Descriptor* descriptor = GetDescriptor();
     ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)

@@ -48,9 +48,9 @@ std::string MessageLite::GetTypeName() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
 
-  if (data->descriptor_methods != nullptr) {
+  if (!data->is_lite) {
     // For !LITE messages, we use the descriptor method function.
-    return data->descriptor_methods->get_type_name(*this);
+    return data->full().descriptor_methods->get_type_name(*this);
   }
 
   // For LITE messages, the type name is a char[] just beyond ClassData.
@@ -71,9 +71,9 @@ std::string MessageLite::InitializationErrorString() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
 
-  if (data->descriptor_methods != nullptr) {
+  if (!data->is_lite) {
     // For !LITE messages, we use the descriptor method function.
-    return data->descriptor_methods->initialization_error_string(*this);
+    return data->full().descriptor_methods->initialization_error_string(*this);
   }
 
   return "(cannot determine missing fields for lite message)";

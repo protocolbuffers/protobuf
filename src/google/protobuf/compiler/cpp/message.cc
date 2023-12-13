@@ -3497,63 +3497,35 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   Formatter format(p);
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
-  const auto class_data_members = [&] {
-    p->Emit(
-        {
-            {"merge_impl",
-             [&] {
-               // TODO: This check is not needed once we migrate
-               // CheckTypeAndMergeFrom to ClassData fully.
-               if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                 p->Emit(R"cc(
-                   $classname$::MergeImpl,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // MergeImpl
-                 )cc");
-               }
-             }},
-            {"on_demand_register_arena_dtor",
-             [&] {
-               if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
-                 p->Emit(R"cc(
-                   $classname$::OnDemandRegisterArenaDtor,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // OnDemandRegisterArenaDtor
-                 )cc");
-               }
-             }},
-            {"descriptor_methods",
-             [&] {
-               if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                 p->Emit(R"cc(
-                   &::$proto_ns$::Message::kDescriptorMethods,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // DescriptorMethods
-                 )cc");
-               }
-             }},
-        },
-        R"cc(
-          $merge_impl$, $on_demand_register_arena_dtor$, $descriptor_methods$,
-              PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-        )cc");
+  const auto on_demand_register_arena_dtor = [&] {
+    if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
+      p->Emit(R"cc(
+        $classname$::OnDemandRegisterArenaDtor,
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        nullptr,  // OnDemandRegisterArenaDtor
+      )cc");
+    }
   };
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     p->Emit(
-        {{"class_data_members", class_data_members}},
+        {
+            {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
+        },
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
           $classname$::GetClassData() const {
-            PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::ClassData
-                _data_ = {
-                    $class_data_members$,
+            PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
+                ClassDataFull _data_ = {
+                    {
+                        $on_demand_register_arena_dtor$,
+                        PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                        false,
+                    },
+                    &$classname$::MergeImpl,
+                    &$classname$::kDescriptorMethods,
                 };
             return &_data_;
           }
@@ -3561,8 +3533,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"class_data_members", class_data_members},
             {"type_size", descriptor_->full_name().size() + 1},
+            {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
         },
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
@@ -3571,9 +3543,12 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               ::$proto_ns$::MessageLite::ClassData header;
               char type_name[$type_size$];
             };
+
             PROTOBUF_CONSTINIT static const ClassData_ _data_ = {
                 {
-                    $class_data_members$,
+                    $on_demand_register_arena_dtor$,
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    true,
                 },
                 "$full_name$",
             };

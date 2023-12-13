@@ -2400,12 +2400,15 @@ inline void FileDescriptorSet::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FileDescriptorSet::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FileDescriptorSet::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
+              false,
+          },
+          &FileDescriptorSet::MergeImpl,
+          &FileDescriptorSet::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -2629,12 +2632,15 @@ inline void FileDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FileDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FileDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &FileDescriptorProto::MergeImpl,
+          &FileDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -3196,12 +3202,15 @@ inline void DescriptorProto_ExtensionRange::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 DescriptorProto_ExtensionRange::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          DescriptorProto_ExtensionRange::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
+              false,
+          },
+          &DescriptorProto_ExtensionRange::MergeImpl,
+          &DescriptorProto_ExtensionRange::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -3455,12 +3464,15 @@ inline void DescriptorProto_ReservedRange::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 DescriptorProto_ReservedRange::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          DescriptorProto_ReservedRange::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
+              false,
+          },
+          &DescriptorProto_ReservedRange::MergeImpl,
+          &DescriptorProto_ReservedRange::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -3710,12 +3722,15 @@ inline void DescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 DescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          DescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &DescriptorProto::MergeImpl,
+          &DescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -4191,12 +4206,15 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 ExtensionRangeOptions_Declaration::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          ExtensionRangeOptions_Declaration::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
+              false,
+          },
+          &ExtensionRangeOptions_Declaration::MergeImpl,
+          &ExtensionRangeOptions_Declaration::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -4521,12 +4539,15 @@ inline void ExtensionRangeOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 ExtensionRangeOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          ExtensionRangeOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
+              false,
+          },
+          &ExtensionRangeOptions::MergeImpl,
+          &ExtensionRangeOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -4866,12 +4887,15 @@ inline void FieldDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FieldDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FieldDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &FieldDescriptorProto::MergeImpl,
+          &FieldDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -5365,12 +5389,15 @@ inline void OneofDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 OneofDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          OneofDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &OneofDescriptorProto::MergeImpl,
+          &OneofDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -5603,12 +5630,15 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 EnumDescriptorProto_EnumReservedRange::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          EnumDescriptorProto_EnumReservedRange::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
+              false,
+          },
+          &EnumDescriptorProto_EnumReservedRange::MergeImpl,
+          &EnumDescriptorProto_EnumReservedRange::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -5848,12 +5878,15 @@ inline void EnumDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 EnumDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          EnumDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &EnumDescriptorProto::MergeImpl,
+          &EnumDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -6187,12 +6220,15 @@ inline void EnumValueDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 EnumValueDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          EnumValueDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &EnumValueDescriptorProto::MergeImpl,
+          &EnumValueDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -6472,12 +6508,15 @@ inline void ServiceDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 ServiceDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          ServiceDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &ServiceDescriptorProto::MergeImpl,
+          &ServiceDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -6772,12 +6811,15 @@ inline void MethodDescriptorProto::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 MethodDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          MethodDescriptorProto::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
+              false,
+          },
+          &MethodDescriptorProto::MergeImpl,
+          &MethodDescriptorProto::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -7180,12 +7222,15 @@ inline void FileOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FileOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FileOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
+              false,
+          },
+          &FileOptions::MergeImpl,
+          &FileOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -7982,12 +8027,15 @@ inline void MessageOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 MessageOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          MessageOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
+              false,
+          },
+          &MessageOptions::MergeImpl,
+          &MessageOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -8350,12 +8398,15 @@ inline void FieldOptions_EditionDefault::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FieldOptions_EditionDefault::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FieldOptions_EditionDefault::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
+              false,
+          },
+          &FieldOptions_EditionDefault::MergeImpl,
+          &FieldOptions_EditionDefault::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -8608,12 +8659,15 @@ inline void FieldOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FieldOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FieldOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
+              false,
+          },
+          &FieldOptions::MergeImpl,
+          &FieldOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -9136,12 +9190,15 @@ inline void OneofOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 OneofOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          OneofOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
+              false,
+          },
+          &OneofOptions::MergeImpl,
+          &OneofOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -9408,12 +9465,15 @@ inline void EnumOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 EnumOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          EnumOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
+              false,
+          },
+          &EnumOptions::MergeImpl,
+          &EnumOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -9754,12 +9814,15 @@ inline void EnumValueOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 EnumValueOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          EnumValueOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
+              false,
+          },
+          &EnumValueOptions::MergeImpl,
+          &EnumValueOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -10076,12 +10139,15 @@ inline void ServiceOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 ServiceOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          ServiceOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
+              false,
+          },
+          &ServiceOptions::MergeImpl,
+          &ServiceOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -10379,12 +10445,15 @@ inline void MethodOptions::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 MethodOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          MethodOptions::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
+              false,
+          },
+          &MethodOptions::MergeImpl,
+          &MethodOptions::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -10697,12 +10766,15 @@ inline void UninterpretedOption_NamePart::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 UninterpretedOption_NamePart::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          UninterpretedOption_NamePart::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
+              false,
+          },
+          &UninterpretedOption_NamePart::MergeImpl,
+          &UninterpretedOption_NamePart::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -10954,12 +11026,15 @@ inline void UninterpretedOption::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 UninterpretedOption::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          UninterpretedOption::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
+              false,
+          },
+          &UninterpretedOption::MergeImpl,
+          &UninterpretedOption::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -11335,12 +11410,15 @@ inline void FeatureSet::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FeatureSet::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FeatureSet::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
+              false,
+          },
+          &FeatureSet::MergeImpl,
+          &FeatureSet::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -11683,12 +11761,15 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
+              false,
+          },
+          &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
+          &FeatureSetDefaults_FeatureSetEditionDefault::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -11938,12 +12019,15 @@ inline void FeatureSetDefaults::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FeatureSetDefaults::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FeatureSetDefaults::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
+              false,
+          },
+          &FeatureSetDefaults::MergeImpl,
+          &FeatureSetDefaults::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -12209,12 +12293,15 @@ inline void SourceCodeInfo_Location::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 SourceCodeInfo_Location::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          SourceCodeInfo_Location::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
+              false,
+          },
+          &SourceCodeInfo_Location::MergeImpl,
+          &SourceCodeInfo_Location::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -12533,12 +12620,15 @@ inline void SourceCodeInfo::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 SourceCodeInfo::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          SourceCodeInfo::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
+              false,
+          },
+          &SourceCodeInfo::MergeImpl,
+          &SourceCodeInfo::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -12741,12 +12831,15 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 GeneratedCodeInfo_Annotation::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          GeneratedCodeInfo_Annotation::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
+              false,
+          },
+          &GeneratedCodeInfo_Annotation::MergeImpl,
+          &GeneratedCodeInfo_Annotation::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -13057,12 +13150,15 @@ inline void GeneratedCodeInfo::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 GeneratedCodeInfo::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          GeneratedCodeInfo::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
+              false,
+          },
+          &GeneratedCodeInfo::MergeImpl,
+          &GeneratedCodeInfo::kDescriptorMethods,
       };
   return &_data_;
 }
