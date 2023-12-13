@@ -487,6 +487,13 @@ absl::flat_hash_map<absl::string_view, std::string> ClassVars(
   vars.emplace("full_name", desc->full_name());
   vars.emplace("superclass", SuperClassName(desc, opts));
 
+  vars.emplace(
+      "WeakDescriptorSelfPin",
+      UsingImplicitWeakDescriptor(desc->file(), opts)
+          ? absl::StrCat("::", ProtobufNamespace(opts),
+                         "::internal::StrongReference(default_instance());")
+          : "");
+
   for (auto& pair : UnknownFieldsVars(desc, opts)) {
     vars.emplace(pair);
   }
@@ -746,6 +753,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       inline bool HasExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_has$;
         return $extensions$.Has(id.number());
       }
@@ -755,6 +763,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       inline void ClearExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+        $WeakDescriptorSelfPin$;
         $extensions$.ClearExtension(id.number());
         $annotate_extension_clear$;
       }
@@ -764,6 +773,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       inline int ExtensionSize(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_repeated_size$;
         return $extensions$.ExtensionSize(id.number());
       }
@@ -774,6 +784,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
         return _proto_TypeTraits::Get(id.number(), $extensions$, id.default_value());
       }
@@ -785,6 +796,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
         return _proto_TypeTraits::Get(id.number(), $extensions$, id.default_value());
       }
@@ -795,6 +807,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id)
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_mutable$;
         return _proto_TypeTraits::Mutable(id.number(), _field_type, &$extensions$);
       }
@@ -805,6 +818,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::ConstType value) {
+        $WeakDescriptorSelfPin$;
         _proto_TypeTraits::Set(id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
@@ -815,6 +829,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::MutableType value) {
+        $WeakDescriptorSelfPin$;
         _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                         &$extensions$);
         $annotate_extension_set$;
@@ -825,6 +840,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::MutableType value) {
+        $WeakDescriptorSelfPin$;
         _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                    value, &$extensions$);
         $annotate_extension_set$;
@@ -836,6 +852,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ReleaseExtension(
               const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                                _field_type, _is_packed>& id) {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
         return _proto_TypeTraits::Release(id.number(), _field_type, &$extensions$);
       }
@@ -845,6 +862,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       UnsafeArenaReleaseExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+        $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
         return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                      &$extensions$);
@@ -857,6 +875,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           int index) const {
+        $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_get$;
         return _proto_TypeTraits::Get(id.number(), $extensions$, index);
       }
@@ -868,6 +887,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_get$;
         return _proto_TypeTraits::Get(id.number(), $extensions$, index);
       }
@@ -878,6 +898,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_mutable$;
         return _proto_TypeTraits::Mutable(id.number(), index, &$extensions$);
       }
@@ -888,6 +909,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+        $WeakDescriptorSelfPin$;
         _proto_TypeTraits::Set(id.number(), index, value, &$extensions$);
         $annotate_repeated_extension_set$;
       }
@@ -898,6 +920,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id)
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         typename _proto_TypeTraits::Repeated::MutableType to_add =
             _proto_TypeTraits::Add(id.number(), _field_type, &$extensions$);
         $annotate_repeated_extension_add_mutable$;
@@ -910,6 +933,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Repeated::ConstType value) {
+        $WeakDescriptorSelfPin$;
         _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                                &$extensions$);
         $annotate_repeated_extension_add$;
@@ -922,6 +946,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list$;
         return _proto_TypeTraits::GetRepeated(id.number(), $extensions$);
       }
@@ -933,6 +958,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id)
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list_mutable$;
         return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                                   _is_packed, &$extensions$);
@@ -970,6 +996,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     p->Emit(
         R"cc(
           inline bool $classname$::has_$name$() const {
+            $WeakDescriptorSelfPin$;
             $annotate_has$;
             return $weak_field_map$.Has($number$);
           }
@@ -994,6 +1021,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
              .WithSuffix(";")},
         R"cc(
           inline bool $classname$::has_$name$() const {
+            $WeakDescriptorSelfPin$;
             $annotate_has$;
             bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;
             $ASSUME$;
@@ -1053,6 +1081,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     p->Emit(R"cc(
       inline bool $classname$::has_$name$() const {
+        $WeakDescriptorSelfPin$;
         $annotate_has$;
         return $has_field$;
       }
@@ -1060,7 +1089,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   }
   if (HasInternalHasMethod(field)) {
     p->Emit(R"cc(
-      inline bool $classname$::_internal_has_$name$() const {
+      inline bool $classname$::_internal_has_$name_internal$() const {
         return $has_field$;
       }
     )cc");
@@ -1068,7 +1097,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // set_has_$name$() for oneof fields is always private; hence should not be
   // annotated.
   p->Emit(R"cc(
-    inline void $classname$::set_has_$name$() {
+    inline void $classname$::set_has_$name_internal$() {
       $oneof_case$[$oneof_index$] = k$field_name$;
     }
   )cc");
@@ -1114,28 +1143,86 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
           R"cc(
             $inline $void $classname$::clear_$name$() {
               PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+              $WeakDescriptorSelfPin$;
               $body$;
               $annotate_clear$;
             }
           )cc");
 }
 
+namespace {
+
+class WeakDescriptorVerifier {
+ public:
+  using SourceLocation = io::Printer::SourceLocation;
+
+  WeakDescriptorVerifier(const FieldDescriptor* field) : field_(field) {}
+  ~WeakDescriptorVerifier() {
+    ABSL_CHECK(!is_armed_) << Error(SourceLocation::current());
+  }
+
+  void operator()(absl::string_view label, io::Printer::SourceLocation loc) {
+    if (label == "name" || label == "release_name") {
+      Arm(loc);
+    } else if (label == "WeakDescriptorSelfPin") {
+      Disarm(loc);
+    }
+  }
+
+ private:
+  void Arm(SourceLocation loc) {
+    ABSL_CHECK(!is_armed_) << Error(loc);
+    is_armed_ = true;
+    this->loc_ = loc;
+  }
+
+  void Disarm(SourceLocation loc) {
+    ABSL_CHECK(is_armed_) << Error(loc);
+    is_armed_ = false;
+    this->loc_ = loc;
+  }
+
+  std::string Error(SourceLocation loc) const {
+    return absl::StrFormat("Field %s printed from %s:%d (prev %s:%d)\n",
+                           field_->full_name(), loc.file_name(), loc.line(),
+                           loc_.file_name(), loc_.line());
+  }
+
+  const FieldDescriptor* field_;
+  SourceLocation loc_;
+  bool is_armed_ = false;
+};
+
+}  // namespace
+
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
+    // We use a print listener to verify that the field generators properly add
+    // the right pins in weak descriptor mode. Each public accessor should have
+    // a pin. The check is a state machine that verifies that every substitution
+    // for `name` is followed by one and only one for `WeakDescriptorSelfPin`.
+    // True positives are accessors that are missing $WeakDescriptorSelfPin$.
+    // False positives are accessors that are using $name$ for an internal name.
+    // For those you can use $name_internal$ which is the same substitution but
+    // not tracked by the verifier.
+    const auto weak_verifier =
+        p->WithSubstitutionListener(WeakDescriptorVerifier(field));
+
     PrintFieldComment(Formatter{p}, field, options_);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     if (field->is_repeated()) {
       p->Emit(R"cc(
-        inline int $classname$::_internal_$name$_size() const {
-          return _internal_$name$().size();
+        inline int $classname$::_internal_$name_internal$_size() const {
+          return _internal_$name_internal$().size();
         }
         inline int $classname$::$name$_size() const {
+          $WeakDescriptorSelfPin$;
           $annotate_size$;
-          return _internal_$name$_size();
+          return _internal_$name_internal$_size();
         }
       )cc");
     } else if (field->real_containing_oneof()) {
@@ -2652,6 +2739,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
       R"cc(
         inline void $classname$::SharedDtor() {
           $DCHK$(GetArena() == nullptr);
+          $WeakDescriptorSelfPin$;
           $field_dtors$;
           $split_field_dtors$;
           $oneof_field_dtors$;
@@ -3393,6 +3481,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
       "{\n");
   format.Indent();
   format("using std::swap;\n");
+  format("$WeakDescriptorSelfPin$");
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (descriptor_->extension_range_count() > 0) {
@@ -3597,6 +3686,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     format(
         "void $classname$::MergeImpl(::$proto_ns$::MessageLite& to_msg, const "
         "::$proto_ns$::MessageLite& from_msg) {\n"
+        "$WeakDescriptorSelfPin$"
         "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
         "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   }
@@ -4361,6 +4451,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     p->Emit(
         R"cc(
           PROTOBUF_NOINLINE ::size_t $classname$::ByteSizeLong() const {
+            $WeakDescriptorSelfPin$;
             $annotate_bytesize$;
             // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
             ::size_t total_size = $extensions$.MessageSetByteSize();
@@ -4377,6 +4468,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   Formatter format(p);
   format(
       "::size_t $classname$::ByteSizeLong() const {\n"
+      "$WeakDescriptorSelfPin$"
       "$annotate_bytesize$"
       "// @@protoc_insertion_point(message_byte_size_start:$full_name$)\n");
   format.Indent();
@@ -4629,6 +4721,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
       },
       R"cc(
         PROTOBUF_NOINLINE bool $classname$::IsInitialized() const {
+          $WeakDescriptorSelfPin$;
           $test_extensions$;
           $test_required_fields$;
           $test_ordinary_fields$;

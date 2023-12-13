@@ -152,6 +152,7 @@ CppFeatures::~CppFeatures() {
 }
 inline void CppFeatures::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -287,6 +288,7 @@ void CppFeatures::CopyFrom(const CppFeatures& from) {
 }
 
 PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {
+  ;
   return true;
 }
 

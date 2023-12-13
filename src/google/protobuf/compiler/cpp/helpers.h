@@ -802,7 +802,9 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 
 inline std::string SimpleBaseClass(const Descriptor* desc,
                                    const Options& options) {
-  if (!HasDescriptorMethods(desc->file(), options)) return "";
+  if (!HasDescriptorMethods(desc->file(), options) ||
+      UsingImplicitWeakDescriptor(desc->file(), options))
+    return "";
   if (desc->extension_range_count() != 0) return "";
   // Don't use a simple base class if the field tracking is enabled. This
   // ensures generating all methods to track.

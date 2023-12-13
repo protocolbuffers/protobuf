@@ -1295,8 +1295,8 @@ inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* va
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, absl::string_view value) {
-  _internal_mutable_file_to_generate()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_file_to_generate()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::add_file_to_generate(const std::string& value) {
@@ -1323,7 +1323,8 @@ inline void CodeGeneratorRequest::add_file_to_generate(const char* value, std::s
 }
 inline void CodeGeneratorRequest::add_file_to_generate(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_file_to_generate()->Add()->assign(value.data(), value.size());
+  _internal_mutable_file_to_generate()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&

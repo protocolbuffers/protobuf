@@ -2395,6 +2395,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 inline void FileDescriptorSet::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -2525,6 +2526,7 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_file()))
     return false;
   return true;
@@ -2622,6 +2624,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 inline void FileDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   _impl_.package_.Destroy();
   _impl_.syntax_.Destroy();
@@ -3089,6 +3092,7 @@ void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_message_type()))
     return false;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_enum_type()))
@@ -3196,6 +3200,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 inline void DescriptorProto_ExtensionRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.options_;
   _impl_.~Impl_();
 }
@@ -3396,6 +3401,7 @@ void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRan
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
+  ;
   if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
   }
@@ -3459,6 +3465,7 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 }
 inline void DescriptorProto_ReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -3625,6 +3632,7 @@ void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -3715,6 +3723,7 @@ DescriptorProto::~DescriptorProto() {
 }
 inline void DescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
@@ -4094,6 +4103,7 @@ void DescriptorProto::CopyFrom(const DescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_field()))
     return false;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_nested_type()))
@@ -4199,6 +4209,7 @@ ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
 }
 inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.full_name_.Destroy();
   _impl_.type_.Destroy();
   _impl_.~Impl_();
@@ -4448,6 +4459,7 @@ void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Dec
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -4533,6 +4545,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 }
 inline void ExtensionRangeOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -4769,6 +4782,7 @@ void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -4876,6 +4890,7 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 inline void FieldDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   _impl_.extendee_.Destroy();
   _impl_.type_name_.Destroy();
@@ -5298,6 +5313,7 @@ void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
+  ;
   if ((_impl_._has_bits_[0] & 0x00000020u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
   }
@@ -5382,6 +5398,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 }
 inline void OneofDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
@@ -5564,6 +5581,7 @@ void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
+  ;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
   }
@@ -5625,6 +5643,7 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -5791,6 +5810,7 @@ void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_E
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -5871,6 +5891,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 inline void EnumDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
@@ -6127,6 +6148,7 @@ void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_value()))
     return false;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
@@ -6213,6 +6235,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 inline void EnumValueDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
@@ -6419,6 +6442,7 @@ void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
+  ;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
   }
@@ -6501,6 +6525,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 inline void ServiceDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   delete _impl_.options_;
   _impl_.~Impl_();
@@ -6708,6 +6733,7 @@ void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_method()))
     return false;
   if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
@@ -6802,6 +6828,7 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 inline void MethodDescriptorProto::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   _impl_.input_type_.Destroy();
   _impl_.output_type_.Destroy();
@@ -7087,6 +7114,7 @@ void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
 }
 
 PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
+  ;
   if ((_impl_._has_bits_[0] & 0x00000008u) != 0) {
     if (!_impl_.options_->IsInitialized()) return false;
   }
@@ -7206,6 +7234,7 @@ FileOptions::~FileOptions() {
 }
 inline void FileOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.java_package_.Destroy();
   _impl_.java_outer_classname_.Destroy();
   _impl_.go_package_.Destroy();
@@ -7910,6 +7939,7 @@ void FileOptions::CopyFrom(const FileOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -8021,6 +8051,7 @@ MessageOptions::~MessageOptions() {
 }
 inline void MessageOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -8311,6 +8342,7 @@ void MessageOptions::CopyFrom(const MessageOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -8392,6 +8424,7 @@ FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
 }
 inline void FieldOptions_EditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.value_.Destroy();
   _impl_.~Impl_();
 }
@@ -8562,6 +8595,7 @@ void FieldOptions_EditionDefault::CopyFrom(const FieldOptions_EditionDefault& fr
 }
 
 PROTOBUF_NOINLINE bool FieldOptions_EditionDefault::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -8653,6 +8687,7 @@ FieldOptions::~FieldOptions() {
 }
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -9095,6 +9130,7 @@ void FieldOptions::CopyFrom(const FieldOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -9184,6 +9220,7 @@ OneofOptions::~OneofOptions() {
 }
 inline void OneofOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -9365,6 +9402,7 @@ void OneofOptions::CopyFrom(const OneofOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -9459,6 +9497,7 @@ EnumOptions::~EnumOptions() {
 }
 inline void EnumOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -9709,6 +9748,7 @@ void EnumOptions::CopyFrom(const EnumOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -9808,6 +9848,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 inline void EnumValueOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -10040,6 +10081,7 @@ void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -10133,6 +10175,7 @@ ServiceOptions::~ServiceOptions() {
 }
 inline void ServiceOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -10340,6 +10383,7 @@ void ServiceOptions::CopyFrom(const ServiceOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -10439,6 +10483,7 @@ MethodOptions::~MethodOptions() {
 }
 inline void MethodOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -10676,6 +10721,7 @@ void MethodOptions::CopyFrom(const MethodOptions& from) {
 }
 
 PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -10760,6 +10806,7 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 }
 inline void UninterpretedOption_NamePart::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_part_.Destroy();
   _impl_.~Impl_();
 }
@@ -10929,6 +10976,7 @@ void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& 
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
+  ;
   if (_Internal::MissingRequiredFields(_impl_._has_bits_)) {
     return false;
   }
@@ -11018,6 +11066,7 @@ UninterpretedOption::~UninterpretedOption() {
 }
 inline void UninterpretedOption::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.identifier_value_.Destroy();
   _impl_.string_value_.Destroy();
   _impl_.aggregate_value_.Destroy();
@@ -11314,6 +11363,7 @@ void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_name()))
     return false;
   return true;
@@ -11405,6 +11455,7 @@ FeatureSet::~FeatureSet() {
 }
 inline void FeatureSet::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -11673,6 +11724,7 @@ void FeatureSet::CopyFrom(const FeatureSet& from) {
 }
 
 PROTOBUF_NOINLINE bool FeatureSet::IsInitialized() const {
+  ;
   if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
     return false;
   }
@@ -11755,6 +11807,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditi
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   delete _impl_.features_;
   _impl_.~Impl_();
 }
@@ -11929,6 +11982,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::CopyFrom(const FeatureSetDefau
 }
 
 PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialized() const {
+  ;
   if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!_impl_.features_->IsInitialized()) return false;
   }
@@ -12014,6 +12068,7 @@ FeatureSetDefaults::~FeatureSetDefaults() {
 }
 inline void FeatureSetDefaults::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -12202,6 +12257,7 @@ void FeatureSetDefaults::CopyFrom(const FeatureSetDefaults& from) {
 }
 
 PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_defaults()))
     return false;
   return true;
@@ -12286,6 +12342,7 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
 }
 inline void SourceCodeInfo_Location::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.leading_comments_.Destroy();
   _impl_.trailing_comments_.Destroy();
   _impl_.~Impl_();
@@ -12549,6 +12606,7 @@ void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -12615,6 +12673,7 @@ SourceCodeInfo::~SourceCodeInfo() {
 }
 inline void SourceCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -12745,6 +12804,7 @@ void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -12825,6 +12885,7 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
 }
 inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.source_file_.Destroy();
   _impl_.~Impl_();
 }
@@ -13076,6 +13137,7 @@ void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& 
 }
 
 PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -13145,6 +13207,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 }
 inline void GeneratedCodeInfo::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -13275,6 +13338,7 @@ void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
 }
 
 PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
+  ;
   return true;
 }
 

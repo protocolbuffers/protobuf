@@ -185,6 +185,7 @@ JavaFeatures::~JavaFeatures() {
 }
 inline void JavaFeatures::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.~Impl_();
 }
 
@@ -351,6 +352,7 @@ void JavaFeatures::CopyFrom(const JavaFeatures& from) {
 }
 
 PROTOBUF_NOINLINE bool JavaFeatures::IsInitialized() const {
+  ;
   return true;
 }
 

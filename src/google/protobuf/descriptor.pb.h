@@ -1917,6 +1917,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -1925,6 +1926,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -1933,6 +1935,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -1942,6 +1945,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -1952,6 +1956,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -1961,6 +1966,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -1970,6 +1976,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -1979,6 +1986,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -1988,6 +1996,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -1998,6 +2007,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -2006,6 +2016,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -2017,6 +2028,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -2027,6 +2039,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -2036,6 +2049,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -2045,6 +2059,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -2054,6 +2069,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -2065,6 +2081,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -2076,6 +2093,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -2086,6 +2104,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -3708,6 +3727,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -3716,6 +3736,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -3724,6 +3745,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -3733,6 +3755,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -3743,6 +3766,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -3752,6 +3776,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -3761,6 +3786,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -3770,6 +3796,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -3779,6 +3806,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -3789,6 +3817,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -3797,6 +3826,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -3808,6 +3838,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -3818,6 +3849,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -3827,6 +3859,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -3836,6 +3869,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -3845,6 +3879,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -3856,6 +3891,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -3867,6 +3903,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -3877,6 +3914,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -4079,6 +4117,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -4087,6 +4126,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -4095,6 +4135,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -4104,6 +4145,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -4114,6 +4156,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -4123,6 +4166,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -4132,6 +4176,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -4141,6 +4186,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -4150,6 +4196,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -4160,6 +4207,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4168,6 +4216,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -4179,6 +4228,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -4189,6 +4239,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -4198,6 +4249,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -4207,6 +4259,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -4216,6 +4269,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -4227,6 +4281,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -4238,6 +4293,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -4248,6 +4304,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -4493,6 +4550,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -4501,6 +4559,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -4509,6 +4568,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -4518,6 +4578,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -4528,6 +4589,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -4537,6 +4599,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -4546,6 +4609,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -4555,6 +4619,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -4564,6 +4629,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -4574,6 +4640,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4582,6 +4649,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -4593,6 +4661,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -4603,6 +4672,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -4612,6 +4682,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -4621,6 +4692,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -4630,6 +4702,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -4641,6 +4714,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -4652,6 +4726,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -4662,6 +4737,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -4925,6 +5001,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -4933,6 +5010,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -4941,6 +5019,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -4950,6 +5029,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -4960,6 +5040,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -4969,6 +5050,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -4978,6 +5060,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -4987,6 +5070,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -4996,6 +5080,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -5006,6 +5091,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5014,6 +5100,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -5025,6 +5112,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -5035,6 +5123,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -5044,6 +5133,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -5053,6 +5143,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -5062,6 +5153,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -5073,6 +5165,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -5084,6 +5177,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -5094,6 +5188,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -5620,6 +5715,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -5628,6 +5724,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -5636,6 +5733,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -5645,6 +5743,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -5655,6 +5754,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -5664,6 +5764,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -5673,6 +5774,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -5682,6 +5784,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -5691,6 +5794,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -5701,6 +5805,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5709,6 +5814,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -5720,6 +5826,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -5730,6 +5837,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -5739,6 +5847,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -5748,6 +5857,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -5757,6 +5867,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -5768,6 +5879,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -5779,6 +5891,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -5789,6 +5902,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -6244,6 +6358,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -6252,6 +6367,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -6260,6 +6376,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -6269,6 +6386,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -6279,6 +6397,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -6288,6 +6407,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -6297,6 +6417,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -6306,6 +6427,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -6315,6 +6437,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -6325,6 +6448,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6333,6 +6457,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -6344,6 +6469,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -6354,6 +6480,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -6363,6 +6490,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -6372,6 +6500,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -6381,6 +6510,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -6392,6 +6522,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -6403,6 +6534,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -6413,6 +6545,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -6877,6 +7010,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -6885,6 +7019,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -6893,6 +7028,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -6902,6 +7038,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -6912,6 +7049,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -6921,6 +7059,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -6930,6 +7069,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -6939,6 +7079,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -6948,6 +7089,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -6958,6 +7100,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6966,6 +7109,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -6977,6 +7121,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -6987,6 +7132,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -6996,6 +7142,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -7005,6 +7152,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -7014,6 +7162,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -7025,6 +7174,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -7036,6 +7186,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -7046,6 +7197,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -7273,6 +7425,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -7281,6 +7434,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -7289,6 +7443,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -7298,6 +7453,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -7308,6 +7464,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -7317,6 +7474,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -7326,6 +7484,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -7335,6 +7494,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -7344,6 +7504,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -7354,6 +7515,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7362,6 +7524,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -7373,6 +7536,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -7383,6 +7547,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -7392,6 +7557,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -7401,6 +7567,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -7410,6 +7577,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -7421,6 +7589,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -7432,6 +7601,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -7442,6 +7612,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -7681,6 +7852,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
@@ -7689,6 +7861,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   inline void ClearExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     _impl_._extensions_.ClearExtension(id.number());
   }
 
@@ -7697,6 +7870,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
@@ -7706,6 +7880,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -7716,6 +7891,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
@@ -7725,6 +7901,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
@@ -7734,6 +7911,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
   }
 
@@ -7743,6 +7921,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
   }
@@ -7752,6 +7931,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
+    ;
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
   }
@@ -7762,6 +7942,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       ReleaseExtension(
           const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7770,6 +7951,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   UnsafeArenaReleaseExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
@@ -7781,6 +7963,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -7791,6 +7974,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
@@ -7800,6 +7984,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
@@ -7809,6 +7994,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
   }
 
@@ -7818,6 +8004,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
     return to_add;
@@ -7829,6 +8016,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
+    ;
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
   }
@@ -7840,6 +8028,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
@@ -7850,6 +8039,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
@@ -10796,8 +10986,8 @@ inline void FileDescriptorProto::set_dependency(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, absl::string_view value) {
-  _internal_mutable_dependency()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_dependency()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const std::string& value) {
@@ -10824,7 +11014,8 @@ inline void FileDescriptorProto::add_dependency(const char* value, std::size_t s
 }
 inline void FileDescriptorProto::add_dependency(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_dependency()->Add()->assign(value.data(), value.size());
+  _internal_mutable_dependency()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -10884,8 +11075,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_public_dependency();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+FileDescriptorProto::_internal_public_dependency() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.public_dependency_;
 }
@@ -10929,8 +11120,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_weak_dependency();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+FileDescriptorProto::_internal_weak_dependency() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.weak_dependency_;
 }
@@ -12205,8 +12396,8 @@ inline void DescriptorProto::set_reserved_name(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, absl::string_view value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_reserved_name()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const std::string& value) {
@@ -12233,7 +12424,8 @@ inline void DescriptorProto::add_reserved_name(const char* value, std::size_t si
 }
 inline void DescriptorProto::add_reserved_name(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
+  _internal_mutable_reserved_name()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -13860,8 +14052,8 @@ inline void EnumDescriptorProto::set_reserved_name(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, absl::string_view value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_reserved_name()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const std::string& value) {
@@ -13888,7 +14080,8 @@ inline void EnumDescriptorProto::add_reserved_name(const char* value, std::size_
 }
 inline void EnumDescriptorProto::add_reserved_name(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
+  _internal_mutable_reserved_name()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -16530,7 +16723,8 @@ inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets()
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_targets();
 }
-inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets() const {
+inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.targets_;
 }
@@ -18613,8 +18807,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+SourceCodeInfo_Location::_internal_path() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.path_;
 }
@@ -18658,8 +18852,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_span();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+SourceCodeInfo_Location::_internal_span() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.span_;
 }
@@ -18858,8 +19052,8 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, co
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, absl::string_view value) {
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const std::string& value) {
@@ -18886,7 +19080,8 @@ inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* v
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_leading_detached_comments()->Add()->assign(value.data(), value.size());
+  _internal_mutable_leading_detached_comments()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -19003,8 +19198,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotatio
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+GeneratedCodeInfo_Annotation::_internal_path() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.path_;
 }

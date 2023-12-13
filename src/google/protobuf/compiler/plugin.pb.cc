@@ -370,6 +370,7 @@ Version::~Version() {
 }
 inline void Version::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.suffix_.Destroy();
   _impl_.~Impl_();
 }
@@ -589,6 +590,7 @@ void Version::CopyFrom(const Version& from) {
 }
 
 PROTOBUF_NOINLINE bool Version::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -680,6 +682,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 }
 inline void CodeGeneratorRequest::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.parameter_.Destroy();
   delete _impl_.compiler_version_;
   _impl_.~Impl_();
@@ -935,6 +938,7 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
+  ;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file()))
     return false;
   if (!::google::protobuf::internal::AllAreInitialized(_internal_source_file_descriptors()))
@@ -1023,6 +1027,7 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
 }
 inline void CodeGeneratorResponse_File::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.name_.Destroy();
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
@@ -1262,6 +1267,7 @@ void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
+  ;
   return true;
 }
 
@@ -1346,6 +1352,7 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 }
 inline void CodeGeneratorResponse::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
+  ;
   _impl_.error_.Destroy();
   _impl_.~Impl_();
 }
@@ -1591,6 +1598,7 @@ void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
+  ;
   return true;
 }
 
