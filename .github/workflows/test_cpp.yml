@@ -30,6 +30,9 @@ jobs:
           - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
           # Override cases with custom images
+          - config: { name: "Bazel7" }
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.0.0-a04396cc76704d4b7c722789e9c08df18f47df53"
+            targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:bd39119d74b8a3fad4ae335d4cf5294e70384676331b7e19949459fc7a8d8328"
             targets: "//src/... //third_party/utf8_range/..."
@@ -313,21 +316,32 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: MacOS
+          - name: MacOS Bazel
             os: macos-12
             cache_key: macos-12
             bazel: test //src/... //third_party/utf8_range/...
-          - name: MacOS Apple Silicon (build only)
+          # TODO Enable these once mac setup is working for Bazel 7
+          #- name: MacOS Bazel 7
+          #  os: macos-12
+          #  cache_key: macos-12-bazel7
+          #  bazel: test //src/... //third_party/utf8_range/...
+          #  bazel_version: '7.0.0'
+          - name: MacOS Apple Silicon (build only) Bazel
             os: macos-12
             cache_key: macos-12-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
-          - name: Windows
+          - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
-    name: ${{ matrix.name }} Bazel
+          - name: Windows Bazel 7
+            os: windows-2022
+            cache_key: windows-2022-bazel7
+            bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel_version: '7.0.0'
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
@@ -340,6 +354,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
+          version: ${{ matrix.bazel_version || '6.3.0' }}
 
   non-linux-cmake:
     strategy:
