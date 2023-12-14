@@ -432,6 +432,8 @@ pub trait PrimitiveWithRawVTable:
     + Debug
     + 'static
     + ProxiedWithPresence
+    + Sync
+    + Send
     + for<'msg> Proxied<View<'msg> = Self, Mut<'msg> = PrimitiveMut<'msg, Self>>
 {
 }

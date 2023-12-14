@@ -37,6 +37,8 @@ impl<'msg, T> PrimitiveMut<'msg, T> {
     }
 }
 
+// SAFETY: all `T` that can perform mutations don't mutate through a shared
+// reference.
 unsafe impl<'msg, T> Sync for PrimitiveMut<'msg, T> {}
 
 impl<'msg, T> PrimitiveMut<'msg, T>
