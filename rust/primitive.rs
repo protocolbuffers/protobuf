@@ -15,17 +15,20 @@ use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, Vi
 /// A mutator for a primitive (numeric or enum) value of `T`.
 ///
 /// This type is `protobuf::Mut<'msg, T>`.
-pub struct PrimitiveMut<'msg, T: ProxiedWithRawVTable> {
+pub struct PrimitiveMut<'msg, T> {
     inner: InnerPrimitiveMut<'msg, T>,
 }
 
-impl<'msg, T: ProxiedWithRawVTable> Debug for PrimitiveMut<'msg, T> {
+impl<'msg, T> Debug for PrimitiveMut<'msg, T>
+where
+    T: PrimitiveWithRawVTable,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("PrimitiveMut").field("inner", &self.inner).finish()
     }
 }
 
-impl<'msg, T: ProxiedWithRawVTable> PrimitiveMut<'msg, T> {
+impl<'msg, T> PrimitiveMut<'msg, T> {
     /// # Safety
     /// `inner` must be valid and non-aliased for `T` for `'msg`
     #[doc(hidden)]
@@ -34,7 +37,7 @@ impl<'msg, T: ProxiedWithRawVTable> PrimitiveMut<'msg, T> {
     }
 }
 
-unsafe impl<'msg, T: ProxiedWithRawVTable> Sync for PrimitiveMut<'msg, T> {}
+unsafe impl<'msg, T> Sync for PrimitiveMut<'msg, T> {}
 
 impl<'msg, T> PrimitiveMut<'msg, T>
 where
