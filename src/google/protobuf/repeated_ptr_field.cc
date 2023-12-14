@@ -54,7 +54,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
   }
 
-  if (using_sso()) {
+  if (using_element()) {
     new_rep->allocated_size = tagged_rep_or_elem_ != nullptr ? 1 : 0;
     new_rep->elements[0] = tagged_rep_or_elem_;
   } else {
@@ -75,7 +75,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
 
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
-  capacity_proxy_ = new_capacity - kSSOCapacity;
+  capacity_proxy_ = new_capacity - kInlinedCapacity;
   return &new_rep->elements[current_size_];
 }
 
@@ -94,18 +94,31 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   tagged_rep_or_elem_ = nullptr;
 }
 
-template <typename F>
-auto* RepeatedPtrFieldBase::AddInternal(F factory) {
+namespace {
+template <typename T>
+struct ElementRecycler {
+  static void clear(void* p) { static_cast<T*>(p)->Clear(); }
+};
+
+template <>
+struct ElementRecycler<std::string> {
+  static void clear(void* str) { static_cast<std::string*>(str)->clear(); }
+};
+
+}  // namespace
+
+template <typename Recycler, typename Factory>
+void* RepeatedPtrFieldBase::AddInternal(Factory factory) {
   Arena* const arena = GetArena();
-  using Result = decltype(factory(arena));
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     tagged_rep_or_elem_ = factory(arena);
-    return static_cast<Result>(tagged_rep_or_elem_);
+    return tagged_rep_or_elem_;
   }
-  if (using_sso()) {
+  if (using_element()) {
     if (ExchangeCurrentSize(1) == 0) {
-      return static_cast<Result>(tagged_rep_or_elem_);
+      Recycler::clear(tagged_rep_or_elem_);
+      return tagged_rep_or_elem_;
     }
   } else {
     absl::PrefetchToLocalCache(rep());
@@ -115,23 +128,28 @@ auto* RepeatedPtrFieldBase::AddInternal(F factory) {
   } else {
     Rep* r = rep();
     if (current_size_ != r->allocated_size) {
-      return static_cast<Result>(
-          r->elements[ExchangeCurrentSize(current_size_ + 1)]);
+      void* cached = r->elements[ExchangeCurrentSize(current_size_ + 1)];
+      Recycler::clear(cached);
+      return cached;
     }
   }
   Rep* r = rep();
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
   result = factory(arena);
-  return static_cast<Result>(result);
+  return result;
 }
 
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
-  return AddInternal(factory);
+void* RepeatedPtrFieldBase::AddMessageLite(ElementFactory factory) {
+  return AddInternal<ElementRecycler<MessageLite>>(factory);
+}
+
+void* RepeatedPtrFieldBase::AddString() {
+  return AddInternal<ElementRecycler<std::string>>(NewStringElement);
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
-  if (using_sso()) {
+  if (using_element()) {
     if (start == 0 && num == 1) {
       tagged_rep_or_elem_ = nullptr;
     }
@@ -146,7 +164,8 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
 }
 
 MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
-  return AddInternal([prototype](Arena* a) { return prototype->New(a); });
+  return static_cast<MessageLite*>(AddInternal<ElementRecycler<MessageLite>>(
+      [prototype](Arena* a) { return prototype->New(a); }));
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
@@ -197,6 +216,7 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
     ABSL_DCHECK(typeid(*src[i]) == typeid(*src[0]))
         << typeid(*src[i]).name() << " vs " << typeid(*src[0]).name();
 #endif
+    dst[i]->Clear();
     dst[i]->CheckTypeAndMergeFrom(*src[i]);
   }
   return count;
