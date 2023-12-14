@@ -1659,6 +1659,7 @@ bool DefinitelyNeedsEscape(unsigned char ch) {
     case '\"':
     case '\'':
     case '\\':
+    case '\177':
       return true;
   }
   return false;
