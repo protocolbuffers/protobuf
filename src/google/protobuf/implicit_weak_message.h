@@ -201,7 +201,7 @@ struct WeakRepeatedPtrField {
   }
 
   T* Add() { return weak.Add(); }
-  void Clear() { base().Clear(); }
+  void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
     if (other.empty()) return;
     base().template MergeFrom<MessageLite>(other.base());

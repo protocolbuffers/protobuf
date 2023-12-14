@@ -1431,7 +1431,7 @@ void Reflection::ClearField(Message* message,
         switch (field->options().ctype()) {
           default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrFieldBase>(message, field)->Clear();
+            MutableRaw<RepeatedPtrField<std::string> >(message, field)->Clear();
             break;
         }
         break;
@@ -1441,7 +1441,10 @@ void Reflection::ClearField(Message* message,
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)->Clear();
         } else {
-          MutableRaw<RepeatedPtrFieldBase>(message, field)->Clear();
+          // We don't know which subclass of RepeatedPtrFieldBase the type is,
+          // so we use RepeatedPtrFieldBase directly.
+          MutableRaw<RepeatedPtrFieldBase>(message, field)
+              ->Clear<GenericTypeHandler<Message> >();
         }
         break;
       }
@@ -1478,7 +1481,8 @@ void Reflection::RemoveLast(Message* message,
         switch (field->options().ctype()) {
           default:  // TODO:  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrFieldBase>(message, field)->RemoveLast();
+            MutableRaw<RepeatedPtrField<std::string> >(message, field)
+                ->RemoveLast();
             break;
         }
         break;
@@ -1487,9 +1491,10 @@ void Reflection::RemoveLast(Message* message,
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
               ->MutableRepeatedField()
-              ->RemoveLast();
+              ->RemoveLast<GenericTypeHandler<Message> >();
         } else {
-          MutableRaw<RepeatedPtrFieldBase>(message, field)->RemoveLast();
+          MutableRaw<RepeatedPtrFieldBase>(message, field)
+              ->RemoveLast<GenericTypeHandler<Message> >();
         }
         break;
     }
