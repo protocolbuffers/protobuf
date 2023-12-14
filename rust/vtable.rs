@@ -6,10 +6,12 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::__internal::{Private, PtrAndLen, RawMessage};
-use crate::__runtime::{copy_bytes_in_arena_if_needed_by_runtime, MutatorMessageRef};
+use crate::__runtime::{
+    copy_bytes_in_arena_if_needed_by_runtime, InnerPrimitiveMut, MutatorMessageRef,
+};
 use crate::{
-    AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, Proxied, ProxiedWithPresence,
-    View, ViewProxy,
+    AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, PrimitiveMut, Proxied,
+    ProxiedWithPresence, View, ViewProxy,
 };
 use std::fmt::{self, Debug};
 
@@ -291,32 +293,6 @@ impl<T> PrimitiveOptionalMutVTable<T> {
     }
 }
 
-macro_rules! impl_raw_vtable_mutator_get_set {
-  ($($t:ty),*) => {
-      $(
-          impl RawVTableMutator<'_, $t> {
-              pub(crate) fn get(self) -> $t {
-                  // SAFETY:
-                  // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by the
-                  //   caller of `new`.
-                  unsafe { (self.vtable.getter)(self.msg_ref.msg()) }
-              }
-
-              /// # Safety
-              /// - `msg_ref` must be valid for the lifetime of `RawVTableMutator`.
-              pub(crate) unsafe fn set(self, val: $t) {
-                // SAFETY:
-                // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by the
-                //   caller of `new`.
-                  unsafe { (self.vtable.setter)(self.msg_ref.msg(), val) }
-              }
-          }
-      )*
-  }
-}
-
-impl_raw_vtable_mutator_get_set!(bool, f32, f64, i32, i64, u32, u64);
-
 /// A generic thunk vtable for mutating a present `bytes` or `string` field.
 #[doc(hidden)]
 #[derive(Debug)]
@@ -421,35 +397,89 @@ impl<'msg> RawVTableOptionalMutatorData<'msg, [u8]> {
     }
 }
 
-macro_rules! impl_raw_vtable_optional_mutator_data {
-  ($($t:ty),*) => {
-      $(
-          impl<'msg> RawVTableOptionalMutatorData<'msg, $t> {
-              pub(crate) fn set_absent_to_default(self) -> Self {
-                // SAFETY:
-                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
-                //   promised by the caller of `new`.
-                self.set(self.vtable.default)
-              }
-
-              pub(crate) fn set(self, val: $t) -> Self {
-                // SAFETY:
-                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
-                //   promised by the caller of `new`.
-                unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val.into()) }
-                self
-              }
-
-              pub(crate) fn clear(self) -> Self {
-                // SAFETY:
-                // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
-                //   promised by the caller of `new`.
-                unsafe { (self.vtable.clearer)(self.msg_ref.msg()) }
-                self
-              }
-          }
-      )*
-  }
+/// Primitive types using a vtable for message access that are trivial to copy
+/// and have a `'static` lifetime.
+///
+/// Implementing this trait automatically implements `ProxiedWithRawVTable`,
+/// `ProxiedWithRawOptionalVTable`, and get/set/clear methods on
+/// `RawVTableMutator` and `RawVTableOptionalMutatorData` that use the vtable.
+///
+/// It doesn't implement `Proxied`, `ViewProxy`, `SettableValue` or
+/// `ProxiedWithPresence` for `Self` to avoid future conflicting blanket impls
+/// on those traits.
+pub trait PrimitiveWithRawVTable:
+    Copy
+    + Debug
+    + 'static
+    + ProxiedWithPresence
+    + for<'msg> Proxied<View<'msg> = Self, Mut<'msg> = PrimitiveMut<'msg, Self>>
+{
 }
 
-impl_raw_vtable_optional_mutator_data!(bool, f32, f64, i32, i64, u32, u64);
+impl<T: PrimitiveWithRawVTable> ProxiedWithRawVTable for T {
+    type VTable = PrimitiveVTable<T>;
+
+    fn make_view(_private: Private, mut_inner: InnerPrimitiveMut<'_, Self>) -> Self {
+        mut_inner.get()
+    }
+
+    fn make_mut(_private: Private, inner: InnerPrimitiveMut<'_, Self>) -> PrimitiveMut<'_, Self> {
+        // SAFETY: `inner` is valid for the necessary lifetime and `T` as promised by
+        // the caller of `InnerPrimitiveMut::new`.
+        unsafe { PrimitiveMut::from_inner(Private, inner) }
+    }
+}
+
+impl<T: PrimitiveWithRawVTable> ProxiedWithRawOptionalVTable for T {
+    type OptionalVTable = PrimitiveOptionalMutVTable<T>;
+
+    fn upcast_vtable(
+        _private: Private,
+        optional_vtable: &'static Self::OptionalVTable,
+    ) -> &'static Self::VTable {
+        &optional_vtable.base
+    }
+}
+
+impl<T: PrimitiveWithRawVTable> RawVTableMutator<'_, T> {
+    pub(crate) fn get(self) -> T {
+        // SAFETY:
+        // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by
+        //   the caller of `new`.
+        unsafe { (self.vtable.getter)(self.msg_ref.msg()) }
+    }
+
+    /// # Safety
+    /// - `msg_ref` must be valid for the lifetime of `RawVTableMutator`.
+    pub(crate) unsafe fn set(self, val: T) {
+        // SAFETY:
+        // - `msg_ref` is valid for the lifetime of `RawVTableMutator` as promised by
+        //   the caller of `new`.
+        unsafe { (self.vtable.setter)(self.msg_ref.msg(), val) }
+    }
+}
+
+impl<'msg, T: PrimitiveWithRawVTable> RawVTableOptionalMutatorData<'msg, T> {
+    pub(crate) fn set_absent_to_default(self) -> Self {
+        // SAFETY:
+        // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+        //   promised by the caller of `new`.
+        self.set(self.vtable.default)
+    }
+
+    pub(crate) fn set(self, val: T) -> Self {
+        // SAFETY:
+        // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+        //   promised by the caller of `new`.
+        unsafe { (self.vtable.base.setter)(self.msg_ref.msg(), val) }
+        self
+    }
+
+    pub(crate) fn clear(self) -> Self {
+        // SAFETY:
+        // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
+        //   promised by the caller of `new`.
+        unsafe { (self.vtable.clearer)(self.msg_ref.msg()) }
+        self
+    }
+}

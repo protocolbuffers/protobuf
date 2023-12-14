@@ -316,13 +316,16 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                           $pbi$::Private,
                           $getter_thunk$,
                           $setter_thunk$);
-                      $pb$::PrimitiveMut::from_inner(
-                        $pbi$::Private,
-                        unsafe {
-                          $pbi$::RawVTableMutator::new($pbi$::Private,
-                          self.inner,
-                          &VTABLE)
-                        })
+                      unsafe {
+                        $pb$::PrimitiveMut::from_inner(
+                          $pbi$::Private,
+                          $pbi$::RawVTableMutator::new(
+                            $pbi$::Private,
+                            self.inner,
+                            &VTABLE
+                          ),
+                        )
+                      }
                     }
                     )rs");
                    }

@@ -9,18 +9,20 @@
 
 use crate::ProtoStr;
 use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::{Mut, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy};
 use core::fmt::Debug;
 use paste::paste;
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
+use std::ffi::c_int;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::{size_of, MaybeUninit};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
-use std::sync::Once;
+use std::sync::{Once, OnceLock};
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
@@ -295,40 +297,28 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
     }
 }
 
-/// RepeatedFieldInner contains a `upb_Array*` as well as a reference to an
-/// `Arena`, most likely that of the containing `Message`. upb requires an Arena
-/// to perform mutations on a repeated field.
+/// The raw type-erased pointer version of `RepeatedMut`.
+///
+/// Contains a `upb_Array*` as well as `RawArena`, most likely that of the
+/// containing message. upb requires a `RawArena` to perform mutations on
+/// a repeated field.
+///
+/// An owned `Repeated` stores a `InnerRepeatedMut<'static>` and manages the
+/// contained `RawArena`.
 #[derive(Clone, Copy, Debug)]
-pub struct RepeatedFieldInner<'msg> {
-    pub raw: RawRepeatedField,
-    pub arena: &'msg Arena,
+pub struct InnerRepeatedMut<'msg> {
+    pub(crate) raw: RawRepeatedField,
+    // Storing a `RawArena` instead of `&Arena` allows this to be used for
+    // both `RepeatedMut<T>` and `Repeated<T>`.
+    arena: RawArena,
+    _phantom: PhantomData<&'msg Arena>,
 }
 
-#[derive(Debug)]
-pub struct RepeatedField<'msg, T: ?Sized> {
-    inner: RepeatedFieldInner<'msg>,
-    _phantom: PhantomData<&'msg mut T>,
-}
-
-// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
-// This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
-impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
-impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
-    fn clone(&self) -> RepeatedField<'msg, T> {
-        *self
-    }
-}
-
-impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
-    pub fn len(&self) -> usize {
-        unsafe { upb_Array_Size(self.inner.raw) }
-    }
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
-        Self { inner, _phantom: PhantomData }
+impl<'msg> InnerRepeatedMut<'msg> {
+    #[doc(hidden)]
+    #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
+    pub fn new(_private: Private, raw: RawRepeatedField, arena: &'msg Arena) -> Self {
+        InnerRepeatedMut { raw, arena: arena.raw(), _phantom: PhantomData }
     }
 }
 
@@ -367,7 +357,6 @@ pub enum UpbCType {
 }
 
 extern "C" {
-    #[allow(dead_code)]
     fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
     fn upb_Array_Size(arr: RawRepeatedField) -> usize;
     fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
@@ -379,60 +368,65 @@ extern "C" {
 }
 
 macro_rules! impl_repeated_primitives {
-    ($(($rs_type:ty, $ufield:ident, $upb_tag:expr)),*) => {
+    ($(($t:ty, $ufield:ident, $upb_tag:expr)),* $(,)?) => {
         $(
-            impl<'msg> RepeatedField<'msg, $rs_type> {
+            // TODO: Add clear, free
+            unsafe impl ProxiedInRepeated for $t {
                 #[allow(dead_code)]
-                fn new(arena: &'msg Arena) -> Self {
-                    Self {
-                        inner: RepeatedFieldInner {
-                            raw: unsafe { upb_Array_New(arena.raw, $upb_tag as std::ffi::c_int) },
-                            arena,
-                        },
-                        _phantom: PhantomData,
+                fn repeated_new(_: Private) -> Repeated<$t> {
+                    let arena = Arena::new();
+                    let raw_arena = arena.raw();
+                    std::mem::forget(arena);
+                    unsafe {
+                        Repeated::from_inner(InnerRepeatedMut {
+                            raw: upb_Array_New(raw_arena, $upb_tag as c_int),
+                            arena: raw_arena,
+                            _phantom: PhantomData,
+                        })
                     }
                 }
-                pub fn push(&mut self, val: $rs_type) {
-                    unsafe { upb_Array_Append(
-                        self.inner.raw,
-                        upb_MessageValue { $ufield: val },
-                        self.inner.arena.raw(),
-                    ) }
+                fn repeated_len(f: View<Repeated<$t>>) -> usize {
+                    unsafe { upb_Array_Size(f.as_raw(Private)) }
                 }
-                pub fn get(&self, i: usize) -> Option<$rs_type> {
-                    if i >= self.len() {
-                        None
-                    } else {
-                        unsafe { Some(upb_Array_Get(self.inner.raw, i).$ufield) }
+                fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
+                    unsafe {
+                        upb_Array_Append(
+                            f.as_raw(Private),
+                             upb_MessageValue { $ufield: v },
+                            f.raw_arena(Private))
                     }
                 }
-                pub fn set(&self, i: usize, val: $rs_type) {
-                    if i >= self.len() {
-                        return;
-                    }
-                    unsafe { upb_Array_Set(
-                        self.inner.raw,
-                        i,
-                        upb_MessageValue { $ufield: val },
-                    ) }
+                unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
+                    unsafe { upb_Array_Get(f.as_raw(Private), i).$ufield }
                 }
-                pub fn copy_from(&mut self, src: &RepeatedField<'_, $rs_type>) {
+                unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
+                    unsafe { upb_Array_Set(f.as_raw(Private), i, upb_MessageValue { $ufield: v }) }
+                }
+                fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     // SAFETY:
                     // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
                     // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
                     //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
                     unsafe {
-                        if (!upb_Array_Resize(self.inner.raw, src.len(), self.inner.arena.raw())) {
+                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), dest.inner.arena)) {
                             panic!("upb_Array_Resize failed.");
                         }
                         ptr::copy_nonoverlapping(
-                          upb_Array_DataPtr(src.inner.raw).cast::<u8>(),
-                          upb_Array_MutableDataPtr(self.inner.raw).cast::<u8>(),
-                          size_of::<$rs_type>() * src.len());
+                          upb_Array_DataPtr(src.as_raw(Private)).cast::<u8>(),
+                          upb_Array_MutableDataPtr(dest.as_raw(Private)).cast::<u8>(),
+                          size_of::<$t>() * src.len());
                     }
                 }
             }
         )*
+    }
+}
+
+impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
+    // Returns a `RawArena` which is live for at least `'msg`
+    #[doc(hidden)]
+    pub fn raw_arena(&self, _private: Private) -> RawArena {
+        self.inner.arena
     }
 }
 
@@ -443,29 +437,28 @@ impl_repeated_primitives!(
     (i32, int32_val, UpbCType::Int32),
     (u32, uint32_val, UpbCType::UInt32),
     (i64, int64_val, UpbCType::Int64),
-    (u64, uint64_val, UpbCType::UInt64)
+    (u64, uint64_val, UpbCType::UInt64),
 );
 
-/// Returns a static thread-local empty RepeatedFieldInner for use in a
-/// RepeatedView.
-///
-/// # Safety
-/// The returned array must never be mutated.
-///
-/// TODO: Split RepeatedFieldInner into mut and const variants to
-/// enforce safety. The returned array must never be mutated.
-pub unsafe fn empty_array() -> RepeatedFieldInner<'static> {
-    // TODO: Consider creating empty array in C.
-    fn new_repeated_field_inner() -> RepeatedFieldInner<'static> {
-        let arena = Box::leak::<'static>(Box::new(Arena::new()));
-        // Provide `i32` as a placeholder type.
-        RepeatedField::<'static, i32>::new(arena).inner
-    }
-    thread_local! {
-        static REPEATED_FIELD: RepeatedFieldInner<'static> = new_repeated_field_inner();
-    }
+/// Returns a static empty RepeatedView.
+pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> {
+    // TODO: Consider creating a static empty array in C.
 
-    REPEATED_FIELD.with(|inner| *inner)
+    // Use `i32` for a shared empty repeated for all repeated types on a thread.
+    static EMPTY_REPEATED_VIEW: OnceLock<RepeatedView<'static, i32>> = OnceLock::new();
+
+    // SAFETY:
+    // - Because the repeated is never mutated, the repeated type is unused and
+    //   therefore valid for `T`.
+    // - The view is leaked for `'static`.
+    unsafe {
+        RepeatedView::from_raw(
+            Private,
+            EMPTY_REPEATED_VIEW
+                .get_or_init(|| Box::leak(Box::new(Repeated::new())).as_mut().into_view())
+                .as_raw(Private),
+        )
+    }
 }
 
 /// Returns a static thread-local empty MapInner for use in a
@@ -720,37 +713,6 @@ mod tests {
             )
         };
         assert_that!(&*serialized_data, eq(b"Hello world"));
-    }
-
-    #[test]
-    fn i32_array() {
-        let arena = Arena::new();
-        let mut arr = RepeatedField::<i32>::new(&arena);
-        assert_that!(arr.len(), eq(0));
-        arr.push(1);
-        assert_that!(arr.get(0), eq(Some(1)));
-        assert_that!(arr.len(), eq(1));
-        arr.set(0, 3);
-        assert_that!(arr.get(0), eq(Some(3)));
-        for i in 0..2048 {
-            arr.push(i);
-            assert_that!(arr.get(arr.len() - 1), eq(Some(i)));
-        }
-    }
-    #[test]
-    fn u32_array() {
-        let mut arena = Arena::new();
-        let mut arr = RepeatedField::<u32>::new(&mut arena);
-        assert_that!(arr.len(), eq(0));
-        arr.push(1);
-        assert_that!(arr.get(0), eq(Some(1)));
-        assert_that!(arr.len(), eq(1));
-        arr.set(0, 3);
-        assert_that!(arr.get(0), eq(Some(3)));
-        for i in 0..2048 {
-            arr.push(i);
-            assert_that!(arr.get(arr.len() - 1), eq(Some(i)));
-        }
     }
 
     #[test]

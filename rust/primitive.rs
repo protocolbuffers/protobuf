@@ -5,105 +5,109 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::fmt::Debug;
+
 use crate::__internal::Private;
 use crate::__runtime::InnerPrimitiveMut;
-use crate::vtable::{
-    PrimitiveOptionalMutVTable, PrimitiveVTable, ProxiedWithRawOptionalVTable,
-    ProxiedWithRawVTable, RawVTableOptionalMutatorData,
-};
+use crate::vtable::{PrimitiveWithRawVTable, ProxiedWithRawVTable, RawVTableOptionalMutatorData};
 use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
 
-#[derive(Debug)]
+/// A mutator for a primitive (numeric or enum) value of `T`.
+///
+/// This type is `protobuf::Mut<'msg, T>`.
 pub struct PrimitiveMut<'msg, T: ProxiedWithRawVTable> {
     inner: InnerPrimitiveMut<'msg, T>,
 }
 
+impl<'msg, T: ProxiedWithRawVTable> Debug for PrimitiveMut<'msg, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrimitiveMut").field("inner", &self.inner).finish()
+    }
+}
+
 impl<'msg, T: ProxiedWithRawVTable> PrimitiveMut<'msg, T> {
+    /// # Safety
+    /// `inner` must be valid and non-aliased for `T` for `'msg`
     #[doc(hidden)]
-    pub fn from_inner(_private: Private, inner: InnerPrimitiveMut<'msg, T>) -> Self {
+    pub unsafe fn from_inner(_private: Private, inner: InnerPrimitiveMut<'msg, T>) -> Self {
         Self { inner }
     }
 }
 
 unsafe impl<'msg, T: ProxiedWithRawVTable> Sync for PrimitiveMut<'msg, T> {}
 
+impl<'msg, T> PrimitiveMut<'msg, T>
+where
+    T: PrimitiveWithRawVTable,
+{
+    pub fn get(&self) -> View<'_, T> {
+        T::make_view(Private, self.inner)
+    }
+
+    pub fn set(&mut self, val: impl SettableValue<T>) {
+        MutProxy::set(self, val)
+    }
+}
+
+impl<'msg, T> ViewProxy<'msg> for PrimitiveMut<'msg, T>
+where
+    T: PrimitiveWithRawVTable,
+{
+    type Proxied = T;
+
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        self.get()
+    }
+
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
+        self.get()
+    }
+}
+
+impl<'msg, T> MutProxy<'msg> for PrimitiveMut<'msg, T>
+where
+    T: PrimitiveWithRawVTable,
+{
+    fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
+        PrimitiveMut { inner: self.inner }
+    }
+
+    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        self
+    }
+}
+
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
       $(
-          impl Proxied for $t {
-              type View<'msg> = $t;
-              type Mut<'msg> = PrimitiveMut<'msg, $t>;
-          }
+        impl Proxied for $t {
+            type View<'msg> = $t;
+            type Mut<'msg> = PrimitiveMut<'msg, $t>;
+        }
 
-          impl<'msg> ViewProxy<'msg> for $t {
-              type Proxied = $t;
+        impl<'msg> ViewProxy<'msg> for $t {
+            type Proxied = $t;
 
-              fn as_view(&self) -> View<'_, Self::Proxied> {
-                  *self
-              }
-
-              fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
-                  self
-              }
-          }
-
-          impl<'msg> PrimitiveMut<'msg, $t> {
-              pub fn get(&self) -> View<'_, $t> {
-                  self.inner.get()
-              }
-
-              pub fn set(&mut self, val: impl SettableValue<$t>) {
-                  val.set_on(Private, self.as_mut());
-              }
-          }
-
-          impl<'msg> ViewProxy<'msg> for PrimitiveMut<'msg, $t> {
-              type Proxied = $t;
-
-              fn as_view(&self) -> View<'_, Self::Proxied> {
-                  self.get()
-              }
-
-              fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
-                  self.get()
-              }
-          }
-
-          impl<'msg> MutProxy<'msg> for PrimitiveMut<'msg, $t> {
-              fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-                  PrimitiveMut { inner: self.inner }
-              }
-
-              fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-              where 'msg: 'shorter,
-              {
-                  self
-              }
-          }
-
-          impl SettableValue<$t> for $t {
-              fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, $t>) where $t: 'msg {
-                // SAFETY: the raw mutator is valid for `'msg` as enforced by `Mut`
-                unsafe { mutator.inner.set(self) }
-              }
-          }
-
-          impl ProxiedWithRawVTable for $t {
-            type VTable = PrimitiveVTable<$t>;
-
-            fn make_view(
-                _private: Private,
-                mut_inner: InnerPrimitiveMut<'_, Self>
-            ) -> View<'_, Self> {
-                mut_inner.get()
+            fn as_view(&self) -> View<'_, Self::Proxied> {
+                *self
             }
 
-            fn make_mut(_private: Private, inner: InnerPrimitiveMut<'_, Self>) -> Mut<'_, Self> {
-                PrimitiveMut::from_inner(Private, inner)
+            fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
+                self
             }
-          }
+        }
 
-          impl ProxiedWithPresence for $t {
+        impl SettableValue<$t> for $t {
+            fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, $t>) where $t: 'msg {
+              // SAFETY: the raw mutator is valid for `'msg` as enforced by `Mut`
+              unsafe { mutator.inner.set(self) }
+            }
+        }
+
+        impl ProxiedWithPresence for $t {
             type PresentMutData<'msg> = RawVTableOptionalMutatorData<'msg, $t>;
             type AbsentMutData<'msg> = RawVTableOptionalMutatorData<'msg, $t>;
 
@@ -118,18 +122,11 @@ macro_rules! impl_singular_primitives {
             ) -> Self::PresentMutData<'_> {
                 absent_mutator.set_absent_to_default()
             }
-          }
+        }
 
-          impl ProxiedWithRawOptionalVTable for $t {
-            type OptionalVTable = PrimitiveOptionalMutVTable<$t>;
+        impl PrimitiveWithRawVTable for $t {}
 
-            fn upcast_vtable(
-                _private: Private,
-                optional_vtable: &'static Self::OptionalVTable,
-            ) -> &'static Self::VTable {
-                &optional_vtable.base
-            }
-          }
+        // ProxiedInRepeated is implemented in {cpp,upb}.rs
       )*
   }
 }

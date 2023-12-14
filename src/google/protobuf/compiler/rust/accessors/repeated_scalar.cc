@@ -27,27 +27,28 @@ void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                  if (field.is_upb()) {
                    field.Emit({}, R"rs(
                     pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
-                      let inner = unsafe {
+                      unsafe {
                         $getter_thunk$(
                           self.inner.msg,
                           /* optional size pointer */ std::ptr::null(),
                         ) }
-                        .map_or_else(|| unsafe {$pbr$::empty_array()}, |raw| {
-                          $pbr$::RepeatedFieldInner{ raw, arena: &self.inner.arena }
-                        });
-                      $pb$::RepeatedView::from_inner($pbi$::Private, inner)
+                        .map_or_else(
+                          $pbr$::empty_array::<$Scalar$>,
+                          |raw| unsafe {
+                            $pb$::RepeatedView::from_raw($pbi$::Private, raw)
+                          }
+                        )
                     }
                   )rs");
                  } else {
                    field.Emit({}, R"rs(
                     pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
-                      $pb$::RepeatedView::from_inner(
-                        $pbi$::Private,
-                        $pbr$::RepeatedFieldInner{
-                          raw: unsafe { $getter_thunk$(self.inner.msg) },
-                          _phantom: std::marker::PhantomData,
-                        },
-                      )
+                      unsafe {
+                        $pb$::RepeatedView::from_raw(
+                          $pbi$::Private,
+                          unsafe { $getter_thunk$(self.inner.msg) },
+                        )
+                      }
                     }
                   )rs");
                  }
@@ -58,29 +59,34 @@ void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                  if (field.is_upb()) {
                    field.Emit({}, R"rs(
                     pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
-                      $pb$::RepeatedMut::from_inner(
-                        $pbi$::Private,
-                        $pbr$::RepeatedFieldInner{
-                          raw: unsafe { $getter_mut_thunk$(
-                            self.inner.msg,
-                            /* optional size pointer */ std::ptr::null(),
-                            self.inner.arena.raw(),
-                          ) },
-                          arena: &self.inner.arena,
-                        },
-                      )
+                      unsafe {
+                        $pb$::RepeatedMut::from_inner(
+                          $pbi$::Private,
+                          $pbr$::InnerRepeatedMut::new(
+                            $pbi$::Private,
+                            $getter_mut_thunk$(
+                              self.inner.msg,
+                              /* optional size pointer */ std::ptr::null(),
+                              self.inner.arena.raw(),
+                            ),
+                            &self.inner.arena,
+                          ),
+                        )
+                      }
                     }
                   )rs");
                  } else {
                    field.Emit({}, R"rs(
                       pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
-                        $pb$::RepeatedMut::from_inner(
-                          $pbi$::Private,
-                          $pbr$::RepeatedFieldInner{
-                            raw: unsafe { $getter_mut_thunk$(self.inner.msg)},
-                            _phantom: std::marker::PhantomData,
-                          },
-                        )
+                        unsafe {
+                          $pb$::RepeatedMut::from_inner(
+                            $pbi$::Private,
+                            $pbr$::InnerRepeatedMut::new(
+                              $pbi$::Private,
+                              $getter_mut_thunk$(self.inner.msg),
+                            ),
+                          )
+                        }
                       }
                     )rs");
                  }

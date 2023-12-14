@@ -44,7 +44,9 @@
 //! implemented the concept of "proxy" types. Proxy types are a reference-like
 //! indirection between the user and the internal memory representation.
 
+use crate::RepeatedMut;
 use crate::__internal::Private;
+use crate::repeated::ProxiedInRepeated;
 use std::fmt::Debug;
 use std::marker::{Send, Sync};
 
@@ -205,6 +207,7 @@ pub trait MutProxy<'msg>: ViewProxy<'msg> {
         'msg: 'shorter;
 }
 
+// TODO: move this to `optional.rs` as it's only used for optionals
 /// `Proxied` types that can be optionally set or unset.
 ///
 /// All scalar and message types implement `ProxiedWithPresence`, while repeated
@@ -233,14 +236,14 @@ pub trait SettableValue<T>: Sized
 where
     T: Proxied + ?Sized,
 {
-    /// Consumes `self` to set the given mutator to its value.
+    /// Consumes `self` to set the given mutator to the value of `self`.
     #[doc(hidden)]
     fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, T>)
     where
         T: 'msg;
 
     /// Consumes `self` and `absent_mutator` to set the given empty field to
-    /// a value.
+    /// the value of `self`.
     #[doc(hidden)]
     fn set_on_absent(
         self,
@@ -256,13 +259,30 @@ where
     }
 
     /// Consumes `self` and `present_mutator` to set the given present field
-    /// to a value.
+    /// to the value of `self`.
     #[doc(hidden)]
     fn set_on_present(self, _private: Private, mut present_mutator: T::PresentMutData<'_>)
     where
         T: ProxiedWithPresence,
     {
         self.set_on(Private, present_mutator.as_mut())
+    }
+
+    /// Consumes `self` and `repeated_mutator` to set the value at the
+    /// given index to the value of `self`.
+    ///
+    /// # Safety
+    /// `index` must be less than `repeated_mutator.len()`
+    #[doc(hidden)]
+    unsafe fn set_on_repeated_unchecked(
+        self,
+        _private: Private,
+        mut _repeated_mutator: RepeatedMut<T>,
+        _index: usize,
+    ) where
+        T: ProxiedInRepeated,
+    {
+        unimplemented!()
     }
 }
 

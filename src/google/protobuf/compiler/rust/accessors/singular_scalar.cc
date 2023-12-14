@@ -85,18 +85,23 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                         $setter_thunk$,
                       );
 
-                      $pb$::PrimitiveMut::from_inner(
-                        $pbi$::Private,
-                        unsafe {
+                      // SAFETY:
+                      // - The message is valid for the output lifetime.
+                      // - The vtable is valid for the field.
+                      // - There is no way to mutate the element for the output
+                      //   lifetime except through this mutator.
+                      unsafe {
+                        $pb$::PrimitiveMut::from_inner(
+                          $pbi$::Private,
                           $pbi$::RawVTableMutator::new(
                             $pbi$::Private,
                             $pbr$::MutatorMessageRef::new(
                               $pbi$::Private, &mut self.inner
                             ),
                             &VTABLE,
-                          )
-                        },
-                      )
+                          ),
+                        )
+                      }
                   }
                 )rs");
              }
