@@ -217,7 +217,8 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
   }
 
   auto rsType = PrimitiveRsTypeName(field.desc());
-  if (fieldType == FieldDescriptor::TYPE_STRING) {
+  if (fieldType == FieldDescriptor::TYPE_STRING ||
+      fieldType == FieldDescriptor::TYPE_BYTES) {
     field.Emit({{"field", fieldName},
                 {"self", self},
                 {"getter_thunk", getter_thunk},
@@ -252,46 +253,7 @@ void GetterForViewOrMut(Context<FieldDescriptor> field, bool is_mut) {
                R"rs(
               pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
                 let s = unsafe { $getter_thunk$($self$).as_ref() };
-                unsafe { __pb::ProtoStr::from_utf8_unchecked(s) }
-              }
-
-              $maybe_mutator$
-            )rs");
-  } else if (fieldType == FieldDescriptor::TYPE_BYTES) {
-    field.Emit({{"field", fieldName},
-                {"self", self},
-                {"getter_thunk", getter_thunk},
-                {"setter_thunk", setter_thunk},
-                {"RsType", rsType},
-                {"maybe_mutator",
-                 [&] {
-                   if (is_mut) {
-                     field.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
-                       static VTABLE: $pbi$::BytesMutVTable =
-                        $pbi$::BytesMutVTable::new(
-                          $pbi$::Private,
-                          $getter_thunk$,
-                          $setter_thunk$,
-                        );
-
-                       unsafe {
-                        <$pb$::Mut<$RsType$>>::from_inner(
-                          $pbi$::Private,
-                          $pbi$::RawVTableMutator::new(
-                            $pbi$::Private,
-                            self.inner,
-                            &VTABLE,
-                           )
-                        )
-                      }
-                    }
-                    )rs");
-                   }
-                 }}},
-               R"rs(
-              pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
-                unsafe { $getter_thunk$($self$).as_ref() }
+                unsafe { __pb::ProtoStr::from_utf8_unchecked(s).into() }
               }
 
               $maybe_mutator$
