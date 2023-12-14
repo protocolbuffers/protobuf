@@ -241,7 +241,7 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
         // Use the object's bytes if they are valid UTF-8.
         char* ptr;
         if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
-        if (utf8_range2((const unsigned char*)ptr, size) != 0) {
+        if (!utf8_range_IsValid(ptr, size)) {
           // Invalid UTF-8.  Try to convert the message to a Python Unicode
           // object, even though we know this will fail, just to get the
           // idiomatic Python error message.

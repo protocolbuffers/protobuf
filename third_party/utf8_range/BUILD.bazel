@@ -23,9 +23,7 @@ exports_files([
 filegroup(
     name = "utf8_range_srcs",
     srcs = [
-        "naive.c",
-        "range2-neon.c",
-        "range2-sse.c",
+        "utf8_range.c",
         "utf8_range.h",
     ],
     visibility = ["//:__subpackages__"],
@@ -34,9 +32,7 @@ filegroup(
 cc_library(
     name = "utf8_range",
     srcs = [
-        "naive.c",
-        "range2-neon.c",
-        "range2-sse.c",
+        "utf8_range.c",
     ],
     hdrs = ["utf8_range.h"],
     strip_include_prefix = "/third_party/utf8_range",
@@ -48,14 +44,19 @@ cc_library(
     hdrs = ["utf8_validity.h"],
     strip_include_prefix = "/third_party/utf8_range",
     deps = [
+        ":utf8_range",
         "@com_google_absl//absl/strings",
     ],
 )
 
 cc_test(
     name = "utf8_validity_test",
-    srcs = ["utf8_validity_test.cc"],
+    srcs = [
+        "utf8_range.c",
+        "utf8_validity_test.cc",
+    ],
     deps = [
+        ":utf8_range",
         ":utf8_validity",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
