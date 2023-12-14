@@ -336,6 +336,16 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   return true;
 }
 
+static bool IsEnumMapType(const FieldDescriptor& field) {
+  if (!field.is_map()) return false;
+  for (int i = 0; i < field.message_type()->field_count(); ++i) {
+    if (field.message_type()->field(i)->type() == FieldDescriptor::TYPE_ENUM) {
+      return true;
+    }
+  }
+  return false;
+}
+
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
@@ -357,7 +367,8 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       // a lot of these conditions.  Note: we do still validate the
       // user-specified map field.
       if (unresolved_features.has_legacy_closed_enum() &&
-          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM &&
+          !IsEnumMapType(field)) {
         status = absl::FailedPreconditionError(
             absl::StrCat("Field ", field.full_name(),
                          " specifies the legacy_closed_enum feature but has "
