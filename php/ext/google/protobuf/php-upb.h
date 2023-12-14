@@ -13497,26 +13497,7 @@ extern const uint8_t upb_utf8_offsets[];
 
 UPB_INLINE
 bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
-  const char* end = ptr + len;
-
-  // Check 8 bytes at a time for any non-ASCII char.
-  while (end - ptr >= 8) {
-    uint64_t data;
-    memcpy(&data, ptr, 8);
-    if (data & 0x8080808080808080) goto non_ascii;
-    ptr += 8;
-  }
-
-  // Check one byte at a time for non-ASCII.
-  while (ptr < end) {
-    if (*ptr & 0x80) goto non_ascii;
-    ptr++;
-  }
-
-  return true;
-
-non_ascii:
-  return utf8_range2((const unsigned char*)ptr, end - ptr) == 0;
+  return utf8_range_IsValid(ptr, len);
 }
 
 const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
