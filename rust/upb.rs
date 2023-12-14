@@ -370,7 +370,6 @@ extern "C" {
 macro_rules! impl_repeated_primitives {
     ($(($t:ty, $ufield:ident, $upb_tag:expr)),* $(,)?) => {
         $(
-            // TODO: Add clear, free
             unsafe impl ProxiedInRepeated for $t {
                 #[allow(dead_code)]
                 fn repeated_new(_: Private) -> Repeated<$t> {
@@ -385,6 +384,16 @@ macro_rules! impl_repeated_primitives {
                         })
                     }
                 }
+                #[allow(dead_code)]
+                unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
+                    // Freeing the array itself is handled by `Arena::Drop`
+                    // SAFETY:
+                    // - `f.raw_arena()` is a live `upb_Arena*` as
+                    // - This function is only called once for `f`
+                    unsafe {
+                        upb_Arena_Free(f.inner().arena);
+                    }
+                }
                 fn repeated_len(f: View<Repeated<$t>>) -> usize {
                     unsafe { upb_Array_Size(f.as_raw(Private)) }
                 }
@@ -395,6 +404,9 @@ macro_rules! impl_repeated_primitives {
                              upb_MessageValue { $ufield: v },
                             f.raw_arena(Private))
                     }
+                }
+                fn repeated_clear(mut f: Mut<Repeated<$t>>) {
+                    unsafe { upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private)); }
                 }
                 unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
                     unsafe { upb_Array_Get(f.as_raw(Private), i).$ufield }

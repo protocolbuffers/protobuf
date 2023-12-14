@@ -12,6 +12,10 @@ extern "C" {
   google::protobuf::RepeatedField<ty>* __pb_rust_RepeatedField_##rust_ty##_new() {      \
     return new google::protobuf::RepeatedField<ty>();                                   \
   }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_free(                              \
+      google::protobuf::RepeatedField<ty>* r) {                                         \
+    delete r;                                                                 \
+  }                                                                           \
   void __pb_rust_RepeatedField_##rust_ty##_add(google::protobuf::RepeatedField<ty>* r,  \
                                                ty val) {                      \
     r->Add(val);                                                              \
@@ -31,6 +35,10 @@ extern "C" {
   void __pb_rust_RepeatedField_##rust_ty##_copy_from(                         \
       google::protobuf::RepeatedField<ty> const& src, google::protobuf::RepeatedField<ty>& dst) { \
     dst.CopyFrom(src);                                                        \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_clear(                             \
+      google::protobuf::RepeatedField<ty>* r) {                                         \
+    r->Clear();                                                               \
   }
 
 expose_repeated_field_methods(int32_t, i32);

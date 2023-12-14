@@ -215,20 +215,23 @@ impl<'msg> InnerRepeatedMut<'msg> {
 macro_rules! impl_repeated_primitives {
     (@impl $($t:ty => [
         $new_thunk:ident,
+        $free_thunk:ident,
         $add_thunk:ident,
         $size_thunk:ident,
         $get_thunk:ident,
         $set_thunk:ident,
+        $clear_thunk:ident,
         $copy_from_thunk:ident $(,)?
     ]),* $(,)?) => {
         $(
-            // TODO: Add clear, free
             extern "C" {
                 fn $new_thunk() -> RawRepeatedField;
+                fn $free_thunk(f: RawRepeatedField);
                 fn $add_thunk(f: RawRepeatedField, v: $t);
                 fn $size_thunk(f: RawRepeatedField) -> usize;
                 fn $get_thunk(f: RawRepeatedField, i: usize) -> $t;
                 fn $set_thunk(f: RawRepeatedField, i: usize, v: $t);
+                fn $clear_thunk(f: RawRepeatedField);
                 fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
             }
 
@@ -239,11 +242,18 @@ macro_rules! impl_repeated_primitives {
                         Repeated::from_inner(InnerRepeatedMut::new(Private, $new_thunk()))
                     }
                 }
+                #[allow(dead_code)]
+                unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
+                    unsafe { $free_thunk(f.as_mut().as_raw(Private)) }
+                }
                 fn repeated_len(f: View<Repeated<$t>>) -> usize {
                     unsafe { $size_thunk(f.as_raw(Private)) }
                 }
                 fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
                     unsafe { $add_thunk(f.as_raw(Private), v) }
+                }
+                fn repeated_clear(mut f: Mut<Repeated<$t>>) {
+                    unsafe { $clear_thunk(f.as_raw(Private)) }
                 }
                 unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
                     unsafe { $get_thunk(f.as_raw(Private), i) }
@@ -262,10 +272,12 @@ macro_rules! impl_repeated_primitives {
             impl_repeated_primitives!(@impl $(
                 $t => [
                     [< __pb_rust_RepeatedField_ $t _new >],
+                    [< __pb_rust_RepeatedField_ $t _free >],
                     [< __pb_rust_RepeatedField_ $t _add >],
                     [< __pb_rust_RepeatedField_ $t _size >],
                     [< __pb_rust_RepeatedField_ $t _get >],
                     [< __pb_rust_RepeatedField_ $t _set >],
+                    [< __pb_rust_RepeatedField_ $t _clear >],
                     [< __pb_rust_RepeatedField_ $t _copy_from >],
                 ],
             )*);

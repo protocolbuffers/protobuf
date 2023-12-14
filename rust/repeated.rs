@@ -110,8 +110,6 @@ impl<'msg, T> RepeatedMut<'msg, T>
 where
     T: ProxiedInRepeated + ?Sized + 'msg,
 {
-    // TODO: Add clear, free
-
     /// # Safety
     /// - `inner` must be valid to read and write from for `'msg`
     /// - There must be no aliasing references or mutations on the same
@@ -158,6 +156,11 @@ where
     pub fn copy_from(&mut self, src: RepeatedView<'_, T>) {
         T::repeated_copy_from(src, self.as_mut())
     }
+
+    /// Clears the repeated field.
+    pub fn clear(&mut self) {
+        T::repeated_clear(self.as_mut())
+    }
 }
 
 /// Types that can appear in a `Repeated<T>`.
@@ -171,10 +174,18 @@ where
 /// - It must be sound to call `*_unchecked*(x)` with an `index` less than
 ///   `repeated_len(x)`.
 pub unsafe trait ProxiedInRepeated: Proxied {
-    // TODO: Add clear, free
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
     fn repeated_new(_private: Private) -> Repeated<Self> {
+        unimplemented!("not required")
+    }
+
+    /// Frees the repeated field in-place, for use in `Drop`.
+    ///
+    /// # Safety
+    /// - After `repeated_free`, no other methods on the input are safe to call.
+    #[doc(hidden)]
+    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>) {
         unimplemented!("not required")
     }
 
@@ -183,6 +194,9 @@ pub unsafe trait ProxiedInRepeated: Proxied {
 
     /// Appends a new element to the end of the repeated field.
     fn repeated_push(repeated: Mut<Repeated<Self>>, val: View<Self>);
+
+    /// Clears the repeated field of elements.
+    fn repeated_clear(repeated: Mut<Repeated<Self>>);
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`
@@ -235,8 +249,8 @@ pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
     _phantom: PhantomData<T>,
 }
 
-#[allow(dead_code)]
 impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
+    #[allow(dead_code)]
     pub(crate) fn new() -> Self {
         T::repeated_new(Private)
     }
@@ -245,12 +259,20 @@ impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
         Self { inner, _phantom: PhantomData }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn inner(&mut self) -> InnerRepeatedMut<'static> {
         self.inner
     }
 
     pub(crate) fn as_mut(&mut self) -> RepeatedMut<'_, T> {
         RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    }
+}
+
+impl<T: ?Sized + ProxiedInRepeated> Drop for Repeated<T> {
+    fn drop(&mut self) {
+        // SAFETY: only called once
+        unsafe { T::repeated_free(Private, self) }
     }
 }
 
@@ -388,6 +410,11 @@ mod tests {
                     r.iter().collect::<Vec<$t>>(), elements_are![$(eq($vals)),*]);
                 r.set(0, <$t as Default>::default());
                 assert_that!(r.get(0).expect("elem 0"), eq(<$t as Default>::default()));
+
+                r.clear();
+                assert!(r.is_empty(), "is_empty after clear");
+                assert!(r.iter().next().is_none(), "iter empty after clear");
+                assert!(r.into_iter().next().is_none(), "mut iter empty after clear");
                 })*
             }
         }
