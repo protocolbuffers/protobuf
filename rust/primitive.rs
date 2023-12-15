@@ -45,12 +45,20 @@ impl<'msg, T> PrimitiveMut<'msg, T>
 where
     T: PrimitiveWithRawVTable,
 {
+    /// Gets the current value of the field.
     pub fn get(&self) -> View<'_, T> {
         T::make_view(Private, self.inner)
     }
 
+    /// Sets a new value for the field.
     pub fn set(&mut self, val: impl SettableValue<T>) {
-        MutProxy::set(self, val)
+        val.set_on(Private, self.as_mut())
+    }
+
+    #[doc(hidden)]
+    pub fn set_primitive(&mut self, _private: Private, value: T) {
+        // SAFETY: the raw mutator is valid for `'msg` as enforced by `Mut`
+        unsafe { self.inner.set(value) }
     }
 }
 
@@ -106,9 +114,17 @@ macro_rules! impl_singular_primitives {
         }
 
         impl SettableValue<$t> for $t {
-            fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, $t>) where $t: 'msg {
-              // SAFETY: the raw mutator is valid for `'msg` as enforced by `Mut`
-              unsafe { mutator.inner.set(self) }
+            fn set_on<'msg>(self, private: Private, mut mutator: Mut<'msg, $t>) where $t: 'msg {
+                mutator.set_primitive(private, self)
+            }
+
+            fn set_on_absent(
+                self,
+                _private: Private,
+                absent_mutator: <$t as ProxiedWithPresence>::PresentMutData<'_>,
+            ) -> <$t as ProxiedWithPresence>::AbsentMutData<'_>
+            {
+                absent_mutator.set(Private, self)
             }
         }
 
@@ -119,13 +135,13 @@ macro_rules! impl_singular_primitives {
             fn clear_present_field(
                 present_mutator: Self::PresentMutData<'_>,
             ) -> Self::AbsentMutData<'_> {
-                present_mutator.clear()
+                present_mutator.clear(Private)
             }
 
             fn set_absent_to_default(
                 absent_mutator: Self::AbsentMutData<'_>,
             ) -> Self::PresentMutData<'_> {
-                absent_mutator.set_absent_to_default()
+                absent_mutator.set_absent_to_default(Private)
             }
         }
 
