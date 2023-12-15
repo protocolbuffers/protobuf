@@ -10,7 +10,7 @@
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
 use protobuf::Optional;
-use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
+use unittest_proto::proto2_unittest::{NestedTestAllTypes, TestAllTypes, TestAllTypes_};
 
 #[test]
 fn test_default_accessors() {
@@ -734,4 +734,16 @@ fn test_oneof_mut_accessors() {
     msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
+}
+
+#[test]
+fn test_set_message_from_view() {
+    use protobuf::MutProxy;
+    let mut m1 = NestedTestAllTypes::new();
+
+    let mut m2 = NestedTestAllTypes::new();
+    m2.payload_mut().optional_int32_mut().set(1);
+
+    m1.payload_mut().set(m2.payload());
+    assert_that!(m1.payload().optional_int32(), eq(1));
 }
