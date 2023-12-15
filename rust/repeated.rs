@@ -7,6 +7,7 @@
 
 use std::fmt::{self, Debug};
 use std::iter;
+use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
 /// `RepeatedField` struct. `RepeatedField` stores an opaque pointer to the
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
@@ -366,6 +367,14 @@ where
         val
     }
 }
+
+impl<'msg, T: ?Sized + ProxiedInRepeated> ExactSizeIterator for RepeatedIter<'msg, T> {
+    fn len(&self) -> usize {
+        self.view.len()
+    }
+}
+
+impl<'msg, T: ?Sized + ProxiedInRepeated> FusedIterator for RepeatedIter<'msg, T> {}
 
 impl<'msg, T> iter::IntoIterator for RepeatedView<'msg, T>
 where
