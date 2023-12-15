@@ -40,7 +40,9 @@ public abstract class CodedOutputStream extends ByteOutput {
   /** Used to adapt to the experimental {@link Writer} interface. */
   CodedOutputStreamWriter wrapper;
 
-  /** @deprecated Use {@link #computeFixed32SizeNoTag(int)} instead. */
+  /**
+   * @deprecated Use {@link #computeFixed32SizeNoTag(int)} instead.
+   */
   @Deprecated public static final int LITTLE_ENDIAN_32_SIZE = FIXED32_SIZE;
 
   /** The buffer size used in {@link #newInstance(OutputStream)}. */
@@ -669,9 +671,8 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet
-   * extension field to the stream. For historical reasons, the wire format differs from normal
-   * fields.
+   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet extension
+   * field to the stream. For historical reasons, the wire format differs from normal fields.
    */
   public static int computeLazyFieldMessageSetExtensionSize(
       final int fieldNumber, final LazyFieldLite value) {
@@ -692,29 +693,52 @@ public abstract class CodedOutputStream extends ByteOutput {
    * tag.
    */
   public static int computeInt32SizeNoTag(final int value) {
-    if (value >= 0) {
-      return computeUInt32SizeNoTag(value);
-    } else {
-      // Must sign-extend.
-      return MAX_VARINT_SIZE;
-    }
+    return computeUInt64SizeNoTag((long) value);
   }
 
   /** Compute the number of bytes that would be needed to encode a {@code uint32} field. */
   public static int computeUInt32SizeNoTag(final int value) {
-    if ((value & (~0 << 7)) == 0) {
-      return 1;
-    }
-    if ((value & (~0 << 14)) == 0) {
-      return 2;
-    }
-    if ((value & (~0 << 21)) == 0) {
-      return 3;
-    }
-    if ((value & (~0 << 28)) == 0) {
-      return 4;
-    }
-    return 5;
+    /*
+    This code is ported from the C++ varint implementation.
+    Implementation notes:
+
+    To calcuate varint size, we want to count the number of 7 bit chunks required. Rather than using
+    division by 7 to accomplish this, we use multiplication by 9/64. This has a number of important
+    properties:
+     * It's roughly 1/7.111111. This makes the 0 bits set case have the same value as the 7 bits set
+       case, so offsetting by 1 gives us the correct value we want for integers up to 448 bits.
+     * Multiplying by 9 is special. x * 9 = x << 3 + x, and so this multiplication can be done by a
+       single shifted add on arm (add w0, w0, w0, lsl #3), or a single lea instruction
+       (leal (%rax,%rax,8), %eax)) on x86.
+     * Dividing by 64 is a 6 bit right shift.
+
+    An explicit non-sign-extended right shift is used instead of the more obvious '/ 64' because
+    that actually produces worse code on android arm64 at time of authoring because of sign
+    extension. Rather than
+        lsr w0, w0, #6
+    It would emit:
+        add w16, w0, #0x3f (63)
+        cmp w0, #0x0 (0)
+        csel w0, w16, w0, lt
+        asr w0, w0, #6
+
+    Summarized:
+    floor(((Integer.SIZE - clz) / 7.1111) + 1
+    ((Integer.SIZE - clz) * 9) / 64 + 1
+    (((Integer.SIZE - clz) * 9) >>> 6) + 1
+    ((Integer.SIZE - clz) * 9 + (1 << 6)) >>> 6
+    (Integer.SIZE * 9 + (1 << 6) - clz * 9) >>> 6
+    (352 - clz * 9) >>> 6
+    on arm:
+    (352 - clz - (clz << 3)) >>> 6
+    on x86:
+    (352 - lea(clz, clz, 8)) >>> 6
+
+    If you make changes here, please validate their compiled output on different architectures and
+    runtimes.
+    */
+    int clz = Integer.numberOfLeadingZeros(value);
+    return ((Integer.SIZE * 9 + (1 << 6)) - (clz * 9)) >>> 6;
   }
 
   /** Compute the number of bytes that would be needed to encode an {@code sint32} field. */
@@ -745,27 +769,9 @@ public abstract class CodedOutputStream extends ByteOutput {
    * tag.
    */
   public static int computeUInt64SizeNoTag(long value) {
-    // handle two popular special cases up front ...
-    if ((value & (~0L << 7)) == 0L) {
-      return 1;
-    }
-    if (value < 0L) {
-      return 10;
-    }
-    // ... leaving us with 8 remaining, which we can divide and conquer
-    int n = 2;
-    if ((value & (~0L << 35)) != 0L) {
-      n += 4;
-      value >>>= 28;
-    }
-    if ((value & (~0L << 21)) != 0L) {
-      n += 2;
-      value >>>= 14;
-    }
-    if ((value & (~0L << 14)) != 0L) {
-      n += 1;
-    }
-    return n;
+    int clz = Long.numberOfLeadingZeros(value);
+    // See computeUInt32SizeNoTag for explanation
+    return ((Long.SIZE * 9 + (1 << 6)) - (clz * 9)) >>> 6;
   }
 
   /** Compute the number of bytes that would be needed to encode an {@code sint64} field. */
