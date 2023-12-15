@@ -101,3 +101,7 @@ message MessageContainingMapCalledEntry {
 message TestRecursiveMapMessage {
   map<string, TestRecursiveMapMessage> a = 1;
 }
+
+message TestI32StrMap {
+  map<int32, string> m_32_str = 1;
+}

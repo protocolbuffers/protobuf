@@ -1005,6 +1005,12 @@ __attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
 static int PyUpb_Message_SetAttr(PyObject* _self, PyObject* attr,
                                  PyObject* value) {
   PyUpb_Message* self = (void*)_self;
+
+  if (value == NULL) {
+    PyErr_SetString(PyExc_AttributeError, "Cannot delete field attribute");
+    return -1;
+  }
+
   const upb_FieldDef* field;
   if (!PyUpb_Message_LookupName(self, attr, &field, NULL,
                                 PyExc_AttributeError)) {

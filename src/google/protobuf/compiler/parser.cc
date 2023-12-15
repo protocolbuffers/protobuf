@@ -740,7 +740,9 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
 
   if (has_edition) {
     if (!Edition_Parse(absl::StrCat("EDITION_", syntax), &edition_) ||
-        edition_ < Edition::EDITION_2023) {
+        edition_ == Edition::EDITION_PROTO2 ||
+        edition_ == Edition::EDITION_PROTO3 ||
+        edition_ == Edition::EDITION_UNKNOWN) {
       RecordError(syntax_token.line, syntax_token.column, [&] {
         return absl::StrCat("Unknown edition \"", syntax, "\".");
       });

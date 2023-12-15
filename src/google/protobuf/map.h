@@ -454,18 +454,6 @@ size_t SpaceUsedInValues(const Map* map) {
   return size;
 }
 
-// Multiply two numbers where overflow is expected.
-template <typename N>
-N MultiplyWithOverflow(N a, N b) {
-#if defined(PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW)
-  N res;
-  (void)__builtin_mul_overflow(a, b, &res);
-  return res;
-#else
-  return a * b;
-#endif
-}
-
 inline size_t SpaceUsedInValues(const void*) { return 0; }
 
 class UntypedMapBase;

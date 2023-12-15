@@ -394,7 +394,7 @@ TEST(GeneratedCode, EnumClosedCheck) {
   upb_MiniTable* table =
       upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
 
-  const upb_MiniTableField* enumField = &table->fields[1];
+  const upb_MiniTableField* enumField = &table->UPB_PRIVATE(fields)[1];
   EXPECT_EQ(upb_MiniTableField_Type(enumField), kUpb_FieldType_Enum);
   EXPECT_FALSE(upb_MiniTableField_IsClosedEnum(enumField));
 
@@ -407,7 +407,7 @@ TEST(GeneratedCode, EnumClosedCheck) {
   table =
       upb_MiniTable_Build(e2.data().data(), e2.data().size(), arena, &status);
 
-  const upb_MiniTableField* closedEnumField = &table->fields[1];
+  const upb_MiniTableField* closedEnumField = &table->UPB_PRIVATE(fields)[1];
   EXPECT_EQ(upb_MiniTableField_Type(closedEnumField), kUpb_FieldType_Enum);
   EXPECT_TRUE(upb_MiniTableField_IsClosedEnum(closedEnumField));
   upb_Arena_Free(arena);

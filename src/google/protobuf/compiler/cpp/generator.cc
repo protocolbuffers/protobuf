@@ -17,15 +17,21 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/io/printer.h"
 
 
 namespace google {
@@ -139,6 +145,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       if (!value.empty()) {
         file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
       }
+    } else if (key == "descriptor_implicit_weak_messages") {
+      file_options.descriptor_implicit_weak_messages = true;
     } else if (key == "proto_h") {
       file_options.proto_h = true;
     } else if (key == "proto_static_reflection_h") {
@@ -328,6 +336,16 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   return true;
 }
 
+static bool IsEnumMapType(const FieldDescriptor& field) {
+  if (!field.is_map()) return false;
+  for (int i = 0; i < field.message_type()->field_count(); ++i) {
+    if (field.message_type()->field(i)->type() == FieldDescriptor::TYPE_ENUM) {
+      return true;
+    }
+  }
+  return false;
+}
+
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
@@ -349,7 +367,8 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       // a lot of these conditions.  Note: we do still validate the
       // user-specified map field.
       if (unresolved_features.has_legacy_closed_enum() &&
-          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM &&
+          !IsEnumMapType(field)) {
         status = absl::FailedPreconditionError(
             absl::StrCat("Field ", field.full_name(),
                          " specifies the legacy_closed_enum feature but has "

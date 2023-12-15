@@ -1675,19 +1675,6 @@ TEST(RepeatedPtrField, ClearedElements) {
 
   field.Clear();
   EXPECT_EQ(field.ClearedCount(), 2);
-#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
-  EXPECT_EQ(field.ReleaseCleared(), original);  // Take ownership again.
-  EXPECT_EQ(field.ClearedCount(), 1);
-  EXPECT_NE(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-  EXPECT_NE(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-
-  field.AddCleared(original);  // Give ownership back, but as a cleared object.
-  EXPECT_EQ(field.ClearedCount(), 1);
-  EXPECT_EQ(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 

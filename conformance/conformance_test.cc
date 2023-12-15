@@ -24,7 +24,6 @@
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 
@@ -143,13 +142,12 @@ ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
 
 std::string
 ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
-  switch (FileDescriptorLegacy(prototype_message_.GetDescriptor()->file())
-              .syntax()) {
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
+  switch (prototype_message_.GetDescriptor()->file()->edition()) {
+    case Edition::EDITION_PROTO3:
       return "Proto3";
-    case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
+    case Edition::EDITION_PROTO2:
       return "Proto2";
-    case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS: {
+    default: {
       std::string id = "Editions";
       if (prototype_message_.GetDescriptor()->name() == "TestAllTypesProto2") {
         absl::StrAppend(&id, "_Proto2");
@@ -159,8 +157,6 @@ ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
       }
       return id;
     }
-    default:
-      return "Unknown";
   }
 }
 

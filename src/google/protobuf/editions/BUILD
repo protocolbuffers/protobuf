@@ -3,6 +3,7 @@ load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflecti
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//:protobuf.bzl", "internal_objc_proto_library")
 
 bzl_library(
     name = "defaults",
@@ -100,6 +101,14 @@ cc_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
+internal_objc_proto_library(
+    name = "test_messages_proto2_editions_objc_proto",
+    testonly = True,
+    srcs = ["golden/test_messages_proto2_editions.proto"],
+    enable_editions = True,
+    visibility = ["//conformance:__pkg__"],
+)
+
 py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
@@ -140,6 +149,19 @@ cc_proto_library(
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_proto3_editions_objc_proto",
+    testonly = True,
+    srcs = ["golden/test_messages_proto3_editions.proto"],
+    enable_editions = True,
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = ["//:well_known_type_protos"],
+    visibility = ["//conformance:__pkg__"],
 )
 
 py_proto_library(

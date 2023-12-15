@@ -245,16 +245,15 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   public:
   void clear_values() ;
   ::google::protobuf::Value* mutable_values(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
-      mutable_values();
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* mutable_values();
+
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* _internal_mutable_values();
   public:
   const ::google::protobuf::Value& values(int index) const;
   ::google::protobuf::Value* add_values();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
-      values() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& values() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;
@@ -835,7 +834,11 @@ inline ::google::protobuf::NullValue Value::null_value() const {
   return _internal_null_value();
 }
 inline void Value::set_null_value(::google::protobuf::NullValue value) {
-  _internal_set_null_value(value);
+  if (kind_case() != kNullValue) {
+    clear_kind();
+    set_has_null_value();
+  }
+  _impl_.kind_.null_value_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Value.null_value)
 }
 inline ::google::protobuf::NullValue Value::_internal_null_value() const {
@@ -843,13 +846,6 @@ inline ::google::protobuf::NullValue Value::_internal_null_value() const {
     return static_cast<::google::protobuf::NullValue>(_impl_.kind_.null_value_);
   }
   return static_cast<::google::protobuf::NullValue>(0);
-}
-inline void Value::_internal_set_null_value(::google::protobuf::NullValue value) {
-  if (kind_case() != kNullValue) {
-    clear_kind();
-    set_has_null_value();
-  }
-  _impl_.kind_.null_value_ = value;
 }
 
 // double number_value = 2;
@@ -871,7 +867,11 @@ inline double Value::number_value() const {
   return _internal_number_value();
 }
 inline void Value::set_number_value(double value) {
-  _internal_set_number_value(value);
+  if (kind_case() != kNumberValue) {
+    clear_kind();
+    set_has_number_value();
+  }
+  _impl_.kind_.number_value_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Value.number_value)
 }
 inline double Value::_internal_number_value() const {
@@ -879,13 +879,6 @@ inline double Value::_internal_number_value() const {
     return _impl_.kind_.number_value_;
   }
   return 0;
-}
-inline void Value::_internal_set_number_value(double value) {
-  if (kind_case() != kNumberValue) {
-    clear_kind();
-    set_has_number_value();
-  }
-  _impl_.kind_.number_value_ = value;
 }
 
 // string string_value = 3;
@@ -992,7 +985,11 @@ inline bool Value::bool_value() const {
   return _internal_bool_value();
 }
 inline void Value::set_bool_value(bool value) {
-  _internal_set_bool_value(value);
+  if (kind_case() != kBoolValue) {
+    clear_kind();
+    set_has_bool_value();
+  }
+  _impl_.kind_.bool_value_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.Value.bool_value)
 }
 inline bool Value::_internal_bool_value() const {
@@ -1000,13 +997,6 @@ inline bool Value::_internal_bool_value() const {
     return _impl_.kind_.bool_value_;
   }
   return false;
-}
-inline void Value::_internal_set_bool_value(bool value) {
-  if (kind_case() != kBoolValue) {
-    clear_kind();
-    set_has_bool_value();
-  }
-  _impl_.kind_.bool_value_ = value;
 }
 
 // .google.protobuf.Struct struct_value = 5;

@@ -84,7 +84,10 @@ std::string Thunk(Context<T> field, absl::string_view op) {
   if (field.is_upb() && op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
-  } else if (field.is_upb() && (op == "case")) {
+  } else if (field.is_upb() && op == "get_mut") {
+    // same as above, with with `mutable` prefix
+    format = "_mutable_$1";
+  } else if (field.is_upb() && op == "case") {
     // some upb functions are in the order x_op compared to has/set/clear which
     // are in the other order e.g. op_x.
     format = "_$1_$0";

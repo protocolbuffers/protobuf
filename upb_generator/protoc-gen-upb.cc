@@ -282,8 +282,9 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
         R"cc(
           UPB_INLINE $0 $1_$2(const struct $3* msg) {
             const upb_MiniTableExtension* ext = &$4;
-            UPB_ASSUME(!upb_MiniTableField_IsRepeatedOrMap(&ext->field));
-            UPB_ASSUME(_upb_MiniTableField_GetRep(&ext->field) == $5);
+            UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
+            UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
+                           &ext->UPB_PRIVATE(field)) == $5);
             $0 default_val = $6;
             $0 ret;
             _upb_Message_GetExtensionField(msg, ext, &default_val, &ret);
@@ -297,8 +298,9 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
         R"cc(
           UPB_INLINE void $1_set_$2(struct $3* msg, $0 val, upb_Arena* arena) {
             const upb_MiniTableExtension* ext = &$4;
-            UPB_ASSUME(!upb_MiniTableField_IsRepeatedOrMap(&ext->field));
-            UPB_ASSUME(_upb_MiniTableField_GetRep(&ext->field) == $5);
+            UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
+            UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
+                           &ext->UPB_PRIVATE(field)) == $5);
             bool ok = _upb_Message_SetExtensionField(msg, ext, &val, arena);
             UPB_ASSERT(ok);
           }
@@ -390,19 +392,6 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
           }
         )cc",
         msg_name, resolved_name, FieldInitializer(pools, field, options));
-  } else if (field.IsMap()) {
-    // Do nothing.
-  } else if (field.IsSequence()) {
-    // TODO: remove.
-    output(
-        R"cc(
-          UPB_INLINE bool $0_has_$1(const $0* msg) {
-            size_t size;
-            $0_$1(msg, &size);
-            return size != 0;
-          }
-        )cc",
-        msg_name, resolved_name);
   }
 }
 
@@ -690,7 +679,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             }
             struct $0* sub = (struct $0*)_upb_Message_New($3, arena);
             if (!arr || !sub) return NULL;
-            _upb_Array_Set(arr, arr->size - 1, &sub, sizeof(sub));
+            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
             return sub;
           }
         )cc",
@@ -706,7 +695,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
               return false;
             }
-            _upb_Array_Set(arr, arr->size - 1, &val, sizeof(val));
+            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &val, sizeof(val));
             return true;
           }
         )cc",
@@ -940,8 +929,8 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     size_t max64 = 0;
     for (const auto message : this_file_messages) {
       if (absl::EndsWith(message.name(), "Options")) {
-        size_t size32 = pools.GetMiniTable32(message)->size;
-        size_t size64 = pools.GetMiniTable64(message)->size;
+        size_t size32 = pools.GetMiniTable32(message)->UPB_PRIVATE(size);
+        size_t size64 = pools.GetMiniTable64(message)->UPB_PRIVATE(size);
         if (size32 > max32) {
           max32 = size32;
           max32_message = message;

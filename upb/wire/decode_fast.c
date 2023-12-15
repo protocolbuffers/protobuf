@@ -20,6 +20,7 @@
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/sub.h"
 #include "upb/wire/internal/decode.h"
 
 // Must be last.
@@ -63,9 +64,9 @@ static const char* fastdecode_dispatch(UPB_PARSE_PARAMS) {
   switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
       *(uint32_t*)msg |= hasbits;  // Sync hasbits.
-      const upb_MiniTable* l = decode_totablep(table);
-      return UPB_UNLIKELY(l->required_count)
-                 ? _upb_Decoder_CheckRequired(d, ptr, msg, l)
+      const upb_MiniTable* m = decode_totablep(table);
+      return UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
+                 ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
                  : ptr;
     case kUpb_IsDoneStatus_NotDone:
       break;
@@ -165,15 +166,15 @@ UPB_FORCEINLINE
 static void* fastdecode_resizearr(upb_Decoder* d, void* dst,
                                   fastdecode_arr* farr, int valbytes) {
   if (UPB_UNLIKELY(dst == farr->end)) {
-    size_t old_capacity = farr->arr->capacity;
+    size_t old_capacity = farr->arr->UPB_PRIVATE(capacity);
     size_t old_bytes = old_capacity * valbytes;
     size_t new_capacity = old_capacity * 2;
     size_t new_bytes = new_capacity * valbytes;
     char* old_ptr = _upb_array_ptr(farr->arr);
     char* new_ptr = upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
     uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-    _upb_Array_SetTaggedPtr(farr->arr, new_ptr, elem_size_lg2);
-    farr->arr->capacity = new_capacity;
+    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(farr->arr, new_ptr, elem_size_lg2);
+    farr->arr->UPB_PRIVATE(capacity) = new_capacity;
     dst = (void*)(new_ptr + (old_capacity * valbytes));
     farr->end = (void*)(new_ptr + (new_capacity * valbytes));
   }
@@ -255,13 +256,13 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       *(uint32_t*)msg |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
-        farr->arr = _upb_Array_New(&d->arena, 8, elem_size_lg2);
+        farr->arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, 8, elem_size_lg2);
         *arr_p = farr->arr;
       } else {
         farr->arr = *arr_p;
       }
       begin = _upb_array_ptr(farr->arr);
-      farr->end = begin + (farr->arr->capacity * valbytes);
+      farr->end = begin + (farr->arr->UPB_PRIVATE(capacity) * valbytes);
       *data = _upb_FastDecoder_LoadTag(ptr);
       return begin + (farr->arr->size * valbytes);
     }
@@ -540,7 +541,8 @@ TAGBYTES(p)
   int elems = size / valbytes;                                              \
                                                                             \
   if (UPB_LIKELY(!arr)) {                                                   \
-    *arr_p = arr = _upb_Array_New(&d->arena, elems, elem_size_lg2);         \
+    *arr_p = arr =                                                          \
+        UPB_PRIVATE(_upb_Array_New)(&d->arena, elems, elem_size_lg2);       \
     if (!arr) {                                                             \
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);            \
     }                                                                       \
@@ -660,7 +662,7 @@ UPB_FORCEINLINE
 static void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size,
                               int copy, char* data, size_t data_offset,
                               upb_StringView* dst) {
-  d->arena.head.ptr += copy;
+  d->arena.head.UPB_PRIVATE(ptr) += copy;
   dst->data = data + data_offset;
   UPB_UNPOISON_MEMORY_REGION(data, copy);
   memcpy(data, ptr, copy);
@@ -692,8 +694,8 @@ static void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size,
   ptr += tagbytes + 1;                                                         \
   dst->size = size;                                                            \
                                                                                \
-  buf = d->arena.head.ptr;                                                     \
-  arena_has = _upb_ArenaHas(&d->arena);                                        \
+  buf = d->arena.head.UPB_PRIVATE(ptr);                                        \
+  arena_has = UPB_PRIVATE(_upb_ArenaHas)(&d->arena);                           \
   common_has = UPB_MIN(arena_has,                                              \
                        upb_EpsCopyInputStream_BytesAvailable(&d->input, ptr)); \
                                                                                \
@@ -865,15 +867,15 @@ TAGBYTES(r)
 /* message fields *************************************************************/
 
 UPB_INLINE
-upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* l,
+upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
                                 int msg_ceil_bytes) {
-  size_t size = l->size + sizeof(upb_Message_Internal);
+  size_t size = m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
   char* msg_data;
   if (UPB_LIKELY(msg_ceil_bytes > 0 &&
-                 _upb_ArenaHas(&d->arena) >= msg_ceil_bytes)) {
+                 UPB_PRIVATE(_upb_ArenaHas)(&d->arena) >= msg_ceil_bytes)) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
-    msg_data = d->arena.head.ptr;
-    d->arena.head.ptr += size;
+    msg_data = d->arena.head.UPB_PRIVATE(ptr);
+    d->arena.head.UPB_PRIVATE(ptr) += size;
     UPB_UNPOISON_MEMORY_REGION(msg_data, msg_ceil_bytes);
     memset(msg_data, 0, msg_ceil_bytes);
     UPB_POISON_MEMORY_REGION(msg_data + size, msg_ceil_bytes - size);
@@ -913,11 +915,12 @@ static const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e,
   upb_Message** dst;                                                      \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
   const upb_MiniTable* tablep = decode_totablep(table);                   \
-  const upb_MiniTable* subtablep = tablep->subs[submsg_idx].submsg;       \
+  const upb_MiniTable* subtablep = upb_MiniTableSub_Message(              \
+      *UPB_PRIVATE(_upb_MiniTable_GetSubByIndex)(tablep, submsg_idx));    \
   fastdecode_submsgdata submsg = {decode_totable(subtablep)};             \
   fastdecode_arr farr;                                                    \
                                                                           \
-  if (subtablep->table_mask == (uint8_t)-1) {                             \
+  if (subtablep->UPB_PRIVATE(table_mask) == (uint8_t)-1) {                \
     d->depth++;                                                           \
     RETURN_GENERIC("submessage doesn't have fast tables.");               \
   }                                                                       \

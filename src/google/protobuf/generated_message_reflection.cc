@@ -30,7 +30,6 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -39,6 +38,7 @@
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -1007,7 +1007,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     const FieldDescriptor* field;
   };
 
-  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   uint32_t oneof_case_lhs = GetOneofCase(*lhs, oneof_descriptor);
   uint32_t oneof_case_rhs = GetOneofCase(*rhs, oneof_descriptor);
 
@@ -1229,12 +1229,10 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   if (schema_.IsSplit()) {
     std::swap(*MutableSplitField(lhs), *MutableSplitField(rhs));
   }
-  const int oneof_decl_count = descriptor_->oneof_decl_count();
+  const int oneof_decl_count = descriptor_->real_oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
-    if (!OneofDescriptorLegacy(oneof).is_synthetic()) {
-      SwapOneofField<true>(lhs, rhs, oneof);
-    }
+    const OneofDescriptor* oneof = descriptor_->real_oneof_decl(i);
+    SwapOneofField<true>(lhs, rhs, oneof);
   }
 
   // Swapping bits need to happen after swapping fields, because the latter may
@@ -2573,7 +2571,7 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
 
 const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
+  if (oneof_descriptor->is_synthetic()) {
     const FieldDescriptor* field = oneof_descriptor->field(0);
     return HasField(message, field) ? field : nullptr;
   }
@@ -2655,30 +2653,11 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
   return descriptor_pool_->FindExtensionByNumber(descriptor_, number);
 }
 
-bool Reflection::SupportsUnknownEnumValues() const {
-  return FileDescriptorLegacy(descriptor_->file()).syntax() ==
-         FileDescriptorLegacy::Syntax::SYNTAX_PROTO3;
-}
-
 // ===================================================================
 // Some private helpers.
 
 // These simple template accessors obtain pointers (or references) to
 // the given field.
-
-template <class Type>
-const Type& Reflection::GetRawNonOneof(const Message& message,
-                                       const FieldDescriptor* field) const {
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  if (!schema_.IsSplit(field)) {
-    return GetConstRefAtOffset<Type>(message, field_offset);
-  }
-  const void* split = GetSplitField(&message);
-  if (SplitFieldHasExtraIndirection(field)) {
-    return **GetConstPointerAtOffset<Type*>(split, field_offset);
-  }
-  return *GetConstPointerAtOffset<Type>(split, field_offset);
-}
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
   ABSL_DCHECK_NE(message, schema_.default_instance_);
@@ -2712,38 +2691,42 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
   return ptr;
 }
 
-template <class Type>
-Type* Reflection::MutableRawNonOneof(Message* message,
-                                     const FieldDescriptor* field) const {
+void* Reflection::MutableRawSplitImpl(Message* message,
+                                      const FieldDescriptor* field) const {
+  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
+
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  if (!schema_.IsSplit(field)) {
-    return GetPointerAtOffset<Type>(message, field_offset);
-  }
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
-                          *GetPointerAtOffset<Type*>(*split, field_offset),
+                          *GetPointerAtOffset<void*>(*split, field_offset),
                           message->GetArena());
   }
-  return GetPointerAtOffset<Type>(*split, field_offset);
+  return GetPointerAtOffset<void>(*split, field_offset);
 }
 
-template <typename Type>
-Type* Reflection::MutableRaw(Message* message,
-                             const FieldDescriptor* field) const {
+void* Reflection::MutableRawNonOneofImpl(Message* message,
+                                         const FieldDescriptor* field) const {
+  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+    return MutableRawSplitImpl(message, field);
+  }
+
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  return GetPointerAtOffset<void>(message, field_offset);
+}
+
+void* Reflection::MutableRawImpl(Message* message,
+                                 const FieldDescriptor* field) const {
+  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+    return MutableRawNonOneofImpl(message, field);
+  }
+
+  // Oneof fields are not split.
+  ABSL_DCHECK(!schema_.IsSplit(field));
+
   const uint32_t field_offset = schema_.GetFieldOffset(field);
-  if (!schema_.IsSplit(field)) {
-    return GetPointerAtOffset<Type>(message, field_offset);
-  }
-  PrepareSplitMessageForWrite(message);
-  void** split = MutableSplitField(message);
-  if (SplitFieldHasExtraIndirection(field)) {
-    return AllocIfDefault(field,
-                          *GetPointerAtOffset<Type*>(*split, field_offset),
-                          message->GetArena());
-  }
-  return GetPointerAtOffset<Type>(*split, field_offset);
+  return GetPointerAtOffset<void>(message, field_offset);
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
@@ -2758,14 +2741,14 @@ uint32_t* Reflection::MutableHasBits(Message* message) const {
 
 uint32_t Reflection::GetOneofCase(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
-  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return internal::GetConstRefAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 uint32_t* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
-  ABSL_DCHECK(!OneofDescriptorLegacy(oneof_descriptor).is_synthetic());
+  ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return GetPointerAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -2959,7 +2942,7 @@ void Reflection::SwapBit(Message* message1, Message* message2,
 
 bool Reflection::HasOneof(const Message& message,
                           const OneofDescriptor* oneof_descriptor) const {
-  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
+  if (oneof_descriptor->is_synthetic()) {
     return HasField(message, oneof_descriptor->field(0));
   }
   return (GetOneofCase(message, oneof_descriptor) > 0);
@@ -2979,7 +2962,7 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
-  if (OneofDescriptorLegacy(oneof_descriptor).is_synthetic()) {
+  if (oneof_descriptor->is_synthetic()) {
     ClearField(message, oneof_descriptor->field(0));
     return;
   }
@@ -3622,8 +3605,6 @@ struct MetadataOwner {
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
-void AddDescriptors(const DescriptorTable* table);
-
 void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   // Ensure the file descriptor is added to the pool.
   {
@@ -3711,16 +3692,6 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   MessageFactory::InternalRegisterGeneratedFile(table);
 }
 
-void AddDescriptors(const DescriptorTable* table) {
-  // AddDescriptors is not thread safe. Callers need to ensure calls are
-  // properly serialized. This function is only called pre-main by global
-  // descriptors and we can assume single threaded access or it's called
-  // by AssignDescriptorImpl which uses a mutex to sequence calls.
-  if (table->is_initialized) return;
-  table->is_initialized = true;
-  AddDescriptorsImpl(table);
-}
-
 }  // namespace
 
 // Separate function because it needs to be a friend of
@@ -3735,6 +3706,16 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 }
 
 namespace internal {
+
+void AddDescriptors(const DescriptorTable* table) {
+  // AddDescriptors is not thread safe. Callers need to ensure calls are
+  // properly serialized. This function is only called pre-main by global
+  // descriptors and we can assume single threaded access or it's called
+  // by AssignDescriptorImpl which uses a mutex to sequence calls.
+  if (table->is_initialized) return;
+  table->is_initialized = true;
+  AddDescriptorsImpl(table);
+}
 
 Metadata AssignDescriptors(const DescriptorTable* (*table)(),
                            absl::once_flag* once, const Metadata& metadata) {
@@ -3824,6 +3805,24 @@ bool IsDescendant(Message& root, const Message& message) {
 
 bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
   return field->is_repeated();
+}
+
+const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
+                                             int index) {
+  // First, make sure we inject the surviving default instances.
+  InitProtobufDefaults();
+
+  // Now check if the table has it. If so, return it.
+  if (const auto* msg = table->default_instances[index]) {
+    return msg;
+  }
+
+  // Fallback to dynamic messages.
+  // Register the dep and generate the prototype via the generated pool.
+  AssignDescriptors(table);
+  ABSL_CHECK(table->file_level_metadata[index].descriptor != nullptr);
+  return MessageFactory::generated_factory()->GetPrototype(
+      table->file_level_metadata[index].descriptor);
 }
 
 }  // namespace internal

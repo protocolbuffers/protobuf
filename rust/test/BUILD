@@ -74,7 +74,7 @@ rust_proto_library(
     name = "unittest_proto3_optional_rust_proto",
     testonly = True,
     visibility = [
-        "//rust/test/shared:__subpackages__",
+        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
     ],
     deps = [
         UNITTEST_PROTO3_OPTIONAL_TARGET,
@@ -84,20 +84,14 @@ rust_proto_library(
 rust_cc_proto_library(
     name = "unittest_proto3_optional_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_OPTIONAL_CC_TARGET],
 )
 
 rust_upb_proto_library(
     name = "unittest_proto3_optional_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
 )
 
@@ -178,6 +172,32 @@ rust_upb_proto_library(
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":dots_in_package_proto"],
+)
+
+proto_library(
+    name = "edition2023_proto",
+    testonly = True,
+    srcs = ["edition2023.proto"],
+)
+
+cc_proto_library(
+    name = "edition2023_cc_proto",
+    testonly = True,
+    deps = [":edition2023_proto"],
+)
+
+rust_cc_proto_library(
+    name = "edition2023_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "edition2023_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_proto"],
 )
 
 proto_library(

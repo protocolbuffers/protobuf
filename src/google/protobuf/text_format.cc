@@ -18,6 +18,7 @@
 #include <atomic>
 #include <climits>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <utility>
@@ -47,6 +48,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -1647,6 +1649,83 @@ class TextFormat::Printer::DebugStringFieldValuePrinter
   }
 };
 
+namespace {
+
+// Returns true if `ch` needs to be escaped in TextFormat, independent of any
+// UTF-8 validity issues.
+bool DefinitelyNeedsEscape(unsigned char ch) {
+  if (ch < 32) return true;
+  switch (ch) {
+    case '\"':
+    case '\'':
+    case '\\':
+      return true;
+  }
+  return false;
+}
+
+// Returns true if this is a high byte that requires UTF-8 validation.  If the
+// UTF-8 validation fails, we must escape the byte.
+bool NeedsUtf8Validation(unsigned char ch) { return ch > 127; }
+
+// Returns the number of bytes in the prefix of `val` that do not need escaping.
+// This is like utf8_range::SpanStructurallyValid(), except that it also
+// terminates at any ASCII char that needs to be escaped in TextFormat (any char
+// that has `DefinitelyNeedsEscape(ch) == true`).
+//
+// If we could get a variant of utf8_range::SpanStructurallyValid() that could
+// terminate on any of these chars, that might be more efficient, but it would
+// be much more complicated to modify that heavily SIMD code.
+size_t SkipPassthroughBytes(absl::string_view val) {
+  for (size_t i = 0; i < val.size(); i++) {
+    unsigned char uc = val[i];
+    if (DefinitelyNeedsEscape(uc)) return i;
+    if (NeedsUtf8Validation(uc)) {
+      // Find the end of this region of consecutive high bytes, so that we only
+      // give high bytes to the UTF-8 checker.  This avoids needing to perform
+      // a second scan of the ASCII characters looking for characters that
+      // need escaping.
+      //
+      // We assume that high bytes are less frequent than plain, printable ASCII
+      // bytes, so we accept the double-scan of high bytes.
+      size_t end = i + 1;
+      for (; end < val.size(); end++) {
+        if (!NeedsUtf8Validation(val[end])) break;
+      }
+      size_t n = end - i;
+      size_t ok = utf8_range::SpanStructurallyValid(val.substr(i, n));
+      if (ok != n) return i + ok;
+      i += ok - 1;
+    }
+  }
+  return val.size();
+}
+
+void HardenedPrintString(absl::string_view src,
+                         TextFormat::BaseTextGenerator* generator) {
+  // Print as UTF-8, while guarding against any invalid UTF-8 in the string
+  // field.
+  //
+  // If in the future we have a guaranteed invariant that invalid UTF-8 will
+  // never be present, we could avoid the UTF-8 check here.
+
+  while (!src.empty()) {
+    size_t n = SkipPassthroughBytes(src);
+    if (n != 0) {
+      generator->PrintString(src.substr(0, n));
+      src.remove_prefix(n);
+      if (src.empty()) break;
+    }
+
+    // If repeated calls to CEscape() and PrintString() are expensive, we could
+    // consider batching them, at the cost of some complexity.
+    generator->PrintString(absl::CEscape(src.substr(0, 1)));
+    src.remove_prefix(1);
+  }
+}
+
+}  // namespace
+
 // ===========================================================================
 //  An internal field value printer that escape UTF8 strings.
 class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
@@ -1655,7 +1734,7 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
   void PrintString(const std::string& val,
                    TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintLiteral("\"");
-    generator->PrintString(absl::Utf8SafeCEscape(val));
+    HardenedPrintString(val, generator);
     generator->PrintLiteral("\"");
   }
   void PrintBytes(const std::string& val,
@@ -1956,7 +2035,9 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
 void TextFormat::FastFieldValuePrinter::PrintString(
     const std::string& val, BaseTextGenerator* generator) const {
   generator->PrintLiteral("\"");
-  generator->PrintString(absl::CEscape(val));
+  if (!val.empty()) {
+    generator->PrintString(absl::CEscape(val));
+  }
   generator->PrintLiteral("\"");
 }
 void TextFormat::FastFieldValuePrinter::PrintBytes(

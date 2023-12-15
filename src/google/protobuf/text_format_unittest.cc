@@ -47,6 +47,7 @@
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.

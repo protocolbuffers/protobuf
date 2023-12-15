@@ -18,6 +18,7 @@
 #include "upb/message/copy.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
+#include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
@@ -412,7 +413,8 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
       id.mini_table_ext(), ::protos::internal::GetArena(message));
   if (!ext) {
-    return ExtensionNotFoundError(id.mini_table_ext()->field.number);
+    return ExtensionNotFoundError(
+        upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
   return Ptr<const Extension>(::protos::internal::CreateMessage<Extension>(
       ext->data.ptr, ::protos::internal::GetArena(message)));

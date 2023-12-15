@@ -1160,19 +1160,18 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
   Formatter format(p);
   absl::flat_hash_map<absl::string_view, std::string> vars;
   CollectMapInfo(options_, descriptor_, &vars);
-  vars["lite"] =
-      HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
+  ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
   auto v = p->WithVars(std::move(vars));
   // Templatize constexpr constructor as a workaround for a bug in gcc 12
   // (warning in gcc 13).
   p->Emit(R"cc(
     class $classname$ final
-        : public ::$proto_ns$::internal::MapEntry$lite$<
+        : public ::$proto_ns$::internal::MapEntry<
               $classname$, $key_cpp$, $val_cpp$,
               ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
               ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {
      public:
-      using SuperType = ::$proto_ns$::internal::MapEntry$lite$<
+      using SuperType = ::$proto_ns$::internal::MapEntry<
           $classname$, $key_cpp$, $val_cpp$,
           ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
           ::$proto_ns$::internal::WireFormatLite::$val_wire_type$>;
@@ -2057,30 +2056,50 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
+
+  const auto pin_weak_writer = [&] {
+    if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
+    p->Emit({{"index", index_in_file_messages_}},
+            R"cc(
+              ::_pbi::StrongPointer(&pb_$index$_weak_);
+            )cc");
+
+    // For CODE_SIZE types, we need to pin the submessages too.
+    // SPEED types will pin them via the TcParse table automatically.
+    if (HasGeneratedMethods(descriptor_->file(), options_)) return;
+    for (int i = 0; i < descriptor_->field_count(); ++i) {
+      auto* field = descriptor_->field(i);
+      if (field->type() != field->TYPE_MESSAGE) continue;
+      p->Emit(
+          {
+              {"sub_default_name",
+               QualifiedDefaultInstanceName(field->message_type(), options_)},
+          },
+          R"cc(
+            ::_pbi::StrongPointer(&$sub_default_name$);
+          )cc");
+    }
+  };
+
   if (IsMapEntryMessage(descriptor_)) {
     format(
         "$classname$::$classname$() {}\n"
         "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
         "    : SuperType(arena) {}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      if (!descriptor_->options().map_entry()) {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "$annotate_reflection$"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      } else {
-        format(
-            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-            "  return ::_pbi::AssignDescriptors(\n"
-            "      &$desc_table$_getter, &$desc_table$_once,\n"
-            "      $file_level_metadata$[$1$]);\n"
-            "}\n",
-            index_in_file_messages_);
-      }
+      p->Emit(
+          {
+              {"pin_weak_writer", pin_weak_writer},
+              {"index", index_in_file_messages_},
+          },
+          R"cc(
+            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+              $pin_weak_writer$;
+              return ::_pbi::AssignDescriptors(&$desc_table$_getter,
+                                               &$desc_table$_once,
+                                               $file_level_metadata$[$index$]);
+            }
+          )cc");
     }
     return;
   }
@@ -2121,10 +2140,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "static constexpr ::int32_t kOneofCaseOffset =\n"
         "  PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);\n");
   }
-  for (auto field : FieldRange(descriptor_)) {
-    auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    field_generators_.get(field).GenerateInternalAccessorDeclarations(p);
-  }
   if (num_required_fields_ > 0) {
     const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
     format(
@@ -2137,9 +2152,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
   format.Outdent();
   format("};\n\n");
-  for (auto field : FieldRange(descriptor_)) {
-    field_generators_.get(field).GenerateInternalAccessorDefinitions(p);
-  }
 
   // Generate non-inline field definitions.
   for (auto field : FieldRange(descriptor_)) {
@@ -2210,24 +2222,20 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   format("\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (!descriptor_->options().map_entry()) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "$annotate_reflection$"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    } else {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::_pbi::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
-    }
+    p->Emit(
+        {
+            {"pin_weak_writer", pin_weak_writer},
+            {"index", index_in_file_messages_},
+        },
+        R"cc(
+          ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+            $annotate_reflection$;
+            $pin_weak_writer$;
+            return ::_pbi::AssignDescriptors(&$desc_table$_getter,
+                                             &$desc_table$_once,
+                                             $file_level_metadata$[$index$]);
+          }
+        )cc");
   }
 
   if (HasTracker(descriptor_, options_)) {
@@ -3489,63 +3497,35 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   Formatter format(p);
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
-  const auto class_data_members = [&] {
-    p->Emit(
-        {
-            {"merge_impl",
-             [&] {
-               // TODO: This check is not needed once we migrate
-               // CheckTypeAndMergeFrom to ClassData fully.
-               if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                 p->Emit(R"cc(
-                   $classname$::MergeImpl,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // MergeImpl
-                 )cc");
-               }
-             }},
-            {"on_demand_register_arena_dtor",
-             [&] {
-               if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
-                 p->Emit(R"cc(
-                   $classname$::OnDemandRegisterArenaDtor,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // OnDemandRegisterArenaDtor
-                 )cc");
-               }
-             }},
-            {"descriptor_methods",
-             [&] {
-               if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                 p->Emit(R"cc(
-                   &::$proto_ns$::Message::kDescriptorMethods,
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   nullptr,  // DescriptorMethods
-                 )cc");
-               }
-             }},
-        },
-        R"cc(
-          $merge_impl$, $on_demand_register_arena_dtor$, $descriptor_methods$,
-              PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-        )cc");
+  const auto on_demand_register_arena_dtor = [&] {
+    if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
+      p->Emit(R"cc(
+        $classname$::OnDemandRegisterArenaDtor,
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        nullptr,  // OnDemandRegisterArenaDtor
+      )cc");
+    }
   };
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     p->Emit(
-        {{"class_data_members", class_data_members}},
+        {
+            {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
+        },
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
           $classname$::GetClassData() const {
-            PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::ClassData
-                _data_ = {
-                    $class_data_members$,
+            PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
+                ClassDataFull _data_ = {
+                    {
+                        $on_demand_register_arena_dtor$,
+                        PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                        false,
+                    },
+                    &$classname$::MergeImpl,
+                    &$classname$::kDescriptorMethods,
                 };
             return &_data_;
           }
@@ -3553,8 +3533,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   } else {
     p->Emit(
         {
-            {"class_data_members", class_data_members},
             {"type_size", descriptor_->full_name().size() + 1},
+            {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
         },
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
@@ -3563,9 +3543,12 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               ::$proto_ns$::MessageLite::ClassData header;
               char type_name[$type_size$];
             };
+
             PROTOBUF_CONSTINIT static const ClassData_ _data_ = {
                 {
-                    $class_data_members$,
+                    $on_demand_register_arena_dtor$,
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    true,
                 },
                 "$full_name$",
             };
@@ -3771,23 +3754,44 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
   // Merge oneof fields. Oneof field requires oneof case check.
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("switch (from.$1$_case()) {\n", oneof->name());
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      field_generators_.get(field).GenerateMergingCode(p);
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format("}\n");
+    p->Emit({{"name", oneof->name()},
+             {"NAME", absl::AsciiStrToUpper(oneof->name())},
+             {"index", oneof->index()},
+             {"cases",
+              [&] {
+                for (const auto* field : FieldRange(oneof)) {
+                  p->Emit(
+                      {{"Label", UnderscoresToCamelCase(field->name(), true)},
+                       {"body",
+                        [&] {
+                          field_generators_.get(field).GenerateMergingCode(p);
+                        }}},
+                      R"cc(
+                        case k$Label$: {
+                          $body$;
+                          break;
+                        }
+                      )cc");
+                }
+              }}},
+            R"cc(
+              if (const uint32_t oneof_from_case = from.$oneof_case$[$index$]) {
+                const uint32_t oneof_to_case = _this->$oneof_case$[$index$];
+                const bool oneof_needs_init = oneof_to_case != oneof_from_case;
+                if (oneof_needs_init) {
+                  if (oneof_to_case != 0) {
+                    _this->clear_$name$();
+                  }
+                  _this->$oneof_case$[$index$] = oneof_from_case;
+                }
+
+                switch (oneof_from_case) {
+                  $cases$;
+                  case $NAME$_NOT_SET:
+                    break;
+                }
+              }
+            )cc");
   }
   if (num_weak_fields_) {
     format(

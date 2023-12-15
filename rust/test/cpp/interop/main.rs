@@ -40,9 +40,9 @@ fn mutate_message_in_cpp() {
     }
 
     let mut msg2 = TestAllTypes::new();
-    msg2.optional_int64_set(Some(42));
+    msg2.optional_int64_mut().set(42);
     msg2.optional_bytes_mut().set(b"something mysterious");
-    msg2.optional_bool_set(Some(false));
+    msg2.optional_bool_mut().set(false);
 
     proto_assert_eq!(msg1, msg2);
 }
@@ -50,7 +50,7 @@ fn mutate_message_in_cpp() {
 #[test]
 fn deserialize_in_rust() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_set(Some(-1));
+    msg1.optional_int64_mut().set(-1);
     msg1.optional_bytes_mut().set(b"some cool data I guess");
     let serialized =
         unsafe { SerializeTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break()) };
@@ -63,7 +63,7 @@ fn deserialize_in_rust() {
 #[test]
 fn deserialize_in_cpp() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_set(Some(-1));
+    msg1.optional_int64_mut().set(-1);
     msg1.optional_bytes_mut().set(b"some cool data I guess");
     let data = msg1.serialize();
 

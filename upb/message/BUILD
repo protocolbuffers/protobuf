@@ -94,6 +94,8 @@ cc_library(
     srcs = [
         "array.c",
         "array.h",
+        "internal/extension.c",
+        "internal/message.c",
         "map.c",
         "map.h",
         "map_sorter.c",
@@ -138,8 +140,12 @@ cc_library(
 
 cc_library(
     name = "message",
+    srcs = [
+        "compat.c",
+    ],
     hdrs = [
         "array.h",
+        "compat.h",
         "map.h",
         "message.h",
     ],
@@ -308,6 +314,7 @@ cc_test(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
+        "//upb:port",
         "//upb:wire",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
@@ -344,7 +351,6 @@ cc_test(
         "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:port",
         "//upb:wire",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",

@@ -494,34 +494,18 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
 
-  // This overload supports those few cases where ParseMessage is called
-  // on a class that is not actually a proto message.
-  // TODO: Eliminate this use case.
-  template <typename T,
-            typename std::enable_if<!std::is_base_of<MessageLite, T>::value,
-                                    bool>::type = true>
-  PROTOBUF_NODISCARD const char* ParseMessage(T* msg, const char* ptr);
-
   // Read the length prefix, push the new limit, call the func(ptr), and then
-  // pop the limit. Useful for situations that don't value an actual message,
-  // like map entries.
+  // pop the limit. Useful for situations that don't have an actual message.
   template <typename Func>
   PROTOBUF_NODISCARD const char* ParseLengthDelimitedInlined(const char*,
                                                              const Func& func);
 
-  template <typename TcParser, typename Table>
-  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
-      MessageLite* msg, const char* ptr, const Table* table) {
-    LimitToken old;
-    ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
-    if (ptr == nullptr) return ptr;
-    auto old_depth = depth_;
-    ptr = TcParser::ParseLoop(msg, ptr, this, table);
-    if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
-    depth_++;
-    if (!PopLimit(std::move(old))) return nullptr;
-    return ptr;
-  }
+  // Push the recursion depth, call the func(ptr), and then pop depth. Useful
+  // for situations that don't have an actual message.
+  template <typename Func>
+  PROTOBUF_NODISCARD const char* ParseGroupInlined(const char* ptr,
+                                                   uint32_t start_tag,
+                                                   const Func& func);
 
   template <typename T>
   PROTOBUF_NODISCARD PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
@@ -531,24 +515,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     auto old_depth = depth_;
     auto old_group_depth = group_depth_;
     ptr = msg->_InternalParse(ptr, this);
-    if (ptr != nullptr) {
-      ABSL_DCHECK_EQ(old_depth, depth_);
-      ABSL_DCHECK_EQ(old_group_depth, group_depth_);
-    }
-    group_depth_--;
-    depth_++;
-    if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
-    return ptr;
-  }
-
-  template <typename TcParser, typename Table>
-  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
-      MessageLite* msg, const char* ptr, uint32_t tag, const Table* table) {
-    if (--depth_ < 0) return nullptr;
-    group_depth_++;
-    auto old_depth = depth_;
-    auto old_group_depth = group_depth_;
-    ptr = TcParser::ParseLoop(msg, ptr, this, table);
     if (ptr != nullptr) {
       ABSL_DCHECK_EQ(old_depth, depth_);
       ABSL_DCHECK_EQ(old_group_depth, group_depth_);
@@ -1105,15 +1071,14 @@ inline int32_t ReadVarintZigZag32(const char** p) {
   return WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(tmp));
 }
 
-template <typename T, typename std::enable_if<
-                          !std::is_base_of<MessageLite, T>::value, bool>::type>
-PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
-                                                          const char* ptr) {
+template <typename Func>
+PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
   LimitToken old;
-  ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
+  ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
   if (ptr == nullptr) return ptr;
   auto old_depth = depth_;
-  ptr = msg->_InternalParse(ptr, this);
+  PROTOBUF_ALWAYS_INLINE_CALL ptr = func(ptr);
   if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
   depth_++;
   if (!PopLimit(std::move(old))) return nullptr;
@@ -1122,13 +1087,20 @@ PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
 
 template <typename Func>
 PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
-ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
-  LimitToken old;
-  ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
-  if (ptr == nullptr) return ptr;
+ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
+                                const Func& func) {
+  if (--depth_ < 0) return nullptr;
+  group_depth_++;
+  auto old_depth = depth_;
+  auto old_group_depth = group_depth_;
   PROTOBUF_ALWAYS_INLINE_CALL ptr = func(ptr);
+  if (ptr != nullptr) {
+    ABSL_DCHECK_EQ(old_depth, depth_);
+    ABSL_DCHECK_EQ(old_group_depth, group_depth_);
+  }
+  group_depth_--;
   depth_++;
-  if (!PopLimit(std::move(old))) return nullptr;
+  if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(start_tag))) return nullptr;
   return ptr;
 }
 

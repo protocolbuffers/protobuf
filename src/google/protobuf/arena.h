@@ -10,7 +10,10 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
+#include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <new>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -26,8 +29,11 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
+#include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -48,6 +54,9 @@ class Message;  // defined in message.h
 class MessageLite;
 template <typename Key, typename T>
 class Map;
+namespace internal {
+struct RepeatedFieldBase;
+}  // namespace internal
 
 namespace arena_metrics {
 
@@ -210,7 +219,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       internal::ThreadSafeArena::kBlockHeaderSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
-  inline ~Arena() {}
+  inline ~Arena() = default;
 
   // API to create proto2 message objects on the arena. If the arena passed in
   // is nullptr, then a heap allocated object is returned. Type T must be a
@@ -243,27 +252,31 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return CreateMessageInternal<Type>(arena, std::forward<Args>(args)...);
   }
 
-  // API to create any objects on the arena. Note that only the object will
-  // be created on the arena; the underlying ptrs (in case of a proto2 message)
-  // will be still heap allocated. Proto messages should usually be allocated
-  // with CreateMessage<T>() instead.
+  // API to create any objects on the arena.
   //
-  // Note that even if T satisfies the arena message construction protocol
-  // (InternalArenaConstructable_ trait and optional DestructorSkippable_
-  // trait), as described above, this function does not follow the protocol;
-  // instead, it treats T as a black-box type, just as if it did not have these
-  // traits. Specifically, T's constructor arguments will always be only those
-  // passed to Create<T>() -- no additional arena pointer is implicitly added.
-  // Furthermore, the destructor will always be called at arena destruction time
-  // (unless the destructor is trivial). Hence, from T's point of view, it is as
-  // if the object were allocated on the heap (except that the underlying memory
-  // is obtained from the arena).
+  // If an object is arena-constructable, this API behaves like
+  // Arena::CreateMessage. Arena constructable types are expected to accept
+  // Arena* as the first argument and one is implicitly added by the API.
+  //
+  // If the object is not arena-constructable, only the object will be created
+  // on the arena; the underlying ptrs will be still heap allocated.
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
-      return new T(std::forward<Args>(args)...);
-    }
-    return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
+    return absl::utility_internal::IfConstexprElse<
+        is_arena_constructable<T>::value>(
+        // Arena-constructable
+        [arena](auto&&... args) {
+          return CreateMessage<T>(arena, std::forward<Args>(args)...);
+        },
+        // Non arena-constructable
+        [arena](auto&&... args) {
+          if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+            return new T(std::forward<Args>(args)...);
+          }
+          return new (arena->AllocateInternal<T>())
+              T(std::forward<Args>(args)...);
+        },
+        std::forward<Args>(args)...);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely

@@ -306,6 +306,7 @@ bootstrap_cc_binary(
     deps = [
         "//upb:base",
         "//upb:mem",
+        "//upb:mini_table",
         "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire_types",

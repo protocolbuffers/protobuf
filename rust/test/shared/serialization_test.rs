@@ -11,8 +11,8 @@ use unittest_proto::proto2_unittest::TestAllTypes;
 #[test]
 fn serialize_deserialize_message() {
     let mut msg = TestAllTypes::new();
-    msg.optional_int64_set(Some(42));
-    msg.optional_bool_set(Some(true));
+    msg.optional_int64_mut().set(42);
+    msg.optional_bool_mut().set(true);
     msg.optional_bytes_mut().set(b"serialize deserialize test");
 
     let serialized = msg.serialize();

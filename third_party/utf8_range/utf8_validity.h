@@ -7,6 +7,8 @@
 #ifndef THIRD_PARTY_UTF8_RANGE_UTF8_VALIDITY_H_
 #define THIRD_PARTY_UTF8_RANGE_UTF8_VALIDITY_H_
 
+#include <cstddef>
+
 #include "absl/strings/string_view.h"
 
 namespace utf8_range {

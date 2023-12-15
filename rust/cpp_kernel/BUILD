@@ -12,6 +12,7 @@ cc_library(
     ],
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
+        "@com_google_absl//absl/strings:string_view",
         "//:protobuf_nowkt",
     ],
 )
