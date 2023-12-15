@@ -392,19 +392,6 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
           }
         )cc",
         msg_name, resolved_name, FieldInitializer(pools, field, options));
-  } else if (field.IsMap()) {
-    // Do nothing.
-  } else if (field.IsSequence()) {
-    // TODO: remove.
-    output(
-        R"cc(
-          UPB_INLINE bool $0_has_$1(const $0* msg) {
-            size_t size;
-            $0_$1(msg, &size);
-            return size != 0;
-          }
-        )cc",
-        msg_name, resolved_name);
   }
 }
 

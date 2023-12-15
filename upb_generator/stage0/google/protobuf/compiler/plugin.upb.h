@@ -220,11 +220,6 @@ UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_file_to_gen
   }
   return arr;
 }
-UPB_INLINE bool google_protobuf_compiler_CodeGeneratorRequest_has_file_to_generate(const google_protobuf_compiler_CodeGeneratorRequest* msg) {
-  size_t size;
-  google_protobuf_compiler_CodeGeneratorRequest_file_to_generate(msg, &size);
-  return size != 0;
-}
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_clear_parameter(google_protobuf_compiler_CodeGeneratorRequest* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 2);
   _upb_Message_ClearNonExtensionField(msg, &field);
@@ -287,11 +282,6 @@ UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_proto_file_
   }
   return arr;
 }
-UPB_INLINE bool google_protobuf_compiler_CodeGeneratorRequest_has_proto_file(const google_protobuf_compiler_CodeGeneratorRequest* msg) {
-  size_t size;
-  google_protobuf_compiler_CodeGeneratorRequest_proto_file(msg, &size);
-  return size != 0;
-}
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_clear_source_file_descriptors(google_protobuf_compiler_CodeGeneratorRequest* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 17);
   _upb_Message_ClearNonExtensionField(msg, &field);
@@ -323,11 +313,6 @@ UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_source_file
     *size = arr ? arr->size : 0;
   }
   return arr;
-}
-UPB_INLINE bool google_protobuf_compiler_CodeGeneratorRequest_has_source_file_descriptors(const google_protobuf_compiler_CodeGeneratorRequest* msg) {
-  size_t size;
-  google_protobuf_compiler_CodeGeneratorRequest_source_file_descriptors(msg, &size);
-  return size != 0;
 }
 
 UPB_INLINE upb_StringView* google_protobuf_compiler_CodeGeneratorRequest_mutable_file_to_generate(google_protobuf_compiler_CodeGeneratorRequest* msg, size_t* size) {
@@ -549,11 +534,6 @@ UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorResponse_file_mutab
     *size = arr ? arr->size : 0;
   }
   return arr;
-}
-UPB_INLINE bool google_protobuf_compiler_CodeGeneratorResponse_has_file(const google_protobuf_compiler_CodeGeneratorResponse* msg) {
-  size_t size;
-  google_protobuf_compiler_CodeGeneratorResponse_file(msg, &size);
-  return size != 0;
 }
 
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_error(google_protobuf_compiler_CodeGeneratorResponse *msg, upb_StringView value) {
