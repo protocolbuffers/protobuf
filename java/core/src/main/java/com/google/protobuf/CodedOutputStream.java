@@ -1332,7 +1332,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             buffer[position++] = (byte) value;
             return;
           } else {
-            buffer[position++] = (byte) ((value & 0x7F) | 0x80);
+            buffer[position++] = (byte) ((value | 0x80) & 0xFF);
             value >>>= 7;
           }
         }
@@ -1363,7 +1363,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
             return;
           } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) (((int) value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(buffer, position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -1374,7 +1374,7 @@ public abstract class CodedOutputStream extends ByteOutput {
               buffer[position++] = (byte) value;
               return;
             } else {
-              buffer[position++] = (byte) (((int) value & 0x7F) | 0x80);
+              buffer[position++] = (byte) (((int) value | 0x80) & 0xFF);
               value >>>= 7;
             }
           }
@@ -1690,7 +1690,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             buffer.put((byte) value);
             return;
           } else {
-            buffer.put((byte) ((value & 0x7F) | 0x80));
+            buffer.put((byte) ((value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -1716,7 +1716,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             buffer.put((byte) value);
             return;
           } else {
-            buffer.put((byte) (((int) value & 0x7F) | 0x80));
+            buffer.put((byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2021,7 +2021,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             return;
           } else {
-            UnsafeUtil.putByte(position++, (byte) ((value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(position++, (byte) ((value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2031,7 +2031,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             return;
           } else {
-            UnsafeUtil.putByte(position++, (byte) ((value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(position++, (byte) ((value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2055,7 +2055,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             return;
           } else {
-            UnsafeUtil.putByte(position++, (byte) (((int) value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2065,7 +2065,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             return;
           } else {
-            UnsafeUtil.putByte(position++, (byte) (((int) value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2265,7 +2265,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) ((value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(buffer, position++, (byte) ((value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2278,7 +2278,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             totalBytesWritten++;
             return;
           } else {
-            buffer[position++] = (byte) ((value & 0x7F) | 0x80);
+            buffer[position++] = (byte) ((value | 0x80) & 0xFF);
             totalBytesWritten++;
             value >>>= 7;
           }
@@ -2298,7 +2298,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) (((int) value & 0x7F) | 0x80));
+            UnsafeUtil.putByte(buffer, position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
@@ -2311,7 +2311,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             totalBytesWritten++;
             return;
           } else {
-            buffer[position++] = (byte) (((int) value & 0x7F) | 0x80);
+            buffer[position++] = (byte) (((int) value | 0x80) & 0xFF);
             totalBytesWritten++;
             value >>>= 7;
           }
