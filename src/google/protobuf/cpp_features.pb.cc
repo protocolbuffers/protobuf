@@ -157,12 +157,15 @@ inline void CppFeatures::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 CppFeatures::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          CppFeatures::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+              false,
+          },
+          &CppFeatures::MergeImpl,
+          &CppFeatures::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -295,15 +298,15 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
         ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >,
                             11, false>
-            cpp(kCppFieldNumber);
+            cpp(kCppFieldNumber, &::pb::_CppFeatures_default_instance_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

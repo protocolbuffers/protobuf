@@ -11,7 +11,7 @@
 
 pub use crate::vtable::{
     new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, PrimitiveOptionalMutVTable,
-    PrimitiveVTable, RawVTableMutator,
+    PrimitiveVTable, PrimitiveWithRawVTable, RawVTableMutator,
 };
 use std::ptr::NonNull;
 use std::slice;

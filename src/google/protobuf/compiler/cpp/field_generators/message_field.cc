@@ -108,8 +108,6 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
-  void GenerateInternalAccessorDeclarations(io::Printer* p) const override;
-  void GenerateInternalAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
@@ -307,47 +305,6 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       )cc");
 }
 
-void SingularMessage::GenerateInternalAccessorDeclarations(
-    io::Printer* p) const {
-  if (!is_weak()) return;
-
-  p->Emit(R"cc(
-    static $pb$::MessageLite* mutable_$name$($Msg$* msg);
-  )cc");
-}
-
-void SingularMessage::GenerateInternalAccessorDefinitions(
-    io::Printer* p) const {
-  // In theory, these accessors could be inline in _Internal. However, in
-  // practice, the linker is then not able to throw them out making implicit
-  // weak dependencies not work at all.
-
-  if (!is_weak() || is_oneof()) return;
-
-  // These private accessors are used by MergeFrom and
-  // MergePartialFromCodedStream, and their purpose is to provide access to
-  // the field without creating a strong dependency on the message type.
-  p->Emit(
-      {
-          {"update_hasbit",
-           [&] {
-             if (!has_hasbit_) return;
-             p->Emit(R"cc(
-               msg->$set_hasbit$;
-             )cc");
-           }},
-      },
-      R"cc(
-        $pb$::MessageLite* $Msg$::_Internal::mutable_$name$($Msg$* msg) {
-          $update_hasbit$;
-          if (msg->$field_$ == nullptr) {
-            msg->$field_$ = $kDefaultPtr$->New(msg->GetArena());
-          }
-          return msg->$field_$;
-        }
-      )cc");
-}
-
 void SingularMessage::GenerateClearingCode(io::Printer* p) const {
   if (!has_hasbit_) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -381,7 +338,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {
   switch (function) {
     case GeneratorFunction::kMergeFrom:
-      return !(is_weak() || should_split());
+      return !should_split();
   }
   return false;
 }
@@ -389,8 +346,12 @@ bool SingularMessage::RequiresArena(GeneratorFunction function) const {
 void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
-        "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
-        "    *from.$field_$);\n");
+        R"cc(
+          if (_this->$field_$ == nullptr) {
+            _this->$field_$ = from.$field_$->New(arena);
+          }
+          _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
+        )cc");
   } else if (should_split()) {
     p->Emit(
         "_this->_internal_mutable_$name$()->$Submsg$::MergeFrom(\n"
@@ -747,34 +708,33 @@ void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
-  Formatter format(p);
-  format("$DEPRECATED$ $Submsg$* ${1$mutable_$name$$}$(int index);\n",
-         std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
-  format(
-      "$DEPRECATED$ $pb$::RepeatedPtrField< $Submsg$ >*\n"
-      "    ${1$mutable_$name$$}$();\n",
-      std::make_tuple(field_, GeneratedCodeInfo::Annotation::ALIAS));
-  format(
-      "private:\n"
-      "const $pb$::RepeatedPtrField<$Submsg$>& _internal_$name$() const;\n"
-      "$pb$::RepeatedPtrField<$Submsg$>* _internal_mutable_$name$();\n");
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto vs = p->WithVars(
+      AnnotatedAccessors(field_, {"add_"}, io::AnnotationCollector::kSet));
+  auto vm = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
+                                           io::AnnotationCollector::kAlias));
+
+  p->Emit(R"cc(
+    $DEPRECATED$ $Submsg$* $mutable_name$(int index);
+    $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $mutable_name$();
+
+    private:
+    const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
+    $pb$::RepeatedPtrField<$Submsg$>* $_internal_mutable_name$();
+  )cc");
   if (is_weak()) {
-    format(
-        "const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() "
-        "const;\n"
-        "$pb$::WeakRepeatedPtrField<$Submsg$>* "
-        "_internal_mutable_weak_$name$();\n");
+    p->Emit(R"cc(
+      const $pb$::WeakRepeatedPtrField<$Submsg$>& _internal_weak_$name$() const;
+      $pb$::WeakRepeatedPtrField<$Submsg$>* _internal_mutable_weak_$name$();
+    )cc");
   }
-  format(
-      "public:\n"
-      "$DEPRECATED$ const $Submsg$& ${1$$name$$}$(int index) const;\n",
-      field_);
-  format("$DEPRECATED$ $Submsg$* ${1$add_$name$$}$();\n",
-         std::make_tuple(field_, GeneratedCodeInfo::Annotation::SET));
-  format(
-      "$DEPRECATED$ const $pb$::RepeatedPtrField< $Submsg$ >&\n"
-      "    ${1$$name$$}$() const;\n",
-      field_);
+  p->Emit(R"cc(
+    public:
+    $DEPRECATED$ const $Submsg$& $name$(int index) const;
+    $DEPRECATED$ $Submsg$* $add_name$();
+    $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$() const;
+  )cc");
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {

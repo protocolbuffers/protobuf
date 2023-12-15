@@ -238,9 +238,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto =
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fapi_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fapi_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto(&descriptor_table_google_2fprotobuf_2fapi_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -328,12 +325,15 @@ inline void Api::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Api::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Api::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
+              false,
+          },
+          &Api::MergeImpl,
+          &Api::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -637,9 +637,9 @@ void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Api::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fapi_2eproto_getter, &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fapi_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fapi_2eproto[0]);
 }
 // ===================================================================
 
@@ -717,12 +717,15 @@ inline void Method::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Method::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Method::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
+              false,
+          },
+          &Method::MergeImpl,
+          &Method::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1006,9 +1009,9 @@ void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Method::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fapi_2eproto_getter, &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fapi_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fapi_2eproto[1]);
 }
 // ===================================================================
 
@@ -1064,12 +1067,15 @@ inline void Mixin::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Mixin::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Mixin::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
+              false,
+          },
+          &Mixin::MergeImpl,
+          &Mixin::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1229,9 +1235,9 @@ void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Mixin::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fapi_2eproto_getter, &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fapi_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fapi_2eproto[2]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -1241,4 +1247,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

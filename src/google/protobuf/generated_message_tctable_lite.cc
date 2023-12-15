@@ -73,7 +73,7 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
 
-PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
   // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
@@ -96,6 +96,12 @@ PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
   return ptr;
+}
+
+PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
+    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    const TcParseTableBase* table) {
+  return ParseLoopInlined(msg, ptr, ctx, table);
 }
 
 // On the fast path, a (matching) 1-byte tag already has the decoded value.
@@ -387,11 +393,12 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     if (field == nullptr) {
       field = inner_table->default_instance->New(msg->GetArena());
     }
-    if (group_coding) {
-      return ctx->ParseGroup<TcParser>(field, ptr, FastDecodeTag(saved_tag),
-                                       inner_table);
-    }
-    return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoopInlined(field, ptr, ctx, inner_table);
+    };
+    return group_coding ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag),
+                                                 inner_loop)
+                        : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
   } else {
     if (field == nullptr) {
       const MessageLite* default_instance =
@@ -474,12 +481,12 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     ptr += sizeof(TagType);
     MessageLite* submsg = field.AddMessage(default_instance);
     if (aux_is_table) {
-      if (group_coding) {
-        ptr = ctx->ParseGroup<TcParser>(submsg, ptr,
-                                        FastDecodeTag(expected_tag), aux.table);
-      } else {
-        ptr = ctx->ParseMessage<TcParser>(submsg, ptr, aux.table);
-      }
+      const auto inner_loop = [&](const char* ptr) {
+        return ParseLoopInlined(submsg, ptr, ctx, aux.table);
+      };
+      ptr = group_coding ? ctx->ParseGroupInlined(
+                               ptr, FastDecodeTag(expected_tag), inner_loop)
+                         : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
     } else {
       if (group_coding) {
         ptr = ctx->ParseGroup(submsg, ptr, FastDecodeTag(expected_tag));
@@ -2369,10 +2376,11 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     if (need_init || field == nullptr) {
       field = inner_table->default_instance->New(msg->GetArena());
     }
-    if (is_group) {
-      return ctx->ParseGroup<TcParser>(field, ptr, decoded_tag, inner_table);
-    }
-    return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoop(field, ptr, ctx, inner_table);
+    };
+    return is_group ? ctx->ParseGroupInlined(ptr, decoded_tag, inner_loop)
+                    : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
   } else {
     if (need_init || field == nullptr) {
       const MessageLite* def;
@@ -2428,9 +2436,11 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
     uint32_t next_tag;
     do {
       MessageLite* value = field.AddMessage(default_instance);
-      ptr = is_group ? ctx->ParseGroup<TcParser>(value, ptr2, decoded_tag,
-                                                 inner_table)
-                     : ctx->ParseMessage<TcParser>(value, ptr2, inner_table);
+      const auto inner_loop = [&](const char* ptr) {
+        return ParseLoop(value, ptr, ctx, inner_table);
+      };
+      ptr = is_group ? ctx->ParseGroupInlined(ptr2, decoded_tag, inner_loop)
+                     : ctx->ParseLengthDelimitedInlined(ptr2, inner_loop);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
       if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
       ptr2 = ReadTag(ptr, &next_tag);

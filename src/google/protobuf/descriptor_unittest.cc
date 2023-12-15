@@ -14,6 +14,7 @@
 #include "google/protobuf/descriptor.h"
 
 #include <cstdlib>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -30,20 +31,22 @@
 #include <gtest/gtest.h>
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/synchronization/notification.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_database.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -469,32 +472,30 @@ TEST_F(FileDescriptorTest, BuildAgainWithSyntax) {
   EXPECT_EQ(proto3_descriptor, pool_.BuildFile(proto_syntax3));
 }
 
-TEST_F(FileDescriptorTest, Syntax) {
+TEST_F(FileDescriptorTest, Edition) {
   FileDescriptorProto proto;
   proto.set_name("foo");
-  // Enable the test when we also populate the syntax for proto2.
-#if 0
   {
     proto.set_syntax("proto2");
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO2, FileDescriptorLegacy(file).syntax());
+    EXPECT_EQ(file->edition(), Edition::EDITION_PROTO2);
     FileDescriptorProto other;
     file->CopyTo(&other);
-    EXPECT_EQ("proto2", other.syntax());
+    EXPECT_EQ("", other.syntax());
+    EXPECT_FALSE(other.has_edition());
   }
-#endif
   {
     proto.set_syntax("proto3");
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_PROTO3,
-              FileDescriptorLegacy(file).syntax());
+    EXPECT_EQ(file->edition(), Edition::EDITION_PROTO3);
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("proto3", other.syntax());
+    EXPECT_FALSE(other.has_edition());
   }
   {
     proto.set_syntax("editions");
@@ -502,8 +503,7 @@ TEST_F(FileDescriptorTest, Syntax) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS,
-              FileDescriptorLegacy(file).syntax());
+    EXPECT_EQ(file->edition(), Edition::EDITION_2023);
     EXPECT_EQ(file->edition(), EDITION_2023);
     FileDescriptorProto other;
     file->CopyTo(&other);
@@ -4015,7 +4015,7 @@ class ValidationErrorTest : public testing::Test {
   }
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
-  const FileDescriptor* BuildFile(const std::string& file_text) {
+  const FileDescriptor* BuildFile(absl::string_view file_text) {
     FileDescriptorProto file_proto;
     EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
@@ -7411,8 +7411,11 @@ TEST_F(FeaturesTest, Proto2Features) {
                 [pb.cpp] { legacy_closed_enum: true })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kVerify);
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/true), Utf8CheckMode::kNone);
+  EXPECT_EQ(
+      GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/false),
+      Utf8CheckMode::kVerify);
+  EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
+            Utf8CheckMode::kNone);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
@@ -7477,8 +7480,11 @@ TEST_F(FeaturesTest, Proto3Features) {
                 [pb.cpp] { legacy_closed_enum: false })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/false), Utf8CheckMode::kStrict);
-  EXPECT_EQ(GetUtf8CheckMode(field, /*is_lite=*/true), Utf8CheckMode::kStrict);
+  EXPECT_EQ(
+      GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/false),
+      Utf8CheckMode::kStrict);
+  EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
+            Utf8CheckMode::kStrict);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
@@ -9214,9 +9220,9 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   EXPECT_FALSE(default_repeated_field->has_presence());
   EXPECT_FALSE(default_repeated_field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(default_repeated_field, /*is_lite=*/false),
-            Utf8CheckMode::kStrict);
+            Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(default_repeated_field, /*is_lite=*/true),
-            Utf8CheckMode::kStrict);
+            Utf8CheckMode::kNone);
 
   EXPECT_TRUE(required_field->has_presence());
   EXPECT_TRUE(required_field->is_required());
@@ -10484,6 +10490,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 json_format: ALLOW
               )pb"));
 }
+
 
 
 

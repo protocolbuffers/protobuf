@@ -24,7 +24,7 @@ import "google/protobuf/wrappers.proto";
 
 option features.field_presence = IMPLICIT;
 option java_package = "com.google.protobuf_test_messages.editions.proto3";
-option objc_class_prefix = "Proto3";
+option objc_class_prefix = "EditionsProto3";
 
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;

@@ -40,14 +40,10 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
-
-// Must be last
-#include "upb/port/def.inc"
 
 namespace {
 
@@ -72,13 +68,13 @@ TEST(GeneratedCode, FindUnknown) {
       upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
                                                 arena);
 
-  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
+  upb_FindUnknownRet result = upb_Message_FindUnknown(
       base_msg,
       upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
-  result = upb_MiniTable_FindUnknown(
+  result = upb_Message_FindUnknown(
       base_msg,
       upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
       0);
@@ -711,21 +707,22 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 5, 0);
+  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 5, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
-      mini_table, (upb_MiniTableField*)&mini_table->fields[1],
+      mini_table,
+      (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(mini_table, 1),
       &upb_0test__ModelWithExtensions_msg_init));
   const int decode_options =
       upb_DecodeOptions_MaxDepth(0);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessageRet promote_result =
       upb_MiniTable_PromoteUnknownToMessage(
-          msg, mini_table, &mini_table->fields[1],
+          msg, mini_table, upb_MiniTable_GetFieldByIndex(mini_table, 1),
           &upb_0test__ModelWithExtensions_msg_init, decode_options, arena);
   EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_Ok);
-  const upb_Message* promoted_message =
-      upb_Message_GetMessage(msg, &mini_table->fields[1], nullptr);
+  const upb_Message* promoted_message = upb_Message_GetMessage(
+      msg, upb_MiniTable_GetFieldByIndex(mini_table, 1), nullptr);
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
             12);
@@ -759,22 +756,24 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have repeated field data in an unknown.
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 6, 0);
+  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 6, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
-      mini_table, (upb_MiniTableField*)&mini_table->fields[2],
+      mini_table,
+      (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(mini_table, 2),
       &upb_0test__ModelWithExtensions_msg_init));
   const int decode_options =
       upb_DecodeOptions_MaxDepth(0);  // UPB_DECODE_ALIAS disabled.
   upb_UnknownToMessage_Status promote_result =
       upb_MiniTable_PromoteUnknownToMessageArray(
-          msg, &mini_table->fields[2], &upb_0test__ModelWithExtensions_msg_init,
-          decode_options, arena);
+          msg, upb_MiniTable_GetFieldByIndex(mini_table, 2),
+          &upb_0test__ModelWithExtensions_msg_init, decode_options, arena);
   EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
 
-  upb_Array* array = upb_Message_GetMutableArray(msg, &mini_table->fields[2]);
+  upb_Array* array = upb_Message_GetMutableArray(
+      msg, upb_MiniTable_GetFieldByIndex(mini_table, 2));
   const upb_Message* promoted_message = upb_Array_Get(array, 0).msg_val;
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
@@ -817,20 +816,23 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have map data in an unknown.
-  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 3, 0);
+  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 3, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
-      mini_table, (upb_MiniTableField*)&mini_table->fields[1],
+      mini_table,
+      (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(mini_table, 1),
       map_entry_mini_table));
   upb_UnknownToMessage_Status promote_result =
-      upb_MiniTable_PromoteUnknownToMap(msg, mini_table, &mini_table->fields[1],
-                                        decode_options, arena);
+      upb_MiniTable_PromoteUnknownToMap(
+          msg, mini_table, upb_MiniTable_GetFieldByIndex(mini_table, 1),
+          decode_options, arena);
   EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
 
   upb_Map* map = upb_Message_GetOrCreateMutableMap(
-      msg, map_entry_mini_table, &mini_table->fields[1], arena);
+      msg, map_entry_mini_table, upb_MiniTable_GetFieldByIndex(mini_table, 1),
+      arena);
   EXPECT_NE(map, nullptr);
   // Lookup in map.
   upb_MessageValue key;

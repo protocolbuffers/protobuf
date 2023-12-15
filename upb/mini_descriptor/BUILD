@@ -66,6 +66,7 @@ cc_test(
         "//upb:message_accessors_internal",
         "//upb:mini_table",
         "//upb:mini_table_internal",
+        "//upb:port",
         "//upb:wire",
         "@com_google_absl//absl/container:flat_hash_set",
     ],

@@ -113,9 +113,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ffield_5fmask_
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2ffield_5fmask_2eproto(&descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -168,12 +165,15 @@ inline void FieldMask::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FieldMask::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FieldMask::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
+              false,
+          },
+          &FieldMask::MergeImpl,
+          &FieldMask::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -303,9 +303,9 @@ void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_getter, &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2ffield_5fmask_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2ffield_5fmask_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -315,4 +315,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

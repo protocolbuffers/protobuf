@@ -87,18 +87,16 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
-#include <iosfwd>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "absl/base/casts.h"
-#include "absl/functional/function_ref.h"
+#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -148,6 +146,7 @@ struct TailCallTableInfo;
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
+class EpsCopyOutputStream;   // coded_stream.h
 class ZeroCopyInputStream;   // zero_copy_stream.h
 class ZeroCopyOutputStream;  // zero_copy_stream.h
 class CodedInputStream;      // coded_stream.h
@@ -233,7 +232,7 @@ PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() {}
+  constexpr Message() = default;
   Message(const Message&) = delete;
   Message& operator=(const Message&) = delete;
 
@@ -888,39 +887,6 @@ class PROTOBUF_EXPORT Reflection final {
   // Returns nullptr if no extension is known for this name or number.
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
 
-  // Feature Flags -------------------------------------------------------------
-
-  // Does this message support storing arbitrary integer values in enum fields?
-  // If |true|, GetEnumValue/SetEnumValue and associated repeated-field versions
-  // take arbitrary integer values, and the legacy GetEnum() getter will
-  // dynamically create an EnumValueDescriptor for any integer value without
-  // one. If |false|, setting an unknown enum value via the integer-based
-  // setters results in undefined behavior (in practice, ABSL_DCHECK-fails).
-  //
-  // Generic code that uses reflection to handle messages with enum fields
-  // should check this flag before using the integer-based setter, and either
-  // downgrade to a compatible value or use the UnknownFieldSet if not. For
-  // example:
-  //
-  //   int new_value = GetValueFromApplicationLogic();
-  //   if (reflection->SupportsUnknownEnumValues()) {
-  //     reflection->SetEnumValue(message, field, new_value);
-  //   } else {
-  //     if (field_descriptor->enum_type()->
-  //             FindValueByNumber(new_value) != nullptr) {
-  //       reflection->SetEnumValue(message, field, new_value);
-  //     } else if (emit_unknown_enum_values) {
-  //       reflection->MutableUnknownFields(message)->AddVarint(
-  //           field->number(), new_value);
-  //     } else {
-  //       // convert value to a compatible/default value.
-  //       new_value = CompatibleDowngrade(new_value);
-  //       reflection->SetEnumValue(message, field, new_value);
-  //     }
-  //   }
-  ABSL_DEPRECATED("Use EnumDescriptor::is_closed instead.")
-  bool SupportsUnknownEnumValues() const;
-
   // Returns the MessageFactory associated with this message.  This can be
   // useful for determining if a message is a generated message or not, for
   // example:
@@ -1289,7 +1255,7 @@ class PROTOBUF_EXPORT Reflection final {
 // around GetPrototype for details
 class PROTOBUF_EXPORT MessageFactory {
  public:
-  inline MessageFactory() {}
+  inline MessageFactory() = default;
   MessageFactory(const MessageFactory&) = delete;
   MessageFactory& operator=(const MessageFactory&) = delete;
   virtual ~MessageFactory();
@@ -1347,6 +1313,10 @@ class PROTOBUF_EXPORT MessageFactory {
   static void InternalRegisterGeneratedMessage(const Descriptor* descriptor,
                                                const Message* prototype);
 
+
+ private:
+  friend class DynamicMessageFactory;
+  static const Message* TryGetGeneratedPrototype(const Descriptor* type);
 };
 
 #define DECLARE_GET_REPEATED_FIELD(TYPE)                           \
@@ -1389,6 +1359,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   (void)unused;
 
 #if PROTOBUF_RTTI
+  internal::StrongReference(T::default_instance());
   return dynamic_cast<const T*>(from);
 #else
   bool ok = from != nullptr &&
@@ -1427,11 +1398,7 @@ T& DynamicCastToGenerated(Message& from) {
 // instance T and T is a type derived from base Message class.
 template <typename T>
 const T* DownCastToGenerated(const Message* from) {
-  // Compile-time assert that T is a generated type that has a
-  // default_instance() accessor, but avoid actually calling it.
-  const T& (*get_default_instance)() = &T::default_instance;
-  (void)get_default_instance;
-
+  internal::StrongReference(T::default_instance());
   ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
       << T::default_instance().GetTypeName();

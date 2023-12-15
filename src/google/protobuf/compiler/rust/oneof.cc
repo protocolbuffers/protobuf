@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -38,7 +39,7 @@ namespace rust {
 // message SomeMsg {
 //   oneof some_oneof {
 //     int32 field_a = 7;
-//     uint32 field_b = 9;
+//     SomeMsg field_b = 9;
 //   }
 // }
 //
@@ -46,14 +47,14 @@ namespace rust {
 // pub mod SomeMsg_ {
 //   // The 'view' struct (no suffix on the name)
 //   pub enum SomeOneof<'msg> {
-//     FieldA(View<'msg, i32>) = 7,
-//     FieldB(View<'msg, u32>) = 9,
-//     not_set = 0
+//     FieldA(i32) = 7,
+//     FieldB(View<'msg, SomeMsg>) = 9,
+//     not_set(std::marker::PhantomData<&'msg ()>) = 0
 //   }
 //   pub enum SomeOneofMut<'msg> {
 //     FieldA(Mut<'msg, i32>) = 7,
-//     FieldB(Mut<'msg, u32>) = 9,
-//     not_set = 0
+//     FieldB(Mut<'msg, SomeMsg>) = 9,
+//     not_set(std::marker::PhantomData<&'msg ()>) = 0
 //   }
 // }
 // impl SomeMsg {
@@ -91,37 +92,79 @@ std::string oneofCaseEnumName(const OneofDescriptor& desc) {
   return ToCamelCase(desc.name()) + "Case";
 }
 
-// TODO: Promote up to naming.h once all types can be spelled.
-std::string RsTypeName(Context<FieldDescriptor> field) {
+std::string RsTypeNameView(Context<FieldDescriptor> field) {
   const auto& desc = field.desc();
 
-  // TODO: Fields with a ctype set not supported in v0.6 api.
   if (desc.options().has_ctype()) {
-    return "";
+    return "";  // TODO: b/308792377 - ctype fields not supported yet.
   }
-
   switch (desc.type()) {
-    case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat("crate::", GetCrateRelativeQualifiedPath(
-                                         field.WithDesc(desc.message_type())));
-    case FieldDescriptor::TYPE_ENUM:
-    case FieldDescriptor::TYPE_GROUP:
-      return "";
-    default:
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FLOAT:
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_BOOL:
       return PrimitiveRsTypeName(desc);
+    case FieldDescriptor::TYPE_BYTES:
+      return "&'msg [u8]";
+    case FieldDescriptor::TYPE_STRING:
+      return "&'msg ::__pb::ProtoStr";
+    case FieldDescriptor::TYPE_MESSAGE:
+      return absl::StrCat(
+          "::__pb::View<'msg, crate::",
+          GetCrateRelativeQualifiedPath(field.WithDesc(desc.message_type())),
+          ">");
+    case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
+    case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
+      return "";
   }
-}
 
-std::string RsTypeNameView(Context<FieldDescriptor> field) {
-  std::string type = RsTypeName(field);
-  if (type.empty()) return "";
-  return absl::StrCat("::__pb::View<'msg, ", type, ">");
+  ABSL_LOG(FATAL) << "Unexpected field type: " << desc.type_name();
+  return "";
 }
 
 std::string RsTypeNameMut(Context<FieldDescriptor> field) {
-  std::string type = RsTypeName(field);
-  if (type.empty()) return "";
-  return absl::StrCat("::__pb::Mut<'msg, ", type, ">");
+  const auto& desc = field.desc();
+  if (desc.options().has_ctype()) {
+    return "";  // TODO: b/308792377 - ctype fields not supported yet.
+  }
+  switch (desc.type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FLOAT:
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_BOOL:
+    case FieldDescriptor::TYPE_BYTES:
+    case FieldDescriptor::TYPE_STRING:
+      return absl::StrCat("::__pb::Mut<'msg, ", PrimitiveRsTypeName(desc), ">");
+    case FieldDescriptor::TYPE_MESSAGE:
+      return absl::StrCat(
+          "::__pb::Mut<'msg, crate::",
+          GetCrateRelativeQualifiedPath(field.WithDesc(desc.message_type())),
+          ">");
+    case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
+    case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
+      return "";
+  }
+
+  ABSL_LOG(FATAL) << "Unexpected field type: " << desc.type_name();
+  return "";
 }
 
 }  // namespace

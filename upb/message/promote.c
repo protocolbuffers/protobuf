@@ -24,8 +24,8 @@
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
@@ -78,7 +78,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
 
   // Check unknown fields, if available promote.
   int field_number = upb_MiniTableExtension_Number(ext_table);
-  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number, 0);
+  upb_FindUnknownRet result = upb_Message_FindUnknown(msg, field_number, 0);
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtension_NotPresent;
   }
@@ -118,9 +118,9 @@ static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
   return (upb_FindUnknownRet){.status = kUpb_FindUnknown_ParseError};
 }
 
-upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
-                                             uint32_t field_number,
-                                             int depth_limit) {
+upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
+                                           uint32_t field_number,
+                                           int depth_limit) {
   depth_limit = depth_limit ? depth_limit : kUpb_WireFormat_DefaultDepthLimit;
 
   size_t size;
@@ -241,14 +241,16 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
              sub_mini_table);
   bool is_oneof = upb_MiniTableField_IsInOneof(field);
-  if (!is_oneof || _upb_Message_GetOneofCase(msg, field) == field->number) {
+  if (!is_oneof || UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, field) ==
+                       upb_MiniTableField_Number(field)) {
     UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
   }
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {
-    unknown = upb_MiniTable_FindUnknown(
-        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
+    unknown =
+        upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
+                                upb_DecodeOptions_GetMaxDepth(decode_options));
     switch (unknown.status) {
       case kUpb_FindUnknown_Ok: {
         const char* unknown_data = unknown.ptr;
@@ -273,7 +275,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   } while (unknown.status == kUpb_FindUnknown_Ok);
   if (message) {
     if (is_oneof) {
-      _upb_Message_SetOneofCase(msg, field);
+      UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, field);
     }
     upb_Message_SetMessage(msg, mini_table, field, message);
     ret.message = message;
@@ -294,8 +296,9 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   do {
-    unknown = upb_MiniTable_FindUnknown(
-        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
+    unknown =
+        upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
+                                upb_DecodeOptions_GetMaxDepth(decode_options));
     if (unknown.status == kUpb_FindUnknown_Ok) {
       upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
           unknown.ptr, unknown.len, mini_table,
@@ -324,17 +327,19 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, int decode_options, upb_Arena* arena) {
-  const upb_MiniTable* map_entry_mini_table =
-      mini_table->subs[field->UPB_PRIVATE(submsg_index)].submsg;
+  // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
+  const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
+      mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(map_entry_mini_table);
   UPB_ASSERT(map_entry_mini_table);
-  UPB_ASSERT(map_entry_mini_table->field_count == 2);
-  UPB_ASSERT(upb_FieldMode_Get(field) == kUpb_FieldMode_Map);
+  UPB_ASSERT(map_entry_mini_table->UPB_PRIVATE(field_count) == 2);
+  UPB_ASSERT(upb_MiniTableField_IsMap(field));
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   while (1) {
-    unknown = upb_MiniTable_FindUnknown(
-        msg, field->number, upb_DecodeOptions_GetMaxDepth(decode_options));
+    unknown =
+        upb_Message_FindUnknown(msg, upb_MiniTableField_Number(field),
+                                upb_DecodeOptions_GetMaxDepth(decode_options));
     if (unknown.status != kUpb_FindUnknown_Ok) break;
     upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
         unknown.ptr, unknown.len, map_entry_mini_table,

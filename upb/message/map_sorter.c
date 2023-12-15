@@ -7,7 +7,14 @@
 
 #include "upb/message/internal/map_sorter.h"
 
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/internal/log2.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/alloc.h"
+#include "upb/message/map.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.
@@ -91,8 +98,10 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
   sorted->end = sorted->start + size;
 
   if (sorted->end > s->cap) {
+    const int oldsize = s->cap * sizeof(*s->entries);
     s->cap = upb_Log2CeilingSize(sorted->end);
-    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
+    const int newsize = s->cap * sizeof(*s->entries);
+    s->entries = upb_grealloc(s->entries, oldsize, newsize);
     if (!s->entries) return false;
   }
 

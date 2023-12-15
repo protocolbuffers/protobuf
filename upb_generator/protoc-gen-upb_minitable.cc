@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -17,18 +19,20 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/names.h"
 #include "upb_generator/plugin.h"
 
 // Must be last.
@@ -62,7 +66,7 @@ std::string SourceFilename(upb::FileDefPtr file) {
 }
 
 std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
-  assert(ext.is_extension());
+  UPB_ASSERT(ext.is_extension());
   std::string ext_scope;
   if (ext.extension_scope()) {
     return MessageName(ext.extension_scope());
@@ -263,23 +267,12 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
       return false;  // Not supported yet.
   }
 
-  switch (upb_FieldMode_Get(mt_f)) {
-    case kUpb_FieldMode_Map:
-      return false;  // Not supported yet (ever?).
-    case kUpb_FieldMode_Array:
-      if (mt_f->mode & kUpb_LabelFlags_IsPacked) {
-        cardinality = "p";
-      } else {
-        cardinality = "r";
-      }
-      break;
-    case kUpb_FieldMode_Scalar:
-      if (mt_f->presence < 0) {
-        cardinality = "o";
-      } else {
-        cardinality = "s";
-      }
-      break;
+  if (upb_MiniTableField_IsArray(mt_f)) {
+    cardinality = upb_MiniTableField_IsPacked(mt_f) ? "p" : "r";
+  } else if (upb_MiniTableField_IsScalar(mt_f)) {
+    cardinality = upb_MiniTableField_IsInOneof(mt_f) ? "o" : "s";
+  } else {
+    return false;  // Not supported yet (ever?).
   }
 
   uint64_t expected_tag = GetEncodedTag(field);
@@ -325,7 +318,7 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
       // cross-file sub-message parsing if we are comfortable requiring that
       // users compile all messages at the same time.
       const upb_MiniTable* sub_mt = pools.GetMiniTable64(field.message_type());
-      size = sub_mt->size + 8;
+      size = sub_mt->UPB_PRIVATE(size) + 8;
     }
     std::vector<size_t> breaks = {64, 128, 192, 256};
     for (auto brk : breaks) {
@@ -392,16 +385,18 @@ void WriteMessageField(upb::FieldDefPtr field,
 
 std::string GetSub(upb::FieldDefPtr field) {
   if (auto message_def = field.message_type()) {
-    return absl::Substitute("{.submsg = &$0}", MessageInitName(message_def));
+    return absl::Substitute("{.UPB_PRIVATE(submsg) = &$0}",
+                            MessageInitName(message_def));
   }
 
   if (auto enum_def = field.enum_subdef()) {
     if (enum_def.is_closed()) {
-      return absl::Substitute("{.subenum = &$0}", EnumInit(enum_def));
+      return absl::Substitute("{.UPB_PRIVATE(subenum) = &$0}",
+                              EnumInit(enum_def));
     }
   }
 
-  return std::string("{.submsg = NULL}");
+  return std::string("{.UPB_PRIVATE(submsg) = NULL}");
 }
 
 // Writes a single message into a .upb.c source file.
@@ -415,12 +410,13 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
   std::map<int, std::string> subs;
 
-  for (int i = 0; i < mt_64->field_count; i++) {
-    const upb_MiniTableField* f = &mt_64->fields[i];
+  for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
+    const upb_MiniTableField* f = &mt_64->UPB_PRIVATE(fields)[i];
     uint32_t index = f->UPB_PRIVATE(submsg_index);
     if (index != kUpb_NoSub) {
+      const int f_number = upb_MiniTableField_Number(f);
       auto pair =
-          subs.emplace(index, GetSub(message.FindFieldByNumber(f->number)));
+          subs.emplace(index, GetSub(message.FindFieldByNumber(f_number)));
       ABSL_CHECK(pair.second);
     }
   }
@@ -440,25 +436,27 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("};\n\n");
   }
 
-  if (mt_64->field_count > 0) {
+  if (mt_64->UPB_PRIVATE(field_count) > 0) {
     std::string fields_array_name = msg_name + "__fields";
     fields_array_ref = "&" + fields_array_name + "[0]";
     output("static const upb_MiniTableField $0[$1] = {\n", fields_array_name,
-           mt_64->field_count);
-    for (int i = 0; i < mt_64->field_count; i++) {
-      WriteMessageField(message.FindFieldByNumber(mt_64->fields[i].number),
-                        &mt_64->fields[i], &mt_32->fields[i], output);
+           mt_64->UPB_PRIVATE(field_count));
+    for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
+      WriteMessageField(message.FindFieldByNumber(
+                            mt_64->UPB_PRIVATE(fields)[i].UPB_PRIVATE(number)),
+                        &mt_64->UPB_PRIVATE(fields)[i],
+                        &mt_32->UPB_PRIVATE(fields)[i], output);
     }
     output("};\n\n");
   }
 
   std::vector<TableEntry> table;
-  uint8_t table_mask = -1;
+  uint8_t table_mask = ~0;
 
   table = FastDecodeTable(message, pools);
 
   if (table.size() > 1) {
-    assert((table.size() & (table.size() - 1)) == 0);
+    UPB_ASSERT((table.size() & (table.size() - 1)) == 0);
     table_mask = (table.size() - 1) << 3;
   }
 
@@ -476,8 +474,10 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   output("  $0,\n", submsgs_array_ref);
   output("  $0,\n", fields_array_ref);
   output("  $0, $1, $2, $3, UPB_FASTTABLE_MASK($4), $5,\n",
-         ArchDependentSize(mt_32->size, mt_64->size), mt_64->field_count,
-         msgext, mt_64->dense_below, table_mask, mt_64->required_count);
+         ArchDependentSize(mt_32->UPB_PRIVATE(size), mt_64->UPB_PRIVATE(size)),
+         mt_64->UPB_PRIVATE(field_count), msgext,
+         mt_64->UPB_PRIVATE(dense_below), table_mask,
+         mt_64->UPB_PRIVATE(required_count));
   if (!table.empty()) {
     output("  UPB_FASTTABLE_INIT({\n");
     for (const auto& ent : table) {

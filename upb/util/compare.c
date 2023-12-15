@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "upb/base/string_view.h"
+#include "upb/mem/alloc.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -108,9 +109,11 @@ static void upb_UnknownFields_SortRecursive(upb_UnknownField* arr, size_t start,
 static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
                                    upb_UnknownFields* fields) {
   if (ctx->tmp_size < fields->size) {
+    const int oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
     ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
     while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
-    ctx->tmp = realloc(ctx->tmp, ctx->tmp_size * sizeof(*ctx->tmp));
+    const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
   }
   upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
 }
@@ -261,7 +264,7 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   }
 
   upb_Arena_Free(ctx->arena);
-  free(ctx->tmp);
+  upb_gfree(ctx->tmp);
   return ret;
 }
 

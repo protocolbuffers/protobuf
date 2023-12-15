@@ -648,18 +648,6 @@ static PyObject* PyUpb_Descriptor_GetOneofsByName(PyObject* _self,
   return PyUpb_ByNameMap_New(&funcs, self->def, self->pool);
 }
 
-static PyObject* PyUpb_Descriptor_GetSyntax(PyObject* self, void* closure) {
-  PyErr_WarnEx(NULL,
-               "descriptor.syntax is deprecated. It will be removed soon. "
-               "Most usages are checking field descriptors. Consider to use "
-               "has_presence, is_packed on field descriptors.",
-               1);
-  const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
-  const char* syntax =
-      upb_MessageDef_Syntax(msgdef) == kUpb_Syntax_Proto2 ? "proto2" : "proto3";
-  return PyUnicode_InternFromString(syntax);
-}
-
 static PyGetSetDef PyUpb_Descriptor_Getters[] = {
     {"name", PyUpb_Descriptor_GetName, NULL, "Last name"},
     {"full_name", PyUpb_Descriptor_GetFullName, NULL, "Full name"},
@@ -694,13 +682,6 @@ static PyGetSetDef PyUpb_Descriptor_Getters[] = {
      "Containing type"},
     {"is_extendable", PyUpb_Descriptor_GetIsExtendable, NULL},
     {"has_options", PyUpb_Descriptor_GetHasOptions, NULL, "Has Options"},
-    // begin:github_only
-    {"syntax", &PyUpb_Descriptor_GetSyntax, NULL, "Syntax"},
-    // end:github_only
-    // begin:google_only
-//     // TODO Use this to open-source syntax deprecation.
-//     {"deprecated_syntax", &PyUpb_Descriptor_GetSyntax, NULL, "Syntax"},
-    // end:google_only
     {NULL}};
 
 static PyMethodDef PyUpb_Descriptor_Methods[] = {
@@ -1248,26 +1229,34 @@ static const void* PyUpb_FileDescriptor_NestedLookup(
 
 static const void* PyUpb_FileDescriptor_LookupMessage(
     const upb_FileDef* filedef, const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(
+  const upb_MessageDef* m = PyUpb_FileDescriptor_NestedLookup(
       filedef, name, (void*)&upb_DefPool_FindMessageByName);
+  if (!m) return NULL;
+  return upb_MessageDef_File(m) == filedef ? m : NULL;
 }
 
 static const void* PyUpb_FileDescriptor_LookupEnum(const upb_FileDef* filedef,
                                                    const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(filedef, name,
-                                           (void*)&upb_DefPool_FindEnumByName);
+  const upb_EnumDef* e = PyUpb_FileDescriptor_NestedLookup(
+      filedef, name, (void*)&upb_DefPool_FindEnumByName);
+  if (!e) return NULL;
+  return upb_EnumDef_File(e) == filedef ? e : NULL;
 }
 
 static const void* PyUpb_FileDescriptor_LookupExtension(
     const upb_FileDef* filedef, const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(
+  const upb_FieldDef* f = PyUpb_FileDescriptor_NestedLookup(
       filedef, name, (void*)&upb_DefPool_FindExtensionByName);
+  if (!f) return NULL;
+  return upb_FieldDef_File(f) == filedef ? f : NULL;
 }
 
 static const void* PyUpb_FileDescriptor_LookupService(
     const upb_FileDef* filedef, const char* name) {
-  return PyUpb_FileDescriptor_NestedLookup(
+  const upb_ServiceDef* s = PyUpb_FileDescriptor_NestedLookup(
       filedef, name, (void*)&upb_DefPool_FindServiceByName);
+  if (!s) return NULL;
+  return upb_ServiceDef_File(s) == filedef ? s : NULL;
 }
 
 static PyObject* PyUpb_FileDescriptor_GetName(PyUpb_DescriptorBase* self,
@@ -1376,17 +1365,10 @@ static PyObject* PyUpb_FileDescriptor_GetPublicDependencies(PyObject* _self,
   return PyUpb_GenericSequence_New(&funcs, self->def, self->pool);
 }
 
-static PyObject* PyUpb_FileDescriptor_GetSyntax(PyObject* _self,
-                                                void* closure) {
-  PyErr_WarnEx(NULL,
-               "descriptor.syntax is deprecated. It will be removed soon. "
-               "Most usages are checking field descriptors. Consider to use "
-               "has_presence, is_packed on field descriptors.",
-               1);
+static PyObject* PyUpb_FileDescriptor_GetEdition(PyObject* _self,
+                                                 void* closure) {
   PyUpb_DescriptorBase* self = (void*)_self;
-  const char* syntax =
-      upb_FileDef_Syntax(self->def) == kUpb_Syntax_Proto2 ? "proto2" : "proto3";
-  return PyUnicode_FromString(syntax);
+  return PyLong_FromLong(upb_FileDef_Edition(self->def));
 }
 
 static PyObject* PyUpb_FileDescriptor_GetHasOptions(PyObject* _self,
@@ -1437,14 +1419,7 @@ static PyGetSetDef PyUpb_FileDescriptor_Getters[] = {
     {"public_dependencies", PyUpb_FileDescriptor_GetPublicDependencies, NULL,
      "Dependencies"},
     {"has_options", PyUpb_FileDescriptor_GetHasOptions, NULL, "Has Options"},
-    // begin:github_only
-    {"syntax", PyUpb_FileDescriptor_GetSyntax, (setter)NULL, "Syntax"},
-    // end:github_only
-    // begin:google_only
-//     // TODO Use this to open-source syntax deprecation.
-//     {"deprecated_syntax", PyUpb_FileDescriptor_GetSyntax, (setter)NULL,
-//      "Syntax"},
-    // end:google_only
+    {"edition", PyUpb_FileDescriptor_GetEdition, (setter)NULL, "Edition"},
     {NULL},
 };
 

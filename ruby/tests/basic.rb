@@ -787,4 +787,15 @@ module BasicTest
     assert_respond_to msg, :has_d?
     refute msg.has_d?
   end
+
+  def test_string_subclass
+    str = "hello"
+    myString = Class.new(String)
+
+    m = proto_module::TestMessage.new(
+      optional_string: myString.new(str),
+    )
+
+    assert_equal str, m.optional_string
+  end
 end

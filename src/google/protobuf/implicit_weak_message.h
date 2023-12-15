@@ -63,10 +63,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     };
     static constexpr Data data = {
         {
-            nullptr,  // merge_impl
             nullptr,  // on_demand_register_arena_dtor
-            nullptr,  // descriptor_methods
             PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+            true,
         },
         ""};
     return &data.header;

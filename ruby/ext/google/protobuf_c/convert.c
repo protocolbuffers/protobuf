@@ -141,7 +141,7 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       VALUE utf8 = rb_enc_from_encoding(rb_utf8_encoding());
       if (rb_obj_class(value) == rb_cSymbol) {
         value = rb_funcall(value, rb_intern("to_s"), 0);
-      } else if (rb_obj_class(value) != rb_cString) {
+      } else if (!rb_obj_is_kind_of(value, rb_cString)) {
         rb_raise(cTypeError,
                  "Invalid argument for string field '%s' (given %s).", name,
                  rb_class2name(CLASS_OF(value)));

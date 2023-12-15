@@ -56,6 +56,8 @@ class PROTOC_EXPORT ExtensionGenerator {
   // Source file stuff.
   void GenerateDefinition(io::Printer* p);
 
+  void GenerateRegistration(io::Printer* p);
+
   bool IsScoped() const;
 
  private:

@@ -32,6 +32,9 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/encode.h"
 
+// Must be last.
+#include "upb/port/def.inc"
+
 namespace {
 
 // Proto2 test messages field numbers used for reflective access.
@@ -301,7 +304,7 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
   std::string unknown_data(data, len);
   // Add unknown data.
-  _upb_Message_AddUnknown(msg, data, len, source_arena);
+  UPB_PRIVATE(_upb_Message_AddUnknown)(msg, data, len, source_arena);
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =

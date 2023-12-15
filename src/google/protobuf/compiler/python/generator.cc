@@ -48,7 +48,6 @@
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
@@ -164,6 +163,17 @@ std::string OptionsValue(absl::string_view serialized_options) {
     return "None";
   } else {
     return absl::StrCat("b'", absl::CEscape(serialized_options), "'");
+  }
+}
+
+std::string GetLegacySyntaxName(Edition edition) {
+  switch (edition) {
+    case Edition::EDITION_PROTO2:
+      return "proto2";
+    case Edition::EDITION_PROTO3:
+      return "proto3";
+    default:
+      return "editions";
   }
 }
 
@@ -534,8 +544,7 @@ void Generator::PrintFileDescriptor() const {
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
-  m["syntax"] = std::string(
-      FileDescriptorLegacy::SyntaxName(FileDescriptorLegacy(file_).syntax()));
+  m["syntax"] = GetLegacySyntaxName(file_->edition());
   m["edition"] = Edition_Name(file_->edition());
   m["options"] = OptionsValue(proto_.options().SerializeAsString());
   m["serialized_descriptor"] = absl::CHexEscape(file_descriptor_serialized_);

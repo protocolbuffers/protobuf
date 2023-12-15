@@ -84,7 +84,7 @@ std::string FieldInitializer(upb::FieldDefPtr field,
                              const upb_MiniTableField* field64,
                              const upb_MiniTableField* field32) {
   return absl::Substitute(
-      "{$0, $1, $2, $3, $4, $5}", field64->number,
+      "{$0, $1, $2, $3, $4, $5}", upb_MiniTableField_Number(field64),
       ArchDependentSize(field32->offset, field64->offset),
       ArchDependentSize(field32->presence, field64->presence),
       field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
@@ -106,7 +106,7 @@ std::string ArchDependentSize(int64_t size32, int64_t size64) {
 std::string GetModeInit(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
   std::string ret;
-  uint8_t mode32 = field32->mode;
+  uint8_t mode32 = field32->UPB_PRIVATE(mode);
   switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
       ret = "(int)kUpb_FieldMode_Map";
@@ -140,15 +140,18 @@ std::string GetModeInit(const upb_MiniTableField* field32,
 
 std::string GetFieldRep(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
-  switch (_upb_MiniTableField_GetRep(field32)) {
+  const auto rep32 = UPB_PRIVATE(_upb_MiniTableField_GetRep)(field32);
+  const auto rep64 = UPB_PRIVATE(_upb_MiniTableField_GetRep)(field64);
+
+  switch (rep32) {
     case kUpb_FieldRep_1Byte:
       return "kUpb_FieldRep_1Byte";
       break;
     case kUpb_FieldRep_4Byte: {
-      if (_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_4Byte) {
+      if (rep64 == kUpb_FieldRep_4Byte) {
         return "kUpb_FieldRep_4Byte";
       } else {
-        assert(_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_8Byte);
+        assert(rep64 == kUpb_FieldRep_8Byte);
         return "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
       }
       break;

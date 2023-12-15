@@ -245,7 +245,6 @@ cc_test(
         ":test_upb_proto",
         "@com_google_googletest//:gtest_main",
         "//upb:mini_table",
-        "//upb:port",
     ],
 )
 

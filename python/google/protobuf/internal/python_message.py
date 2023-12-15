@@ -1385,15 +1385,9 @@ def _Clear(self):
 
 
 def _UnknownFields(self):
-  warnings.warn(
-      'message.UnknownFields() is deprecated. Please use the add one '
-      'feature unknown_fields.UnknownFieldSet(message) in '
-      'unknown_fields.py instead.'
-  )
-  if self._unknown_field_set is None:  # pylint: disable=protected-access
-    # pylint: disable=protected-access
-    self._unknown_field_set = containers.UnknownFieldSet()
-  return self._unknown_field_set    # pylint: disable=protected-access
+  raise NotImplementedError('Please use the add-on feaure '
+                            'unknown_fields.UnknownFieldSet(message) in '
+                            'unknown_fields.py instead.')
 
 
 def _DiscardUnknownFields(self):

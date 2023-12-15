@@ -953,20 +953,6 @@ TEST(ArenaTest, AddAllocatedWithReflection) {
 }
 
 TEST(ArenaTest, RepeatedPtrFieldAddClearedTest) {
-#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
-  {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    RepeatedPtrField<TestAllTypes> repeated_field;
-    EXPECT_TRUE(repeated_field.empty());
-    EXPECT_EQ(0, repeated_field.size());
-    // Ownership is passed to repeated_field.
-    TestAllTypes* cleared = new TestAllTypes();
-    repeated_field.AddCleared(cleared);
-    EXPECT_TRUE(repeated_field.empty());
-    EXPECT_EQ(0, repeated_field.size());
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-  }
-#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
   {
     RepeatedPtrField<TestAllTypes> repeated_field;
     EXPECT_TRUE(repeated_field.empty());

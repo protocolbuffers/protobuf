@@ -30,12 +30,20 @@ _DEFAULT_COPTS.extend([
 
 UPB_DEFAULT_CPPOPTS = select({
     "//upb:windows": [],
+    # begin:google_only
+#     # Override default -Oz for release builds on Android.
+#     "//bazel:android_opt": _DEFAULT_CPPOPTS + ["-O2"],
+    # end:google_only
     "//conditions:default": _DEFAULT_CPPOPTS,
 })
 
 UPB_DEFAULT_COPTS = select({
     "//upb:windows": [],
     "//upb:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
+    # begin:google_only
+#     # Override default -Oz for release builds on Android.
+#     "//bazel:android_opt": _DEFAULT_COPTS + ["-O2"],
+    # end:google_only
     "//conditions:default": _DEFAULT_COPTS,
 })
 

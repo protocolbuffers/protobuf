@@ -50,19 +50,6 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
           {"getter_thunk", Thunk(field, "get")},
           {"setter_thunk", Thunk(field, "set")},
           {"clearer_thunk", Thunk(field, "clear")},
-          {"field_setter",
-           [&] {
-             if (field.desc().has_presence()) {
-               field.Emit({}, R"rs(
-                  pub fn r#$field$_set(&mut self, val: Option<$Scalar$>) {
-                    match val {
-                      Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
-                      None => unsafe { $clearer_thunk$(self.inner.msg) },
-                    }
-                  }
-                )rs");
-             }
-           }},
           {"field_mutator_getter",
            [&] {
              if (field.desc().has_presence()) {
@@ -98,18 +85,23 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
                         $setter_thunk$,
                       );
 
-                      $pb$::PrimitiveMut::from_singular(
-                        $pbi$::Private,
-                        unsafe {
+                      // SAFETY:
+                      // - The message is valid for the output lifetime.
+                      // - The vtable is valid for the field.
+                      // - There is no way to mutate the element for the output
+                      //   lifetime except through this mutator.
+                      unsafe {
+                        $pb$::PrimitiveMut::from_inner(
+                          $pbi$::Private,
                           $pbi$::RawVTableMutator::new(
                             $pbi$::Private,
                             $pbr$::MutatorMessageRef::new(
                               $pbi$::Private, &mut self.inner
                             ),
                             &VTABLE,
-                          )
-                        },
-                      )
+                          ),
+                        )
+                      }
                   }
                 )rs");
              }
@@ -118,7 +110,6 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
       R"rs(
           $getter$
           $getter_opt$
-          $field_setter$
           $field_mutator_getter$
         )rs");
 }

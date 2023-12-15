@@ -42,6 +42,7 @@ import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyOneofDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import com.google.protobuf.util.JsonFormat;
@@ -1340,7 +1341,7 @@ public class RubyMessage extends RubyObject {
         // Keep track of what Oneofs are set
         if (value.isNil()) {
           oneofCases.remove(oneofDescriptor);
-          if (!oneofDescriptor.isSynthetic()) {
+          if (!LegacyOneofDescriptor.isSynthetic(oneofDescriptor)) {
             addValue = false;
           }
         } else {

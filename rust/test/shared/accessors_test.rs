@@ -9,7 +9,6 @@
 
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
-use paste::paste;
 use protobuf::Optional;
 use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
 
@@ -34,6 +33,8 @@ fn test_default_accessors() {
             default_bool(): eq(true),
         })
     );
+    assert_that!(msg.default_string(), eq("hello"));
+    assert_that!(msg.default_bytes(), eq("world".as_bytes()));
 }
 
 #[test]
@@ -42,11 +43,11 @@ fn test_optional_fixed32_accessors() {
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 
-    msg.optional_fixed32_set(Some(99));
+    msg.optional_fixed32_mut().set(99);
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(99)));
     assert_that!(msg.optional_fixed32(), eq(99));
 
-    msg.optional_fixed32_set(None);
+    msg.optional_fixed32_mut().clear();
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 }
@@ -84,11 +85,11 @@ fn test_optional_fixed64_accessors() {
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed64(), eq(0));
 
-    msg.optional_fixed64_set(Some(2000));
+    msg.optional_fixed64_mut().set(2000);
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Set(2000)));
     assert_that!(msg.optional_fixed64(), eq(2000));
 
-    msg.optional_fixed64_set(None);
+    msg.optional_fixed64_mut().clear();
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed64(), eq(0));
 }
@@ -126,11 +127,11 @@ fn test_optional_int32_accessors() {
     assert_that!(msg.optional_int32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int32(), eq(0));
 
-    msg.optional_int32_set(Some(1));
+    msg.optional_int32_mut().set(1);
     assert_that!(msg.optional_int32_opt(), eq(Optional::Set(1)));
     assert_that!(msg.optional_int32(), eq(1));
 
-    msg.optional_int32_set(None);
+    msg.optional_int32_mut().clear();
     assert_that!(msg.optional_int32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int32(), eq(0));
 }
@@ -168,11 +169,11 @@ fn test_optional_int64_accessors() {
     assert_that!(msg.optional_int64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int64(), eq(0));
 
-    msg.optional_int64_set(Some(42));
+    msg.optional_int64_mut().set(42);
     assert_that!(msg.optional_int64_opt(), eq(Optional::Set(42)));
     assert_that!(msg.optional_int64(), eq(42));
 
-    msg.optional_int64_set(None);
+    msg.optional_int64_mut().clear();
     assert_that!(msg.optional_int64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int64(), eq(0));
 }
@@ -210,11 +211,11 @@ fn test_optional_sint32_accessors() {
     assert_that!(msg.optional_sint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint32(), eq(0));
 
-    msg.optional_sint32_set(Some(-22));
+    msg.optional_sint32_mut().set(-22);
     assert_that!(msg.optional_sint32_opt(), eq(Optional::Set(-22)));
     assert_that!(msg.optional_sint32(), eq(-22));
 
-    msg.optional_sint32_set(None);
+    msg.optional_sint32_mut().clear();
     assert_that!(msg.optional_sint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint32(), eq(0));
 }
@@ -252,11 +253,11 @@ fn test_optional_sint64_accessors() {
     assert_that!(msg.optional_sint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint64(), eq(0));
 
-    msg.optional_sint64_set(Some(7000));
+    msg.optional_sint64_mut().set(7000);
     assert_that!(msg.optional_sint64_opt(), eq(Optional::Set(7000)));
     assert_that!(msg.optional_sint64(), eq(7000));
 
-    msg.optional_sint64_set(None);
+    msg.optional_sint64_mut().clear();
     assert_that!(msg.optional_sint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_sint64(), eq(0));
 }
@@ -294,11 +295,11 @@ fn test_optional_uint32_accessors() {
     assert_that!(msg.optional_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint32(), eq(0));
 
-    msg.optional_uint32_set(Some(9001));
+    msg.optional_uint32_mut().set(9001);
     assert_that!(msg.optional_uint32_opt(), eq(Optional::Set(9001)));
     assert_that!(msg.optional_uint32(), eq(9001));
 
-    msg.optional_uint32_set(None);
+    msg.optional_uint32_mut().clear();
     assert_that!(msg.optional_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint32(), eq(0));
 }
@@ -336,11 +337,11 @@ fn test_optional_uint64_accessors() {
     assert_that!(msg.optional_uint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint64(), eq(0));
 
-    msg.optional_uint64_set(Some(42));
+    msg.optional_uint64_mut().set(42);
     assert_that!(msg.optional_uint64_opt(), eq(Optional::Set(42)));
     assert_that!(msg.optional_uint64(), eq(42));
 
-    msg.optional_uint64_set(None);
+    msg.optional_uint64_mut().clear();
     assert_that!(msg.optional_uint64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_uint64(), eq(0));
 }
@@ -378,11 +379,11 @@ fn test_optional_float_accessors() {
     assert_that!(msg.optional_float_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_float(), eq(0.0));
 
-    msg.optional_float_set(Some(std::f32::consts::PI));
+    msg.optional_float_mut().set(std::f32::consts::PI);
     assert_that!(msg.optional_float_opt(), eq(Optional::Set(std::f32::consts::PI)));
     assert_that!(msg.optional_float(), eq(std::f32::consts::PI));
 
-    msg.optional_float_set(None);
+    msg.optional_float_mut().clear();
     assert_that!(msg.optional_float_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_float(), eq(0.0));
 }
@@ -420,11 +421,11 @@ fn test_optional_double_accessors() {
     assert_that!(msg.optional_double_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_double(), eq(0.0));
 
-    msg.optional_double_set(Some(-10.99));
+    msg.optional_double_mut().set(-10.99);
     assert_that!(msg.optional_double_opt(), eq(Optional::Set(-10.99)));
     assert_that!(msg.optional_double(), eq(-10.99));
 
-    msg.optional_double_set(None);
+    msg.optional_double_mut().clear();
     assert_that!(msg.optional_double_opt(), eq(Optional::Unset(0.0)));
     assert_that!(msg.optional_double(), eq(0.0));
 }
@@ -461,10 +462,10 @@ fn test_optional_bool_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_bool_opt(), eq(Optional::Unset(false)));
 
-    msg.optional_bool_set(Some(true));
+    msg.optional_bool_mut().set(true);
     assert_that!(msg.optional_bool_opt(), eq(Optional::Set(true)));
 
-    msg.optional_bool_set(None);
+    msg.optional_bool_mut().clear();
     assert_that!(msg.optional_bool_opt(), eq(Optional::Unset(false)));
 }
 
@@ -686,15 +687,15 @@ fn test_oneof_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
 
@@ -708,7 +709,7 @@ fn test_oneof_mut_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
 
     match msg.oneof_field_mut() {
         OneofUint32(mut v) => {
@@ -727,127 +728,10 @@ fn test_oneof_mut_accessors() {
         matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
     );
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
-}
-
-macro_rules! generate_repeated_numeric_test {
-    ($(($t: ty, $field: ident)),*) => {
-        paste! { $(
-            #[test]
-            fn [< test_repeated_ $field _accessors >]() {
-                let mut msg = TestAllTypes::new();
-                assert_that!(msg.[< repeated_ $field >]().len(), eq(0));
-                assert_that!(msg.[<repeated_ $field >]().get(0), none());
-
-                let mut mutator = msg.[<repeated_ $field _mut >]();
-                mutator.push(1 as $t);
-                assert_that!(mutator.len(), eq(1));
-                assert_that!(mutator.get(0), some(eq(1 as $t)));
-                mutator.set(0, 2 as $t);
-                assert_that!(mutator.get(0), some(eq(2 as $t)));
-                mutator.push(1 as $t);
-
-                mutator.push(3 as $t);
-                assert_that!(mutator.get_mut(2).is_some(), eq(true));
-                let mut mut_elem = mutator.get_mut(2).unwrap();
-                mut_elem.set(4 as $t);
-                assert_that!(mut_elem.get(), eq(4 as $t));
-                mut_elem.clear();
-                assert_that!(mut_elem.get(), eq(0 as $t));
-
-                assert_that!(
-                    mutator.iter().collect::<Vec<_>>(),
-                    eq(vec![2 as $t, 1 as $t, 0 as $t])
-                );
-                assert_that!(
-                    (*mutator).into_iter().collect::<Vec<_>>(),
-                    eq(vec![2 as $t, 1 as $t, 0 as $t])
-                );
-
-                for mut mutable_elem in msg.[<repeated_ $field _mut >]() {
-                    mutable_elem.set(0 as $t);
-                }
-                assert_that!(
-                    msg.[<repeated_ $field _mut >]().iter().all(|v| v == (0 as $t)),
-                    eq(true)
-                );
-            }
-
-            #[test]
-            fn [< test_repeated_ $field _set >]() {
-                let mut msg = TestAllTypes::new();
-                let mut mutator = msg.[<repeated_ $field _mut>]();
-                let mut msg2 = TestAllTypes::new();
-                let mut mutator2 = msg2.[<repeated_ $field _mut>]();
-                for i in 0..5 {
-                    mutator2.push(i as $t);
-                }
-                protobuf::MutProxy::set(&mut mutator, *mutator2);
-
-                assert_that!(
-                    mutator.iter().collect::<Vec<_>>(),
-                    eq(mutator2.iter().collect::<Vec<_>>())
-                );
-            }
-        )* }
-    };
-}
-
-generate_repeated_numeric_test!(
-    (i32, int32),
-    (u32, uint32),
-    (i64, int64),
-    (u64, uint64),
-    (f32, float),
-    (f64, double)
-);
-
-#[test]
-fn test_repeated_bool_accessors() {
-    let mut msg = TestAllTypes::new();
-    assert_that!(msg.repeated_bool().len(), eq(0));
-    assert_that!(msg.repeated_bool().get(0), none());
-
-    let mut mutator = msg.repeated_bool_mut();
-    mutator.push(true);
-    assert_that!(mutator.len(), eq(1));
-    assert_that!(mutator.get(0), some(eq(true)));
-    mutator.set(0, false);
-    assert_that!(mutator.get(0), some(eq(false)));
-    mutator.push(true);
-
-    mutator.push(false);
-    assert_that!(mutator.get_mut(2), pat!(Some(_)));
-    let mut mut_elem = mutator.get_mut(2).unwrap();
-    mut_elem.set(true);
-    assert_that!(mut_elem.get(), eq(true));
-    mut_elem.clear();
-    assert_that!(mut_elem.get(), eq(false));
-
-    assert_that!(mutator.iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
-    assert_that!((*mutator).into_iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
-
-    for mut mutable_elem in msg.repeated_bool_mut() {
-        mutable_elem.set(false);
-    }
-    assert_that!(msg.repeated_bool().iter().all(|v| v), eq(false));
-}
-
-#[test]
-fn test_repeated_bool_set() {
-    let mut msg = TestAllTypes::new();
-    let mut mutator = msg.repeated_bool_mut();
-    let mut msg2 = TestAllTypes::new();
-    let mut mutator2 = msg2.repeated_bool_mut();
-    for _ in 0..5 {
-        mutator2.push(true);
-    }
-    protobuf::MutProxy::set(&mut mutator, *mutator2);
-
-    assert_that!(mutator.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
 }

@@ -24,12 +24,26 @@ public final class RuntimeVersionTest {
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
                 RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    -1,
-                    RuntimeVersion.MINOR,
-                    RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX));
-    assertThat(thrown).hasMessageThat().contains("Invalid gencode version: -1");
+                    RuntimeVersion.DOMAIN, 1, -2, -3, ""));
+    assertThat(thrown).hasMessageThat().contains("Invalid gencode version: 1.-2.-3");
+  }
+
+  @Test
+  public void versionValidation_crossDomainDisallowed() {
+
+    RuntimeVersion.RuntimeDomain gencodeDomain = RuntimeVersion.RuntimeDomain.GOOGLE_INTERNAL;
+    RuntimeVersion.ProtobufRuntimeVersionException thrown =
+        assertThrows(
+            RuntimeVersion.ProtobufRuntimeVersionException.class,
+            () -> RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain));
+    assertThat(thrown).hasMessageThat().contains("Mismatched Protobuf Gencode/Runtime domains");
+  }
+
+  @Test
+  public void versionValidation_sameDomainAllowed() {
+
+    RuntimeVersion.RuntimeDomain gencodeDomain = RuntimeVersion.RuntimeDomain.PUBLIC;
+    RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain);
   }
 
   @Test

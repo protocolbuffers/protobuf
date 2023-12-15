@@ -1340,6 +1340,17 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
 
+  def testDel(self):
+    msg = unittest_pb2.TestAllTypes()
+
+    # Fields cannot be deleted.
+    with self.assertRaises(AttributeError):
+      del msg.optional_int32
+    with self.assertRaises(AttributeError):
+      del msg.optional_bool
+    with self.assertRaises(AttributeError):
+      del msg.repeated_nested_message
+
   def testAssignInvalidEnum(self):
     """Assigning an invalid enum number is not allowed in proto2."""
     m = unittest_pb2.TestAllTypes()

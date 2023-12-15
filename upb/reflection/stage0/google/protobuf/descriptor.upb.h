@@ -109,7 +109,8 @@ typedef enum {
   google_protobuf_EDITION_2023 = 1000,
   google_protobuf_EDITION_99997_TEST_ONLY = 99997,
   google_protobuf_EDITION_99998_TEST_ONLY = 99998,
-  google_protobuf_EDITION_99999_TEST_ONLY = 99999
+  google_protobuf_EDITION_99999_TEST_ONLY = 99999,
+  google_protobuf_EDITION_MAX = 2147483647
 } google_protobuf_Edition;
 
 typedef enum {
@@ -150,8 +151,8 @@ typedef enum {
 
 typedef enum {
   google_protobuf_FeatureSet_UTF8_VALIDATION_UNKNOWN = 0,
-  google_protobuf_FeatureSet_NONE = 1,
-  google_protobuf_FeatureSet_VERIFY = 2
+  google_protobuf_FeatureSet_VERIFY = 2,
+  google_protobuf_FeatureSet_NONE = 3
 } google_protobuf_FeatureSet_Utf8Validation;
 
 typedef enum {

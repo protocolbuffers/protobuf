@@ -204,7 +204,7 @@ alias(
 alias(
     name = "mem_internal",
     actual = "//upb/mem:internal",
-    visibility = ["//upb:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 alias(
