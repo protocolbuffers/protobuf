@@ -5,13 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
 namespace protoc = ::google::protobuf::compiler;
@@ -61,7 +61,7 @@ static void PrintString(int max_cols, absl::string_view* str,
     } else if (ch == '\'') {
       printer->PrintRaw("\\'");
       max_cols--;
-    } else if (isprint(ch)) {
+    } else if (isprint(static_cast<int>(static_cast<unsigned char>(ch)))) {
       printer->WriteRaw(&ch, 1);
       max_cols--;
     } else {
