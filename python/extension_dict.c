@@ -126,7 +126,7 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   if (val) {
     return PyUpb_Message_SetFieldValue(self->msg, f, val, PyExc_TypeError);
   } else {
-    PyUpb_Message_DoClearField(self->msg, f);
+    PyUpb_Message_DoClearExtension(self->msg, f);
     return 0;
   }
 }

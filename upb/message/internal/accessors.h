@@ -24,6 +24,7 @@
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -289,31 +290,32 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   return true;
 }
 
-UPB_INLINE void _upb_Message_ClearExtensionField(
-    upb_Message* msg, const upb_MiniTableExtension* ext_l) {
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
+    upb_Message* msg, const upb_MiniTableExtension* m_ext) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) return;
   const upb_Extension* base =
       UPB_PTR_AT(in->internal, in->internal->ext_begin, upb_Extension);
-  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, ext_l);
-  if (ext) {
-    *ext = *base;
+  upb_Extension* msg_ext = (upb_Extension*)_upb_Message_Getext(msg, m_ext);
+  if (msg_ext) {
+    *msg_ext = *base;
     in->internal->ext_begin += sizeof(upb_Extension);
   }
 }
 
-UPB_INLINE void _upb_Message_ClearNonExtensionField(
-    upb_Message* msg, const upb_MiniTableField* field) {
-  if (field->presence > 0) {
-    UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, field);
-  } else if (upb_MiniTableField_IsInOneof(field)) {
-    uint32_t* ptr = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
-    if (*ptr != upb_MiniTableField_Number(field)) return;
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearNormalField)(
+    upb_Message* msg, const upb_MiniTableField* f) {
+  UPB_ASSERT(!upb_MiniTableField_IsExtension(f));
+  if (f->presence > 0) {
+    UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, f);
+  } else if (upb_MiniTableField_IsInOneof(f)) {
+    uint32_t* ptr = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, f);
+    if (*ptr != upb_MiniTableField_Number(f)) return;
     *ptr = 0;
   }
   const char zeros[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (field, _upb_MiniTableField_GetPtr(msg, field), zeros);
+  (f, _upb_MiniTableField_GetPtr(msg, f), zeros);
 }
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
