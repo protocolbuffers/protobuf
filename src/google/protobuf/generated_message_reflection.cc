@@ -2659,6 +2659,20 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 // These simple template accessors obtain pointers (or references) to
 // the given field.
 
+template <class Type>
+const Type& Reflection::GetRawNonOneof(const Message& message,
+                                       const FieldDescriptor* field) const {
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  if (!schema_.IsSplit(field)) {
+    return GetConstRefAtOffset<Type>(message, field_offset);
+  }
+  const void* split = GetSplitField(&message);
+  if (SplitFieldHasExtraIndirection(field)) {
+    return **GetConstPointerAtOffset<Type*>(split, field_offset);
+  }
+  return *GetConstPointerAtOffset<Type>(split, field_offset);
+}
+
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
   ABSL_DCHECK_NE(message, schema_.default_instance_);
   void** split = MutableSplitField(message);
@@ -2691,42 +2705,38 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
   return ptr;
 }
 
-void* Reflection::MutableRawSplitImpl(Message* message,
-                                      const FieldDescriptor* field) const {
-  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
-
+template <class Type>
+Type* Reflection::MutableRawNonOneof(Message* message,
+                                     const FieldDescriptor* field) const {
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  if (!schema_.IsSplit(field)) {
+    return GetPointerAtOffset<Type>(message, field_offset);
+  }
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
-                          *GetPointerAtOffset<void*>(*split, field_offset),
+                          *GetPointerAtOffset<Type*>(*split, field_offset),
                           message->GetArena());
   }
-  return GetPointerAtOffset<void>(*split, field_offset);
+  return GetPointerAtOffset<Type>(*split, field_offset);
 }
 
-void* Reflection::MutableRawNonOneofImpl(Message* message,
-                                         const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
-    return MutableRawSplitImpl(message, field);
-  }
-
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  return GetPointerAtOffset<void>(message, field_offset);
-}
-
-void* Reflection::MutableRawImpl(Message* message,
-                                 const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
-    return MutableRawNonOneofImpl(message, field);
-  }
-
-  // Oneof fields are not split.
-  ABSL_DCHECK(!schema_.IsSplit(field));
-
+template <typename Type>
+Type* Reflection::MutableRaw(Message* message,
+                             const FieldDescriptor* field) const {
   const uint32_t field_offset = schema_.GetFieldOffset(field);
-  return GetPointerAtOffset<void>(message, field_offset);
+  if (!schema_.IsSplit(field)) {
+    return GetPointerAtOffset<Type>(message, field_offset);
+  }
+  PrepareSplitMessageForWrite(message);
+  void** split = MutableSplitField(message);
+  if (SplitFieldHasExtraIndirection(field)) {
+    return AllocIfDefault(field,
+                          *GetPointerAtOffset<Type*>(*split, field_offset),
+                          message->GetArena());
+  }
+  return GetPointerAtOffset<Type>(*split, field_offset);
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
