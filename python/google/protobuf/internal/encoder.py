@@ -694,12 +694,16 @@ def BytesEncoder(field_number, is_repeated, is_packed):
       for element in value:
         write(tag)
         local_EncodeVarint(write, local_len(element), deterministic)
+        if isinstance(element, memoryview) and not element.contiguous:
+          element = bytes(element)
         write(element)
     return EncodeRepeatedField
   else:
     def EncodeField(write, value, deterministic):
       write(tag)
       local_EncodeVarint(write, local_len(value), deterministic)
+      if isinstance(value, memoryview) and not value.contiguous:
+        value = bytes(value)
       return write(value)
     return EncodeField
 

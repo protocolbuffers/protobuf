@@ -26,12 +26,11 @@ import unittest
 from unittest import mock
 import warnings
 
-import numpy as np
-
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import encoder
+from google.protobuf.internal import byte_buffer_pb2
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
@@ -1289,27 +1288,39 @@ class MessageTest(unittest.TestCase):
     self.assertNotEqual(m, ComparesWithFoo())
     self.assertNotEqual(ComparesWithFoo(), m)
 
-  def testMemoryViewToBytes(self, message_module):
-    message = message_module.TestAllTypes()
+
+@testing_refleaks.TestCase
+class MemoryView2BytesTest(unittest.TestCase):
+
+  def testMemoryViewToBytes(self):
+    message = byte_buffer_pb2.BytesBufferMsg()
     message.single_bytes = memoryview(b'abcdef')
+    message.ParseFromString(message.SerializeToString())
+
+    self.assertIsInstance(message.single_bytes, bytes)
     self.assertEqual(message.single_bytes, b'abcdef')
 
-  def testMemoryViewToRepeatedBytes(self, message_module):
-    message = message_module.TestAllTypes()
+  def testMemoryViewToRepeatedBytes(self):
+    message = byte_buffer_pb2.BytesBufferMsg()
     message.repeated_bytes.append(memoryview(b'a'))
     message.repeated_bytes.append(memoryview(b'c'))
     message.repeated_bytes.append(memoryview(b'b'))
+    message.ParseFromString(message.SerializeToString())
+
     message.repeated_bytes.sort()
     self.assertEqual(message.repeated_bytes[0], b'a')
     self.assertEqual(message.repeated_bytes[1], b'b')
     self.assertEqual(message.repeated_bytes[2], b'c')
     self.assertEqual(str(message.repeated_bytes), str([b'a', b'b', b'c']))
 
-  def testNonContiguousMemoryViewToBytes(self, message_module):
-    message = message_module.TestAllTypes()
-    message.single_bytes = np.arange(10, dtype=np.int8)[::2].data
-    np.testing.assert_equal(
-        np.frombuffer(message.single_bytes, dtype=np.int8), [0, 2, 4, 6, 8])
+  def testNonContiguousMemoryViewToBytes(self):
+    buffer = b'\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+    message = byte_buffer_pb2.BytesBufferMsg()
+    message.single_bytes = memoryview(buffer)[::2]
+    message.ParseFromString(message.SerializeToString())
+
+    self.assertIsInstance(message.single_bytes, bytes)
+    self.assertEqual(message.single_bytes, b'\x00\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00')
 
 
 # Class to test proto2-only features (required, extensions, etc.)
