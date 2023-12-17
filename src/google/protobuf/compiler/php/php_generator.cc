@@ -734,9 +734,9 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "utf8",
         field->type() == FieldDescriptor::TYPE_STRING ? "True": "False");
   } else {
-    printer->Print(
-        "GPBUtil::check^type^($var);\n",
-        "type", UnderscoresToCamelCase(field->cpp_type_name(), true));
+    printer->Print("GPBUtil::check^type^($var);\n", "type",
+                   UnderscoresToCamelCase(
+                       absl::StripSuffix(field->cpp_type_name(), "_t"), true));
   }
 
   if (oneof != NULL) {

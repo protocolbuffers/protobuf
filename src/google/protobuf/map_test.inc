@@ -386,8 +386,8 @@ TEST_F(MapImplTest, UsageErrors) {
   EXPECT_DEATH(key.GetUInt64Value(),
                "Protocol Buffer map usage error:\n"
                "MapKey::GetUInt64Value type does not match\n"
-               "  Expected : uint64\n"
-               "  Actual   : int64");
+               "  Expected : uint64_t\n"
+               "  Actual   : int64_t");
 
   MapValueRef value;
   EXPECT_DEATH(

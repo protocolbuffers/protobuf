@@ -790,16 +790,16 @@ const char* const FieldDescriptor::kTypeToName[MAX_TYPE + 1] = {
 const char* const FieldDescriptor::kCppTypeToName[MAX_CPPTYPE + 1] = {
     "ERROR",  // 0 is reserved for errors
 
-    "int32",    // CPPTYPE_INT32
-    "int64",    // CPPTYPE_INT64
-    "uint32",   // CPPTYPE_UINT32
-    "uint64",   // CPPTYPE_UINT64
-    "double",   // CPPTYPE_DOUBLE
-    "float",    // CPPTYPE_FLOAT
-    "bool",     // CPPTYPE_BOOL
-    "enum",     // CPPTYPE_ENUM
-    "string",   // CPPTYPE_STRING
-    "message",  // CPPTYPE_MESSAGE
+    "int32_t",   // CPPTYPE_INT32
+    "int64_t",   // CPPTYPE_INT64
+    "uint32_t",  // CPPTYPE_UINT32
+    "uint64_t",  // CPPTYPE_UINT64
+    "double",    // CPPTYPE_DOUBLE
+    "float",     // CPPTYPE_FLOAT
+    "bool",      // CPPTYPE_BOOL
+    "enum",      // CPPTYPE_ENUM
+    "string",    // CPPTYPE_STRING
+    "message",   // CPPTYPE_MESSAGE
 };
 
 const char* const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {

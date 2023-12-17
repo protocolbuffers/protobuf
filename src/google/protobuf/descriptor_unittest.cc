@@ -2729,22 +2729,22 @@ TEST_F(MiscTest, CppTypeNames) {
 
   EXPECT_STREQ("double", GetCppTypeNameForFieldType(FD::TYPE_DOUBLE));
   EXPECT_STREQ("float", GetCppTypeNameForFieldType(FD::TYPE_FLOAT));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_INT64));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_UINT64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_INT32));
-  EXPECT_STREQ("uint64", GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
+  EXPECT_STREQ("int64_t", GetCppTypeNameForFieldType(FD::TYPE_INT64));
+  EXPECT_STREQ("uint64_t", GetCppTypeNameForFieldType(FD::TYPE_UINT64));
+  EXPECT_STREQ("int32_t", GetCppTypeNameForFieldType(FD::TYPE_INT32));
+  EXPECT_STREQ("uint64_t", GetCppTypeNameForFieldType(FD::TYPE_FIXED64));
+  EXPECT_STREQ("uint32_t", GetCppTypeNameForFieldType(FD::TYPE_FIXED32));
   EXPECT_STREQ("bool", GetCppTypeNameForFieldType(FD::TYPE_BOOL));
   EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_STRING));
   EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_GROUP));
   EXPECT_STREQ("message", GetCppTypeNameForFieldType(FD::TYPE_MESSAGE));
   EXPECT_STREQ("string", GetCppTypeNameForFieldType(FD::TYPE_BYTES));
-  EXPECT_STREQ("uint32", GetCppTypeNameForFieldType(FD::TYPE_UINT32));
+  EXPECT_STREQ("uint32_t", GetCppTypeNameForFieldType(FD::TYPE_UINT32));
   EXPECT_STREQ("enum", GetCppTypeNameForFieldType(FD::TYPE_ENUM));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
-  EXPECT_STREQ("int32", GetCppTypeNameForFieldType(FD::TYPE_SINT32));
-  EXPECT_STREQ("int64", GetCppTypeNameForFieldType(FD::TYPE_SINT64));
+  EXPECT_STREQ("int32_t", GetCppTypeNameForFieldType(FD::TYPE_SFIXED32));
+  EXPECT_STREQ("int64_t", GetCppTypeNameForFieldType(FD::TYPE_SFIXED64));
+  EXPECT_STREQ("int32_t", GetCppTypeNameForFieldType(FD::TYPE_SINT32));
+  EXPECT_STREQ("int64_t", GetCppTypeNameForFieldType(FD::TYPE_SINT64));
 }
 
 TEST_F(MiscTest, StaticCppTypeNames) {
@@ -2752,10 +2752,10 @@ TEST_F(MiscTest, StaticCppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_STREQ("int32", FD::CppTypeName(FD::CPPTYPE_INT32));
-  EXPECT_STREQ("int64", FD::CppTypeName(FD::CPPTYPE_INT64));
-  EXPECT_STREQ("uint32", FD::CppTypeName(FD::CPPTYPE_UINT32));
-  EXPECT_STREQ("uint64", FD::CppTypeName(FD::CPPTYPE_UINT64));
+  EXPECT_STREQ("int32_t", FD::CppTypeName(FD::CPPTYPE_INT32));
+  EXPECT_STREQ("int64_t", FD::CppTypeName(FD::CPPTYPE_INT64));
+  EXPECT_STREQ("uint32_t", FD::CppTypeName(FD::CPPTYPE_UINT32));
+  EXPECT_STREQ("uint64_t", FD::CppTypeName(FD::CPPTYPE_UINT64));
   EXPECT_STREQ("double", FD::CppTypeName(FD::CPPTYPE_DOUBLE));
   EXPECT_STREQ("float", FD::CppTypeName(FD::CPPTYPE_FLOAT));
   EXPECT_STREQ("bool", FD::CppTypeName(FD::CPPTYPE_BOOL));
