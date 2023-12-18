@@ -89,19 +89,37 @@ where
         Self { raw, _phantom: PhantomData }
     }
 
+    /// Gets the length of the repeated field.
     pub fn len(&self) -> usize {
         T::repeated_len(*self)
     }
+
+    /// Returns true if the repeated field has no values.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    /// Gets the value at `index`.
+    ///
+    /// Returns `None` if `index > len`.
     pub fn get(self, index: usize) -> Option<View<'msg, T>> {
         if index >= self.len() {
             return None;
         }
         // SAFETY: `index` has been checked to be in-bounds
-        Some(unsafe { T::repeated_get_unchecked(self, index) })
+        Some(unsafe { self.get_unchecked(index) })
     }
+
+    /// Gets the value at `index` without bounds-checking.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    pub unsafe fn get_unchecked(self, index: usize) -> View<'msg, T> {
+        // SAFETY: in-bounds as promised
+        unsafe { T::repeated_get_unchecked(self, index) }
+    }
+
+    /// Iterates over the values in the repeated field.
     pub fn iter(self) -> RepeatedIter<'msg, T> {
         self.into_iter()
     }
@@ -118,6 +136,13 @@ where
     #[doc(hidden)]
     pub unsafe fn from_inner(_private: Private, inner: InnerRepeatedMut<'msg>) -> Self {
         Self { inner, _phantom: PhantomData }
+    }
+
+    /// # Safety
+    /// - The return value must not be mutated through without synchronization.
+    #[allow(dead_code)]
+    pub(crate) unsafe fn into_inner(self) -> InnerRepeatedMut<'msg> {
+        self.inner
     }
 
     #[doc(hidden)]
@@ -140,6 +165,15 @@ where
             panic!("index {index} >= repeated len {len}");
         }
         // SAFETY: `index` has been checked to be in-bounds.
+        unsafe { self.set_unchecked(index, val) }
+    }
+
+    /// Sets the value at `index` to the value `val`.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    pub unsafe fn set_unchecked(&mut self, index: usize, val: View<T>) {
+        // SAFETY: `index` is in-bounds as promised by the caller.
         unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
     }
 
