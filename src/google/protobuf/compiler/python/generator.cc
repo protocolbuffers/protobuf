@@ -295,7 +295,7 @@ bool Generator::Generate(const FileDescriptor* file,
   PrintFileDescriptor();
   printer_->Print("_globals = globals()\n");
   if (GeneratingDescriptorProto()) {
-    printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
+    printer_->Print("if not _descriptor._USE_C_DESCRIPTORS:\n");
     printer_->Indent();
     // Create enums before message descriptors
     PrintAllEnumsInFile();
@@ -322,7 +322,7 @@ bool Generator::Generate(const FileDescriptor* file,
       "_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, '$module_name$', "
       "_globals)\n",
       "module_name", module_name);
-  printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
+  printer.Print("if not _descriptor._USE_C_DESCRIPTORS:\n");
   printer_->Indent();
 
   // Descriptor options may have custom extensions. These custom options
@@ -549,7 +549,7 @@ void Generator::PrintFileDescriptor() const {
   m["options"] = OptionsValue(proto_.options().SerializeAsString());
   m["serialized_descriptor"] = absl::CHexEscape(file_descriptor_serialized_);
   if (GeneratingDescriptorProto()) {
-    printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
+    printer_->Print("if not _descriptor._USE_C_DESCRIPTORS:\n");
     printer_->Indent();
     // Pure python's AddSerializedFile() depend on the generated
     // descriptor_pb2.py thus we can not use AddSerializedFile() when
