@@ -801,7 +801,7 @@ class Converter(object):
               "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}.upb_minitable.c"
               "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}.upbdefs.c")
       endforeach()
-      file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/stage2")
+      file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf")
       add_custom_command(
         OUTPUT ${UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_LUAS}
               ${UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_HEADERS}
