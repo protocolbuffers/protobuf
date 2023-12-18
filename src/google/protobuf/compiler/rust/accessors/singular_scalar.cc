@@ -115,24 +115,25 @@ void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
 }
 
 void SingularScalar::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit(
-      {{"Scalar", PrimitiveRsTypeName(field.desc())},
-       {"hazzer_thunk", Thunk(field, "has")},
-       {"getter_thunk", Thunk(field, "get")},
-       {"setter_thunk", Thunk(field, "set")},
-       {"clearer_thunk", Thunk(field, "clear")},
-       {"hazzer",
-        [&] {
-          if (field.desc().has_presence()) {
-            field.Emit(
-                R"rs(fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;)rs");
-          }
-        }}},
-      R"rs(
-          $hazzer$
+  field.Emit({{"Scalar", PrimitiveRsTypeName(field.desc())},
+              {"hazzer_thunk", Thunk(field, "has")},
+              {"getter_thunk", Thunk(field, "get")},
+              {"setter_thunk", Thunk(field, "set")},
+              {"clearer_thunk", Thunk(field, "clear")},
+              {"hazzer_and_clearer",
+               [&] {
+                 if (field.desc().has_presence()) {
+                   field.Emit(
+                       R"rs(
+                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+                )rs");
+                 }
+               }}},
+             R"rs(
+          $hazzer_and_clearer$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
           fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
-          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
 }
 
@@ -145,23 +146,23 @@ void SingularScalar::InThunkCc(Context<FieldDescriptor> field) const {
               {"getter_thunk", Thunk(field, "get")},
               {"setter_thunk", Thunk(field, "set")},
               {"clearer_thunk", Thunk(field, "clear")},
-              {"hazzer",
+              {"hazzer_and_clearer",
                [&] {
                  if (field.desc().has_presence()) {
                    field.Emit(R"cc(
                      bool $hazzer_thunk$($QualifiedMsg$* msg) {
                        return msg->has_$field$();
                      }
+                     void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
                    )cc");
                  }
                }}},
              R"cc(
-               $hazzer$;
+               $hazzer_and_clearer$;
                $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
                void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
                  msg->set_$field$(val);
                }
-               void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
              )cc");
 }
 
