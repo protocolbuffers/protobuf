@@ -482,14 +482,14 @@ impl<T: PrimitiveWithRawVTable> RawVTableMutator<'_, T> {
 }
 
 impl<'msg, T: PrimitiveWithRawVTable> RawVTableOptionalMutatorData<'msg, T> {
-    pub(crate) fn set_absent_to_default(self) -> Self {
+    pub fn set_absent_to_default(self, private: Private) -> Self {
         // SAFETY:
         // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
         //   promised by the caller of `new`.
-        self.set(self.optional_vtable().default)
+        self.set(private, self.optional_vtable().default)
     }
 
-    pub(crate) fn set(self, val: T) -> Self {
+    pub fn set(self, _private: Private, val: T) -> Self {
         // SAFETY:
         // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
         //   promised by the caller of `new`.
@@ -497,7 +497,7 @@ impl<'msg, T: PrimitiveWithRawVTable> RawVTableOptionalMutatorData<'msg, T> {
         self
     }
 
-    pub(crate) fn clear(self) -> Self {
+    pub fn clear(self, _private: Private) -> Self {
         // SAFETY:
         // - `msg_ref` is valid for the lifetime of `RawVTableOptionalMutatorData` as
         //   promised by the caller of `new`.
