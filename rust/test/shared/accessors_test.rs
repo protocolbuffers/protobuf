@@ -713,9 +713,9 @@ fn test_oneof_mut_accessors() {
 
     match msg.oneof_field_mut() {
         OneofUint32(mut v) => {
-            assert_eq!(v.get(), 7);
+            assert_that!(v.get(), eq(7));
             v.set(8);
-            assert_eq!(v.get(), 8);
+            assert_that!(v.get(), eq(8));
         }
         f => panic!("unexpected field_mut type! {:?}", f),
     }

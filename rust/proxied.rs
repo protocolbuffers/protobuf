@@ -289,6 +289,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
     use std::borrow::Cow;
 
     #[derive(Debug, Default, PartialEq)]
@@ -414,7 +415,7 @@ mod tests {
 
         let my_view = my_proxied.as_view();
 
-        assert_eq!(my_view.val(), my_proxied.val);
+        assert_that!(my_view.val(), eq(&my_proxied.val));
     }
 
     #[test]
@@ -425,8 +426,8 @@ mod tests {
         my_mut.set("Hello indeed".to_string());
 
         let val_after_set = my_mut.as_view().val().to_string();
-        assert_eq!(my_proxied.val, val_after_set);
-        assert_eq!(my_proxied.val, "Hello indeed");
+        assert_that!(my_proxied.val, eq(val_after_set));
+        assert_that!(my_proxied.val, eq("Hello indeed"));
     }
 
     fn reborrow_mut_into_view<'msg>(x: Mut<'msg, MyProxied>) -> View<'msg, MyProxied> {
@@ -557,12 +558,12 @@ mod tests {
     fn test_set() {
         let mut my_proxied = MyProxied::default();
         my_proxied.as_mut().set("hello");
-        assert_eq!(my_proxied.as_view().val(), "hello");
+        assert_that!(my_proxied.as_view().val(), eq("hello"));
 
         my_proxied.as_mut().set(String::from("hello2"));
-        assert_eq!(my_proxied.as_view().val(), "hello2");
+        assert_that!(my_proxied.as_view().val(), eq("hello2"));
 
         my_proxied.as_mut().set(Cow::Borrowed("hello3"));
-        assert_eq!(my_proxied.as_view().val(), "hello3");
+        assert_that!(my_proxied.as_view().val(), eq("hello3"));
     }
 }

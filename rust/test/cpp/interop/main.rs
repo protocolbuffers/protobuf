@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use googletest::prelude::*;
 use protobuf_cpp::__internal::PtrAndLen;
 use protobuf_cpp::__internal::RawMessage;
 use unittest_proto::proto2_unittest::TestAllExtensions;
@@ -15,9 +16,9 @@ macro_rules! proto_assert_eq {
         let lhs = &$lhs;
         let rhs = &$rhs;
 
-        assert_eq!(lhs.optional_int64(), rhs.optional_int64());
-        assert_eq!(lhs.optional_bytes(), rhs.optional_bytes());
-        assert_eq!(lhs.optional_bool(), rhs.optional_bool());
+        assert_that!(lhs.optional_int64(), eq(rhs.optional_int64()));
+        assert_that!(lhs.optional_bytes(), eq(rhs.optional_bytes()));
+        assert_that!(lhs.optional_bool(), eq(rhs.optional_bool()));
     }};
 }
 
