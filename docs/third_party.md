@@ -45,7 +45,10 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Elixir: https://github.com/jeremyong/exprotoc
 *   Elixir: https://github.com/tony612/protobuf-elixir
 *   Elixir: https://github.com/ahamez/protox
-*   Elm: https://github.com/tiziano88/elm-protobuf
+*   Elm: https://github.com/andreasewering/protoc-gen-elm (code generator)
+*   Elm: https://github.com/andreasewering/elm-grpc (runtime)
+*   Elm: https://github.com/eriktim/elm-protocol-buffers (runtime)
+*   Elm: https://github.com/tiziano88/elm-protobuf (not actively maintained, use protoc-gen-elm instead)
 *   Erlang: https://github.com/tomas-abrahamsson/gpb
 *   Erlang: http://piqi.org/
 *   Erlang: https://github.com/basho/erlang_protobuffs (no longer maintained,
