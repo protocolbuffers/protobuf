@@ -17,19 +17,19 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void Map::InMsgImpl(Context<FieldDescriptor> field) const {
-  auto& key_type = *field.desc().message_type()->map_key();
-  auto& value_type = *field.desc().message_type()->map_value();
+void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
+  auto& key_type = *field.message_type()->map_key();
+  auto& value_type = *field.message_type()->map_value();
 
-  field.Emit({{"field", field.desc().name()},
-              {"Key", PrimitiveRsTypeName(key_type)},
-              {"Value", PrimitiveRsTypeName(value_type)},
-              {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "get_mut")},
-              {"getter",
-               [&] {
-                 if (field.is_upb()) {
-                   field.Emit({}, R"rs(
+  ctx.Emit({{"field", field.name()},
+            {"Key", PrimitiveRsTypeName(key_type)},
+            {"Value", PrimitiveRsTypeName(value_type)},
+            {"getter_thunk", Thunk(ctx, field, "get")},
+            {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+            {"getter",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
                     pub fn r#$field$(&self)
                       -> $pb$::View<'_, $pb$::Map<$Key$, $Value$>> {
                       let inner = unsafe {
@@ -44,8 +44,8 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                       });
                       $pb$::MapView::from_inner($pbi$::Private, inner)
                     })rs");
-                 } else {
-                   field.Emit({}, R"rs(
+               } else {
+                 ctx.Emit({}, R"rs(
                     pub fn r#$field$(&self)
                       -> $pb$::View<'_, $pb$::Map<$Key$, $Value$>> {
                       let inner = $pbr$::MapInner {
@@ -55,12 +55,12 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                       };
                       $pb$::MapView::from_inner($pbi$::Private, inner)
                     })rs");
-                 }
-               }},
-              {"getter_mut",
-               [&] {
-                 if (field.is_upb()) {
-                   field.Emit({}, R"rs(
+               }
+             }},
+            {"getter_mut",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
                     pub fn r#$field$_mut(&mut self)
                       -> $pb$::Mut<'_, $pb$::Map<$Key$, $Value$>> {
                       let raw = unsafe {
@@ -75,8 +75,8 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                       };
                       $pb$::MapMut::from_inner($pbi$::Private, inner)
                     })rs");
-                 } else {
-                   field.Emit({}, R"rs(
+               } else {
+                 ctx.Emit({}, R"rs(
                     pub fn r#$field$_mut(&mut self)
                       -> $pb$::Mut<'_, $pb$::Map<$Key$, $Value$>> {
                       let inner = $pbr$::MapInner {
@@ -86,30 +86,30 @@ void Map::InMsgImpl(Context<FieldDescriptor> field) const {
                       };
                       $pb$::MapMut::from_inner($pbi$::Private, inner)
                     })rs");
-                 }
-               }}},
-             R"rs(
+               }
+             }}},
+           R"rs(
     $getter$
     $getter_mut$
     )rs");
 }
 
-void Map::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit(
+void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
+  ctx.Emit(
       {
-          {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "get_mut")},
+          {"getter_thunk", Thunk(ctx, field, "get")},
+          {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
           {"getter",
            [&] {
-             if (field.is_upb()) {
-               field.Emit({}, R"rs(
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
                 fn $getter_thunk$(raw_msg: $pbi$::RawMessage)
                   -> Option<$pbi$::RawMap>;
                 fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
                   arena: $pbi$::RawArena) -> $pbi$::RawMap;
               )rs");
              } else {
-               field.Emit({}, R"rs(
+               ctx.Emit({}, R"rs(
                 fn $getter_thunk$(msg: $pbi$::RawMessage) -> $pbi$::RawMap;
                 fn $getter_mut_thunk$(msg: $pbi$::RawMessage,) -> $pbi$::RawMap;
               )rs");
@@ -121,20 +121,19 @@ void Map::InExternC(Context<FieldDescriptor> field) const {
   )rs");
 }
 
-void Map::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit(
-      {{"field", cpp::FieldName(&field.desc())},
-       {"Key", cpp::PrimitiveTypeName(
-                   field.desc().message_type()->map_key()->cpp_type())},
-       {"Value", cpp::PrimitiveTypeName(
-                     field.desc().message_type()->map_value()->cpp_type())},
-       {"QualifiedMsg",
-        cpp::QualifiedClassName(field.desc().containing_type())},
-       {"getter_thunk", Thunk(field, "get")},
-       {"getter_mut_thunk", Thunk(field, "get_mut")},
+void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
+  ctx.Emit(
+      {{"field", cpp::FieldName(&field)},
+       {"Key",
+        cpp::PrimitiveTypeName(field.message_type()->map_key()->cpp_type())},
+       {"Value",
+        cpp::PrimitiveTypeName(field.message_type()->map_value()->cpp_type())},
+       {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+       {"getter_thunk", Thunk(ctx, field, "get")},
+       {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
        {"impls",
         [&] {
-          field.Emit(
+          ctx.Emit(
               R"cc(
                 const void* $getter_thunk$($QualifiedMsg$& msg) {
                   return &msg.$field$();
