@@ -95,39 +95,47 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 }
 
 template <typename F>
-auto* RepeatedPtrFieldBase::AddInternal(F factory) {
+void* RepeatedPtrFieldBase::AddInternal(F factory) {
   Arena* const arena = GetArena();
-  using Result = decltype(factory(arena));
+  absl::PrefetchToLocalCache(tagged_rep_or_elem_);
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     tagged_rep_or_elem_ = factory(arena);
-    return static_cast<Result>(tagged_rep_or_elem_);
+    return tagged_rep_or_elem_;
   }
   if (using_sso()) {
-    if (ExchangeCurrentSize(1) == 0) {
-      return static_cast<Result>(tagged_rep_or_elem_);
+    if (current_size_ == 0) {
+      ExchangeCurrentSize(1);
+      return tagged_rep_or_elem_;
     }
-  } else {
-    absl::PrefetchToLocalCache(rep());
-  }
-  if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
-    InternalExtend(1);
-  } else {
+    void*& result = *InternalExtend(1);
+    result = factory(arena);
     Rep* r = rep();
-    if (current_size_ != r->allocated_size) {
-      return static_cast<Result>(
-          r->elements[ExchangeCurrentSize(current_size_ + 1)]);
-    }
+    r->allocated_size = 2;
+    ExchangeCurrentSize(2);
+    return result;
   }
   Rep* r = rep();
+  if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
+    InternalExtend(1);
+    r = rep();
+  } else {
+    if (current_size_ != r->allocated_size) {
+      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
+    }
+  }
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
   result = factory(arena);
-  return static_cast<Result>(result);
+  return result;
 }
 
-void* RepeatedPtrFieldBase::AddOutOfLineHelper(ElementFactory factory) {
+void* RepeatedPtrFieldBase::AddMessageLite(ElementFactory factory) {
   return AddInternal(factory);
+}
+
+void* RepeatedPtrFieldBase::AddString() {
+  return AddInternal([](Arena* arena) { return NewStringElement(arena); });
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -146,7 +154,8 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
 }
 
 MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
-  return AddInternal([prototype](Arena* a) { return prototype->New(a); });
+  return static_cast<MessageLite*>(
+      AddInternal([prototype](Arena* a) { return prototype->New(a); }));
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {

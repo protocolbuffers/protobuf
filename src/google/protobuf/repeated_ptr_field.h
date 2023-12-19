@@ -183,7 +183,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename Handler>
   Value<Handler>* Add() {
-    return cast<Handler>(AddOutOfLineHelper(Handler::GetNewFunc()));
+    if (std::is_same<Value<Handler>, std::string>{}) {
+      return cast<Handler>(AddString());
+    }
+    return cast<Handler>(AddMessageLite(Handler::GetNewFunc()));
   }
 
   template <
@@ -742,8 +745,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return InternalExtend(n - Capacity());
   }
 
-  // Internal helper for Add that keeps definition out-of-line.
-  void* AddOutOfLineHelper(ElementFactory factory);
+  // Internal helpers for Add that keep definition out-of-line.
+  void* AddMessageLite(ElementFactory factory);
+  void* AddString();
 
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
@@ -751,10 +755,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   // Note: avoid inlining this function in methods such as `Add()` as this would
   // drastically increase binary size due to template instantiation and implicit
-  // inlining. Instead, use wrapper functions with out-of-line definition
-  // similar to `AddOutOfLineHelper`.
-  template <typename F>
-  auto* AddInternal(F factory);
+  // inlining.
+  template <typename Factory>
+  void* AddInternal(Factory factory);
 
   // A few notes on internal representation:
   //
