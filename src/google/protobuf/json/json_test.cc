@@ -26,6 +26,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
@@ -50,6 +51,7 @@ using ::proto3::TestMap;
 using ::proto3::TestMessage;
 using ::proto3::TestOneof;
 using ::proto3::TestWrapper;
+using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
@@ -202,6 +204,9 @@ TEST_P(JsonTest, TestDefaultValues) {
 
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
+  m.set_optional_bool_value(false);
+  m.set_optional_string_value("");
+  m.set_optional_bytes_value("");
   EXPECT_THAT(
       ToJson(m, options),
       IsOkAndHolds("{\"boolValue\":false,"
@@ -224,7 +229,10 @@ TEST_P(JsonTest, TestDefaultValues) {
                    "\"repeatedStringValue\":[],"
                    "\"repeatedBytesValue\":[],"
                    "\"repeatedEnumValue\":[],"
-                   "\"repeatedMessageValue\":[]"
+                   "\"repeatedMessageValue\":[],"
+                   "\"optionalBoolValue\":false,"
+                   "\"optionalStringValue\":\"\","
+                   "\"optionalBytesValue\":\"\""
                    "}"));
 
   EXPECT_THAT(
@@ -1329,6 +1337,24 @@ TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {
   (*s.mutable_fields())["hello"].set_string_value("world");
   ASSERT_OK(JsonStringToMessage("{}", &s));
   EXPECT_THAT(s.fields(), IsEmpty());
+}
+
+TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
+  std::unique_ptr<TypeResolver> resolver{
+      google::protobuf::util::NewTypeResolverForDescriptorPool(
+          "type.googleapis.com", DescriptorPool::generated_pool())};
+  io::internal::TestZeroCopyInputStream input_stream(
+      {"{\"bool_value\":", "5}"});
+  std::string result;
+  io::StringOutputStream output_stream(&result);
+  absl::Status s = JsonToBinaryStream(
+      resolver.get(), "type.googleapis.com/proto3.TestMessage", &input_stream,
+      &output_stream, ParseOptions{});
+  ASSERT_FALSE(s.ok());
+  EXPECT_THAT(
+      s.message(),
+      ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
+                    "*@ *bool_value"));
 }
 
 }  // namespace

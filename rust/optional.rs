@@ -83,7 +83,7 @@ impl<T> From<Optional<T>> for Option<T> {
 
 /// A mutable view into the value of an optional field, which may be set or
 /// unset.
-pub type FieldEntry<'a, T> = Optional<PresentField<'a, T>, AbsentField<'a, T>>;
+pub type FieldEntry<'msg, T> = Optional<PresentField<'msg, T>, AbsentField<'msg, T>>;
 
 /// Methods for `_mut()` accessors of optional types.
 ///
@@ -285,11 +285,11 @@ where
 
 /// A field mutator capable of setting that is statically known to point to a
 /// non-set field.
-pub struct AbsentField<'a, T>
+pub struct AbsentField<'msg, T>
 where
-    T: ProxiedWithPresence + ?Sized + 'a,
+    T: ProxiedWithPresence + ?Sized + 'msg,
 {
-    pub(crate) inner: T::AbsentMutData<'a>,
+    pub(crate) inner: T::AbsentMutData<'msg>,
 }
 
 impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> Debug for AbsentField<'msg, T> {
@@ -432,10 +432,10 @@ mod tests {
         }
     }
 
-    fn make_field_entry<'a>(
-        msg: &'a mut MyMessage,
-        vtable: &'a ProxyVtable,
-    ) -> FieldEntry<'a, VtableProxied> {
+    fn make_field_entry<'msg>(
+        msg: &'msg mut MyMessage,
+        vtable: &'msg ProxyVtable,
+    ) -> FieldEntry<'msg, VtableProxied> {
         if (vtable.has)(&*msg) {
             Optional::Set(PresentField::from_inner(Private, VtableProxiedMut { msg, vtable }))
         } else {
@@ -494,8 +494,8 @@ mod tests {
     struct VtableProxied;
 
     impl Proxied for VtableProxied {
-        type View<'a> = VtableProxiedView;
-        type Mut<'a> = VtableProxiedMut<'a>;
+        type View<'msg> = VtableProxiedView;
+        type Mut<'msg> = VtableProxiedMut<'msg>;
     }
 
     impl ProxiedWithPresence for VtableProxied {
@@ -503,19 +503,19 @@ mod tests {
         // `Mut` in layout. Other types/runtimes could require otherwise, e.g. `Mut`
         // could be defined to only have get/set functions in its vtable, and not
         // has/clear.
-        type PresentMutData<'a> = VtableProxiedMut<'a>;
-        type AbsentMutData<'a> = VtableProxiedMut<'a>;
+        type PresentMutData<'msg> = VtableProxiedMut<'msg>;
+        type AbsentMutData<'msg> = VtableProxiedMut<'msg>;
 
-        fn clear_present_field<'a>(
-            present_mutator: Self::PresentMutData<'a>,
-        ) -> Self::AbsentMutData<'a> {
+        fn clear_present_field<'msg>(
+            present_mutator: Self::PresentMutData<'msg>,
+        ) -> Self::AbsentMutData<'msg> {
             (present_mutator.vtable.clear)(&mut *present_mutator.msg);
             present_mutator
         }
 
-        fn set_absent_to_default<'a>(
-            absent_mutator: Self::AbsentMutData<'a>,
-        ) -> Self::PresentMutData<'a> {
+        fn set_absent_to_default<'msg>(
+            absent_mutator: Self::AbsentMutData<'msg>,
+        ) -> Self::PresentMutData<'msg> {
             SettableValue::<VtableProxied>::set_on_absent(
                 absent_mutator.as_view().val(),
                 Private,
@@ -539,28 +539,28 @@ mod tests {
         }
     }
 
-    impl<'a> ViewProxy<'a> for VtableProxiedView {
+    impl<'msg> ViewProxy<'msg> for VtableProxiedView {
         type Proxied = VtableProxied;
 
-        fn as_view(&self) -> View<'a, VtableProxied> {
+        fn as_view(&self) -> View<'msg, VtableProxied> {
             *self
         }
 
         fn into_view<'shorter>(self) -> View<'shorter, VtableProxied>
         where
-            'a: 'shorter,
+            'msg: 'shorter,
         {
             self
         }
     }
 
     #[derive(Debug)]
-    struct VtableProxiedMut<'a> {
-        msg: &'a mut MyMessage,
-        vtable: &'a ProxyVtable,
+    struct VtableProxiedMut<'msg> {
+        msg: &'msg mut MyMessage,
+        vtable: &'msg ProxyVtable,
     }
 
-    impl<'a> ViewProxy<'a> for VtableProxiedMut<'a> {
+    impl<'msg> ViewProxy<'msg> for VtableProxiedMut<'msg> {
         type Proxied = VtableProxied;
 
         fn as_view(&self) -> View<'_, VtableProxied> {
@@ -569,49 +569,55 @@ mod tests {
 
         fn into_view<'shorter>(self) -> View<'shorter, VtableProxied>
         where
-            'a: 'shorter,
+            'msg: 'shorter,
         {
             VtableProxiedView::read(self.msg, self.vtable)
         }
     }
 
-    impl<'a> MutProxy<'a> for VtableProxiedMut<'a> {
+    impl<'msg> MutProxy<'msg> for VtableProxiedMut<'msg> {
         fn as_mut(&mut self) -> Mut<'_, VtableProxied> {
             VtableProxiedMut { msg: self.msg, vtable: self.vtable }
         }
 
         fn into_mut<'shorter>(self) -> Mut<'shorter, VtableProxied>
         where
-            'a: 'shorter,
+            'msg: 'shorter,
         {
             self
         }
     }
 
     impl SettableValue<VtableProxied> for View<'_, VtableProxied> {
-        fn set_on(self, _private: Private, mutator: Mut<VtableProxied>) {
+        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, VtableProxied>)
+        where
+            VtableProxied: 'msg,
+        {
             SettableValue::<VtableProxied>::set_on(self.val(), Private, mutator)
         }
 
-        fn set_on_absent<'a>(
+        fn set_on_absent<'msg>(
             self,
             _private: Private,
-            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'a>,
-        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'a> {
+            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'msg>,
+        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'msg> {
             SettableValue::<VtableProxied>::set_on_absent(self.val(), Private, absent_mutator)
         }
     }
 
     impl SettableValue<VtableProxied> for i32 {
-        fn set_on(self, _private: Private, mutator: Mut<VtableProxied>) {
+        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, VtableProxied>)
+        where
+            VtableProxied: 'msg,
+        {
             (mutator.vtable.set)(mutator.msg, self)
         }
 
-        fn set_on_absent<'a>(
+        fn set_on_absent<'msg>(
             self,
             _private: Private,
-            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'a>,
-        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'a> {
+            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'msg>,
+        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'msg> {
             (absent_mutator.vtable.set)(absent_mutator.msg, self);
             absent_mutator
         }
@@ -619,109 +625,125 @@ mod tests {
 
     #[test]
     fn test_field_entry() {
+        use googletest::prelude::*;
         let mut m1 = MyMessage::default();
         let mut m2 = MyMessage::default();
 
         let mut m1_a = m1.a_mut();
-        assert!(matches!(m1_a, Optional::Unset(_)));
-        assert_eq!(m1_a.as_view().val(), 0);
+        assert_that!(m1_a, matches_pattern!(Optional::Unset(_)));
 
-        assert_eq!(m2.b().val(), 5);
+        assert_that!(m1_a.as_view().val(), eq(0));
+
+        assert_that!(m2.b().val(), eq(5));
 
         let mut m2_b = m2.b_mut();
-        assert!(m2_b.is_unset());
-        assert_eq!(m2_b.as_view().val(), 5);
+        assert_that!(m2_b.is_unset(), eq(true));
+        assert_that!(m2_b.as_view().val(), eq(5));
 
         m2_b.set(10);
-        assert!(m2_b.is_set());
-        assert!(matches!(m2_b, Optional::Set(_)));
-        assert_eq!(m2_b.as_view().val(), 10);
+        assert_that!(m2_b.is_set(), eq(true));
+        assert_that!(m2_b, matches_pattern!(Optional::Set(_)));
+        assert_that!(m2_b.as_view().val(), eq(10));
 
-        assert_eq!(m1_a.or_default().as_view().val(), 0);
-        assert_eq!(m1.a_opt(), Optional::Set(VtableProxiedView { val: 0 }));
+        assert_that!(m1_a.or_default().as_view().val(), eq(0));
+        assert_that!(m1.a_opt(), eq(Optional::Set(VtableProxiedView { val: 0 })));
         m1.a_mut().clear();
 
-        assert_eq!(m1.a().val(), 0);
-        assert_eq!(m1.b().val(), 5);
-        assert_eq!(m2.a().val(), 0);
-        assert_eq!(m2.b().val(), 10);
+        assert_that!(m1.a().val(), eq(0));
+        assert_that!(m1.b().val(), eq(5));
+        assert_that!(m2.a().val(), eq(0));
+        assert_that!(m2.b().val(), eq(10));
     }
 
     #[test]
     fn test_or_set() {
+        use googletest::prelude::*;
         let mut m1 = MyMessage::default();
         let mut m2 = MyMessage::default();
 
-        assert_eq!(m1.a_mut().or_set(10).get().val(), 10);
-        assert_eq!(m1.a_opt(), Optional::Set(VtableProxiedView { val: 10 }));
-        assert_eq!(m1.a_mut().or_set(20).get().val(), 10);
-        assert_eq!(m1.a_opt(), Optional::Set(VtableProxiedView { val: 10 }));
+        assert_that!(m1.a_mut().or_set(10).get().val(), eq(10));
+        assert_that!(m1.a_opt(), eq(Optional::Set(VtableProxiedView { val: 10 })));
+        assert_that!(m1.a_mut().or_set(20).get().val(), eq(10));
+        assert_that!(m1.a_opt(), eq(Optional::Set(VtableProxiedView { val: 10 })));
 
-        assert_eq!(m2.a_mut().or_set_with(|| m1.a().val() + m1.b().val()).get().val(), 15);
-        assert_eq!(m2.a_opt(), Optional::Set(VtableProxiedView { val: 15 }));
-        assert_eq!(m2.a_mut().or_set_with(|| None::<i32>.unwrap()).get().val(), 15);
-        assert_eq!(m2.a_opt(), Optional::Set(VtableProxiedView { val: 15 }));
+        assert_that!(m2.a_mut().or_set_with(|| m1.a().val() + m1.b().val()).get().val(), eq(15));
+        assert_that!(m2.a_opt(), eq(Optional::Set(VtableProxiedView { val: 15 })));
+        assert_that!(m2.a_mut().or_set_with(|| None::<i32>.unwrap()).get().val(), eq(15));
+        assert_that!(m2.a_opt(), eq(Optional::Set(VtableProxiedView { val: 15 })));
     }
 
     #[test]
     fn test_into_optional_view() {
+        use googletest::prelude::*;
         let mut m1 = MyMessage::default();
-        assert_eq!(m1.a_mut().into_optional_view(), Optional::Unset(VtableProxiedView { val: 0 }));
+        assert_that!(
+            m1.a_mut().into_optional_view(),
+            eq(Optional::Unset(VtableProxiedView { val: 0 }))
+        );
         m1.a_mut().set(10);
-        assert_eq!(m1.a_mut().into_optional_view(), Optional::Set(VtableProxiedView { val: 10 }));
-        assert_eq!(m1.b_mut().into_optional_view(), Optional::Unset(VtableProxiedView { val: 5 }));
+        assert_that!(
+            m1.a_mut().into_optional_view(),
+            eq(Optional::Set(VtableProxiedView { val: 10 }))
+        );
+        assert_that!(
+            m1.b_mut().into_optional_view(),
+            eq(Optional::Unset(VtableProxiedView { val: 5 }))
+        );
     }
 
     #[test]
     fn test_try_into_mut() {
+        use googletest::prelude::*;
         let mut m1 = MyMessage::default();
-        assert!(m1.a_mut().try_into_mut().is_none());
+        assert_that!(m1.a_mut().try_into_mut().is_none(), eq(true));
         m1.a_mut().set(10);
         let mut a_mut = m1.a_mut().try_into_mut().expect("field to be set");
         a_mut.set(20);
-        assert_eq!(m1.a().val(), 20);
+        assert_that!(m1.a().val(), eq(20));
     }
 
     #[test]
     fn test_present_field() {
+        use googletest::prelude::*;
         let mut m = MyMessage::default();
         m.a_mut().set(10);
         match m.a_mut() {
             Optional::Set(mut present) => {
-                assert_eq!(present.as_view().val(), 10);
+                assert_that!(present.as_view().val(), eq(10));
                 present.set(20);
-                assert_eq!(present.as_view().val(), 20);
+                assert_that!(present.as_view().val(), eq(20));
                 present.into_mut().set(30);
             }
             Optional::Unset(_) => unreachable!(),
         }
-        assert_eq!(m.a_opt(), Optional::Set(VtableProxiedView { val: 30 }));
+        assert_that!(m.a_opt(), eq(Optional::Set(VtableProxiedView { val: 30 })));
         m.b_mut().set(20);
         match m.b_mut() {
             Optional::Set(present) => present.clear(),
             Optional::Unset(_) => unreachable!(),
         };
-        assert_eq!(m.b_opt(), Optional::Unset(VtableProxiedView { val: 5 }));
+        assert_that!(m.b_opt(), eq(Optional::Unset(VtableProxiedView { val: 5 })));
     }
 
     #[test]
     fn test_absent_field() {
+        use googletest::prelude::*;
         let mut m = MyMessage::default();
         match m.a_mut() {
             Optional::Set(_) => unreachable!(),
             Optional::Unset(absent) => {
-                assert_eq!(absent.as_view().val(), 0);
+                assert_that!(absent.as_view().val(), eq(0));
                 absent.set(20);
             }
         }
-        assert_eq!(m.a_opt(), Optional::Set(VtableProxiedView { val: 20 }));
+        assert_that!(m.a_opt(), eq(Optional::Set(VtableProxiedView { val: 20 })));
         match m.b_mut() {
             Optional::Set(_) => unreachable!(),
             Optional::Unset(absent) => {
-                assert_eq!(absent.as_view().val(), 5);
+                assert_that!(absent.as_view().val(), eq(5));
                 absent.set_default();
             }
         }
-        assert_eq!(m.b_opt(), Optional::Set(VtableProxiedView { val: 5 }));
+        assert_that!(m.b_opt(), eq(Optional::Set(VtableProxiedView { val: 5 })));
     }
 }

@@ -47,10 +47,11 @@ int CompileJavaProto(std::string proto_file_name) {
       "protoc",
       proto_path.c_str(),
       java_out.c_str(),
+      "--experimental_editions",
       proto_file_name.c_str(),
   };
 
-  return cli.Run(4, argv);
+  return cli.Run(5, argv);
 }
 
 TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {

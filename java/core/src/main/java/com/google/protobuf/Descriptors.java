@@ -140,8 +140,6 @@ public final class Descriptors {
     }
 
     /** The syntax of the .proto file. */
-    @Deprecated
-    public
     enum Syntax {
       UNKNOWN("unknown"),
       PROTO2("proto2"),
@@ -156,8 +154,6 @@ public final class Descriptors {
     }
 
     /** Get the syntax of the .proto file. */
-    @Deprecated
-    public
     Syntax getSyntax() {
       if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
         return Syntax.PROTO3;
@@ -169,15 +165,15 @@ public final class Descriptors {
 
     /** Get the edition of the .proto file. */
     public Edition getEdition() {
-      return proto.getEditionEnum();
+      return proto.getEdition();
     }
 
     /** Gets the name of the edition as specified in the .proto file. */
     public String getEditionName() {
-      if (proto.getEditionEnum().equals(Edition.EDITION_UNKNOWN)) {
+      if (proto.getEdition().equals(Edition.EDITION_UNKNOWN)) {
         return "";
       }
-      return proto.getEditionEnum().name().substring("EDITION_".length());
+      return proto.getEdition().name().substring("EDITION_".length());
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {
@@ -187,7 +183,7 @@ public final class Descriptors {
       }
 
       if (getSyntax().equals(Syntax.EDITIONS)) {
-        protoBuilder.setEditionEnum(getEdition());
+        protoBuilder.setEdition(getEdition());
       }
 
       if (!getOptions().equals(FileOptions.getDefaultInstance())) {
@@ -604,6 +600,15 @@ public final class Descriptors {
       pool.addPackage(packageName, this);
       pool.addSymbol(message);
     }
+
+    /**
+     * This method is to be called by generated code only. It resolves features for the descriptor
+     * and all of its children.
+     *
+     * <p>TODO Implement and use this method in gencode once users using prebuilt jars
+     * with stale runtimes updated.
+     */
+    public void resolveAllFeatures() {}
 
     /** Look up and cross-link all field types, etc. */
     private void crossLink() throws DescriptorValidationException {
@@ -1264,8 +1269,6 @@ public final class Descriptors {
      * Returns true if this field was syntactically written with "optional" in the .proto file.
      * Excludes singular proto3 fields that do not have a label.
      */
-    @Deprecated
-    public
     boolean hasOptionalKeyword() {
       return isProto3Optional
           || (file.getSyntax() == Syntax.PROTO2 && isOptional() && getContainingOneof() == null);
@@ -2834,8 +2837,6 @@ public final class Descriptors {
       return proto;
     }
 
-    @Deprecated
-    public
     boolean isSynthetic() {
       return fields.length == 1 && fields[0].isProto3Optional;
     }

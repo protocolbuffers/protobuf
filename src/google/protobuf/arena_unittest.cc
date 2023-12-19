@@ -11,19 +11,22 @@
 #include <array>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <string>
 #include <thread>
 #include <type_traits>
-#include <typeinfo>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
+#include "absl/utility/utility.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -45,7 +48,7 @@
 #include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
-using protobuf_unittest::ForeignMessage;
+using protobuf_unittest::NestedTestAllTypes;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
@@ -314,6 +317,80 @@ TEST(ArenaTest, CreateDestroy) {
             strlen(arena_message->optional_string().c_str()));
 }
 
+TEST(ArenaTest, MoveCtorOnArena) {
+  Arena arena;
+
+  ASSERT_EQ(arena.SpaceUsed(), 0);
+
+  auto* original = Arena::CreateMessage<NestedTestAllTypes>(&arena);
+  TestUtil::SetAllFields(original->mutable_payload());
+  TestUtil::ExpectAllFieldsSet(original->payload());
+
+  auto usage_original = arena.SpaceUsed();
+  auto* moved =
+      Arena::CreateMessage<NestedTestAllTypes>(&arena, std::move(*original));
+  auto usage_by_move = arena.SpaceUsed() - usage_original;
+
+  TestUtil::ExpectAllFieldsSet(moved->payload());
+
+  // The only extra allocation with moves is sizeof(NestedTestAllTypes).
+  EXPECT_EQ(usage_by_move, sizeof(NestedTestAllTypes));
+  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  TestUtil::ExpectClear(original->payload());
+}
+
+TEST(ArenaTest, RepeatedFieldMoveCtorOnArena) {
+  Arena arena;
+
+  auto* original = Arena::CreateMessage<RepeatedField<int32_t>>(&arena);
+  original->Add(1);
+  original->Add(2);
+  ASSERT_EQ(original->size(), 2);
+  ASSERT_EQ(original->Get(0), 1);
+  ASSERT_EQ(original->Get(1), 2);
+
+  auto* moved = Arena::CreateMessage<RepeatedField<int32_t>>(
+      &arena, std::move(*original));
+
+  EXPECT_EQ(moved->size(), 2);
+  EXPECT_EQ(moved->Get(0), 1);
+  EXPECT_EQ(moved->Get(1), 2);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  EXPECT_EQ(original->size(), 0);
+}
+
+TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
+  Arena arena;
+
+  ASSERT_EQ(arena.SpaceUsed(), 0);
+
+  auto* original = Arena::CreateMessage<RepeatedPtrField<TestAllTypes>>(&arena);
+  auto* msg = original->Add();
+  TestUtil::SetAllFields(msg);
+  TestUtil::ExpectAllFieldsSet(*msg);
+
+  auto usage_original = arena.SpaceUsed();
+  auto* moved = Arena::CreateMessage<RepeatedPtrField<TestAllTypes>>(
+      &arena, std::move(*original));
+  auto usage_by_move = arena.SpaceUsed() - usage_original;
+
+  EXPECT_EQ(moved->size(), 1);
+  TestUtil::ExpectAllFieldsSet(moved->Get(0));
+
+  // The only extra allocation with moves is sizeof(RepeatedPtrField).
+  EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
+  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  EXPECT_EQ(original->size(), 0);
+}
+
 struct OnlyArenaConstructible {
   using InternalArenaConstructable_ = void;
   explicit OnlyArenaConstructible(Arena* arena) {}
@@ -323,6 +400,104 @@ TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
   Arena arena;
   Arena::CreateMessage<OnlyArenaConstructible>(&arena);
 }
+
+TEST(ArenaTest, GetConstructTypeWorks) {
+  using T = TestAllTypes;
+  using Peer = internal::ArenaTestPeer;
+  using CT = typename Peer::ConstructType;
+  EXPECT_EQ(CT::kDefault, (Peer::GetConstructType<T>()));
+  EXPECT_EQ(CT::kCopy, (Peer::GetConstructType<T, const T&>()));
+  EXPECT_EQ(CT::kCopy, (Peer::GetConstructType<T, T&>()));
+  EXPECT_EQ(CT::kCopy, (Peer::GetConstructType<T, const T&&>()));
+  EXPECT_EQ(CT::kMove, (Peer::GetConstructType<T, T&&>()));
+  EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<T, double&>()));
+  EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<T, T&, T&>()));
+
+  // For non-protos, it's always unknown
+  EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<int, const int&>()));
+}
+
+#ifdef __cpp_if_constexpr
+class DispatcherTestProto : public Message {
+ public:
+  using InternalArenaConstructable_ = void;
+  // For the test below to construct.
+  explicit DispatcherTestProto(absl::in_place_t) {}
+  explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
+  DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
+  DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
+  Metadata GetMetadata() const final { ABSL_LOG(FATAL); }
+  const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
+};
+// We use a specialization to inject behavior for the test.
+// This test is very intrusive and will have to be fixed if we change the
+// implementation of CreateMessage.
+absl::string_view hook_called;
+template <>
+void* Arena::DefaultConstruct<DispatcherTestProto>(Arena*) {
+  hook_called = "default";
+  return nullptr;
+}
+template <>
+void* Arena::CopyConstruct<DispatcherTestProto>(Arena*, const void*) {
+  hook_called = "copy";
+  return nullptr;
+}
+template <>
+DispatcherTestProto* Arena::CreateMessageInternal<DispatcherTestProto, int>(
+    Arena*, int&&) {
+  hook_called = "fallback";
+  return nullptr;
+}
+
+TEST(ArenaTest, CreateArenaConstructable) {
+  TestAllTypes original;
+  TestUtil::SetAllFields(&original);
+
+  Arena arena;
+  auto copied = Arena::Create<TestAllTypes>(&arena, original);
+
+  TestUtil::ExpectAllFieldsSet(*copied);
+  EXPECT_EQ(copied->GetArena(), &arena);
+  EXPECT_EQ(copied->optional_nested_message().GetArena(), &arena);
+}
+
+TEST(ArenaTest, CreateRepeatedPtrField) {
+  Arena arena;
+  auto repeated = Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  TestUtil::SetAllFields(repeated->Add());
+
+  TestUtil::ExpectAllFieldsSet(repeated->Get(0));
+  EXPECT_EQ(repeated->GetArena(), &arena);
+  EXPECT_EQ(repeated->Get(0).GetArena(), &arena);
+  EXPECT_EQ(repeated->Get(0).optional_nested_message().GetArena(), &arena);
+}
+
+TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr);
+  EXPECT_EQ(hook_called, "default");
+
+  DispatcherTestProto ref(absl::in_place);
+  const DispatcherTestProto& cref = ref;
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr);
+  EXPECT_EQ(hook_called, "default");
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr, ref);
+  EXPECT_EQ(hook_called, "copy");
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr, cref);
+  EXPECT_EQ(hook_called, "copy");
+
+  hook_called = "";
+  Arena::CreateMessage<DispatcherTestProto>(nullptr, 1);
+  EXPECT_EQ(hook_called, "fallback");
+}
+#endif  // __cpp_if_constexpr
 
 TEST(ArenaTest, Parsing) {
   TestAllTypes original;
@@ -561,16 +736,6 @@ TEST(ArenaTest, UnsafeArenaSwap) {
   TestUtil::ExpectAllFieldsSet(*message2);
 }
 
-TEST(ArenaTest, GetOwningArena) {
-  Arena arena;
-  auto* m1 = Arena::CreateMessage<TestAllTypes>(&arena);
-  EXPECT_EQ(Arena::InternalGetOwningArena(m1), &arena);
-  EXPECT_EQ(&arena, Arena::InternalGetOwningArena(
-                        m1->mutable_repeated_foreign_message()));
-  EXPECT_EQ(&arena,
-            Arena::InternalGetOwningArena(m1->mutable_repeated_int32()));
-}
-
 TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
   Arena arena1;
   TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
@@ -723,7 +888,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 #if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->SetAllocatedMessage(arena1_message, arena2_submessage, msg_field),
-        "GetOwningArena");
+        "GetArena");
 #endif
     EXPECT_NE(arena2_submessage,
               arena1_message->mutable_optional_nested_message());
@@ -736,7 +901,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 #if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       r->SetAllocatedMessage(heap_message, arena1_submessage, msg_field),
-      "GetOwningArena");
+      "GetArena");
 #endif
   EXPECT_NE(arena1_submessage, heap_message->mutable_optional_nested_message());
   delete heap_message;
@@ -788,20 +953,6 @@ TEST(ArenaTest, AddAllocatedWithReflection) {
 }
 
 TEST(ArenaTest, RepeatedPtrFieldAddClearedTest) {
-#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
-  {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    RepeatedPtrField<TestAllTypes> repeated_field;
-    EXPECT_TRUE(repeated_field.empty());
-    EXPECT_EQ(0, repeated_field.size());
-    // Ownership is passed to repeated_field.
-    TestAllTypes* cleared = new TestAllTypes();
-    repeated_field.AddCleared(cleared);
-    EXPECT_TRUE(repeated_field.empty());
-    EXPECT_EQ(0, repeated_field.size());
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-  }
-#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
   {
     RepeatedPtrField<TestAllTypes> repeated_field;
     EXPECT_TRUE(repeated_field.empty());
@@ -1504,7 +1655,7 @@ TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
 }
 
 TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
-#ifdef ADDRESS_SANITIZER
+#ifdef PROTOBUF_ASAN
   char buf[1024]{};
   constexpr int kSize = 32;
   {
@@ -1538,9 +1689,9 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
     ASSERT_FALSE(__asan_address_is_poisoned(&c));
   }
 
-#else   // ADDRESS_SANITIZER
+#else   // PROTOBUF_ASAN
   GTEST_SKIP();
-#endif  // ADDRESS_SANITIZER
+#endif  // PROTOBUF_ASAN
 }
 
 

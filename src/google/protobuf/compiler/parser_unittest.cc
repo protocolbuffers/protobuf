@@ -118,6 +118,7 @@ class ParserTest : public testing::Test {
     // We don't cover SourceCodeInfo in these tests.
     actual.clear_source_code_info();
 
+
     // Parse the ASCII representation in order to canonicalize it.  We could
     // just compare directly to actual.DebugString(), but that would require
     // that the caller precisely match the formatting that DebugString()
@@ -868,7 +869,7 @@ TEST_F(ParseMessageTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition_enum: EDITION_2023 "
+      "edition: EDITION_2023 "
       "message_type {"
       "  name: \"TestMessage\""
       "  reserved_name: \"foo\""
@@ -928,6 +929,35 @@ TEST_F(ParseMessageTest, CompoundExtensionRange) {
       "  extension_range { start:100 end:536870912 }"
       "  extension_range { start:3   end:4         }"
       "}");
+}
+
+TEST_F(ParseMessageTest, MaxIntExtensionDoesNotOverflow) {
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 2147483647;
+        }
+      )",
+      "3:31: Field number out of bounds.\n");
+  error_collector_.text_.clear();
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 1 to 2147483647;
+        }
+      )",
+      "3:36: Field number out of bounds.\n");
+  error_collector_.text_.clear();
+  ExpectHasErrors(
+      R"(
+        syntax = "proto2";
+        message TestMessage {
+          extensions 2147483647 to 2147483647;
+        }
+      )",
+      "3:32: Field number out of bounds.\n");
 }
 
 TEST_F(ParseMessageTest, CompoundExtensionRangeWithOptions) {
@@ -1256,7 +1286,7 @@ TEST_F(ParseEnumTest, ReservedIdentifiers) {
       "}\n",
 
       "syntax: \"editions\" "
-      "edition_enum: EDITION_2023 "
+      "edition: EDITION_2023 "
       "enum_type {"
       "  name: \"TestEnum\""
       "  value { name:\"FOO\" number:0 }"
@@ -4058,7 +4088,7 @@ TEST_F(ParseEditionsTest, Editions) {
       "  }"
       "}"
       "syntax: \"editions\""
-      "edition_enum: EDITION_2023\n");
+      "edition: EDITION_2023\n");
 }
 
 TEST_F(ParseEditionsTest, TestEdition) {
@@ -4067,7 +4097,7 @@ TEST_F(ParseEditionsTest, TestEdition) {
         edition = "99998_TEST_ONLY";
       )schema",
       "syntax: \"editions\""
-      "edition_enum: EDITION_99998_TEST_ONLY\n");
+      "edition: EDITION_99998_TEST_ONLY\n");
 }
 
 TEST_F(ParseEditionsTest, ExtensionsParse) {
@@ -4093,7 +4123,7 @@ TEST_F(ParseEditionsTest, ExtensionsParse) {
       "  type: TYPE_STRING"
       "}"
       "syntax: \"editions\""
-      "edition_enum: EDITION_2023\n");
+      "edition: EDITION_2023\n");
 }
 
 TEST_F(ParseEditionsTest, MapFeatures) {
@@ -4152,7 +4182,7 @@ TEST_F(ParseEditionsTest, MapFeatures) {
              }
            }
            syntax: "editions"
-           edition_enum: EDITION_2023)pb");
+           edition: EDITION_2023)pb");
 }
 
 TEST_F(ParseEditionsTest, EmptyEdition) {
@@ -4183,6 +4213,26 @@ TEST_F(ParseEditionsTest, UnknownEdition) {
           optional int32 b = 1;
         })schema",
       "1:18: Unknown edition \"UNKNOWN\".\n");
+}
+
+TEST_F(ParseEditionsTest, LegacyProto2Edition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "PROTO2";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"PROTO2\".\n");
+}
+
+TEST_F(ParseEditionsTest, LegacyProto3Edition) {
+  ExpectHasEarlyExitErrors(
+      R"schema(
+        edition = "PROTO3";
+        message A {
+          optional int32 b = 1;
+        })schema",
+      "1:18: Unknown edition \"PROTO3\".\n");
 }
 
 TEST_F(ParseEditionsTest, SyntaxEditions) {
@@ -4225,7 +4275,7 @@ TEST_F(ParseEditionsTest, OptionalKeywordBanned) {
         message A {
           optional int32 b = 1;
         })schema",
-      "3:10: Label \"optional\" is not supported in editions.  By default, all "
+      "3:10: Label \"optional\" is not supported in editions. By default, all "
       "singular fields have presence unless features.field_presence is set.\n");
 }
 
@@ -4277,8 +4327,8 @@ TEST_F(ParseEditionsTest, InvalidMerge) {
             features.enum_type = ENUM_TYPE_UNKNOWN
           ];
         })schema",
-      "5:17: Feature field google.protobuf.FeatureSet.field_presence must resolve to a "
-      "known value, found FIELD_PRESENCE_UNKNOWN\n");
+      "5:17: Feature field `field_presence` must resolve to a known value, "
+      "found FIELD_PRESENCE_UNKNOWN\n");
 }
 
 TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {

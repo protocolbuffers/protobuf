@@ -13,6 +13,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -22,8 +23,9 @@ namespace compiler {
 namespace objectivec {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : SingleFieldGenerator(descriptor) {}
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : SingleFieldGenerator(descriptor, generation_options) {}
 
 void PrimitiveFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
@@ -52,14 +54,16 @@ void PrimitiveFieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
 }
 
 PrimitiveObjFieldGenerator::PrimitiveObjFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : ObjCObjFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : ObjCObjFieldGenerator(descriptor, generation_options) {
   variables_["property_storage_attribute"] = "copy";
 }
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {}
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {}
 
 }  // namespace objectivec
 }  // namespace compiler

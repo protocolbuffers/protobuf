@@ -393,4 +393,27 @@
                                NSException, GPBCodedOutputStreamException_WriteFailed);
 }
 
+- (void)testThatDeallocNeverThrows {
+  uint8_t buffer[1] = {0};
+
+  // Output stream which can write precisely 1 byte of data before it's full.
+  NSOutputStream* output = [[[NSOutputStream alloc] initToBuffer:buffer
+                                                        capacity:sizeof(buffer)] autorelease];
+
+  NSMutableData* outputBuffer = [NSMutableData data];
+  GPBCodedOutputStream* codedOutput =
+      [[GPBCodedOutputStream alloc] initWithOutputStream:output data:outputBuffer];
+
+  [codedOutput writeRawByte:0x23];
+  [codedOutput flush];
+
+  // Put one more byte in the output buffer.
+  [codedOutput writeRawByte:0x42];
+  XCTAssertThrowsSpecificNamed([codedOutput flush], NSException,
+                               GPBCodedOutputStreamException_WriteFailed);
+
+  // -dealloc must not throw when it flushes, even if a previous flush failed.
+  XCTAssertNoThrow([codedOutput release]);
+}
+
 @end

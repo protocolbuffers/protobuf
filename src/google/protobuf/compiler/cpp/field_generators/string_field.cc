@@ -88,10 +88,27 @@ class SingularString : public FieldGeneratorBase {
             )cc");
   }
 
+  bool RequiresArena(GeneratorFunction function) const override {
+    switch (function) {
+      case GeneratorFunction::kMergeFrom:
+        return is_oneof();
+    }
+    return false;
+  }
+
   void GenerateMergingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
-    )cc");
+    if (is_oneof()) {
+      p->Emit(R"cc(
+        if (oneof_needs_init) {
+          _this->$field_$.InitDefault();
+        }
+        _this->$field_$.Set(from._internal_$name$(), arena);
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        _this->_internal_set_$name$(from._internal_$name$());
+      )cc");
+    }
   }
 
   void GenerateArenaDestructorCode(io::Printer* p) const override {
@@ -291,11 +308,11 @@ void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
 
 void ArgsForSetter(io::Printer* p, bool inlined) {
   if (!inlined) {
-    p->Emit("GetArenaForAllocation()");
+    p->Emit("GetArena()");
     return;
   }
   p->Emit(
-      "GetArenaForAllocation(), _internal_$name$_donated(), "
+      "GetArena(), _internal_$name$_donated(), "
       "&$donating_states_word$, $mask_for_undonate$, this");
 }
 
@@ -325,7 +342,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
       }
       $clear_hasbit$;
 
-      return $field_$.Release(GetArenaForAllocation(), _internal_$name$_donated());
+      return $field_$.Release(GetArena(), _internal_$name$_donated());
     )cc");
     return;
   }
@@ -361,7 +378,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
       }
       if (value != nullptr) {
         set_has_$name$();
-        $field_$.InitAllocated(value, GetArenaForAllocation());
+        $field_$.InitAllocated(value, GetArena());
       }
     )cc");
     return;
@@ -512,7 +529,7 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 
   ABSL_DCHECK(!is_inlined());
   p->Emit(R"cc(
-    $field_$.ClearToDefault($lazy_var$, GetArenaForAllocation());
+    $field_$.ClearToDefault($lazy_var$, GetArena());
   )cc");
 }
 
@@ -551,7 +568,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $field_$.ClearToDefault($lazy_var$, GetArenaForAllocation());
+      $field_$.ClearToDefault($lazy_var$, GetArena());
     )cc");
     return;
   }
@@ -596,10 +613,10 @@ void SingularString::GenerateConstructorCode(io::Printer* p) const {
     $field_$.InitDefault();
   )cc");
 
-  if (IsString(field_, *opts_) && EmptyDefault()) {
+  if (IsString(field_) && EmptyDefault()) {
     p->Emit(R"cc(
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-      $field_$.Set("", GetArenaForAllocation());
+      $field_$.Set("", GetArena());
 #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
     )cc");
   }
@@ -626,10 +643,10 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
        {"set_args",
         [&] {
           if (!is_inlined()) {
-            p->Emit("_this->GetArenaForAllocation()");
+            p->Emit("_this->GetArena()");
           } else {
             p->Emit(
-                "_this->GetArenaForAllocation(), "
+                "_this->GetArena(), "
                 "_this->_internal_$name$_donated(), "
                 "&_this->$donating_states_word$, $mask_for_undonate$, _this");
           }
@@ -643,14 +660,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularString::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-    // Explicitly calls ~InlinedStringField as its automatic call is disabled.
-    // Destructor has been implicitly skipped as a union.
     ABSL_DCHECK(!should_split());
-    p->Emit(R"cc(
-      $field_$.~InlinedStringField();
-    )cc");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     return;
   }
 
@@ -774,12 +784,6 @@ class RepeatedString : public FieldGeneratorBase {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
-    } else {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      p->Emit(R"cc(
-        _internal_mutable_$name$()->~RepeatedPtrField();
-      )cc");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     }
   }
 
@@ -972,7 +976,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         if ($field_$.IsDefault()) {
           $field_$.Set(
               $pb$::Arena::CreateMessage<$pb$::RepeatedPtrField<std::string>>(
-                  GetArenaForAllocation()));
+                  GetArena()));
         }
         return $field_$.Get();
       }

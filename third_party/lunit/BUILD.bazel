@@ -3,5 +3,8 @@ exports_files(
         "console.lua",
         "lunit.lua",
     ],
-    visibility = ["//upb/lua:__pkg__"],
+    visibility = [
+        "//lua:__pkg__",
+        "//upb/lua:__pkg__",
+    ],
 )

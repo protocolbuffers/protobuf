@@ -183,6 +183,11 @@ struct MapTestPeer {
   }
 
   template <typename T>
+  static size_t NumBuckets(T& map) {
+    return map.num_buckets_;
+  }
+
+  template <typename T>
   static size_t BucketNumber(T& map, typename T::key_type key) {
     return map.BucketNumber(key);
   }
@@ -198,6 +203,10 @@ struct MapTestPeer {
       if (TableEntryIsTree(map.table_[i])) return true;
     }
     return false;
+  }
+
+  static int CalculateHiCutoff(int num_buckets) {
+    return Map<int, int>::CalculateHiCutoff(num_buckets);
   }
 };
 
@@ -466,11 +475,6 @@ TEST_F(MapImplTest, IteratorBasic) {
   EXPECT_TRUE(it == cit);
 }
 
-static absl::Duration median(absl::Span<absl::Duration> v) {
-  std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
-  return v[v.size() / 2];
-}
-
 // Arbitrary odd integers for creating test data.
 static int k0 = 812398771;
 static int k1 = 1312938717;
@@ -518,36 +522,6 @@ TEST_F(MapImplTest, TreePathWorksAsExpected) {
   EXPECT_TRUE(map_.empty());
 }
 
-// Create kTestSize keys that will land in just a few buckets, and time the
-// insertions, to get a rough estimate of whether an O(n^2) worst case was
-// triggered.  This test is a hacky, but probably better than nothing.
-TEST_F(MapImplTest, HashFlood) {
-  const std::vector<int> s = FindBadInputs(map_, 1000);
-
-  // Create hash table with 1000 entries that hash flood a table. The entries
-  // were chosen so that they all fall in a few buckets.
-  std::vector<absl::Duration> times;
-  int count = 0;
-  for (int i : s) {
-    const auto start = absl::Now();
-    map_[i] = 0;
-    const auto end = absl::Now();
-    if (end > start) {
-      times.push_back(end - start);
-    }
-    ++count;
-  }
-  if (times.size() < .99 * count) return;
-  const auto x0 = median(absl::MakeSpan(times).subspan(0, 9));
-  const auto x1 = median(absl::MakeSpan(times).subspan(times.size() - 9));
-  ABSL_LOG(INFO) << "number of samples=" << times.size() << " x0=" << x0
-                 << " x1=" << x1;
-  // x1 will greatly exceed x0 if inserting the elements was O(n) time.
-  // We know it will not be O(1) because of all the collisions, but we want to
-  // allow O(log n).
-  // lg2(1000) is ~10, times a constant for the cost of the tree.
-  EXPECT_LE(x1, x0 * 50);
-}
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;
@@ -1270,7 +1244,6 @@ TEST_F(MapImplTest, SwapArena) {
 
 TEST_F(MapImplTest, SwapFieldArenaReflection) {
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
-  Arena arena;
 
   {
     // Tests filled lfs and empty rhs.
@@ -1289,9 +1262,15 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
       reflection->SwapFields(lhs, &rhs, fields);
 
       reflection_tester.ExpectClearViaReflection(*lhs);
+
+      // Add an entry to make sure it is using the right arena.
+      (*lhs->mutable_map_int32_int32())[1234] = 1234;
     }
 
     reflection_tester.ExpectMapFieldsSetViaReflection(rhs);
+
+      // Add an entry to make sure it is using the right arena.
+    (*rhs.mutable_map_int32_int32())[1234] = 1234;
   }
 }
 
@@ -1306,7 +1285,7 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
 }
 
 TEST_F(MapImplTest, SpaceUsed) {
-  constexpr size_t kMinCap = 8;
+  constexpr size_t kMinCap = 16 / sizeof(void*);
 
   Map<int32_t, int32_t> m;
   // An newly constructed map should have no space used.
@@ -1316,15 +1295,11 @@ TEST_F(MapImplTest, SpaceUsed) {
     std::pair<int32_t, int32_t> kv;
   };
 
-  size_t capacity = kMinCap;
   for (int i = 0; i < 100; ++i) {
     m[i];
-    static constexpr double kMaxLoadFactor = .75;
-    if (m.size() >= capacity * kMaxLoadFactor) {
-      capacity *= 2;
-    }
     EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-              sizeof(void*) * capacity + m.size() * sizeof(IntIntNode));
+              sizeof(void*) * MapTestPeer::NumBuckets(m) +
+                  m.size() * sizeof(IntIntNode));
   }
 
   // Test string, and non-scalar keys.
@@ -1390,10 +1365,9 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   const auto& cm = m;
 
   m.insert({"ABC", 1});
-
-  const auto abc_it = m.begin();
-
   m.insert({"DEF", 2});
+
+  const auto abc_it = m.find("ABC");
 
   using testing::Pair;
   using testing::UnorderedElementsAre;
@@ -2351,17 +2325,18 @@ class MyMapEntry
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntry() {}
-  MyMapEntry(Arena*) { ABSL_CHECK(false); }
+  using MyMapEntry::MapEntry::MapEntry;
   Metadata GetMetadata() const override { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
 
 TEST(MapEntryTest, ConstInit) {
-  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
-  // constant initialized.
+  // This verifies that `MapEntry` can be constant initialized.
   PROTOBUF_CONSTINIT static MyMapEntry entry{};
-  EXPECT_NE(entry.SpaceUsed(), 0);
+  // Use the object in some way to make sure the vtable is there.
+  const google::protobuf::Message* volatile m = &entry;
+  delete m->New();
 }
 
 // Generated Message Test ===========================================

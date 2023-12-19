@@ -34,6 +34,11 @@ _MICROS_PER_SECOND = 1000000
 _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
 
+_EPOCH_DATETIME_NAIVE = datetime.datetime(1970, 1, 1, tzinfo=None)
+_EPOCH_DATETIME_AWARE = _EPOCH_DATETIME_NAIVE.replace(
+    tzinfo=datetime.timezone.utc
+)
+
 
 class Any(object):
   """Class for Any Message type."""
@@ -65,11 +70,6 @@ class Any(object):
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
-
-
-_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
-_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
-    0, tz=datetime.timezone.utc)
 
 
 class Timestamp(object):
@@ -223,13 +223,21 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
+    # Using datetime.fromtimestamp for this would avoid constructing an extra
+    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # the disadvantage of not handling the full precision (on all platforms, see
+    # https://github.com/python/cpython/issues/109849) or full range (on some
+    # platforms, see https://github.com/python/cpython/issues/110042) of
+    # datetime.
     delta = datetime.timedelta(
         seconds=self.seconds,
-        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
+    )
     if tzinfo is None:
       return _EPOCH_DATETIME_NAIVE + delta
     else:
-      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
+      # Note the tz conversion has to come after the timedelta arithmetic.
+      return (_EPOCH_DATETIME_AWARE + delta).astimezone(tzinfo)
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp.

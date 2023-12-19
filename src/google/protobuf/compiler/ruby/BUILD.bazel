@@ -11,13 +11,12 @@ cc_library(
     srcs = ["ruby_generator.cc"],
     hdrs = ["ruby_generator.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/ruby",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
@@ -64,9 +63,12 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ], allow_empty = True),
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

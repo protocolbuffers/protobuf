@@ -12,8 +12,12 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import json
 import math
 import struct
-
 import unittest
+
+from google.protobuf import descriptor_pool
+from google.protobuf import json_format
+from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
@@ -21,12 +25,9 @@ from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import wrappers_pb2
-from google.protobuf.internal import test_proto3_optional_pb2
-from google.protobuf import descriptor_pool
-from google.protobuf import json_format
 from google.protobuf import any_test_pb2
-from google.protobuf import unittest_pb2
 from google.protobuf import unittest_mset_pb2
+from google.protobuf import unittest_pb2
 from google.protobuf.util import json_format_pb2
 from google.protobuf.util import json_format_proto3_pb2
 
@@ -1274,6 +1275,39 @@ class JsonFormatTest(JsonFormatBase):
     # The following one can pass
     json_format.Parse('{"payload": {}, "child": {"child":{}}}',
                       message, max_recursion_depth=3)
+
+  def testJsonNameConflictSerilize(self):
+    message = more_messages_pb2.ConflictJsonName(value=2)
+    self.assertEqual(
+        json.loads('{"old_value": 2}'),
+        json.loads(json_format.MessageToJson(message))
+    )
+
+    new_message = more_messages_pb2.ConflictJsonName(new_value=2)
+    self.assertEqual(
+        json.loads('{"value": 2}'),
+        json.loads(json_format.MessageToJson(new_message))
+    )
+
+  def testJsonNameConflictParse(self):
+    message = more_messages_pb2.ConflictJsonName()
+    json_format.Parse('{"value": 2}', message)
+    self.assertEqual(2, message.new_value)
+    self.assertEqual(0, message.value)
+
+  def testJsonNameConflictRoundTrip(self):
+    message = more_messages_pb2.ConflictJsonName(value=2)
+    parsed_message = more_messages_pb2.ConflictJsonName()
+    json_string = json_format.MessageToJson(message)
+    json_format.Parse(json_string, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+    new_message = more_messages_pb2.ConflictJsonName(new_value=2)
+    new_parsed_message = more_messages_pb2.ConflictJsonName()
+    json_string = json_format.MessageToJson(new_message)
+    json_format.Parse(json_string, new_parsed_message)
+    self.assertEqual(new_message, new_parsed_message)
+
 
 if __name__ == '__main__':
   unittest.main()

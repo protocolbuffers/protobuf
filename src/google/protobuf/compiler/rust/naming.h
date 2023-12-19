@@ -19,25 +19,27 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::string GetCrateName(Context<FileDescriptor> dep);
+std::string GetCrateName(Context& ctx, const FileDescriptor& dep);
 
-std::string GetRsFile(Context<FileDescriptor> file);
-std::string GetThunkCcFile(Context<FileDescriptor> file);
-std::string GetHeaderFile(Context<FileDescriptor> file);
+std::string GetRsFile(Context& ctx, const FileDescriptor& file);
+std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);
+std::string GetHeaderFile(Context& ctx, const FileDescriptor& file);
 
-std::string Thunk(Context<FieldDescriptor> field, absl::string_view op);
-std::string Thunk(Context<OneofDescriptor> field, absl::string_view op);
+std::string Thunk(Context& ctx, const FieldDescriptor& field,
+                  absl::string_view op);
+std::string Thunk(Context& ctx, const OneofDescriptor& field,
+                  absl::string_view op);
 
-std::string Thunk(Context<Descriptor> msg, absl::string_view op);
+std::string Thunk(Context& ctx, const Descriptor& msg, absl::string_view op);
 
-std::string PrimitiveRsTypeName(const FieldDescriptor& desc);
+std::string PrimitiveRsTypeName(const FieldDescriptor& field);
 
-std::string FieldInfoComment(Context<FieldDescriptor> field);
+std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);
 
-std::string RustModule(Context<Descriptor> msg);
-std::string RustInternalModuleName(Context<FileDescriptor> file);
+std::string RustModule(Context& ctx, const Descriptor& msg);
+std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 
-std::string GetCrateRelativeQualifiedPath(Context<Descriptor> msg);
+std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
 
 }  // namespace rust
 }  // namespace compiler

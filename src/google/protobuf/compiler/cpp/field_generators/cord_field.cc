@@ -65,9 +65,6 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-  void GenerateDestructorCode(io::Printer* printer) const override;
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
@@ -122,8 +119,10 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
   void GenerateNonInlineAccessorDefinitions(
       io::Printer* printer) const override;
+  bool RequiresArena(GeneratorFunction func) const override;
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   // Overrides CordFieldGenerator behavior.
@@ -244,17 +243,6 @@ void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   }
 }
 
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-void CordFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  if (should_split()) {
-    // A cord field in the `Split` struct is automatically destroyed when the
-    // split pointer is deleted and should not be explicitly destroyed here.
-    return;
-  }
-  format("$field$.~Cord();\n");
-}
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
 
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
@@ -353,28 +341,25 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::$name$() const {
+    inline const ::absl::Cord& $classname$::$name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$full_name$)
       return _internal_$name$();
     }
   )cc");
   printer->Emit(R"cc(
-    inline void $classname$::_internal_set_$name$(const ::absl::Cord& value) {
+    inline void $classname$::set_$name$(const ::absl::Cord& value) {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArenaForAllocation() != nullptr) {
-          GetArenaForAllocation()->Own($field$);
+        ::$proto_ns$::Arena* arena = GetArena();
+        if (arena != nullptr) {
+          arena->Own($field$);
         }
       }
       *$field$ = value;
-    }
-  )cc");
-  printer->Emit(R"cc(
-    inline void $classname$::set_$name$(const ::absl::Cord& value) {
-      _internal_set_$name$(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$full_name$)
     }
@@ -385,8 +370,9 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArenaForAllocation() != nullptr) {
-          GetArenaForAllocation()->Own($field$);
+        ::$proto_ns$::Arena* arena = GetArena();
+        if (arena != nullptr) {
+          arena->Own($field$);
         }
       }
       *$field$ = value;
@@ -400,8 +386,9 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name$();
         $field$ = new ::absl::Cord;
-        if (GetArenaForAllocation() != nullptr) {
-          GetArenaForAllocation()->Own($field$);
+        ::$proto_ns$::Arena* arena = GetArena();
+        if (arena != nullptr) {
+          arena->Own($field$);
         }
       }
       return $field$;
@@ -421,10 +408,18 @@ void CordOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
   }
 }
 
+bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
+  switch (func) {
+    case GeneratorFunction::kMergeFrom:
+      return true;
+  }
+  return false;
+}
+
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
-      "if (GetArenaForAllocation() == nullptr) {\n"
+      "if (GetArena() == nullptr) {\n"
       "  delete $field$;\n"
       "}\n");
 }
@@ -437,6 +432,15 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
   // We inherit from CordFieldGenerator, so we need to re-override to the
   // default behavior here.
+}
+
+void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
+  printer->Emit(R"cc(
+    if (oneof_needs_init) {
+      _this->$field$ = ::$proto_ns$::Arena::Create<absl::Cord>(arena);
+    }
+    *_this->$field$ = *from.$field$;
+  )cc");
 }
 
 // ===================================================================

@@ -16,6 +16,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -48,6 +49,8 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
   uint64_t GetSupportedFeatures() const override {
     return (FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS);
   }
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
 };
 
 }  // namespace objectivec

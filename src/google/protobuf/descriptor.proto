@@ -62,6 +62,13 @@ enum Edition {
   // A placeholder for an unknown edition value.
   EDITION_UNKNOWN = 0;
 
+  // Legacy syntax "editions".  These pre-date editions, but behave much like
+  // distinct editions.  These can't be used to specify the edition of proto
+  // files, but feature definitions must supply proto2/proto3 defaults for
+  // backwards compatibility.
+  EDITION_PROTO2 = 998;
+  EDITION_PROTO3 = 999;
+
   // Editions that have been released.  The specific values are arbitrary and
   // should not be depended on, but they will always be time-ordered for easy
   // comparison.
@@ -74,6 +81,11 @@ enum Edition {
   EDITION_99997_TEST_ONLY = 99997;
   EDITION_99998_TEST_ONLY = 99998;
   EDITION_99999_TEST_ONLY = 99999;
+
+  // Placeholder for specifying unbounded edition support.  This should only
+  // ever be used by plugins that can expect to never require any changes to
+  // support a new edition.
+  EDITION_MAX = 0x7FFFFFFF;
 }
 
 // Describes a complete .proto file.
@@ -109,12 +121,8 @@ message FileDescriptorProto {
   // If `edition` is present, this value must be "editions".
   optional string syntax = 12;
 
-  // The edition of the proto file, which is an opaque string.
-  // TODO Deprecate and remove this field in favor of enums.
-  optional string edition = 13;
-
   // The edition of the proto file.
-  optional Edition edition_enum = 14;
+  optional Edition edition = 14;
 }
 
 // Describes a message type.
@@ -199,7 +207,8 @@ message ExtensionRangeOptions {
   // The verification state of the range.
   // TODO: flip the default to DECLARATION once all empty ranges
   // are marked as UNVERIFIED.
-  optional VerificationState verification = 3 [default = UNVERIFIED];
+  optional VerificationState verification = 3
+      [default = UNVERIFIED, retention = RETENTION_SOURCE];
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
@@ -224,9 +233,10 @@ message FieldDescriptorProto {
     TYPE_BOOL = 8;
     TYPE_STRING = 9;
     // Tag-delimited aggregate.
-    // Group type is deprecated and not supported in proto3. However, Proto3
+    // Group type is deprecated and not supported after google.protobuf. However, Proto3
     // implementations should still be able to parse the group wire format and
-    // treat group fields as unknown fields.
+    // treat group fields as unknown fields.  In Editions, the group wire format
+    // can be enabled via the `message_encoding` feature.
     TYPE_GROUP = 10;
     TYPE_MESSAGE = 11;  // Length-delimited aggregate.
 
@@ -243,8 +253,11 @@ message FieldDescriptorProto {
   enum Label {
     // 0 is reserved for errors
     LABEL_OPTIONAL = 1;
-    LABEL_REQUIRED = 2;
     LABEL_REPEATED = 3;
+    // The required label is only allowed in google.protobuf.  In proto3 and Editions
+    // it's explicitly prohibited.  In Editions, the `field_presence` feature
+    // can be used to get this behavior.
+    LABEL_REQUIRED = 2;
   }
 
   optional string name = 1;
@@ -287,12 +300,12 @@ message FieldDescriptorProto {
   // If true, this is a proto3 "optional". When a proto3 field is optional, it
   // tracks presence regardless of field type.
   //
-  // When proto3_optional is true, this field must be belong to a oneof to
-  // signal to old proto3 clients that presence is tracked for this field. This
-  // oneof is known as a "synthetic" oneof, and this field must be its sole
-  // member (each proto3 optional field gets its own synthetic oneof). Synthetic
-  // oneofs exist in the descriptor only, and do not generate any API. Synthetic
-  // oneofs must be ordered after all "real" oneofs.
+  // When proto3_optional is true, this field must belong to a oneof to signal
+  // to old proto3 clients that presence is tracked for this field. This oneof
+  // is known as a "synthetic" oneof, and this field must be its sole member
+  // (each proto3 optional field gets its own synthetic oneof). Synthetic oneofs
+  // exist in the descriptor only, and do not generate any API. Synthetic oneofs
+  // must be ordered after all "real" oneofs.
   //
   // For message fields, proto3_optional doesn't create any semantic change,
   // since non-repeated message fields always track presence. However it still
@@ -563,10 +576,6 @@ message MessageOptions {
 
   reserved 4, 5, 6;
 
-  // NOTE: Do not set the option in .proto files. Always use the maps syntax
-  // instead. The option should only be implicitly set by the proto compiler
-  // parser.
-  //
   // Whether the message is an automatically generated map entry type for the
   // maps field.
   //
@@ -584,6 +593,10 @@ message MessageOptions {
   // use a native map in the target language to hold the keys and values.
   // The reflection APIs in such implementations still need to work as
   // if the field is a repeated message field.
+  //
+  // NOTE: Do not set the option in .proto files. Always use the maps syntax
+  // instead. The option should only be implicitly set by the proto compiler
+  // parser.
   optional bool map_entry = 7;
 
   reserved 8;  // javalite_serializable
@@ -637,7 +650,9 @@ message FieldOptions {
   // a more efficient representation on the wire. Rather than repeatedly
   // writing the tag and type for each element, the entire array is encoded as
   // a single length-delimited blob. In proto3, only explicit setting it to
-  // false will avoid using packed encoding.
+  // false will avoid using packed encoding.  This option is prohibited in
+  // Editions, but the `repeated_field_encoding` feature can be used to control
+  // the behavior.
   optional bool packed = 2;
 
   // The jstype option determines the JavaScript type used for values of the
@@ -744,9 +759,7 @@ message FieldOptions {
   repeated OptionTargetType targets = 19;
 
   message EditionDefault {
-    // TODO Deprecate and remove this field in favor of enums.
-    optional string edition = 1;
-    optional Edition edition_enum = 3;
+    optional Edition edition = 3;
     optional string value = 2;  // Textproto value.
   }
   repeated EditionDefault edition_defaults = 20;
@@ -934,7 +947,9 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "EXPLICIT" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "EXPLICIT" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "IMPLICIT" },
+    edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
 
   enum EnumType {
@@ -946,7 +961,8 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "OPEN" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "CLOSED" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
   ];
 
   enum RepeatedFieldEncoding {
@@ -958,7 +974,21 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "PACKED" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "EXPANDED" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "PACKED" }
+  ];
+
+  enum Utf8Validation {
+    UTF8_VALIDATION_UNKNOWN = 0;
+    VERIFY = 2;
+    NONE = 3;
+  }
+  optional Utf8Validation utf8_validation = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: EDITION_PROTO2, value: "NONE" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
   enum MessageEncoding {
@@ -970,7 +1000,7 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "LENGTH_PREFIXED" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -983,10 +1013,11 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition_enum: EDITION_2023, value: "ALLOW" }
+    edition_defaults = { edition: EDITION_PROTO2, value: "LEGACY_BEST_EFFORT" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
-  reserved 4, 999;
+  reserved 999;
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java
@@ -1004,24 +1035,18 @@ message FeatureSetDefaults {
   // the defaults at the closest matching edition ordered at or before it should
   // be used.  This field must be in strict ascending order by edition.
   message FeatureSetEditionDefault {
-    // TODO Deprecate and remove this field in favor of enums.
-    optional string edition = 1;
-    optional Edition edition_enum = 3;
+    optional Edition edition = 3;
     optional FeatureSet features = 2;
   }
   repeated FeatureSetEditionDefault defaults = 1;
 
-  // TODO Deprecate and remove these fields in favor of enums.
-  optional string minimum_edition = 2;
-  optional string maximum_edition = 3;
-
   // The minimum supported edition (inclusive) when this was constructed.
   // Editions before this will not have defaults.
-  optional Edition minimum_edition_enum = 4;
+  optional Edition minimum_edition = 4;
 
   // The maximum known edition (inclusive) when this was constructed. Editions
   // after this will not have reliable defaults.
-  optional Edition maximum_edition_enum = 5;
+  optional Edition maximum_edition = 5;
 }
 
 // ===================================================================
@@ -1079,7 +1104,7 @@ message SourceCodeInfo {
     // location.
     //
     // Each element is a field number or an index.  They form a path from
-    // the root FileDescriptorProto to the place where the definition occurs.
+    // the root FileDescriptorProto to the place where the definition appears.
     // For example, this path:
     //   [ 4, 3, 2, 7, 1 ]
     // refers to:

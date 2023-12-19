@@ -11,6 +11,7 @@ using Google.Protobuf.Compatibility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -43,6 +44,8 @@ namespace Google.Protobuf.Collections
     /// in future versions.
     /// </para>
     /// </remarks>
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(MapField<,>.MapFieldDebugView))]
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary, IReadOnlyDictionary<TKey, TValue>
     {
         private static readonly EqualityComparer<TValue> ValueEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TValue>();
@@ -324,7 +327,7 @@ namespace Google.Protobuf.Collections
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
@@ -429,12 +432,35 @@ namespace Google.Protobuf.Collections
             WriteContext.Initialize(output, out WriteContext ctx);
             try
             {
-                WriteTo(ref ctx, codec);
+                IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+
+                if (output.Deterministic)
+                {
+                    listToWrite = GetSortedListCopy(list);
+                }
+                WriteTo(ref ctx, codec, listToWrite);
             }
             finally
             {
                 ctx.CopyStateTo(output);
             }
+        }
+
+        internal IEnumerable<KeyValuePair<TKey, TValue>> GetSortedListCopy(IEnumerable<KeyValuePair<TKey, TValue>> listToSort)
+        {
+            // We can't sort the list in place, as that would invalidate the linked list.
+            // Instead, we create a new list, sort that, and then write it out.
+            var listToWrite = new List<KeyValuePair<TKey, TValue>>(listToSort);
+            listToWrite.Sort((pair1, pair2) =>
+            {
+                if (typeof(TKey) == typeof(string))
+                {
+                    // Use Ordinal, otherwise Comparer<string>.Default uses StringComparer.CurrentCulture
+                    return StringComparer.Ordinal.Compare(pair1.Key.ToString(), pair2.Key.ToString());
+                }
+                return Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key);
+            });
+            return listToWrite;
         }
 
         /// <summary>
@@ -446,7 +472,18 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void WriteTo(ref WriteContext ctx, Codec codec)
         {
-            foreach (var entry in list)
+            IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+            if (ctx.state.CodedOutputStream?.Deterministic ?? false)
+            {
+                listToWrite = GetSortedListCopy(list);
+            }
+            WriteTo(ref ctx, codec, listToWrite);
+        }
+
+        [SecuritySafeCritical]
+        private void WriteTo(ref WriteContext ctx, Codec codec, IEnumerable<KeyValuePair<TKey, TValue>> listKvp)
+        {
+            foreach (var entry in listKvp)
             {
                 ctx.WriteTag(codec.MapTag);
 
@@ -628,7 +665,7 @@ namespace Google.Protobuf.Collections
                 this.containsCheck = containsCheck;
             }
 
-            public int Count => parent.Count; 
+            public int Count => parent.Count;
 
             public bool IsReadOnly => true;
 
@@ -682,6 +719,19 @@ namespace Google.Protobuf.Collections
                     array.SetValue(item, index++);
                 }
             }
+        }
+
+        private sealed class MapFieldDebugView
+        {
+            private readonly MapField<TKey, TValue> map;
+
+            public MapFieldDebugView(MapField<TKey, TValue> map)
+            {
+                this.map = map;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<TKey, TValue>[] Items => map.list.ToArray();
         }
     }
 }

@@ -224,10 +224,9 @@ int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
     bytecode_estimate += 6;
     printer->Print("\"$field_name$\", ", "field_name", info->capitalized_name);
   }
-  // TODO: Once cl/534906231 propagates, only consider real oneofs
-  // since proto reflection does not use this for synthetic oneofs.
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof = descriptor_->real_oneof_decl(i);
     const OneofGeneratorInfo* info = context_->GetOneofGeneratorInfo(oneof);
     bytecode_estimate += 6;
     printer->Print("\"$oneof_name$\", ", "oneof_name", info->capitalized_name);
@@ -341,6 +340,15 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   printer->Print("private static final long serialVersionUID = 0L;\n");
 
   printer->Indent();
+
+  if (context_->options().opensource_runtime) {
+    printer->Print("static {\n");
+    printer->Indent();
+    PrintGencodeVersionValidator(printer);
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+
   // Using builder_type, instead of Builder, prevents the Builder class from
   // being loaded into PermGen space when the default instance is created.
   // This optimizes the PermGen space usage for clients that do not modify
@@ -1132,7 +1140,7 @@ void ImmutableMessageGenerator::GenerateExtensionRegistrationCode(
 // ===================================================================
 void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
   printer->Print(
-      "$visibility$ static final com.google.protobuf.Parser<$classname$>\n"
+      "private static final com.google.protobuf.Parser<$classname$>\n"
       "    PARSER = new com.google.protobuf.AbstractParser<$classname$>() {\n"
       "  @java.lang.Override\n"
       "  public $classname$ parsePartialFrom(\n"
@@ -1165,9 +1173,6 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "  return PARSER;\n"
       "}\n"
       "\n",
-      "visibility",
-      ExposePublicParser(descriptor_->file()) ? "@java.lang.Deprecated public"
-                                              : "private",
       "classname", descriptor_->name());
 }
 

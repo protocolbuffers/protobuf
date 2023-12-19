@@ -165,7 +165,7 @@ public class DurationsTest {
   @Test
   public void testParse_outOfRange() throws ParseException {
     try {
-      Duration x = Durations.parse("316576000000.123456789123456789s");
+      Durations.parse("316576000000.123456789123456789s");
       fail("expected ParseException");
     } catch (ParseException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("Duration value is out of range.");
@@ -507,60 +507,65 @@ public class DurationsTest {
   public void testOverflows() throws Exception {
     try {
       Durations.toNanos(duration(315576000000L, 999999999));
-      assertWithMessage("Expected an ArithmeticException to be thrown").fail();
+      fail("Expected an ArithmeticException to be thrown");
     } catch (ArithmeticException expected) {
     }
 
     try {
       Durations.add(Durations.MAX_VALUE, Durations.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      Durations.subtract(Durations.MAX_VALUE, Durations.MIN_VALUE);
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.subtract(Durations.MIN_VALUE, Durations.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
 
     try {
       Durations.toNanos(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.toMicros(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.toMillis(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.toSeconds(INVALID_MAX);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
 
     try {
       Durations.toNanos(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.toMicros(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.toMillis(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.toSeconds(INVALID_MIN);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
 
@@ -568,17 +573,17 @@ public class DurationsTest {
         .isEqualTo("9223372036.854775807s");
     try {
       Durations.fromMicros(Long.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.fromMillis(Long.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.fromSeconds(Long.MAX_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
 
@@ -586,17 +591,17 @@ public class DurationsTest {
         .isEqualTo("-9223372036.854775808s");
     try {
       Durations.fromMicros(Long.MIN_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.fromMillis(Long.MIN_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
     try {
       Durations.fromSeconds(Long.MIN_VALUE);
-      assertWithMessage("Expected an IllegalArgumentException to be thrown").fail();
+      fail("Expected an IllegalArgumentException to be thrown");
     } catch (IllegalArgumentException expected) {
     }
   }

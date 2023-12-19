@@ -17,6 +17,7 @@
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -28,12 +29,15 @@ namespace objectivec {
 // provides a bunch of things (no has* methods, comments for contained type,
 // etc.).
 
-MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+MapFieldGenerator::MapFieldGenerator(
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {
   const FieldDescriptor* key_descriptor = descriptor->message_type()->map_key();
   const FieldDescriptor* value_descriptor =
       descriptor->message_type()->map_value();
-  value_field_generator_.reset(FieldGenerator::Make(value_descriptor));
+  value_field_generator_.reset(
+      FieldGenerator::Make(value_descriptor, generation_options));
 
   // Pull over some variables_ from the value.
   variables_["field_type"] = value_field_generator_->variable("field_type");

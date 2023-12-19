@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,8 @@ namespace protobuf {
 namespace compiler {
 namespace {
 
+#define ASSERT_OK(x) ASSERT_TRUE(x.ok()) << x.message();
+
 using ::testing::HasSubstr;
 using ::testing::NotNull;
 
@@ -42,6 +45,9 @@ class TestGenerator : public CodeGenerator {
                 std::string* error) const override {
     return true;
   }
+
+  uint64_t GetSupportedFeatures() const override { return features_; }
+  void set_supported_features(uint64_t features) { features_ = features; }
 
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return feature_extensions_;
@@ -65,6 +71,7 @@ class TestGenerator : public CodeGenerator {
   using CodeGenerator::GetUnresolvedSourceFeatures;
 
  private:
+  uint64_t features_ = CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
   Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
   Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
   std::vector<const FieldDescriptor*> feature_extensions_ = {
@@ -163,7 +170,7 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
-  pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
@@ -196,7 +203,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
-  pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
@@ -264,18 +271,54 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
                 defaults {
-                  edition_enum: EDITION_2023
+                  edition: EDITION_PROTO2
                   features {
                     field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: NONE
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  features {
+                    field_presence: IMPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
                 }
-                minimum_edition_enum: EDITION_99997_TEST_ONLY
-                maximum_edition_enum: EDITION_99999_TEST_ONLY
+                defaults {
+                  edition: EDITION_2023
+                  features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                minimum_edition: EDITION_99997_TEST_ONLY
+                maximum_edition: EDITION_99999_TEST_ONLY
               )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {
+  TestGenerator generator;
+  generator.set_supported_features(0);
+  generator.set_feature_extensions({});
+  generator.set_minimum_edition(EDITION_99997_TEST_ONLY);
+  generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
+  auto result = generator.BuildFeatureSetDefaults();
+
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  EXPECT_EQ(result->minimum_edition(), PROTOBUF_MINIMUM_EDITION);
+  EXPECT_EQ(result->maximum_edition(), PROTOBUF_MAXIMUM_EDITION);
 }
 
 #include "google/protobuf/port_undef.inc"

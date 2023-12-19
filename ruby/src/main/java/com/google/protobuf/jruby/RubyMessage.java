@@ -42,6 +42,7 @@ import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
+import com.google.protobuf.LegacyDescriptorsUtil.LegacyOneofDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import com.google.protobuf.util.JsonFormat;
@@ -628,9 +629,13 @@ public class RubyMessage extends RubyObject {
         input.setRecursionLimit(((RubyNumeric) recursionLimit).getIntValue());
       }
     }
+    return decodeBytes(context, ret, input, /*freeze*/ false);
+  }
 
+  public static IRubyObject decodeBytes(
+      ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
     try {
-      ret.builder.mergeFrom(input);
+      ret.builder.mergeFrom(input, RubyDescriptorPool.registry);
     } catch (Exception e) {
       throw RaiseException.from(
           context.runtime,
@@ -658,7 +663,9 @@ public class RubyMessage extends RubyObject {
                 }
               });
     }
-
+    if (freeze) {
+      ret.deepFreeze(context);
+    }
     return ret;
   }
 
@@ -811,6 +818,22 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
+  protected IRubyObject deepFreeze(ThreadContext context) {
+    setFrozen(true);
+    for (FieldDescriptor fdef : descriptor.getFields()) {
+      if (fdef.isMapField()) {
+        ((RubyMap) fields.get(fdef)).deepFreeze(context);
+      } else if (fdef.isRepeated()) {
+        this.getRepeatedField(context, fdef).deepFreeze(context);
+      } else if (fields.containsKey(fdef)) {
+        if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+          ((RubyMessage) fields.get(fdef)).deepFreeze(context);
+        }
+      }
+    }
+    return this;
+  }
+
   protected DynamicMessage build(ThreadContext context, int depth, int recursionLimit) {
     if (depth >= recursionLimit) {
       throw context.runtime.newRuntimeError("Recursion limit exceeded during encoding.");
@@ -941,6 +964,12 @@ public class RubyMessage extends RubyObject {
       ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
     validateMessageType(context, fieldDescriptor, "set");
     return setFieldInternal(context, fieldDescriptor, value);
+  }
+
+  protected IRubyObject setField(
+      ThreadContext context, RubyFieldDescriptor fieldDescriptor, IRubyObject value) {
+    validateMessageType(context, fieldDescriptor.getDescriptor(), "set");
+    return setFieldInternal(context, fieldDescriptor.getDescriptor(), fieldDescriptor, value);
   }
 
   private RubyRepeatedField getRepeatedField(
@@ -1253,6 +1282,14 @@ public class RubyMessage extends RubyObject {
 
   private IRubyObject setFieldInternal(
       ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
+    return setFieldInternal(context, fieldDescriptor, null, value);
+  }
+
+  private IRubyObject setFieldInternal(
+      ThreadContext context,
+      FieldDescriptor fieldDescriptor,
+      RubyFieldDescriptor rubyFieldDescriptor,
+      IRubyObject value) {
     testFrozen("can't modify frozen " + getMetaClass());
 
     if (fieldDescriptor.isMapField()) {
@@ -1277,8 +1314,12 @@ public class RubyMessage extends RubyObject {
       // Determine the typeclass, if any
       IRubyObject typeClass = context.runtime.getObject();
       if (fieldType == FieldDescriptor.Type.MESSAGE) {
-        typeClass =
-            ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+        if (rubyFieldDescriptor != null) {
+          typeClass = ((RubyDescriptor) rubyFieldDescriptor.getSubtype(context)).msgclass(context);
+        } else {
+          typeClass =
+              ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+        }
         if (value.isNil()) {
           addValue = false;
         }
@@ -1300,7 +1341,7 @@ public class RubyMessage extends RubyObject {
         // Keep track of what Oneofs are set
         if (value.isNil()) {
           oneofCases.remove(oneofDescriptor);
-          if (!oneofDescriptor.isSynthetic()) {
+          if (!LegacyOneofDescriptor.isSynthetic(oneofDescriptor)) {
             addValue = false;
           }
         } else {

@@ -34,7 +34,6 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -80,6 +79,10 @@ MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {
     feature_extensions_ = {nullptr};
   } else if (key == "no_feature_defaults") {
     feature_extensions_ = {};
+  } else if (key == "high_maximum") {
+    maximum_edition_ = Edition::EDITION_99997_TEST_ONLY;
+  } else if (key == "low_minimum") {
+    maximum_edition_ = Edition::EDITION_1_TEST_ONLY;
   }
 }
 
@@ -203,8 +206,17 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                                  const std::string& parameter,
                                  GeneratorContext* context,
                                  std::string* error) const {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::SYNTAX_EDITIONS) {
+  // Override minimum/maximum after generating the pool to simulate a plugin
+  // that "works" but doesn't advertise support of the current edition.
+  absl::string_view test_case = getenv("TEST_CASE");
+  if (test_case == "high_minimum") {
+    minimum_edition_ = Edition::EDITION_99997_TEST_ONLY;
+  } else if (test_case == "low_maximum") {
+    maximum_edition_ = Edition::EDITION_PROTO2;
+  }
+
+  if (file->edition() >= Edition::EDITION_2023 &&
+      (suppressed_features_ & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
     internal::VisitDescriptors(*file, [&](const auto& descriptor) {
       const FeatureSet& features = GetResolvedSourceFeatures(descriptor);
       ABSL_CHECK(features.HasExtension(pb::test))

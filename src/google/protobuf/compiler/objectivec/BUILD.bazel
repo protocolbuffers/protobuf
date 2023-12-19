@@ -10,7 +10,7 @@ cc_library(
     name = "names",
     hdrs = ["names.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
@@ -27,7 +27,7 @@ cc_library(
         "nsobject_methods.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":line_consumer",
@@ -43,7 +43,7 @@ cc_library(
     srcs = ["line_consumer.cc"],
     hdrs = ["line_consumer.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
         "//src/google/protobuf:protobuf_nowkt",
@@ -87,7 +87,7 @@ cc_library(
         "text_format_decode_data.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/compiler/objectivec",
+    strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
@@ -95,7 +95,6 @@ cc_library(
     deps = [
         ":line_consumer",
         ":names",
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:btree",
@@ -155,9 +154,12 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ], allow_empty = True),
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

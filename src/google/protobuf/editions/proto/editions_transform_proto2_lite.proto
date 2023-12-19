@@ -13,8 +13,6 @@ option optimize_for = LITE_RUNTIME;
 
 message TestMessageLite {
   optional string string_field = 1;
-  optional string string_field_utf = 2;
-  optional string string_field_noutf = 3;
 
   map<string, string> string_map_field = 4;
 

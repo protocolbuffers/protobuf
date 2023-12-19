@@ -335,7 +335,7 @@ absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(char out_utf8[4]) {
     out_utf8[1] = ((rune >> 6) & 0x3f) | 0x80;
     out_utf8[2] = ((rune >> 0) & 0x3f) | 0x80;
     return 3;
-  } else if (rune < 0x10ffff) {
+  } else if (rune <= 0x10ffff) {
     out_utf8[0] = ((rune >> 18) & 0x07) | 0xF0;
     out_utf8[1] = ((rune >> 12) & 0x3f) | 0x80;
     out_utf8[2] = ((rune >> 6) & 0x3f) | 0x80;

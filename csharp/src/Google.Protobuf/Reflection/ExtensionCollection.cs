@@ -9,6 +9,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Google.Protobuf.Reflection
@@ -16,6 +17,8 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// A collection to simplify retrieving the descriptors of extensions in a descriptor for a message
     /// </summary>
+    [DebuggerDisplay("Count = {UnorderedExtensions.Count}")]
+    [DebuggerTypeProxy(typeof(ExtensionCollectionDebugView))]
     public sealed class ExtensionCollection
     {
         private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInDeclarationOrder;
@@ -97,6 +100,19 @@ namespace Google.Protobuf.Reflection
                 .ToDictionary(kvp => kvp.Key, kvp => (IList<FieldDescriptor>)new ReadOnlyCollection<FieldDescriptor>(kvp.Value));
             extensionsByTypeInNumberOrder = declarationOrder
                 .ToDictionary(kvp => kvp.Key, kvp => (IList<FieldDescriptor>)new ReadOnlyCollection<FieldDescriptor>(kvp.Value.OrderBy(field => field.FieldNumber).ToArray()));
+        }
+
+        private sealed class ExtensionCollectionDebugView
+        {
+            private readonly ExtensionCollection list;
+
+            public ExtensionCollectionDebugView(ExtensionCollection list)
+            {
+                this.list = list;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public FieldDescriptor[] Items => list.UnorderedExtensions.ToArray();
         }
     }
 }

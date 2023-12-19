@@ -17,6 +17,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -28,7 +29,8 @@ namespace objectivec {
 
 ExtensionGenerator::ExtensionGenerator(
     absl::string_view root_or_message_class_name,
-    const FieldDescriptor* descriptor)
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
     : method_name_(ExtensionMethodName(descriptor)),
       full_method_name_(
           absl::StrCat(root_or_message_class_name, "_", method_name_)),

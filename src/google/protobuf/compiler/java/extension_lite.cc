@@ -46,7 +46,7 @@ void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
                    &vars, context_);
   printer->Print(vars, "public static final int $constant_name$ = $number$;\n");
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldDocComment(printer, descriptor_, context_->options());
   if (descriptor_->is_repeated()) {
     printer->Print(
         vars,

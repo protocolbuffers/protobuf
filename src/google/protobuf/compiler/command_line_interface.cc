@@ -11,16 +11,17 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include <cstdint>
 #include <cstdlib>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/feature_resolver.h"
 
@@ -284,28 +285,16 @@ std::string PluginName(absl::string_view plugin_prefix,
                       directive.substr(2, directive.size() - 6));
 }
 
-
-bool EnforceEditionsSupport(
-    const std::string& codegen_name, uint64_t supported_features,
-    const std::vector<const FileDescriptor*>& parsed_files) {
-  if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
-    for (const auto fd : parsed_files) {
-      if (FileDescriptorLegacy(fd).syntax() ==
-          FileDescriptorLegacy::SYNTAX_EDITIONS) {
-        std::cerr
-            << fd->name() << ": is an editions file, but code generator "
-            << codegen_name
-            << " hasn't been updated to support editions yet.  Please ask "
-               "the owner of this code generator to add support or "
-               "switch back to proto2/proto3.\n\nSee "
-               "https://protobuf.dev/editions/overview/ for more information."
-            << std::endl;
-        return false;
-      }
+bool GetBootstrapParam(const std::string& parameter) {
+  std::vector<std::string> parts = absl::StrSplit(parameter, ',');
+  for (const auto& part : parts) {
+    if (part == "bootstrap") {
+      return true;
     }
   }
-  return true;
+  return false;
 }
+
 
 }  // namespace
 
@@ -989,7 +978,8 @@ namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (FieldDescriptorLegacy(desc->field(i)).has_optional_keyword()) {
+    if (desc->field(i)->real_containing_oneof() == nullptr &&
+        desc->field(i)->containing_oneof() != nullptr) {
       return true;
     }
   }
@@ -1002,8 +992,7 @@ bool ContainsProto3Optional(const Descriptor* desc) {
 }
 
 bool ContainsProto3Optional(const FileDescriptor* file) {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
+  if (file->edition() == Edition::EDITION_PROTO3) {
     for (int i = 0; i < file->message_type_count(); i++) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;
@@ -1528,24 +1517,26 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if ((output.generator->GetSupportedFeatures() &
-         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
-      continue;
-    }
-    if (output.generator->GetMinimumEdition() != PROTOBUF_MINIMUM_EDITION) {
-      ABSL_LOG(ERROR) << "Built-in generator " << output.name
-                      << " specifies a minimum edition "
-                      << output.generator->GetMinimumEdition()
-                      << " which is not the protoc minimum "
-                      << PROTOBUF_MINIMUM_EDITION << ".";
-      return false;
-    }
-    if (output.generator->GetMaximumEdition() != PROTOBUF_MAXIMUM_EDITION) {
-      ABSL_LOG(ERROR) << "Built-in generator " << output.name
-                      << " specifies a maximum edition "
-                      << output.generator->GetMaximumEdition()
-                      << " which is not the protoc maximum "
-                      << PROTOBUF_MINIMUM_EDITION << ".";
-      return false;
+         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) != 0) {
+      // Only validate min/max edition on generators that advertise editions
+      // support.  Generators still under development will always use the
+      // correct values.
+      if (output.generator->GetMinimumEdition() != minimum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a minimum edition "
+                        << output.generator->GetMinimumEdition()
+                        << " which is not the protoc minimum "
+                        << minimum_edition << ".";
+        return false;
+      }
+      if (output.generator->GetMaximumEdition() != maximum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a maximum edition "
+                        << output.generator->GetMaximumEdition()
+                        << " which is not the protoc maximum "
+                        << maximum_edition << ".";
+        return false;
+      }
     }
     for (const FieldDescriptor* ext :
          output.generator->GetFeatureExtensions()) {
@@ -1565,7 +1556,8 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
     ABSL_LOG(ERROR) << defaults.status();
     return false;
   }
-  pool.SetFeatureSetDefaults(std::move(defaults).value());
+  absl::Status status = pool.SetFeatureSetDefaults(std::move(defaults).value());
+  ABSL_CHECK(status.ok()) << status.message();
   return true;
 }
 
@@ -1605,9 +1597,10 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
-    if (!experimental_editions_ && !IsEarlyEditionsFile(parsed_file->name())) {
-      if (FileDescriptorLegacy(parsed_file).syntax() ==
-          FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
+    if (!experimental_editions_ &&
+        !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
+        !absl::StartsWith(parsed_file->name(), "upb/")) {
+      if (parsed_file->edition() >= Edition::EDITION_2023) {
         std::cerr
             << parsed_file->name()
             << ": This file uses editions, but --experimental_editions has not "
@@ -1889,7 +1882,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
         break;  // only for --decode_raw
       }
       // --decode (not raw) is handled the same way as the rest of the modes.
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case MODE_ENCODE:
     case MODE_PRINT:
       missing_proto_definitions =
@@ -2201,7 +2194,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     if (!version_info_.empty()) {
       std::cout << version_info_ << std::endl;
     }
-    std::cout << "libprotoc " << internal::ProtocVersionString(PROTOBUF_VERSION)
+    std::cout << "libprotoc "
+              << ::google::protobuf::internal::ProtocVersionString(
+                     PROTOBUF_VERSION)
               << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
@@ -2554,6 +2549,52 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
   return true;
 }
 
+bool CommandLineInterface::EnforceEditionsSupport(
+    const std::string& codegen_name, uint64_t supported_features,
+    Edition minimum_edition, Edition maximum_edition,
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    if (fd->edition() < Edition::EDITION_2023) {
+      // Legacy proto2/proto3 files don't need any checks.
+      continue;
+    }
+
+    if (absl::StartsWith(fd->name(), "google/protobuf/") ||
+        absl::StartsWith(fd->name(), "upb/")) {
+      continue;
+    }
+    if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+      std::cerr << absl::Substitute(
+          "$0: is an editions file, but code generator $1 hasn't been "
+          "updated to support editions yet.  Please ask the owner of this code "
+          "generator to add support or switch back to proto2/proto3.\n\nSee "
+          "https://protobuf.dev/editions/overview/ for more information.",
+          fd->name(), codegen_name);
+      return false;
+    }
+    if (fd->edition() < minimum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please upgrade your file to at least edition $3.",
+          fd->name(), codegen_name, fd->edition(), minimum_edition);
+      return false;
+    }
+    if (fd->edition() > maximum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please ask the owner of this code generator to add "
+          "support or switch back to a maximum of edition $3.",
+          fd->name(), codegen_name, fd->edition(), maximum_edition);
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::GenerateOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
@@ -2596,7 +2637,9 @@ bool CommandLineInterface::GenerateOutput(
 
     if (!EnforceEditionsSupport(
             output_directive.name,
-            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+            output_directive.generator->GetSupportedFeatures(),
+            output_directive.generator->GetMinimumEdition(),
+            output_directive.generator->GetMaximumEdition(), parsed_files)) {
       return false;
     }
 
@@ -2700,6 +2743,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   CodeGeneratorResponse response;
   std::string processed_parameter = parameter;
 
+  bool bootstrap = GetBootstrapParam(processed_parameter);
 
   // Build the request.
   if (!processed_parameter.empty()) {
@@ -2727,8 +2771,11 @@ bool CommandLineInterface::GeneratePluginOutput(
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
       *request.add_source_file_descriptors() = std::move(file_proto);
       file->CopyTo(&file_proto);
-      file->CopySourceCodeInfoTo(&file_proto);
-      file->CopyJsonNameTo(&file_proto);
+      // Don't populate source code info or json_name for bootstrap protos.
+      if (!bootstrap) {
+        file->CopySourceCodeInfoTo(&file_proto);
+        file->CopyJsonNameTo(&file_proto);
+      }
       StripSourceRetentionOptions(*file->pool(), file_proto);
     }
   }
@@ -2796,11 +2843,15 @@ bool CommandLineInterface::GeneratePluginOutput(
     // Generator returned an error.
     *error = response.error();
     return false;
-  } else if (!EnforceProto3OptionalSupport(
-                 plugin_name, response.supported_features(), parsed_files)) {
+  }
+  if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
+                                    parsed_files)) {
     return false;
-  } else if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
-                                     parsed_files)) {
+  }
+  if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
+                              static_cast<Edition>(response.minimum_edition()),
+                              static_cast<Edition>(response.maximum_edition()),
+                              parsed_files)) {
     return false;
   }
 

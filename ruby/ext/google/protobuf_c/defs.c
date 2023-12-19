@@ -44,7 +44,7 @@ static VALUE rb_str_maybe_null(const char* s) {
   }
   return rb_str_new2(s);
 }
-
+static ID options_instancevar_interned;
 // -----------------------------------------------------------------------------
 // DescriptorPool.
 // -----------------------------------------------------------------------------
@@ -144,18 +144,24 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
  * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
- * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
- * exists with the given name.
+ * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+ * or nil if none exists with the given name.
  */
 static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const char* name_str = get_str(name);
   const upb_MessageDef* msgdef;
   const upb_EnumDef* enumdef;
+  const upb_FieldDef* fielddef;
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
     return get_msgdef_obj(_self, msgdef);
+  }
+
+  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
   }
 
   enumdef = upb_DefPool_FindEnumByName(self->symtab, name_str);
@@ -192,6 +198,7 @@ static void DescriptorPool_register(VALUE module) {
 
   rb_gc_register_address(&generated_pool);
   generated_pool = rb_class_new_instance(0, NULL, klass);
+  options_instancevar_interned = rb_intern("options");
 }
 
 // -----------------------------------------------------------------------------
@@ -224,6 +231,35 @@ static Descriptor* ruby_to_Descriptor(VALUE val) {
   Descriptor* ret;
   TypedData_Get_Struct(val, Descriptor, &Descriptor_type, ret);
   return ret;
+}
+
+// Decode and return a frozen instance of a Descriptor Option for the given pool
+static VALUE decode_options(VALUE self, const char* option_type, int size,
+                            const char* bytes, VALUE descriptor_pool) {
+  VALUE options_rb = rb_ivar_get(self, options_instancevar_interned);
+  if (options_rb != Qnil) {
+    return options_rb;
+  }
+
+  static const char* prefix = "google.protobuf.";
+  char fullname
+      [/*strlen(prefix)*/ 16 +
+       /*strln(longest option type supported e.g. "MessageOptions")*/ 14 +
+       /*null terminator*/ 1];
+
+  snprintf(fullname, sizeof(fullname), "%s%s", prefix, option_type);
+  const upb_MessageDef* msgdef = upb_DefPool_FindMessageByName(
+      ruby_to_DescriptorPool(descriptor_pool)->symtab, fullname);
+  if (!msgdef) {
+    rb_raise(rb_eRuntimeError, "Cannot find %s in DescriptorPool", option_type);
+  }
+
+  VALUE desc_rb = get_msgdef_obj(descriptor_pool, msgdef);
+  const Descriptor* desc = ruby_to_Descriptor(desc_rb);
+
+  options_rb = Message_decode_bytes(size, bytes, 0, desc->klass, true);
+  rb_ivar_set(self, options_instancevar_interned, options_rb);
+  return options_rb;
 }
 
 /*
@@ -374,6 +410,26 @@ static VALUE Descriptor_msgclass(VALUE _self) {
   return self->klass;
 }
 
+/*
+ * call-seq:
+ *     Descriptor.options => options
+ *
+ * Returns the `MessageOptions` for this `Descriptor`.
+ */
+static VALUE Descriptor_options(VALUE _self) {
+  Descriptor* self = ruby_to_Descriptor(_self);
+  const google_protobuf_MessageOptions* opts =
+      upb_MessageDef_Options(self->msgdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized =
+      google_protobuf_MessageOptions_serialize(opts, arena, &size);
+  VALUE message_options = decode_options(_self, "MessageOptions", size,
+                                         serialized, self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return message_options;
+}
+
 static void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
@@ -385,6 +441,7 @@ static void Descriptor_register(VALUE module) {
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
+  rb_define_method(klass, "options", Descriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
@@ -484,12 +541,31 @@ static VALUE FileDescriptor_syntax(VALUE _self) {
   }
 }
 
+/*
+ * call-seq:
+ *     FileDescriptor.options => options
+ *
+ * Returns the `FileOptions` for this `FileDescriptor`.
+ */
+static VALUE FileDescriptor_options(VALUE _self) {
+  FileDescriptor* self = ruby_to_FileDescriptor(_self);
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(self->filedef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_FileOptions_serialize(opts, arena, &size);
+  VALUE file_options = decode_options(_self, "FileOptions", size, serialized,
+                                      self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return file_options;
+}
+
 static void FileDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FileDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FileDescriptor_alloc);
   rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
+  rb_define_method(klass, "options", FileDescriptor_options, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }
@@ -540,7 +616,7 @@ static VALUE FieldDescriptor_alloc(VALUE klass) {
 
 /*
  * call-seq:
- *    EnumDescriptor.new(c_only_cookie, pool, ptr) => EnumDescriptor
+ *    FieldDescriptor.new(c_only_cookie, pool, ptr) => FieldDescriptor
  *
  * Creates a descriptor wrapper object.  May only be called from C.
  */
@@ -841,6 +917,25 @@ static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     FieldDescriptor.options => options
+ *
+ * Returns the `FieldOptions` for this `FieldDescriptor`.
+ */
+static VALUE FieldDescriptor_options(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  const google_protobuf_FieldOptions* opts =
+      upb_FieldDef_Options(self->fielddef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, &size);
+  VALUE field_options = decode_options(_self, "FieldOptions", size, serialized,
+                                       self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return field_options;
+}
+
 static void FieldDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
@@ -857,6 +952,7 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
+  rb_define_method(klass, "options", FieldDescriptor_options, 0);
   rb_gc_register_address(&cFieldDescriptor);
   cFieldDescriptor = klass;
 }
@@ -956,12 +1052,32 @@ static VALUE OneofDescriptor_each(VALUE _self) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     OneofDescriptor.options => options
+ *
+ * Returns the `OneofOptions` for this `OneofDescriptor`.
+ */
+static VALUE OneOfDescriptor_options(VALUE _self) {
+  OneofDescriptor* self = ruby_to_OneofDescriptor(_self);
+  const google_protobuf_OneofOptions* opts =
+      upb_OneofDef_Options(self->oneofdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, &size);
+  VALUE oneof_options = decode_options(_self, "OneofOptions", size, serialized,
+                                       self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return oneof_options;
+}
+
 static void OneofDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
   rb_define_method(klass, "initialize", OneofDescriptor_initialize, 3);
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
+  rb_define_method(klass, "options", OneOfDescriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
   cOneofDescriptor = klass;
@@ -1131,6 +1247,24 @@ static VALUE EnumDescriptor_enummodule(VALUE _self) {
   return self->module;
 }
 
+/*
+ * call-seq:
+ *     EnumDescriptor.options => options
+ *
+ * Returns the `EnumOptions` for this `EnumDescriptor`.
+ */
+static VALUE EnumDescriptor_options(VALUE _self) {
+  EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
+  const google_protobuf_EnumOptions* opts = upb_EnumDef_Options(self->enumdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, &size);
+  VALUE enum_options = decode_options(_self, "EnumOptions", size, serialized,
+                                      self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return enum_options;
+}
+
 static void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
@@ -1141,6 +1275,7 @@ static void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
+  rb_define_method(klass, "options", EnumDescriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;

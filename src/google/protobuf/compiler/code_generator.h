@@ -119,11 +119,11 @@ class PROTOC_EXPORT CodeGenerator {
 
   // Returns the minimum edition (inclusive) supported by this generator.  Any
   // proto files with an edition before this will result in an error.
-  virtual Edition GetMinimumEdition() const { return PROTOBUF_MINIMUM_EDITION; }
+  virtual Edition GetMinimumEdition() const { return Edition::EDITION_UNKNOWN; }
 
   // Returns the maximum edition (inclusive) supported by this generator.  Any
   // proto files with an edition after this will result in an error.
-  virtual Edition GetMaximumEdition() const { return PROTOBUF_MAXIMUM_EDITION; }
+  virtual Edition GetMaximumEdition() const { return Edition::EDITION_UNKNOWN; }
 
   // Builds a default feature set mapping for this generator.
   //
@@ -135,9 +135,9 @@ class PROTOC_EXPORT CodeGenerator {
 
  protected:
   // Retrieves the resolved source features for a given descriptor.  All the
-  // features that are imported (from the proto file) and linked in (from the
-  // callers binary) will be fully resolved. These should be used to make any
-  // feature-based decisions during code generation.
+  // global features and language features returned by GetFeatureExtensions will
+  // be fully resolved. These should be used to make any feature-based decisions
+  // during code generation.
   template <typename DescriptorT>
   static const FeatureSet& GetResolvedSourceFeatures(const DescriptorT& desc) {
     return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
@@ -229,6 +229,9 @@ PROTOC_EXPORT void ParseGeneratorParameter(
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 PROTOC_EXPORT std::string StripProto(absl::string_view filename);
+
+// Returns true if the proto path corresponds to a known feature file.
+PROTOC_EXPORT bool IsKnownFeatureProto(absl::string_view filename);
 
 }  // namespace compiler
 }  // namespace protobuf

@@ -101,7 +101,7 @@ void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
                    &vars, context_);
   printer->Print(vars, "public static final int $constant_name$ = $number$;\n");
 
-  WriteFieldDocComment(printer, descriptor_);
+  WriteFieldDocComment(printer, descriptor_, context_->options());
   if (descriptor_->extension_scope() == NULL) {
     // Non-nested
     printer->Print(

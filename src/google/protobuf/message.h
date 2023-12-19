@@ -87,16 +87,16 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
-#include <iosfwd>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "absl/base/casts.h"
-#include "absl/functional/function_ref.h"
+#include "google/protobuf/stubs/common.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -133,6 +133,7 @@ class MapValueConstRef;
 class MapValueRef;
 class MapIterator;
 class MapReflectionTester;
+class TextFormat;
 
 namespace internal {
 struct FuzzPeer;
@@ -145,6 +146,7 @@ struct TailCallTableInfo;
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
+class EpsCopyOutputStream;   // coded_stream.h
 class ZeroCopyInputStream;   // zero_copy_stream.h
 class ZeroCopyOutputStream;  // zero_copy_stream.h
 class CodedInputStream;      // coded_stream.h
@@ -230,7 +232,7 @@ PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() {}
+  constexpr Message() = default;
   Message(const Message&) = delete;
   Message& operator=(const Message&) = delete;
 
@@ -255,7 +257,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // messages which will be merged.  Repeated fields will be concatenated.
   // The given message must be of the same type as this message (i.e. the
   // exact same class).
-  virtual void MergeFrom(const Message& from);
+  void MergeFrom(const Message& from);
 
   // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
@@ -269,7 +271,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
-  std::string InitializationErrorString() const override;
+  std::string InitializationErrorString() const;
 
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
@@ -284,8 +286,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   void DiscardUnknownFields();
 
   // Computes (an estimate of) the total number of bytes currently used for
-  // storing the message in memory.  The default implementation calls the
-  // Reflection object's SpaceUsed() method.
+  // storing the message in memory.
   //
   // SpaceUsed() is noticeably slower than ByteSize(), as it is implemented
   // using reflection (rather than the generated code implementation for
@@ -295,7 +296,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Note: The precise value of this method should never be depended on, and can
   // change substantially due to internal details.  In debug builds, this will
   // include a random fuzz factor to prevent these dependencies.
-  virtual size_t SpaceUsedLong() const;
+  size_t SpaceUsedLong() const;
 
   [[deprecated("Please use SpaceUsedLong() instead")]] int SpaceUsed() const {
     return internal::ToIntSize(SpaceUsedLong());
@@ -328,7 +329,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  std::string GetTypeName() const override;
   void Clear() override;
 
   // Returns whether all required fields have been set. Note that required
@@ -367,6 +367,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
                                        internal::CachedSize* cached_size) const;
+
+  // Reflection based version for reflection based types.
+  static void MergeImpl(MessageLite& to, const MessageLite& from);
+
+  static const DescriptorMethods kDescriptorMethods;
 
 };
 
@@ -882,39 +887,6 @@ class PROTOBUF_EXPORT Reflection final {
   // Returns nullptr if no extension is known for this name or number.
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
 
-  // Feature Flags -------------------------------------------------------------
-
-  // Does this message support storing arbitrary integer values in enum fields?
-  // If |true|, GetEnumValue/SetEnumValue and associated repeated-field versions
-  // take arbitrary integer values, and the legacy GetEnum() getter will
-  // dynamically create an EnumValueDescriptor for any integer value without
-  // one. If |false|, setting an unknown enum value via the integer-based
-  // setters results in undefined behavior (in practice, ABSL_DCHECK-fails).
-  //
-  // Generic code that uses reflection to handle messages with enum fields
-  // should check this flag before using the integer-based setter, and either
-  // downgrade to a compatible value or use the UnknownFieldSet if not. For
-  // example:
-  //
-  //   int new_value = GetValueFromApplicationLogic();
-  //   if (reflection->SupportsUnknownEnumValues()) {
-  //     reflection->SetEnumValue(message, field, new_value);
-  //   } else {
-  //     if (field_descriptor->enum_type()->
-  //             FindValueByNumber(new_value) != nullptr) {
-  //       reflection->SetEnumValue(message, field, new_value);
-  //     } else if (emit_unknown_enum_values) {
-  //       reflection->MutableUnknownFields(message)->AddVarint(
-  //           field->number(), new_value);
-  //     } else {
-  //       // convert value to a compatible/default value.
-  //       new_value = CompatibleDowngrade(new_value);
-  //       reflection->SetEnumValue(message, field, new_value);
-  //     }
-  //   }
-  ABSL_DEPRECATED("Use EnumDescriptor::is_closed instead.")
-  bool SupportsUnknownEnumValues() const;
-
   // Returns the MessageFactory associated with this message.  This can be
   // useful for determining if a message is a generated message or not, for
   // example:
@@ -1005,6 +977,7 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsSplit(field);
   }
 
+  friend class google::protobuf::TextFormat;
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
   friend bool internal::IsDescendant(Message& root, const Message& message);
@@ -1282,7 +1255,7 @@ class PROTOBUF_EXPORT Reflection final {
 // around GetPrototype for details
 class PROTOBUF_EXPORT MessageFactory {
  public:
-  inline MessageFactory() {}
+  inline MessageFactory() = default;
   MessageFactory(const MessageFactory&) = delete;
   MessageFactory& operator=(const MessageFactory&) = delete;
   virtual ~MessageFactory();
@@ -1340,6 +1313,10 @@ class PROTOBUF_EXPORT MessageFactory {
   static void InternalRegisterGeneratedMessage(const Descriptor* descriptor,
                                                const Message* prototype);
 
+
+ private:
+  friend class DynamicMessageFactory;
+  static const Message* TryGetGeneratedPrototype(const Descriptor* type);
 };
 
 #define DECLARE_GET_REPEATED_FIELD(TYPE)                           \
@@ -1382,6 +1359,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   (void)unused;
 
 #if PROTOBUF_RTTI
+  internal::StrongReference(T::default_instance());
   return dynamic_cast<const T*>(from);
 #else
   bool ok = from != nullptr &&
@@ -1394,6 +1372,56 @@ template <typename T>
 T* DynamicCastToGenerated(Message* from) {
   const Message* message_const = from;
   return const_cast<T*>(DynamicCastToGenerated<T>(message_const));
+}
+
+// An overloaded version of DynamicCastToGenerated for downcasting references to
+// base Message class. If the destination type T if the argument is not an
+// instance of T and dynamic_cast returns nullptr, it terminates with an error.
+template <typename T>
+const T& DynamicCastToGenerated(const Message& from) {
+  const T* destination_message = DynamicCastToGenerated<T>(&from);
+  ABSL_CHECK(destination_message != nullptr)
+      << "Cannot downcast " << from.GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+  return *destination_message;
+}
+
+template <typename T>
+T& DynamicCastToGenerated(Message& from) {
+  const Message& message_const = from;
+  const T& destination_message = DynamicCastToGenerated<T>(message_const);
+  return const_cast<T&>(destination_message);
+}
+
+// A lightweight function for downcasting base Message pointer to derived type.
+// It should only be used when the caller is certain that the argument is of
+// instance T and T is a type derived from base Message class.
+template <typename T>
+const T* DownCastToGenerated(const Message* from) {
+  internal::StrongReference(T::default_instance());
+  ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
+      << "Cannot downcast " << from->GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+
+  return static_cast<const T*>(from);
+}
+
+template <typename T>
+T* DownCastToGenerated(Message* from) {
+  const Message* message_const = from;
+  return const_cast<T*>(DownCastToGenerated<T>(message_const));
+}
+
+template <typename T>
+const T& DownCastToGenerated(const Message& from) {
+  return *DownCastToGenerated<T>(&from);
+}
+
+template <typename T>
+T& DownCastToGenerated(Message& from) {
+  const Message& message_const = from;
+  const T& destination_message = DownCastToGenerated<T>(message_const);
+  return const_cast<T&>(destination_message);
 }
 
 // Call this function to ensure that this message's reflection is linked into
@@ -1508,6 +1536,12 @@ bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
   ABSL_DCHECK_EQ(SplitFieldHasExtraIndirection(field), ret);
   return ret;
 }
+
+class RawMessageBase : public Message {
+ public:
+  using Message::Message;
+  virtual size_t SpaceUsedLong() const = 0;
+};
 
 }  // namespace internal
 

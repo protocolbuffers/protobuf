@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -471,11 +471,11 @@ namespace Google.Protobuf
 
         // Assume that anything non-bounds-related is covered in the Int32 case
         [Test]
-        [TestCase("9223372036854775808")]
-        // Theoretical bound would be -9223372036854775809, but when that is parsed to a double
-        // we end up with the exact value of long.MinValue due to lack of precision. The value here
-        // is the "next double down".
-        [TestCase("-9223372036854780000")]
+        // Runtime implementation differences produce different results for values just outside
+        // (long.MinValue, long.MaxValue) which cannot be exactly represented as a double. Use the
+        // next values exactly representable as doubles to ensure consistency.
+        [TestCase("9223372036854777856")]
+        [TestCase("-9223372036854777856")]
         public void NumberToInt64_Invalid(string jsonValue)
         {
             string json = "{ \"singleInt64\": " + jsonValue + "}";
@@ -498,7 +498,10 @@ namespace Google.Protobuf
         // Assume that anything non-bounds-related is covered in the Int32 case
         [Test]
         [TestCase("-1")]
-        [TestCase("18446744073709551616")]
+        // Runtime implementation differences produce different results for values just beyond
+        // ulong.MaxValue which cannot be exactly represented as a double. Use the  next value
+        // exactly representable as a double to ensure consistency.
+        [TestCase("18446744073709555712")]
         public void NumberToUInt64_Invalid(string jsonValue)
         {
             string json = "{ \"singleUint64\": " + jsonValue + "}";

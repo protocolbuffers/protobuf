@@ -89,7 +89,7 @@ selects.config_setting_group(
     match_any = [
         ":config_win32",
         ":config_win64",
-    ]
+    ],
 )
 
 config_setting(
@@ -107,7 +107,7 @@ selects.config_setting_group(
     match_any = [
         ":config_osx_aarch64",
         ":config_osx_x86_64",
-    ]
+    ],
 )
 
 # Internal testing:

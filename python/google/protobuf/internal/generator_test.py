@@ -344,8 +344,15 @@ class GeneratorTest(unittest.TestCase):
     self.assertEqual(0, desc.oneofs[0].index)
     self.assertIs(desc, desc.oneofs[0].containing_type)
     self.assertIs(desc.oneofs[0], desc.oneofs_by_name['oneof_field'])
-    nested_names = set(['oneof_uint32', 'oneof_nested_message',
-                        'oneof_string', 'oneof_bytes'])
+    nested_names = set([
+        'oneof_uint32',
+        'oneof_nested_message',
+        'oneof_string',
+        'oneof_bytes',
+        'oneof_cord',
+        'oneof_string_piece',
+        'oneof_lazy_nested_message',
+    ])
     self.assertEqual(
         nested_names,
         set([field.name for field in desc.oneofs[0].fields]))

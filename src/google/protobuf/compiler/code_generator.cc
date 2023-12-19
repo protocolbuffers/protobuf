@@ -23,6 +23,9 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/feature_resolver.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -57,6 +60,14 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
 absl::StatusOr<FeatureSetDefaults> CodeGenerator::BuildFeatureSetDefaults()
     const {
+  if ((GetSupportedFeatures() & FEATURE_SUPPORTS_EDITIONS) == 0) {
+    // For generators that don't fully support editions yet, provide an
+    // optimistic set of defaults.  Protoc will check this condition later
+    // anyway.
+    return FeatureResolver::CompileDefaults(
+        FeatureSet::descriptor(), GetFeatureExtensions(),
+        PROTOBUF_MINIMUM_EDITION, PROTOBUF_MAXIMUM_EDITION);
+  }
   return FeatureResolver::CompileDefaults(
       FeatureSet::descriptor(), GetFeatureExtensions(), GetMinimumEdition(),
       GetMaximumEdition());
@@ -120,6 +131,16 @@ std::string StripProto(absl::string_view filename) {
   }
 }
 
+bool IsKnownFeatureProto(absl::string_view filename) {
+  if (filename == "google/protobuf/cpp_features.proto" ||
+      filename == "google/protobuf/java_features.proto") {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

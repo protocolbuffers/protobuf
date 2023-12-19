@@ -19,6 +19,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
@@ -77,6 +78,11 @@ class PROTOC_EXPORT FileGenerator {
   // This includes header guards and file-global variables.
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
                     std::function<void()> cb);
+
+  // Generates a static initializers with all the existing values from
+  // `static_initializers_`.
+  // They run in `PROTOBUF_ATTRIBUTE_INIT_PRIORITY2` priority.
+  void GenerateStaticInitializer(io::Printer* p);
 
   // Shared code between the two header generators.
   void GenerateSharedHeaderCode(io::Printer* p);
@@ -169,6 +175,8 @@ class PROTOC_EXPORT FileGenerator {
   friend class FileGeneratorFriendForTesting;
 
   absl::flat_hash_set<const FileDescriptor*> weak_deps_;
+
+  std::vector<absl::AnyInvocable<void(io::Printer*)>> static_initializers_;
 
   const FileDescriptor* file_;
   Options options_;

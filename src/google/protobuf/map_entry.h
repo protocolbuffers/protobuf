@@ -13,12 +13,11 @@
 #include <string>
 
 #include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/port.h"
-#include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -44,6 +43,28 @@ class MapField;
 namespace google {
 namespace protobuf {
 namespace internal {
+
+// Base class to keep common fields and virtual function overrides.
+class MapEntryBase : public Message {
+ protected:
+  using Message::Message;
+
+  const ClassData* GetClassData() const final {
+    ABSL_CONST_INIT static const ClassDataFull data = {
+        {
+            nullptr,  // on_demand_register_arena_dtor
+            PROTOBUF_FIELD_OFFSET(MapEntryBase, _cached_size_),
+            false,
+        },
+        &MergeImpl,
+        &kDescriptorMethods,
+    };
+    return &data;
+  }
+
+  HasBits<1> _has_bits_{};
+  mutable CachedSize _cached_size_{};
+};
 
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
 // google::protobuf::Reflection. In order to let it work with generated message
@@ -74,7 +95,7 @@ namespace internal {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public Message {
+class MapEntry : public MapEntryBase {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
@@ -84,12 +105,6 @@ class MapEntry : public Message {
   // pointers, while other types are stored as values.
   using KeyOnMemory = typename KeyTypeHandler::TypeOnMemory;
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
-
-  // Enum type cannot be used for MapTypeHandler::Read. Define a type
-  // which will replace Enum with int.
-  using KeyMapEntryAccessorType = typename KeyTypeHandler::MapEntryAccessorType;
-  using ValueMapEntryAccessorType =
-      typename ValueTypeHandler::MapEntryAccessorType;
 
   // Constants for field number.
   static const int kKeyFieldNumber = 1;
@@ -105,20 +120,18 @@ class MapEntry : public Message {
  public:
   constexpr MapEntry()
       : key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()),
-        _has_bits_{} {}
+        value_(ValueTypeHandler::Constinit()) {}
 
   explicit MapEntry(Arena* arena)
-      : Message(arena),
+      : MapEntryBase(arena),
         key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()),
-        _has_bits_{} {}
+        value_(ValueTypeHandler::Constinit()) {}
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
 
   ~MapEntry() override {
-    if (GetArenaForAllocation() != nullptr) return;
+    if (GetArena() != nullptr) return;
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
@@ -129,37 +142,17 @@ class MapEntry : public Message {
 
   // accessors ======================================================
 
-  inline const KeyMapEntryAccessorType& key() const {
-    return KeyTypeHandler::GetExternalReference(key_);
+  inline auto* mutable_key() {
+    _has_bits_[0] |= 0x00000001u;
+    return KeyTypeHandler::EnsureMutable(&key_, GetArena());
   }
-  inline const ValueMapEntryAccessorType& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(value_);
+  inline auto* mutable_value() {
+    _has_bits_[0] |= 0x00000002u;
+    return ValueTypeHandler::EnsureMutable(&value_, GetArena());
   }
-  inline KeyMapEntryAccessorType* mutable_key() {
-    set_has_key();
-    return KeyTypeHandler::EnsureMutable(&key_, GetArenaForAllocation());
-  }
-  inline ValueMapEntryAccessorType* mutable_value() {
-    set_has_value();
-    return ValueTypeHandler::EnsureMutable(&value_, GetArenaForAllocation());
-  }
-
-  // implements MessageLite =========================================
-
-  // MapEntry is for implementation only and this function isn't called
-  // anywhere. Just provide a fake implementation here for MessageLite.
-  std::string GetTypeName() const override { return ""; }
-
-  size_t SpaceUsedLong() const final {
-    size_t size = sizeof(Derived);
-    size += KeyTypeHandler::SpaceUsedInMapEntryLong(this->key_);
-    size += ValueTypeHandler::SpaceUsedInMapEntryLong(this->value_);
-    return size;
-  }
-
-  void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    MergeFromInternal(*::google::protobuf::internal::DownCast<const Derived*>(&other));
-  }
+  // TODO: These methods currently differ in behavior from the ones
+  // implemented via reflection. This means that a MapEntry does not behave the
+  // same as an equivalent object made via DynamicMessage.
 
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
     while (!ctx->Done(&ptr)) {
@@ -167,13 +160,11 @@ class MapEntry : public Message {
       ptr = ReadTag(ptr, &tag);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == kKeyTag) {
-        set_has_key();
-        KeyMapEntryAccessorType* key = mutable_key();
+        auto* key = mutable_key();
         ptr = KeyTypeHandler::Read(ptr, ctx, key);
         if (!Derived::ValidateKey(key)) return nullptr;
       } else if (tag == kValueTag) {
-        set_has_value();
-        ValueMapEntryAccessorType* value = mutable_value();
+        auto* value = mutable_value();
         ptr = ValueTypeHandler::Read(ptr, ctx, value);
         if (!Derived::ValidateValue(value)) return nullptr;
       } else {
@@ -190,33 +181,8 @@ class MapEntry : public Message {
     return ptr;
   }
 
-  size_t ByteSizeLong() const override {
-    size_t size = 0;
-    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
-    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
-    return size;
-  }
-
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* ptr, io::EpsCopyOutputStream* stream) const override {
-    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
-    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
-  }
-
-  bool IsInitialized() const override {
-    return ValueTypeHandler::IsInitialized(value_);
-  }
-
-  Message* New(Arena* arena) const override {
-    Derived* entry = Arena::CreateMessage<Derived>(arena);
-    return entry;
-  }
-
-  void Clear() final {
-    KeyTypeHandler::Clear(&key_, GetArenaForAllocation());
-    ValueTypeHandler::Clear(&value_, GetArenaForAllocation());
-    clear_has_key();
-    clear_has_value();
+  Message* New(Arena* arena) const final {
+    return Arena::CreateMessage<Derived>(arena);
   }
 
  protected:
@@ -225,33 +191,8 @@ class MapEntry : public Message {
             WireFormatLite::FieldType>
   friend class MapField;
 
-  // We can't declare this function directly here as it would hide the other
-  // overload (const Message&).
-  void MergeFromInternal(const MapEntry& from) {
-    if (from._has_bits_[0]) {
-      if (from.has_key()) {
-        KeyTypeHandler::EnsureMutable(&key_, GetArenaForAllocation());
-        KeyTypeHandler::Merge(from.key(), &key_, GetArenaForAllocation());
-        set_has_key();
-      }
-      if (from.has_value()) {
-        ValueTypeHandler::EnsureMutable(&value_, GetArenaForAllocation());
-        ValueTypeHandler::Merge(from.value(), &value_, GetArenaForAllocation());
-        set_has_value();
-      }
-    }
-  }
-
-  void set_has_key() { _has_bits_[0] |= 0x00000001u; }
-  bool has_key() const { return (_has_bits_[0] & 0x00000001u) != 0; }
-  void clear_has_key() { _has_bits_[0] &= ~0x00000001u; }
-  void set_has_value() { _has_bits_[0] |= 0x00000002u; }
-  bool has_value() const { return (_has_bits_[0] & 0x00000002u) != 0; }
-  void clear_has_value() { _has_bits_[0] &= ~0x00000002u; }
-
   KeyOnMemory key_;
   ValueOnMemory value_;
-  uint32_t _has_bits_[1];
 };
 
 }  // namespace internal

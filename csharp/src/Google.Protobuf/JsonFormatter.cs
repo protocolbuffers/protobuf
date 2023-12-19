@@ -9,15 +9,16 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Google.Protobuf
 {
@@ -962,25 +963,14 @@ namespace Google.Protobuf
         // The need for this is unfortunate, as is its unbounded size, but realistically it shouldn't cause issues.
         private static class OriginalEnumValueHelper
         {
-            // TODO: In the future we might want to use ConcurrentDictionary, at the point where all
-            // the platforms we target have it.
-            private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries
-                = new Dictionary<System.Type, Dictionary<object, string>>();
+            private static readonly ConcurrentDictionary<System.Type, Dictionary<object, string>> dictionaries
+                = new ConcurrentDictionary<System.Type, Dictionary<object, string>>();
 
             [UnconditionalSuppressMessage("Trimming", "IL2072",
                 Justification = "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
             internal static string GetOriginalName(object value)
             {
-                var enumType = value.GetType();
-                Dictionary<object, string> nameMapping;
-                lock (dictionaries)
-                {
-                    if (!dictionaries.TryGetValue(enumType, out nameMapping))
-                    {
-                        nameMapping = GetNameMapping(enumType);
-                        dictionaries[enumType] = nameMapping;
-                    }
-                }
+                Dictionary<object, string> nameMapping = dictionaries.GetOrAdd(value.GetType(), static t => GetNameMapping(t));
 
                 // If this returns false, originalName will be null, which is what we want.
                 nameMapping.TryGetValue(value, out string originalName);

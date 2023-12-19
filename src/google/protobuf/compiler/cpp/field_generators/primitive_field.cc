@@ -108,7 +108,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
+      _this->$field_$ = from.$field_$;
     )cc");
   }
 
@@ -192,39 +192,42 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name$();
     }
-    inline void $Msg$::set_$name$($Type$ value) {
-      $PrepareSplitMessageForWrite$;
-      _internal_set_$name$(value);
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-    }
   )cc");
 
   if (is_oneof()) {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Type$ value) {
+        $PrepareSplitMessageForWrite$;
+        if ($not_has_field$) {
+          clear_$oneof_name$();
+          set_has_$name$();
+        }
+        $field_$ = value;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Type$ $Msg$::_internal_$name$() const {
         if ($has_field$) {
           return $field_$;
         }
         return $kDefault$;
       }
-      inline void $Msg$::_internal_set_$name$($Type$ value) {
-        if ($not_has_field$) {
-          clear_$oneof_name$();
-          set_has_$name$();
-        }
-        $field_$ = value;
-      }
     )cc");
   } else {
     p->Emit(R"cc(
+      inline void $Msg$::set_$name$($Type$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name$(value);
+        $set_hasbit$;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
       inline $Type$ $Msg$::_internal_$name$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
       inline void $Msg$::_internal_set_$name$($Type$ value) {
         $TsanDetectConcurrentMutation$;
-        $set_hasbit$;
         $field_$ = value;
       }
     )cc");
@@ -329,12 +332,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
-    } else {
-#ifndef PROTOBUF_EXPLICIT_CONSTRUCTORS
-      p->Emit(R"cc(
-        $field_$.~RepeatedField();
-      )cc");
-#endif  // !PROTOBUF_EXPLICIT_CONSTRUCTORS
     }
   }
 
@@ -520,7 +517,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
           $field_$.Set($pb$::Arena::CreateMessage<$pb$::RepeatedField<$Type$>>(
-              GetArenaForAllocation()));
+              GetArena()));
         }
         return $field_$.Get();
       }

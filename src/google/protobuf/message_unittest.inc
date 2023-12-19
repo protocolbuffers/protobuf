@@ -46,6 +46,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
 
 
@@ -98,6 +99,24 @@ TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
 
   EXPECT_TRUE(message.SerializeAsString() == str1);
 
+}
+
+TEST(MESSAGE_TEST_NAME, RoundTrip) {
+  UNITTEST::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+
+  UNITTEST::TestAllTypes copied, merged, parsed;
+  copied = message;
+  TestUtil::ExpectAllFieldsSet(copied);
+
+  merged.MergeFrom(message);
+  TestUtil::ExpectAllFieldsSet(merged);
+
+  std::string data;
+  ASSERT_TRUE(message.SerializeToString(&data));
+  ASSERT_TRUE(parsed.ParseFromString(data));
+  TestUtil::ExpectAllFieldsSet(parsed);
 }
 
 TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
@@ -805,6 +824,69 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
   Message* test_all_types_pointer_nullptr = nullptr;
   EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DynamicCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  ASSERT_DEATH(DynamicCastToGenerated<UNITTEST::TestRequired>(
+                   test_all_types_pointer_const_ref),
+               "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+                   UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedValidType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer));
+
+  const Message* test_all_types_pointer_const = &test_all_types;
+  EXPECT_EQ(&test_all_types, DownCastToGenerated<const UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const));
+
+  Message* test_all_types_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DownCastToGenerated<UNITTEST::TestAllTypes>(
+                         test_all_types_pointer_nullptr));
+
+  Message& test_all_types_pointer_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_ref));
+
+  const Message& test_all_types_pointer_const_ref = test_all_types;
+  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidPointerType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message* test_all_types_pointer = &test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidReferenceType) {
+  UNITTEST::TestAllTypes test_all_types;
+
+  Message& test_all_types_pointer = test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      "Cannot downcast " + test_all_types.GetTypeName() + " to " +
+          UNITTEST::TestRequired::default_instance().GetTypeName());
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -1873,9 +1955,10 @@ TEST(MESSAGE_TEST_NAME, TestRegressionInlinedStringAuxIdxMismatchOnFastParser) {
   if (table != nullptr &&
       table->fast_entry(1)->target() == internal::TcParser::FastSiS1) {
     // optional string str1 = 1;
+    // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(1)->bits.aux_idx(), 1);
     // optional InlinedStringIdxRegressionProto sub = 2;
-    EXPECT_EQ(table->fast_entry(2)->bits.aux_idx(), 2);
+    EXPECT_EQ(table->fast_entry(2)->bits.aux_idx(), 1);
     // optional string str2 = 3;
     // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(3)->bits.aux_idx(), 2);
@@ -1994,6 +2077,34 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
     EXPECT_FALSE(message.ParseFromString(with_error));
     validate_message(message);
   }
+}
+
+TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
+  UNITTEST::TestAllTypes message;
+  auto* lazy = message.mutable_oneof_lazy_nested_message();
+  // We need to add enough payload to make the lazy field overflow the SSO of
+  // Cord. However, NestedMessage does not have enough fields for that. Just add
+  // some unknown payload to it. Use something that the validator will allow to
+  // stay as lazy.
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(10, 10);
+  lazy->GetReflection()->MutableUnknownFields(lazy)->AddFixed64(11, 10);
+  // Validate that the size is large enough.
+  ASSERT_GT(lazy->ByteSizeLong(), 15);
+
+  // Append two instances of the oneof: first the lazy field, then any other to
+  // cause a switch during parsing.
+  std::string str;
+  ASSERT_TRUE(message.AppendToString(&str));
+  message.set_oneof_uint32(7);
+  ASSERT_TRUE(message.AppendToString(&str));
+
+  EXPECT_TRUE(UNITTEST::TestAllTypes().ParseFromString(str));
+  Arena arena;
+  // This call had a bug where the LazyField was not destroyed in any way
+  // causing the Cord inside it to leak its contents.
+  EXPECT_TRUE(
+      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena)->ParseFromString(
+          str));
 }
 
 }  // namespace protobuf

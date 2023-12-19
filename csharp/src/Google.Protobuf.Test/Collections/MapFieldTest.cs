@@ -632,6 +632,59 @@ namespace Google.Protobuf.Collections
             CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Values, ((IReadOnlyDictionary<string, string>)map).Values);
         }
 
+        [Test]
+        public void SortIntKeys_RandomOrder()
+        {
+            var map = new MapField<int, string>() { { 1, "val" }, { -1, "val"}, { 0, "val" } };
+            var sortedList = map.GetSortedListCopy(map.ToList()).ToList();
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            CollectionAssert.AreEqual(new[] { -1, 0, 1 }, sortedKeys);
+        }
+
+        [Test]
+        public void SortIntKeys_Empty()
+        {
+            var map = new MapField<int, string> { };
+            var sortedList = map.GetSortedListCopy(map.ToList()).ToList();
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            Assert.IsEmpty(sortedKeys);
+        }
+
+        [Test]
+        public void SortStringKeys_RandomOrder()
+        {
+            var map = new MapField<string, string> { { "a", "val" }, { "c", "val" }, { "b", "val" } };
+            var sortedList = map.GetSortedListCopy(map.ToList()).ToList();
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            CollectionAssert.AreEqual(new[] { "a", "b", "c" }, sortedKeys);
+        }
+
+        [Test]
+        public void SortStringKeys_EnsureOrdinalSort()
+        {
+            var map = new MapField<string, string>
+            {
+                { "i", "val" } , { "I", "val" }, { "ı", "val" }, { "İ", "val" }
+            };
+            var sortedList = map.GetSortedListCopy(map.ToList());
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            // Assert Ordinal sort  I, i, ı, İ (Non-ordinal sort returns i, I, İ, ı)
+            // I == 0x49 , i == 0x69 , İ == 0x130 , ı == 0x131
+            CollectionAssert.AreEqual(new[] { "I", "i", "İ", "ı" }, sortedKeys);
+        }
+
+        [Test]
+        public void SortBoolKeys()
+        {
+            var map = new MapField<bool, string>
+            {
+                { true, "val" } , { false, "val" }
+            };
+            var sortedList = map.GetSortedListCopy(map.ToList());
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            CollectionAssert.AreEqual(new[] { false, true }, sortedKeys);
+        }
+
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {
             return new KeyValuePair<TKey, TValue>(key, value);

@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use googletest::prelude::*;
+
 #[test]
 fn test_canonical_types() {
     let _child = child_proto::child_package::Child::new();
@@ -17,10 +19,10 @@ fn test_canonical_types() {
 
 #[test]
 fn test_parent_serialization() {
-    assert_eq!(*parent_proto::parent_package::Parent::new().serialize(), []);
+    assert_that!(*parent_proto::parent_package::Parent::new().serialize(), empty());
 }
 
 #[test]
 fn test_child_serialization() {
-    assert_eq!(*child_proto::child_package::Child::new().serialize(), []);
+    assert_that!(*child_proto::child_package::Child::new().serialize(), empty());
 }

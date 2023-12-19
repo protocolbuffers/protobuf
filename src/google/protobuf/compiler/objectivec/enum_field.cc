@@ -16,6 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -28,14 +29,17 @@ namespace {
 
 void SetEnumVariables(
     const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   const std::string type = EnumName(descriptor->enum_type());
   const std::string enum_desc_func = absl::StrCat(type, "_EnumDescriptor");
   (*variables)["enum_name"] = type;
-  // For non repeated fields, if it was defined in a different file, the
-  // property decls need to use "enum NAME" rather than just "NAME" to support
-  // the forward declaration of the enums.
-  if (!descriptor->is_repeated() &&
+  // When using fwd decls, for non repeated fields, if it was defined in a
+  // different file, the property decls need to use "enum NAME" rather than just
+  // "NAME" to support the forward declaration of the enums.
+  if (generation_options.headers_use_forward_declarations &&
+      !descriptor->is_repeated() &&
+      !IsProtobufLibraryBundledProtoFile(descriptor->enum_type()->file()) &&
       (descriptor->file() != descriptor->enum_type()->file())) {
     (*variables)["property_type"] = absl::StrCat("enum ", type, " ");
   }
@@ -50,9 +54,11 @@ void SetEnumVariables(
 }
 }  // namespace
 
-EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
-    : SingleFieldGenerator(descriptor) {
-  SetEnumVariables(descriptor, &variables_);
+EnumFieldGenerator::EnumFieldGenerator(
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : SingleFieldGenerator(descriptor, generation_options) {
+  SetEnumVariables(descriptor, generation_options, &variables_);
 }
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
@@ -125,9 +131,10 @@ void EnumFieldGenerator::DetermineNeededFiles(
 }
 
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
-  SetEnumVariables(descriptor, &variables_);
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {
+  SetEnumVariables(descriptor, generation_options, &variables_);
 }
 
 void RepeatedEnumFieldGenerator::EmitArrayComment(io::Printer* printer) const {

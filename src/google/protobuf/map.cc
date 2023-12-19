@@ -35,7 +35,7 @@ NodeBase* UntypedMapBase::DestroyTree(Tree* tree) {
   return head;
 }
 
-void UntypedMapBase::EraseFromTree(size_type b,
+void UntypedMapBase::EraseFromTree(map_index_t b,
                                    typename Tree::iterator tree_it) {
   ABSL_DCHECK(TableEntryIsTree(b));
   Tree* tree = TableEntryToTree(table_[b]);
@@ -50,11 +50,11 @@ void UntypedMapBase::EraseFromTree(size_type b,
   }
 }
 
-size_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
+map_index_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
   return BucketNumberFromHash(key.Hash());
 }
 
-void UntypedMapBase::InsertUniqueInTree(size_type b, GetKey get_key,
+void UntypedMapBase::InsertUniqueInTree(map_index_t b, GetKey get_key,
                                         NodeBase* node) {
   if (TableEntryIsNonEmptyList(b)) {
     // To save in binary size, we delegate to an out-of-line function to do
@@ -81,7 +81,7 @@ void UntypedMapBase::TransferTree(Tree* tree, GetKey get_key) {
   do {
     NodeBase* next = node->next;
 
-    size_type b = VariantBucketNumber(get_key(node));
+    map_index_t b = VariantBucketNumber(get_key(node));
     // This is similar to InsertUnique, but with erasure.
     if (TableEntryIsEmpty(b)) {
       InsertUniqueInList(b, node);
@@ -122,8 +122,8 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   if (alloc_.arena() == nullptr) {
     const auto loop = [=](auto destroy_node) {
       const TableEntryPtr* table = table_;
-      for (size_type b = index_of_first_non_null_, end = num_buckets_; b < end;
-           ++b) {
+      for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
+           b < end; ++b) {
         NodeBase* node =
             PROTOBUF_PREDICT_FALSE(internal::TableEntryIsTree(table[b]))
                 ? DestroyTree(TableEntryToTree(table[b]))
@@ -187,7 +187,7 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   }
 }
 
-auto UntypedMapBase::FindFromTree(size_type b, VariantKey key,
+auto UntypedMapBase::FindFromTree(map_index_t b, VariantKey key,
                                   Tree::iterator* it) const -> NodeAndBucket {
   Tree* tree = TableEntryToTree(table_[b]);
   auto tree_it = tree->find(key);
@@ -206,7 +206,7 @@ size_t UntypedMapBase::SpaceUsedInTable(size_t sizeof_node) const {
   size += sizeof_node * num_elements_;
   // For each tree, count the overhead of those nodes.
   // Two buckets at a time because we only care about trees.
-  for (size_t b = 0; b < num_buckets_; ++b) {
+  for (map_index_t b = 0; b < num_buckets_; ++b) {
     if (TableEntryIsTree(b)) {
       size += sizeof(Tree);
       size += sizeof(Tree::value_type) * TableEntryToTree(table_[b])->size();

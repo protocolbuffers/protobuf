@@ -6,18 +6,18 @@ load("//python:internal.bzl", "internal_py_test")
 
 # TODO: b/278896688 - Remove this target and replace with py_library
 exports_files([
-  "__init__.py",
-  "numpy_test.py",
+    "__init__.py",
+    "numpy_test.py",
 ])
 
 internal_py_test(
     name = "numpy_test",
     srcs = ["numpy_test.py"],
+    visibility = [
+        "//python:__pkg__",
+        "//python/pb_unit_tests:__pkg__",
+    ],
     deps = [
         requirement("numpy"),
     ],
-    visibility = [
-      "//python:__pkg__",
-      "//upb/python/pb_unit_tests:__pkg__",
-    ]
 )

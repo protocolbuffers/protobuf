@@ -42,8 +42,8 @@ genrule(
         for wkt in _OBJC_WKT_NAMES
         for ext in _OBJC_EXTS
     ]),
-    tools = ["//:protoc"],
     tags = ["manual"],
+    tools = ["//:protoc"],
 )
 
 staleness_test(
@@ -160,6 +160,7 @@ objc_library(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_objc.txt",
+    maximum_edition = "2023",
     target_compatible_with = ["@platforms//os:macos"],
     testee = "//conformance:conformance_objc",
 )

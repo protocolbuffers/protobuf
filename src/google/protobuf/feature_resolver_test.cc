@@ -216,9 +216,9 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
           pool.FindMessageTypeByName("google.protobuf.FeatureSet"),
           {pool.FindExtensionByName("pb.test")}, EDITION_2023, EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 1);
-  ASSERT_EQ(defaults->defaults().at(0).edition_enum(), EDITION_2023);
-  FeatureSet merged = defaults->defaults().at(0).features();
+  ASSERT_EQ(defaults->defaults().size(), 3);
+  ASSERT_EQ(defaults->defaults().at(2).edition(), EDITION_2023);
+  FeatureSet merged = defaults->defaults().at(2).features();
 
   EXPECT_EQ(merged.field_presence(), FeatureSet::EXPLICIT);
   EXPECT_TRUE(merged.HasExtension(pb::test));
@@ -232,7 +232,7 @@ TEST(FeatureResolverTest, DefaultsTooEarly) {
                                        {GetExtension(pb::test)}, EDITION_2023,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  defaults->set_minimum_edition_enum(EDITION_1_TEST_ONLY);
+  defaults->set_minimum_edition(EDITION_1_TEST_ONLY);
   absl::StatusOr<FeatureSet> merged =
       GetDefaults(EDITION_1_TEST_ONLY, *defaults);
   EXPECT_THAT(merged, HasError(AllOf(HasSubstr("No valid default found"),
@@ -298,34 +298,25 @@ TEST(FeatureResolverTest, DefaultsMessageMerge) {
 }
 
 TEST(FeatureResolverTest, CreateFromUnsortedDefaults) {
-  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
-    minimum_edition_enum: EDITION_2_TEST_ONLY
-    maximum_edition_enum: EDITION_99997_TEST_ONLY
-    defaults {
-      edition_enum: EDITION_2_TEST_ONLY
-      features {}
-    }
-    defaults {
-      edition_enum: EDITION_99997_TEST_ONLY
-      features {}
-    }
-    defaults {
-      edition_enum: EDITION_2023
-      features {}
-    }
-  )pb");
+  auto valid_defaults = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {}, EDITION_PROTO2, EDITION_2023);
+  ASSERT_OK(valid_defaults);
+  FeatureSetDefaults defaults = *valid_defaults;
+
+  defaults.mutable_defaults()->SwapElements(0, 1);
+
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(AllOf(HasSubstr("not strictly increasing."),
-                             HasSubstr("Edition 99997_TEST_ONLY is greater "
-                                       "than or equal to edition 2023"))));
+                             HasSubstr("Edition PROTO3 is greater "
+                                       "than or equal to edition PROTO2"))));
 }
 
 TEST(FeatureResolverTest, CreateUnknownEdition) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
-    minimum_edition_enum: EDITION_UNKNOWN
-    maximum_edition_enum: EDITION_99999_TEST_ONLY
+    minimum_edition: EDITION_UNKNOWN
+    maximum_edition: EDITION_99999_TEST_ONLY
     defaults {
-      edition_enum: EDITION_UNKNOWN
+      edition: EDITION_UNKNOWN
       features {}
     }
   )pb");
@@ -335,12 +326,35 @@ TEST(FeatureResolverTest, CreateUnknownEdition) {
 
 TEST(FeatureResolverTest, CreateMissingEdition) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
-    minimum_edition_enum: EDITION_UNKNOWN
-    maximum_edition_enum: EDITION_99999_TEST_ONLY
+    minimum_edition: EDITION_UNKNOWN
+    maximum_edition: EDITION_99999_TEST_ONLY
     defaults { features {} }
   )pb");
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(HasSubstr("Invalid edition UNKNOWN")));
+}
+
+TEST(FeatureResolverTest, CreateUnknownEnumFeature) {
+  auto valid_defaults = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(), {}, EDITION_2023, EDITION_2023);
+  ASSERT_OK(valid_defaults);
+
+  // Use reflection to make sure we validate every enum feature in FeatureSet.
+  const Descriptor& descriptor = *FeatureSet::descriptor();
+  for (int i = 0; i < descriptor.field_count(); ++i) {
+    const FieldDescriptor& field = *descriptor.field(i);
+
+    FeatureSetDefaults defaults = *valid_defaults;
+    FeatureSet* features =
+        defaults.mutable_defaults()->Mutable(0)->mutable_features();
+    const Reflection& reflection = *features->GetReflection();
+
+    // Clear the feature, which should be invalid.
+    reflection.ClearField(features, &field);
+    EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
+                HasError(AllOf(HasSubstr(field.name()),
+                               HasSubstr("must resolve to a known value"))));
+  }
 }
 
 TEST(FeatureResolverTest, CompileDefaultsMissingDescriptor) {
@@ -469,51 +483,26 @@ TEST(FeatureResolverTest, MergeFeaturesParentOverrides) {
   EXPECT_EQ(ext.enum_field_feature(), pb::TestFeatures::ENUM_VALUE4);
 }
 
-TEST(FeatureResolverTest, MergeFeaturesFieldPresenceUnknown) {
+TEST(FeatureResolverTest, MergeFeaturesUnknownEnumFeature) {
   absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
   ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    field_presence: FIELD_PRESENCE_UNKNOWN
-  )pb");
-  EXPECT_THAT(
-      resolver->MergeFeatures(FeatureSet(), child),
-      HasError(AllOf(HasSubstr("field google.protobuf.FeatureSet.field_presence"),
-                     HasSubstr("FIELD_PRESENCE_UNKNOWN"))));
-}
 
-TEST(FeatureResolverTest, MergeFeaturesEnumTypeUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    enum_type: ENUM_TYPE_UNKNOWN
-  )pb");
-  EXPECT_THAT(resolver->MergeFeatures(FeatureSet(), child),
-              HasError(AllOf(HasSubstr("field google.protobuf.FeatureSet.enum_type"),
-                             HasSubstr("ENUM_TYPE_UNKNOWN"))));
-}
+  // Use reflection to make sure we validate every enum feature in FeatureSet.
+  const Descriptor& descriptor = *FeatureSet::descriptor();
+  for (int i = 0; i < descriptor.field_count(); ++i) {
+    const FieldDescriptor& field = *descriptor.field(i);
 
-TEST(FeatureResolverTest, MergeFeaturesRepeatedFieldEncodingUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    repeated_field_encoding: REPEATED_FIELD_ENCODING_UNKNOWN
-  )pb");
-  EXPECT_THAT(resolver->MergeFeatures(FeatureSet(), child),
-              HasError(AllOf(
-                  HasSubstr("field google.protobuf.FeatureSet.repeated_field_encoding"),
-                  HasSubstr("REPEATED_FIELD_ENCODING_UNKNOWN"))));
-}
+    FeatureSet features;
+    const Reflection& reflection = *features.GetReflection();
 
-TEST(FeatureResolverTest, MergeFeaturesMessageEncodingUnknown) {
-  absl::StatusOr<FeatureResolver> resolver = SetupFeatureResolver(EDITION_2023);
-  ASSERT_OK(resolver);
-  FeatureSet child = ParseTextOrDie(R"pb(
-    message_encoding: MESSAGE_ENCODING_UNKNOWN
-  )pb");
-  EXPECT_THAT(
-      resolver->MergeFeatures(FeatureSet(), child),
-      HasError(AllOf(HasSubstr("field google.protobuf.FeatureSet.message_encoding"),
-                     HasSubstr("MESSAGE_ENCODING_UNKNOWN"))));
+    // Set the feature to a value of 0, which is unknown by convention.
+    reflection.SetEnumValue(&features, &field, 0);
+    EXPECT_THAT(
+        resolver->MergeFeatures(FeatureSet(), features),
+        HasError(AllOf(
+            HasSubstr(field.name()), HasSubstr("must resolve to a known value"),
+            HasSubstr(field.enum_type()->FindValueByNumber(0)->name()))));
+  }
 }
 
 TEST(FeatureResolverTest, MergeFeaturesExtensionEnumUnknown) {
@@ -644,7 +633,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidWithExtensions) {
     extend Foo {
       optional Foo bar2 = 1 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2023, value: "" }
+        edition_defaults = { edition: EDITION_2023, value: "" }
       ];
     }
   )schema");
@@ -670,11 +659,11 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidWithOneof) {
       oneof x {
         int32 int_field = 1 [
           targets = TARGET_TYPE_FIELD,
-          edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+          edition_defaults = { edition: EDITION_2023, value: "1" }
         ];
         string string_field = 2 [
           targets = TARGET_TYPE_FIELD,
-          edition_defaults = { edition_enum: EDITION_2023, value: "'hello'" }
+          edition_defaults = { edition: EDITION_2023, value: "'hello'" }
         ];
       }
     }
@@ -700,7 +689,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidWithRequired) {
     message Foo {
       required int32 required_field = 1 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2023, value: "" }
+        edition_defaults = { edition: EDITION_2023, value: "" }
       ];
     }
   )schema");
@@ -725,7 +714,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidWithRepeated) {
     message Foo {
       repeated int32 repeated_field = 1 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_2023, value: "1" }
       ];
     }
   )schema");
@@ -749,7 +738,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidWithMissingTarget) {
     }
     message Foo {
       optional int32 int_field = 1 [
-        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_2023, value: "1" }
       ];
     }
   )schema");
@@ -778,7 +767,7 @@ TEST_F(FeatureResolverPoolTest,
       }
       optional MessageFeature message_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2023, value: "9987" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "9987" }
       ];
     }
   )schema");
@@ -807,9 +796,10 @@ TEST_F(FeatureResolverPoolTest,
       }
       optional MessageFeature message_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_99998_TEST_ONLY, value: "int_field: 2" },
-        edition_defaults = { edition_enum: EDITION_99997_TEST_ONLY, value: "int_field: 1" },
-        edition_defaults = { edition_enum: EDITION_2023, value: "9987" }
+        edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "int_field: 2" },
+        edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "int_field: 1" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "" },
+        edition_defaults = { edition: EDITION_2023, value: "9987" }
       ];
     }
   )schema");
@@ -838,9 +828,10 @@ TEST_F(FeatureResolverPoolTest,
       }
       optional MessageFeature message_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_99997_TEST_ONLY, value: "int_field: 2" },
-        edition_defaults = { edition_enum: EDITION_2023, value: "int_field: 1" },
-        edition_defaults = { edition_enum: EDITION_99998_TEST_ONLY, value: "9987" }
+        edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "int_field: 2" },
+        edition_defaults = { edition: EDITION_2023, value: "int_field: 1" },
+        edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "9987" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "" }
       ];
     }
   )schema");
@@ -870,7 +861,7 @@ TEST_F(FeatureResolverPoolTest,
     message Foo {
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2023, value: "1.23" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "1.23" }
       ];
     }
   )schema");
@@ -896,8 +887,8 @@ TEST_F(FeatureResolverPoolTest,
     message Foo {
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_99997_TEST_ONLY, value: "1.5" },
-        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "1.5" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "1" }
       ];
     }
   )schema");
@@ -926,7 +917,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidDefaultsTooEarly) {
     message Foo {
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2_TEST_ONLY, value: "1" }
+        edition_defaults = { edition: EDITION_2_TEST_ONLY, value: "1" }
       ];
     }
   )schema");
@@ -951,7 +942,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumTooEarly) {
     message Foo {
       optional int32 int_field_feature = 12 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_PROTO2, value: "1" }
       ];
     }
   )schema");
@@ -976,8 +967,9 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
     message Foo {
       optional int32 int_file_feature = 1 [
         targets = TARGET_TYPE_FIELD,
-        edition_defaults = { edition_enum: EDITION_99998_TEST_ONLY, value: "2" },
-        edition_defaults = { edition_enum: EDITION_2023, value: "1" }
+        edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "2" },
+        edition_defaults = { edition: EDITION_2023, value: "1" },
+        edition_defaults = { edition: EDITION_PROTO2, value: "0" }
       ];
     }
   )schema");
@@ -989,25 +981,51 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   ASSERT_OK(defaults);
 
   EXPECT_THAT(*defaults, EqualsProto(R"pb(
-    minimum_edition_enum: EDITION_99997_TEST_ONLY
-    maximum_edition_enum: EDITION_99999_TEST_ONLY
+    minimum_edition: EDITION_99997_TEST_ONLY
+    maximum_edition: EDITION_99999_TEST_ONLY
     defaults {
-      edition_enum: EDITION_2023
+      edition: EDITION_PROTO2
+      features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        [pb.test] { int_file_feature: 0 }
+      }
+    }
+    defaults {
+      edition: EDITION_PROTO3
+      features {
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { int_file_feature: 0 }
+      }
+    }
+    defaults {
+      edition: EDITION_2023
       features {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.test] { int_file_feature: 1 }
       }
     }
     defaults {
-      edition_enum: EDITION_99998_TEST_ONLY
+      edition: EDITION_99998_TEST_ONLY
       features {
         field_presence: EXPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.test] { int_file_feature: 2 }

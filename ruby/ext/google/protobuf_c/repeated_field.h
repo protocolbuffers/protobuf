@@ -35,4 +35,7 @@ extern VALUE cRepeatedField;
 // Call at startup to register all types in this module.
 void RepeatedField_register(VALUE module);
 
+// Recursively freeze RepeatedField.
+VALUE RepeatedField_internal_deep_freeze(VALUE _self);
+
 #endif  // RUBY_PROTOBUF_REPEATED_FIELD_H_

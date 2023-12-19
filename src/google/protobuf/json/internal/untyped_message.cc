@@ -197,6 +197,10 @@ PROTOBUF_NOINLINE static absl::Status MakeInvalidLengthDelimType(
       field_number));
 }
 
+PROTOBUF_NOINLINE static absl::Status MakeTooDeepError() {
+  return absl::InvalidArgumentError("allowed depth exceeded");
+}
+
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
   while (true) {
@@ -296,7 +300,7 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
 
         UntypedMessage group(*group_desc);
         RETURN_IF_ERROR(group.Decode(stream, field_number));
-        RETURN_IF_ERROR(InsertField<UntypedMessage>(*field, std::move(group)));
+        RETURN_IF_ERROR(InsertField(*field, std::move(group)));
         break;
       }
       case WireFormatLite::WIRETYPE_END_GROUP:
@@ -447,6 +451,9 @@ absl::Status UntypedMessage::Decode32Bit(io::CodedInputStream& stream,
 
 absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
                                              const ResolverPool::Field& field) {
+  if (!stream.IncrementRecursionDepth()) {
+    return MakeTooDeepError();
+  }
   auto limit = stream.ReadLengthAndPushLimit();
   if (limit == 0) {
     return MakeUnexpectedEofError();
@@ -466,7 +473,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
         }
       }
 
-      RETURN_IF_ERROR(InsertField<std::string>(field, std::move(buf)));
+      RETURN_IF_ERROR(InsertField(field, std::move(buf)));
       break;
     }
     case Field::TYPE_MESSAGE: {
@@ -475,7 +482,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
 
       auto inner = ParseFromStream(*inner_desc, stream);
       RETURN_IF_ERROR(inner.status());
-      RETURN_IF_ERROR(InsertField<UntypedMessage>(field, std::move(*inner)));
+      RETURN_IF_ERROR(InsertField(field, std::move(*inner)));
       break;
     }
     default: {
@@ -510,15 +517,15 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       break;
     }
   }
-  stream.PopLimit(limit);
+  stream.DecrementRecursionDepthAndPopLimit(limit);
   return absl::OkStatus();
 }
 
 template <typename T>
 absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
-                                         T value) {
+                                         T&& value) {
   int32_t number = field.proto().number();
-  auto emplace_result = fields_.try_emplace(number, std::move(value));
+  auto emplace_result = fields_.try_emplace(number, std::forward<T>(value));
   if (emplace_result.second) {
     return absl::OkStatus();
   }
@@ -530,17 +537,18 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
   }
 
   Value& slot = emplace_result.first->second;
-  if (auto* extant = absl::get_if<T>(&slot)) {
-    std::vector<T> repeated;
+  using value_type = std::decay_t<T>;
+  if (auto* extant = absl::get_if<value_type>(&slot)) {
+    std::vector<value_type> repeated;
     repeated.push_back(std::move(*extant));
-    repeated.push_back(std::move(value));
+    repeated.push_back(std::forward<T>(value));
 
     slot = std::move(repeated);
-  } else if (auto* extant = absl::get_if<std::vector<T>>(&slot)) {
-    extant->push_back(std::move(value));
+  } else if (auto* extant = absl::get_if<std::vector<value_type>>(&slot)) {
+    extant->push_back(std::forward<T>(value));
   } else {
     absl::optional<absl::string_view> name =
-        google::protobuf::internal::RttiTypeName<T>();
+        google::protobuf::internal::RttiTypeName<value_type>();
     if (!name.has_value()) {
       name = "<unknown>";
     }

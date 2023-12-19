@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
@@ -50,10 +50,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
       - name: Cross compile protoc for i386
         id: cross-compile
@@ -68,9 +67,10 @@ jobs:
         with:
           image: i386/ruby:2.7.3-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          # Pin to Ruby 2.7 compatible bundler version.
           command: >-
             /bin/bash -cex '
-            gem install bundler;
+            gem install bundler -v 2.4.22;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -99,9 +99,10 @@ jobs:
         with:
           image: arm64v8/ruby:2.7.3-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          # Pin to Ruby 2.7 compatible bundler version.
           command: >-
             /bin/bash -cex '
-            gem install bundler;
+            gem install bundler -v 2.4.22;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -129,7 +130,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -167,7 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests

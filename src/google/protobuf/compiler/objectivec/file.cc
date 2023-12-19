@@ -22,6 +22,8 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -31,7 +33,6 @@
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -119,10 +120,10 @@ void MakeDescriptors(
     std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
     std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
     std::vector<std::unique_ptr<MessageGenerator>>* message_generators,
-    bool strip_custom_options) {
+    const GenerationOptions& generation_options) {
   for (int i = 0; i < descriptor->enum_type_count(); i++) {
-    enum_generators->emplace_back(
-        std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
+    enum_generators->emplace_back(std::make_unique<EnumGenerator>(
+        descriptor->enum_type(i), generation_options));
   }
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     const Descriptor* message_type = descriptor->nested_type(i);
@@ -132,13 +133,33 @@ void MakeDescriptors(
       continue;
     }
     message_generators->emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name, message_type));
-    message_generators->back()->AddExtensionGenerators(extension_generators,
-                                                       strip_custom_options);
+        file_description_name, message_type, generation_options));
+    message_generators->back()->AddExtensionGenerators(extension_generators);
     MakeDescriptors(message_type, file_description_name, enum_generators,
                     extension_generators, message_generators,
-                    strip_custom_options);
+                    generation_options);
   }
+}
+
+void EmitLinkWKTs(absl::string_view name, io::Printer* p) {
+  absl::string_view::size_type last_slash = name.rfind('/');
+  std::string basename;
+  if (last_slash == absl::string_view::npos) {
+    basename = std::string(name);
+  } else {
+    basename = std::string(name.substr(last_slash + 1));
+  }
+
+  p->Emit({{"basename", StripProto(basename)}},
+          R"objc(
+            // This is to help make sure that the GPBWellKnownTypes.* categories get linked and
+            // developers do not have to use the `-ObjC` linker flag. More information
+            // here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
+            __attribute__((used)) static NSString* $basename$_importCategories () {
+              return GPBWellKnownTypesErrorDomain;
+            }
+          )objc");
+  p->Emit("\n");
 }
 
 void EmitSourceFwdDecls(const absl::btree_set<std::string>& fwd_decls,
@@ -253,15 +274,15 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       file_description_name_(FileClassName(file) + "_FileDescription"),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
-    enum_generators_.emplace_back(
-        std::make_unique<EnumGenerator>(file_->enum_type(i)));
+    enum_generators_.emplace_back(std::make_unique<EnumGenerator>(
+        file_->enum_type(i), generation_options));
   }
   for (int i = 0; i < file_->extension_count(); i++) {
     const FieldDescriptor* extension = file_->extension(i);
     if (!generation_options.strip_custom_options ||
         !ExtensionIsCustomOption(extension)) {
-      extension_generators_.push_back(
-          std::make_unique<ExtensionGenerator>(root_class_name_, extension));
+      extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
+          root_class_name_, extension, generation_options));
     }
   }
   file_scoped_extension_count_ = extension_generators_.size();
@@ -273,12 +294,11 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       continue;
     }
     message_generators_.emplace_back(std::make_unique<MessageGenerator>(
-        file_description_name_, message_type));
-    message_generators_.back()->AddExtensionGenerators(
-        &extension_generators_, generation_options.strip_custom_options);
+        file_description_name_, message_type, generation_options));
+    message_generators_.back()->AddExtensionGenerators(&extension_generators_);
     MakeDescriptors(message_type, file_description_name_, &enum_generators_,
                     &extension_generators_, &message_generators_,
-                    generation_options.strip_custom_options);
+                    generation_options);
   }
 }
 
@@ -388,6 +408,10 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
     EmitRootImplementation(p, deps_with_extensions);
     EmitFileDescription(p);
 
+    if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
+      EmitLinkWKTs(file_->name(), p);
+    }
+
     for (const auto& generator : enum_generators_) {
       generator->GenerateSource(p);
     }
@@ -398,6 +422,8 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
@@ -419,6 +445,8 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   // Enum implementation uses atomic in the generated code.
   GeneratedFileOptions file_options;
   file_options.extra_system_headers.push_back("stdatomic.h");
@@ -431,6 +459,8 @@ void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   const auto& generator = message_generators_[idx];
 
   absl::btree_set<std::string> fwd_decls;
@@ -488,6 +518,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       break;
     case GeneratedFileType::kSource:
       import_writer.AddRuntimeImport("GPBProtocolBuffers_RuntimeSupport.h");
+      if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
+        import_writer.AddRuntimeImport("GPBWellKnownTypes.h");
+      }
       import_writer.AddFile(file_, header_extension);
       if (HeadersUseForwardDeclarations()) {
         if (generation_options_.generate_minimal_imports) {
@@ -744,17 +777,17 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
     // mode.
     syntax = "GPBFileSyntaxUnknown";
   } else {
-    switch (FileDescriptorLegacy(file_).syntax()) {
-      case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
+    switch (file_->edition()) {
+      case Edition::EDITION_UNKNOWN:
         syntax = "GPBFileSyntaxUnknown";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
+      case Edition::EDITION_PROTO2:
         syntax = "GPBFileSyntaxProto2";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
+      case Edition::EDITION_PROTO3:
         syntax = "GPBFileSyntaxProto3";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
+      default:
         syntax = "GPBFileSyntaxProtoEditions";
         break;
     }

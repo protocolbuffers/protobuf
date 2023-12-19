@@ -177,7 +177,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
    */
   @SuppressWarnings("unchecked")
   static <K, V> Map<K, V> copy(Map<K, V> map) {
-    Map<K, V> result = new LinkedHashMap<K, V>();
+    Map<K, V> result = new LinkedHashMap<K, V>(map.size() * 4 / 3 + 1);
     for (Map.Entry<K, V> entry : map.entrySet()) {
       result.put(entry.getKey(), (V) copy(entry.getValue()));
     }

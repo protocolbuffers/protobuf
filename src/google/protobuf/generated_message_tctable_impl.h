@@ -390,9 +390,13 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* ReflectionFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL);
 
+  PROTOBUF_NOINLINE
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,
                                const TcParseTableBase* table);
+  static const char* ParseLoopInlined(MessageLite* msg, const char* ptr,
+                                      ParseContext* ctx,
+                                      const TcParseTableBase* table);
 
   // Functions referenced by generated fast tables (numeric types):
   //   F: fixed      V: varint     Z: zigzag
@@ -401,52 +405,52 @@ class PROTOBUF_EXPORT TcParser final {
   //   1/2: tag length (bytes)
 
   // Fixed:
-  static const char* FastF32S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF32S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF32R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF32R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF32P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF32P2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF64S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF64S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF64R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF64R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF64P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastF64P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF32S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF32S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF32R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF32R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF32P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF32P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF64S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF64S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF64R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF64R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF64P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastF64P2(PROTOBUF_TC_PARAM_DECL);
 
   // Varint:
-  static const char* FastV8S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV8S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV8R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV8R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV8P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV8P2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV32S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV32S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV32R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV32R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV32P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV32P2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV64S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV64S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV64R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV64R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV64P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastV64P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV8S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV8S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV8R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV8R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV8P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV8P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV32S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV32S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV32R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV32R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV32P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV32P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV64S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV64S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV64R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV64R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV64P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastV64P2(PROTOBUF_TC_PARAM_DECL);
 
   // Varint (with zigzag):
-  static const char* FastZ32S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ32S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ32R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ32R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ32P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ32P2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ64S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ64S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ64R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ64R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ64P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastZ64P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ32S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ32S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ32R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ32R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ32P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ32P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ64S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ64S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ64R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ64R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ64P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastZ64P2(PROTOBUF_TC_PARAM_DECL);
 
   template <typename FieldType, int unused_data_offset, int unused_hasbit_idx>
   static constexpr TailCallParseFunc SingularVarintNoZag1() {
@@ -470,89 +474,89 @@ class PROTOBUF_EXPORT TcParser final {
   //   r: enum range  v: enum validator (ValidateEnum function)
   //   S: singular   R: repeated   P: packed
   //   1/2: tag length (bytes)
-  static const char* FastErS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastErS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastErR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastErR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastErP1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastErP2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEvS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEvS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEvR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEvR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEvP1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEvP2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastErS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastErS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastErR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastErR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastErP1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastErP2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEvS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEvS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEvR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEvR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEvP1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEvP2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastEr0S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr0S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr0R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr0R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr0P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr0P2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr1S1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr1S2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr1R1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr1R2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr1P1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEr1P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr0S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr0S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr0R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr0R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr0P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr0P2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr1S1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr1S2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr1R1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr1R2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr1P1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEr1P2(PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (string types):
   //   B: bytes      S: string     U: UTF-8 string
   //   (empty): ArenaStringPtr     i: InlinedString
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
-  static const char* FastBS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastSS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastSS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastSR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastSR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastSS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastSS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastSR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastSR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUR2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastBiS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBiS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastSiS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastSiS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUiS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUiS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBiS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBiS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastSiS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastSiS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUiS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUiS2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastBcS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastBcS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastScS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastScS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUcS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastUcS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBcS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastBcS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastScS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastScS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUcS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastUcS2(PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group
   //   d: default*   t: TcParseTable* (the contents of aux)  l: lazy
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
-  static const char* FastMdS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMdS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGdS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGdS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMtS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMtS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGtS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGtS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMdS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMdS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGdS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGdS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMtS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMtS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGtS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGtS2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastMdR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMdR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGdR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGdR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMtR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMtR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGtR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGtR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMdR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMdR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGdR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGdR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMtR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMtR2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGtR1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastGtR2(PROTOBUF_TC_PARAM_DECL);
 
-  static const char* FastMlS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMlS2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMlS1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastMlS2(PROTOBUF_TC_PARAM_DECL);
 
   // NOTE: Do not dedup RefAt by having one call the other with a const_cast. It
   // causes ICEs of gcc 7.5.
@@ -598,7 +602,7 @@ class PROTOBUF_EXPORT TcParser final {
     if (!is_split) return RefAt<T>(x, offset);
     void*& ptr = RefAt<void*>(x, offset);
     if (ptr == DefaultRawPtr()) {
-      ptr = Arena::CreateMessage<T>(msg->GetArenaForAllocation());
+      ptr = Arena::CreateMessage<T>(msg->GetArena());
     }
     return *static_cast<T*>(ptr);
   }
@@ -632,10 +636,11 @@ class PROTOBUF_EXPORT TcParser final {
   // NOTE: Currently, this function only calls the table-level fallback
   // function, so it should only be called as the fallback from fast table
   // parsing.
+  PROTOBUF_NOINLINE
   static const char* MiniParse(PROTOBUF_TC_PARAM_NO_DATA_DECL);
 
-  static const char* FastEndG1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastEndG2(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEndG1(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* FastEndG2(PROTOBUF_TC_PARAM_DECL);
 
   // For `map` mini parsing generate a type card for the key/value.
   template <typename MapField>
@@ -682,6 +687,7 @@ class PROTOBUF_EXPORT TcParser final {
     const TcParseTableBase::FieldEntry* found_entry;
     const char* ptr;
   };
+  PROTOBUF_NOINLINE
   static TestMiniParseResult TestMiniParse(PROTOBUF_TC_PARAM_DECL);
   template <bool export_called_function>
   static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
@@ -709,9 +715,11 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* TagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
   static const char* ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
   static const char* ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_DECL);
-  static const char* Error(PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  PROTOBUF_NOINLINE static const char* Error(PROTOBUF_TC_PARAM_NO_DATA_DECL);
 
+  PROTOBUF_NOINLINE
   static const char* FastUnknownEnumFallback(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE
   static const char* MpUnknownEnumFallback(PROTOBUF_TC_PARAM_DECL);
 
   class ScopedArenaSwap;
@@ -794,7 +802,8 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Helper for ints > 127:
   template <typename FieldType, typename TagType, bool zigzag = false>
-  static const char* SingularVarBigint(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* SingularVarBigint(
+      PROTOBUF_TC_PARAM_DECL);
 
   // Implementations for fast enum field parsing functions:
   template <typename TagType, uint16_t xform_val>
@@ -821,6 +830,7 @@ class PROTOBUF_EXPORT TcParser final {
       const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
       RepeatedPtrField<std::string>& field);
 
+  PROTOBUF_NOINLINE
   static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,
                              uint32_t tag, int32_t enum_value);
 
@@ -833,6 +843,7 @@ class PROTOBUF_EXPORT TcParser final {
                                      UntypedMapBase& map,
                                      const TcParseTableBase::FieldAux* aux,
                                      bool is_key);
+  PROTOBUF_NOINLINE
   static void DestroyMapNode(NodeBase* node, MapAuxInfo map_info,
                              UntypedMapBase& map);
   static const char* ParseOneMapEntry(NodeBase* node, const char* ptr,
@@ -873,33 +884,33 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Mini parsing:
   template <bool is_split>
-  static const char* MpVarint(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpVarint(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split, typename FieldType, uint16_t xform_val>
   static const char* MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpPackedVarint(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpPackedVarint(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split, typename FieldType, uint16_t xform_val>
   static const char* MpPackedVarintT(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpFixed(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpFixed(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpPackedFixed(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpPackedFixed(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpString(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpString(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpRepeatedString(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpRepeatedString(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split, bool is_group>
   static const char* MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL);
   static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
-  static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>
-  static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
 };
 
 // Dispatch to the designated parse function
@@ -934,6 +945,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
   SyncHasbits(msg, hasbits, table);
   return ptr;
 }
+
+// Prints the type card as or of labels, using known higher level labels.
+// Used for code generation, but also useful for debugging.
+PROTOBUF_EXPORT std::string TypeCardToString(uint16_t type_card);
 
 }  // namespace internal
 }  // namespace protobuf

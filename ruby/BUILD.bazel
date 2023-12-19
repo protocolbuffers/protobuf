@@ -6,10 +6,10 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("//build_defs:internal_shell.bzl", "inline_sh_binary")
-load("//:protobuf.bzl", "internal_ruby_proto_library")
-load("//conformance:defs.bzl", "conformance_test")
+load("//python:internal.bzl", "internal_copy_files")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
+load("//conformance:defs.bzl", "conformance_test")
 
 ################################################################################
 # Ruby Runtime
@@ -86,6 +86,49 @@ selects.config_setting_group(
     ],
 )
 
+internal_copy_files(
+    name = "copied_wkt_proto_files",
+    srcs = [
+        "//:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf/compiler:plugin.proto",
+    ],
+    strip_prefix = "src",
+)
+
+internal_ruby_proto_library(
+    name = "well_known_ruby_protos",
+    srcs = [":copied_wkt_proto_files"],
+    default_runtime = "",
+    includes = ["."],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__subpackages__",
+    ],
+)
+
+internal_copy_files(
+    name = "copied_conformance_test_files",
+    testonly = 1,
+    srcs = [
+        "//src/google/protobuf:test_messages_proto2.proto",
+        "//src/google/protobuf:test_messages_proto3.proto",
+    ],
+    strip_prefix = "src",
+)
+
+internal_ruby_proto_library(
+    name = "conformance_test_ruby_proto",
+    testonly = 1,
+    srcs = [":copied_conformance_test_files"],
+    includes = ["."],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__subpackages__",
+    ],
+    deps = [":well_known_ruby_protos"],
+)
+
 ruby_library(
     name = "protobuf",
     visibility = [
@@ -100,12 +143,12 @@ ruby_library(
 genrule(
     name = "jruby_release",
     srcs = [
-        "@utf8_range//:utf8_range_srcs",
-        "@utf8_range//:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
         "//ruby/lib/google:copy_jar",
         "//ruby/lib/google:dist_files",
         "//ruby/ext/google/protobuf_c:dist_files",
-        "//:well_known_ruby_protos",
+        ":well_known_ruby_protos",
         "google-protobuf.gemspec",
     ],
     outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + "-java.gem"],
@@ -116,10 +159,10 @@ genrule(
             cp --parents -L "$$src" tmp
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
-        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+        for utf in $(execpaths //third_party/utf8_range:utf8_range_srcs) $(execpath //third_party/utf8_range:LICENSE); do
             mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
-        for wkt in $(execpaths //:well_known_ruby_protos); do
+        for wkt in $(execpaths :well_known_ruby_protos); do
             mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
         done
         mv "tmp/$(execpath //ruby/lib/google:copy_jar)" "tmp/ruby/lib/google"
@@ -139,11 +182,11 @@ genrule(
 genrule(
     name = "ruby_release",
     srcs = [
-        "@utf8_range//:utf8_range_srcs",
-        "@utf8_range//:LICENSE",
-        "//:well_known_ruby_protos",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
+        ":well_known_ruby_protos",
         "google-protobuf.gemspec",
     ],
     outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + ".gem"],
@@ -154,10 +197,10 @@ genrule(
             cp --parents -L "$$src" "tmp"
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
-        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+        for utf in $(execpaths //third_party/utf8_range:utf8_range_srcs) $(execpath //third_party/utf8_range:LICENSE); do
             mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
-        for wkt in $(execpaths //:well_known_ruby_protos); do
+        for wkt in $(execpaths :well_known_ruby_protos); do
             mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
         done
         cd tmp/ruby
@@ -198,7 +241,7 @@ internal_ruby_proto_library(
     visibility = [
         "//ruby:__subpackages__",
     ],
-    deps = ["//:well_known_ruby_protos"],
+    deps = [":well_known_ruby_protos"],
 )
 
 conformance_test(

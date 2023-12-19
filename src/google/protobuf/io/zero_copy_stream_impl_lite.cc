@@ -617,7 +617,7 @@ bool CordOutputStream::Next(void** data, int* size) {
     case State::kFull:
       assert(buffer_.length() > 0);
       cord_.Append(std::move(buffer_));
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case State::kEmpty:
       assert(buffer_.length() == 0);
       buffer_ = absl::CordBuffer::CreateWithDefaultLimit(desired_size);

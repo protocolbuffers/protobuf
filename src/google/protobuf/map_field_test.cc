@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
 #include <memory>
 
 #include <gmock/gmock.h>
@@ -24,6 +25,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -35,27 +37,18 @@ namespace internal {
 
 using unittest::TestAllTypes;
 
-class MapFieldBaseStub : public TypeDefinedMapFieldBase<int32_t, int32_t> {
- public:
-  using InternalArenaConstructable_ = void;
-  typedef void DestructorSkippable_;
-  MapFieldBaseStub() {}
-  virtual ~MapFieldBaseStub() {}
-  explicit MapFieldBaseStub(Arena* arena)
-      : MapFieldBaseStub::TypeDefinedMapFieldBase(arena) {}
-
-  const Message* GetPrototype() const override {
-    return unittest::TestMap_MapInt32Int32Entry_DoNotUse::
-        internal_default_instance();
+struct MapFieldTestPeer {
+  static auto GetArena(const RepeatedPtrFieldBase& v) { return v.GetArena(); }
+  template <typename T>
+  static auto& GetMap(T& t) {
+    return t.map_;
   }
-
-  Arena* GetArenaForInternalRepeatedField() {
-    auto* repeated_field = MutableRepeatedField();
-    return repeated_field->GetArena();
-  }
-
-  using MapFieldBaseStub::TypeDefinedMapFieldBase::map_;
 };
+
+using TestMapField = ::google::protobuf::internal::MapField<
+    unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
@@ -156,20 +149,20 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
-    MapFieldBaseStub* map_field =
-        Arena::CreateMessage<MapFieldBaseStub>(&arena);
+    TestMapField* map_field = Arena::CreateMessage<TestMapField>(&arena);
 
     // Trigger conversion to repeated field.
     EXPECT_TRUE(map_field->MutableRepeatedField() != nullptr);
 
-    EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), &arena);
+    EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()),
+              &arena);
   }
 }
 
 TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
-  std::unique_ptr<MapFieldBaseStub> map_field(
-      Arena::CreateMessage<MapFieldBaseStub>(nullptr));
-  EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), nullptr);
+  std::unique_ptr<TestMapField> map_field(
+      Arena::CreateMessage<TestMapField>(nullptr));
+  EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()), nullptr);
 }
 
 namespace {

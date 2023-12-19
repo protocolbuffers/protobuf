@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -326,6 +327,8 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// A collection to simplify retrieving the field accessor for a particular field.
         /// </summary>
+        [DebuggerDisplay("Count = {InFieldNumberOrder().Count}")]
+        [DebuggerTypeProxy(typeof(FieldCollectionDebugView))]
         public sealed class FieldCollection
         {
             private readonly MessageDescriptor messageDescriptor;
@@ -397,6 +400,19 @@ namespace Google.Protobuf.Reflection
                     }
                     return fieldDescriptor;
                 }
+            }
+
+            private sealed class FieldCollectionDebugView
+            {
+                private readonly FieldCollection collection;
+
+                public FieldCollectionDebugView(FieldCollection collection)
+                {
+                    this.collection = collection;
+                }
+
+                [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+                public FieldDescriptor[] Items => collection.InFieldNumberOrder().ToArray();
             }
         }
     }

@@ -74,6 +74,14 @@ void ZeroCopyBufferedStream::DownRefBuffer() {
     return;
   }
 
+  // If we have hit EOF then that means we might be buffering one or more
+  // chunks of data that we have not yet logically advanced through. We need to
+  // leave the buffer in place to ensure that we do not inadvertently drop such
+  // chunks.
+  if (eof_) {
+    return;
+  }
+
   // The "virtual length" is the size of the buffer cursor_ indexes into, which
   // is bigger than buf_.
   size_t virtual_buf_len = buf_.size() + buffer_start_;

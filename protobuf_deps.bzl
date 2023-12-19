@@ -1,6 +1,7 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
@@ -67,20 +68,12 @@ def protobuf_deps():
             build_file = Label("//:third_party/jsoncpp.BUILD"),
         )
 
-    if not native.existing_rule("utf8_range"):
-        _github_archive(
-            name = "utf8_range",
-            repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
-            sha256 = "568988b5f7261ca181468dba38849fabf59dd9200fb2ed4b2823da187ef84d8c",
-        )
-
     if not native.existing_rule("rules_cc"):
         _github_archive(
             name = "rules_cc",
             repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "818289e5613731ae410efb54218a4077fb9dbb03",
-            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610",
+            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",  # 0.0.9
+            sha256 = "5f862a44bbd032e1b48ed53c9c211ba2a1da60e10c5baa01c97369c249299ecb",
         )
 
     if not native.existing_rule("rules_java"):
@@ -91,27 +84,21 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_proto"):
-        _github_archive(
+        http_archive(
             name = "rules_proto",
-            repo = "https://github.com/bazelbuild/rules_proto",
-            commit = "f7a30f6f80006b591fa7c437fe5a951eb10bcbcf",
-            sha256 = "a4382f78723af788f0bc19fd4c8411f44ffe0a72723670a34692ffad56ada3ac",
+            sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
+            strip_prefix = "rules_proto-5.3.0-21.7",
+            urls = [
+                "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
+            ],
         )
 
     if not native.existing_rule("rules_python"):
-        _github_archive(
+        http_archive(
             name = "rules_python",
-            repo = "https://github.com/bazelbuild/rules_python",
-            commit = "02b521fce3c7b36b05813aa986d72777cc3ee328",  # 0.24.0
-            sha256 = "f9e4f6acf82449324d56669bda4bdb28b48688ad2990d8b39fa5b93ed39c9ad1",
-        )
-
-    if not native.existing_rule("rules_ruby"):
-        _github_archive(
-            name = "rules_ruby",
-            repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "b7f3e9756f3c45527be27bc38840d5a1ba690436",
-            sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+            sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
+            strip_prefix = "rules_python-0.26.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -135,8 +122,8 @@ def protobuf_deps():
     if not native.existing_rule("build_bazel_rules_apple"):
         http_archive(
             name = "build_bazel_rules_apple",
-            sha256 = "f94e6dddf74739ef5cb30f000e13a2a613f6ebfa5e63588305a71fce8a8a9911",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/1.1.3/rules_apple.1.1.3.tar.gz",
+            sha256 = "34c41bfb59cdaea29ac2df5a2fa79e5add609c71bb303b2ebb10985f93fa20e7",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.1.1/rules_apple.3.1.1.tar.gz",
         )
 
     if not native.existing_rule("io_bazel_rules_kotlin"):
@@ -146,10 +133,32 @@ def protobuf_deps():
             sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
         )
 
-    if not native.existing_rule("upb"):
-        http_archive(
-            name = "upb",
-            url = "https://github.com/protocolbuffers/protobuf/archive/7242c3619c6db9843614b2c865681bf397261be8.zip",
-            strip_prefix = "protobuf-7242c3619c6db9843614b2c865681bf397261be8/upb",
-            sha256 = "0fc581f5e5caaf30c7119a73f2cff5d45424e4a4f23a52ebba73e3df031ad1c6",
-        )
+    # Python Downloads
+    python_source_archive(
+        name = "python-3.8.0",
+        sha256 = "f1069ad3cae8e7ec467aa98a6565a62a48ef196cb8f1455a245a08db5e1792df",
+    )
+    python_nuget_package(
+        name = "nuget_python_i686_3.8.0",
+        sha256 = "87a6481f5eef30b42ac12c93f06f73bd0b8692f26313b76a6615d1641c4e7bca",
+    )
+    python_nuget_package(
+        name = "nuget_python_x86-64_3.8.0",
+        sha256 = "96c61321ce90dd053c8a04f305a5f6cc6d91350b862db34440e4a4f069b708a0",
+    )
+    python_nuget_package(
+        name = "nuget_python_i686_3.9.0",
+        sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
+    )
+    python_nuget_package(
+        name = "nuget_python_x86-64_3.9.0",
+        sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
+    )
+    python_nuget_package(
+        name = "nuget_python_i686_3.10.0",
+        sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
+    )
+    python_nuget_package(
+        name = "nuget_python_x86-64_3.10.0",
+        sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
+    )

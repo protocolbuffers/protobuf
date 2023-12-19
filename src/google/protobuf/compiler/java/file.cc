@@ -248,7 +248,7 @@ void FileGenerator::Generate(io::Printer* printer) {
       "filename", file_->name());
   if (options_.opensource_runtime) {
     printer->Print("// Protobuf Java Version: $protobuf_java_version$\n",
-                   "protobuf_java_version", internal::kProtoJavaVersionString);
+                   "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
   }
   if (!java_package_.empty()) {
     printer->Print(
@@ -272,6 +272,14 @@ void FileGenerator::Generate(io::Printer* printer) {
       "classname", classname_, "ctor", classname_);
   printer->Annotate("classname", file_->name());
   printer->Indent();
+
+  if (options_.opensource_runtime) {
+    printer->Print("static {\n");
+    printer->Indent();
+    PrintGencodeVersionValidator(printer);
+    printer->Outdent();
+    printer->Print("}\n");
+  }
 
   // -----------------------------------------------------------------
 
@@ -442,6 +450,13 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
 
+  if (options_.strip_nonfunctional_codegen) {
+    // Skip feature extensions, which are a visible (but non-functional)
+    // deviation between editions and legacy syntax.
+    absl::erase_if(extensions, [](const FieldDescriptor* field) {
+      return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
+    });
+  }
   if (!extensions.empty()) {
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
@@ -608,7 +623,7 @@ static void GenerateSibling(
       "\n",
       "filename", descriptor->file()->name());
   printer.Print("// Protobuf Java Version: $protobuf_java_version$\n",
-                "protobuf_java_version", internal::kProtoJavaVersionString);
+                "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
   if (!java_package.empty()) {
     printer.Print(
         "package $package$;\n"
@@ -744,6 +759,13 @@ void FileGenerator::GenerateKotlinSiblings(
 
 bool FileGenerator::ShouldIncludeDependency(const FileDescriptor* descriptor,
                                             bool immutable_api) {
+  // Skip feature imports, which are a visible (but non-functional) deviation
+  // between editions and legacy syntax.
+  if (options_.strip_nonfunctional_codegen &&
+      IsKnownFeatureProto(descriptor->name())) {
+    return false;
+  }
+
   return true;
 }
 

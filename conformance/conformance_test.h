@@ -14,13 +14,16 @@
 #ifndef CONFORMANCE_CONFORMANCE_TEST_H
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
-#include <functional>
+#include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -129,6 +132,7 @@ class ConformanceTestSuite {
       : verbose_(false),
         performance_(false),
         enforce_recommended_(false),
+        maximum_edition_(Edition::EDITION_PROTO3),
         failure_list_flag_name_("--failure_list") {}
   virtual ~ConformanceTestSuite() {}
 
@@ -144,6 +148,9 @@ class ConformanceTestSuite {
   // See the comments about ConformanceLevel below to learn more about the
   // difference between REQUIRED and RECOMMENDED test cases.
   void SetEnforceRecommended(bool value) { enforce_recommended_ = value; }
+
+  // Sets the maximum edition (inclusive) that should be tests for conformance.
+  void SetMaximumEdition(Edition edition) { maximum_edition_ = edition; }
 
   // Gets the flag name to the failure list file.
   // By default, this would return --failure_list
@@ -198,13 +205,15 @@ class ConformanceTestSuite {
 
     std::unique_ptr<Message> NewTestMessage() const;
 
+    std::string GetSyntaxIdentifier() const;
+
     std::string GetTestName() const;
 
     const conformance::ConformanceRequest& GetRequest() const {
       return request_;
     }
 
-    const ConformanceLevel GetLevel() const { return level_; }
+    ConformanceLevel GetLevel() const { return level_; }
 
     std::string ConformanceLevelToString(ConformanceLevel level) const;
 
@@ -245,9 +254,9 @@ class ConformanceTestSuite {
                       bool need_report_success, bool require_same_wire_format);
 
   void TruncateDebugPayload(std::string* payload);
-  const conformance::ConformanceRequest TruncateRequest(
+  conformance::ConformanceRequest TruncateRequest(
       const conformance::ConformanceRequest& request);
-  const conformance::ConformanceResponse TruncateResponse(
+  conformance::ConformanceResponse TruncateResponse(
       const conformance::ConformanceResponse& response);
 
   void ReportSuccess(const std::string& test_name);
@@ -279,6 +288,7 @@ class ConformanceTestSuite {
   bool verbose_;
   bool performance_;
   bool enforce_recommended_;
+  Edition maximum_edition_;
   std::string output_;
   std::string output_dir_;
   std::string failure_list_flag_name_;

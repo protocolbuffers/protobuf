@@ -960,7 +960,7 @@ const char* WireFormat::_InternalParseAndMergeField(
     case FieldDescriptor::TYPE_STRING:
       utf8_check = true;
       strict_utf8_check = field->requires_utf8_validation();
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
       if (ptr == nullptr) return nullptr;

@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/compiler/code_generator.h"
+
 
 #include <memory>
 
@@ -69,6 +71,8 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       file_options.annotate_code = true;
     } else if (option.first == "annotation_list_file") {
       file_options.annotation_list_file = option.second;
+    } else if (option.first == "experimental_strip_nonfunctional_codegen") {
+      file_options.strip_nonfunctional_codegen = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;

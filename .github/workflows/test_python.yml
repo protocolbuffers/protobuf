@@ -17,10 +17,11 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: ["3.8", "3.9", "3.10", "3.11" ]
+        # TODO: b/309627662 - Add coverage for Python 3.12.
+        version: ["3.8", "3.9", "3.10", "3.11"]
         include:
           - type: Pure
-            targets: //python/... //upb/python/... //python:python_version_test
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=false
           - type: C++
             targets: //python/... //python:python_version_test
@@ -36,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
@@ -46,6 +47,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
+          exclude-targets: -//python/pb_unit_tests/...
 
 
   macos:
@@ -54,10 +56,10 @@ jobs:
       matrix:
         type: [ Pure, C++]
         # TODO Consider expanding this set of versions.
-        version: [ "3.11" ]
+        version: [ "3.12" ]
         include:
           - type: Pure
-            targets: //python/... //upb/python/... //python:python_version_test
+            targets: //python/... //python:python_version_test
           - type: C++
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
@@ -66,7 +68,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -75,6 +77,7 @@ jobs:
         with:
           python-version: ${{ matrix.version }}
           cache: pip
+          cache-dependency-path: 'python/requirements.txt'
 
       - name: Validate version
         run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
@@ -95,3 +98,4 @@ jobs:
             test ${{ matrix.targets }} ${{ matrix.flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
             --macos_minimum_os=10.9
+          exclude-targets: -//python/pb_unit_tests/...

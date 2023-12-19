@@ -16,6 +16,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -36,7 +37,8 @@ std::string SafelyPrintIntToCode(int v) {
 }
 }  // namespace
 
-EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
+EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
+                             const GenerationOptions& generation_options)
     : descriptor_(descriptor), name_(EnumName(descriptor_)) {
   // Track the names for the enum values, and if an alias overlaps a base
   // value, skip making a name for it. Likewise if two alias overlap, the

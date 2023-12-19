@@ -222,6 +222,11 @@ class PROTOC_EXPORT CommandLineInterface {
       const std::string& codegen_name, uint64_t supported_features,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  bool EnforceEditionsSupport(
+      const std::string& codegen_name, uint64_t supported_features,
+      Edition minimum_edition, Edition maximum_edition,
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {

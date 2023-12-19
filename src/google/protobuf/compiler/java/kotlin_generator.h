@@ -13,6 +13,8 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -38,6 +40,15 @@ class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
                 GeneratorContext* context, std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override;
+
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return {GetExtensionReflection(pb::java)};
+  }
+
+  using CodeGenerator::GetResolvedSourceFeatures;
 };
 
 }  // namespace java

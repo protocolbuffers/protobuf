@@ -5,8 +5,8 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//upb/cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 package(
     default_visibility = [
@@ -162,6 +162,7 @@ cc_library(
     copts = COPTS,
     includes = ["wkt"],
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [":protobuf_nowkt"],
 )
@@ -198,7 +199,7 @@ cc_library(
         "port_def.inc",
         "port_undef.inc",
     ],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -212,7 +213,7 @@ cc_library(
     name = "varint_shuffle",
     hdrs = ["varint_shuffle.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -238,6 +239,7 @@ cc_test(
     deps = [
         ":port_def",
         ":varint_shuffle",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -248,7 +250,7 @@ cc_library(
     name = "arena_align",
     srcs = ["arena_align.cc"],
     hdrs = ["arena_align.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -264,7 +266,7 @@ cc_library(
 cc_library(
     name = "arena_cleanup",
     hdrs = ["arena_cleanup.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -278,7 +280,7 @@ cc_library(
 cc_library(
     name = "arena_allocation_policy",
     hdrs = ["arena_allocation_policy.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -291,7 +293,7 @@ cc_library(
 cc_library(
     name = "string_block",
     hdrs = ["string_block.h"],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     deps = [
         ":arena_align",
         "@com_google_absl//absl/base:core_headers",
@@ -320,7 +322,7 @@ cc_library(
         "serial_arena.h",
         "thread_safe_arena.h",
     ],
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -336,6 +338,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/utility:if_constexpr",
     ],
 )
 
@@ -343,7 +346,7 @@ cc_library(
     name = "internal_visibility",
     hdrs = ["internal_visibility.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -355,7 +358,7 @@ cc_library(
     testonly = 1,
     hdrs = ["internal_visibility_for_testing.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -388,6 +391,7 @@ cc_library(
         "arena.h",
         "arenastring.h",
         "arenaz_sampler.h",
+        "descriptor_lite.h",
         "endian.h",
         "explicitly_constructed.h",
         "extension_set.h",
@@ -419,8 +423,8 @@ cc_library(
             "-Wno-error",
         ],
     }),
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -435,7 +439,9 @@ cc_library(
         ":varint_shuffle",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
+        "//third_party/utf8_range:utf8_validity",
         "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/hash",
@@ -446,7 +452,6 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
-        "@utf8_range//:utf8_validity",
     ],
 )
 
@@ -476,11 +481,11 @@ cc_library(
         "wire_format.cc",
     ],
     hdrs = [
+        "cpp_edition_defaults.h",
         "cpp_features.pb.h",
         "descriptor.h",
         "descriptor.pb.h",
         "descriptor_database.h",
-        "descriptor_legacy.h",
         "descriptor_visitor.h",
         "dynamic_message.h",
         "feature_resolver.h",
@@ -505,8 +510,8 @@ cc_library(
         "wire_format.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -519,6 +524,7 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/stubs",
+        "//third_party/utf8_range:utf8_validity",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/base:dynamic_annotations",
         "@com_google_absl//absl/container:btree",
@@ -530,7 +536,6 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
-        "@utf8_range//:utf8_validity",
     ],
 )
 
@@ -548,8 +553,8 @@ cc_test(
 cc_library(
     name = "protobuf",
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
@@ -572,28 +577,15 @@ cc_library(
         "**/*.h",
         "**/*.inc",
     ]),
-)
-
-cc_library(
-    name = "descriptor_legacy",
-    hdrs = ["descriptor_legacy.h"],
-    copts = COPTS,
-    include_prefix = "google/protobuf",
-    linkopts = LINK_OPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":port_def",
-        ":protobuf_nowkt",
-        "@com_google_absl//absl/strings",
-    ],
+    strip_include_prefix = "/src",
 )
 
 cc_library(
     name = "descriptor_visitor",
     hdrs = ["descriptor_visitor.h"],
     copts = COPTS,
-    include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
         ":port_def",
@@ -749,6 +741,22 @@ proto_library(
 )
 
 proto_library(
+    name = "unittest_features_proto",
+    srcs = ["unittest_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [
+        ":descriptor_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_features_cc_proto",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [":unittest_features_proto"],
+)
+
+proto_library(
     name = "generic_test_protos",
     srcs = [":test_proto_srcs"],
     strip_import_prefix = "/src",
@@ -776,6 +784,7 @@ exports_files(
     visibility = [
         "//:__pkg__",
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 
@@ -786,6 +795,8 @@ proto_library(
     visibility = [
         "//:__pkg__",
         "//conformance:__pkg__",
+        "//lua:__subpackages__",
+        "//python:__subpackages__",
         "//upb:__subpackages__",
     ],
 )
@@ -797,6 +808,8 @@ proto_library(
     visibility = [
         "//:__pkg__",
         "//conformance:__pkg__",
+        "//lua:__subpackages__",
+        "//python:__subpackages__",
         "//upb:__subpackages__",
     ],
     deps = [
@@ -863,6 +876,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":cc_lite_test_protos",
+        ":port_def",
         ":test_util2",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
@@ -1015,7 +1029,6 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":descriptor_legacy",
         ":protobuf",
         ":test_textproto",
         "//src/google/protobuf/compiler:importer",
@@ -1311,7 +1324,6 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":descriptor_legacy",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",
@@ -1400,6 +1412,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/random",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1536,6 +1549,30 @@ cc_test(
         ":protobuf",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "unredacted_debug_format_for_test",
+    testonly = True,
+    srcs = ["unredacted_debug_format_for_test.cc"],
+    hdrs = ["unredacted_debug_format_for_test.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+    ],
+)
+
+cc_test(
+    name = "unredacted_debug_format_for_test_test",
+    srcs = ["unredacted_debug_format_for_test_test.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
+        ":protobuf",
+        ":unredacted_debug_format_for_test",
         "@com_google_googletest//:gtest_main",
     ],
 )

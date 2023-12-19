@@ -91,6 +91,7 @@
 #include <atomic>
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -522,6 +523,9 @@ class PROTOBUF_EXPORT CodedInputStream {
   // See EnableAliasing().
   bool aliasing_enabled_;
 
+  // If true, set eager parsing mode to override lazy fields.
+  bool force_eager_parsing_;
+
   // Limits
   Limit current_limit_;  // if position = -1, no limit is applied
 
@@ -912,7 +916,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   template <int S>
   uint8_t* WriteRawLittleEndian(const void* data, int size, uint8_t* ptr);
-#if !defined(PROTOBUF_LITTLE_ENDIAN) || \
+#if !defined(ABSL_IS_LITTLE_ENDIAN) || \
     defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   uint8_t* WriteRawLittleEndian32(const void* data, int size, uint8_t* ptr);
   uint8_t* WriteRawLittleEndian64(const void* data, int size, uint8_t* ptr);
@@ -960,7 +964,7 @@ template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<4>(const void* data,
                                                              int size,
                                                              uint8_t* ptr) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   return WriteRaw(data, size, ptr);
 #else
@@ -971,7 +975,7 @@ template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
                                                              int size,
                                                              uint8_t* ptr) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   return WriteRaw(data, size, ptr);
 #else
@@ -1320,7 +1324,7 @@ inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
     const uint8_t* buffer, uint32_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(value, buffer, sizeof(*value));
   return buffer + sizeof(*value);
@@ -1335,7 +1339,7 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
     const uint8_t* buffer, uint64_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(value, buffer, sizeof(*value));
   return buffer + sizeof(*value);
@@ -1354,7 +1358,7 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
 }
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian32FromArray(buffer_, value);
@@ -1368,7 +1372,7 @@ inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
 }
 
 inline bool CodedInputStream::ReadLittleEndian64(uint64_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian64FromArray(buffer_, value);
@@ -1553,6 +1557,7 @@ inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
       last_tag_(0),
       legitimate_message_end_(false),
       aliasing_enabled_(false),
+      force_eager_parsing_(false),
       current_limit_(std::numeric_limits<int32_t>::max()),
       buffer_size_after_limit_(0),
       total_bytes_limit_(kDefaultTotalBytesLimit),
@@ -1573,6 +1578,7 @@ inline CodedInputStream::CodedInputStream(const uint8_t* buffer, int size)
       last_tag_(0),
       legitimate_message_end_(false),
       aliasing_enabled_(false),
+      force_eager_parsing_(false),
       current_limit_(size),
       buffer_size_after_limit_(0),
       total_bytes_limit_(kDefaultTotalBytesLimit),
@@ -1646,7 +1652,7 @@ inline uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
                                                               uint8_t* target) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(target, &value, sizeof(value));
 #else
@@ -1660,7 +1666,7 @@ inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian64ToArray(uint64_t value,
                                                               uint8_t* target) {
-#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(target, &value, sizeof(value));
 #else
@@ -1698,38 +1704,68 @@ inline uint8_t* CodedOutputStream::WriteTagToArray(uint32_t value,
   return WriteVarint32ToArray(value, target);
 }
 
+#if (defined(__x86__) || defined(__x86_64__) || defined(_M_IX86) || \
+     defined(_M_X64)) &&                                            \
+    !(defined(__LZCNT__) || defined(__AVX2__))
+// X86 CPUs lacking the lzcnt instruction are faster with the bsr-based
+// implementation. MSVC does not define __LZCNT__, the nearest option that
+// it interprets as lzcnt availability is __AVX2__.
+#define PROTOBUF_CODED_STREAM_H_PREFER_BSR 1
+#else
+#define PROTOBUF_CODED_STREAM_H_PREFER_BSR 0
+#endif
 inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
-  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
-  // Use an explicit multiplication to implement the divide of
-  // a number in the 1..31 range.
-  //
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
   // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
-  // requires a branch to check for on many platforms.
-  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73) / 64);
+  // requires a branch to check for on platforms without a clz instruction.
+  uint32_t log2value = (std::numeric_limits<uint32_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9)) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint32_t>::digits * 9 + 64) - (clz * 9)) / 64);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
   // Same as above, but one more.
-  uint32_t log2value = 31 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
+  uint32_t log2value = (std::numeric_limits<uint32_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9) + 64) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint32_t>::digits * 9 + 64 + 64) - (clz * 9)) / 64);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
-  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
-  // Use an explicit multiplication to implement the divide of
-  // a number in the 1..63 range.
-  //
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
   // Explicit OR 0x1 to avoid calling absl::countl_zero(0), which
-  // requires a branch to check for on many platforms.
-  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73) / 64);
+  // requires a branch to check for on platforms without a clz instruction.
+  uint32_t log2value = (std::numeric_limits<uint64_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9)) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint64_t>::digits * 9 + 64) - (clz * 9)) / 64);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
   // Same as above, but one more.
-  uint32_t log2value = 63 - absl::countl_zero(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
+#if PROTOBUF_CODED_STREAM_H_PREFER_BSR
+  uint32_t log2value = (std::numeric_limits<uint64_t>::digits - 1) -
+                       absl::countl_zero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + (64 + 9) + 64) / 64);
+#else
+  uint32_t clz = absl::countl_zero(value);
+  return static_cast<size_t>(
+      ((std::numeric_limits<uint64_t>::digits * 9 + 64 + 64) - (clz * 9)) / 64);
+#endif
 }
 
 inline size_t CodedOutputStream::VarintSize32SignExtended(int32_t value) {
@@ -1740,6 +1776,7 @@ inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(
     int32_t value) {
   return VarintSize64PlusOne(static_cast<uint64_t>(int64_t{value}));
 }
+#undef PROTOBUF_CODED_STREAM_H_PREFER_BSR
 
 inline void CodedOutputStream::WriteString(const std::string& str) {
   WriteRaw(str.data(), static_cast<int>(str.size()));

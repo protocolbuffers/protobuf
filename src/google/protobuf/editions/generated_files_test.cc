@@ -8,8 +8,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/editions/golden/test_messages_proto2.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto3.pb.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/editions/proto/test_editions_default_features.pb.h"
 #include "google/protobuf/test_textproto.h"
 
@@ -21,9 +22,9 @@ namespace protobuf {
 namespace {
 
 using ::protobuf_editions_test::EditionsDefaultMessage;
-using ::protobuf_test_messages::proto2::TestAllRequiredTypesProto2;
-using ::protobuf_test_messages::proto2::TestAllTypesProto2;
-using ::protobuf_test_messages::proto3::TestAllTypesProto3;
+using ::protobuf_test_messages::editions::proto2::TestAllRequiredTypesProto2;
+using ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
+using ::protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 using ::testing::NotNull;
 
 TEST(Generated, Parsing) {
@@ -136,17 +137,17 @@ TEST(Generated, EditionDefaults2023) {
 }
 
 TEST(Generated, EditionDefaults2023InternalFeatures) {
-  EXPECT_THAT(
-      internal::InternalFeatureHelper::GetFeatures(
-          *EditionsDefaultMessage::descriptor()),
-      google::protobuf::EqualsProto(R"pb(
-        field_presence: EXPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.cpp] { legacy_closed_enum: false utf8_validation: VERIFY_PARSE }
-      )pb"));
+  EXPECT_THAT(internal::InternalFeatureHelper::GetFeatures(
+                  *EditionsDefaultMessage::descriptor()),
+              google::protobuf::EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false }
+              )pb"));
 }
 
 }  // namespace

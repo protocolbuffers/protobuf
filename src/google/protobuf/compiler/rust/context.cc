@@ -17,6 +17,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -65,6 +66,14 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
   }
 
   return opts;
+}
+
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file) {
+  return ctx.generator_context().is_file_in_current_crate(file);
+}
+
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message) {
+  return IsInCurrentlyGeneratingCrate(ctx, *message.file());
 }
 
 }  // namespace rust

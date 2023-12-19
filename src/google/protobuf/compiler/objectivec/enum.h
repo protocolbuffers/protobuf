@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -22,7 +23,8 @@ namespace objectivec {
 
 class EnumGenerator {
  public:
-  explicit EnumGenerator(const EnumDescriptor* descriptor);
+  EnumGenerator(const EnumDescriptor* descriptor,
+                const GenerationOptions& generation_options);
   ~EnumGenerator() = default;
 
   EnumGenerator(const EnumGenerator&) = delete;

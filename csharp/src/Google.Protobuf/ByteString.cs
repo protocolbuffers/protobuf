@@ -10,6 +10,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -23,6 +24,8 @@ namespace Google.Protobuf
     /// Immutable array of bytes.
     /// </summary>
     [SecuritySafeCritical]
+    [DebuggerDisplay("Length = {Length}")]
+    [DebuggerTypeProxy(typeof(ByteStringDebugView))]
     public sealed class ByteString : IEnumerable<byte>, IEquatable<ByteString>
     {
         private static readonly ByteString empty = new ByteString(new byte[0]);
@@ -399,6 +402,19 @@ namespace Google.Protobuf
                 var array = bytes.ToArray();
                 outputStream.Write(array, 0, array.Length);
             }
+        }
+
+        private sealed class ByteStringDebugView
+        {
+            private readonly ByteString data;
+
+            public ByteStringDebugView(ByteString data)
+            {
+                this.data = data;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public byte[] Items => data.bytes.ToArray();
         }
     }
 }

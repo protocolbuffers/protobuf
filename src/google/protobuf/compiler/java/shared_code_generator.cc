@@ -83,6 +83,9 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
+    if (options_.opensource_runtime) {
+      PrintGencodeVersionValidator(printer.get());
+    }
     printer->Outdent();
     printer->Outdent();
     printer->Print(
@@ -113,6 +116,11 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // code size limits (error "code to large").  String literals are apparently
   // embedded raw, which is what we want.
   FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
+  // Skip serialized file descriptor proto, which contain non-functional
+  // deviation between editions and legacy syntax (e.g. syntax, features)
+  if (options_.strip_nonfunctional_codegen) {
+    file_proto.Clear();
+  }
 
   std::string file_data;
   file_proto.SerializeToString(&file_data);

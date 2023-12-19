@@ -115,8 +115,8 @@ void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
                      absl::btree_set<Edition>& editions) {
   for (int i = 0; i < descriptor.field_count(); ++i) {
     for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
-      if (maximum_edition < def.edition_enum()) continue;
-      editions.insert(def.edition_enum());
+      if (maximum_edition < def.edition()) continue;
+      editions.insert(def.edition());
     }
   }
 }
@@ -126,10 +126,10 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
 
   auto comparator = [](const FieldOptions::EditionDefault& a,
                        const FieldOptions::EditionDefault& b) {
-    return a.edition_enum() < b.edition_enum();
+    return a.edition() < b.edition();
   };
   FieldOptions::EditionDefault edition_lookup;
-  edition_lookup.set_edition_enum(edition);
+  edition_lookup.set_edition(edition);
 
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
@@ -169,24 +169,28 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
   return absl::OkStatus();
 }
 
-absl::Status ValidateMergedFeatures(const Message& msg) {
-  const Descriptor& descriptor = *msg.GetDescriptor();
-  const Reflection& reflection = *msg.GetReflection();
-  for (int i = 0; i < descriptor.field_count(); ++i) {
-    const FieldDescriptor& field = *descriptor.field(i);
-    // Validate enum features.
-    if (field.enum_type() != nullptr) {
-      ABSL_DCHECK(reflection.HasField(msg, &field));
-      int int_value = reflection.GetEnumValue(msg, &field);
-      const EnumValueDescriptor* value =
-          field.enum_type()->FindValueByNumber(int_value);
-      ABSL_DCHECK(value != nullptr);
-      if (value->number() == 0) {
-        return Error("Feature field ", field.full_name(),
-                     " must resolve to a known value, found ", value->name());
-      }
-    }
+absl::Status ValidateMergedFeatures(const FeatureSet& features) {
+// Avoid using reflection here because this is called early in the descriptor
+// builds.  Instead, a reflection-based test will be used to keep this in sync
+// with descriptor.proto.  These checks should be run on every global feature
+// in FeatureSet.
+#define CHECK_ENUM_FEATURE(FIELD, CAMELCASE, UPPERCASE)               \
+  if (!FeatureSet::CAMELCASE##_IsValid(features.FIELD()) ||           \
+      features.FIELD() == FeatureSet::UPPERCASE##_UNKNOWN) {          \
+    return Error("Feature field `" #FIELD                             \
+                 "` must resolve to a known value, found " #UPPERCASE \
+                 "_UNKNOWN");                                         \
   }
+
+  CHECK_ENUM_FEATURE(field_presence, FieldPresence, FIELD_PRESENCE)
+  CHECK_ENUM_FEATURE(enum_type, EnumType, ENUM_TYPE)
+  CHECK_ENUM_FEATURE(repeated_field_encoding, RepeatedFieldEncoding,
+                     REPEATED_FIELD_ENCODING)
+  CHECK_ENUM_FEATURE(utf8_validation, Utf8Validation, UTF8_VALIDATION)
+  CHECK_ENUM_FEATURE(message_encoding, MessageEncoding, MESSAGE_ENCODING)
+  CHECK_ENUM_FEATURE(json_format, JsonFormat, JSON_FORMAT)
+
+#undef CHECK_ENUM_FEATURE
 
   return absl::OkStatus();
 }
@@ -228,8 +232,8 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 
   // Fill the default spec.
   FeatureSetDefaults defaults;
-  defaults.set_minimum_edition_enum(minimum_edition);
-  defaults.set_maximum_edition_enum(maximum_edition);
+  defaults.set_minimum_edition(minimum_edition);
+  defaults.set_maximum_edition(maximum_edition);
   auto message_factory = absl::make_unique<DynamicMessageFactory>();
   for (const auto& edition : editions) {
     auto defaults_dynamic =
@@ -241,7 +245,7 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
                        defaults_dynamic.get(), extension)));
     }
     auto* edition_defaults = defaults.mutable_defaults()->Add();
-    edition_defaults->set_edition_enum(edition);
+    edition_defaults->set_edition(edition);
     edition_defaults->mutable_features()->MergeFromString(
         defaults_dynamic->SerializeAsString());
   }
@@ -250,41 +254,43 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 
 absl::StatusOr<FeatureResolver> FeatureResolver::Create(
     Edition edition, const FeatureSetDefaults& compiled_defaults) {
-  if (edition < compiled_defaults.minimum_edition_enum()) {
+  if (edition < compiled_defaults.minimum_edition()) {
     return Error("Edition ", edition,
                  " is earlier than the minimum supported edition ",
-                 compiled_defaults.minimum_edition_enum());
+                 compiled_defaults.minimum_edition());
   }
-  if (compiled_defaults.maximum_edition_enum() < edition) {
+  if (compiled_defaults.maximum_edition() < edition) {
     return Error("Edition ", edition,
                  " is later than the maximum supported edition ",
-                 compiled_defaults.maximum_edition_enum());
+                 compiled_defaults.maximum_edition());
   }
 
   // Validate compiled defaults.
   Edition prev_edition = EDITION_UNKNOWN;
   for (const auto& edition_default : compiled_defaults.defaults()) {
-    if (edition_default.edition_enum() == EDITION_UNKNOWN) {
-      return Error("Invalid edition ", edition_default.edition_enum(),
+    if (edition_default.edition() == EDITION_UNKNOWN) {
+      return Error("Invalid edition ", edition_default.edition(),
                    " specified.");
     }
     if (prev_edition != EDITION_UNKNOWN) {
-      if (edition_default.edition_enum() <= prev_edition) {
+      if (edition_default.edition() <= prev_edition) {
         return Error(
             "Feature set defaults are not strictly increasing.  Edition ",
             prev_edition, " is greater than or equal to edition ",
-            edition_default.edition_enum(), ".");
+            edition_default.edition(), ".");
       }
     }
-    prev_edition = edition_default.edition_enum();
+    RETURN_IF_ERROR(ValidateMergedFeatures(edition_default.features()));
+
+    prev_edition = edition_default.edition();
   }
 
   // Select the matching edition defaults.
   auto comparator = [](const auto& a, const auto& b) {
-    return a.edition_enum() < b.edition_enum();
+    return a.edition() < b.edition();
   };
   FeatureSetDefaults::FeatureSetEditionDefault search;
-  search.set_edition_enum(edition);
+  search.set_edition(edition);
   auto first_nonmatch =
       absl::c_upper_bound(compiled_defaults.defaults(), search, comparator);
   if (first_nonmatch == compiled_defaults.defaults().begin()) {

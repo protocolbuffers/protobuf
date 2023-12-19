@@ -660,11 +660,8 @@ static VALUE Message_dup(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   Message* new_msg_self = ruby_to_Message(new_msg);
-  size_t size = upb_MessageDef_MiniTable(self->msgdef)->size;
-
-  // TODO
-  // TODO
-  memcpy((upb_Message*)new_msg_self->msg, self->msg, size);
+  const upb_MiniTable* m = upb_MessageDef_MiniTable(self->msgdef);
+  upb_Message_ShallowCopy((upb_Message*)new_msg_self->msg, self->msg, m);
   Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
   return new_msg;
 }
@@ -860,6 +857,32 @@ static VALUE Message_freeze(VALUE _self) {
 }
 
 /*
+ * Deep freezes the message object recursively.
+ * Internal use only.
+ */
+VALUE Message_internal_deep_freeze(VALUE _self) {
+  Message* self = ruby_to_Message(_self);
+  Message_freeze(_self);
+
+  int n = upb_MessageDef_FieldCount(self->msgdef);
+  for (int i = 0; i < n; i++) {
+    const upb_FieldDef* f = upb_MessageDef_Field(self->msgdef, i);
+    VALUE field = Message_getfield(_self, f);
+
+    if (field != Qnil) {
+      if (upb_FieldDef_IsMap(f)) {
+        Map_internal_deep_freeze(field);
+      } else if (upb_FieldDef_IsRepeated(f)) {
+        RepeatedField_internal_deep_freeze(field);
+      } else if (upb_FieldDef_IsSubMessage(f)) {
+        Message_internal_deep_freeze(field);
+      }
+    }
+  }
+  return _self;
+}
+
+/*
  * call-seq:
  *     Message.[](index) => value
  *
@@ -911,7 +934,7 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
  *     MessageClass.decode(data, options) => message
  *
  * Decodes the given data (as a string containing bytes in protocol buffers wire
- * format) under the interpretration given by this message class's definition
+ * format) under the interpretation given by this message class's definition
  * and returns a message object with the corresponding field values.
  * @param options [Hash] options for the decoder
  *  recursion_limit: set to maximum decoding depth for message (default is 64)
@@ -942,18 +965,27 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
     rb_raise(rb_eArgError, "Expected string for binary protobuf data.");
   }
 
+  return Message_decode_bytes(RSTRING_LEN(data), RSTRING_PTR(data), options,
+                              klass, /*freeze*/ false);
+}
+
+VALUE Message_decode_bytes(int size, const char* bytes, int options,
+                           VALUE klass, bool freeze) {
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);
 
-  upb_DecodeStatus status =
-      upb_Decode(RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-                 upb_MessageDef_MiniTable(msg->msgdef), NULL, options,
-                 Arena_get(msg->arena));
-
+  const upb_FileDef* file = upb_MessageDef_File(msg->msgdef);
+  const upb_ExtensionRegistry* extreg =
+      upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
+  upb_DecodeStatus status = upb_Decode(bytes, size, (upb_Message*)msg->msg,
+                                       upb_MessageDef_MiniTable(msg->msgdef),
+                                       extreg, options, Arena_get(msg->arena));
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
   }
-
+  if (freeze) {
+    Message_internal_deep_freeze(msg_rb);
+  }
   return msg_rb;
 }
 
@@ -1271,9 +1303,12 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   upb_Message* new_msg = upb_Message_New(layout, arena);
   char* data;
 
+  const upb_FileDef* file = upb_MessageDef_File(m);
+  const upb_ExtensionRegistry* extreg =
+      upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
           kUpb_EncodeStatus_Ok ||
-      upb_Decode(data, size, new_msg, layout, NULL, 0, arena) !=
+      upb_Decode(data, size, new_msg, layout, extreg, 0, arena) !=
           kUpb_DecodeStatus_Ok) {
     upb_Arena_Free(tmp_arena);
     rb_raise(cParseError, "Error occurred copying proto");
