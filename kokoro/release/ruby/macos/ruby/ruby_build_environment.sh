@@ -21,15 +21,15 @@ set -e  # rvm commands are very verbose
 time rvm install 2.5.0
 rvm use 2.5.0
 gem install rake-compiler --no-document
-gem install bundler --no-document
+gem install bundler -v 2.4.22 --no-document
 time rvm install 3.1.0
 rvm use 3.1.0
 gem install rake-compiler --no-document
-gem install bundler --no-document
+gem install bundler -v 2.4.22 --no-document
 time rvm install 2.7.0
 rvm use 2.7.0 --default
 gem install rake-compiler --no-document
-gem install bundler --no-document
+gem install bundler -v 2.4.22 --no-document
 rvm osx-ssl-certs status all
 rvm osx-ssl-certs update all
 set -ex
