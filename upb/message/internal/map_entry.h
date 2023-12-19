@@ -5,8 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+#define UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+
+#include <stdint.h>
 
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
@@ -40,4 +42,4 @@ typedef struct {
   upb_MapEntryData data;
 } upb_MapEntry;
 
-#endif  // UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_

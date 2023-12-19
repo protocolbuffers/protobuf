@@ -449,11 +449,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
 }
 
 // Updates a map entry given an entry message.
-upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
-                                               const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* field,
-                                               upb_Message* map_entry_message,
-                                               upb_Arena* arena);
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
+                             const upb_MiniTableField* field,
+                             upb_Message* map_entry_message, upb_Arena* arena);
 
 // Compares two messages by serializing them and calling memcmp().
 bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,

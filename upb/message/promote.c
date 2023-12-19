@@ -15,7 +15,6 @@
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
@@ -347,13 +346,9 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
                                                      field, arena);
     upb_Message* map_entry_message = ret.message;
-    upb_MapInsertStatus insert_status = upb_Message_InsertMapEntry(
-        map, mini_table, field, map_entry_message, arena);
-    if (insert_status == kUpb_MapInsertStatus_OutOfMemory) {
-      return kUpb_UnknownToMessage_OutOfMemory;
-    }
-    UPB_ASSUME(insert_status == kUpb_MapInsertStatus_Inserted ||
-               insert_status == kUpb_MapInsertStatus_Replaced);
+    bool insert_success = upb_Message_SetMapEntry(map, mini_table, field,
+                                                  map_entry_message, arena);
+    if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
     upb_Message_DeleteUnknown(msg, unknown.ptr, unknown.len);
   }
   return kUpb_UnknownToMessage_Ok;

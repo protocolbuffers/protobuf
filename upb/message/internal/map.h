@@ -7,9 +7,13 @@
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_H_
+#define UPB_MESSAGE_INTERNAL_MAP_H_
 
+#include <stddef.h>
+#include <string.h>
+
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
@@ -147,4 +151,4 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_INTERNAL_MAP_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MAP_H_ */

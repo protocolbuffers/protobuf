@@ -105,8 +105,7 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
     if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
       return NULL;
     }
-    if (upb_Map_Insert(cloned_map, key, val, arena) ==
-        kUpb_MapInsertStatus_OutOfMemory) {
+    if (!upb_Map_Set(cloned_map, key, val, arena)) {
       return NULL;
     }
   }
