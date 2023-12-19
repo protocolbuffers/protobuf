@@ -24,6 +24,9 @@
 extern "C" {
 #endif
 
+const upb_Extension* upb_Message_ExtensionByIndex(const upb_Message* msg,
+                                                  size_t index);
+
 // Returns the extension with the given field number, or NULL on failure.
 const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
                                                        uint32_t field_number);

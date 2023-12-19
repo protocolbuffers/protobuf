@@ -570,7 +570,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Extension* ext =
+        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;

@@ -45,11 +45,11 @@ upb_Extension* _upb_Message_GetOrCreateExtension(
 
 // Returns an array of extensions for this message.
 // Note: the array is ordered in reverse relative to the order of creation.
-const upb_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                          size_t* count);
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(const upb_Message* msg,
+                                                       size_t* count);
 
-// Returns an extension for the given field number, or NULL if no extension
-// exists for this field number.
+// Returns an extension for a message with a given mini table,
+// or NULL if no extension exists with this mini table.
 const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
                                          const upb_MiniTableExtension* ext);
 
