@@ -53,6 +53,7 @@ _special_targets_mapping = {
   "//src/google/protobuf/compiler:code_generator" : ["protobuf::libprotoc", "protobuf::libprotobuf"],
   "@utf8_range": ["utf8_range"],
   "//third_party/utf8_range": ["utf8_range"],
+  "@lua//:liblua": ["lua::liblua"],
 }
 _directory_sep = re.compile('[/\\:]')
 
@@ -138,11 +139,12 @@ add_library(%(name)s ALIAS %(actual)s)
 """
 
 class BuildFileFunctions(object):
-  def __init__(self, converter, subdir, target_prefix):
+  def __init__(self, converter, subdir, target_prefix, enable_condition = None):
     self.converter = converter
     self.subdir = subdir
     self.target_prefix = target_prefix
     self.alias_default_name = os.path.basename(os.path.normpath(subdir))
+    self.enable_condition = enable_condition
 
   def _add_deps(self, kwargs, keyword="", stage = ""):
     if "deps" not in kwargs:
@@ -186,6 +188,8 @@ class BuildFileFunctions(object):
         found_files.append("../" + self.subdir +file)
 
     target_name = self.target_prefix + kwargs["name"]
+    if self.enable_condition:
+      self.converter.toplevel += "if ({0})\n".format(self.enable_condition)
     if list(filter(IsSourceFile, files)):
       # Has sources, make this a normal library.
       self.converter.toplevel += ADD_LIBRARY_FORMAT % {
@@ -237,6 +241,8 @@ class BuildFileFunctions(object):
             "name": alias_name,
             "actual": target_name,
           }
+    if self.enable_condition:
+      self.converter.toplevel += "endif()\n"
 
   def cc_binary(self, **kwargs):
     if kwargs["name"] in _block_targets:
@@ -247,7 +253,10 @@ class BuildFileFunctions(object):
     for file in files:
       found_files.append("../" + self.subdir + file)
 
-    self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
+    if self.enable_condition:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN AND {0})\n".format(self.enable_condition)
+    else:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
     self.converter.toplevel += ADD_EXECUTABLE_FORMAT % {
         "name": self.target_prefix + kwargs["name"],
         "keyword": "PRIVATE",
@@ -392,7 +401,10 @@ class BuildFileFunctions(object):
       base_dir = base_dir[0:-1]
 
     oss_src_files_prefix = [".".join(x.split(".")[0:-1]) for x in oss_src_files]
-    self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
+    if self.enable_condition:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN AND {0})\n".format(self.enable_condition)
+    else:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
     # Stage0
     self.converter.toplevel += ADD_LIBRARY_FORMAT % {
         "name": self.target_prefix + kwargs["name"] + _stages[0],
@@ -482,13 +494,16 @@ class BuildFileFunctions(object):
     )
     self.converter.toplevel += ")\n"
 
-    self.converter.toplevel += "add_custom_command(\n"
-    self.converter.toplevel += "  OUTPUT\n    {0}\n".format(
-      "\n    ".join([
-        "\n    ".join(["{0}/{1}.upbdefs.h\n    {0}/{1}.upbdefs.c".format(stage2_generated_dir, x) for x in oss_src_files_prefix]),
-        "\n    ".join(["{0}/{1}_pb.lua".format(stage2_generated_dir, x) for x in oss_src_files_prefix])
-      ])
+    self.converter.toplevel += "set(UPB_STAGE2_GENERATED_FILES\n  "
+    self.converter.toplevel += "\n  ".join(["{0}/{1}.upbdefs.h\n  {0}/{1}.upbdefs.c".format(stage2_generated_dir, x) for x in oss_src_files_prefix])
+    self.converter.toplevel += ")\n"
+    self.converter.toplevel += "if (TARGET lua::liblua)\n"
+    self.converter.toplevel += "  list(APPEND UPB_STAGE2_GENERATED_FILES\n  {0})\n".format(
+      "\n  ".join(["{0}/{1}_pb.lua".format(stage2_generated_dir, x) for x in oss_src_files_prefix])
     )
+    self.converter.toplevel += "endif()\n"
+    self.converter.toplevel += "add_custom_command(\n"
+    self.converter.toplevel += "  OUTPUT\n    {0}\n".format("${UPB_STAGE2_GENERATED_FILES}")
     self.converter.toplevel += "  DEPENDS\n    {0}\n".format(
       "\n    ".join(["{0}/{1}".format("${UPB_HOST_INCLUDE_DIR}", x) for x in oss_src_files])
     )
@@ -547,12 +562,19 @@ class BuildFileFunctions(object):
       "\n    ".join([
         "\n    ".join(["{0}/{1}.upb.h\n    {0}/{1}.upb.c".format(stage2_generated_dir, x) for x in oss_src_files_prefix]),
         "\n    ".join(["{0}/{1}.upb_minitable.h\n    {0}/{1}.upb_minitable.c".format(stage2_generated_dir, x) for x in oss_src_files_prefix]),
-        "\n    ".join(["{0}/{1}.upbdefs.h\n    {0}/{1}.upbdefs.c".format(stage2_generated_dir, x) for x in oss_src_files_prefix]),
-        "\n    ".join(["{0}/{1}_pb.lua".format(stage2_generated_dir, x) for x in oss_src_files_prefix])
+        "\n    ".join(["{0}/{1}.upbdefs.h\n    {0}/{1}.upbdefs.c".format(stage2_generated_dir, x) for x in oss_src_files_prefix])
       ])
     )
     self.converter.toplevel += "  DESTINATION \"include/{0}\"\n".format(os.path.dirname(oss_src_files_prefix[0]))
     self.converter.toplevel += ")\n"
+    self.converter.toplevel += "if (TARGET lua::liblua)\n"
+    self.converter.toplevel += "  install(\n"
+    self.converter.toplevel += "    FILES\n    {0}\n".format(
+      "\n      ".join(["{0}/{1}_pb.lua".format(stage2_generated_dir, x) for x in oss_src_files_prefix])
+    )
+    self.converter.toplevel += "    DESTINATION \"include/{0}\"\n".format(os.path.dirname(oss_src_files_prefix[0]))
+    self.converter.toplevel += "  )\n"
+    self.converter.toplevel += "endif()\n"
 
     self.converter.export_codegen_targets.append(self.target_prefix + kwargs["name"] + _stages[2])
     self.converter.export_codegen_targets.append(self.target_prefix + kwargs["name"] + _stages[2] + "_minitable")
@@ -568,7 +590,10 @@ class BuildFileFunctions(object):
     for file in files:
       found_files.append("../" + self.subdir + file)
 
-    self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
+    if self.enable_condition:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN AND {0})\n".format(self.enable_condition)
+    else:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
     for stage in _stages:
       stage_name = self.target_prefix + kwargs["name"] + stage
       if list(filter(IsSourceFile, files)):
@@ -629,7 +654,10 @@ class BuildFileFunctions(object):
       found_files.append("../" + self.subdir + file)
 
     # Has sources, make this a normal library.
-    self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
+    if self.enable_condition:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN AND {0})\n".format(self.enable_condition)
+    else:
+      self.converter.toplevel += "if (UPB_ENABLE_CODEGEN)\n"
     for stage in _stages:
       stage_name = self.target_prefix + kwargs["name"] + stage
       self.converter.toplevel += ADD_EXECUTABLE_FORMAT % {
@@ -656,10 +684,14 @@ class BuildFileFunctions(object):
     else:
       self.converter.alias[actual] = [alias_name]
     if actual in self.converter.written_targets:
+      if self.enable_condition:
+        self.converter.toplevel += "if ({0})\n".format(self.enable_condition)
       self.converter.toplevel += ADD_ALIAS_FORMAT % {
         "name": alias_name,
         "actual": actual,
       }
+      if self.enable_condition:
+        self.converter.toplevel += "endif()\n"
 
 
 class Converter(object):
@@ -788,6 +820,21 @@ class Converter(object):
           set(UPB_HOST_INCLUDE_DIR "${PROTOBUF_INCLUDE_DIR}")
         endif()
       endif()
+      find_package(Lua QUIET)
+      if (NOT TARGET lua::liblua AND (Lua_FOUND OR LUA_FOUND))
+        foreach(TEST_LUA_TARGET_NAME lua::liblua-dynamic lua::liblua-static unofficial-lua::lua)
+          if(TARGET ${TEST_LUA_TARGET_NAME})
+            add_library(lua::liblua ALIAS ${TEST_LUA_TARGET_NAME})
+            break()
+          endif()
+        endforeach()
+        if (NOT TARGET lua::liblua AND LUA_FOUND)
+          add_library(lua::liblua INTERFACE IMPORTED)
+          set_target_properties(lua::liblua PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+            INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}")
+        endif()
+      endif()
     endif()
 
     %(toplevel)s
@@ -808,8 +855,10 @@ class Converter(object):
       foreach(PROTO_NAME IN LISTS UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_PROTO_NAMES)
         list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_PROTO_FILES
               "${UPB_HOST_INCLUDE_DIR}/google/protobuf/${PROTO_NAME}.proto")
-        list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_LUAS
-              "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}_pb.lua")
+        if (TARGET lua::liblua) 
+          list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_LUAS
+                "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}_pb.lua")
+        endif()
         list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_HEADERS
               "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}.upb.h"
               "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}.upb_minitable.h"
@@ -854,10 +903,11 @@ class Converter(object):
       PATTERN "*.hpp"
       PATTERN "*.inc"
     )
-    install(TARGETS
-      %(export_targets)s
-      EXPORT upb-config
-    )
+    foreach(MAYBE_TARGET %(export_targets)s)
+      if(TARGET ${MAYBE_TARGET})
+        install(TARGETS ${MAYBE_TARGET} EXPORT upb-config)
+      endif()
+    endforeach()
     if (UPB_ENABLE_CODEGEN)
       install(
         FILES
@@ -869,12 +919,11 @@ class Converter(object):
         DIRECTORY ../../lua/
         DESTINATION share/upb/lua
       )
-      install(TARGETS
-        upb_well_known_types
-        %(export_codegen_targets)s
-        ${UPB_CODEGEN_TARGETS}
-        EXPORT upb-config
-      )
+      foreach(MAYBE_TARGET upb_well_known_types %(export_codegen_targets)s)
+        if(TARGET ${MAYBE_TARGET})
+          install(TARGETS ${MAYBE_TARGET} EXPORT upb-config)
+        endif()
+      endforeach()
     endif()
     install(EXPORT upb-config NAMESPACE protobuf:: DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/upb")
   """)
@@ -901,7 +950,7 @@ for build_file in glob.glob(os.path.join(build_dir, "*", 'BUILD')):
   exec(open(build_file).read(), GetDict(BuildFileFunctions(converter, subdir + "/", "upb_" + _directory_sep.sub("_", subdir) + "_")))  # BUILD
 exec(open(sys.argv[1]).read(), GetDict(BuildFileFunctions(converter, "", "upb_")))  # BUILD
 exec(open(os.path.join(build_dir, '..', 'upb_generator', 'BUILD')).read(), GetDict(BuildFileFunctions(converter, "../upb_generator/", "upb_generator_")))  # util/BUILD
-exec(open(os.path.join(build_dir, '..', 'lua', 'BUILD.bazel')).read(), GetDict(BuildFileFunctions(converter, "../lua/", "lua_")))  # util/BUILD
+exec(open(os.path.join(build_dir, '..', 'lua', 'BUILD.bazel')).read(), GetDict(BuildFileFunctions(converter, "../lua/", "lua_", "TARGET lua::liblua")))  # util/BUILD
 
 with open(sys.argv[2], "w") as f:
   f.write(converter.convert())

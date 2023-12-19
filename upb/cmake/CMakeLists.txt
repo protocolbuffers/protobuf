@@ -107,6 +107,21 @@ if (UPB_ENABLE_CODEGEN)
       set(UPB_HOST_INCLUDE_DIR "${PROTOBUF_INCLUDE_DIR}")
     endif()
   endif()
+  find_package(Lua QUIET)
+  if (NOT TARGET lua::liblua AND (Lua_FOUND OR LUA_FOUND))
+    foreach(TEST_LUA_TARGET_NAME lua::liblua-dynamic lua::liblua-static unofficial-lua::lua)
+      if(TARGET ${TEST_LUA_TARGET_NAME})
+        add_library(lua::liblua ALIAS ${TEST_LUA_TARGET_NAME})
+        break()
+      endif()
+    endforeach()
+    if (NOT TARGET lua::liblua AND LUA_FOUND)
+      add_library(lua::liblua INTERFACE IMPORTED)
+      set_target_properties(lua::liblua PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}")
+    endif()
+  endif()
 endif()
 
 
@@ -858,11 +873,16 @@ add_custom_command(
     "--upb_minitable_out=${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto"
     ${UPB_HOST_INCLUDE_DIR}/google/protobuf/descriptor.proto
 )
+set(UPB_STAGE2_GENERATED_FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upbdefs.h
+  ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upbdefs.c)
+if (TARGET lua::liblua)
+  list(APPEND UPB_STAGE2_GENERATED_FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor_pb.lua)
+endif()
 add_custom_command(
   OUTPUT
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upbdefs.h
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upbdefs.c
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor_pb.lua
+    ${UPB_STAGE2_GENERATED_FILES}
   DEPENDS
     ${UPB_HOST_INCLUDE_DIR}/google/protobuf/descriptor.proto
   COMMAND
@@ -943,9 +963,15 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upb_minitable.c
     ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upbdefs.h
     ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor.upbdefs.c
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor_pb.lua
   DESTINATION "include/google/protobuf"
 )
+if (TARGET lua::liblua)
+  install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_reflection_descriptor_upb_proto/google/protobuf/descriptor_pb.lua
+    DESTINATION "include/google/protobuf"
+  )
+endif()
 endif()
 if (UPB_ENABLE_CODEGEN)
 
@@ -1662,11 +1688,16 @@ add_custom_command(
     "--upb_minitable_out=${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto"
     ${UPB_HOST_INCLUDE_DIR}/google/protobuf/compiler/plugin.proto
 )
+set(UPB_STAGE2_GENERATED_FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upbdefs.h
+  ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upbdefs.c)
+if (TARGET lua::liblua)
+  list(APPEND UPB_STAGE2_GENERATED_FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin_pb.lua)
+endif()
 add_custom_command(
   OUTPUT
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upbdefs.h
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upbdefs.c
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin_pb.lua
+    ${UPB_STAGE2_GENERATED_FILES}
   DEPENDS
     ${UPB_HOST_INCLUDE_DIR}/google/protobuf/compiler/plugin.proto
   COMMAND
@@ -1751,9 +1782,15 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upb_minitable.c
     ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upbdefs.h
     ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin.upbdefs.c
-    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin_pb.lua
   DESTINATION "include/google/protobuf/compiler"
 )
+if (TARGET lua::liblua)
+  install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_generator_plugin_upb_proto/google/protobuf/compiler/plugin_pb.lua
+    DESTINATION "include/google/protobuf/compiler"
+  )
+endif()
 endif()
 if (UPB_ENABLE_CODEGEN)
 
@@ -2314,6 +2351,7 @@ target_link_libraries(upb_generator_protoc-gen-upbdefs PRIVATE
   upb_reflection
   upb_util_def_to_proto)
 endif()
+if (TARGET lua::liblua)
 
 add_library(lua_lupb 
     ../../lua/def.c
@@ -2336,8 +2374,9 @@ target_link_libraries(lua_lupb PUBLIC
   upb_message
   upb_reflection
   upb_text
-  @lua___liblua)
-if (UPB_ENABLE_CODEGEN)
+  lua::liblua)
+endif()
+if (UPB_ENABLE_CODEGEN AND TARGET lua::liblua)
 
 add_executable(lua_protoc-gen-lua
     ../../lua/upbc.cc
@@ -2375,8 +2414,10 @@ if (UPB_ENABLE_CODEGEN)
   foreach(PROTO_NAME IN LISTS UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_PROTO_NAMES)
     list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_PROTO_FILES
           "${UPB_HOST_INCLUDE_DIR}/google/protobuf/${PROTO_NAME}.proto")
-    list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_LUAS
-          "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}_pb.lua")
+    if (TARGET lua::liblua) 
+      list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_LUAS
+            "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}_pb.lua")
+    endif()
     list(APPEND UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_HEADERS
           "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}.upb.h"
           "${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types/google/protobuf/${PROTO_NAME}.upb_minitable.h"
@@ -2421,10 +2462,11 @@ install(
   PATTERN "*.hpp"
   PATTERN "*.inc"
 )
-install(TARGETS
-  upb_base_base upb_base_internal upb_collections_collections upb_hash_hash upb_io_string upb_io_tokenizer upb_io_zero_copy_stream upb_json_json upb_lex_lex upb_mem_mem upb_mem_internal upb_message_accessors upb_message_accessors_internal upb_message_copy upb_message_internal upb_message_internal_types upb_message_message upb_message_promote upb_message_split64 upb_message_tagged_ptr upb_message_types upb_message_value upb_mini_descriptor_mini_descriptor upb_mini_descriptor_internal upb_mini_table_compat upb_mini_table_mini_table upb_mini_table_internal upb_port_port upb_reflection_generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me upb_text_text upb_util_def_to_proto upb_util_required_fields upb_util_compare upb_wire_wire upb_wire_internal upb_wire_reader upb_wire_types upb_wire_eps_copy_input_stream upb_upb upb_generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me upb_generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me upb_generator_keywords upb_generator_mangle lua_lupb
-  EXPORT upb-config
-)
+foreach(MAYBE_TARGET upb_base_base upb_base_internal upb_collections_collections upb_hash_hash upb_io_string upb_io_tokenizer upb_io_zero_copy_stream upb_json_json upb_lex_lex upb_mem_mem upb_mem_internal upb_message_accessors upb_message_accessors_internal upb_message_copy upb_message_internal upb_message_internal_types upb_message_message upb_message_promote upb_message_split64 upb_message_tagged_ptr upb_message_types upb_message_value upb_mini_descriptor_mini_descriptor upb_mini_descriptor_internal upb_mini_table_compat upb_mini_table_mini_table upb_mini_table_internal upb_port_port upb_reflection_generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me upb_text_text upb_util_def_to_proto upb_util_required_fields upb_util_compare upb_wire_wire upb_wire_internal upb_wire_reader upb_wire_types upb_wire_eps_copy_input_stream upb_upb upb_generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me upb_generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me upb_generator_keywords upb_generator_mangle lua_lupb)
+  if(TARGET ${MAYBE_TARGET})
+    install(TARGETS ${MAYBE_TARGET} EXPORT upb-config)
+  endif()
+endforeach()
 if (UPB_ENABLE_CODEGEN)
   install(
     FILES
@@ -2436,11 +2478,10 @@ if (UPB_ENABLE_CODEGEN)
     DIRECTORY ../../lua/
     DESTINATION share/upb/lua
   )
-  install(TARGETS
-    upb_well_known_types
-    upb_reflection_descriptor_upb_proto upb_reflection_descriptor_upb_proto_minitable upb_reflection_descriptor_upb_proto_defs upb_reflection_reflection upb_reflection_internal upb_generator_plugin_upb_proto upb_generator_plugin_upb_proto_minitable upb_generator_plugin_upb_proto_defs upb_generator_common upb_generator_file_layout upb_generator_plugin upb_generator_names upb_generator_protoc-gen-upb upb_generator_protoc-gen-upb_minitable upb_generator_protoc-gen-upbdefs lua_protoc-gen-lua
-    ${UPB_CODEGEN_TARGETS}
-    EXPORT upb-config
-  )
+  foreach(MAYBE_TARGET upb_well_known_types upb_reflection_descriptor_upb_proto upb_reflection_descriptor_upb_proto_minitable upb_reflection_descriptor_upb_proto_defs upb_reflection_reflection upb_reflection_internal upb_generator_plugin_upb_proto upb_generator_plugin_upb_proto_minitable upb_generator_plugin_upb_proto_defs upb_generator_common upb_generator_file_layout upb_generator_plugin upb_generator_names upb_generator_protoc-gen-upb upb_generator_protoc-gen-upb_minitable upb_generator_protoc-gen-upbdefs lua_protoc-gen-lua)
+    if(TARGET ${MAYBE_TARGET})
+      install(TARGETS ${MAYBE_TARGET} EXPORT upb-config)
+    endif()
+  endforeach()
 endif()
 install(EXPORT upb-config NAMESPACE protobuf:: DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/upb")
