@@ -2019,8 +2019,8 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       buffers.addFirst(allocatedBuffer);
 
       buffer = nioBuffer;
-      buffer.limit(buffer.capacity());
-      buffer.position(0);
+      Java8Compatibility.limit(buffer, buffer.capacity());
+      Java8Compatibility.position(buffer, 0);
       // Set byte order to little endian for fast writing of fixed 32/64.
       buffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -2046,7 +2046,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       if (buffer != null) {
         totalDoneBytes += bytesWrittenToCurrentBuffer();
         // Update the indices on the netty buffer.
-        buffer.position(pos + 1);
+        Java8Compatibility.position(buffer, pos + 1);
         buffer = null;
         pos = 0;
         limitMinusOne = 0;
@@ -2475,7 +2475,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(pos + 1);
+      Java8Compatibility.position(buffer, pos + 1);
       buffer.put(value, offset, length);
     }
 
@@ -2494,7 +2494,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(pos + 1);
+      Java8Compatibility.position(buffer, pos + 1);
       buffer.put(value, offset, length);
     }
 
@@ -2506,7 +2506,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(pos + 1);
+      Java8Compatibility.position(buffer, pos + 1);
       buffer.put(value);
     }
 
@@ -2526,7 +2526,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(pos + 1);
+      Java8Compatibility.position(buffer, pos + 1);
       buffer.put(value);
     }
 
@@ -2576,8 +2576,8 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       buffers.addFirst(allocatedBuffer);
 
       buffer = nioBuffer;
-      buffer.limit(buffer.capacity());
-      buffer.position(0);
+      Java8Compatibility.limit(buffer, buffer.capacity());
+      Java8Compatibility.position(buffer, 0);
 
       bufferOffset = UnsafeUtil.addressOffset(buffer);
       limitMinusOne = bufferOffset + (buffer.limit() - 1);
@@ -2602,7 +2602,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       if (buffer != null) {
         totalDoneBytes += bytesWrittenToCurrentBuffer();
         // Update the indices on the netty buffer.
-        buffer.position(bufferPos() + 1);
+        Java8Compatibility.position(buffer, bufferPos() + 1);
         buffer = null;
         pos = 0;
         limitMinusOne = 0;
@@ -3016,7 +3016,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(bufferPos() + 1);
+      Java8Compatibility.position(buffer, bufferPos() + 1);
       buffer.put(value, offset, length);
     }
 
@@ -3035,7 +3035,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(bufferPos() + 1);
+      Java8Compatibility.position(buffer, bufferPos() + 1);
       buffer.put(value, offset, length);
     }
 
@@ -3047,7 +3047,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(bufferPos() + 1);
+      Java8Compatibility.position(buffer, bufferPos() + 1);
       buffer.put(value);
     }
 
@@ -3067,7 +3067,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
       }
 
       pos -= length;
-      buffer.position(bufferPos() + 1);
+      Java8Compatibility.position(buffer, bufferPos() + 1);
       buffer.put(value);
     }
 

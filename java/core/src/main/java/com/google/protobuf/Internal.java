@@ -313,7 +313,11 @@ public final class Internal {
     }
     // ByteBuffer.equals() will only compare the remaining bytes, but we want to
     // compare all the content.
-    return a.duplicate().clear().equals(b.duplicate().clear());
+    ByteBuffer aDuplicate = a.duplicate();
+    Java8Compatibility.clear(aDuplicate);
+    ByteBuffer bDuplicate = b.duplicate();
+    Java8Compatibility.clear(bDuplicate);
+    return aDuplicate.equals(bDuplicate);
   }
 
   /** Helper method for implementing {@link Message#equals(Object)} for bytes field. */
@@ -353,7 +357,7 @@ public final class Internal {
           bytes.capacity() > DEFAULT_BUFFER_SIZE ? DEFAULT_BUFFER_SIZE : bytes.capacity();
       final byte[] buffer = new byte[bufferSize];
       final ByteBuffer duplicated = bytes.duplicate();
-      duplicated.clear();
+      Java8Compatibility.clear(duplicated);
       int h = bytes.capacity();
       while (duplicated.remaining() > 0) {
         final int length =
