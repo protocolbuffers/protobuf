@@ -244,6 +244,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
            R"rs(
       #[repr(C)]
       #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+      #[allow(dead_code)]
       pub(super) enum $case_enum_name$ {
         $cases$
 
@@ -274,7 +275,9 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
                     {"rs_getter", field.name()},
                     {"type", rs_type},
                 },
-                R"rs($Msg$_::$case_enum_name$::$case$ => $Msg$_::$view_enum_name$::$case$(self.$rs_getter$()),
+                R"rs(
+                $Msg$_::$case_enum_name$::$case$ =>
+                    $Msg$_::$view_enum_name$::$case$(self.$rs_getter$()),
                 )rs");
           }
         }},
@@ -309,8 +312,11 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
                   field.type() == FieldDescriptor::TYPE_MESSAGE
                       ? ""
                       : ".try_into_mut().unwrap()"}},
-                R"rs($Msg$_::$case_enum_name$::$case$ =>
-               $Msg$_::$mut_enum_name$::$case$(self.$rs_mut_getter$()$into_mut_transform$), )rs");
+                R"rs(
+                $Msg$_::$case_enum_name$::$case$ =>
+                    $Msg$_::$mut_enum_name$::$case$(
+                        self.$rs_mut_getter$()$into_mut_transform$),
+               )rs");
           }
         }},
        {"case_thunk", Thunk(ctx, oneof, "case")}},
