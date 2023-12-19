@@ -1625,7 +1625,7 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
 
 // Must be last.
 
-typedef struct upb_Message_Extension upb_Message_Extension;
+typedef struct upb_Extension upb_Extension;
 
 #ifdef __cplusplus
 extern "C" {
@@ -1749,7 +1749,7 @@ UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-struct upb_Message_Extension {
+struct upb_Extension {
   const upb_MiniTableExtension* ext;
   union {
     upb_StringView str;
@@ -1765,18 +1765,18 @@ extern "C" {
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
+upb_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext, upb_Arena* arena);
 
 // Returns an array of extensions for this message.
 // Note: the array is ordered in reverse relative to the order of creation.
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count);
+const upb_Extension* _upb_Message_Getexts(const upb_Message* msg,
+                                          size_t* count);
 
 // Returns an extension for the given field number, or NULL if no extension
 // exists for this field number.
-const upb_Message_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTableExtension* ext);
+const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
+                                         const upb_MiniTableExtension* ext);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -2381,7 +2381,7 @@ extern const double kUpb_NaN;
 
 struct upb_Message_InternalData {
   /* Total size of this structure, including the data that follows.
-   * Must be aligned to 8, which is alignof(upb_Message_Extension) */
+   * Must be aligned to 8, which is alignof(upb_Extension) */
   uint32_t size;
 
   /* Offsets relative to the beginning of this structure.
@@ -2644,7 +2644,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 UPB_INLINE void _upb_Message_GetExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
+  const upb_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
@@ -2694,8 +2694,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
     upb_Message* msg, const upb_MiniTableExtension* mt_ext, const void* val,
     upb_Arena* a) {
   UPB_ASSERT(a);
-  upb_Message_Extension* ext =
-      _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
+  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (&mt_ext->UPB_PRIVATE(field), &ext->data, val);
@@ -2706,13 +2705,12 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
     upb_Message* msg, const upb_MiniTableExtension* ext_l) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) return;
-  const upb_Message_Extension* base =
-      UPB_PTR_AT(in->internal, in->internal->ext_begin, upb_Message_Extension);
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, ext_l);
+  const upb_Extension* base =
+      UPB_PTR_AT(in->internal, in->internal->ext_begin, upb_Extension);
+  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, ext_l);
   if (ext) {
     *ext = *base;
-    in->internal->ext_begin += sizeof(upb_Message_Extension);
+    in->internal->ext_begin += sizeof(upb_Extension);
   }
 }
 
@@ -12284,8 +12282,8 @@ extern "C" {
 #endif
 
 // Returns the extension with the given field number, or NULL on failure.
-const upb_Message_Extension* upb_Message_FindExtensionByNumber(
-    const upb_Message* msg, uint32_t field_number);
+const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
+                                                       uint32_t field_number);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -12424,9 +12422,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
 
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const upb_Message_Extension** ext) {
+                                       const upb_Extension** ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const upb_Message_Extension*)s->entries[sorted->pos++];
+  *ext = (const upb_Extension*)s->entries[sorted->pos++];
   return true;
 }
 
@@ -12438,9 +12436,8 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted);
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const upb_Message_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted);
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */

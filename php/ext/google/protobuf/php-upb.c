@@ -5934,10 +5934,10 @@ void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner) {
 
 // Must be last.
 
-const upb_Message_Extension* upb_Message_FindExtensionByNumber(
-    const upb_Message* msg, uint32_t field_number) {
+const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
+                                                       uint32_t field_number) {
   size_t count = 0;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+  const upb_Extension* ext = _upb_Message_Getexts(msg, &count);
 
   while (count--) {
     if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;
@@ -6154,9 +6154,8 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
 }
 
 static bool upb_Clone_ExtensionValue(
-    const upb_MiniTableExtension* mini_table_ext,
-    const upb_Message_Extension* source, upb_Message_Extension* dest,
-    upb_Arena* arena) {
+    const upb_MiniTableExtension* mini_table_ext, const upb_Extension* source,
+    upb_Extension* dest, upb_Arena* arena) {
   dest->data = source->data;
   return upb_Clone_MessageValue(
       &dest->data,
@@ -6232,11 +6231,11 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
   // Clone extensions.
   size_t ext_count;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(src, &ext_count);
+  const upb_Extension* ext = _upb_Message_Getexts(src, &ext_count);
   for (size_t i = 0; i < ext_count; ++i) {
-    const upb_Message_Extension* msg_ext = &ext[i];
+    const upb_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-    upb_Message_Extension* dst_ext =
+    upb_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
     if (upb_MiniTableField_IsScalar(field)) {
@@ -6415,10 +6414,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
 
 // Must be last.
 
-const upb_Message_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTableExtension* e) {
+const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
+                                         const upb_MiniTableExtension* e) {
   size_t n;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
+  const upb_Extension* ext = _upb_Message_Getexts(msg, &n);
 
   // For now we use linear search exclusively to find extensions.
   // If this becomes an issue due to messages with lots of extensions,
@@ -6432,12 +6431,12 @@ const upb_Message_Extension* _upb_Message_Getext(
   return NULL;
 }
 
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count) {
+const upb_Extension* _upb_Message_Getexts(const upb_Message* msg,
+                                          size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
-    *count = (in->internal->size - in->internal->ext_begin) /
-             sizeof(upb_Message_Extension);
+    *count =
+        (in->internal->size - in->internal->ext_begin) / sizeof(upb_Extension);
     return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
   } else {
     *count = 0;
@@ -6445,16 +6444,16 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
   }
 }
 
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
+upb_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, e);
+  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Message_Extension), arena)) return NULL;
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Extension), arena))
+    return NULL;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(upb_Message_Extension);
+  in->internal->ext_begin -= sizeof(upb_Extension);
   ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  memset(ext, 0, sizeof(upb_Message_Extension));
+  memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
   return ext;
 }
@@ -6738,17 +6737,16 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 }
 
 static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
-  const upb_Message_Extension* const* a = _a;
-  const upb_Message_Extension* const* b = _b;
+  const upb_Extension* const* a = _a;
+  const upb_Extension* const* b = _b;
   uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
   uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
   assert(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const upb_Message_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted) {
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted) {
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
 
   for (size_t i = 0; i < count; i++) {
@@ -11438,7 +11436,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   if (ext_pool) {
     // Return any extensions that are set.
     size_t count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+    const upb_Extension* ext = _upb_Message_Getexts(msg, &count);
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));
@@ -13484,7 +13482,7 @@ enum {
 static void upb_Decoder_AddKnownMessageSetItem(
     upb_Decoder* d, upb_Message* msg, const upb_MiniTableExtension* item_mt,
     const char* data, uint32_t size) {
-  upb_Message_Extension* ext =
+  upb_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, item_mt, &d->arena);
   if (UPB_UNLIKELY(!ext)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -13828,7 +13826,7 @@ static const char* _upb_Decoder_DecodeKnownField(
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
         (const upb_MiniTableExtension*)field;
-    upb_Message_Extension* ext =
+    upb_Extension* ext =
         _upb_Message_GetOrCreateExtension(msg, ext_layout, &d->arena);
     if (UPB_UNLIKELY(!ext)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -15537,8 +15535,7 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
   }
 }
 
-static void encode_msgset_item(upb_encstate* e,
-                               const upb_Message_Extension* ext) {
+static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
   size_t size;
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   encode_message(e, ext->data.ptr,
@@ -15550,7 +15547,7 @@ static void encode_msgset_item(upb_encstate* e,
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
 }
 
-static void encode_ext(upb_encstate* e, const upb_Message_Extension* ext,
+static void encode_ext(upb_encstate* e, const upb_Extension* ext,
                        bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
@@ -15588,7 +15585,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;
@@ -15598,7 +15595,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
         }
         _upb_mapsorter_popmap(&e->sorter, &sorted);
       } else {
-        const upb_Message_Extension* end = ext + ext_count;
+        const upb_Extension* end = ext + ext_count;
         for (; ext != end; ext++) {
           encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }
