@@ -9,32 +9,18 @@ load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "mem",
+    srcs = [
+        "alloc.c",
+        "arena.c",
+    ],
     hdrs = [
         "alloc.h",
         "arena.h",
         "arena.hpp",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":internal",
-        "//upb:port",
-    ],
-)
-
-cc_library(
-    name = "internal",
-    srcs = [
-        "alloc.c",
-        "alloc.h",
-        "arena.c",
-        "arena.h",
-    ],
-    hdrs = [
         "internal/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//upb:__pkg__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//upb:port",
     ],
@@ -44,9 +30,8 @@ cc_test(
     name = "arena_test",
     srcs = ["arena_test.cc"],
     deps = [
+        ":mem",
         "@com_google_googletest//:gtest_main",
-        "//upb:mem",
-        "//upb:mem_internal",
         "//upb:port",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",

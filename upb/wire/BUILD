@@ -51,7 +51,6 @@ cc_library(
         "//upb:base",
         "//upb:hash",
         "//upb:mem",
-        "//upb:mem_internal",
         "//upb:message",
         "//upb:message_accessors_internal",
         "//upb:message_internal",

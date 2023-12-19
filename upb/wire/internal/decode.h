@@ -33,7 +33,10 @@ typedef struct upb_Decoder {
   uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
   uint16_t options;
   bool missing_required;
-  upb_Arena arena;
+  union {
+    upb_Arena arena;
+    void* foo[UPB_ARENA_SIZE_HACK];
+  };
   upb_DecodeStatus status;
   jmp_buf err;
 
