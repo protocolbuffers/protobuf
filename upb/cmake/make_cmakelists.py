@@ -49,35 +49,53 @@ import re
 _stages = ["_stage0", "_stage1", ""]
 _block_targets = ["libupb.so", "libupb_generator.so", "conformance_upb", "conformance_upb_dynamic_minitable", "upbdev", "protoc-gen-upbdev"]
 _special_targets_mapping = {
-  "//:protobuf" : "protobuf::libprotobuf",
-  "//src/google/protobuf/compiler:code_generator" : "protobuf::libprotoc",
-  "//third_party/utf8_range": "utf8_range",
-  "@utf8_range": "utf8_range",
+  "//:protobuf" : ["protobuf::libprotobuf"],
+  "//src/google/protobuf/compiler:code_generator" : ["protobuf::libprotoc", "protobuf::libprotobuf"],
+  "@utf8_range": ["utf8_range"],
+  "//third_party/utf8_range": ["utf8_range"],
 }
 _directory_sep = re.compile('[/\\:]')
 
-def MappingThirdPartyDep(dep, target_prefix):
+def MappingThirdPartyDep(output, dep, target_prefix):
   if dep.startswith("//upb/"):
-    return "upb_" + _directory_sep.sub("_", dep[6:])
+    output.append("upb_" + _directory_sep.sub("_", dep[6:]))
+    return
   if dep.startswith("//upb_generator/"):
-    return "upb_generator_" + _directory_sep.sub("_", dep[16:])
+    output.append("upb_generator_" + _directory_sep.sub("_", dep[16:]))
+    return
   if dep.startswith("//lua/"):
-    return "lua_" + _directory_sep.sub("_", dep[6:])
+    output.append("lua_" + _directory_sep.sub("_", dep[6:]))
+    return
   if dep in _special_targets_mapping:
-    return _special_targets_mapping[dep]
+    output += _special_targets_mapping[dep]
+    return
   if dep.startswith("@com_google_absl//"):
     p = dep.rfind(":")
     if p < 0:
-      return "absl::" + dep[dep.rfind("/")+1:]
-    return "absl::" + dep[p+1:]
+      output.append("absl::" + dep[dep.rfind("/")+1:])
+      return
+    output.append("absl::" + dep[p+1:])
+    return
   if dep.startswith(":"):
-    return _directory_sep.sub("_", target_prefix + dep[1:])
-  if dep.startswith("//"):
-    return _directory_sep.sub("_", dep[2:])
-  return _directory_sep.sub("_", dep)
+    output.append(_directory_sep.sub("_", target_prefix + dep[1:]))
+  elif dep.startswith("//"):
+    output.append(_directory_sep.sub("_", dep[2:]))
+  else:
+    output.append(_directory_sep.sub("_", dep))
 
-def StripFirstChar(deps, target_prefix):
-  return [MappingThirdPartyDep(dep, target_prefix) for dep in deps]
+def MappingThirdPartyDeps(deps, target_prefix):
+  origin_deps = []
+  for dep in deps:
+    MappingThirdPartyDep(origin_deps, dep, target_prefix)
+  origin_deps.reverse()
+  duplicated_checker = set()
+  result_deps = []
+  for dep in origin_deps:
+    if dep not in duplicated_checker:
+      result_deps.append(dep)
+      duplicated_checker.add(dep)
+  result_deps.reverse()
+  return result_deps
 
 def IsSourceFile(name):
   return name.endswith(".c") or name.endswith(".cc")
@@ -132,7 +150,7 @@ class BuildFileFunctions(object):
     self.converter.toplevel += "target_link_libraries(%s%s\n  %s)\n" % (
         self.target_prefix + kwargs["name"] + stage,
         keyword,
-        "\n  ".join(StripFirstChar(kwargs["deps"], self.target_prefix))
+        "\n  ".join(MappingThirdPartyDeps(kwargs["deps"], self.target_prefix))
     )
 
   def _add_bootstrap_deps(self, kwargs, keyword="", stage = "", deps_key = "bootstrap_deps", target_name = None):
@@ -143,7 +161,7 @@ class BuildFileFunctions(object):
     self.converter.toplevel += "target_link_libraries({0}{1}\n  {2})\n".format(
         self.target_prefix + target_name + stage,
         keyword,
-        "\n  ".join([dep + stage for dep in StripFirstChar(kwargs[deps_key], self.target_prefix)])
+        "\n  ".join([dep + stage for dep in MappingThirdPartyDeps(kwargs[deps_key], self.target_prefix)])
     )
 
   def load(self, *args):
@@ -775,11 +793,11 @@ class Converter(object):
     %(toplevel)s
 
     if (UPB_ENABLE_CODEGEN)
-      set(PROTOC_PROGRAM "\$<TARGET_FILE:protobuf::protoc>")
-      set(PROTOC_GEN_UPB_PROGRAM "\$<TARGET_FILE:upb_generator_protoc-gen-upb>")
-      set(PROTOC_GEN_UPB_MINITABLE_PROGRAM "\$<TARGET_FILE:upb_generator_protoc-gen-upb_minitable>")
-      set(PROTOC_GEN_UPBDEFS_PROGRAM "\$<TARGET_FILE:upb_generator_protoc-gen-upbdefs>")
-      set(PROTOC_GEN_UPBLUA_PROGRAM "\$<TARGET_FILE:lua_protoc-gen-lua>")
+      set(PROTOC_PROGRAM "\\$<TARGET_FILE:protobuf::protoc>")
+      set(PROTOC_GEN_UPB_PROGRAM "\\$<TARGET_FILE:upb_generator_protoc-gen-upb>")
+      set(PROTOC_GEN_UPB_MINITABLE_PROGRAM "\\$<TARGET_FILE:upb_generator_protoc-gen-upb_minitable>")
+      set(PROTOC_GEN_UPBDEFS_PROGRAM "\\$<TARGET_FILE:upb_generator_protoc-gen-upbdefs>")
+      set(PROTOC_GEN_UPBLUA_PROGRAM "\\$<TARGET_FILE:lua_protoc-gen-lua>")
 
       unset(UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_LUAS)
       unset(UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_HEADERS)
@@ -822,7 +840,7 @@ class Converter(object):
       )
       add_library(upb_well_known_types ${UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_HEADERS}
         ${UPB_DESCRIPTOR_UPB_WELL_KNOWN_TYPES_SOURCES})
-      target_include_directories(upb_well_known_types PUBLIC "\$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types>")
+      target_include_directories(upb_well_known_types PUBLIC "\\$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/stage2/upb_well_known_types>")
       set_target_properties(upb_well_known_types PROPERTIES EXPORT_NAME "well_known_types")
       target_link_libraries(upb_well_known_types PUBLIC upb_upb upb_descriptor_upb_proto)
     endif()

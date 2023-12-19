@@ -2015,8 +2015,8 @@ if(NOT UPB_ENABLE_CODEGEN)
   )
 endif()
 target_link_libraries(upb_generator_names_stage0 PUBLIC
-  protobuf::libprotobuf
   protobuf::libprotoc
+  protobuf::libprotobuf
   absl::core_headers
   absl::flat_hash_map
   absl::strings)
@@ -2038,8 +2038,8 @@ if(NOT UPB_ENABLE_CODEGEN)
   )
 endif()
 target_link_libraries(upb_generator_names_stage1 PUBLIC
-  protobuf::libprotobuf
   protobuf::libprotoc
+  protobuf::libprotobuf
   absl::core_headers
   absl::flat_hash_map
   absl::strings)
@@ -2061,8 +2061,8 @@ if(NOT UPB_ENABLE_CODEGEN)
   )
 endif()
 target_link_libraries(upb_generator_names PUBLIC
-  protobuf::libprotobuf
   protobuf::libprotoc
+  protobuf::libprotobuf
   absl::core_headers
   absl::flat_hash_map
   absl::strings)
@@ -2354,6 +2354,7 @@ endif()
 set_target_properties(lua_protoc-gen-lua PROPERTIES OUTPUT_NAME protoc-gen-lua EXPORT_NAME protoc-gen-lua)
 target_link_libraries(lua_protoc-gen-lua PRIVATE
   protobuf::libprotoc
+  protobuf::libprotobuf
   absl::strings)
 endif()
 
