@@ -1792,8 +1792,11 @@ const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_H_
+#define UPB_MESSAGE_INTERNAL_MAP_H_
+
+#include <stddef.h>
+#include <string.h>
 
 
 #ifndef UPB_HASH_STR_TABLE_H_
@@ -2336,7 +2339,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 #endif
 
 
-#endif /* UPB_COLLECTIONS_INTERNAL_MAP_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MAP_H_ */
 
 /*
 ** Our memory representation for parsing tables and messages themselves.
@@ -3352,11 +3355,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
 }
 
 // Updates a map entry given an entry message.
-upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
-                                               const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* field,
-                                               upb_Message* map_entry_message,
-                                               upb_Arena* arena);
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
+                             const upb_MiniTableField* field,
+                             upb_Message* map_entry_message, upb_Arena* arena);
 
 // Compares two messages by serializing them and calling memcmp().
 bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
@@ -12346,14 +12347,16 @@ void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
+#define UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
 
 #include <stdlib.h>
 
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+#define UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+
+#include <stdint.h>
 
 
 // Map entries aren't actually stored for map fields, they are only used during
@@ -12384,7 +12387,7 @@ typedef struct {
   upb_MapEntryData data;
 } upb_MapEntry;
 
-#endif  // UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
 
 // Must be last.
 
@@ -12453,7 +12456,7 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
 #endif
 
 
-#endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
 
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_

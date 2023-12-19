@@ -5961,11 +5961,9 @@ const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
 
 // Must be last.
 
-upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
-                                               const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* f,
-                                               upb_Message* map_entry_message,
-                                               upb_Arena* arena) {
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
+                             const upb_MiniTableField* f,
+                             upb_Message* map_entry_message, upb_Arena* arena) {
   // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
   const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
       mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
@@ -5983,7 +5981,7 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
       upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
   upb_MessageValue map_entry_value = upb_Message_GetField(
       map_entry_message, map_entry_value_field, default_val);
-  return upb_Map_Insert(map, map_entry_key, map_entry_value, arena);
+  return upb_Map_Set(map, map_entry_key, map_entry_value, arena);
 }
 
 bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
@@ -6090,8 +6088,7 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
     if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
       return NULL;
     }
-    if (upb_Map_Insert(cloned_map, key, val, arena) ==
-        kUpb_MapInsertStatus_OutOfMemory) {
+    if (!upb_Map_Set(cloned_map, key, val, arena)) {
       return NULL;
     }
   }
