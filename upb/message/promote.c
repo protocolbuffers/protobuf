@@ -196,7 +196,7 @@ upb_DecodeStatus upb_Array_PromoteMessages(upb_Array* arr,
                                            int decode_options,
                                            upb_Arena* arena) {
   void** data = _upb_array_ptr(arr);
-  size_t size = arr->size;
+  size_t size = arr->UPB_PRIVATE(size);
   for (size_t i = 0; i < size; i++) {
     upb_TaggedMessagePtr tagged;
     memcpy(&tagged, &data[i], sizeof(tagged));

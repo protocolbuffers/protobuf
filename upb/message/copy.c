@@ -142,7 +142,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
 
 upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
-  size_t size = array->size;
+  size_t size = array->UPB_PRIVATE(size);
   upb_Array* cloned_array =
       UPB_PRIVATE(_upb_Array_New)(arena, size, upb_CType_SizeLg2(value_type));
   if (!cloned_array) {

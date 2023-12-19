@@ -503,7 +503,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           const upb_MiniTableField field = $3;
           const upb_Array* arr = upb_Message_GetArray(msg, &field);
           if (arr) {
-            if (size) *size = arr->size;
+            if (size) *size = arr->UPB_PRIVATE(size);
             return ($0 const*)_upb_array_constptr(arr);
           } else {
             if (size) *size = 0;
@@ -528,7 +528,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           const upb_MiniTableField field = $3;
           const upb_Array* arr = upb_Message_GetArray(msg, &field);
           if (size) {
-            *size = arr ? arr->size : 0;
+            *size = arr ? arr->UPB_PRIVATE(size) : 0;
           }
           return arr;
         }
@@ -537,7 +537,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           upb_Array* arr = upb_Message_GetOrCreateMutableArray(
               (upb_Message*)msg, &field, arena);
           if (size) {
-            *size = arr ? arr->size : 0;
+            *size = arr ? arr->UPB_PRIVATE(size) : 0;
           }
           return arr;
         }
@@ -649,7 +649,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           upb_MiniTableField field = $3;
           upb_Array* arr = upb_Message_GetMutableArray(msg, &field);
           if (arr) {
-            if (size) *size = arr->size;
+            if (size) *size = arr->UPB_PRIVATE(size);
             return ($0*)_upb_array_ptr(arr);
           } else {
             if (size) *size = 0;
@@ -674,12 +674,14 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           UPB_INLINE struct $0* $1_add_$2($1* msg, upb_Arena* arena) {
             upb_MiniTableField field = $4;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
-            if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+            if (!arr || !_upb_Array_ResizeUninitialized(
+                            arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return NULL;
             }
             struct $0* sub = (struct $0*)_upb_Message_New($3, arena);
             if (!arr || !sub) return NULL;
-            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
+            UPB_PRIVATE(_upb_Array_Set)
+            (arr, arr->UPB_PRIVATE(size) - 1, &sub, sizeof(sub));
             return sub;
           }
         )cc",
@@ -692,10 +694,12 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           UPB_INLINE bool $1_add_$2($1* msg, $0 val, upb_Arena* arena) {
             upb_MiniTableField field = $3;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
-            if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+            if (!arr || !_upb_Array_ResizeUninitialized(
+                            arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return false;
             }
-            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &val, sizeof(val));
+            UPB_PRIVATE(_upb_Array_Set)
+            (arr, arr->UPB_PRIVATE(size) - 1, &val, sizeof(val));
             return true;
           }
         )cc",

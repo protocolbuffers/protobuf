@@ -181,7 +181,7 @@ static void encode_tag(upb_encstate* e, uint32_t field_number,
 
 static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
                               size_t elem_size, uint32_t tag) {
-  size_t bytes = arr->size * elem_size;
+  size_t bytes = arr->UPB_PRIVATE(size) * elem_size;
   const char* data = _upb_array_constptr(arr);
   const char* ptr = data + bytes - elem_size;
 
@@ -313,14 +313,14 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
   bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - e->ptr;
 
-  if (arr == NULL || arr->size == 0) {
+  if (arr == NULL || arr->UPB_PRIVATE(size) == 0) {
     return;
   }
 
 #define VARINT_CASE(ctype, encode)                                         \
   {                                                                        \
     const ctype* start = _upb_array_constptr(arr);                         \
-    const ctype* ptr = start + arr->size;                                  \
+    const ctype* ptr = start + arr->UPB_PRIVATE(size);                     \
     uint32_t tag =                                                         \
         packed ? 0 : (f->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint; \
     do {                                                                   \
@@ -365,7 +365,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes: {
       const upb_StringView* start = _upb_array_constptr(arr);
-      const upb_StringView* ptr = start + arr->size;
+      const upb_StringView* ptr = start + arr->UPB_PRIVATE(size);
       do {
         ptr--;
         encode_bytes(e, ptr->data, ptr->size);
@@ -376,7 +376,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     }
     case kUpb_FieldType_Group: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
-      const upb_TaggedMessagePtr* ptr = start + arr->size;
+      const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
@@ -392,7 +392,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     }
     case kUpb_FieldType_Message: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
-      const upb_TaggedMessagePtr* ptr = start + arr->size;
+      const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
