@@ -100,12 +100,12 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetOneofCase)(
 
 UPB_INLINE void* _upb_MiniTableField_GetPtr(upb_Message* msg,
                                             const upb_MiniTableField* field) {
-  return (char*)msg + field->offset;
+  return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE const void* _upb_MiniTableField_GetConstPtr(
     const upb_Message* msg, const upb_MiniTableField* field) {
-  return (char*)msg + field->offset;
+  return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(

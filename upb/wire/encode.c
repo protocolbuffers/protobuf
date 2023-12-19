@@ -309,7 +309,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
 static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* f) {
-  const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
+  const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
   bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - e->ptr;
 
@@ -432,7 +432,7 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
 static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTableSub* subs,
                        const upb_MiniTableField* f) {
-  const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
+  const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
   const upb_MiniTable* layout =
       upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(layout->UPB_PRIVATE(field_count) == 2);
@@ -467,7 +467,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
                                 const upb_MiniTableField* f) {
   if (f->presence == 0) {
     // Proto3 presence or map/array.
-    const void* mem = UPB_PTR_AT(msg, f->offset, void);
+    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
     switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
       case kUpb_FieldRep_1Byte: {
         char ch;
@@ -512,7 +512,8 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
       encode_map(e, msg, subs, field);
       break;
     case kUpb_FieldMode_Scalar:
-      encode_scalar(e, UPB_PTR_AT(msg, field->offset, void), subs, field);
+      encode_scalar(e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), subs,
+                    field);
       break;
     default:
       UPB_UNREACHABLE();

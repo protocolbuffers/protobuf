@@ -85,7 +85,8 @@ std::string FieldInitializer(upb::FieldDefPtr field,
                              const upb_MiniTableField* field32) {
   return absl::Substitute(
       "{$0, $1, $2, $3, $4, $5}", upb_MiniTableField_Number(field64),
-      ArchDependentSize(field32->offset, field64->offset),
+      ArchDependentSize(field32->UPB_PRIVATE(offset),
+                        field64->UPB_PRIVATE(offset)),
       ArchDependentSize(field32->presence, field64->presence),
       field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
           ? "kUpb_NoSub"
