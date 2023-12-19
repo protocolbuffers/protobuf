@@ -1035,7 +1035,7 @@ TEST(Movable, Works) {
   EXPECT_FALSE(internal::IsMovable<NonMovable>::value);
 }
 
-TEST(RepeatedField, MoveAdd) {
+TEST(RepeatedPtrField, MoveAdd) {
   RepeatedPtrField<TestAllTypes> field;
   TestAllTypes test_all_types;
   auto* optional_nested_message =
@@ -1913,20 +1913,20 @@ TEST(RepeatedPtrField, SmallOptimization) {
   EXPECT_EQ(array->pointer_begin()[0], &str);
   // The T** in pointer_begin points into the sso in the object.
   EXPECT_TRUE(std::less_equal<void*>{}(array, &*array->pointer_begin()));
-  EXPECT_TRUE(std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+  EXPECT_TRUE(std::less<void*>{}(&*array->pointer_begin(), array + 1));
 
   // Adding a second object stops sso.
   std::string str2;
   array->UnsafeArenaAddAllocated(&str2);
-  EXPECT_EQ(array->Capacity(), 3);
+  EXPECT_EQ(array->Capacity(), 4);
   // Backing array and the strings.
   EXPECT_EQ(array->SpaceUsedExcludingSelf(),
-            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+            array->Capacity() * sizeof(void*) + 2 * sizeof(str));
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.
   EXPECT_FALSE(std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
-               std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+               std::less<void*>{}(&*array->pointer_begin(), array + 1));
 }
 
 TEST(RepeatedPtrField, CopyAssign) {
