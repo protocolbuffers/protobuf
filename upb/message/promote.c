@@ -67,8 +67,7 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
 
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena,
-    const upb_Message_Extension** extension) {
+    int decode_options, upb_Arena* arena, const upb_Extension** extension) {
   UPB_ASSERT(upb_MiniTableField_CType(upb_MiniTableExtension_AsField(
                  ext_table)) == kUpb_CType_Message);
   *extension = _upb_Message_Getext(msg, ext_table);
@@ -102,8 +101,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
-  upb_Message_Extension* ext =
-      _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
+  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }

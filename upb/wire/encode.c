@@ -519,8 +519,7 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
   }
 }
 
-static void encode_msgset_item(upb_encstate* e,
-                               const upb_Message_Extension* ext) {
+static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
   size_t size;
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   encode_message(e, ext->data.ptr,
@@ -532,7 +531,7 @@ static void encode_msgset_item(upb_encstate* e,
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
 }
 
-static void encode_ext(upb_encstate* e, const upb_Message_Extension* ext,
+static void encode_ext(upb_encstate* e, const upb_Extension* ext,
                        bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
@@ -570,7 +569,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;
@@ -580,7 +579,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
         }
         _upb_mapsorter_popmap(&e->sorter, &sorted);
       } else {
-        const upb_Message_Extension* end = ext + ext_count;
+        const upb_Extension* end = ext + ext_count;
         for (; ext != end; ext++) {
           encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }

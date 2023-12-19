@@ -18,10 +18,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const upb_Message_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTableExtension* e) {
+const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
+                                         const upb_MiniTableExtension* e) {
   size_t n;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
+  const upb_Extension* ext = _upb_Message_Getexts(msg, &n);
 
   // For now we use linear search exclusively to find extensions.
   // If this becomes an issue due to messages with lots of extensions,
@@ -35,12 +35,12 @@ const upb_Message_Extension* _upb_Message_Getext(
   return NULL;
 }
 
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count) {
+const upb_Extension* _upb_Message_Getexts(const upb_Message* msg,
+                                          size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
-    *count = (in->internal->size - in->internal->ext_begin) /
-             sizeof(upb_Message_Extension);
+    *count =
+        (in->internal->size - in->internal->ext_begin) / sizeof(upb_Extension);
     return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
   } else {
     *count = 0;
@@ -48,16 +48,16 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
   }
 }
 
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
+upb_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, e);
+  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Message_Extension), arena)) return NULL;
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Extension), arena))
+    return NULL;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(upb_Message_Extension);
+  in->internal->ext_begin -= sizeof(upb_Extension);
   ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  memset(ext, 0, sizeof(upb_Message_Extension));
+  memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
   return ext;
 }

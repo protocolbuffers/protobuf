@@ -122,7 +122,7 @@ TEST(GeneratedCode, Extensions) {
   char* serialized =
       upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
 
-  const upb_Message_Extension* upb_ext2;
+  const upb_Extension* upb_ext2;
   upb_test_ModelExtension1* ext1;
   upb_test_ModelExtension2* ext2;
   upb_GetExtension_Status promote_status;

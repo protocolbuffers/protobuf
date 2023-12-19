@@ -41,7 +41,7 @@ extern const double kUpb_NaN;
 
 struct upb_Message_InternalData {
   /* Total size of this structure, including the data that follows.
-   * Must be aligned to 8, which is alignof(upb_Message_Extension) */
+   * Must be aligned to 8, which is alignof(upb_Extension) */
   uint32_t size;
 
   /* Offsets relative to the beginning of this structure.
