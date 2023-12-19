@@ -5934,10 +5934,19 @@ void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner) {
 
 // Must be last.
 
+const upb_Extension* upb_Message_ExtensionByIndex(const upb_Message* msg,
+                                                  size_t index) {
+  size_t count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+
+  UPB_ASSERT(index < count);
+  return &ext[index];
+}
+
 const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
                                                        uint32_t field_number) {
-  size_t count = 0;
-  const upb_Extension* ext = _upb_Message_Getexts(msg, &count);
+  size_t count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
 
   while (count--) {
     if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;
@@ -6231,7 +6240,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
   // Clone extensions.
   size_t ext_count;
-  const upb_Extension* ext = _upb_Message_Getexts(src, &ext_count);
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(src, &ext_count);
   for (size_t i = 0; i < ext_count; ++i) {
     const upb_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
@@ -6414,10 +6423,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
 
 // Must be last.
 
-const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
-                                         const upb_MiniTableExtension* e) {
+const struct upb_Extension* _upb_Message_Getext(
+    const upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
-  const upb_Extension* ext = _upb_Message_Getexts(msg, &n);
+  const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
 
   // For now we use linear search exclusively to find extensions.
   // If this becomes an issue due to messages with lots of extensions,
@@ -6431,12 +6440,12 @@ const upb_Extension* _upb_Message_Getext(const upb_Message* msg,
   return NULL;
 }
 
-const upb_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                          size_t* count) {
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
+    const upb_Message* msg, size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
-    *count =
-        (in->internal->size - in->internal->ext_begin) / sizeof(upb_Extension);
+    *count = (in->internal->size - in->internal->ext_begin) /
+             sizeof(struct upb_Extension);
     return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
   } else {
     *count = 0;
@@ -6444,16 +6453,18 @@ const upb_Extension* _upb_Message_Getexts(const upb_Message* msg,
   }
 }
 
-upb_Extension* _upb_Message_GetOrCreateExtension(
+struct upb_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
-  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, e);
+  struct upb_Extension* ext =
+      (struct upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Extension), arena))
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension),
+                                         arena))
     return NULL;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(upb_Extension);
+  in->internal->ext_begin -= sizeof(struct upb_Extension);
   ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  memset(ext, 0, sizeof(upb_Extension));
+  memset(ext, 0, sizeof(struct upb_Extension));
   ext->ext = e;
   return ext;
 }
@@ -6819,7 +6830,7 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   size_t count;
-  _upb_Message_Getexts(msg, &count);
+  UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
   return count;
 }
 
@@ -11437,7 +11448,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   if (ext_pool) {
     // Return any extensions that are set.
     size_t count;
-    const upb_Extension* ext = _upb_Message_Getexts(msg, &count);
+    const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));
@@ -15587,7 +15598,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Extension* ext =
+        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;
