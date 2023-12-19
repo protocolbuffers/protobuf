@@ -1095,7 +1095,7 @@ UPB_INLINE int upb_FieldType_SizeLg2(upb_FieldType field_type) {
 // LINT.IfChange(struct_definition)
 struct upb_MiniTableField {
   uint32_t UPB_ONLYBITS(number);
-  uint16_t offset;
+  uint16_t UPB_ONLYBITS(offset);
   int16_t presence;  // If >0, hasbit_index.  If <0, ~oneof_index
 
   // Indexes into `upb_MiniTable.subs`
@@ -1247,6 +1247,11 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasPresence)(
 UPB_INLINE uint32_t
 UPB_PRIVATE(_upb_MiniTableField_Number)(const struct upb_MiniTableField* f) {
   return f->UPB_ONLYBITS(number);
+}
+
+UPB_INLINE uint16_t
+UPB_PRIVATE(_upb_MiniTableField_Offset)(const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE size_t
@@ -2515,12 +2520,12 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetOneofCase)(
 
 UPB_INLINE void* _upb_MiniTableField_GetPtr(upb_Message* msg,
                                             const upb_MiniTableField* field) {
-  return (char*)msg + field->offset;
+  return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE const void* _upb_MiniTableField_GetConstPtr(
     const upb_Message* msg, const upb_MiniTableField* field) {
-  return (char*)msg + field->offset;
+  return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
@@ -3262,13 +3267,14 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
-  upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
+  upb_Message* sub_message =
+      *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
         mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
-    *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
+    *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*) = sub_message;
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   }
   return sub_message;
