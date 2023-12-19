@@ -68,13 +68,12 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
   return opts;
 }
 
-bool IsInCurrentlyGeneratingCrate(Context<FileDescriptor> file) {
-  return file.generator_context().is_file_in_current_crate(&file.desc());
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file) {
+  return ctx.generator_context().is_file_in_current_crate(file);
 }
 
-bool IsInCurrentlyGeneratingCrate(Context<Descriptor> message) {
-  return message.generator_context().is_file_in_current_crate(
-      message.desc().file());
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message) {
+  return IsInCurrentlyGeneratingCrate(ctx, *message.file());
 }
 
 }  // namespace rust

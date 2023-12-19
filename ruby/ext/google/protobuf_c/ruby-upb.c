@@ -5448,10 +5448,19 @@ void upb_Arena_DecRefFor(upb_Arena* arena, const void* owner) {
 
 // Must be last.
 
-const upb_Message_Extension* upb_Message_FindExtensionByNumber(
-    const upb_Message* msg, uint32_t field_number) {
-  size_t count = 0;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+const upb_Extension* upb_Message_ExtensionByIndex(const upb_Message* msg,
+                                                  size_t index) {
+  size_t count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+
+  UPB_ASSERT(index < count);
+  return &ext[index];
+}
+
+const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
+                                                       uint32_t field_number) {
+  size_t count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
 
   while (count--) {
     if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;
@@ -5466,11 +5475,9 @@ const upb_Message_Extension* upb_Message_FindExtensionByNumber(
 
 // Must be last.
 
-upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
-                                               const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* f,
-                                               upb_Message* map_entry_message,
-                                               upb_Arena* arena) {
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
+                             const upb_MiniTableField* f,
+                             upb_Message* map_entry_message, upb_Arena* arena) {
   // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
   const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
       mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
@@ -5488,7 +5495,7 @@ upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
       upb_Message_GetField(map_entry_message, map_entry_key_field, default_val);
   upb_MessageValue map_entry_value = upb_Message_GetField(
       map_entry_message, map_entry_value_field, default_val);
-  return upb_Map_Insert(map, map_entry_key, map_entry_value, arena);
+  return upb_Map_Set(map, map_entry_key, map_entry_value, arena);
 }
 
 bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
@@ -5595,8 +5602,7 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
     if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
       return NULL;
     }
-    if (upb_Map_Insert(cloned_map, key, val, arena) ==
-        kUpb_MapInsertStatus_OutOfMemory) {
+    if (!upb_Map_Set(cloned_map, key, val, arena)) {
       return NULL;
     }
   }
@@ -5630,7 +5636,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
 
 upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
-  size_t size = array->size;
+  size_t size = array->UPB_PRIVATE(size);
   upb_Array* cloned_array =
       UPB_PRIVATE(_upb_Array_New)(arena, size, upb_CType_SizeLg2(value_type));
   if (!cloned_array) {
@@ -5668,9 +5674,8 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
 }
 
 static bool upb_Clone_ExtensionValue(
-    const upb_MiniTableExtension* mini_table_ext,
-    const upb_Message_Extension* source, upb_Message_Extension* dest,
-    upb_Arena* arena) {
+    const upb_MiniTableExtension* mini_table_ext, const upb_Extension* source,
+    upb_Extension* dest, upb_Arena* arena) {
   dest->data = source->data;
   return upb_Clone_MessageValue(
       &dest->data,
@@ -5746,11 +5751,11 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
   // Clone extensions.
   size_t ext_count;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(src, &ext_count);
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(src, &ext_count);
   for (size_t i = 0; i < ext_count; ++i) {
-    const upb_Message_Extension* msg_ext = &ext[i];
+    const upb_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-    upb_Message_Extension* dst_ext =
+    upb_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
     if (upb_MiniTableField_IsScalar(field)) {
@@ -5830,13 +5835,13 @@ const void* upb_Array_DataPtr(const upb_Array* arr) {
 
 void* upb_Array_MutableDataPtr(upb_Array* arr) { return _upb_array_ptr(arr); }
 
-size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
+size_t upb_Array_Size(const upb_Array* arr) { return arr->UPB_PRIVATE(size); }
 
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   upb_MessageValue ret;
   const char* data = _upb_array_constptr(arr);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
-  UPB_ASSERT(i < arr->size);
+  UPB_ASSERT(i < arr->UPB_PRIVATE(size));
   memcpy(&ret, data + (i << lg2), 1 << lg2);
   return ret;
 }
@@ -5844,16 +5849,16 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
 void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
   char* data = _upb_array_ptr(arr);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
-  UPB_ASSERT(i < arr->size);
+  UPB_ASSERT(i < arr->UPB_PRIVATE(size));
   memcpy(data + (i << lg2), &val, 1 << lg2);
 }
 
 bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
   UPB_ASSERT(arena);
-  if (!_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+  if (!_upb_Array_ResizeUninitialized(arr, arr->UPB_PRIVATE(size) + 1, arena)) {
     return false;
   }
-  upb_Array_Set(arr, arr->size - 1, val);
+  upb_Array_Set(arr, arr->UPB_PRIVATE(size) - 1, val);
   return true;
 }
 
@@ -5867,10 +5872,11 @@ void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
 bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
                       upb_Arena* arena) {
   UPB_ASSERT(arena);
-  UPB_ASSERT(i <= arr->size);
-  UPB_ASSERT(count + arr->size >= count);
-  const size_t oldsize = arr->size;
-  if (!_upb_Array_ResizeUninitialized(arr, arr->size + count, arena)) {
+  UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
+  UPB_ASSERT(count + arr->UPB_PRIVATE(size) >= count);
+  const size_t oldsize = arr->UPB_PRIVATE(size);
+  if (!_upb_Array_ResizeUninitialized(arr, arr->UPB_PRIVATE(size) + count,
+                                      arena)) {
     return false;
   }
   upb_Array_Move(arr, i + count, i, oldsize - i);
@@ -5884,17 +5890,17 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
   const size_t end = i + count;
   UPB_ASSERT(i <= end);
-  UPB_ASSERT(end <= arr->size);
-  upb_Array_Move(arr, i, end, arr->size - end);
-  arr->size -= count;
+  UPB_ASSERT(end <= arr->UPB_PRIVATE(size));
+  upb_Array_Move(arr, i, end, arr->UPB_PRIVATE(size) - end);
+  arr->UPB_PRIVATE(size) -= count;
 }
 
 bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
-  const size_t oldsize = arr->size;
+  const size_t oldsize = arr->UPB_PRIVATE(size);
   if (UPB_UNLIKELY(!_upb_Array_ResizeUninitialized(arr, size, arena))) {
     return false;
   }
-  const size_t newsize = arr->size;
+  const size_t newsize = arr->UPB_PRIVATE(size);
   if (newsize > oldsize) {
     const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
     char* data = _upb_array_ptr(arr);
@@ -5928,10 +5934,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
 
 // Must be last.
 
-const upb_Message_Extension* _upb_Message_Getext(
+const struct upb_Extension* _upb_Message_Getext(
     const upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
+  const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
 
   // For now we use linear search exclusively to find extensions.
   // If this becomes an issue due to messages with lots of extensions,
@@ -5945,12 +5951,12 @@ const upb_Message_Extension* _upb_Message_Getext(
   return NULL;
 }
 
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count) {
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
+    const upb_Message* msg, size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
     *count = (in->internal->size - in->internal->ext_begin) /
-             sizeof(upb_Message_Extension);
+             sizeof(struct upb_Extension);
     return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
   } else {
     *count = 0;
@@ -5958,16 +5964,18 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
   }
 }
 
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
+struct upb_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, e);
+  struct upb_Extension* ext =
+      (struct upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Message_Extension), arena)) return NULL;
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension),
+                                         arena))
+    return NULL;
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(upb_Message_Extension);
+  in->internal->ext_begin -= sizeof(struct upb_Extension);
   ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  memset(ext, 0, sizeof(upb_Message_Extension));
+  memset(ext, 0, sizeof(struct upb_Extension));
   ext->ext = e;
   return ext;
 }
@@ -6251,17 +6259,16 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 }
 
 static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
-  const upb_Message_Extension* const* a = _a;
-  const upb_Message_Extension* const* b = _b;
+  const upb_Extension* const* a = _a;
+  const upb_Extension* const* b = _b;
   uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
   uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
   assert(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const upb_Message_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted) {
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted) {
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
 
   for (size_t i = 0; i < count; i++) {
@@ -6334,7 +6341,7 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   size_t count;
-  _upb_Message_Getexts(msg, &count);
+  UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
   return count;
 }
 
@@ -6614,10 +6621,10 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
     type -= kUpb_EncodedType_RepeatedBase;
     field->UPB_PRIVATE(mode) = kUpb_FieldMode_Array;
     field->UPB_PRIVATE(mode) |= pointer_rep << kUpb_FieldRep_Shift;
-    field->offset = kNoPresence;
+    field->UPB_PRIVATE(offset) = kNoPresence;
   } else {
     field->UPB_PRIVATE(mode) = kUpb_FieldMode_Scalar;
-    field->offset = kHasbitPresence;
+    field->UPB_PRIVATE(offset) = kHasbitPresence;
     if (type == kUpb_EncodedType_Group || type == kUpb_EncodedType_Message) {
       field->UPB_PRIVATE(mode) |= pointer_rep << kUpb_FieldRep_Shift;
     } else if ((unsigned long)type >= sizeof(kUpb_EncodedToFieldRep)) {
@@ -6665,7 +6672,7 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
   bool required = field_modifiers & kUpb_EncodedFieldModifier_IsRequired;
 
   // Validate.
-  if ((singular || required) && field->offset != kHasbitPresence) {
+  if ((singular || required) && field->UPB_PRIVATE(offset) != kHasbitPresence) {
     upb_MdDecoder_ErrorJmp(&d->base,
                            "Invalid modifier(s) for repeated field %" PRIu32,
                            upb_MiniTableField_Number(field));
@@ -6676,9 +6683,9 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
         upb_MiniTableField_Number(field));
   }
 
-  if (singular) field->offset = kNoPresence;
+  if (singular) field->UPB_PRIVATE(offset) = kNoPresence;
   if (required) {
-    field->offset = kRequiredPresence;
+    field->UPB_PRIVATE(offset) = kRequiredPresence;
   }
 }
 
@@ -6765,7 +6772,7 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
                            " to oneof, no such field number.",
                            field_num);
   }
-  if (f->offset != kHasbitPresence) {
+  if (f->UPB_PRIVATE(offset) != kHasbitPresence) {
     upb_MdDecoder_ErrorJmp(
         &d->base,
         "Cannot add repeated, required, or singular field %" PRIu32
@@ -6780,7 +6787,7 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
     item->rep = rep;
   }
   // Prepend this field to the linked list.
-  f->offset = item->field_index;
+  f->UPB_PRIVATE(offset) = item->field_index;
   item->field_index = (f - d->fields) + kOneofBase;
   return ptr;
 }
@@ -6957,7 +6964,7 @@ static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
   int n = d->table->UPB_PRIVATE(field_count);
   for (int i = 0; i < n; i++) {
     upb_MiniTableField* f = &d->fields[i];
-    if (f->offset >= kOneofBase) continue;
+    if (f->UPB_PRIVATE(offset) >= kOneofBase) continue;
     upb_LayoutItem item = {.field_index = i,
                            .rep = f->UPB_PRIVATE(mode) >> kUpb_FieldRep_Shift,
                            .type = kUpb_LayoutItemType_Field};
@@ -6985,9 +6992,9 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
   for (int i = 0; i < n; i++) {
     upb_MiniTableField* field =
         (upb_MiniTableField*)&ret->UPB_PRIVATE(fields)[i];
-    if (field->offset == kRequiredPresence) {
+    if (field->UPB_PRIVATE(offset) == kRequiredPresence) {
       field->presence = ++last_hasbit;
-    } else if (field->offset == kNoPresence) {
+    } else if (field->UPB_PRIVATE(offset) == kNoPresence) {
       field->presence = 0;
     }
   }
@@ -7001,7 +7008,7 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
   for (int i = 0; i < n; i++) {
     upb_MiniTableField* field =
         (upb_MiniTableField*)&ret->UPB_PRIVATE(fields)[i];
-    if (field->offset == kHasbitPresence) {
+    if (field->UPB_PRIVATE(offset) == kHasbitPresence) {
       field->presence = ++last_hasbit;
     }
   }
@@ -7039,9 +7046,10 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     upb_MiniTableField* f = &d->fields[item->field_index];
     while (true) {
       f->presence = ~item->offset;
-      if (f->offset == kUpb_LayoutItem_IndexSentinel) break;
-      UPB_ASSERT(f->offset - kOneofBase < d->table->UPB_PRIVATE(field_count));
-      f = &d->fields[f->offset - kOneofBase];
+      if (f->UPB_PRIVATE(offset) == kUpb_LayoutItem_IndexSentinel) break;
+      UPB_ASSERT(f->UPB_PRIVATE(offset) - kOneofBase <
+                 d->table->UPB_PRIVATE(field_count));
+      f = &d->fields[f->UPB_PRIVATE(offset) - kOneofBase];
     }
   }
 
@@ -7051,14 +7059,14 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     switch (item->type) {
       case kUpb_LayoutItemType_OneofField:
         while (true) {
-          uint16_t next_offset = f->offset;
-          f->offset = item->offset;
+          uint16_t next_offset = f->UPB_PRIVATE(offset);
+          f->UPB_PRIVATE(offset) = item->offset;
           if (next_offset == kUpb_LayoutItem_IndexSentinel) break;
           f = &d->fields[next_offset - kOneofBase];
         }
         break;
       case kUpb_LayoutItemType_Field:
-        f->offset = item->offset;
+        f->UPB_PRIVATE(offset) = item->offset;
         break;
       default:
         break;
@@ -7129,8 +7137,8 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   // NOTE: sync with mini_table/message_internal.h.
   const size_t kv_size = d->platform == kUpb_MiniTablePlatform_32Bit ? 8 : 16;
   const size_t hasbit_size = 8;
-  d->fields[0].offset = hasbit_size;
-  d->fields[1].offset = hasbit_size + kv_size;
+  d->fields[0].UPB_PRIVATE(offset) = hasbit_size;
+  d->fields[1].UPB_PRIVATE(offset) = hasbit_size + kv_size;
   d->table->UPB_PRIVATE(size) =
       UPB_ALIGN_UP(hasbit_size + kv_size + kv_size, 8);
 
@@ -7255,7 +7263,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
 
   f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
-  f->offset = 0;
+  f->UPB_PRIVATE(offset) = 0;
   f->presence = 0;
 
   if (extendee->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMessageSet) {
@@ -10951,7 +10959,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   if (ext_pool) {
     // Return any extensions that are set.
     size_t count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+    const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));
@@ -12317,9 +12325,10 @@ static void _upb_Decoder_VerifyUtf8(upb_Decoder* d, const char* buf, int len) {
 }
 
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
-  bool need_realloc = arr->UPB_PRIVATE(capacity) - arr->size < elem;
-  if (need_realloc &&
-      !UPB_PRIVATE(_upb_Array_Realloc)(arr, arr->size + elem, &d->arena)) {
+  bool need_realloc =
+      arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
+  if (need_realloc && !UPB_PRIVATE(_upb_Array_Realloc)(
+                          arr, arr->UPB_PRIVATE(size) + elem, &d->arena)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
@@ -12593,8 +12602,8 @@ static const char* _upb_Decoder_DecodeEnumArray(upb_Decoder* d, const char* ptr,
                                                 wireval* val) {
   const upb_MiniTableEnum* e = _upb_MiniTableSubs_EnumByField(subs, field);
   if (!_upb_Decoder_CheckEnum(d, ptr, msg, e, field, val)) return ptr;
-  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
-  arr->size++;
+  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) * 4, void);
+  arr->UPB_PRIVATE(size)++;
   memcpy(mem, val, 4);
   return ptr;
 }
@@ -12610,8 +12619,9 @@ static const char* _upb_Decoder_DecodeFixedPacked(
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   }
   _upb_Decoder_Reserve(d, arr, count);
-  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
-  arr->size += count;
+  void* mem =
+      UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) << lg2, void);
+  arr->UPB_PRIVATE(size) += count;
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
   if (_upb_IsLittleEndian()) {
@@ -12641,15 +12651,17 @@ static const char* _upb_Decoder_DecodeVarintPacked(
     const upb_MiniTableField* field, int lg2) {
   int scale = 1 << lg2;
   int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
-  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
+  char* out =
+      UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) << lg2, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
     wireval elem;
     ptr = _upb_Decoder_DecodeVarint(d, ptr, &elem.uint64_val);
     _upb_Decoder_Munge(field->UPB_PRIVATE(descriptortype), &elem);
     if (_upb_Decoder_Reserve(d, arr, 1)) {
-      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
+      out =
+          UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) << lg2, void);
     }
-    arr->size++;
+    arr->UPB_PRIVATE(size)++;
     memcpy(out, &elem, scale);
     out += scale;
   }
@@ -12664,7 +12676,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     wireval* val) {
   const upb_MiniTableEnum* e = _upb_MiniTableSubs_EnumByField(subs, field);
   int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
-  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
+  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) * 4, void);
   while (!_upb_Decoder_IsDone(d, &ptr)) {
     wireval elem;
     ptr = _upb_Decoder_DecodeVarint(d, ptr, &elem.uint64_val);
@@ -12673,9 +12685,9 @@ static const char* _upb_Decoder_DecodeEnumPacked(
       continue;
     }
     if (_upb_Decoder_Reserve(d, arr, 1)) {
-      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
+      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) * 4, void);
     }
-    arr->size++;
+    arr->UPB_PRIVATE(size)++;
     memcpy(out, &elem, 4);
     out += 4;
   }
@@ -12697,7 +12709,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
                                               const upb_MiniTableSub* subs,
                                               const upb_MiniTableField* field,
                                               wireval* val, int op) {
-  upb_Array** arrp = UPB_PTR_AT(msg, field->offset, void);
+  upb_Array** arrp = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
   upb_Array* arr = *arrp;
   void* mem;
 
@@ -12713,8 +12725,8 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
     case kUpb_DecodeOp_Scalar4Byte:
     case kUpb_DecodeOp_Scalar8Byte:
       /* Append scalar value. */
-      mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << op, void);
-      arr->size++;
+      mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->UPB_PRIVATE(size) << op, void);
+      arr->UPB_PRIVATE(size)++;
       memcpy(mem, val, 1 << op);
       return ptr;
     case kUpb_DecodeOp_String:
@@ -12722,16 +12734,18 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
       /* Fallthrough. */
     case kUpb_DecodeOp_Bytes: {
       /* Append bytes. */
-      upb_StringView* str = (upb_StringView*)_upb_array_ptr(arr) + arr->size;
-      arr->size++;
+      upb_StringView* str =
+          (upb_StringView*)_upb_array_ptr(arr) + arr->UPB_PRIVATE(size);
+      arr->UPB_PRIVATE(size)++;
       return _upb_Decoder_ReadString(d, ptr, val->size, str);
     }
     case kUpb_DecodeOp_SubMessage: {
       /* Append submessage / group. */
       upb_TaggedMessagePtr* target = UPB_PTR_AT(
-          _upb_array_ptr(arr), arr->size * sizeof(void*), upb_TaggedMessagePtr);
+          _upb_array_ptr(arr), arr->UPB_PRIVATE(size) * sizeof(void*),
+          upb_TaggedMessagePtr);
       upb_Message* submsg = _upb_Decoder_NewSubMessage(d, subs, field, target);
-      arr->size++;
+      arr->UPB_PRIVATE(size)++;
       if (UPB_UNLIKELY(field->UPB_PRIVATE(descriptortype) ==
                        kUpb_FieldType_Group)) {
         return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, subs, field);
@@ -12786,8 +12800,8 @@ upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
   const upb_MiniTableField* val_field = &entry->UPB_PRIVATE(fields)[1];
   char key_size = kSizeInMap[key_field->UPB_PRIVATE(descriptortype)];
   char val_size = kSizeInMap[val_field->UPB_PRIVATE(descriptortype)];
-  UPB_ASSERT(key_field->offset == offsetof(upb_MapEntryData, k));
-  UPB_ASSERT(val_field->offset == offsetof(upb_MapEntryData, v));
+  UPB_ASSERT(key_field->UPB_PRIVATE(offset) == offsetof(upb_MapEntryData, k));
+  UPB_ASSERT(val_field->UPB_PRIVATE(offset) == offsetof(upb_MapEntryData, v));
   upb_Map* ret = _upb_Map_New(&d->arena, key_size, val_size);
   if (!ret) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return ret;
@@ -12798,7 +12812,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
                                             const upb_MiniTableSub* subs,
                                             const upb_MiniTableField* field,
                                             wireval* val) {
-  upb_Map** map_p = UPB_PTR_AT(msg, field->offset, upb_Map*);
+  upb_Map** map_p = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), upb_Map*);
   upb_Map* map = *map_p;
   upb_MapEntry ent;
   UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
@@ -12861,7 +12875,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, wireval* val,
     int op) {
-  void* mem = UPB_PTR_AT(msg, field->offset, void);
+  void* mem = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
   int type = field->UPB_PRIVATE(descriptortype);
 
   if (UPB_UNLIKELY(op == kUpb_DecodeOp_Enum) &&
@@ -12991,7 +13005,7 @@ enum {
 static void upb_Decoder_AddKnownMessageSetItem(
     upb_Decoder* d, upb_Message* msg, const upb_MiniTableExtension* item_mt,
     const char* data, uint32_t size) {
-  upb_Message_Extension* ext =
+  upb_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, item_mt, &d->arena);
   if (UPB_UNLIKELY(!ext)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -13335,7 +13349,7 @@ static const char* _upb_Decoder_DecodeKnownField(
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
         (const upb_MiniTableExtension*)field;
-    upb_Message_Extension* ext =
+    upb_Extension* ext =
         _upb_Message_GetOrCreateExtension(msg, ext_layout, &d->arena);
     if (UPB_UNLIKELY(!ext)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
@@ -13749,7 +13763,7 @@ static bool fastdecode_tagmatch(uint32_t tag, uint64_t data, int tagbytes) {
 UPB_FORCEINLINE
 static void fastdecode_commitarr(void* dst, fastdecode_arr* farr,
                                  int valbytes) {
-  farr->arr->size =
+  farr->arr->UPB_PRIVATE(size) =
       (size_t)((char*)dst - (char*)_upb_array_ptr(farr->arr)) / valbytes;
 }
 
@@ -13820,7 +13834,7 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       begin = _upb_array_ptr(farr->arr);
       farr->end = begin + (farr->arr->UPB_PRIVATE(capacity) * valbytes);
       *data = _upb_FastDecoder_LoadTag(ptr);
-      return begin + (farr->arr->size * valbytes);
+      return begin + (farr->arr->UPB_PRIVATE(size) * valbytes);
     }
     default:
       UPB_UNREACHABLE();
@@ -14108,7 +14122,7 @@ TAGBYTES(p)
                                                                             \
   char* dst = _upb_array_ptr(arr);                                          \
   memcpy(dst, ptr, size);                                                   \
-  arr->size = elems;                                                        \
+  arr->UPB_PRIVATE(size) = elems;                                           \
                                                                             \
   ptr += size;                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
@@ -14706,7 +14720,7 @@ static void encode_tag(upb_encstate* e, uint32_t field_number,
 
 static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
                               size_t elem_size, uint32_t tag) {
-  size_t bytes = arr->size * elem_size;
+  size_t bytes = arr->UPB_PRIVATE(size) * elem_size;
   const char* data = _upb_array_constptr(arr);
   const char* ptr = data + bytes - elem_size;
 
@@ -14834,18 +14848,18 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
 static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* f) {
-  const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
+  const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
   bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - e->ptr;
 
-  if (arr == NULL || arr->size == 0) {
+  if (arr == NULL || arr->UPB_PRIVATE(size) == 0) {
     return;
   }
 
 #define VARINT_CASE(ctype, encode)                                         \
   {                                                                        \
     const ctype* start = _upb_array_constptr(arr);                         \
-    const ctype* ptr = start + arr->size;                                  \
+    const ctype* ptr = start + arr->UPB_PRIVATE(size);                     \
     uint32_t tag =                                                         \
         packed ? 0 : (f->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint; \
     do {                                                                   \
@@ -14890,7 +14904,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes: {
       const upb_StringView* start = _upb_array_constptr(arr);
-      const upb_StringView* ptr = start + arr->size;
+      const upb_StringView* ptr = start + arr->UPB_PRIVATE(size);
       do {
         ptr--;
         encode_bytes(e, ptr->data, ptr->size);
@@ -14901,7 +14915,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     }
     case kUpb_FieldType_Group: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
-      const upb_TaggedMessagePtr* ptr = start + arr->size;
+      const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
@@ -14917,7 +14931,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     }
     case kUpb_FieldType_Message: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
-      const upb_TaggedMessagePtr* ptr = start + arr->size;
+      const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
@@ -14957,7 +14971,7 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
 static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTableSub* subs,
                        const upb_MiniTableField* f) {
-  const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
+  const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
   const upb_MiniTable* layout =
       upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(layout->UPB_PRIVATE(field_count) == 2);
@@ -14992,7 +15006,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
                                 const upb_MiniTableField* f) {
   if (f->presence == 0) {
     // Proto3 presence or map/array.
-    const void* mem = UPB_PTR_AT(msg, f->offset, void);
+    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
     switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
       case kUpb_FieldRep_1Byte: {
         char ch;
@@ -15037,15 +15051,15 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
       encode_map(e, msg, subs, field);
       break;
     case kUpb_FieldMode_Scalar:
-      encode_scalar(e, UPB_PTR_AT(msg, field->offset, void), subs, field);
+      encode_scalar(e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), subs,
+                    field);
       break;
     default:
       UPB_UNREACHABLE();
   }
 }
 
-static void encode_msgset_item(upb_encstate* e,
-                               const upb_Message_Extension* ext) {
+static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
   size_t size;
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   encode_message(e, ext->data.ptr,
@@ -15057,7 +15071,7 @@ static void encode_msgset_item(upb_encstate* e,
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
 }
 
-static void encode_ext(upb_encstate* e, const upb_Message_Extension* ext,
+static void encode_ext(upb_encstate* e, const upb_Extension* ext,
                        bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
@@ -15095,7 +15109,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Extension* ext =
+        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;
@@ -15105,7 +15120,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
         }
         _upb_mapsorter_popmap(&e->sorter, &sorted);
       } else {
-        const upb_Message_Extension* end = ext + ext_count;
+        const upb_Extension* end = ext + ext_count;
         for (; ext != end; ext++) {
           encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }

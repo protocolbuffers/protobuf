@@ -119,10 +119,11 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
                  .status == kUpb_FindUnknown_Ok;
 }
 
-const upb_Message_Extension* GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena) {
+const upb_Extension* GetOrPromoteExtension(upb_Message* msg,
+                                           const upb_MiniTableExtension* eid,
+                                           upb_Arena* arena) {
   MessageLock msg_lock(msg);
-  const upb_Message_Extension* ext = _upb_Message_Getext(msg, eid);
+  const upb_Extension* ext = _upb_Message_Getext(msg, eid);
   if (ext == nullptr) {
     upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
         (upb_Message*)msg, eid, 0, arena, &ext);
@@ -162,7 +163,7 @@ upb_Message* DeepClone(const upb_Message* source,
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
                            upb_Message* extension, upb_Arena* extension_arena) {
-  upb_Message_Extension* msg_ext =
+  upb_Extension* msg_ext =
       _upb_Message_GetOrCreateExtension(message, ext, message_arena);
   if (!msg_ext) {
     return MessageAllocationError();
@@ -183,7 +184,7 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension) {
-  upb_Message_Extension* msg_ext =
+  upb_Extension* msg_ext =
       _upb_Message_GetOrCreateExtension(message, ext, message_arena);
   if (!msg_ext) {
     return MessageAllocationError();

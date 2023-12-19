@@ -21,7 +21,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-typedef struct upb_Message_Extension upb_Message_Extension;
+typedef struct upb_Extension upb_Extension;
 
 #ifdef __cplusplus
 extern "C" {

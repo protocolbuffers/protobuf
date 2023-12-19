@@ -20,24 +20,25 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
-  std::string hazzer_thunk = Thunk(field, "has");
-  std::string getter_thunk = Thunk(field, "get");
-  std::string setter_thunk = Thunk(field, "set");
-  std::string proxied_type = PrimitiveRsTypeName(field.desc());
+void SingularString::InMsgImpl(Context& ctx,
+                               const FieldDescriptor& field) const {
+  std::string hazzer_thunk = Thunk(ctx, field, "has");
+  std::string getter_thunk = Thunk(ctx, field, "get");
+  std::string setter_thunk = Thunk(ctx, field, "set");
+  std::string proxied_type = PrimitiveRsTypeName(field);
   auto transform_view = [&] {
-    if (field.desc().type() == FieldDescriptor::TYPE_STRING) {
-      field.Emit(R"rs(
+    if (field.type() == FieldDescriptor::TYPE_STRING) {
+      ctx.Emit(R"rs(
         // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
         unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
       )rs");
     } else {
-      field.Emit("view");
+      ctx.Emit("view");
     }
   };
-  field.Emit(
+  ctx.Emit(
       {
-          {"field", field.desc().name()},
+          {"field", field.name()},
           {"hazzer_thunk", hazzer_thunk},
           {"getter_thunk", getter_thunk},
           {"setter_thunk", setter_thunk},
@@ -45,12 +46,12 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
           {"transform_view", transform_view},
           {"field_optional_getter",
            [&] {
-             if (!field.desc().is_optional()) return;
-             if (!field.desc().has_presence()) return;
-             field.Emit({{"hazzer_thunk", hazzer_thunk},
-                         {"getter_thunk", getter_thunk},
-                         {"transform_view", transform_view}},
-                        R"rs(
+             if (!field.is_optional()) return;
+             if (!field.has_presence()) return;
+             ctx.Emit({{"hazzer_thunk", hazzer_thunk},
+                       {"getter_thunk", getter_thunk},
+                       {"transform_view", transform_view}},
+                      R"rs(
             pub fn $field$_opt(&self) -> $pb$::Optional<&$proxied_type$> {
                 let view = unsafe { $getter_thunk$(self.inner.msg).as_ref() };
                 $pb$::Optional::new(
@@ -62,30 +63,29 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
            }},
           {"field_mutator_getter",
            [&] {
-             if (field.desc().has_presence()) {
-               field.Emit(
+             if (field.has_presence()) {
+               ctx.Emit(
                    {
-                       {"field", field.desc().name()},
+                       {"field", field.name()},
                        {"proxied_type", proxied_type},
                        {"default_val", DefaultValue(field)},
                        {"view_type", proxied_type},
                        {"transform_field_entry",
                         [&] {
-                          if (field.desc().type() ==
-                              FieldDescriptor::TYPE_STRING) {
-                            field.Emit(R"rs(
+                          if (field.type() == FieldDescriptor::TYPE_STRING) {
+                            ctx.Emit(R"rs(
                               $pb$::ProtoStrMut::field_entry_from_bytes(
                                 $pbi$::Private, out
                               )
                             )rs");
                           } else {
-                            field.Emit("out");
+                            ctx.Emit("out");
                           }
                         }},
                        {"hazzer_thunk", hazzer_thunk},
                        {"getter_thunk", getter_thunk},
                        {"setter_thunk", setter_thunk},
-                       {"clearer_thunk", Thunk(field, "clear")},
+                       {"clearer_thunk", Thunk(ctx, field, "clear")},
                    },
                    R"rs(
             pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
@@ -112,11 +112,11 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
             }
           )rs");
              } else {
-               field.Emit({{"field", field.desc().name()},
-                           {"proxied_type", proxied_type},
-                           {"getter_thunk", getter_thunk},
-                           {"setter_thunk", setter_thunk}},
-                          R"rs(
+               ctx.Emit({{"field", field.name()},
+                         {"proxied_type", proxied_type},
+                         {"getter_thunk", getter_thunk},
+                         {"setter_thunk", setter_thunk}},
+                        R"rs(
               pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
                 static VTABLE: $pbi$::BytesMutVTable = unsafe {
                   $pbi$::BytesMutVTable::new(
@@ -152,20 +152,21 @@ void SingularString::InMsgImpl(Context<FieldDescriptor> field) const {
       )rs");
 }
 
-void SingularString::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit({{"hazzer_thunk", Thunk(field, "has")},
-              {"getter_thunk", Thunk(field, "get")},
-              {"setter_thunk", Thunk(field, "set")},
-              {"clearer_thunk", Thunk(field, "clear")},
-              {"hazzer",
-               [&] {
-                 if (field.desc().has_presence()) {
-                   field.Emit(R"rs(
+void SingularString::InExternC(Context& ctx,
+                               const FieldDescriptor& field) const {
+  ctx.Emit({{"hazzer_thunk", Thunk(ctx, field, "has")},
+            {"getter_thunk", Thunk(ctx, field, "get")},
+            {"setter_thunk", Thunk(ctx, field, "set")},
+            {"clearer_thunk", Thunk(ctx, field, "clear")},
+            {"hazzer",
+             [&] {
+               if (field.has_presence()) {
+                 ctx.Emit(R"rs(
                      fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
                    )rs");
-                 }
-               }}},
-             R"rs(
+               }
+             }}},
+           R"rs(
           $hazzer$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
           fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $pbi$::PtrAndLen);
@@ -173,35 +174,35 @@ void SingularString::InExternC(Context<FieldDescriptor> field) const {
         )rs");
 }
 
-void SingularString::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({{"field", cpp::FieldName(&field.desc())},
-              {"QualifiedMsg",
-               cpp::QualifiedClassName(field.desc().containing_type())},
-              {"hazzer_thunk", Thunk(field, "has")},
-              {"getter_thunk", Thunk(field, "get")},
-              {"setter_thunk", Thunk(field, "set")},
-              {"clearer_thunk", Thunk(field, "clear")},
-              {"hazzer",
-               [&] {
-                 if (field.desc().has_presence()) {
-                   field.Emit(R"cc(
-                     bool $hazzer_thunk$($QualifiedMsg$* msg) {
-                       return msg->has_$field$();
-                     }
-                     void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-                   )cc");
-                 }
-               }}},
-             R"cc(
-               $hazzer$;
-               ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
-                 absl::string_view val = msg->$field$();
-                 return ::google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+void SingularString::InThunkCc(Context& ctx,
+                               const FieldDescriptor& field) const {
+  ctx.Emit({{"field", cpp::FieldName(&field)},
+            {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"hazzer_thunk", Thunk(ctx, field, "has")},
+            {"getter_thunk", Thunk(ctx, field, "get")},
+            {"setter_thunk", Thunk(ctx, field, "set")},
+            {"clearer_thunk", Thunk(ctx, field, "clear")},
+            {"hazzer",
+             [&] {
+               if (field.has_presence()) {
+                 ctx.Emit(R"cc(
+                   bool $hazzer_thunk$($QualifiedMsg$* msg) {
+                     return msg->has_$field$();
+                   }
+                   void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+                 )cc");
                }
-               void $setter_thunk$($QualifiedMsg$* msg, ::google::protobuf::rust_internal::PtrAndLen s) {
-                 msg->set_$field$(absl::string_view(s.ptr, s.len));
-               }
-             )cc");
+             }}},
+           R"cc(
+             $hazzer$;
+             ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
+               absl::string_view val = msg->$field$();
+               return ::google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+             }
+             void $setter_thunk$($QualifiedMsg$* msg, ::google::protobuf::rust_internal::PtrAndLen s) {
+               msg->set_$field$(absl::string_view(s.ptr, s.len));
+             }
+           )cc");
 }
 
 }  // namespace rust

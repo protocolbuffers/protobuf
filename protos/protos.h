@@ -223,8 +223,9 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid);
 
-const upb_Message_Extension* GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
+const upb_Extension* GetOrPromoteExtension(upb_Message* msg,
+                                           const upb_MiniTableExtension* eid,
+                                           upb_Arena* arena);
 
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena);
@@ -409,7 +410,7 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   // TODO: Fix const correctness issues.
-  const upb_Message_Extension* ext = ::protos::internal::GetOrPromoteExtension(
+  const upb_Extension* ext = ::protos::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
       id.mini_table_ext(), ::protos::internal::GetArena(message));
   if (!ext) {

@@ -100,12 +100,12 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetOneofCase)(
 
 UPB_INLINE void* _upb_MiniTableField_GetPtr(upb_Message* msg,
                                             const upb_MiniTableField* field) {
-  return (char*)msg + field->offset;
+  return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE const void* _upb_MiniTableField_GetConstPtr(
     const upb_Message* msg, const upb_MiniTableField* field) {
-  return (char*)msg + field->offset;
+  return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
@@ -229,7 +229,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 UPB_INLINE void _upb_Message_GetExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  const upb_Message_Extension* ext = _upb_Message_Getext(msg, mt_ext);
+  const upb_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
@@ -279,8 +279,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
     upb_Message* msg, const upb_MiniTableExtension* mt_ext, const void* val,
     upb_Arena* a) {
   UPB_ASSERT(a);
-  upb_Message_Extension* ext =
-      _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
+  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (&mt_ext->UPB_PRIVATE(field), &ext->data, val);
@@ -291,13 +290,12 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
     upb_Message* msg, const upb_MiniTableExtension* ext_l) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) return;
-  const upb_Message_Extension* base =
-      UPB_PTR_AT(in->internal, in->internal->ext_begin, upb_Message_Extension);
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, ext_l);
+  const upb_Extension* base =
+      UPB_PTR_AT(in->internal, in->internal->ext_begin, upb_Extension);
+  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, ext_l);
   if (ext) {
     *ext = *base;
-    in->internal->ext_begin += sizeof(upb_Message_Extension);
+    in->internal->ext_begin += sizeof(upb_Extension);
   }
 }
 

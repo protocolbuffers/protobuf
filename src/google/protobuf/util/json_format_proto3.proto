@@ -54,6 +54,18 @@ message TestMessage {
   repeated bytes repeated_bytes_value = 29;
   repeated EnumType repeated_enum_value = 30;
   repeated MessageType repeated_message_value = 31;
+
+  optional bool optional_bool_value = 41;
+  optional int32 optional_int32_value = 42;
+  optional int64 optional_int64_value = 43;
+  optional uint32 optional_uint32_value = 44;
+  optional uint64 optional_uint64_value = 45;
+  optional float optional_float_value = 46;
+  optional double optional_double_value = 47;
+  optional string optional_string_value = 48;
+  optional bytes optional_bytes_value = 49;
+  optional EnumType optional_enum_value = 50;
+  optional MessageType optional_message_value = 51;
 }
 
 message TestOneof {

@@ -72,6 +72,6 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   size_t count;
-  _upb_Message_Getexts(msg, &count);
+  UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
   return count;
 }

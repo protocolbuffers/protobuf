@@ -7,8 +7,8 @@
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
+#define UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
 
 #include <stdlib.h>
 
@@ -63,9 +63,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
 
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const upb_Message_Extension** ext) {
+                                       const upb_Extension** ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const upb_Message_Extension*)s->entries[sorted->pos++];
+  *ext = (const upb_Extension*)s->entries[sorted->pos++];
   return true;
 }
 
@@ -77,9 +77,8 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted);
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const upb_Message_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted);
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -87,4 +86,4 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */

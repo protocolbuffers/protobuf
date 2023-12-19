@@ -67,9 +67,10 @@ jobs:
         with:
           image: i386/ruby:2.7.3-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          # Pin to Ruby 2.7 compatible bundler version.
           command: >-
             /bin/bash -cex '
-            gem install bundler;
+            gem install bundler -v 2.4.22;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -98,9 +99,10 @@ jobs:
         with:
           image: arm64v8/ruby:2.7.3-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          # Pin to Ruby 2.7 compatible bundler version.
           command: >-
             /bin/bash -cex '
-            gem install bundler;
+            gem install bundler -v 2.4.22;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;

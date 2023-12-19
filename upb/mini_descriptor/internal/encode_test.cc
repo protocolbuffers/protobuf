@@ -70,8 +70,8 @@ TEST_P(MiniTableTest, AllScalarTypes) {
     const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
     EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
-    EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
@@ -96,8 +96,8 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
     const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
     EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsArray(f));
-    EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
@@ -125,8 +125,8 @@ TEST_P(MiniTableTest, Skips) {
     EXPECT_EQ(field_numbers[i], upb_MiniTableField_Number(f));
     EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
-    EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
@@ -155,13 +155,14 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
     EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
     EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     // For a oneof all fields have the same offset.
-    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].offset, f->offset);
+    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].UPB_PRIVATE(offset),
+              f->UPB_PRIVATE(offset));
     // All presence fields should point to the same oneof case offset.
     size_t case_ofs = _upb_MiniTableField_OneofOffset(f);
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
-    EXPECT_TRUE(f->offset < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
     EXPECT_TRUE(case_ofs < table->UPB_PRIVATE(size));
-    EXPECT_TRUE(case_ofs != f->offset);
+    EXPECT_TRUE(case_ofs != f->UPB_PRIVATE(offset));
   }
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }

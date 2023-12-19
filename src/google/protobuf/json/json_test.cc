@@ -204,6 +204,9 @@ TEST_P(JsonTest, TestDefaultValues) {
 
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
+  m.set_optional_bool_value(false);
+  m.set_optional_string_value("");
+  m.set_optional_bytes_value("");
   EXPECT_THAT(
       ToJson(m, options),
       IsOkAndHolds("{\"boolValue\":false,"
@@ -226,7 +229,10 @@ TEST_P(JsonTest, TestDefaultValues) {
                    "\"repeatedStringValue\":[],"
                    "\"repeatedBytesValue\":[],"
                    "\"repeatedEnumValue\":[],"
-                   "\"repeatedMessageValue\":[]"
+                   "\"repeatedMessageValue\":[],"
+                   "\"optionalBoolValue\":false,"
+                   "\"optionalStringValue\":\"\","
+                   "\"optionalBytesValue\":\"\""
                    "}"));
 
   EXPECT_THAT(

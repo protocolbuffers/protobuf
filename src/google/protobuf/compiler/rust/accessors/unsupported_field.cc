@@ -15,11 +15,12 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void UnsupportedField::InMsgImpl(Context<FieldDescriptor> field) const {
-  field.Emit({{"reason", reason_}}, R"rs(
+void UnsupportedField::InMsgImpl(Context& ctx,
+                                 const FieldDescriptor& field) const {
+  ctx.Emit({{"reason", reason_}}, R"rs(
     // Unsupported! :( Reason: $reason$
     )rs");
-  field.printer().PrintRaw("\n");
+  ctx.printer().PrintRaw("\n");
 }
 
 }  // namespace rust
