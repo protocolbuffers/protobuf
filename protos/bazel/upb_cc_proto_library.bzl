@@ -267,7 +267,6 @@ _upb_cc_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = use_cpp_toolchain(),
-    incompatible_use_toolchain_transition = True,
 )
 
 upb_cc_proto_library = rule(
