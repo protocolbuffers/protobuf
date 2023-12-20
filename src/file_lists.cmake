@@ -663,6 +663,7 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.h
