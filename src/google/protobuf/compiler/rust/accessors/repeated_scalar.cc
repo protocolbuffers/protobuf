@@ -150,8 +150,9 @@ void RepeatedScalar::InThunkCc(Context& ctx,
                      google::protobuf::RepeatedField<$Scalar$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
                        return msg->mutable_$field$();
                      }
-                     const google::protobuf::RepeatedField<$Scalar$>& $getter_thunk$($QualifiedMsg$& msg) {
-                       return msg.$field$();
+                     const google::protobuf::RepeatedField<$Scalar$>* $getter_thunk$(
+                         const $QualifiedMsg$* msg) {
+                       return &msg->$field$();
                      }
                    )cc");
              }}},

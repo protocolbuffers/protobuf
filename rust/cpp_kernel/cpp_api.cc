@@ -1,5 +1,6 @@
 #include "rust/cpp_kernel/cpp_api.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -33,8 +34,8 @@ extern "C" {
     return r->Set(index, val);                                                \
   }                                                                           \
   void __pb_rust_RepeatedField_##rust_ty##_copy_from(                         \
-      google::protobuf::RepeatedField<ty> const& src, google::protobuf::RepeatedField<ty>& dst) { \
-    dst.CopyFrom(src);                                                        \
+      const google::protobuf::RepeatedField<ty>* src, google::protobuf::RepeatedField<ty>* dst) { \
+    dst->CopyFrom(*src);                                                      \
   }                                                                           \
   void __pb_rust_RepeatedField_##rust_ty##_clear(                             \
       google::protobuf::RepeatedField<ty>* r) {                                         \
@@ -63,7 +64,7 @@ expose_repeated_field_methods(int64_t, i64);
     m->clear();                                                                \
   }                                                                            \
   size_t __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_size(                 \
-      google::protobuf::Map<key_ty, value_ty>* m) {                                      \
+      const google::protobuf::Map<key_ty, value_ty>* m) {                                \
     return m->size();                                                          \
   }                                                                            \
   void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_insert(                 \
@@ -73,7 +74,8 @@ expose_repeated_field_methods(int64_t, i64);
     (*m)[cpp_key] = cpp_value;                                                 \
   }                                                                            \
   bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_get(                    \
-      google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty* value) { \
+      const google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key,                  \
+      ffi_value_ty* value) {                                                   \
     auto cpp_key = to_cpp_key;                                                 \
     auto it = m->find(cpp_key);                                                \
     if (it == m->end()) {                                                      \

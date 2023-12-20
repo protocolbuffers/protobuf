@@ -135,8 +135,8 @@ void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
         [&] {
           ctx.Emit(
               R"cc(
-                const void* $getter_thunk$($QualifiedMsg$& msg) {
-                  return &msg.$field$();
+                const void* $getter_thunk$(const $QualifiedMsg$* msg) {
+                  return &msg->$field$();
                 }
                 void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
               )cc");
