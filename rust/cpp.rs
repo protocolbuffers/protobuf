@@ -8,13 +8,16 @@
 // Rust Protobuf runtime using the C++ kernel.
 
 use crate::ProtoStr;
-use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
-use crate::{Mut, Proxied, ProxiedInRepeated, Repeated, SettableValue, View};
+use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::{
+    Mut, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, SettableValue, View,
+};
 use core::fmt::Debug;
 use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::convert::identity;
+use std::ffi::c_int;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
@@ -295,6 +298,34 @@ macro_rules! impl_repeated_primitives {
 }
 
 impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool);
+
+/// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
+pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedView<E>,
+) -> RepeatedView<c_int> {
+    // SAFETY: the implementer of `Enum` has promised that this
+    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    unsafe { RepeatedView::from_raw(private, repeated.as_raw(Private)) }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>`.
+///
+/// Writing an unknown value is sound because all enums
+/// are representationally open.
+pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    mut repeated: RepeatedMut<E>,
+) -> RepeatedMut<i32> {
+    // SAFETY: the implementer of `Enum` has promised that this
+    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    unsafe {
+        RepeatedMut::from_inner(
+            private,
+            InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
+        )
+    }
+}
 
 #[derive(Debug)]
 pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {

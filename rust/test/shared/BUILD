@@ -95,6 +95,42 @@ rust_test(
 )
 
 rust_test(
+    name = "enum_cpp_test",
+    srcs = ["enum_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust:protobuf_cpp",
+        "//rust/test:enums_cc_rust_proto",
+        "//rust/test:unittest_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "enum_upb_test",
+    srcs = ["enum_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+        "//rust:protobuf_upb",
+        "//rust/test:enums_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
+    ],
+)
+
+rust_test(
     name = "package_cpp_test",
     srcs = ["package_test.rs"],
     tags = [

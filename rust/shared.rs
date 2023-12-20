@@ -22,6 +22,7 @@ use std::fmt;
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
+    pub use crate::r#enum::UnknownEnumValue;
     pub use crate::map::{Map, MapMut, MapView};
     pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
     pub use crate::primitive::PrimitiveMut;
@@ -49,6 +50,8 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+#[path = "enum.rs"]
+mod r#enum;
 mod macros;
 mod map;
 mod optional;

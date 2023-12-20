@@ -201,6 +201,33 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "enums_proto",
+    testonly = True,
+    srcs = ["enums.proto"],
+    deps = ["//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto"],
+)
+
+cc_proto_library(
+    name = "enums_cc_proto",
+    testonly = True,
+    deps = [":enums_proto"],
+)
+
+rust_cc_proto_library(
+    name = "enums_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":enums_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "enums_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":enums_proto"],
+)
+
+proto_library(
     name = "no_package_import_proto",
     testonly = True,
     srcs = ["no_package_import.proto"],

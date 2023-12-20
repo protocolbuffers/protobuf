@@ -7,7 +7,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
     Mut, ProtoStr, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, SettableValue,
     View, ViewProxy,
@@ -423,7 +423,7 @@ macro_rules! impl_repeated_primitives {
                     unsafe { upb_Array_Get(f.as_raw(Private), i).$ufield }
                 }
                 unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
-                    unsafe { upb_Array_Set(f.as_raw(Private), i, upb_MessageValue { $ufield: v }) }
+                    unsafe { upb_Array_Set(f.as_raw(Private), i, upb_MessageValue { $ufield: v.into() }) }
                 }
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     // SAFETY:
@@ -462,6 +462,32 @@ impl_repeated_primitives!(
     (i64, int64_val, UpbCType::Int64),
     (u64, uint64_val, UpbCType::UInt64),
 );
+
+/// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<i32>`.
+pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedView<E>,
+) -> RepeatedView<i32> {
+    // SAFETY: Reading an enum array as an i32 array is sound.
+    unsafe { RepeatedView::from_raw(private, repeated.as_raw(Private)) }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<i32>`.
+///
+/// Writing an unknown value is sound because all enums
+/// are representationally open.
+pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+) -> RepeatedMut<i32> {
+    // SAFETY:
+    // - Reading an enum array as an i32 array is sound.
+    // - No shared mutation is possible through the output.
+    unsafe {
+        let InnerRepeatedMut { arena, raw, .. } = repeated.into_inner();
+        RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw, _phantom: PhantomData })
+    }
+}
 
 /// Returns a static empty RepeatedView.
 pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> {
