@@ -5,7 +5,7 @@ set -ex
 # go to the repo root
 cd $(dirname $0)/../../..
 
-gem install bundler
+gem install bundler -v 2.4.22
 
 cd ruby
 
