@@ -224,7 +224,6 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
- protected:
   explicit Version(::google::protobuf::Arena* arena);
   Version(::google::protobuf::Arena* arena, const Version& from);
   Version(::google::protobuf::Arena* arena, Version&& from) noexcept
@@ -233,9 +232,9 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -438,7 +437,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
- protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* arena, const CodeGeneratorResponse_File& from);
   CodeGeneratorResponse_File(::google::protobuf::Arena* arena, CodeGeneratorResponse_File&& from) noexcept
@@ -447,9 +445,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -668,7 +666,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
- protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* arena);
   CodeGeneratorResponse(::google::protobuf::Arena* arena, const CodeGeneratorResponse& from);
   CodeGeneratorResponse(::google::protobuf::Arena* arena, CodeGeneratorResponse&& from) noexcept
@@ -677,9 +674,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using File = CodeGeneratorResponse_File;
   using Feature = CodeGeneratorResponse_Feature;
@@ -922,7 +919,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
- protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* arena);
   CodeGeneratorRequest(::google::protobuf::Arena* arena, const CodeGeneratorRequest& from);
   CodeGeneratorRequest(::google::protobuf::Arena* arena, CodeGeneratorRequest&& from) noexcept
@@ -931,9 +927,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

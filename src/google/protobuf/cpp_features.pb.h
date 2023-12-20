@@ -176,7 +176,6 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
- protected:
   explicit CppFeatures(::google::protobuf::Arena* arena);
   CppFeatures(::google::protobuf::Arena* arena, const CppFeatures& from);
   CppFeatures(::google::protobuf::Arena* arena, CppFeatures&& from) noexcept
@@ -185,9 +184,9 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

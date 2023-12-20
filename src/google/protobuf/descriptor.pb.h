@@ -805,7 +805,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption.NamePart"; }
 
- protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* arena);
   UninterpretedOption_NamePart(::google::protobuf::Arena* arena, const UninterpretedOption_NamePart& from);
   UninterpretedOption_NamePart(::google::protobuf::Arena* arena, UninterpretedOption_NamePart&& from) noexcept
@@ -814,9 +813,9 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -993,7 +992,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo.Location"; }
 
- protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* arena);
   SourceCodeInfo_Location(::google::protobuf::Arena* arena, const SourceCodeInfo_Location& from);
   SourceCodeInfo_Location(::google::protobuf::Arena* arena, SourceCodeInfo_Location&& from) noexcept
@@ -1002,9 +1000,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1259,7 +1257,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo.Annotation"; }
 
- protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, const GeneratedCodeInfo_Annotation& from);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena, GeneratedCodeInfo_Annotation&& from) noexcept
@@ -1268,9 +1265,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using Semantic = GeneratedCodeInfo_Annotation_Semantic;
   static constexpr Semantic NONE = GeneratedCodeInfo_Annotation_Semantic_NONE;
@@ -1514,7 +1511,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.EditionDefault"; }
 
- protected:
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* arena);
   FieldOptions_EditionDefault(::google::protobuf::Arena* arena, const FieldOptions_EditionDefault& from);
   FieldOptions_EditionDefault(::google::protobuf::Arena* arena, FieldOptions_EditionDefault&& from) noexcept
@@ -1523,9 +1519,9 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1702,7 +1698,6 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet"; }
 
- protected:
   explicit FeatureSet(::google::protobuf::Arena* arena);
   FeatureSet(::google::protobuf::Arena* arena, const FeatureSet& from);
   FeatureSet(::google::protobuf::Arena* arena, FeatureSet&& from) noexcept
@@ -1711,9 +1706,9 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using FieldPresence = FeatureSet_FieldPresence;
   static constexpr FieldPresence FIELD_PRESENCE_UNKNOWN = FeatureSet_FieldPresence_FIELD_PRESENCE_UNKNOWN;
@@ -2235,7 +2230,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions.Declaration"; }
 
- protected:
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, const ExtensionRangeOptions_Declaration& from);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena, ExtensionRangeOptions_Declaration&& from) noexcept
@@ -2244,9 +2238,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -2468,7 +2462,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto.EnumReservedRange"; }
 
- protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, const EnumDescriptorProto_EnumReservedRange& from);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept
@@ -2477,9 +2470,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -2650,7 +2643,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ReservedRange"; }
 
- protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* arena);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, const DescriptorProto_ReservedRange& from);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* arena, DescriptorProto_ReservedRange&& from) noexcept
@@ -2659,9 +2651,9 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -2832,7 +2824,6 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption"; }
 
- protected:
   explicit UninterpretedOption(::google::protobuf::Arena* arena);
   UninterpretedOption(::google::protobuf::Arena* arena, const UninterpretedOption& from);
   UninterpretedOption(::google::protobuf::Arena* arena, UninterpretedOption&& from) noexcept
@@ -2841,9 +2832,9 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using NamePart = UninterpretedOption_NamePart;
 
@@ -3104,7 +3095,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo"; }
 
- protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* arena);
   SourceCodeInfo(::google::protobuf::Arena* arena, const SourceCodeInfo& from);
   SourceCodeInfo(::google::protobuf::Arena* arena, SourceCodeInfo&& from) noexcept
@@ -3113,9 +3103,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using Location = SourceCodeInfo_Location;
 
@@ -3279,7 +3269,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo"; }
 
- protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* arena);
   GeneratedCodeInfo(::google::protobuf::Arena* arena, const GeneratedCodeInfo& from);
   GeneratedCodeInfo(::google::protobuf::Arena* arena, GeneratedCodeInfo&& from) noexcept
@@ -3288,9 +3277,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using Annotation = GeneratedCodeInfo_Annotation;
 
@@ -3454,7 +3443,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault"; }
 
- protected:
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
@@ -3463,9 +3451,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -3640,7 +3628,6 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceOptions"; }
 
- protected:
   explicit ServiceOptions(::google::protobuf::Arena* arena);
   ServiceOptions(::google::protobuf::Arena* arena, const ServiceOptions& from);
   ServiceOptions(::google::protobuf::Arena* arena, ServiceOptions&& from) noexcept
@@ -3649,9 +3636,9 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -4023,7 +4010,6 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofOptions"; }
 
- protected:
   explicit OneofOptions(::google::protobuf::Arena* arena);
   OneofOptions(::google::protobuf::Arena* arena, const OneofOptions& from);
   OneofOptions(::google::protobuf::Arena* arena, OneofOptions&& from) noexcept
@@ -4032,9 +4018,9 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -4393,7 +4379,6 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodOptions"; }
 
- protected:
   explicit MethodOptions(::google::protobuf::Arena* arena);
   MethodOptions(::google::protobuf::Arena* arena, const MethodOptions& from);
   MethodOptions(::google::protobuf::Arena* arena, MethodOptions&& from) noexcept
@@ -4402,9 +4387,9 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using IdempotencyLevel = MethodOptions_IdempotencyLevel;
   static constexpr IdempotencyLevel IDEMPOTENCY_UNKNOWN = MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN;
@@ -4809,7 +4794,6 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.MessageOptions"; }
 
- protected:
   explicit MessageOptions(::google::protobuf::Arena* arena);
   MessageOptions(::google::protobuf::Arena* arena, const MessageOptions& from);
   MessageOptions(::google::protobuf::Arena* arena, MessageOptions&& from) noexcept
@@ -4818,9 +4802,9 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -5244,7 +5228,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileOptions"; }
 
- protected:
   explicit FileOptions(::google::protobuf::Arena* arena);
   FileOptions(::google::protobuf::Arena* arena, const FileOptions& from);
   FileOptions(::google::protobuf::Arena* arena, FileOptions&& from) noexcept
@@ -5253,9 +5236,9 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using OptimizeMode = FileOptions_OptimizeMode;
   static constexpr OptimizeMode SPEED = FileOptions_OptimizeMode_SPEED;
@@ -5941,7 +5924,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions"; }
 
- protected:
   explicit FieldOptions(::google::protobuf::Arena* arena);
   FieldOptions(::google::protobuf::Arena* arena, const FieldOptions& from);
   FieldOptions(::google::protobuf::Arena* arena, FieldOptions&& from) noexcept
@@ -5950,9 +5932,9 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using EditionDefault = FieldOptions_EditionDefault;
   using CType = FieldOptions_CType;
@@ -6556,7 +6538,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults"; }
 
- protected:
   explicit FeatureSetDefaults(::google::protobuf::Arena* arena);
   FeatureSetDefaults(::google::protobuf::Arena* arena, const FeatureSetDefaults& from);
   FeatureSetDefaults(::google::protobuf::Arena* arena, FeatureSetDefaults&& from) noexcept
@@ -6565,9 +6546,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using FeatureSetEditionDefault = FeatureSetDefaults_FeatureSetEditionDefault;
 
@@ -6758,7 +6739,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions"; }
 
- protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* arena);
   ExtensionRangeOptions(::google::protobuf::Arena* arena, const ExtensionRangeOptions& from);
   ExtensionRangeOptions(::google::protobuf::Arena* arena, ExtensionRangeOptions&& from) noexcept
@@ -6767,9 +6747,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using Declaration = ExtensionRangeOptions_Declaration;
   using VerificationState = ExtensionRangeOptions_VerificationState;
@@ -7180,7 +7160,6 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueOptions"; }
 
- protected:
   explicit EnumValueOptions(::google::protobuf::Arena* arena);
   EnumValueOptions(::google::protobuf::Arena* arena, const EnumValueOptions& from);
   EnumValueOptions(::google::protobuf::Arena* arena, EnumValueOptions&& from) noexcept
@@ -7189,9 +7168,9 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -7576,7 +7555,6 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumOptions"; }
 
- protected:
   explicit EnumOptions(::google::protobuf::Arena* arena);
   EnumOptions(::google::protobuf::Arena* arena, const EnumOptions& from);
   EnumOptions(::google::protobuf::Arena* arena, EnumOptions&& from) noexcept
@@ -7585,9 +7563,9 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -7985,7 +7963,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofDescriptorProto"; }
 
- protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* arena);
   OneofDescriptorProto(::google::protobuf::Arena* arena, const OneofDescriptorProto& from);
   OneofDescriptorProto(::google::protobuf::Arena* arena, OneofDescriptorProto&& from) noexcept
@@ -7994,9 +7971,9 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -8177,7 +8154,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodDescriptorProto"; }
 
- protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* arena);
   MethodDescriptorProto(::google::protobuf::Arena* arena, const MethodDescriptorProto& from);
   MethodDescriptorProto(::google::protobuf::Arena* arena, MethodDescriptorProto&& from) noexcept
@@ -8186,9 +8162,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -8433,7 +8409,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldDescriptorProto"; }
 
- protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* arena);
   FieldDescriptorProto(::google::protobuf::Arena* arena, const FieldDescriptorProto& from);
   FieldDescriptorProto(::google::protobuf::Arena* arena, FieldDescriptorProto&& from) noexcept
@@ -8442,9 +8417,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using Type = FieldDescriptorProto_Type;
   static constexpr Type TYPE_DOUBLE = FieldDescriptorProto_Type_TYPE_DOUBLE;
@@ -8821,7 +8796,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueDescriptorProto"; }
 
- protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* arena);
   EnumValueDescriptorProto(::google::protobuf::Arena* arena, const EnumValueDescriptorProto& from);
   EnumValueDescriptorProto(::google::protobuf::Arena* arena, EnumValueDescriptorProto&& from) noexcept
@@ -8830,9 +8804,9 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -9026,7 +9000,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ExtensionRange"; }
 
- protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, const DescriptorProto_ExtensionRange& from);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena, DescriptorProto_ExtensionRange&& from) noexcept
@@ -9035,9 +9008,9 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -9225,7 +9198,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceDescriptorProto"; }
 
- protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* arena);
   ServiceDescriptorProto(::google::protobuf::Arena* arena, const ServiceDescriptorProto& from);
   ServiceDescriptorProto(::google::protobuf::Arena* arena, ServiceDescriptorProto&& from) noexcept
@@ -9234,9 +9206,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -9436,7 +9408,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto"; }
 
- protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* arena);
   EnumDescriptorProto(::google::protobuf::Arena* arena, const EnumDescriptorProto& from);
   EnumDescriptorProto(::google::protobuf::Arena* arena, EnumDescriptorProto&& from) noexcept
@@ -9445,9 +9416,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using EnumReservedRange = EnumDescriptorProto_EnumReservedRange;
 
@@ -9697,7 +9668,6 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto"; }
 
- protected:
   explicit DescriptorProto(::google::protobuf::Arena* arena);
   DescriptorProto(::google::protobuf::Arena* arena, const DescriptorProto& from);
   DescriptorProto(::google::protobuf::Arena* arena, DescriptorProto&& from) noexcept
@@ -9706,9 +9676,9 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using ExtensionRange = DescriptorProto_ExtensionRange;
   using ReservedRange = DescriptorProto_ReservedRange;
@@ -10054,7 +10024,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorProto"; }
 
- protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* arena);
   FileDescriptorProto(::google::protobuf::Arena* arena, const FileDescriptorProto& from);
   FileDescriptorProto(::google::protobuf::Arena* arena, FileDescriptorProto&& from) noexcept
@@ -10063,9 +10032,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -10460,7 +10429,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorSet"; }
 
- protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* arena);
   FileDescriptorSet(::google::protobuf::Arena* arena, const FileDescriptorSet& from);
   FileDescriptorSet(::google::protobuf::Arena* arena, FileDescriptorSet&& from) noexcept
@@ -10469,9 +10437,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

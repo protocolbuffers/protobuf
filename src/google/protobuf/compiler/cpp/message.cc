@@ -2012,10 +2012,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           friend class ::$proto_ns$::internal::AnyMetadata;
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
 
-          //~ TODO Make this private! Currently people are
-          //~ deriving from protos to give access to this constructor,
-          //~ breaking the invariants we rely on.
-         protected:
           explicit $classname$(::$proto_ns$::Arena* arena);
           $classname$(::$proto_ns$::Arena* arena, const $classname$& from);
           $classname$(::$proto_ns$::Arena* arena, $classname$&& from) noexcept
@@ -2024,9 +2020,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $arena_dtor$;
           $get_class_data$;
+          $get_metadata$;
 
          public:
-          $get_metadata$;
           $decl_split_methods$;
           // nested types ----------------------------------------------------
           $nested_types$;

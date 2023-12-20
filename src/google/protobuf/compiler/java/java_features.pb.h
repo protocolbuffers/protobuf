@@ -207,7 +207,6 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
- protected:
   explicit JavaFeatures(::google::protobuf::Arena* arena);
   JavaFeatures(::google::protobuf::Arena* arena, const JavaFeatures& from);
   JavaFeatures(::google::protobuf::Arena* arena, JavaFeatures&& from) noexcept
@@ -216,9 +215,9 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   }
   const ::google::protobuf::MessageLite::ClassData* GetClassData()
       const final;
+  ::google::protobuf::Metadata GetMetadata() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
   // nested types ----------------------------------------------------
   using Utf8Validation = JavaFeatures_Utf8Validation;
   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = JavaFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN;
