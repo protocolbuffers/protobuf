@@ -482,36 +482,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   int ClearedCount() const { return allocated_size() - current_size_; }
 
-  template <typename TypeHandler>
-  void AddCleared(Value<TypeHandler>* value) {
-    ABSL_DCHECK(GetArena() == nullptr) << "AddCleared() can only be used on a "
-                                          "RepeatedPtrField not on an arena.";
-    ABSL_DCHECK(TypeHandler::GetArena(value) == nullptr)
-        << "AddCleared() can only accept values not on an arena.";
-    MaybeExtend();
-    if (using_sso()) {
-      tagged_rep_or_elem_ = value;
-    } else {
-      element_at(rep()->allocated_size++) = value;
-    }
-  }
-
-  template <typename TypeHandler>
-  PROTOBUF_NODISCARD Value<TypeHandler>* ReleaseCleared() {
-    ABSL_DCHECK(GetArena() == nullptr)
-        << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
-        << "an arena.";
-    ABSL_DCHECK(tagged_rep_or_elem_ != nullptr);
-    ABSL_DCHECK_GT(allocated_size(), current_size_);
-    if (using_sso()) {
-      auto* result = cast<TypeHandler>(tagged_rep_or_elem_);
-      tagged_rep_or_elem_ = nullptr;
-      return result;
-    } else {
-      return cast<TypeHandler>(element_at(--rep()->allocated_size));
-    }
-  }
-
   // Slowpath handles all cases, copying if necessary.
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void AddAllocatedSlowWithCopy(
