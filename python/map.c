@@ -62,7 +62,7 @@ static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_Dealloc(_self);
 }
 
-PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
+static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
   assert(upb_FieldDef_IsMap(f));
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   const upb_FieldDef* val =
@@ -130,9 +130,9 @@ upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* _self) {
   return map;
 }
 
-bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
-                            upb_MessageValue key, upb_MessageValue val,
-                            upb_Arena* arena) {
+static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
+                                   upb_MessageValue key, upb_MessageValue val,
+                                   upb_Arena* arena) {
   switch (upb_Map_Insert(map, key, val, arena)) {
     case kUpb_MapInsertStatus_Inserted:
       return true;
@@ -146,8 +146,9 @@ bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
   return false;  // Unreachable, silence compiler warning.
 }
 
-int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
-                                       PyObject* val) {
+// Assigns `self[key] = val` for the map `self`.
+static int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
+                                              PyObject* val) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
@@ -170,7 +171,7 @@ int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
   return 0;
 }
 
-PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
+static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
@@ -194,7 +195,7 @@ PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
   return PyUpb_UpbToPy(u_val, val_f, self->arena);
 }
 
-PyObject* PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
+static PyObject* PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   if (!map) Py_RETURN_FALSE;
@@ -210,7 +211,7 @@ PyObject* PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
   }
 }
 
-PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
+static PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
   upb_Map_Clear(map);
   Py_RETURN_NONE;
@@ -252,13 +253,13 @@ static PyObject* PyUpb_MapContainer_GetEntryClass(PyObject* _self,
   return PyUpb_Descriptor_GetClass(entry_m);
 }
 
-Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
+static Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   return map ? upb_Map_Size(map) : 0;
 }
 
-PyUpb_MapContainer* PyUpb_MapContainer_Check(PyObject* _self) {
+static PyUpb_MapContainer* PyUpb_MapContainer_Check(PyObject* _self) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   if (!PyObject_TypeCheck(_self, state->message_map_container_type) &&
       !PyObject_TypeCheck(_self, state->scalar_map_container_type)) {
@@ -444,7 +445,7 @@ static void PyUpb_MapIterator_Dealloc(void* _self) {
   PyUpb_Dealloc(_self);
 }
 
-PyObject* PyUpb_MapIterator_IterNext(PyObject* _self) {
+static PyObject* PyUpb_MapIterator_IterNext(PyObject* _self) {
   PyUpb_MapIterator* self = (PyUpb_MapIterator*)_self;
   if (self->version != self->map->version) {
     return PyErr_Format(PyExc_RuntimeError, "Map modified during iteration.");
