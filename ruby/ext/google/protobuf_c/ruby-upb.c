@@ -5710,9 +5710,9 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
 
 upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
-  size_t size = array->UPB_PRIVATE(size);
-  upb_Array* cloned_array =
-      UPB_PRIVATE(_upb_Array_New)(arena, size, upb_CType_SizeLg2(value_type));
+  const size_t size = array->UPB_PRIVATE(size);
+  const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(value_type);
+  upb_Array* cloned_array = UPB_PRIVATE(_upb_Array_New)(arena, size, lg2);
   if (!cloned_array) {
     return NULL;
   }
@@ -5900,7 +5900,8 @@ upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
 // Must be last.
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return UPB_PRIVATE(_upb_Array_New)(a, 4, upb_CType_SizeLg2(type));
+  const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(type);
+  return UPB_PRIVATE(_upb_Array_New)(a, 4, lg2);
 }
 
 const void* upb_Array_DataPtr(const upb_Array* arr) {
@@ -7929,6 +7930,23 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 }
 
 
+#include <stddef.h>
+
+// Must be last.
+
+// A MiniTable for an empty message, used for unlinked sub-messages.
+const upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
+    .UPB_PRIVATE(subs) = NULL,
+    .UPB_PRIVATE(fields) = NULL,
+    .UPB_PRIVATE(size) = 0,
+    .UPB_PRIVATE(field_count) = 0,
+    .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,
+    .UPB_PRIVATE(dense_below) = 0,
+    .UPB_PRIVATE(table_mask) = -1,
+    .UPB_PRIVATE(required_count) = 0,
+};
+
+
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -7994,23 +8012,6 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
   }
   return false;
 }
-
-
-#include <stddef.h>
-
-// Must be last.
-
-// A MiniTable for an empty message, used for unlinked sub-messages.
-const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
-    .UPB_PRIVATE(subs) = NULL,
-    .UPB_PRIVATE(fields) = NULL,
-    .UPB_PRIVATE(size) = 0,
-    .UPB_PRIVATE(field_count) = 0,
-    .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,
-    .UPB_PRIVATE(dense_below) = 0,
-    .UPB_PRIVATE(table_mask) = -1,
-    .UPB_PRIVATE(required_count) = 0,
-};
 
 
 
@@ -12772,7 +12773,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
 upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                     const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
-  const size_t lg2 = upb_FieldType_SizeLg2(field_type);
+  const size_t lg2 = UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
   upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
   if (!ret) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return ret;
