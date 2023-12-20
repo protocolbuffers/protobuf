@@ -341,67 +341,49 @@ impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
     }
 }
 
-macro_rules! generate_map_with_key_ops_traits {
-    ($($t:ty, $sized_t:ty;)*) => {
-        paste! {
-            $(
-                pub trait [< MapWith $t:camel KeyOps >] : Proxied {
-                    fn new_map() -> RawMap;
-                    fn clear(m: RawMap);
-                    fn size(m: RawMap) -> usize;
-                    fn insert(m: RawMap, key: $sized_t, value: View<'_, Self>) -> bool;
-                    fn get<'msg>(m: RawMap, key: $sized_t) -> Option<View<'msg, Self>>;
-                    fn remove(m: RawMap, key: $sized_t) -> bool;
-                }
+pub trait ProxiedInMapValue<K>: Proxied
+where
+    K: Proxied + ?Sized,
+{
+    fn new_map() -> RawMap;
+    fn clear(m: RawMap);
+    fn size(m: RawMap) -> usize;
+    fn insert(m: RawMap, key: View<'_, K>, value: View<'_, Self>) -> bool;
+    fn get<'msg>(m: RawMap, key: View<'_, K>) -> Option<View<'msg, Self>>;
+    fn remove(m: RawMap, key: View<'_, K>) -> bool;
+}
 
-                impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> Default for MapInner<'msg, $t, V> {
-                    fn default() -> Self {
-                        MapInner {
-                            raw: V::new_map(),
-                            _phantom_key: PhantomData,
-                            _phantom_value: PhantomData
-                        }
-                    }
-                }
-
-                impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> MapInner<'msg, $t, V> {
-                    pub fn size(&self) -> usize {
-                        V::size(self.raw)
-                    }
-
-                    pub fn clear(&mut self) {
-                        V::clear(self.raw)
-                    }
-
-                    pub fn get<'a>(&self, key: $sized_t) -> Option<View<'a, V>> {
-                        V::get(self.raw, key)
-                    }
-
-                    pub fn remove(&mut self, key: $sized_t) -> bool {
-                        V::remove(self.raw, key)
-                    }
-
-                    pub fn insert(&mut self, key: $sized_t, value: View<'_, V>) -> bool {
-                        V::insert(self.raw, key, value);
-                        true
-                    }
-                }
-            )*
-        }
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Default for MapInner<'msg, K, V> {
+    fn default() -> Self {
+        MapInner { raw: V::new_map(), _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 }
 
-generate_map_with_key_ops_traits!(
-    i32, i32;
-    u32, u32;
-    i64, i64;
-    u64, u64;
-    bool, bool;
-    ProtoStr, &ProtoStr;
-);
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MapInner<'msg, K, V> {
+    pub fn size(&self) -> usize {
+        V::size(self.raw)
+    }
 
-macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
-    ($key_t:ty, $sized_key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, $trait:ident for $($t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr, $zero_val:literal;)*) => {
+    pub fn clear(&mut self) {
+        V::clear(self.raw)
+    }
+
+    pub fn get<'a>(&self, key: View<'_, K>) -> Option<View<'a, V>> {
+        V::get(self.raw, key)
+    }
+
+    pub fn remove(&mut self, key: View<'_, K>) -> bool {
+        V::remove(self.raw, key)
+    }
+
+    pub fn insert(&mut self, key: View<'_, K>, value: View<'_, V>) -> bool {
+        V::insert(self.raw, key, value);
+        true
+    }
+}
+
+macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
+    ($key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, for $($t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr, $zero_val:literal;)*) => {
         paste! { $(
             extern "C" {
                 fn [< __pb_rust_Map_ $key_t _ $t _new >]() -> RawMap;
@@ -411,7 +393,8 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
                 fn [< __pb_rust_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
                 fn [< __pb_rust_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
-            impl $trait for $t {
+
+            impl ProxiedInMapValue<$key_t> for $t {
                 fn new_map() -> RawMap {
                     unsafe { [< __pb_rust_Map_ $key_t _ $t _new >]() }
                 }
@@ -424,14 +407,14 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
                     unsafe { [< __pb_rust_Map_ $key_t _ $t _size >](m) }
                 }
 
-                fn insert(m: RawMap, key: $sized_key_t, value: View<'_, Self>) -> bool {
+                fn insert(m: RawMap, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let ffi_value = $to_ffi_value(value);
                     unsafe { [< __pb_rust_Map_ $key_t _ $t _insert >](m, ffi_key, ffi_value) }
                     true
                 }
 
-                fn get<'msg>(m: RawMap, key: $sized_key_t) -> Option<View<'msg, Self>> {
+                fn get<'msg>(m: RawMap, key: View<'_, $key_t>) -> Option<View<'msg, Self>> {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
                     let found = unsafe { [< __pb_rust_Map_ $key_t _ $t _get >](m, ffi_key, &mut ffi_value) };
@@ -441,7 +424,7 @@ macro_rules! impl_scalar_map_with_key_op_for_scalar_values {
                     Some($from_ffi_value(ffi_value))
                 }
 
-                fn remove(m: RawMap, key: $sized_key_t) -> bool {
+                fn remove(m: RawMap, key: View<'_, $key_t>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
                     unsafe { [< __pb_rust_Map_ $key_t _ $t _remove >](m, ffi_key, &mut ffi_value) }
@@ -459,11 +442,11 @@ fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
     unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
 }
 
-macro_rules! impl_map_with_key_ops_for_scalar_values {
-    ($($t:ty, $t_sized:ty, $ffi_t:ty, $to_ffi_key:expr;)*) => {
+macro_rules! impl_ProxiedInMapValue_for_key_types {
+    ($($t:ty, $ffi_t:ty, $to_ffi_key:expr;)*) => {
         paste! {
             $(
-                impl_scalar_map_with_key_op_for_scalar_values!($t, $t_sized, $ffi_t, $to_ffi_key, [< MapWith $t:camel KeyOps >] for
+                impl_ProxiedInMapValue_for_non_generated_value_types!($t, $ffi_t, $to_ffi_key, for
                     f32, f32, identity, identity, 0f32;
                     f64, f64, identity, identity, 0f64;
                     i32, i32, identity, identity, 0i32;
@@ -478,13 +461,13 @@ macro_rules! impl_map_with_key_ops_for_scalar_values {
     }
 }
 
-impl_map_with_key_ops_for_scalar_values!(
-    i32, i32, i32, identity;
-    u32, u32, u32, identity;
-    i64, i64, i64, identity;
-    u64, u64, u64, identity;
-    bool, bool, bool, identity;
-    ProtoStr, &ProtoStr, PtrAndLen, str_to_ptrlen;
+impl_ProxiedInMapValue_for_key_types!(
+    i32, i32, identity;
+    u32, u32, identity;
+    i64, i64, identity;
+    u64, u64, identity;
+    bool, bool, identity;
+    ProtoStr, PtrAndLen, str_to_ptrlen;
 );
 
 #[cfg(test)]

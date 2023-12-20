@@ -45,8 +45,8 @@ generate_map_primitives_tests!(
 #[test]
 fn test_string_maps() {
     let mut msg = TestMap::new();
-    msg.map_string_string_mut().insert("hello", "world".into());
-    msg.map_string_string_mut().insert("fizz", "buzz".into());
+    msg.map_string_string_mut().insert("hello", "world");
+    msg.map_string_string_mut().insert("fizz", "buzz");
     assert_that!(msg.map_string_string().len(), eq(2));
     assert_that!(msg.map_string_string().get("fizz").unwrap(), eq("buzz"));
     assert_that!(msg.map_string_string().get("not found"), eq(None));
