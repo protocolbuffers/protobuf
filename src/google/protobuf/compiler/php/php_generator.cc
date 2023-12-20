@@ -87,10 +87,6 @@ void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
                             const Options& options);
 void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
-void GenerateServiceDocComment(io::Printer* printer,
-                               const ServiceDescriptor* service);
-void GenerateServiceMethodDocComment(io::Printer* printer,
-                              const MethodDescriptor* method);
 
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
@@ -343,17 +339,6 @@ std::string LegacyReadOnlyGeneratedClassFileName(std::string php_namespace,
   }
 
   return absl::StrCat(desc->name(), ".php");
-}
-
-std::string GeneratedServiceFileName(const ServiceDescriptor* service,
-                                     const Options& options) {
-  std::string result = FullClassName(service, options);
-  for (int i = 0; i < result.size(); i++) {
-    if (result[i] == '\\') {
-      result[i] = '/';
-    }
-  }
-  return absl::StrCat(result, "Interface", ".php");
 }
 
 std::string IntToString(int32_t value) {
@@ -794,16 +779,6 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   }
   printer->Print("->finalizeToPool();\n\n");
   Outdent(printer);
-}
-
-void GenerateServiceMethod(const MethodDescriptor* method,
-                           io::Printer* printer) {
-  printer->Print(
-        "public function ^camel_name^(\\^request_name^ $request);\n\n",
-        "camel_name", UnderscoresToCamelCase(method->name(), false),
-        "request_name", FullClassName(
-          method->input_type(), false)
-  );
 }
 
 void GenerateMessageToPool(absl::string_view name_prefix,
@@ -1573,53 +1548,6 @@ bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   return true;
 }
 
-void GenerateServiceFile(
-    const FileDescriptor* file, const ServiceDescriptor* service,
-    const Options& options, GeneratorContext* generator_context) {
-  std::string filename = GeneratedServiceFileName(service, options);
-  std::unique_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
-  io::Printer printer(output.get(), '^');
-
-  GenerateHead(file, &printer);
-
-  std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of('\\');
-
-  if (!file->options().php_namespace().empty() ||
-      (!file->options().has_php_namespace() && !file->package().empty()) ||
-      lastindex != std::string::npos) {
-    printer.Print(
-        "namespace ^name^;\n\n",
-        "name", fullname.substr(0, lastindex));
-  }
-
-  GenerateServiceDocComment(&printer, service);
-
-  if (lastindex != std::string::npos) {
-    printer.Print(
-        "interface ^name^\n"
-        "{\n",
-        "name", fullname.substr(lastindex + 1));
-  } else {
-    printer.Print(
-        "interface ^name^\n"
-        "{\n",
-        "name", fullname);
-  }
-
-  Indent(&printer);
-
-  for (int i = 0; i < service->method_count(); i++) {
-    const MethodDescriptor* method = service->method(i);
-    GenerateServiceMethodDocComment(&printer, method);
-    GenerateServiceMethod(method, &printer);
-  }
-
-  Outdent(&printer);
-  printer.Print("}\n\n");
-}
-
 bool GenerateFile(const FileDescriptor* file, const Options& options,
                   GeneratorContext* generator_context, std::string* error) {
   GenerateMetadataFile(file, options, generator_context);
@@ -1634,11 +1562,6 @@ bool GenerateFile(const FileDescriptor* file, const Options& options,
     if (!GenerateEnumFile(file, file->enum_type(i), options, generator_context,
                           error)) {
       return false;
-    }
-  }
-  if (file->options().php_generic_services()) {
-    for (int i = 0; i < file->service_count(); i++) {
-      GenerateServiceFile(file, file->service(i), options, generator_context);
     }
   }
 
@@ -1791,19 +1714,6 @@ void GenerateMessageConstructorDocComment(io::Printer* printer,
   printer->Print(" */\n");
 }
 
-void GenerateServiceDocComment(io::Printer* printer,
-                               const ServiceDescriptor* service) {
-  printer->Print("/**\n");
-  if (service->options().deprecated()) {
-    printer->Print(" * @deprecated\n");
-  }
-  GenerateDocCommentBody(printer, service);
-  printer->Print(
-    " * Protobuf type <code>^fullname^</code>\n"
-    " */\n",
-    "fullname", EscapePhpdoc(service->full_name()));
-}
-
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
                              const Options& options, int function_type) {
   // In theory we should have slightly different comments for setters, getters,
@@ -1892,26 +1802,6 @@ void GenerateEnumValueDocComment(io::Printer* printer,
     " * Generated from protobuf enum <code>^def^</code>\n"
     " */\n",
     "def", EscapePhpdoc(FirstLineOf(value->DebugString())));
-}
-
-void GenerateServiceMethodDocComment(io::Printer* printer,
-                                     const MethodDescriptor* method) {
-  printer->Print("/**\n");
-  GenerateDocCommentBody(printer, method);
-  if (method->options().deprecated()) {
-    printer->Print(" * @deprecated\n");
-  }
-  printer->Print(
-    " * Method <code>^method_name^</code>\n"
-    " *\n",
-    "method_name", EscapePhpdoc(UnderscoresToCamelCase(method->name(), false)));
-  printer->Print(
-    " * @param \\^input_type^ $request\n",
-    "input_type", EscapePhpdoc(FullClassName(method->input_type(), false)));
-  printer->Print(
-    " * @return \\^return_type^\n"
-    " */\n",
-    "return_type", EscapePhpdoc(FullClassName(method->output_type(), false)));
 }
 
 std::string FilenameCName(const FileDescriptor* file) {

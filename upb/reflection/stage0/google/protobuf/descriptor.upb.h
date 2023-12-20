@@ -3351,21 +3351,6 @@ UPB_INLINE bool google_protobuf_FileOptions_has_php_namespace(const google_proto
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 41);
   return _upb_Message_HasNonExtensionField(msg, &field);
 }
-UPB_INLINE void google_protobuf_FileOptions_clear_php_generic_services(google_protobuf_FileOptions* msg) {
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 42);
-  _upb_Message_ClearNonExtensionField(msg, &field);
-}
-UPB_INLINE bool google_protobuf_FileOptions_php_generic_services(const google_protobuf_FileOptions* msg) {
-  bool default_val = false;
-  bool ret;
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 42);
-  _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
-  return ret;
-}
-UPB_INLINE bool google_protobuf_FileOptions_has_php_generic_services(const google_protobuf_FileOptions* msg) {
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 42);
-  return _upb_Message_HasNonExtensionField(msg, &field);
-}
 UPB_INLINE void google_protobuf_FileOptions_clear_php_metadata_namespace(google_protobuf_FileOptions* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 44);
   _upb_Message_ClearNonExtensionField(msg, &field);
@@ -3510,10 +3495,6 @@ UPB_INLINE void google_protobuf_FileOptions_set_php_class_prefix(google_protobuf
 }
 UPB_INLINE void google_protobuf_FileOptions_set_php_namespace(google_protobuf_FileOptions *msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 41);
-  _upb_Message_SetNonExtensionField(msg, &field, &value);
-}
-UPB_INLINE void google_protobuf_FileOptions_set_php_generic_services(google_protobuf_FileOptions *msg, bool value) {
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FileOptions_msg_init(), 42);
   _upb_Message_SetNonExtensionField(msg, &field, &value);
 }
 UPB_INLINE void google_protobuf_FileOptions_set_php_metadata_namespace(google_protobuf_FileOptions *msg, upb_StringView value) {
@@ -6315,7 +6296,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 /* Max size 32 is google.protobuf.FileOptions */
 /* Max size 64 is google.protobuf.FileOptions */
-#define _UPB_MAXOPT_SIZE UPB_SIZE(112, 200)
+#define _UPB_MAXOPT_SIZE UPB_SIZE(104, 192)
 
 #ifdef __cplusplus
 }  /* extern "C" */
