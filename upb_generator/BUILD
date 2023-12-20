@@ -104,7 +104,6 @@ bootstrap_cc_library(
     deps = [
         ":mangle",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "@com_google_absl//absl/strings",
     ],
@@ -129,7 +128,6 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mini_descriptor",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
@@ -267,7 +265,6 @@ bootstrap_cc_binary(
     deps = [
         "//upb:base",
         "//upb:mem",
-        "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire_types",
         "@com_google_absl//absl/container:flat_hash_map",
@@ -307,7 +304,6 @@ bootstrap_cc_binary(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire_types",
         "@com_google_absl//absl/container:flat_hash_map",

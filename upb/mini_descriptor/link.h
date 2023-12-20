@@ -18,10 +18,7 @@
 
 #include "upb/base/status.h"
 #include "upb/mem/arena.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
+#include "upb/mini_table/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

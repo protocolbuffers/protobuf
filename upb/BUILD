@@ -292,12 +292,6 @@ alias(
 )
 
 alias(
-    name = "mini_table_internal",
-    actual = "//upb/mini_table:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "port",
     actual = "//upb/port",
     visibility = ["//visibility:public"],
@@ -409,7 +403,6 @@ upb_amalgamation(
         ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_compat",
-        ":mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",
@@ -458,7 +451,6 @@ upb_amalgamation(
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
-        ":mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",
@@ -508,7 +500,6 @@ upb_amalgamation(
         ":mini_descriptor",
         ":mini_descriptor_internal",
         ":mini_table",
-        ":mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",

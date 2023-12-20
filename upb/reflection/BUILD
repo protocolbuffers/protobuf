@@ -133,6 +133,7 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
+        "//upb:base_internal",
         "//upb:hash",
         "//upb:mem",
         "//upb:message",
@@ -144,9 +145,7 @@ bootstrap_cc_library(
         "//upb:mini_descriptor",
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
-        "//upb/base:internal",
     ],
 )
 

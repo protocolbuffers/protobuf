@@ -24,7 +24,6 @@
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"

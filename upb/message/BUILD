@@ -37,7 +37,6 @@ cc_library(
         "//upb:mem",
         "//upb:message_types",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire",
         "//upb:wire_reader",
@@ -59,7 +58,6 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )
@@ -84,7 +82,6 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )
@@ -122,7 +119,6 @@ cc_library(
         "//upb:hash",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )
@@ -183,7 +179,6 @@ cc_library(
         "//upb:eps_copy_input_stream",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "//upb:wire",
         "//upb:wire_internal",

@@ -57,7 +57,6 @@ cc_library(
         "//upb:message_internal_types",
         "//upb:message_tagged_ptr",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "//third_party/utf8_range",
     ],
