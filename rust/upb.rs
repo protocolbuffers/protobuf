@@ -7,10 +7,10 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::ProtoStr;
 use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
-    Mut, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
+    Mut, ProtoStr, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, SettableValue,
+    View, ViewProxy,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -214,6 +214,15 @@ impl Deref for SerializedData {
 impl fmt::Debug for SerializedData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self.deref(), f)
+    }
+}
+
+impl SettableValue<[u8]> for SerializedData {
+    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
+    where
+        [u8]: 'msg,
+    {
+        mutator.set(self.as_ref())
     }
 }
 

@@ -9,7 +9,7 @@
 
 use crate::ProtoStr;
 use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
-use crate::{Mut, Proxied, ProxiedInRepeated, Repeated, View};
+use crate::{Mut, Proxied, ProxiedInRepeated, Repeated, SettableValue, View};
 use core::fmt::Debug;
 use paste::paste;
 use std::alloc::Layout;
@@ -136,6 +136,15 @@ impl Drop for SerializedData {
 impl fmt::Debug for SerializedData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self.deref(), f)
+    }
+}
+
+impl SettableValue<[u8]> for SerializedData {
+    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
+    where
+        [u8]: 'msg,
+    {
+        mutator.set(self.as_ref())
     }
 }
 
