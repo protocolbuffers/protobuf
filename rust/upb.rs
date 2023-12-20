@@ -9,7 +9,9 @@
 
 use crate::ProtoStr;
 use crate::__internal::{Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
-use crate::{Mut, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy};
+use crate::{
+    Mut, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
+};
 use core::fmt::Debug;
 use paste::paste;
 use std::alloc;
@@ -519,9 +521,7 @@ macro_rules! generate_map_key_ops_traits {
     ($($t:ty, $sized_t:ty;)*) => {
         paste! {
             $(
-                pub trait [< MapWith $t:camel KeyOps >] {
-                    type Value<'msg>: Sized;
-
+                pub trait [< MapWith $t:camel KeyOps >] : Proxied {
                     fn new_map(a: RawArena) -> RawMap;
                     fn clear(m: RawMap) {
                         unsafe { upb_Map_Clear(m) }
@@ -529,8 +529,8 @@ macro_rules! generate_map_key_ops_traits {
                     fn size(m: RawMap) -> usize {
                         unsafe { upb_Map_Size(m) }
                     }
-                    fn insert(m: RawMap, a: RawArena, key: $sized_t, value: Self::Value<'_>) -> bool;
-                    fn get<'msg>(m: RawMap, key: $sized_t) -> Option<Self::Value<'msg>>;
+                    fn insert(m: RawMap, a: RawArena, key: $sized_t, value: View<'_, Self>) -> bool;
+                    fn get<'msg>(m: RawMap, key: $sized_t) -> Option<View<'msg, Self>>;
                     fn remove(m: RawMap, key: $sized_t) -> bool;
                 }
 
@@ -553,7 +553,7 @@ macro_rules! generate_map_key_ops_traits {
                         V::clear(self.raw)
                     }
 
-                    pub fn get<'a>(&self, key: $sized_t) -> Option<V::Value<'a>> {
+                    pub fn get<'a>(&self, key: $sized_t) -> Option<View<'a, V>> {
                         V::get(self.raw, key)
                     }
 
@@ -561,7 +561,7 @@ macro_rules! generate_map_key_ops_traits {
                         V::remove(self.raw, key)
                     }
 
-                    pub fn insert(&mut self, key: $sized_t, value: V::Value<'_>) -> bool {
+                    pub fn insert(&mut self, key: $sized_t, value: View<'_, V>) -> bool {
                         V::insert(self.raw, self.arena.raw(), key, value)
                     }
                 }
@@ -580,16 +580,14 @@ generate_map_key_ops_traits!(
 );
 
 macro_rules! impl_scalar_map_key_op_for_scalar_values {
-    ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, $trait:ident for $($t:ty, $sized_t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
+    ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, $trait:ident for $($t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
          $(
             impl $trait for $t {
-                type Value<'msg> = $sized_t;
-
                 fn new_map(a: RawArena) -> RawMap {
                     unsafe { upb_Map_New(a, $key_upb_tag, $upb_tag) }
                 }
 
-                fn insert(m: RawMap, a: RawArena, key: $key_t, value: Self::Value<'_>) -> bool {
+                fn insert(m: RawMap, a: RawArena, key: $key_t, value: View<'_, Self>) -> bool {
                     unsafe {
                         upb_Map_Set(
                             m,
@@ -600,7 +598,7 @@ macro_rules! impl_scalar_map_key_op_for_scalar_values {
                     }
                 }
 
-                fn get<'msg>(m: RawMap, key: $key_t) -> Option<Self::Value<'msg>> {
+                fn get<'msg>(m: RawMap, key: $key_t) -> Option<View<'msg, Self>> {
                     let mut val = $msg_val($zero_val);
                     let found = unsafe {
                         upb_Map_Get(m, $key_msg_val(key), &mut val)
@@ -647,14 +645,14 @@ macro_rules! impl_map_key_ops_for_scalar_values {
         paste! {
             $(
                 impl_scalar_map_key_op_for_scalar_values!($t_sized, $key_msg_val, $upb_tag, [< MapWith $t:camel KeyOps >] for
-                    f32, f32, scalar_to_msg!(float_val), scalar_from_msg!(float_val),  UpbCType::Float, 0f32;
-                    f64, f64, scalar_to_msg!(double_val), scalar_from_msg!(double_val),  UpbCType::Double, 0f64;
-                    i32, i32, scalar_to_msg!(int32_val), scalar_from_msg!(int32_val),  UpbCType::Int32, 0i32;
-                    u32, u32, scalar_to_msg!(uint32_val), scalar_from_msg!(uint32_val), UpbCType::UInt32, 0u32;
-                    i64, i64, scalar_to_msg!(int64_val), scalar_from_msg!(int64_val), UpbCType::Int64, 0i64;
-                    u64, u64, scalar_to_msg!(uint64_val), scalar_from_msg!(uint64_val), UpbCType::UInt64, 0u64;
-                    bool, bool, scalar_to_msg!(bool_val), scalar_from_msg!(bool_val), UpbCType::Bool, false;
-                    ProtoStr, &'msg ProtoStr, str_to_msg, msg_to_str, UpbCType::String, "";
+                    f32, scalar_to_msg!(float_val), scalar_from_msg!(float_val),  UpbCType::Float, 0f32;
+                    f64, scalar_to_msg!(double_val), scalar_from_msg!(double_val),  UpbCType::Double, 0f64;
+                    i32, scalar_to_msg!(int32_val), scalar_from_msg!(int32_val),  UpbCType::Int32, 0i32;
+                    u32, scalar_to_msg!(uint32_val), scalar_from_msg!(uint32_val), UpbCType::UInt32, 0u32;
+                    i64, scalar_to_msg!(int64_val), scalar_from_msg!(int64_val), UpbCType::Int64, 0i64;
+                    u64, scalar_to_msg!(uint64_val), scalar_from_msg!(uint64_val), UpbCType::UInt64, 0u64;
+                    bool, scalar_to_msg!(bool_val), scalar_from_msg!(bool_val), UpbCType::Bool, false;
+                    ProtoStr, str_to_msg, msg_to_str, UpbCType::String, "";
                 );
             )*
         }
