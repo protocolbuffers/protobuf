@@ -897,6 +897,7 @@ cc_library(
         "map_test_util.inc",
         "message_unittest.inc",
         "reflection_tester.h",
+        "repeated_field_reflection_unittest.inc",
         "test_util.h",
         "test_util.inc",
         "test_util_lite.h",
@@ -1377,7 +1378,10 @@ cc_test(
 
 cc_test(
     name = "repeated_field_reflection_unittest",
-    srcs = ["repeated_field_reflection_unittest.cc"],
+    srcs = [
+        "repeated_field_reflection_unittest.cc",
+        "repeated_field_reflection_unittest.inc",
+    ],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
