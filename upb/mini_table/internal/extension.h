@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/sub.h"
 
@@ -28,9 +29,9 @@ struct upb_MiniTableExtension {
 extern "C" {
 #endif
 
-UPB_INLINE const upb_MiniTableField* UPB_PRIVATE(
-    _upb_MiniTableExtension_AsField)(const upb_MiniTableExtension* e) {
-  return (const upb_MiniTableField*)&e->UPB_PRIVATE(field);
+UPB_INLINE upb_CType
+UPB_PRIVATE(_upb_MiniTableExtension_CType)(const upb_MiniTableExtension* e) {
+  return upb_MiniTableField_CType(&e->UPB_PRIVATE(field));
 }
 
 UPB_INLINE uint32_t

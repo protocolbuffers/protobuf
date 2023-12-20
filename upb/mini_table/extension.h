@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/types.h"  // IWYU pragma: export
 
@@ -20,9 +21,9 @@
 extern "C" {
 #endif
 
-UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_AsField(
-    const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_AsField)(e);
+UPB_API_INLINE upb_CType
+upb_MiniTableExtension_CType(const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableExtension_CType)(e);
 }
 
 UPB_API_INLINE uint32_t
