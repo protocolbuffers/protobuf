@@ -131,15 +131,15 @@ UPB_PRIVATE(_upb_MiniTableField_CType)(const upb_MiniTableField* f) {
   return upb_FieldType_CType(UPB_PRIVATE(_upb_MiniTableField_Type)(f));
 }
 
-UPB_INLINE char _upb_MiniTableField_HasbitMask(
+UPB_INLINE char UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(f->presence > 0);
   const size_t index = f->presence;
   return 1 << (index % 8);
 }
 
-UPB_INLINE size_t
-_upb_MiniTableField_HasbitOffset(const struct upb_MiniTableField* f) {
+UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
+    const struct upb_MiniTableField* f) {
   UPB_ASSERT(f->presence > 0);
   const size_t index = f->presence;
   return index / 8;
@@ -180,8 +180,8 @@ UPB_PRIVATE(_upb_MiniTableField_Offset)(const struct upb_MiniTableField* f) {
   return f->UPB_ONLYBITS(offset);
 }
 
-UPB_INLINE size_t
-_upb_MiniTableField_OneofOffset(const struct upb_MiniTableField* f) {
+UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(
+    const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(f));
   return ~(ptrdiff_t)f->presence;
 }

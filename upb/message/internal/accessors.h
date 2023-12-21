@@ -56,22 +56,25 @@ extern "C" {
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
     const upb_Message* msg, const upb_MiniTableField* f) {
-  const size_t offset = _upb_MiniTableField_HasbitOffset(f);
-  const char mask = _upb_MiniTableField_HasbitMask(f);
+  const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
+  const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
+
   return (*UPB_PTR_AT(msg, offset, const char) & mask) != 0;
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
     const upb_Message* msg, const upb_MiniTableField* f) {
-  const size_t offset = _upb_MiniTableField_HasbitOffset(f);
-  const char mask = _upb_MiniTableField_HasbitMask(f);
+  const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
+  const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
+
   (*UPB_PTR_AT(msg, offset, char)) |= mask;
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
     const upb_Message* msg, const upb_MiniTableField* f) {
-  const size_t offset = _upb_MiniTableField_HasbitOffset(f);
-  const char mask = _upb_MiniTableField_HasbitMask(f);
+  const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
+  const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
+
   (*UPB_PTR_AT(msg, offset, char)) &= ~mask;
 }
 
@@ -79,7 +82,8 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
 
 UPB_INLINE uint32_t* UPB_PRIVATE(_upb_Message_OneofCasePtr)(
     upb_Message* msg, const upb_MiniTableField* f) {
-  return UPB_PTR_AT(msg, _upb_MiniTableField_OneofOffset(f), uint32_t);
+  return UPB_PTR_AT(msg, UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(f),
+                    uint32_t);
 }
 
 UPB_INLINE uint32_t UPB_PRIVATE(_upb_Message_GetOneofCase)(
