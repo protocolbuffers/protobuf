@@ -19,6 +19,7 @@
 #include "google/protobuf/compiler/plugin.upb.h"
 #include "google/protobuf/compiler/plugin.upbdefs.h"
 #include "upb/base/status.h"
+#include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
@@ -34,7 +35,8 @@ static google_protobuf_compiler_CodeGeneratorResponse* upbc_JsonDecode(
   upb_DefPool* s = upb_DefPool_New();
   const upb_MessageDef* m = google_protobuf_compiler_CodeGeneratorResponse_getmsgdef(s);
 
-  (void)upb_JsonDecode(data, size, response, m, s, 0, arena, status);
+  (void)upb_JsonDecode(data, size, UPB_UPCAST(response), m, s, 0, arena,
+                       status);
   if (!upb_Status_IsOk(status)) return NULL;
 
   upb_DefPool_Free(s);
@@ -50,12 +52,14 @@ static upb_StringView upbc_JsonEncode(const upb_CodeGeneratorRequest* request,
   const upb_MessageDef* m = upb_CodeGeneratorRequest_getmsgdef(s);
   const int options = upb_JsonEncode_FormatEnumsAsIntegers;
 
-  out.size = upb_JsonEncode(request, m, s, options, NULL, 0, status);
+  out.size =
+      upb_JsonEncode(UPB_UPCAST(request), m, s, options, NULL, 0, status);
   if (!upb_Status_IsOk(status)) goto done;
 
   char* data = (char*)upb_Arena_Malloc(arena, out.size + 1);
 
-  (void)upb_JsonEncode(request, m, s, options, data, out.size + 1, status);
+  (void)upb_JsonEncode(UPB_UPCAST(request), m, s, options, data, out.size + 1,
+                       status);
   if (!upb_Status_IsOk(status)) goto done;
 
   out.data = (const char*)data;

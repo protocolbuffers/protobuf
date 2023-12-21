@@ -535,7 +535,7 @@ static void encode_ext(upb_encstate* e, const upb_Extension* ext,
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
   } else {
-    encode_field(e, &ext->data, &ext->ext->UPB_PRIVATE(sub),
+    encode_field(e, (upb_Message*)&ext->data, &ext->ext->UPB_PRIVATE(sub),
                  &ext->ext->UPB_PRIVATE(field));
   }
 }
@@ -603,7 +603,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
 }
 
 static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
-                                           const void* const msg,
+                                           const upb_Message* const msg,
                                            const upb_MiniTable* const l,
                                            char** const buf,
                                            size_t* const size) {
@@ -631,7 +631,7 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
   return encoder->status;
 }
 
-upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
+upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
   upb_encstate e;

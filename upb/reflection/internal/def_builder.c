@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "upb/base/internal/log2.h"
+#include "upb/base/upcast.h"
 #include "upb/mem/alloc.h"
 #include "upb/message/copy.h"
 #include "upb/reflection/def_pool.h"
@@ -17,6 +18,7 @@
 #include "upb/reflection/field_def.h"
 #include "upb/reflection/file_def.h"
 #include "upb/reflection/internal/strdup2.h"
+#include "upb/wire/decode.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -368,8 +370,8 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
     return false;
   }
 
-  *set =
-      upb_Message_DeepClone(parent, UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
+  *set = (UPB_DESC(FeatureSet*))upb_Message_DeepClone(
+      UPB_UPCAST(parent), UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
   if (!*set) _upb_DefBuilder_OomErr(ctx);
 
   v = upb_value_ptr(*set);
@@ -406,7 +408,7 @@ const UPB_DESC(FeatureSet*)
   }
 
   upb_DecodeStatus dec_status =
-      upb_Decode(child_bytes, child_size, resolved,
+      upb_Decode(child_bytes, child_size, UPB_UPCAST(resolved),
                  UPB_DESC_MINITABLE(FeatureSet), NULL, 0, ctx->arena);
   if (dec_status != kUpb_DecodeStatus_Ok) _upb_DefBuilder_OomErr(ctx);
 

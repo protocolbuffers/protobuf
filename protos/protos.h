@@ -72,7 +72,7 @@ class Ptr final {
 #endif
 
  private:
-  Ptr(void* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
+  Ptr(upb_Message* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
 
   friend class Ptr<const T>;
   friend typename T::Access;
@@ -132,11 +132,11 @@ struct PrivateAccess {
     return message->msg();
   }
   template <typename T>
-  static auto Proxy(void* p, upb_Arena* arena) {
+  static auto Proxy(upb_Message* p, upb_Arena* arena) {
     return typename T::Proxy(p, arena);
   }
   template <typename T>
-  static auto CProxy(const void* p, upb_Arena* arena) {
+  static auto CProxy(const upb_Message* p, upb_Arena* arena) {
     return typename T::CProxy(p, arena);
   }
 };
@@ -152,7 +152,7 @@ T CreateMessage() {
 }
 
 template <typename T>
-typename T::Proxy CreateMessageProxy(void* msg, upb_Arena* arena) {
+typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
 }
 
@@ -418,7 +418,7 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
         upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
   return Ptr<const Extension>(::protos::internal::CreateMessage<Extension>(
-      ext->data.ptr, ::protos::internal::GetArena(message)));
+      (upb_Message*)ext->data.ptr, ::protos::internal::GetArena(message)));
 }
 
 template <typename T, typename Extendee, typename Extension,

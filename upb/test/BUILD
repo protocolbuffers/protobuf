@@ -208,6 +208,7 @@ cc_test(
         ":timestamp_upb_proto",
         ":timestamp_upb_proto_reflection",
         "@com_google_googletest//:gtest_main",
+        "//upb:base",
         "//upb:json",
         "//upb:port",
         "//upb:reflection",

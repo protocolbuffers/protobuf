@@ -184,7 +184,7 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
     map = PyUpb_MapContainer_EnsureReified(_self);
     upb_Arena* arena = PyUpb_Arena_Get(self->arena);
     if (upb_FieldDef_IsSubMessage(val_f)) {
-      const upb_Message* m = upb_FieldDef_MessageSubDef(val_f);
+      const upb_MessageDef* m = upb_FieldDef_MessageSubDef(val_f);
       const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
       u_val.msg_val = upb_Message_New(layout, arena);
     } else {

@@ -146,6 +146,7 @@ bootstrap_cc_library(
         "//upb:mini_descriptor_internal",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire",
     ],
 )
 
@@ -178,6 +179,7 @@ cc_test(
     deps = [
         ":descriptor_upb_proto",
         "@com_google_googletest//:gtest_main",
+        "//upb:base",
         "//upb:hash",
         "//upb:mem",
         "//upb:port",

@@ -20,6 +20,7 @@
 #include "google/protobuf/editions/golden/test_messages_proto3_editions.upbdefs.h"
 #include "google/protobuf/test_messages_proto2.upbdefs.h"
 #include "google/protobuf/test_messages_proto3.upbdefs.h"
+#include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/reflection/message.h"
@@ -291,9 +292,9 @@ bool DoTestIo(upb_DefPool* symtab) {
   test_count++;
 
   if (verbose) {
-    debug_print("Request", c.request,
+    debug_print("Request", UPB_UPCAST(c.request),
                 conformance_ConformanceRequest_getmsgdef(symtab), &c);
-    debug_print("Response", c.response,
+    debug_print("Response", UPB_UPCAST(c.response),
                 conformance_ConformanceResponse_getmsgdef(symtab), &c);
     fprintf(stderr, "\n");
   }

@@ -17,6 +17,7 @@ cc_library(
         "status.h",
         "status.hpp",
         "string_view.h",
+        "upcast.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
