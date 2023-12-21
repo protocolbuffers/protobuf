@@ -10170,7 +10170,8 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   bool implicit = false;
 
   if (syntax != kUpb_Syntax_Editions) {
-    upb_Message_Clear(ctx->legacy_features, UPB_DESC_MINITABLE(FeatureSet));
+    upb_Message_Clear(UPB_UPCAST(ctx->legacy_features),
+                      UPB_DESC_MINITABLE(FeatureSet));
     if (_upb_FieldDef_InferLegacyFeatures(ctx, f, field_proto, f->opts, syntax,
                                           ctx->legacy_features)) {
       implicit = true;
@@ -11323,8 +11324,8 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
     return false;
   }
 
-  *set =
-      upb_Message_DeepClone(parent, UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
+  *set = (UPB_DESC(FeatureSet*))upb_Message_DeepClone(
+      UPB_UPCAST(parent), UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
   if (!*set) _upb_DefBuilder_OomErr(ctx);
 
   v = upb_value_ptr(*set);
@@ -11361,7 +11362,7 @@ const UPB_DESC(FeatureSet*)
   }
 
   upb_DecodeStatus dec_status =
-      upb_Decode(child_bytes, child_size, resolved,
+      upb_Decode(child_bytes, child_size, UPB_UPCAST(resolved),
                  UPB_DESC_MINITABLE(FeatureSet), NULL, 0, ctx->arena);
   if (dec_status != kUpb_DecodeStatus_Ok) _upb_DefBuilder_OomErr(ctx);
 
@@ -13400,18 +13401,18 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
     ent.data.v.val = upb_value_uintptr(msg);
   }
 
-  ptr =
-      _upb_Decoder_DecodeSubMessage(d, ptr, &ent.data, subs, field, val->size);
+  ptr = _upb_Decoder_DecodeSubMessage(d, ptr, (upb_Message*)&ent.data, subs,
+                                      field, val->size);
   // check if ent had any unknown fields
   size_t size;
-  upb_Message_GetUnknown(&ent.data, &size);
+  upb_Message_GetUnknown((upb_Message*)&ent.data, &size);
   if (size != 0) {
     char* buf;
     size_t size;
     uint32_t tag =
         ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
     upb_EncodeStatus status =
-        upb_Encode(&ent.data, entry, 0, &d->arena, &buf, &size);
+        upb_Encode((upb_Message*)&ent.data, entry, 0, &d->arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
@@ -13913,7 +13914,7 @@ static const char* _upb_Decoder_DecodeKnownField(
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
     d->unknown_msg = msg;
-    msg = &ext->data;
+    msg = (upb_Message*)&ext->data;
     subs = &ext->ext->UPB_PRIVATE(sub);
   }
 
@@ -14104,7 +14105,7 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
   return decoder->status;
 }
 
-upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
+upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                             const upb_MiniTable* l,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {
@@ -15629,7 +15630,7 @@ static void encode_ext(upb_encstate* e, const upb_Extension* ext,
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
   } else {
-    encode_field(e, &ext->data, &ext->ext->UPB_PRIVATE(sub),
+    encode_field(e, (upb_Message*)&ext->data, &ext->ext->UPB_PRIVATE(sub),
                  &ext->ext->UPB_PRIVATE(field));
   }
 }
@@ -15697,7 +15698,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
 }
 
 static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
-                                           const void* const msg,
+                                           const upb_Message* const msg,
                                            const upb_MiniTable* const l,
                                            char** const buf,
                                            size_t* const size) {
@@ -15725,7 +15726,7 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
   return encoder->status;
 }
 
-upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
+upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
   upb_encstate e;
