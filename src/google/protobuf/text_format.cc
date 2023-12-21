@@ -1654,13 +1654,22 @@ namespace {
 // Returns true if `ch` needs to be escaped in TextFormat, independent of any
 // UTF-8 validity issues.
 bool DefinitelyNeedsEscape(unsigned char ch) {
-  if (ch < 32) return true;
+  if (ch >= 0x80) {
+    return false;  // High byte; no escapes necessary if UTF-8 is vaid.
+  }
+
+  if (!absl::ascii_isprint(ch)) {
+    return true;  // Unprintable characters need escape.
+  }
+
   switch (ch) {
     case '\"':
     case '\'':
     case '\\':
+      // These characters need escapes despite being printable.
       return true;
   }
+
   return false;
 }
 
