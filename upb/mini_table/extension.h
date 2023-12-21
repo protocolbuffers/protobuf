@@ -37,7 +37,7 @@ UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
 
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
     upb_MiniTableExtension* e, const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
+  UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
 }
 
 #ifdef __cplusplus

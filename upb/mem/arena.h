@@ -68,7 +68,7 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 // this was not the last alloc.
 UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
-  return UPB_PRIVATE(_upb_Arena_ShrinkLast)(a, ptr, oldsize, size);
+  UPB_PRIVATE(_upb_Arena_ShrinkLast)(a, ptr, oldsize, size);
 }
 
 #ifdef __cplusplus
