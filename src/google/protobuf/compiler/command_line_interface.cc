@@ -2421,7 +2421,7 @@ void CommandLineInterface::PrintHelpText() {
   std::cout << "Usage: " << executable_name_ << " [OPTION] PROTO_FILES";
   std::cout << R"(
 Parse PROTO_FILES and generate output based on the options given:
-  -IPATH, --proto_path=PATH   Specify the directory in which to search for
+  -IPATH, -I, --proto_path=PATH   Specify the directory in which to search for
                               imports.  May be specified multiple times;
                               directories will be searched in order.  If not
                               given, the current working directory is used.
