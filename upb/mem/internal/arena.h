@@ -22,14 +22,14 @@
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #define UPB_ARENA_SIZE_HACK 7
 
-// LINT.IfChange(upb_Array)
+// LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   char* UPB_ONLYBITS(end);
 };
 
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Array)
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
 
 #ifdef __cplusplus
 extern "C" {
