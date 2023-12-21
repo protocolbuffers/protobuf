@@ -488,20 +488,20 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // Pass value_arena and my_arena to avoid duplicate virtual call (value)
       // or load (mine).
       Value<TypeHandler>* value, Arena* value_arena, Arena* my_arena) {
+    using H = CommonHandler<TypeHandler>;
     // Ensure that either the value is in the same arena, or if not, we do the
     // appropriate thing: Own() it (if it's on heap and we're in an arena) or
     // copy it to our arena/heap (otherwise).
     if (my_arena != nullptr && value_arena == nullptr) {
       my_arena->Own(value);
     } else if (my_arena != value_arena) {
+      ABSL_DCHECK(value_arena != nullptr);
       auto* new_value = TypeHandler::NewFromPrototype(value, my_arena);
-      using H = CommonHandler<TypeHandler>;
       H::Merge(*value, new_value);
-      H::Delete(value, value_arena);
       value = new_value;
     }
 
-    UnsafeArenaAddAllocated<TypeHandler>(value);
+    UnsafeArenaAddAllocated<H>(value);
   }
 
   template <typename TypeHandler>
