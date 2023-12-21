@@ -682,7 +682,6 @@ PHP_METHOD(Message, mergeFrom) {
 PHP_METHOD(Message, mergeFromString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   char* data = NULL;
-  char* data_copy = NULL;
   zend_long data_len;
   const upb_MiniTable* l = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Arena* arena = Arena_Get(&intern->arena);
@@ -692,11 +691,7 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
 
-  // TODO: avoid this copy when we can make the decoder copy.
-  data_copy = upb_Arena_Malloc(arena, data_len);
-  memcpy(data_copy, data, data_len);
-
-  if (upb_Decode(data_copy, data_len, intern->msg, l, NULL, 0, arena) !=
+  if (upb_Decode(data, data_len, intern->msg, l, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
     return;
@@ -739,7 +734,6 @@ PHP_METHOD(Message, serializeToString) {
 PHP_METHOD(Message, mergeFromJsonString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   char* data = NULL;
-  char* data_copy = NULL;
   zend_long data_len;
   upb_Arena* arena = Arena_Get(&intern->arena);
   upb_Status status;
@@ -751,17 +745,12 @@ PHP_METHOD(Message, mergeFromJsonString) {
     return;
   }
 
-  // TODO: avoid this copy when we can make the decoder copy.
-  data_copy = upb_Arena_Malloc(arena, data_len + 1);
-  memcpy(data_copy, data, data_len);
-  data_copy[data_len] = '\0';
-
   if (ignore_json_unknown) {
     options |= upb_JsonDecode_IgnoreUnknown;
   }
 
   upb_Status_Clear(&status);
-  if (!upb_JsonDecode(data_copy, data_len, intern->msg, intern->desc->msgdef,
+  if (!upb_JsonDecode(data, data_len, intern->msg, intern->desc->msgdef,
                       DescriptorPool_GetSymbolTable(), options, arena,
                       &status)) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing: %s",
