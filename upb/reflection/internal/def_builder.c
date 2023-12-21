@@ -29,7 +29,8 @@
  * initialized to zeroes.
  *
  * We have to allocate an extra pointer for upb's internal metadata. */
-static const char opt_default_buf[_UPB_MAXOPT_SIZE + sizeof(void*)] = {0};
+static UPB_ALIGN_AS(8) const
+    char opt_default_buf[_UPB_MAXOPT_SIZE + sizeof(void*)] = {0};
 const char* kUpbDefOptDefault = &opt_default_buf[sizeof(void*)];
 
 const char* _upb_DefBuilder_FullToShort(const char* fullname) {

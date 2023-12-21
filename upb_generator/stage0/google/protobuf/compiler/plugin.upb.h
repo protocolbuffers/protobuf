@@ -219,8 +219,8 @@ UPB_INLINE const upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_file_
 }
 UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_file_to_generate_mutable_upb_array(google_protobuf_compiler_CodeGeneratorRequest* msg, size_t* size, upb_Arena* arena) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 1);
-  upb_Array* arr = upb_Message_GetOrCreateMutableArray(
-      UPB_UPCAST(msg), &field, arena);
+  upb_Array* arr = upb_Message_GetOrCreateMutableArray(UPB_UPCAST(msg),
+                                                       &field, arena);
   if (size) {
     *size = arr ? arr->UPB_PRIVATE(size) : 0;
   }
@@ -283,8 +283,8 @@ UPB_INLINE const upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_proto
 }
 UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_proto_file_mutable_upb_array(google_protobuf_compiler_CodeGeneratorRequest* msg, size_t* size, upb_Arena* arena) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 15);
-  upb_Array* arr = upb_Message_GetOrCreateMutableArray(
-      UPB_UPCAST(msg), &field, arena);
+  upb_Array* arr = upb_Message_GetOrCreateMutableArray(UPB_UPCAST(msg),
+                                                       &field, arena);
   if (size) {
     *size = arr ? arr->UPB_PRIVATE(size) : 0;
   }
@@ -315,8 +315,8 @@ UPB_INLINE const upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_sourc
 }
 UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorRequest_source_file_descriptors_mutable_upb_array(google_protobuf_compiler_CodeGeneratorRequest* msg, size_t* size, upb_Arena* arena) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 17);
-  upb_Array* arr = upb_Message_GetOrCreateMutableArray(
-      UPB_UPCAST(msg), &field, arena);
+  upb_Array* arr = upb_Message_GetOrCreateMutableArray(UPB_UPCAST(msg),
+                                                       &field, arena);
   if (size) {
     *size = arr ? arr->UPB_PRIVATE(size) : 0;
   }
@@ -553,8 +553,8 @@ UPB_INLINE const upb_Array* _google_protobuf_compiler_CodeGeneratorResponse_file
 }
 UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorResponse_file_mutable_upb_array(google_protobuf_compiler_CodeGeneratorResponse* msg, size_t* size, upb_Arena* arena) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 15);
-  upb_Array* arr = upb_Message_GetOrCreateMutableArray(
-      UPB_UPCAST(msg), &field, arena);
+  upb_Array* arr = upb_Message_GetOrCreateMutableArray(UPB_UPCAST(msg),
+                                                       &field, arena);
   if (size) {
     *size = arr ? arr->UPB_PRIVATE(size) : 0;
   }
