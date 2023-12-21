@@ -95,6 +95,13 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_OF(type) offsetof (struct { char c; type member; }, member)
 #endif
 
+#ifdef _MSC_VER
+// Some versions of our Windows compiler don't support the C11 syntax.
+#define UPB_ALIGN_AS(x) __declspec(align(x))
+#else
+#define UPB_ALIGN_AS(x) _Alignas(x)
+#endif
+
 // Hints to the compiler about likely/unlikely branches.
 #if defined (__GNUC__) || defined(__clang__)
 #define UPB_LIKELY(x) __builtin_expect((bool)(x), 1)
@@ -10499,7 +10506,8 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
  * initialized to zeroes.
  *
  * We have to allocate an extra pointer for upb's internal metadata. */
-static const char opt_default_buf[_UPB_MAXOPT_SIZE + sizeof(void*)] = {0};
+static UPB_ALIGN_AS(8) const
+    char opt_default_buf[_UPB_MAXOPT_SIZE + sizeof(void*)] = {0};
 const char* kUpbDefOptDefault = &opt_default_buf[sizeof(void*)];
 
 const char* _upb_DefBuilder_FullToShort(const char* fullname) {
@@ -15310,6 +15318,7 @@ const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
 #undef UPB_ALIGN_DOWN
 #undef UPB_ALIGN_MALLOC
 #undef UPB_ALIGN_OF
+#undef UPB_ALIGN_AS
 #undef UPB_MALLOC_ALIGN
 #undef UPB_LIKELY
 #undef UPB_UNLIKELY

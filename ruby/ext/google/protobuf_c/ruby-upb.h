@@ -96,6 +96,13 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_OF(type) offsetof (struct { char c; type member; }, member)
 #endif
 
+#ifdef _MSC_VER
+// Some versions of our Windows compiler don't support the C11 syntax.
+#define UPB_ALIGN_AS(x) __declspec(align(x))
+#else
+#define UPB_ALIGN_AS(x) _Alignas(x)
+#endif
+
 // Hints to the compiler about likely/unlikely branches.
 #if defined (__GNUC__) || defined(__clang__)
 #define UPB_LIKELY(x) __builtin_expect((bool)(x), 1)
@@ -13787,6 +13794,7 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 #undef UPB_ALIGN_DOWN
 #undef UPB_ALIGN_MALLOC
 #undef UPB_ALIGN_OF
+#undef UPB_ALIGN_AS
 #undef UPB_MALLOC_ALIGN
 #undef UPB_LIKELY
 #undef UPB_UNLIKELY
