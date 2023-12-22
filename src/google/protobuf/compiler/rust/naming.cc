@@ -214,9 +214,8 @@ std::string RustModule(Context& ctx, const Descriptor& msg) {
 }
 
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
-  // TODO: Introduce a more robust mangling here to avoid conflicts
-  // between `foo/bar/baz.proto` and `foo_bar/baz.proto`.
-  return absl::StrReplaceAll(StripProto(file.name()), {{"/", "_"}});
+  return absl::StrReplaceAll(StripProto(file.name()),
+                             {{"_", "__"}, {"/", "_s"}});
 }
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg) {
