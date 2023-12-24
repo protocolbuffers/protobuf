@@ -53,12 +53,14 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
+        "internal/compare_unknown.c",
         "internal/extension.c",
         "internal/message.c",
     ],
     hdrs = [
         "internal/accessors.h",
         "internal/array.h",
+        "internal/compare_unknown.h",
         "internal/extension.h",
         "internal/map.h",
         "internal/map_sorter.h",
@@ -70,9 +72,11 @@ cc_library(
     deps = [
         ":types",
         "//upb:base",
+        "//upb:eps_copy_input_stream",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire_reader",
         "//upb/base:internal",
         "//upb/hash",
         "//upb/mini_table:internal",
@@ -90,12 +94,14 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
         ":message",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -228,6 +234,20 @@ cc_test(
         ":message",
         "//upb:base",
         "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "compare_unknown_test",
+    srcs = ["internal/compare_unknown_test.cc"],
+    deps = [
+        ":internal",
+        "//upb:port",
+        "//upb:wire_reader",
+        "//upb/base:internal",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
