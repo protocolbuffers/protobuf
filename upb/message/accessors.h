@@ -433,9 +433,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[1];
   return _upb_Message_GetOrCreateMutableMap(
       msg, field,
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),
@@ -451,6 +451,9 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
 // Compares two messages by serializing them and calling memcmp().
 bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
                                 const upb_MiniTable* layout);
+
+UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
+                                 const upb_MiniTable* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

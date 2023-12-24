@@ -11,15 +11,72 @@
 
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/encode.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+#define kUpb_MapField_Begin ((size_t)-1)
+
+// static because it is not yet ready for general use.
+static bool upb_Message_NextField(const upb_Message* msg,
+                                  const upb_MiniTable* m,
+                                  const upb_MiniTableField** out_f,
+                                  upb_MessageValue* out_v, size_t* iter) {
+  const size_t n = upb_MiniTable_FieldCount(m);
+  size_t i = *iter;
+
+  // Iterate over normal fields.
+  while (++i < n) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
+    const void* src = _upb_MiniTableField_GetConstPtr(msg, f);
+
+    upb_MessageValue val;
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &val, src);
+
+    // Skip field if unset or empty.
+    if (upb_MiniTableField_HasPresence(f)) {
+      if (!_upb_Message_HasNonExtensionField(msg, f)) continue;
+    } else {
+      switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
+        case kUpb_FieldMode_Map:
+          if (!val.map_val || upb_Map_Size(val.map_val) == 0) continue;
+          break;
+
+        case kUpb_FieldMode_Array:
+          if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
+          break;
+
+        case kUpb_FieldMode_Scalar:
+          if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(f, &val)) continue;
+          break;
+      }
+    }
+
+    *out_f = f;
+    *out_v = val;
+    *iter = i;
+    return true;
+  }
+
+  return false;
+}
+
+bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
+  if (upb_Message_ExtensionCount(msg)) return false;
+
+  const upb_MiniTableField* f;
+  upb_MessageValue v;
+  size_t iter = kUpb_MapField_Begin;
+  return upb_Message_NextField(msg, m, &f, &v, &iter);
+}
 
 bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
                              const upb_MiniTableField* f,
