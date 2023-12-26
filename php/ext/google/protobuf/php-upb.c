@@ -8425,7 +8425,7 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 // Must be last.
 
 // A MiniTable for an empty message, used for unlinked sub-messages.
-const upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
+const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
     .UPB_PRIVATE(subs) = NULL,
     .UPB_PRIVATE(fields) = NULL,
     .UPB_PRIVATE(size) = 0,
