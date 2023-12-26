@@ -25,6 +25,7 @@
 #include "upb/message/tagged_ptr.h"
 #include "upb/message/types.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"

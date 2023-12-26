@@ -10,8 +10,6 @@
 
 #include <stdint.h>
 
-#include "upb/mini_table/types.h"
-
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -26,7 +24,7 @@ extern "C" {
 #endif
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
-    const upb_MiniTableEnum* e, uint32_t val) {
+    const struct upb_MiniTableEnum* e, uint32_t val) {
   if (UPB_LIKELY(val < 64)) {
     const uint64_t mask =
         e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);

@@ -12,7 +12,6 @@
 
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/sub.h"
-#include "upb/mini_table/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -45,8 +44,8 @@ typedef enum {
 
 // LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
-  const upb_MiniTableSub* UPB_PRIVATE(subs);
-  const upb_MiniTableField* UPB_ONLYBITS(fields);
+  const union upb_MiniTableSub* UPB_PRIVATE(subs);
+  const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
   // unknown fields, extension dict, pointer to msglayout, etc.
@@ -70,43 +69,47 @@ struct upb_MiniTable {
 extern "C" {
 #endif
 
-UPB_INLINE const upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_Empty)(void) {
-  extern const upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_Empty)(void) {
+  extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
 
   return &UPB_PRIVATE(_kUpb_MiniTable_Empty);
 }
 
-UPB_INLINE int UPB_PRIVATE(_upb_MiniTable_FieldCount)(const upb_MiniTable* m) {
+UPB_INLINE int UPB_PRIVATE(_upb_MiniTable_FieldCount)(
+    const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(const upb_MiniTable* m) {
-  extern const upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
+    const struct upb_MiniTable* m) {
+  extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
 
   return m == &UPB_PRIVATE(_kUpb_MiniTable_Empty);
 }
 
-UPB_INLINE const upb_MiniTableField* UPB_PRIVATE(
-    _upb_MiniTable_GetFieldByIndex)(const upb_MiniTable* m, uint32_t i) {
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTable_GetFieldByIndex)(const struct upb_MiniTable* m, uint32_t i) {
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
-UPB_INLINE const upb_MiniTableSub* UPB_PRIVATE(_upb_MiniTable_GetSubByIndex)(
-    const upb_MiniTable* m, uint32_t i) {
+UPB_INLINE const union upb_MiniTableSub* UPB_PRIVATE(
+    _upb_MiniTable_GetSubByIndex)(const struct upb_MiniTable* m, uint32_t i) {
   return &m->UPB_PRIVATE(subs)[i];
 }
 
-UPB_INLINE const upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTable_GetSubMessageTable)(const struct upb_MiniTable* m,
+                                       const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_CType)(f) == kUpb_CType_Message);
-  const upb_MiniTable* ret = UPB_PRIVATE(_upb_MiniTableSub_Message)(
+  const struct upb_MiniTable* ret = UPB_PRIVATE(_upb_MiniTableSub_Message)(
       m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSUME(ret);
   return UPB_PRIVATE(_upb_MiniTable_IsEmpty)(ret) ? NULL : ret;
 }
 
-UPB_INLINE const upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTable_GetSubEnumTable)(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
+UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
+    _upb_MiniTable_GetSubEnumTable)(const struct upb_MiniTable* m,
+                                    const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_CType)(f) == kUpb_CType_Enum);
   return UPB_PRIVATE(_upb_MiniTableSub_Enum)(
       m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
@@ -131,7 +134,7 @@ UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
+    const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f) != NULL;
 }
 
@@ -142,7 +145,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
 //    RequiredMask(1) => 0b10 (0x2)
 //    RequiredMask(5) => 0b111110 (0x3e)
 UPB_INLINE uint64_t
-UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const upb_MiniTable* m) {
+UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const struct upb_MiniTable* m) {
   int n = m->UPB_PRIVATE(required_count);
   UPB_ASSERT(0 < n && n <= 63);
   return ((1ULL << n) - 1) << 1;
