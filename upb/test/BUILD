@@ -299,3 +299,25 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*.cc",
+            "**/*.h",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+filegroup(
+    name = "test_utils",
+    srcs = glob(
+        [
+            "**/*.proto",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+# end:github_only
