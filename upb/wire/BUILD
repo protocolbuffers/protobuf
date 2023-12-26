@@ -37,6 +37,7 @@ cc_library(
         "//upb:message_types",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/mem:internal",
         "//third_party/utf8_range",
     ],
 )

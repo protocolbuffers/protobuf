@@ -395,6 +395,7 @@ upb_amalgamation(
         ":reflection_internal",
         ":wire",
         ":wire_reader",
+        "//upb/mem:internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -441,6 +442,7 @@ upb_amalgamation(
         ":reflection_internal",
         ":wire",
         ":wire_reader",
+        "//upb/mem:internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -488,6 +490,7 @@ upb_amalgamation(
         ":reflection_internal",
         ":wire",
         ":wire_reader",
+        "//upb/mem:internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
