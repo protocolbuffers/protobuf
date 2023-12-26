@@ -1354,8 +1354,9 @@ UPB_INLINE const upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
 // Must be last.
 
 struct upb_Decoder;
+struct upb_Message;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     upb_Message* msg, intptr_t table,
+                                     struct upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
 typedef struct {
   uint64_t field_data;
@@ -4004,6 +4005,72 @@ UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
 
 #endif /* UPB_WIRE_DECODE_H_ */
 
+// upb_Encode: parsing from a upb_Message using a upb_MiniTable.
+
+#ifndef UPB_WIRE_ENCODE_H_
+#define UPB_WIRE_ENCODE_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum {
+  /* If set, the results of serializing will be deterministic across all
+   * instances of this binary. There are no guarantees across different
+   * binary builds.
+   *
+   * If your proto contains maps, the encoder will need to malloc()/free()
+   * memory during encode. */
+  kUpb_EncodeOption_Deterministic = 1,
+
+  // When set, unknown fields are not printed.
+  kUpb_EncodeOption_SkipUnknown = 2,
+
+  // When set, the encode will fail if any required fields are missing.
+  kUpb_EncodeOption_CheckRequired = 4,
+};
+
+typedef enum {
+  kUpb_EncodeStatus_Ok = 0,
+  kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
+  kUpb_EncodeStatus_MaxDepthExceeded = 2,
+
+  // kUpb_EncodeOption_CheckRequired failed but the parse otherwise succeeded.
+  kUpb_EncodeStatus_MissingRequired = 3,
+} upb_EncodeStatus;
+
+UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
+  return (uint32_t)depth << 16;
+}
+
+UPB_INLINE uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
+}
+
+// Enforce an upper bound on recursion depth.
+UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
+  uint32_t max_depth = upb_EncodeOptions_GetMaxDepth(encode_options);
+  if (max_depth > limit) max_depth = limit;
+  return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
+}
+
+UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
+                                    const upb_MiniTable* l, int options,
+                                    upb_Arena* arena, char** buf, size_t* size);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_ENCODE_H_ */
+
 // These are the specialized field parser functions for the fast parser.
 // Generated tables will refer to these by name.
 //
@@ -4038,8 +4105,8 @@ UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
 //   - '1' for one-byte tags (field numbers 1-15)
 //   - '2' for two-byte tags (field numbers 16-2048)
 
-#ifndef UPB_WIRE_DECODE_FAST_H_
-#define UPB_WIRE_DECODE_FAST_H_
+#ifndef UPB_WIRE_DECODE_INTERNAL_FAST_H_
+#define UPB_WIRE_DECODE_INTERNAL_FAST_H_
 
 
 // Must be last.
@@ -4140,73 +4207,7 @@ TAGBYTES(r)
 #endif
 
 
-#endif /* UPB_WIRE_DECODE_FAST_H_ */
-
-// upb_Encode: parsing from a upb_Message using a upb_MiniTable.
-
-#ifndef UPB_WIRE_ENCODE_H_
-#define UPB_WIRE_ENCODE_H_
-
-#include <stddef.h>
-#include <stdint.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-enum {
-  /* If set, the results of serializing will be deterministic across all
-   * instances of this binary. There are no guarantees across different
-   * binary builds.
-   *
-   * If your proto contains maps, the encoder will need to malloc()/free()
-   * memory during encode. */
-  kUpb_EncodeOption_Deterministic = 1,
-
-  // When set, unknown fields are not printed.
-  kUpb_EncodeOption_SkipUnknown = 2,
-
-  // When set, the encode will fail if any required fields are missing.
-  kUpb_EncodeOption_CheckRequired = 4,
-};
-
-typedef enum {
-  kUpb_EncodeStatus_Ok = 0,
-  kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_EncodeStatus_MaxDepthExceeded = 2,
-
-  // kUpb_EncodeOption_CheckRequired failed but the parse otherwise succeeded.
-  kUpb_EncodeStatus_MissingRequired = 3,
-} upb_EncodeStatus;
-
-UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
-  return (uint32_t)depth << 16;
-}
-
-UPB_INLINE uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
-  return options >> 16;
-}
-
-// Enforce an upper bound on recursion depth.
-UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
-  uint32_t max_depth = upb_EncodeOptions_GetMaxDepth(encode_options);
-  if (max_depth > limit) max_depth = limit;
-  return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
-}
-
-UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
-                                    const upb_MiniTable* l, int options,
-                                    upb_Arena* arena, char** buf, size_t* size);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_WIRE_ENCODE_H_ */
+#endif /* UPB_WIRE_DECODE_INTERNAL_FAST_H_ */
 // IWYU pragma: end_exports
 
 #endif  // UPB_GENERATED_CODE_SUPPORT_H_
@@ -13714,8 +13715,8 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 
 #endif /* UPB_WIRE_INTERNAL_DECODE_H_ */
 
-#ifndef UPB_WIRE_INTERNAL_SWAP_H_
-#define UPB_WIRE_INTERNAL_SWAP_H_
+#ifndef UPB_WIRE_INTERNAL_ENDIAN_H_
+#define UPB_WIRE_INTERNAL_ENDIAN_H_
 
 #include <stdint.h>
 
@@ -13725,23 +13726,23 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 extern "C" {
 #endif
 
-UPB_INLINE bool _upb_IsLittleEndian(void) {
-  int x = 1;
+UPB_INLINE bool UPB_PRIVATE(_upb_IsLittleEndian)(void) {
+  const int x = 1;
   return *(char*)&x == 1;
 }
 
-UPB_INLINE uint32_t _upb_BigEndian_Swap32(uint32_t val) {
-  if (_upb_IsLittleEndian()) return val;
+UPB_INLINE uint32_t UPB_PRIVATE(_upb_BigEndian32)(uint32_t val) {
+  if (UPB_PRIVATE(_upb_IsLittleEndian)()) return val;
 
   return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
          ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
 }
 
-UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
-  if (_upb_IsLittleEndian()) return val;
+UPB_INLINE uint64_t UPB_PRIVATE(_upb_BigEndian64)(uint64_t val) {
+  if (UPB_PRIVATE(_upb_IsLittleEndian)()) return val;
 
-  return ((uint64_t)_upb_BigEndian_Swap32((uint32_t)val) << 32) |
-         _upb_BigEndian_Swap32((uint32_t)(val >> 32));
+  return ((uint64_t)UPB_PRIVATE(_upb_BigEndian32)((uint32_t)val) << 32) |
+         UPB_PRIVATE(_upb_BigEndian32)((uint32_t)(val >> 32));
 }
 
 #ifdef __cplusplus
@@ -13749,11 +13750,64 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
 #endif
 
 
-#endif /* UPB_WIRE_INTERNAL_SWAP_H_ */
+#endif /* UPB_WIRE_INTERNAL_ENDIAN_H_ */
 
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
 
+
+#ifndef UPB_WIRE_INTERNAL_READER_H_
+#define UPB_WIRE_INTERNAL_READER_H_
+
+// Must be last.
+
+#define kUpb_WireReader_WireTypeBits 3
+#define kUpb_WireReader_WireTypeMask 7
+
+typedef struct {
+  const char* ptr;
+  uint64_t val;
+} UPB_PRIVATE(_upb_WireReader_LongVarint);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_PRIVATE(_upb_WireReader_LongVarint)
+UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val);
+
+static UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
+    const char* ptr, uint64_t* val, int maxlen, uint64_t maxval) {
+  uint64_t byte = (uint8_t)*ptr;
+  if (UPB_LIKELY((byte & 0x80) == 0)) {
+    *val = (uint32_t)byte;
+    return ptr + 1;
+  }
+  const char* start = ptr;
+  UPB_PRIVATE(_upb_WireReader_LongVarint)
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(ptr, byte);
+  if (!res.ptr || (maxlen < 10 && res.ptr - start > maxlen) ||
+      res.val > maxval) {
+    return NULL;  // Malformed.
+  }
+  *val = res.val;
+  return res.ptr;
+}
+
+UPB_INLINE uint32_t UPB_PRIVATE(_upb_WireReader_GetFieldNumber)(uint32_t tag) {
+  return tag >> kUpb_WireReader_WireTypeBits;
+}
+
+UPB_INLINE uint8_t UPB_PRIVATE(_upb_WireReader_GetWireType)(uint32_t tag) {
+  return tag & kUpb_WireReader_WireTypeMask;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_WIRE_INTERNAL_READER_H_
 
 #ifndef UPB_WIRE_TYPES_H_
 #define UPB_WIRE_TYPES_H_
@@ -13772,46 +13826,15 @@ typedef enum {
 
 // Must be last.
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // The upb_WireReader interface is suitable for general-purpose parsing of
-// protobuf binary wire format.  It is designed to be used along with
+// protobuf binary wire format. It is designed to be used along with
 // upb_EpsCopyInputStream for buffering, and all parsing routines in this file
 // assume that at least kUpb_EpsCopyInputStream_SlopBytes worth of data is
 // available to read without any bounds checks.
 
-#define kUpb_WireReader_WireTypeMask 7
-#define kUpb_WireReader_WireTypeBits 3
-
-typedef struct {
-  const char* ptr;
-  uint64_t val;
-} _upb_WireReader_ReadLongVarintRet;
-
-_upb_WireReader_ReadLongVarintRet _upb_WireReader_ReadLongVarint(
-    const char* ptr, uint64_t val);
-
-static UPB_FORCEINLINE const char* _upb_WireReader_ReadVarint(const char* ptr,
-                                                              uint64_t* val,
-                                                              int maxlen,
-                                                              uint64_t maxval) {
-  uint64_t byte = (uint8_t)*ptr;
-  if (UPB_LIKELY((byte & 0x80) == 0)) {
-    *val = (uint32_t)byte;
-    return ptr + 1;
-  }
-  const char* start = ptr;
-  _upb_WireReader_ReadLongVarintRet res =
-      _upb_WireReader_ReadLongVarint(ptr, byte);
-  if (!res.ptr || (maxlen < 10 && res.ptr - start > maxlen) ||
-      res.val > maxval) {
-    return NULL;  // Malformed.
-  }
-  *val = res.val;
-  return res.ptr;
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Parses a tag into `tag`, and returns a pointer past the end of the tag, or
 // NULL if there was an error in the tag data.
@@ -13822,7 +13845,7 @@ static UPB_FORCEINLINE const char* _upb_WireReader_ReadVarint(const char* ptr,
 static UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
                                                           uint32_t* tag) {
   uint64_t val;
-  ptr = _upb_WireReader_ReadVarint(ptr, &val, 5, UINT32_MAX);
+  ptr = UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, &val, 5, UINT32_MAX);
   if (!ptr) return NULL;
   *tag = val;
   return ptr;
@@ -13830,17 +13853,17 @@ static UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
 
 // Given a tag, returns the field number.
 UPB_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
-  return tag >> kUpb_WireReader_WireTypeBits;
+  return UPB_PRIVATE(_upb_WireReader_GetFieldNumber)(tag);
 }
 
 // Given a tag, returns the wire type.
 UPB_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) {
-  return tag & kUpb_WireReader_WireTypeMask;
+  return UPB_PRIVATE(_upb_WireReader_GetWireType)(tag);
 }
 
 UPB_INLINE const char* upb_WireReader_ReadVarint(const char* ptr,
                                                  uint64_t* val) {
-  return _upb_WireReader_ReadVarint(ptr, val, 10, UINT64_MAX);
+  return UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, val, 10, UINT64_MAX);
 }
 
 // Skips data for a varint, returning a pointer past the end of the varint, or
@@ -13876,7 +13899,7 @@ UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
 UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
   uint32_t uval;
   memcpy(&uval, ptr, 4);
-  uval = _upb_BigEndian_Swap32(uval);
+  uval = UPB_PRIVATE(_upb_BigEndian32)(uval);
   memcpy(val, &uval, 4);
   return ptr + 4;
 }
@@ -13889,14 +13912,14 @@ UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
 UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
   uint64_t uval;
   memcpy(&uval, ptr, 8);
-  uval = _upb_BigEndian_Swap64(uval);
+  uval = UPB_PRIVATE(_upb_BigEndian64)(uval);
   memcpy(val, &uval, 8);
   return ptr + 8;
 }
 
-const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
-                                      int depth_limit,
-                                      upb_EpsCopyInputStream* stream);
+const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
+    const char* ptr, uint32_t tag, int depth_limit,
+    upb_EpsCopyInputStream* stream);
 
 // Skips data for a group, returning a pointer past the end of the group, or
 // NULL if there was an error parsing the group.  The `tag` argument should be
@@ -13909,7 +13932,7 @@ const char* _upb_WireReader_SkipGroup(const char* ptr, uint32_t tag,
 // control over this?
 UPB_INLINE const char* upb_WireReader_SkipGroup(
     const char* ptr, uint32_t tag, upb_EpsCopyInputStream* stream) {
-  return _upb_WireReader_SkipGroup(ptr, tag, 100, stream);
+  return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
 }
 
 UPB_INLINE const char* _upb_WireReader_SkipValue(
@@ -13930,7 +13953,8 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       return ptr;
     }
     case kUpb_WireType_StartGroup:
-      return _upb_WireReader_SkipGroup(ptr, tag, depth_limit, stream);
+      return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, depth_limit,
+                                                    stream);
     case kUpb_WireType_EndGroup:
       return NULL;  // Should be handled before now.
     default:
