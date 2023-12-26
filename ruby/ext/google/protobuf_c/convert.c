@@ -296,7 +296,7 @@ bool Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(rb_eRuntimeError, upb_Status_ErrorMessage(&status));
+    rb_raise(rb_eRuntimeError, "%s", upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -309,6 +309,6 @@ uint64_t Msgval_GetHash(upb_MessageValue val, TypeInfo type_info,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(rb_eRuntimeError, upb_Status_ErrorMessage(&status));
+    rb_raise(rb_eRuntimeError, "%s", upb_Status_ErrorMessage(&status));
   }
 }

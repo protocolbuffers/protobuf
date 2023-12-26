@@ -675,7 +675,7 @@ bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
+    rb_raise(cParseError, "%s", upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -706,7 +706,7 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
+    rb_raise(cParseError, "%s", upb_Status_ErrorMessage(&status));
   }
 }
 
