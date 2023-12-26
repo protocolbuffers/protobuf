@@ -31,6 +31,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -39,7 +40,7 @@
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/decode.h"
-#include "upb/wire/internal/swap.h"
+#include "upb/wire/internal/endian.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
@@ -209,7 +210,7 @@ static const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
 }
 
 static void _upb_Decoder_MungeInt32(wireval* val) {
-  if (!_upb_IsLittleEndian()) {
+  if (!UPB_PRIVATE(_upb_IsLittleEndian)()) {
     /* The next stage will memcpy(dst, &val, 4) */
     val->uint32_val = val->uint64_val;
   }
@@ -429,7 +430,7 @@ static const char* _upb_Decoder_DecodeFixedPacked(
   arr->UPB_PRIVATE(size) += count;
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
-  if (_upb_IsLittleEndian()) {
+  if (UPB_PRIVATE(_upb_IsLittleEndian)()) {
     ptr = upb_EpsCopyInputStream_Copy(&d->input, ptr, mem, val->size);
   } else {
     int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
@@ -753,7 +754,7 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
   }
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
-  msg_head = _upb_BigEndian_Swap64(msg_head);
+  msg_head = UPB_PRIVATE(_upb_BigEndian64)(msg_head);
   if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
     d->missing_required = true;
   }

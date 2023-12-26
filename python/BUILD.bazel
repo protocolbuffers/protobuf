@@ -200,7 +200,6 @@ py_extension(
         "//upb:reflection",
         "//upb:text",
         "//upb:wire_reader",
-        "//upb:wire_types",
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",

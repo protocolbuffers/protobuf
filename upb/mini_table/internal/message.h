@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 
-#include "upb/message/types.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/types.h"
@@ -19,8 +18,9 @@
 #include "upb/port/def.inc"
 
 struct upb_Decoder;
+struct upb_Message;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     upb_Message* msg, intptr_t table,
+                                     struct upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
 typedef struct {
   uint64_t field_data;

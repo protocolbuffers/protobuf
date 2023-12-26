@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/types.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.

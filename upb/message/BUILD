@@ -33,7 +33,6 @@ cc_library(
         ":message",
         ":tagged_ptr",
         "//upb:base",
-        "//upb:eps_copy_input_stream",
         "//upb:mem",
         "//upb:message_types",
         "//upb:mini_table",
@@ -181,7 +180,6 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire",
-        "//upb:wire_internal",
         "//upb:wire_reader",
     ],
 )

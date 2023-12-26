@@ -10,44 +10,22 @@ load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 cc_library(
     name = "wire",
     srcs = [
-    ],
-    hdrs = [
-        "decode.h",
-        "encode.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":internal",
-        ":types",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
-    ],
-)
-
-cc_library(
-    name = "internal",
-    srcs = [
         "decode.c",
-        "decode.h",
-        "decode_fast.c",
         "encode.c",
-        "encode.h",
+        "internal/decode_fast.c",
     ],
     hdrs = [
-        "decode_fast.h",
+        "decode.h",
+        "encode.h",
         "internal/constants.h",
         "internal/decode.h",
-        "internal/swap.h",
+        "internal/decode_fast.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream",
         ":reader",
-        ":types",
         "//upb:base",
         "//upb:hash",
         "//upb:mem",
@@ -56,6 +34,7 @@ cc_library(
         "//upb:message_internal",
         "//upb:message_internal_types",
         "//upb:message_tagged_ptr",
+        "//upb:message_types",
         "//upb:mini_table",
         "//upb:port",
         "//third_party/utf8_range",
@@ -65,22 +44,19 @@ cc_library(
 cc_library(
     name = "reader",
     srcs = [
-        "internal/swap.h",
         "reader.c",
     ],
-    hdrs = ["reader.h"],
+    hdrs = [
+        "internal/endian.h",
+        "internal/reader.h",
+        "reader.h",
+        "types.h",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream",
-        ":types",
         "//upb:port",
     ],
-)
-
-cc_library(
-    name = "types",
-    hdrs = ["types.h"],
-    visibility = ["//visibility:public"],
 )
 
 cc_library(

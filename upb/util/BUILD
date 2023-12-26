@@ -153,7 +153,6 @@ cc_library(
         "//upb:mem",
         "//upb:port",
         "//upb:wire_reader",
-        "//upb:wire_types",
     ],
 )
 
@@ -163,8 +162,8 @@ cc_test(
     deps = [
         ":compare",
         "@com_google_googletest//:gtest_main",
-        "//upb:wire_internal",
-        "//upb:wire_types",
+        "//upb:port",
+        "//upb:wire_reader",
         "@com_google_absl//absl/strings",
     ],
 )

@@ -15,7 +15,7 @@
 // field type (eg. oneof boolean field with a 1 byte tag) and then dispatch
 // to the specialized function as quickly as possible.
 
-#include "upb/wire/decode_fast.h"
+#include "upb/wire/internal/decode_fast.h"
 
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"

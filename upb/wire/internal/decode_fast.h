@@ -39,8 +39,8 @@
 //   - '1' for one-byte tags (field numbers 1-15)
 //   - '2' for two-byte tags (field numbers 16-2048)
 
-#ifndef UPB_WIRE_DECODE_FAST_H_
-#define UPB_WIRE_DECODE_FAST_H_
+#ifndef UPB_WIRE_DECODE_INTERNAL_FAST_H_
+#define UPB_WIRE_DECODE_INTERNAL_FAST_H_
 
 #include "upb/message/message.h"
 
@@ -144,4 +144,4 @@ TAGBYTES(r)
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_DECODE_FAST_H_ */
+#endif /* UPB_WIRE_DECODE_INTERNAL_FAST_H_ */
