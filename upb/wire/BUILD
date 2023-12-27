@@ -38,6 +38,7 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb/mem:internal",
+        "//upb/mini_table:internal",
         "//third_party/utf8_range",
     ],
 )

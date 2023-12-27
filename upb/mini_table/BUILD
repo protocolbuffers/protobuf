@@ -14,7 +14,6 @@ cc_library(
     name = "mini_table",
     srcs = [
         "extension_registry.c",
-        "internal/message.c",
         "message.c",
     ],
     hdrs = [
@@ -23,6 +22,27 @@ cc_library(
         "extension_registry.h",
         "field.h",
         "file.h",
+        "message.h",
+        "sub.h",
+        "types.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        "//upb:base",
+        "//upb:hash",
+        "//upb:mem",
+        "//upb:port",
+    ],
+)
+
+cc_library(
+    name = "internal",
+    srcs = [
+        "internal/message.c",
+    ],
+    hdrs = [
         "internal/enum.h",
         "internal/extension.h",
         "internal/field.h",
@@ -30,9 +50,6 @@ cc_library(
         "internal/message.h",
         "internal/size_log2.h",
         "internal/sub.h",
-        "message.h",
-        "sub.h",
-        "types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],

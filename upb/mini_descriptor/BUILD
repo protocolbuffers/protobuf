@@ -25,6 +25,7 @@ cc_library(
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/mini_table:internal",
     ],
 )
 
