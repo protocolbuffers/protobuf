@@ -1279,13 +1279,6 @@ class FileDescriptor(DescriptorBase):
   def _parent(self):
     return None
 
-  @property
-  def edition(self):
-    # pylint: disable=g-import-not-at-top
-    from google.protobuf import descriptor_pb2
-
-    return descriptor_pb2.Edition.Value(self._edition)
-
 
 def _ParseOptions(message, string):
   """Parses serialized options.
