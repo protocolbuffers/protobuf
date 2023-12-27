@@ -3450,10 +3450,6 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
                              const upb_MiniTableField* field,
                              upb_Message* map_entry_message, upb_Arena* arena);
 
-// Compares two messages by serializing them and calling memcmp().
-bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
-                                const upb_MiniTable* layout);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -12335,49 +12331,6 @@ const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
 
 #endif /* UPB_MESSAGE_COMPAT_H_ */
 
-#ifndef UPB_MESSAGE_COPY_H_
-#define UPB_MESSAGE_COPY_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Deep clones a message using the provided target arena.
-upb_Message* upb_Message_DeepClone(const upb_Message* msg,
-                                   const upb_MiniTable* m, upb_Arena* arena);
-
-// Shallow clones a message using the provided target arena.
-upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
-                                      const upb_MiniTable* m, upb_Arena* arena);
-
-// Deep clones array contents.
-upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
-                               const upb_MiniTable* sub, upb_Arena* arena);
-
-// Deep clones map contents.
-upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
-                           upb_CType value_type,
-                           const upb_MiniTable* map_entry_table,
-                           upb_Arena* arena);
-
-// Deep copies the message from src to dst.
-bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
-                          const upb_MiniTable* m, upb_Arena* arena);
-
-// Shallow copies the message from src to dst.
-void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
-                             const upb_MiniTable* m);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MESSAGE_COPY_H_
-
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 #ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
@@ -12490,6 +12443,71 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
 
 
 #endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
+
+#ifndef UPB_MESSAGE_COMPARE_H_
+#define UPB_MESSAGE_COMPARE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Compares two messages by serializing them and calling memcmp().
+UPB_API bool upb_Message_IsExactlyEqual(const upb_Message* msg1,
+                                        const upb_Message* msg2,
+                                        const upb_MiniTable* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MESSAGE_COMPARE_H_
+
+#ifndef UPB_MESSAGE_COPY_H_
+#define UPB_MESSAGE_COPY_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Deep clones a message using the provided target arena.
+upb_Message* upb_Message_DeepClone(const upb_Message* msg,
+                                   const upb_MiniTable* m, upb_Arena* arena);
+
+// Shallow clones a message using the provided target arena.
+upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
+                                      const upb_MiniTable* m, upb_Arena* arena);
+
+// Deep clones array contents.
+upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
+                               const upb_MiniTable* sub, upb_Arena* arena);
+
+// Deep clones map contents.
+upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
+                           upb_CType value_type,
+                           const upb_MiniTable* map_entry_table,
+                           upb_Arena* arena);
+
+// Deep copies the message from src to dst.
+bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
+                          const upb_MiniTable* m, upb_Arena* arena);
+
+// Shallow copies the message from src to dst.
+void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
+                             const upb_MiniTable* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MESSAGE_COPY_H_
 
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
