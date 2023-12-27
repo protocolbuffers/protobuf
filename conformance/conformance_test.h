@@ -217,8 +217,9 @@ class ConformanceTestSuite {
 
     std::string ConformanceLevelToString(ConformanceLevel level) const;
 
-    void SetPrintUnknownFields(bool print_unknown_fields) {
-      request_.set_print_unknown_fields(true);
+    void SetTextFormatEncodingOptions(
+        conformance::TextEncodingOptions options) {
+      *request_.mutable_text_encoding_options() = options;
     }
 
     void SetPrototypeMessageForCompare(const Message& message) {

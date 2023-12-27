@@ -193,7 +193,8 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
 
     case conformance::TEXT_FORMAT: {
       TextFormat::Printer printer;
-      printer.SetHideUnknownFields(!request.print_unknown_fields());
+      printer.SetHideUnknownFields(
+          !request.text_encoding_options().print_unknown_fields());
       ABSL_CHECK(printer.PrintToString(*test_message,
                                        response.mutable_text_payload()));
       break;

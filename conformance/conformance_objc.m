@@ -108,12 +108,6 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
         response.skipped = @"ObjC doesn't support generating JSON";
         break;
 
-      case ConformanceWireFormat_Jspb:
-        response.skipped =
-            @"ConformanceRequest had a requested_output_format of JSPB WireFormat; that"
-             " isn't supposed to happen with opensource.";
-        break;
-
       case ConformanceWireFormat_TextFormat:
         // ObjC only has partial objc generation, so don't attempt any tests that need
         // support.

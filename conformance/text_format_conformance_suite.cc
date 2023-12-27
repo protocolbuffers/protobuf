@@ -48,7 +48,7 @@ bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
     const ConformanceRequestSetting& setting, Message* test_message) {
   TextFormat::Parser parser;
   const ConformanceRequest& request = setting.GetRequest();
-  if (request.print_unknown_fields()) {
+  if (request.text_encoding_options().print_unknown_fields()) {
     parser.AllowFieldNumber(true);
   }
   if (!parser.ParseFromString(response.text_payload(), test_message)) {
@@ -231,7 +231,11 @@ void TextFormatConformanceTestSuiteImpl<
       conformance::TEXT_FORMAT_TEST, prototype,
       absl::StrCat(test_name, "_Print"), serialized_input);
   setting2.SetPrototypeMessageForCompare(message);
-  setting2.SetPrintUnknownFields(true);
+
+  conformance::TextEncodingOptions text_encoding_options;
+  text_encoding_options.set_print_unknown_fields(true);
+  setting2.SetTextFormatEncodingOptions(text_encoding_options);
+
   suite_.RunValidBinaryInputTest(setting2, serialized_input);
 }
 
