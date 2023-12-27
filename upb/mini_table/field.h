@@ -12,10 +12,11 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/types.h"  // IWYU pragma: export
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef struct upb_MiniTableField upb_MiniTableField;
 
 #ifdef __cplusplus
 extern "C" {

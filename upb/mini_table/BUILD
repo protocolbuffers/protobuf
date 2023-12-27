@@ -24,7 +24,6 @@ cc_library(
         "file.h",
         "message.h",
         "sub.h",
-        "types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -55,7 +54,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
     ],

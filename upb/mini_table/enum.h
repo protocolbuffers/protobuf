@@ -11,10 +11,11 @@
 #include <stdint.h>
 
 #include "upb/mini_table/internal/enum.h"
-#include "upb/mini_table/types.h"  // IWYU pragma: export
 
 // Must be last
 #include "upb/port/def.inc"
+
+typedef struct upb_MiniTableEnum upb_MiniTableEnum;
 
 #ifdef __cplusplus
 extern "C" {

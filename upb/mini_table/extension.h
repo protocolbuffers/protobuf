@@ -10,11 +10,14 @@
 
 #include <stdint.h>
 
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/extension.h"
-#include "upb/mini_table/types.h"  // IWYU pragma: export
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 
 #ifdef __cplusplus
 extern "C" {
