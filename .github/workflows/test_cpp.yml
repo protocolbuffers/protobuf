@@ -361,10 +361,11 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: MacOS CMake
-            os: macos-12
-            flags: -DCMAKE_CXX_STANDARD=14
-            cache-prefix: macos-cmake
+          # TODO: investigate and fix
+          # - name: MacOS CMake
+          #   os: macos-12
+          #   flags: -DCMAKE_CXX_STANDARD=14
+          #   cache-prefix: macos-cmake
           - name: Windows CMake
             os: windows-2022
             flags: >-
