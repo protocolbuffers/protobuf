@@ -21,7 +21,6 @@ cc_library(
         "//upb:eps_copy_input_stream",
         "//upb:lex",
         "//upb:message",
-        "//upb:message_internal",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",
