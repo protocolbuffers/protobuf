@@ -112,6 +112,6 @@ void upbdev_ProcessStdout(const char* buf, size_t size, upb_Arena* arena,
   }
 }
 
-upb_Arena* upbdev_Arena_New() { return upb_Arena_New(); }
+upb_Arena* upbdev_Arena_New(void) { return upb_Arena_New(); }
 
 void upbdev_Status_Clear(upb_Status* status) { upb_Status_Clear(status); }
