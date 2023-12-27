@@ -12758,6 +12758,42 @@ char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 
 #endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
 
+#ifndef UPB_MINI_TABLE_COMPAT_H_
+#define UPB_MINI_TABLE_COMPAT_H_
+
+
+// Must be last.
+
+// upb does not support mixing minitables from different sources but these
+// functions are still used by some existing users so for now we make them
+// available here. This may or may not change in the future so do not add
+// them to new code.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Checks if memory layout of src is compatible with dst.
+bool upb_MiniTable_Compatible(const upb_MiniTable* src,
+                              const upb_MiniTable* dst);
+
+typedef enum {
+  kUpb_MiniTableEquals_NotEqual,
+  kUpb_MiniTableEquals_Equal,
+  kUpb_MiniTableEquals_OutOfMemory,
+} upb_MiniTableEquals_Status;
+
+// Checks equality of mini tables originating from different language runtimes.
+upb_MiniTableEquals_Status upb_MiniTable_Equals(const upb_MiniTable* src,
+                                                const upb_MiniTable* dst);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_COMPAT_H_ */
+
 #ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
