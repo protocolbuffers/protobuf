@@ -16,6 +16,7 @@ use kernel::Optional::{Set, Unset};
 
 use std::io::{self, ErrorKind, Read, Write};
 use test_messages_proto2::protobuf_test_messages::proto2::TestAllTypesProto2;
+use test_messages_proto3::protobuf_test_messages::proto3::TestAllTypesProto3;
 
 /// Returns Some(i32) if a binary read can succeed from stdin.
 /// Returns None if we have reached an EOF.
@@ -64,8 +65,8 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
     };
 
     // Enums aren't supported yet (and not in scope for v0.6) so we can't perform
-    // this check yet.
-
+    // this check yet. Note that this causes Rust to fail every test case that asks
+    // for output that isn't wire format.
     // if req.requested_output_format() != WireFormat.PROTOBUF {
     //     resp.skipped_mut().set("only wire format output implemented")
     // }
@@ -78,19 +79,24 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         Set(bytes) => bytes,
     };
 
-    if is_proto2 {
+    let serialized = if is_proto2 {
         let mut proto = TestAllTypesProto2::new();
         if let Err(_) = proto.deserialize(bytes) {
             resp.parse_error_mut().set("failed to parse bytes");
             return resp;
         }
-        let serialized = proto.serialize(); // Note: serialize() is infallible in Rust api.
-        resp.protobuf_payload_mut().set(serialized.as_ref());
-        return resp;
+        proto.serialize()
     } else {
-        resp.skipped_mut().set("only proto2 supported");
-        return resp;
-    }
+        let mut proto = TestAllTypesProto3::new();
+        if let Err(_) = proto.deserialize(bytes) {
+            resp.parse_error_mut().set("failed to parse bytes");
+            return resp;
+        }
+        proto.serialize()
+    };
+
+    resp.protobuf_payload_mut().set(serialized);
+    return resp;
 }
 
 fn main() {
