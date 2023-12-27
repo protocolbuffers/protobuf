@@ -1164,22 +1164,8 @@ const FeatureSet& GetParentFeatures(const MethodDescriptor* method) {
   return internal::InternalFeatureHelper::GetFeatures(*method->service());
 }
 
-bool IsLegacyEdition(const FileDescriptor* file) {
-  return file->edition() < Edition::EDITION_2023;
-}
-
-template <class DescriptorT>
-bool IsLegacyEdition(const DescriptorT* descriptor) {
-  return IsLegacyEdition(descriptor->file());
-}
-
-Edition GetDescriptorEdition(const FileDescriptor* descriptor) {
-  return descriptor->edition();
-}
-
-template <class DescriptorT>
-Edition GetDescriptorEdition(const DescriptorT* descriptor) {
-  return GetDescriptorEdition(descriptor->file());
+bool IsLegacyEdition(Edition edition) {
+  return edition < Edition::EDITION_2023;
 }
 
 }  // anonymous namespace
@@ -2759,7 +2745,7 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
 
   if (edition() == Edition::EDITION_PROTO3) {
     proto->set_syntax("proto3");
-  } else if (!IsLegacyEdition(this)) {
+  } else if (!IsLegacyEdition(edition())) {
     proto->set_syntax("editions");
     proto->set_edition(edition());
   }
@@ -2857,7 +2843,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   }
   // Some compilers do not allow static_cast directly between two enum types,
   // so we must cast to int first.
-  if (is_required() && !IsLegacyEdition(this)) {
+  if (is_required() && !IsLegacyEdition(file()->edition())) {
     // Editions files have no required keyword, and we only set this label
     // during descriptor build.
     proto->set_label(static_cast<FieldDescriptorProto::Label>(
@@ -2866,7 +2852,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
     proto->set_label(static_cast<FieldDescriptorProto::Label>(
         absl::implicit_cast<int>(label())));
   }
-  if (type() == TYPE_GROUP && !IsLegacyEdition(this)) {
+  if (type() == TYPE_GROUP && !IsLegacyEdition(file()->edition())) {
     // Editions files have no group keyword, and we only set this label
     // during descriptor build.
     proto->set_type(static_cast<FieldDescriptorProto::Type>(
@@ -3002,8 +2988,9 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
 
 namespace {
 
-bool IsGroupSyntax(const FieldDescriptor* desc) {
-  return IsLegacyEdition(desc) && desc->type() == FieldDescriptor::TYPE_GROUP;
+bool IsGroupSyntax(Edition edition, const FieldDescriptor* desc) {
+  return IsLegacyEdition(edition) &&
+         desc->type() == FieldDescriptor::TYPE_GROUP;
 }
 
 template <typename OptionsT>
@@ -3117,8 +3104,8 @@ bool FormatLineOptions(int depth, const Message& options,
   return !all_options.empty();
 }
 
-static std::string GetLegacySyntaxName(const FileDescriptor* file) {
-  if (file->edition() == Edition::EDITION_PROTO3) {
+static std::string GetLegacySyntaxName(Edition edition) {
+  if (edition == Edition::EDITION_PROTO3) {
     return "proto3";
   }
   return "proto2";
@@ -3201,9 +3188,9 @@ std::string FileDescriptor::DebugStringWithOptions(
     SourceLocationCommentPrinter syntax_comment(this, path, "",
                                                 debug_string_options);
     syntax_comment.AddPreComment(&contents);
-    if (IsLegacyEdition(this)) {
+    if (IsLegacyEdition(edition())) {
       absl::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
-                                GetLegacySyntaxName(this));
+                                GetLegacySyntaxName(edition()));
     } else {
       absl::SubstituteAndAppend(&contents, "edition = \"$0\";\n\n", edition());
     }
@@ -3256,7 +3243,7 @@ std::string FileDescriptor::DebugStringWithOptions(
   // definitions (those will be done with their group field descriptor).
   absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < extension_count(); i++) {
-    if (IsGroupSyntax(extension(i))) {
+    if (IsGroupSyntax(edition(), extension(i))) {
       groups.insert(extension(i)->message_type());
     }
   }
@@ -3331,12 +3318,12 @@ void Descriptor::DebugString(int depth, std::string* contents,
   // descriptor).
   absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < field_count(); i++) {
-    if (IsGroupSyntax(field(i))) {
+    if (IsGroupSyntax(file()->edition(), field(i))) {
       groups.insert(field(i)->message_type());
     }
   }
   for (int i = 0; i < extension_count(); i++) {
-    if (IsGroupSyntax(extension(i))) {
+    if (IsGroupSyntax(file()->edition(), extension(i))) {
       groups.insert(extension(i)->message_type());
     }
   }
@@ -3447,7 +3434,7 @@ std::string FieldDescriptor::FieldTypeNameDebugString() const {
   switch (type()) {
     case TYPE_MESSAGE:
     case TYPE_GROUP:
-      if (IsGroupSyntax(this)) {
+      if (IsGroupSyntax(file()->edition(), this)) {
         return kTypeToName[type()];
       }
       return absl::StrCat(".", message_type()->full_name());
@@ -3482,7 +3469,7 @@ void FieldDescriptor::DebugString(
     label.clear();
   }
   // Label is omitted for optional and required fields under editions.
-  if ((is_optional() || is_required()) && !IsLegacyEdition(this)) {
+  if ((is_optional() || is_required()) && !IsLegacyEdition(file()->edition())) {
     label.clear();
   }
 
@@ -3492,7 +3479,8 @@ void FieldDescriptor::DebugString(
 
   absl::SubstituteAndAppend(
       contents, "$0$1$2 $3 = $4", prefix, label, field_type,
-      IsGroupSyntax(this) ? message_type()->name() : name(), number());
+      IsGroupSyntax(file()->edition(), this) ? message_type()->name() : name(),
+      number());
 
   bool bracketed = false;
   if (has_default_value()) {
@@ -3526,7 +3514,7 @@ void FieldDescriptor::DebugString(
     contents->append("]");
   }
 
-  if (IsGroupSyntax(this)) {
+  if (IsGroupSyntax(file()->edition(), this)) {
     if (debug_string_options.elide_group_body) {
       contents->append(" { ... };\n");
     } else {
@@ -4201,8 +4189,8 @@ class DescriptorBuilder {
                        internal::FlatAllocator& alloc);
   template <class DescriptorT>
   void ResolveFeaturesImpl(
-      const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
-      typename DescriptorT::OptionsType* options,
+      Edition edition, const typename DescriptorT::Proto& proto,
+      DescriptorT* descriptor, typename DescriptorT::OptionsType* options,
       internal::FlatAllocator& alloc,
       DescriptorPool::ErrorCollector::ErrorLocation error_location,
       bool force_merge = false);
@@ -5305,8 +5293,9 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
 
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
-    const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
-    typename DescriptorT::OptionsType* options, internal::FlatAllocator& alloc,
+    Edition edition, const typename DescriptorT::Proto& proto,
+    DescriptorT* descriptor, typename DescriptorT::OptionsType* options,
+    internal::FlatAllocator& alloc,
     DescriptorPool::ErrorCollector::ErrorLocation error_location,
     bool force_merge) {
   const FeatureSet& parent_features = GetParentFeatures(descriptor);
@@ -5326,13 +5315,12 @@ void DescriptorBuilder::ResolveFeaturesImpl(
   FeatureSet base_features = *descriptor->proto_features_;
 
   // Handle feature inference from proto2/proto3.
-  if (IsLegacyEdition(descriptor)) {
+  if (IsLegacyEdition(edition)) {
     if (descriptor->proto_features_ != &FeatureSet::default_instance()) {
       AddError(descriptor->name(), proto, error_location,
                "Features are only valid under editions.");
     }
-    InferLegacyProtoFeatures(proto, *options, GetDescriptorEdition(descriptor),
-                             base_features);
+    InferLegacyProtoFeatures(proto, *options, edition, base_features);
   }
 
   if (base_features.ByteSizeLong() == 0 && !force_merge) {
@@ -5358,8 +5346,8 @@ void DescriptorBuilder::ResolveFeatures(
     const typename DescriptorT::Proto& proto, DescriptorT* descriptor,
     typename DescriptorT::OptionsType* options,
     internal::FlatAllocator& alloc) {
-  ResolveFeaturesImpl(proto, descriptor, options, alloc,
-                      DescriptorPool::ErrorCollector::NAME);
+  ResolveFeaturesImpl(descriptor->file()->edition(), proto, descriptor, options,
+                      alloc, DescriptorPool::ErrorCollector::NAME);
 }
 
 void DescriptorBuilder::ResolveFeatures(const FileDescriptorProto& proto,
@@ -5368,7 +5356,7 @@ void DescriptorBuilder::ResolveFeatures(const FileDescriptorProto& proto,
                                         internal::FlatAllocator& alloc) {
   // File descriptors always need their own merged feature set, even without
   // any explicit features.
-  ResolveFeaturesImpl(proto, descriptor, options, alloc,
+  ResolveFeaturesImpl(descriptor->edition(), proto, descriptor, options, alloc,
                       DescriptorPool::ErrorCollector::EDITIONS,
                       /*force_merge=*/true);
 }
@@ -5444,11 +5432,11 @@ void DescriptorBuilder::AddImportError(const FileDescriptorProto& proto,
 }
 
 PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
-    const FileDescriptor* existing_file, const FileDescriptorProto& proto) {
+    Edition edition, const FileDescriptor* existing_file,
+    const FileDescriptorProto& proto) {
   FileDescriptorProto existing_proto;
   existing_file->CopyTo(&existing_proto);
-  if (existing_file->edition() == Edition::EDITION_PROTO2 &&
-      proto.has_syntax()) {
+  if (edition == Edition::EDITION_PROTO2 && proto.has_syntax()) {
     existing_proto.set_syntax("proto2");
   }
 
@@ -5593,7 +5581,8 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   const FileDescriptor* existing_file = tables_->FindFile(filename_);
   if (existing_file != nullptr) {
     // File already in pool.  Compare the existing one to the input.
-    if (ExistingFileMatchesProto(existing_file, proto)) {
+    if (ExistingFileMatchesProto(existing_file->edition(), existing_file,
+                                 proto)) {
       // They're identical.  Return the existing descriptor.
       return existing_file;
     }
@@ -7882,7 +7871,7 @@ static bool IsStringMapType(const FieldDescriptor& field) {
 void DescriptorBuilder::ValidateFileFeatures(const FileDescriptor* file,
                                              const FileDescriptorProto& proto) {
   // Rely on our legacy validation for proto2/proto3 files.
-  if (IsLegacyEdition(file)) {
+  if (IsLegacyEdition(file->edition())) {
     return;
   }
 
@@ -9588,6 +9577,9 @@ Edition FileDescriptor::edition() const { return edition_; }
 namespace internal {
 absl::string_view ShortEditionName(Edition edition) {
   return absl::StripPrefix(Edition_Name(edition), "EDITION_");
+}
+Edition InternalFeatureHelper::GetEdition(const FileDescriptor& desc) {
+  return desc.edition();
 }
 }  // namespace internal
 

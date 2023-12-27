@@ -237,6 +237,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:internal_visibility_for_testing",
         "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/compiler:command_line_interface_tester",

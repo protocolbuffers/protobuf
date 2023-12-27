@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/enum_lite.h"
 #include "google/protobuf/compiler/java/extension_lite.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/message_builder.h"
@@ -476,9 +477,11 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
     flags |= 0x2;
   }
   if (!context_->options().strip_nonfunctional_codegen) {
-    if (descriptor_->file()->edition() == Edition::EDITION_PROTO2) {
+    if (JavaGenerator::GetEdition(*descriptor_->file()) ==
+        Edition::EDITION_PROTO2) {
       flags |= 0x1;
-    } else if (descriptor_->file()->edition() >= Edition::EDITION_2023) {
+    } else if (JavaGenerator::GetEdition(*descriptor_->file()) >=
+               Edition::EDITION_2023) {
       flags |= 0x4;
     }
   }
