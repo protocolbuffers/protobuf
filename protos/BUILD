@@ -132,10 +132,11 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":protos_internal",
-        "@com_google_googletest//:gtest_main",
-        "//upb:mem",
         "//protos_generator/tests:test_model_upb_cc_proto",
         "//protos_generator/tests:test_model_upb_proto",
+        "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -150,6 +151,7 @@ cc_test(
     srcs = ["repeated_field_iterator_test.cc"],
     deps = [
         ":repeated_field",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -158,12 +160,13 @@ cc_test(
     name = "protos_extension_lock_test",
     srcs = ["protos_extension_lock_test.cc"],
     deps = [
-        "@com_google_googletest//:gtest_main",
-        "//upb:mem",
         "//protos",
         "//protos:protos_extension_lock",
         "//protos_generator/tests:test_model_upb_cc_proto",
+        "//upb:mem",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )

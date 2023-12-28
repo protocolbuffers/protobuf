@@ -7,10 +7,15 @@ load(
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_CC_PROTO_TARGET = "//src/google/protobuf:cc_test_protos"
+
 UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_PROTO3_CC_TARGET = "//src/google/protobuf:cc_test_protos"
+
 UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_PROTO3_OPTIONAL_CC_TARGET = "//src/google/protobuf:cc_test_protos"
 
 alias(

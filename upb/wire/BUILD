@@ -26,6 +26,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         ":reader",
+        "//third_party/utf8_range",
         "//upb:base",
         "//upb:hash",
         "//upb:mem",
@@ -37,7 +38,6 @@ cc_library(
         "//upb:port",
         "//upb/mem:internal",
         "//upb/mini_table:internal",
-        "//third_party/utf8_range",
     ],
 )
 
@@ -75,8 +75,9 @@ cc_test(
     srcs = ["eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
-        "@com_google_googletest//:gtest_main",
         "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -90,9 +91,9 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only
 

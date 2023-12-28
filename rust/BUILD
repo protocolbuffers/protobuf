@@ -2,7 +2,6 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(
@@ -74,8 +73,8 @@ rust_library(
     ],
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [
-        "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
     ],
     deps = [
         ":utf8",

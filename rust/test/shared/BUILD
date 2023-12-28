@@ -23,8 +23,8 @@ rust_library(
         "//rust:protobuf_upb": "protobuf",
     },
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_upb",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -35,8 +35,8 @@ rust_library(
         "//rust:protobuf_cpp": "protobuf",
     },
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -48,9 +48,9 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:child_upb_rust_proto",
         "//rust/test:parent_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -62,9 +62,9 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:child_cc_rust_proto",
         "//rust/test:parent_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -76,8 +76,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:edition2023_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -89,8 +89,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:edition2023_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -105,10 +105,10 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:enums_cc_rust_proto",
         "//rust/test:unittest_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -123,10 +123,10 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:enums_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -166,9 +166,9 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:reserved_cc_rust_proto",
         "//rust/test:unittest_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -180,9 +180,9 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:reserved_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -221,10 +221,10 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
         "//rust/test/shared:matchers_cpp",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -243,10 +243,10 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
         "//rust/test/shared:matchers_upb",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -262,11 +262,11 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_proto3_cc_rust_proto",
         "//rust/test:unittest_proto3_optional_cc_rust_proto",
         "//rust/test/shared:matchers_cpp",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -282,11 +282,11 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test/shared:matchers_upb",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -298,8 +298,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -311,8 +311,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:unittest_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -324,8 +324,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:nested_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -337,8 +337,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:nested_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -356,9 +356,9 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -376,9 +376,9 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -393,8 +393,8 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:map_unittest_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -409,7 +409,7 @@ rust_test(
         "not_build:arm",
     ],
     deps = [
-        "@crate_index//:googletest",
         "//rust/test:map_unittest_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )

@@ -82,11 +82,12 @@ cc_test(
     name = "compat_test",
     srcs = ["compat_test.cc"],
     deps = [
-        "@com_google_googletest//:gtest_main",
         "//upb:mini_table_compat",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -100,9 +101,9 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only
 

@@ -67,12 +67,13 @@ cc_test(
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
         "//upb:descriptor_upb_proto_reflection",
         "//upb:mem",
         "//upb:reflection",
         "//upb/test:parse_text_proto",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -83,7 +84,7 @@ cc_test(
 #     tags = ["clang_only"],
 #     deps = [
 #         ":def_to_proto_test_lib",
-#         "@com_google_googletest//:gtest_main",
+#         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
 #         "//testing/fuzzing:fuzztest",
 #     ],
 # )
@@ -130,13 +131,14 @@ cc_test(
         ":required_fields",
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",
         "//upb:reflection_internal",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -161,10 +163,11 @@ cc_test(
     srcs = ["compare_test.cc"],
     deps = [
         ":compare",
-        "@com_google_googletest//:gtest_main",
         "//upb:port",
         "//upb:wire_reader",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -193,6 +196,7 @@ filegroup(
     ),
     visibility = ["//pkg:__pkg__"],
 )
+
 filegroup(
     name = "test_utils",
     srcs = glob(

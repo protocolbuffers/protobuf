@@ -176,7 +176,6 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:hash",
         "//upb:mem",
@@ -184,6 +183,8 @@ cc_test(
         "//upb:reflection",
         "//upb:reflection_internal",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -223,8 +224,8 @@ filegroup(
         exclude = ["stage0/**"],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only

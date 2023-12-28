@@ -22,6 +22,7 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 def use_cpp_toolchain():
     return ["@bazel_tools//tools/cpp:toolchain_type"]
+
 # end:github_only
 
 # Generic support code #########################################################

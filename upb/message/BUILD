@@ -228,7 +228,6 @@ cc_test(
         ":accessors",
         ":message",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_descriptor",
@@ -242,6 +241,8 @@ cc_test(
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -250,9 +251,10 @@ cc_test(
     srcs = ["array_test.cc"],
     deps = [
         ":message",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -264,7 +266,6 @@ cc_test(
         ":copy",
         ":message",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -274,6 +275,8 @@ cc_test(
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -282,9 +285,10 @@ cc_test(
     srcs = ["map_test.cc"],
     deps = [
         ":message",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -298,7 +302,6 @@ cc_test(
         ":promote",
         ":tagged_ptr",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_descriptor",
@@ -310,6 +313,8 @@ cc_test(
         "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -323,7 +328,6 @@ cc_test(
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
         ":value",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:json",
         "//upb:mem",
@@ -333,6 +337,8 @@ cc_test(
         "//upb:wire",
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -361,10 +367,11 @@ cc_test(
     deps = [
         ":utf8_test_upb_minitable_proto",
         ":utf8_test_upb_proto",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:wire",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -378,9 +385,9 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only
 
@@ -394,6 +401,7 @@ filegroup(
     ),
     visibility = ["//pkg:__pkg__"],
 )
+
 filegroup(
     name = "test_utils",
     srcs = glob(

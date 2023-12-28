@@ -13,6 +13,7 @@ load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 # begin:github_only
 load("@rules_pkg//:mappings.bzl", "pkg_files")
 load("//python:build_targets.bzl", "build_targets")
+
 build_targets(name = "python")
 # end:github_only
 
@@ -20,7 +21,7 @@ licenses(["notice"])
 
 package(
     # begin:google_only
-#     default_applicable_licenses = ["//upb:license"],
+    #     default_applicable_licenses = ["//upb:license"],
     # end:google_only
     default_visibility = ["//python/dist:__pkg__"],
 )
@@ -136,10 +137,10 @@ selects.config_setting_group(
 
 # begin:github_only
 _message_target_compatible_with = {
-   "@platforms//os:windows": ["@platforms//:incompatible"],
-   "@system_python//:none": ["@platforms//:incompatible"],
-   "@system_python//:unsupported": ["@platforms//:incompatible"],
-   "//conditions:default": [],
+    "@platforms//os:windows": ["@platforms//:incompatible"],
+    "@system_python//:none": ["@platforms//:incompatible"],
+    "@system_python//:unsupported": ["@platforms//:incompatible"],
+    "//conditions:default": [],
 }
 
 # end:github_only
@@ -176,7 +177,7 @@ filegroup(
         "unknown_fields.h",
     ],
     # begin:google_only
-#     compatible_with = ["//buildenv/target:non_prod"],
+    #     compatible_with = ["//buildenv/target:non_prod"],
     # end:google_only
 )
 
@@ -190,6 +191,7 @@ py_extension(
     ],
     target_compatible_with = select(_message_target_compatible_with),
     deps = [
+        "//third_party/utf8_range",
         "//upb:base",
         "//upb:descriptor_upb_proto_reflection",
         "//upb:eps_copy_input_stream",
@@ -203,6 +205,5 @@ py_extension(
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
-        "//third_party/utf8_range",
     ],
 )

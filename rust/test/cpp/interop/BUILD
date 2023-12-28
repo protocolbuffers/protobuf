@@ -6,9 +6,9 @@ cc_library(
     name = "test_utils",
     srcs = ["test_utils.cc"],
     deps = [
-        "@com_google_absl//absl/strings",
         "//rust/cpp_kernel:cpp_api",
         "//rust/test:unittest_cc_proto",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -21,8 +21,8 @@ rust_test(
     ],
     deps = [
         ":test_utils",
-        "@crate_index//:googletest",
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
+        "@crate_index//:googletest",
     ],
 )

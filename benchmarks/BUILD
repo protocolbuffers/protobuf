@@ -76,7 +76,6 @@ cc_test(
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
         "//src/google/protobuf/json",
         "//upb:base",
         "//upb:descriptor_upb_proto",
@@ -88,6 +87,8 @@ cc_test(
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
