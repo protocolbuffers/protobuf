@@ -175,7 +175,6 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
   auto fieldType = field.type();
   auto getter_thunk = Thunk(ctx, field, "get");
   auto setter_thunk = Thunk(ctx, field, "set");
-  auto clearer_thunk = Thunk(ctx, field, "clear");
   // If we're dealing with a Mut, the getter must be supplied
   // self.inner.msg() whereas a View has to be supplied self.msg
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
@@ -240,7 +239,6 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
   ctx.Emit({{"field", fieldName},
             {"getter_thunk", getter_thunk},
             {"setter_thunk", setter_thunk},
-            {"clearer_thunk", clearer_thunk},
             {"self", self},
             {"RsType", rsType},
             {"as_ref", asRef},

@@ -122,7 +122,7 @@ void SingularScalar::InExternC(Context& ctx,
             {"getter_thunk", Thunk(ctx, field, "get")},
             {"setter_thunk", Thunk(ctx, field, "set")},
             {"clearer_thunk", Thunk(ctx, field, "clear")},
-            {"hazzer_and_clearer",
+            {"with_presence_fields_thunks",
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(
@@ -133,7 +133,7 @@ void SingularScalar::InExternC(Context& ctx,
                }
              }}},
            R"rs(
-          $hazzer_and_clearer$
+          $with_presence_fields_thunks$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
           fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
         )rs");
@@ -148,7 +148,7 @@ void SingularScalar::InThunkCc(Context& ctx,
             {"getter_thunk", Thunk(ctx, field, "get")},
             {"setter_thunk", Thunk(ctx, field, "set")},
             {"clearer_thunk", Thunk(ctx, field, "clear")},
-            {"hazzer_and_clearer",
+            {"with_presence_fields_thunks",
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(R"cc(
@@ -160,7 +160,7 @@ void SingularScalar::InThunkCc(Context& ctx,
                }
              }}},
            R"cc(
-             $hazzer_and_clearer$;
+             $with_presence_fields_thunks$;
              $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
              void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
                msg->set_$field$(val);

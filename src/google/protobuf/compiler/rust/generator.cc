@@ -54,6 +54,7 @@ void EmitOpeningOfPackageModules(Context& ctx, absl::string_view pkg) {
   for (absl::string_view segment : absl::StrSplit(pkg, '.')) {
     ctx.Emit({{"segment", segment}},
              R"rs(
+           #[allow(non_snake_case)]
            pub mod $segment$ {
            )rs");
   }
@@ -157,6 +158,7 @@ void DeclareSubmodulesForNonPrimarySrcs(
               {"mod_name", RustInternalModuleName(ctx, *non_primary_src)}},
              R"rs(
                         #[path="$file_path$"]
+                        #[allow(non_snake_case)]
                         pub mod $mod_name$;
                       )rs");
   }

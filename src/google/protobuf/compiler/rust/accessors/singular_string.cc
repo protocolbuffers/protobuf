@@ -118,13 +118,12 @@ void SingularString::InMsgImpl(Context& ctx,
                          {"setter_thunk", setter_thunk}},
                         R"rs(
               pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
-                static VTABLE: $pbi$::BytesMutVTable = unsafe {
+                static VTABLE: $pbi$::BytesMutVTable =
                   $pbi$::BytesMutVTable::new(
                     $pbi$::Private,
                     $getter_thunk$,
                     $setter_thunk$,
-                  )
-                };
+                  );
                 unsafe {
                   <$pb$::Mut<$proxied_type$>>::from_inner(
                     $pbi$::Private,
@@ -158,19 +157,19 @@ void SingularString::InExternC(Context& ctx,
             {"getter_thunk", Thunk(ctx, field, "get")},
             {"setter_thunk", Thunk(ctx, field, "set")},
             {"clearer_thunk", Thunk(ctx, field, "clear")},
-            {"hazzer",
+            {"with_presence_fields_thunks",
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(R"rs(
                      fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+                     fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
                    )rs");
                }
              }}},
            R"rs(
-          $hazzer$
+          $with_presence_fields_thunks$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
           fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $pbi$::PtrAndLen);
-          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
 }
 
@@ -182,7 +181,7 @@ void SingularString::InThunkCc(Context& ctx,
             {"getter_thunk", Thunk(ctx, field, "get")},
             {"setter_thunk", Thunk(ctx, field, "set")},
             {"clearer_thunk", Thunk(ctx, field, "clear")},
-            {"hazzer",
+            {"with_presence_fields_thunks",
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(R"cc(
@@ -194,7 +193,7 @@ void SingularString::InThunkCc(Context& ctx,
                }
              }}},
            R"cc(
-             $hazzer$;
+             $with_presence_fields_thunks$;
              ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
                absl::string_view val = msg->$field$();
                return ::google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
