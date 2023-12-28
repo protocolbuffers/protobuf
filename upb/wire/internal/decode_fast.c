@@ -21,7 +21,7 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/sub.h"
-#include "upb/wire/internal/decode.h"
+#include "upb/wire/internal/decoder.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -48,6 +48,23 @@ typedef enum {
   CARD_r = 2, /* Repeated */
   CARD_p = 3  /* Packed Repeated */
 } upb_card;
+
+UPB_INLINE
+static const char* _upb_FastDecoder_TagDispatch(upb_Decoder* d, const char* ptr,
+                                                upb_Message* msg,
+                                                intptr_t table,
+                                                uint64_t hasbits,
+                                                uint64_t tag) {
+  const upb_MiniTable* table_p = decode_totablep(table);
+  uint8_t mask = table;
+  uint64_t data;
+  size_t idx = tag & mask;
+  UPB_ASSUME((idx & 7) == 0);
+  idx >>= 3;
+  data = table_p->UPB_PRIVATE(fasttable)[idx].field_data ^ tag;
+  UPB_MUSTTAIL return table_p->UPB_PRIVATE(fasttable)[idx].field_parser(
+      d, ptr, msg, table, hasbits, data);
+}
 
 UPB_NOINLINE
 static const char* fastdecode_isdonefallback(UPB_PARSE_PARAMS) {

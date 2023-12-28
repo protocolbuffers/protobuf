@@ -10,8 +10,8 @@
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_WIRE_INTERNAL_DECODE_H_
-#define UPB_WIRE_INTERNAL_DECODE_H_
+#ifndef UPB_WIRE_INTERNAL_DECODER_H_
+#define UPB_WIRE_INTERNAL_DECODER_H_
 
 #include "upb/mem/internal/arena.h"
 #include "upb/message/internal/message.h"
@@ -99,23 +99,6 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
   return new_start;
 }
 
-#if UPB_FASTTABLE
-UPB_INLINE
-const char* _upb_FastDecoder_TagDispatch(upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg, intptr_t table,
-                                         uint64_t hasbits, uint64_t tag) {
-  const upb_MiniTable* table_p = decode_totablep(table);
-  uint8_t mask = table;
-  uint64_t data;
-  size_t idx = tag & mask;
-  UPB_ASSUME((idx & 7) == 0);
-  idx >>= 3;
-  data = table_p->UPB_PRIVATE(fasttable)[idx].field_data ^ tag;
-  UPB_MUSTTAIL return table_p->UPB_PRIVATE(fasttable)[idx].field_parser(
-      d, ptr, msg, table, hasbits, data);
-}
-#endif
-
 UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   uint16_t tag;
   memcpy(&tag, ptr, 2);
@@ -124,4 +107,4 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_INTERNAL_DECODE_H_ */
+#endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
