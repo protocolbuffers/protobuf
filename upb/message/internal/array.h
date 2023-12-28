@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-#include "upb/message/array.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -39,7 +39,7 @@ struct upb_Array {
   size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
 };
 
-UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(upb_Array* array,
+UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(struct upb_Array* array,
                                                      void* data, size_t lg2) {
   UPB_ASSERT(lg2 != 1);
   UPB_ASSERT(lg2 <= 4);
@@ -47,29 +47,31 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(upb_Array* array,
   array->data = (uintptr_t)data | bits;
 }
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const upb_Array* array) {
+UPB_INLINE size_t
+UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
   const size_t bits = array->data & _UPB_ARRAY_MASK_LG2;
   const size_t lg2 = bits + (bits != 0);
   return lg2;
 }
 
-UPB_INLINE const void* _upb_array_constptr(const upb_Array* array) {
+UPB_INLINE const void* _upb_array_constptr(const struct upb_Array* array) {
   UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
   return (void*)(array->data & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
 }
 
-UPB_INLINE void* _upb_array_ptr(upb_Array* array) {
+UPB_INLINE void* _upb_array_ptr(struct upb_Array* array) {
   return (void*)_upb_array_constptr(array);
 }
 
-UPB_INLINE upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
-                                                  size_t init_capacity,
-                                                  int elem_size_lg2) {
+UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
+                                                         size_t init_capacity,
+                                                         int elem_size_lg2) {
   UPB_ASSERT(elem_size_lg2 != 1);
   UPB_ASSERT(elem_size_lg2 <= 4);
-  const size_t array_size = UPB_ALIGN_UP(sizeof(upb_Array), UPB_MALLOC_ALIGN);
+  const size_t array_size =
+      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
   const size_t bytes = array_size + (init_capacity << elem_size_lg2);
-  upb_Array* array = (upb_Array*)upb_Arena_Malloc(arena, bytes);
+  struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
   if (!array) return NULL;
   UPB_PRIVATE(_upb_Array_SetTaggedPtr)
   (array, UPB_PTR_AT(array, array_size, void), elem_size_lg2);
@@ -79,19 +81,19 @@ UPB_INLINE upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
 }
 
 // Resizes the capacity of the array to be at least min_size.
-bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_size,
+bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array, size_t min_size,
                                      upb_Arena* arena);
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(upb_Array* array, size_t size,
-                                                upb_Arena* arena) {
+UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
+                                                size_t size, upb_Arena* arena) {
   if (array->UPB_PRIVATE(capacity) < size)
     return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
   return true;
 }
 
 // Resize without initializing new elements.
-UPB_INLINE bool _upb_Array_ResizeUninitialized(upb_Array* array, size_t size,
-                                               upb_Arena* arena) {
+UPB_INLINE bool _upb_Array_ResizeUninitialized(struct upb_Array* array,
+                                               size_t size, upb_Arena* arena) {
   UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
              arena);  // Allow NULL arena when shrinking.
   if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
@@ -102,7 +104,7 @@ UPB_INLINE bool _upb_Array_ResizeUninitialized(upb_Array* array, size_t size,
 // This function is intended for situations where elem_size is compile-time
 // constant or a known expression of the form (1 << lg2), so that the expression
 // i*elem_size does not result in an actual multiplication.
-UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(upb_Array* array, size_t i,
+UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
                                             const void* data,
                                             size_t elem_size) {
   UPB_ASSERT(i < array->UPB_ONLYBITS(size));

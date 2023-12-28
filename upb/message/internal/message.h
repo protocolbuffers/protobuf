@@ -68,31 +68,33 @@ UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
 }
 
 // Inline version upb_Message_New(), for internal use.
-UPB_INLINE upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
-                                         upb_Arena* arena) {
+UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
+                                                upb_Arena* arena) {
   size_t size = upb_msg_sizeof(mini_table);
   void* mem = upb_Arena_Malloc(arena, size + sizeof(upb_Message_Internal));
   if (UPB_UNLIKELY(!mem)) return NULL;
-  upb_Message* msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_Message);
+  struct upb_Message* msg =
+      UPB_PTR_AT(mem, sizeof(upb_Message_Internal), struct upb_Message);
   memset(mem, 0, size);
   return msg;
 }
 
 UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
-    const upb_Message* msg) {
+    const struct upb_Message* msg) {
   ptrdiff_t size = sizeof(upb_Message_Internal);
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
 // Discards the unknown fields for this message only.
-void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
+void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance.
-bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
-                                          size_t len, upb_Arena* arena);
+bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
+                                          const char* data, size_t len,
+                                          upb_Arena* arena);
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(upb_Message* msg, size_t need,
+bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* arena);
 
 #ifdef __cplusplus

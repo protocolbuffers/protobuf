@@ -5,14 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/message/message.h"
+#include "upb/message/internal/message.h"
 
 #include <math.h>
 #include <string.h>
 
 #include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
-#include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 
 // Must be last.
@@ -24,7 +23,7 @@ const double kUpb_NaN = NAN;
 
 static const size_t realloc_overhead = sizeof(upb_Message_InternalData);
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(upb_Message* msg, size_t need,
+bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* arena) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) {

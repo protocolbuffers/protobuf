@@ -14,13 +14,10 @@
 
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
-#include "upb/message/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
-#include "upb/message/map.h"
-#include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
@@ -232,7 +229,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 UPB_INLINE void _upb_Message_GetExtensionField(
     const upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  const upb_Extension* ext = _upb_Message_Getext(msg, mt_ext);
+  const struct upb_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
@@ -282,7 +279,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
     upb_Message* msg, const upb_MiniTableExtension* mt_ext, const void* val,
     upb_Arena* a) {
   UPB_ASSERT(a);
-  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
+  struct upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (&mt_ext->UPB_PRIVATE(field), &ext->data, val);
@@ -293,12 +290,13 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
     upb_Message* msg, const upb_MiniTableExtension* ext_l) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) return;
-  const upb_Extension* base =
-      UPB_PTR_AT(in->internal, in->internal->ext_begin, upb_Extension);
-  upb_Extension* ext = (upb_Extension*)_upb_Message_Getext(msg, ext_l);
+  const struct upb_Extension* base =
+      UPB_PTR_AT(in->internal, in->internal->ext_begin, struct upb_Extension);
+  struct upb_Extension* ext =
+      (struct upb_Extension*)_upb_Message_Getext(msg, ext_l);
   if (ext) {
     *ext = *base;
-    in->internal->ext_begin += sizeof(upb_Extension);
+    in->internal->ext_begin += sizeof(struct upb_Extension);
   }
 }
 
@@ -328,13 +326,13 @@ UPB_INLINE void _upb_Message_AssertMapIsUntagged(
 #endif
 }
 
-UPB_INLINE upb_Map* _upb_Message_GetOrCreateMutableMap(
+UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
     upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
   _upb_Message_AssertMapIsUntagged(msg, field);
-  upb_Map* map = NULL;
-  upb_Map* default_map_value = NULL;
+  struct upb_Map* map = NULL;
+  struct upb_Map* default_map_value = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
   if (!map) {
     map = _upb_Map_New(arena, key_size, val_size);
