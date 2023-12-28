@@ -77,8 +77,8 @@ std::string FieldPrefix(Context& ctx, const T& field) {
 }
 
 template <typename T>
-std::string Thunk(Context& ctx, const T& field, absl::string_view op) {
-  std::string thunk = FieldPrefix(ctx, field);
+std::string ThunkName(Context& ctx, const T& field, absl::string_view op) {
+  std::string thunkName = FieldPrefix(ctx, field);
 
   absl::string_view format;
   if (ctx.is_upb() && op == "get") {
@@ -95,46 +95,47 @@ std::string Thunk(Context& ctx, const T& field, absl::string_view op) {
     format = "_$0_$1";
   }
 
-  absl::SubstituteAndAppend(&thunk, format, op, field.name());
-  return thunk;
+  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
+  return thunkName;
 }
 
 std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
                                absl::string_view op) {
   if (!ctx.is_upb()) {
-    return Thunk<FieldDescriptor>(ctx, field, op);
+    return ThunkName<FieldDescriptor>(ctx, field, op);
   }
 
-  std::string thunk = absl::StrCat("_", FieldPrefix(ctx, field));
+  std::string thunkName = absl::StrCat("_", FieldPrefix(ctx, field));
   absl::string_view format;
   if (op == "get") {
     format = field.is_map() ? "_$1_upb_map" : "_$1_upb_array";
   } else if (op == "get_mut") {
     format = field.is_map() ? "_$1_mutable_upb_map" : "_$1_mutable_upb_array";
   } else {
-    return Thunk<FieldDescriptor>(ctx, field, op);
+    return ThunkName<FieldDescriptor>(ctx, field, op);
   }
 
-  absl::SubstituteAndAppend(&thunk, format, op, field.name());
-  return thunk;
+  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
+  return thunkName;
 }
 
 }  // namespace
 
-std::string Thunk(Context& ctx, const FieldDescriptor& field,
-                  absl::string_view op) {
+std::string ThunkName(Context& ctx, const FieldDescriptor& field,
+                      absl::string_view op) {
   if (field.is_map() || field.is_repeated()) {
     return ThunkMapOrRepeated(ctx, field, op);
   }
-  return Thunk<FieldDescriptor>(ctx, field, op);
+  return ThunkName<FieldDescriptor>(ctx, field, op);
 }
 
-std::string Thunk(Context& ctx, const OneofDescriptor& field,
-                  absl::string_view op) {
-  return Thunk<OneofDescriptor>(ctx, field, op);
+std::string ThunkName(Context& ctx, const OneofDescriptor& field,
+                      absl::string_view op) {
+  return ThunkName<OneofDescriptor>(ctx, field, op);
 }
 
-std::string Thunk(Context& ctx, const Descriptor& msg, absl::string_view op) {
+std::string ThunkName(Context& ctx, const Descriptor& msg,
+                      absl::string_view op) {
   absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
                       op);

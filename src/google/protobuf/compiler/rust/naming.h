@@ -25,12 +25,13 @@ std::string GetRsFile(Context& ctx, const FileDescriptor& file);
 std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file);
 
-std::string Thunk(Context& ctx, const FieldDescriptor& field,
-                  absl::string_view op);
-std::string Thunk(Context& ctx, const OneofDescriptor& field,
-                  absl::string_view op);
+std::string ThunkName(Context& ctx, const FieldDescriptor& field,
+                      absl::string_view op);
+std::string ThunkName(Context& ctx, const OneofDescriptor& field,
+                      absl::string_view op);
 
-std::string Thunk(Context& ctx, const Descriptor& msg, absl::string_view op);
+std::string ThunkName(Context& ctx, const Descriptor& msg,
+                      absl::string_view op);
 
 std::string PrimitiveRsTypeName(const FieldDescriptor& field);
 

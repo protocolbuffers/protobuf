@@ -29,13 +29,13 @@ namespace {
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      ctx.Emit({{"new_thunk", Thunk(ctx, msg, "new")}}, R"rs(
+      ctx.Emit({{"new_thunk", ThunkName(ctx, msg, "new")}}, R"rs(
         Self { inner: $pbr$::MessageInner { msg: unsafe { $new_thunk$() } } }
       )rs");
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"new_thunk", Thunk(ctx, msg, "new")}}, R"rs(
+      ctx.Emit({{"new_thunk", ThunkName(ctx, msg, "new")}}, R"rs(
         let arena = $pbr$::Arena::new();
         Self {
           inner: $pbr$::MessageInner {
@@ -53,13 +53,13 @@ void MessageNew(Context& ctx, const Descriptor& msg) {
 void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      ctx.Emit({{"serialize_thunk", Thunk(ctx, msg, "serialize")}}, R"rs(
+      ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
         unsafe { $serialize_thunk$(self.inner.msg) }
       )rs");
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"serialize_thunk", Thunk(ctx, msg, "serialize")}}, R"rs(
+      ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
         let arena = $pbr$::Arena::new();
         let mut len = 0;
         unsafe {
@@ -78,7 +78,7 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       ctx.Emit(
           {
-              {"deserialize_thunk", Thunk(ctx, msg, "deserialize")},
+              {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
           },
           R"rs(
           let success = unsafe {
@@ -94,7 +94,7 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"deserialize_thunk", Thunk(ctx, msg, "parse")}}, R"rs(
+      ctx.Emit({{"deserialize_thunk", ThunkName(ctx, msg, "parse")}}, R"rs(
         let arena = $pbr$::Arena::new();
         let msg = unsafe {
           $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
@@ -122,10 +122,10 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       ctx.Emit(
           {
-              {"new_thunk", Thunk(ctx, msg, "new")},
-              {"delete_thunk", Thunk(ctx, msg, "delete")},
-              {"serialize_thunk", Thunk(ctx, msg, "serialize")},
-              {"deserialize_thunk", Thunk(ctx, msg, "deserialize")},
+              {"new_thunk", ThunkName(ctx, msg, "new")},
+              {"delete_thunk", ThunkName(ctx, msg, "delete")},
+              {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
+              {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
           },
           R"rs(
           fn $new_thunk$() -> $pbi$::RawMessage;
@@ -138,9 +138,9 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           {
-              {"new_thunk", Thunk(ctx, msg, "new")},
-              {"serialize_thunk", Thunk(ctx, msg, "serialize")},
-              {"deserialize_thunk", Thunk(ctx, msg, "parse")},
+              {"new_thunk", ThunkName(ctx, msg, "new")},
+              {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
+              {"deserialize_thunk", ThunkName(ctx, msg, "parse")},
           },
           R"rs(
           fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
@@ -160,7 +160,7 @@ void MessageDrop(Context& ctx, const Descriptor& msg) {
     return;
   }
 
-  ctx.Emit({{"delete_thunk", Thunk(ctx, msg, "delete")}}, R"rs(
+  ctx.Emit({{"delete_thunk", ThunkName(ctx, msg, "delete")}}, R"rs(
     unsafe { $delete_thunk$(self.inner.msg); }
   )rs");
 }
@@ -173,8 +173,8 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
                         bool is_mut) {
   auto fieldName = field.name();
   auto fieldType = field.type();
-  auto getter_thunk = Thunk(ctx, field, "get");
-  auto setter_thunk = Thunk(ctx, field, "set");
+  auto getter_thunk = ThunkName(ctx, field, "get");
+  auto setter_thunk = ThunkName(ctx, field, "set");
   // If we're dealing with a Mut, the getter must be supplied
   // self.inner.msg() whereas a View has to be supplied self.msg
   auto self = is_mut ? "self.inner.msg()" : "self.msg";
@@ -552,10 +552,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
       {{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
        {"Msg", msg.name()},
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
-       {"new_thunk", Thunk(ctx, msg, "new")},
-       {"delete_thunk", Thunk(ctx, msg, "delete")},
-       {"serialize_thunk", Thunk(ctx, msg, "serialize")},
-       {"deserialize_thunk", Thunk(ctx, msg, "deserialize")},
+       {"new_thunk", ThunkName(ctx, msg, "new")},
+       {"delete_thunk", ThunkName(ctx, msg, "delete")},
+       {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
+       {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {

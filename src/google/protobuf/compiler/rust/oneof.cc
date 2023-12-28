@@ -319,7 +319,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
                )rs");
           }
         }},
-       {"case_thunk", Thunk(ctx, oneof, "case")}},
+       {"case_thunk", ThunkName(ctx, oneof, "case")}},
       R"rs(
         pub fn r#$oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
           match unsafe { $case_thunk$(self.inner.msg) } {
@@ -342,7 +342,7 @@ void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
           {"case_enum_rs_name", oneofCaseEnumName(oneof)},
-          {"case_thunk", Thunk(ctx, oneof, "case")},
+          {"case_thunk", ThunkName(ctx, oneof, "case")},
       },
       R"rs(
         fn $case_thunk$(raw_msg: $pbi$::RawMessage) -> $Msg$_::$case_enum_rs_name$;
@@ -354,7 +354,7 @@ void GenerateOneofThunkCc(Context& ctx, const OneofDescriptor& oneof) {
       {
           {"oneof_name", oneof.name()},
           {"case_enum_name", oneofCaseEnumName(oneof)},
-          {"case_thunk", Thunk(ctx, oneof, "case")},
+          {"case_thunk", ThunkName(ctx, oneof, "case")},
           {"QualifiedMsg", cpp::QualifiedClassName(oneof.containing_type())},
       },
       R"cc(

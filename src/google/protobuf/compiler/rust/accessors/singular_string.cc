@@ -22,9 +22,9 @@ namespace rust {
 
 void SingularString::InMsgImpl(Context& ctx,
                                const FieldDescriptor& field) const {
-  std::string hazzer_thunk = Thunk(ctx, field, "has");
-  std::string getter_thunk = Thunk(ctx, field, "get");
-  std::string setter_thunk = Thunk(ctx, field, "set");
+  std::string hazzer_thunk = ThunkName(ctx, field, "has");
+  std::string getter_thunk = ThunkName(ctx, field, "get");
+  std::string setter_thunk = ThunkName(ctx, field, "set");
   std::string proxied_type = PrimitiveRsTypeName(field);
   auto transform_view = [&] {
     if (field.type() == FieldDescriptor::TYPE_STRING) {
@@ -85,7 +85,7 @@ void SingularString::InMsgImpl(Context& ctx,
                        {"hazzer_thunk", hazzer_thunk},
                        {"getter_thunk", getter_thunk},
                        {"setter_thunk", setter_thunk},
-                       {"clearer_thunk", Thunk(ctx, field, "clear")},
+                       {"clearer_thunk", ThunkName(ctx, field, "clear")},
                    },
                    R"rs(
             pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
@@ -153,10 +153,10 @@ void SingularString::InMsgImpl(Context& ctx,
 
 void SingularString::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
-  ctx.Emit({{"hazzer_thunk", Thunk(ctx, field, "has")},
-            {"getter_thunk", Thunk(ctx, field, "get")},
-            {"setter_thunk", Thunk(ctx, field, "set")},
-            {"clearer_thunk", Thunk(ctx, field, "clear")},
+  ctx.Emit({{"hazzer_thunk", ThunkName(ctx, field, "has")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"setter_thunk", ThunkName(ctx, field, "set")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"with_presence_fields_thunks",
              [&] {
                if (field.has_presence()) {
@@ -177,10 +177,10 @@ void SingularString::InThunkCc(Context& ctx,
                                const FieldDescriptor& field) const {
   ctx.Emit({{"field", cpp::FieldName(&field)},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-            {"hazzer_thunk", Thunk(ctx, field, "has")},
-            {"getter_thunk", Thunk(ctx, field, "get")},
-            {"setter_thunk", Thunk(ctx, field, "set")},
-            {"clearer_thunk", Thunk(ctx, field, "clear")},
+            {"hazzer_thunk", ThunkName(ctx, field, "has")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"setter_thunk", ThunkName(ctx, field, "set")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"with_presence_fields_thunks",
              [&] {
                if (field.has_presence()) {

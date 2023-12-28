@@ -21,8 +21,8 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
                                const FieldDescriptor& field) const {
   ctx.Emit({{"field", field.name()},
             {"Scalar", PrimitiveRsTypeName(field)},
-            {"getter_thunk", Thunk(ctx, field, "get")},
-            {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
@@ -54,7 +54,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
                   )rs");
                }
              }},
-            {"clearer_thunk", Thunk(ctx, field, "clear")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"field_mutator_getter",
              [&] {
                if (ctx.is_upb()) {
@@ -101,8 +101,8 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
 void RepeatedScalar::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
   ctx.Emit({{"Scalar", PrimitiveRsTypeName(field)},
-            {"getter_thunk", Thunk(ctx, field, "get")},
-            {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
@@ -125,7 +125,7 @@ void RepeatedScalar::InExternC(Context& ctx,
                   )rs");
                }
              }},
-            {"clearer_thunk", Thunk(ctx, field, "clear")}},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")}},
            R"rs(
           fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
           $getter$
@@ -137,9 +137,9 @@ void RepeatedScalar::InThunkCc(Context& ctx,
   ctx.Emit({{"field", cpp::FieldName(&field)},
             {"Scalar", cpp::PrimitiveTypeName(field.cpp_type())},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-            {"clearer_thunk", Thunk(ctx, field, "clear")},
-            {"getter_thunk", Thunk(ctx, field, "get")},
-            {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"impls",
              [&] {
                ctx.Emit(

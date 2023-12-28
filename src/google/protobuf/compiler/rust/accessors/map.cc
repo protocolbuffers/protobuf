@@ -24,8 +24,8 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
   ctx.Emit({{"field", field.name()},
             {"Key", PrimitiveRsTypeName(key_type)},
             {"Value", PrimitiveRsTypeName(value_type)},
-            {"getter_thunk", Thunk(ctx, field, "get")},
-            {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
@@ -97,8 +97,8 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
 void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
   ctx.Emit(
       {
-          {"getter_thunk", Thunk(ctx, field, "get")},
-          {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
           {"getter",
            [&] {
              if (ctx.is_upb()) {
@@ -129,8 +129,8 @@ void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
        {"Value",
         cpp::PrimitiveTypeName(field.message_type()->map_value()->cpp_type())},
        {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-       {"getter_thunk", Thunk(ctx, field, "get")},
-       {"getter_mut_thunk", Thunk(ctx, field, "get_mut")},
+       {"getter_thunk", ThunkName(ctx, field, "get")},
+       {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
        {"impls",
         [&] {
           ctx.Emit(
