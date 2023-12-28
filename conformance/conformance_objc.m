@@ -78,11 +78,6 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       response.skipped = @"ObjC doesn't support parsing JSON";
       break;
 
-    case ConformanceRequest_Payload_OneOfCase_JspbPayload:
-      response.skipped = @"ConformanceRequest had a jspb_payload ConformanceRequest.payload;"
-                          " those aren't supposed to happen with opensource.";
-      break;
-
     case ConformanceRequest_Payload_OneOfCase_TextPayload:
       response.skipped = @"ObjC doesn't support parsing TextFormat";
       break;
@@ -106,12 +101,6 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
 
       case ConformanceWireFormat_Json:
         response.skipped = @"ObjC doesn't support generating JSON";
-        break;
-
-      case ConformanceWireFormat_Jspb:
-        response.skipped =
-            @"ConformanceRequest had a requested_output_format of JSPB WireFormat; that"
-             " isn't supposed to happen with opensource.";
         break;
 
       case ConformanceWireFormat_TextFormat:
