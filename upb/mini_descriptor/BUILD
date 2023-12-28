@@ -21,10 +21,10 @@ cc_library(
     deps = [
         ":internal",
         "//upb:base",
-        "//upb:base_internal",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/base:internal",
         "//upb/mini_table:internal",
     ],
 )
@@ -47,8 +47,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:base_internal",
         "//upb:port",
+        "//upb/base:internal",
     ],
 )
 

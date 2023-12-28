@@ -138,12 +138,6 @@ alias(
 )
 
 alias(
-    name = "base_internal",
-    actual = "//upb/base:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "collections",
     actual = "//upb/collections",
     deprecation = "use upb:message instead",
@@ -259,12 +253,6 @@ alias(
 )
 
 alias(
-    name = "mini_descriptor_internal",
-    actual = "//upb/mini_descriptor:internal",
-    visibility = ["//upb:__subpackages__"],
-)
-
-alias(
     name = "mini_table",
     actual = "//upb/mini_table",
     visibility = ["//upb:friends"],
@@ -358,7 +346,6 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -374,7 +361,6 @@ upb_amalgamation(
         ":message_types",
         ":message_value",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_compat",
         ":port",
@@ -382,7 +368,9 @@ upb_amalgamation(
         ":reflection_internal",
         ":wire",
         ":wire_reader",
+        "//upb/base:internal",
         "//upb/mem:internal",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
     ],
     strip_import_prefix = ["src"],
@@ -404,7 +392,6 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
@@ -422,7 +409,6 @@ upb_amalgamation(
         ":message_types",
         ":message_value",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_compat",
         ":port",
@@ -430,7 +416,9 @@ upb_amalgamation(
         ":reflection_internal",
         ":wire",
         ":wire_reader",
+        "//upb/base:internal",
         "//upb/mem:internal",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
     ],
     prefix = "php-",
@@ -454,7 +442,6 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
@@ -471,7 +458,6 @@ upb_amalgamation(
         ":message_types",
         ":message_value",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_compat",
         ":port",
@@ -479,7 +465,9 @@ upb_amalgamation(
         ":reflection_internal",
         ":wire",
         ":wire_reader",
+        "//upb/base:internal",
         "//upb/mem:internal",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
     ],
     prefix = "ruby-",

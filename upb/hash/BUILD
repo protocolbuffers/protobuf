@@ -21,9 +21,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:base_internal",
         "//upb:mem",
         "//upb:port",
+        "//upb/base:internal",
     ],
 )
 
