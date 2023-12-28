@@ -1655,7 +1655,7 @@ namespace {
 // UTF-8 validity issues.
 bool DefinitelyNeedsEscape(unsigned char ch) {
   if (ch >= 0x80) {
-    return false;  // High byte; no escapes necessary if UTF-8 is vaid.
+    return false;  // High byte; no escapes necessary if UTF-8 is valid.
   }
 
   if (!absl::ascii_isprint(ch)) {
