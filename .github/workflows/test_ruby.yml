@@ -24,10 +24,10 @@ jobs:
           #- { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
           - { name: Ruby 3.0, ruby: ruby-3.0.2 }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
-          - { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: NATIVE }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0 }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: FFI }
+          #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
 
@@ -123,9 +123,10 @@ jobs:
         #- { version: "2.7", ffi: FFI }
         - { version: "3.0" }
         - { version: "3.1" }
-        - { version: "3.2", ffi: NATIVE }
+        - { version: "3.2" }
+        - { version: "3.3", ffi: NATIVE }
         # TODO Re-enable these once flakes are fixed
-        #- { version: "3.2", ffi: FFI }
+        #- { version: "3.3", ffi: FFI }
 
     name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
@@ -136,7 +137,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Ruby version
-        uses: ruby/setup-ruby@ee26e27437bde475b19a6bf8cb73c9fa658876a2 # v1.134.0
+        uses: ruby/setup-ruby@961f85197f92e4842e3cb92a4f97bd8e010cdbaf # v1.165.0
         with:
           ruby-version: ${{ matrix.version }}
 
@@ -161,8 +162,9 @@ jobs:
           - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
           - { name: Ruby 3.0, ruby: ruby-3.0.2}
           - { name: Ruby 3.1, ruby: ruby-3.1.0}
-          - { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: NATIVE }
-          - { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: FFI }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0}
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
     name: Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
@@ -175,7 +177,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-904cad5249547845454998ca3837a34c71fabf96
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
