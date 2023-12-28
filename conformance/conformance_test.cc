@@ -115,6 +115,11 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       break;
     }
 
+    case conformance::JSPB: {
+      request_.set_jspb_payload(input);
+      break;
+    }
+
     case conformance::TEXT_FORMAT: {
       request_.set_text_payload(input);
       break;
@@ -225,6 +230,9 @@ ConformanceRequest ConformanceTestSuite::TruncateRequest(
     case ConformanceRequest::kTextPayload:
       TruncateDebugPayload(debug_request.mutable_text_payload());
       break;
+    case ConformanceRequest::kJspbPayload:
+      TruncateDebugPayload(debug_request.mutable_jspb_payload());
+      break;
     default:
       // Do nothing.
       break;
@@ -244,6 +252,9 @@ ConformanceResponse ConformanceTestSuite::TruncateResponse(
       break;
     case ConformanceResponse::kTextPayload:
       TruncateDebugPayload(debug_response.mutable_text_payload());
+      break;
+    case ConformanceResponse::kJspbPayload:
+      TruncateDebugPayload(debug_response.mutable_jspb_payload());
       break;
     default:
       // Do nothing.
@@ -418,6 +429,8 @@ std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
       return "PROTOBUF";
     case conformance::JSON:
       return "JSON";
+    case conformance::JSPB:
+      return "JSPB";
     case conformance::TEXT_FORMAT:
       return "TEXT_FORMAT";
     case conformance::UNSPECIFIED:
