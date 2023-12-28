@@ -6209,7 +6209,7 @@ const double kUpb_NaN = NAN;
 
 static const size_t realloc_overhead = sizeof(upb_Message_InternalData);
 
-bool UPB_PRIVATE(_upb_Message_Realloc)(upb_Message* msg, size_t need,
+bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* arena) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) {
