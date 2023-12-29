@@ -57,7 +57,8 @@ def _ObjcOuts(srcs, out_type):
     return _ObjcHdrs(srcs) + _ObjcSrcs(srcs)
 
 def _PyOuts(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + "_pb2.py" for s in srcs]
+    ret = ([s[:-len(".proto")] + "_pb2.py" for s in srcs] +
+           [s[:-len(".proto")] + "_pb2.pyi" for s in srcs])
     if use_grpc_plugin:
         ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
     return ret
@@ -157,6 +158,8 @@ def _proto_gen_impl(ctx):
 
             # Otherwise, rely on user-supplied outs.
             args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
+            if lang == "python":
+                args += [("--pyi_out=" + path_tpl) % gen_dir]
 
         if ctx.attr.outs:
             outs.extend(ctx.attr.outs)
