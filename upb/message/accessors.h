@@ -25,10 +25,6 @@
 #include "upb/message/tagged_ptr.h"
 #include "upb/message/types.h"
 #include "upb/mini_table/enum.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
 // Must be last.
@@ -364,13 +360,14 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
-  upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
+  upb_Message* sub_message =
+      *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
         mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
-    *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
+    *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*) = sub_message;
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   }
   return sub_message;
@@ -448,15 +445,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
 }
 
 // Updates a map entry given an entry message.
-upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
-                                               const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* field,
-                                               upb_Message* map_entry_message,
-                                               upb_Arena* arena);
-
-// Compares two messages by serializing them and calling memcmp().
-bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
-                                const upb_MiniTable* layout);
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
+                             const upb_MiniTableField* field,
+                             upb_Message* map_entry_message, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

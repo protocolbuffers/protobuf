@@ -4,14 +4,14 @@
     "lts": false,
     "date": "2023-11-01",
     "languages": {
-      "cpp": "4.26-dev",
+      "cpp": "5.26-dev",
       "csharp": "3.26-dev",
-      "java": "3.26-dev",
+      "java": "4.26-dev",
       "javascript": "3.26-dev",
       "objectivec": "3.26-dev",
-      "php": "3.26-dev",
-      "python": "4.26-dev",
-      "ruby": "3.26-dev"
+      "php": "4.26-dev",
+      "python": "5.26-dev",
+      "ruby": "4.26-dev"
     }
   }
 }

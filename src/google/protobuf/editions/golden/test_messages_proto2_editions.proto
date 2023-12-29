@@ -19,7 +19,7 @@ option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
 option java_package = "com.google.protobuf_test_messages.editions.proto2";
-option objc_class_prefix = "Proto2";
+option objc_class_prefix = "EditionsProto2";
 
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;

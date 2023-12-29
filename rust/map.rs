@@ -155,7 +155,7 @@ macro_rules! impl_scalar_map_keys {
   ($(key_type $t:ty;)*) => {
       paste! { $(
         impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MapView<'msg, $t, V> {
-          pub fn get<'b>(&self, key: $t) -> Option<V::Value<'b>> {
+          pub fn get<'b>(&self, key: $t) -> Option<View<'b, V>> {
             self.inner.get(key)
           }
 
@@ -169,7 +169,7 @@ macro_rules! impl_scalar_map_keys {
         }
 
         impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MapMut<'msg, $t, V> {
-          pub fn insert(&mut self, key: $t, value: V::Value<'_>) -> bool {
+          pub fn insert(&mut self, key: $t, value: View<'_, V>) -> bool {
             self.inner.insert(key, value)
           }
 
@@ -198,7 +198,7 @@ impl_scalar_map_keys!(
 );
 
 impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapView<'msg, ProtoStr, V> {
-    pub fn get(&self, key: impl Into<&'msg ProtoStr>) -> Option<V::Value<'_>> {
+    pub fn get(&self, key: impl Into<&'msg ProtoStr>) -> Option<View<'_, V>> {
         self.inner.get(key.into())
     }
 
@@ -212,7 +212,7 @@ impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapView<'msg, Pro
 }
 
 impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapMut<'msg, ProtoStr, V> {
-    pub fn insert(&mut self, key: impl Into<&'msg ProtoStr>, value: V::Value<'_>) -> bool {
+    pub fn insert(&mut self, key: impl Into<&'msg ProtoStr>, value: View<'_, V>) -> bool {
         self.inner.insert(key.into(), value)
     }
 

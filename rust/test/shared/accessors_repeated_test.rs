@@ -21,6 +21,7 @@ macro_rules! generate_repeated_numeric_test {
               let mut mutator = msg.[<repeated_ $field _mut >]();
               mutator.push(1 as $t);
               assert_that!(mutator.len(), eq(1));
+              assert_that!(mutator.iter().len(), eq(1));
               assert_that!(mutator.get(0), some(eq(1 as $t)));
               mutator.set(0, 2 as $t);
               assert_that!(mutator.get(0), some(eq(2 as $t)));

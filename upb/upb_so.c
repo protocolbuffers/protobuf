@@ -10,7 +10,10 @@
 // IWYU pragma: begin_exports
 #include "upb/message/accessors_split64.h"
 #include "upb/message/array_split64.h"
+#include "upb/message/compare.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 // IWYU pragma: end_exports

@@ -72,8 +72,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_cc",
             repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "818289e5613731ae410efb54218a4077fb9dbb03",
-            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610",
+            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",  # 0.0.9
+            sha256 = "5f862a44bbd032e1b48ed53c9c211ba2a1da60e10c5baa01c97369c249299ecb",
         )
 
     if not native.existing_rule("rules_java"):
@@ -122,8 +122,8 @@ def protobuf_deps():
     if not native.existing_rule("build_bazel_rules_apple"):
         http_archive(
             name = "build_bazel_rules_apple",
-            sha256 = "f94e6dddf74739ef5cb30f000e13a2a613f6ebfa5e63588305a71fce8a8a9911",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/1.1.3/rules_apple.1.1.3.tar.gz",
+            sha256 = "34c41bfb59cdaea29ac2df5a2fa79e5add609c71bb303b2ebb10985f93fa20e7",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.1.1/rules_apple.3.1.1.tar.gz",
         )
 
     if not native.existing_rule("io_bazel_rules_kotlin"):

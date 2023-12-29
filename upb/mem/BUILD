@@ -9,6 +9,10 @@ load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "mem",
+    srcs = [
+        "alloc.c",
+        "arena.c",
+    ],
     hdrs = [
         "alloc.h",
         "arena.h",
@@ -24,17 +28,11 @@ cc_library(
 
 cc_library(
     name = "internal",
-    srcs = [
-        "alloc.c",
-        "alloc.h",
-        "arena.c",
-        "arena.h",
-    ],
     hdrs = [
         "internal/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//upb:__pkg__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//upb:port",
     ],
@@ -44,14 +42,14 @@ cc_test(
     name = "arena_test",
     srcs = ["arena_test.cc"],
     deps = [
-        "@com_google_googletest//:gtest_main",
-        "//upb:mem",
-        "//upb:mem_internal",
+        ":mem",
         "//upb:port",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/random:distributions",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -66,8 +64,20 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
+)
+# end:github_only
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
 )
 # end:github_only

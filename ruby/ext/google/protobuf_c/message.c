@@ -488,7 +488,8 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   k = Convert_RubyToUpb(key, "", map_init->key_type, NULL);
 
   if (map_init->val_type.type == kUpb_CType_Message && TYPE(val) == T_HASH) {
-    upb_MiniTable* t = upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
+    const upb_MiniTable* t =
+        upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
     upb_Message* msg = upb_Message_New(t, map_init->arena);
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
                           map_init->arena);
@@ -519,7 +520,7 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
                                                upb_Arena* arena) {
   if (info.type == kUpb_CType_Message) {
     upb_MessageValue msgval;
-    upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
+    const upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
     upb_Message* msg = upb_Message_New(t, arena);
     Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
@@ -635,7 +636,7 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE arena_rb = Arena_new();
   upb_Arena* arena = Arena_get(arena_rb);
-  upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
   upb_Message* msg = upb_Message_New(t, arena);
 
   Message_InitPtr(_self, msg, arena_rb);
@@ -675,7 +676,8 @@ bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
+    rb_raise(cParseError, "Message_Equal(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -706,7 +708,8 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
+    rb_raise(cParseError, "Message_Hash(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }
 

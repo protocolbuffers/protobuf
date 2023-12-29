@@ -394,6 +394,9 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,
                                const TcParseTableBase* table);
+  static const char* ParseLoopInlined(MessageLite* msg, const char* ptr,
+                                      ParseContext* ctx,
+                                      const TcParseTableBase* table);
 
   // Functions referenced by generated fast tables (numeric types):
   //   F: fixed      V: varint     Z: zigzag

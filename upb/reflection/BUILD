@@ -137,16 +137,14 @@ bootstrap_cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:message_accessors",
-        "//upb:message_accessors_internal",
         "//upb:message_copy",
-        "//upb:message_internal",
         "//upb:message_value",
         "//upb:mini_descriptor",
-        "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
+        "//upb:wire",
         "//upb/base:internal",
+        "//upb/mini_descriptor:internal",
     ],
 )
 
@@ -178,13 +176,15 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
-        "@com_google_googletest//:gtest_main",
+        "//upb:base",
         "//upb:hash",
         "//upb:mem",
         "//upb:port",
         "//upb:reflection",
         "//upb:reflection_internal",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -224,8 +224,8 @@ filegroup(
         exclude = ["stage0/**"],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only

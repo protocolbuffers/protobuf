@@ -212,7 +212,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     Map* self = ruby_to_Map(_self);
     Map* other = ruby_to_Map(hashmap);
     upb_Arena* arena = Arena_get(self->arena);
-    upb_Message* self_msg = Map_GetMutable(_self);
+    upb_Map* self_map = Map_GetMutable(_self);
 
     Arena_fuse(other->arena, arena);
 
@@ -225,7 +225,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
     while (upb_Map_Next(other->map, &key, &val, &iter)) {
-      upb_Map_Set(self_msg, key, val, arena);
+      upb_Map_Set(self_map, key, val, arena);
     }
   } else {
     rb_raise(rb_eArgError, "Unknown type merging into Map");

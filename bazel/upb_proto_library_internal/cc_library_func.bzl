@@ -14,6 +14,7 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 def upb_use_cpp_toolchain():
     return ["@bazel_tools//tools/cpp:toolchain_type"]
+
 # end:github_only
 
 def cc_library_func(ctx, name, hdrs, srcs, copts, includes, dep_ccinfos):

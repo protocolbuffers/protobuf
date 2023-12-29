@@ -40,10 +40,11 @@ cc_test(
         ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:reflection",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -55,10 +56,11 @@ cc_test(
         ":struct_upb_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:reflection",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -96,7 +98,7 @@ upb_c_proto_library(
 #         ":json",
 #         ":test_upb_proto",
 #         ":test_upb_proto_reflection",
-#         "@com_google_googletest//:gtest_main",
+#         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
 #         "//testing/fuzzing:fuzztest",
 #         "//upb:base",
 #         "//upb:mem",
@@ -107,3 +109,25 @@ upb_c_proto_library(
 #     ],
 # )
 # end:google_only
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_utils",
+    srcs = glob(
+        [
+            "**/*test.proto",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+# end:github_only

@@ -10,7 +10,9 @@
 
 #include <stdint.h>
 
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/extension.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -21,7 +23,7 @@ typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 extern "C" {
 #endif
 
-UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTableExtension_AsField(
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_AsField(
     const upb_MiniTableExtension* e) {
   return UPB_PRIVATE(_upb_MiniTableExtension_AsField)(e);
 }
@@ -31,14 +33,14 @@ upb_MiniTableExtension_Number(const upb_MiniTableExtension* e) {
   return UPB_PRIVATE(_upb_MiniTableExtension_Number)(e);
 }
 
-UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
+UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const upb_MiniTableExtension* e) {
   return UPB_PRIVATE(_upb_MiniTableExtension_GetSubMessage)(e);
 }
 
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
-    upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
+    upb_MiniTableExtension* e, const upb_MiniTable* m) {
+  UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
 }
 
 #ifdef __cplusplus

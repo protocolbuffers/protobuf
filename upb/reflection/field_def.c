@@ -16,6 +16,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/value.h"
@@ -607,7 +608,8 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   bool implicit = false;
 
   if (syntax != kUpb_Syntax_Editions) {
-    upb_Message_Clear(ctx->legacy_features, UPB_DESC_MINITABLE(FeatureSet));
+    upb_Message_Clear(UPB_UPCAST(ctx->legacy_features),
+                      UPB_DESC_MINITABLE(FeatureSet));
     if (_upb_FieldDef_InferLegacyFeatures(ctx, f, field_proto, f->opts, syntax,
                                           ctx->legacy_features)) {
       implicit = true;

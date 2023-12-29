@@ -51,12 +51,17 @@ typedef struct {
   const upb_FieldDef* debug_field;
 } jsondec;
 
+typedef struct {
+  upb_MessageValue value;
+  bool ignore;
+} upb_JsonMessageValue;
+
 enum { JD_OBJECT, JD_ARRAY, JD_STRING, JD_NUMBER, JD_TRUE, JD_FALSE, JD_NULL };
 
 /* Forward declarations of mutually-recursive functions. */
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m);
-static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
+static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
 static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
                                    const upb_MessageDef* m);
 static void jsondec_object(jsondec* d, upb_Message* msg,
@@ -787,19 +792,19 @@ static upb_MessageValue jsondec_strfield(jsondec* d, const upb_FieldDef* f) {
   return val;
 }
 
-static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
+static upb_JsonMessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
   switch (jsondec_peek(d)) {
     case JD_STRING: {
       upb_StringView str = jsondec_string(d);
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
-      upb_MessageValue val;
+      upb_JsonMessageValue val = {.ignore = false};
       if (ev) {
-        val.int32_val = upb_EnumValueDef_Number(ev);
+        val.value.int32_val = upb_EnumValueDef_Number(ev);
       } else {
         if (d->options & upb_JsonDecode_IgnoreUnknown) {
-          val.int32_val = 0;
+          val.ignore = true;
         } else {
           jsondec_errf(d, "Unknown enumerator: '" UPB_STRINGVIEW_FORMAT "'",
                        UPB_STRINGVIEW_ARGS(str));
@@ -809,15 +814,16 @@ static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
     }
     case JD_NULL: {
       if (jsondec_isnullvalue(f)) {
-        upb_MessageValue val;
+        upb_JsonMessageValue val = {.ignore = false};
         jsondec_null(d);
-        val.int32_val = 0;
+        val.value.int32_val = 0;
         return val;
       }
     }
       /* Fallthrough. */
     default:
-      return jsondec_int(d, f);
+      return (upb_JsonMessageValue){.value = jsondec_int(d, f),
+                                    .ignore = false};
   }
 }
 
@@ -860,8 +866,10 @@ static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
-    upb_MessageValue elem = jsondec_value(d, f);
-    upb_Array_Append(arr, elem, d->arena);
+    upb_JsonMessageValue elem = jsondec_value(d, f);
+    if (!elem.ignore) {
+      upb_Array_Append(arr, elem.value, d->arena);
+    }
   }
   jsondec_arrend(d);
 }
@@ -874,11 +882,14 @@ static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
-    upb_MessageValue key, val;
+    upb_JsonMessageValue key, val;
     key = jsondec_value(d, key_f);
+    UPB_ASSUME(!key.ignore);  // Map key cannot be enum.
     jsondec_entrysep(d);
     val = jsondec_value(d, val_f);
-    upb_Map_Set(map, key, val, d->arena);
+    if (!val.ignore) {
+      upb_Map_Set(map, key.value, val.value, d->arena);
+    }
   }
   jsondec_objend(d);
 }
@@ -959,8 +970,10 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     jsondec_tomsg(d, submsg, subm);
   } else {
-    upb_MessageValue val = jsondec_value(d, f);
-    upb_Message_SetFieldByDef(msg, f, val, d->arena);
+    upb_JsonMessageValue val = jsondec_value(d, f);
+    if (!val.ignore) {
+      upb_Message_SetFieldByDef(msg, f, val.value, d->arena);
+    }
   }
 
   d->debug_field = preserved;
@@ -975,7 +988,7 @@ static void jsondec_object(jsondec* d, upb_Message* msg,
   jsondec_objend(d);
 }
 
-static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
+static upb_MessageValue jsondec_nonenum(jsondec* d, const upb_FieldDef* f) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Bool:
       return jsondec_bool(d, f);
@@ -991,12 +1004,20 @@ static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
       return jsondec_strfield(d, f);
-    case kUpb_CType_Enum:
-      return jsondec_enum(d, f);
     case kUpb_CType_Message:
       return jsondec_msg(d, f);
+    case kUpb_CType_Enum:
     default:
       UPB_UNREACHABLE();
+  }
+}
+
+static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
+  if (upb_FieldDef_CType(f) == kUpb_CType_Enum) {
+    return jsondec_enum(d, f);
+  } else {
+    return (upb_JsonMessageValue){.value = jsondec_nonenum(d, f),
+                                  .ignore = false};
   }
 }
 
@@ -1424,8 +1445,9 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
                             const upb_MessageDef* m) {
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  upb_MessageValue val = jsondec_value(d, value_f);
-  upb_Message_SetFieldByDef(msg, value_f, val, d->arena);
+  upb_JsonMessageValue val = jsondec_value(d, value_f);
+  UPB_ASSUME(val.ignore == false);  // Wrapper cannot be an enum.
+  upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena);
 }
 
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,

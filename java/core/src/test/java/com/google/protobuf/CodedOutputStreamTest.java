@@ -327,6 +327,81 @@ public class CodedOutputStreamTest {
         .isEqualTo(-75123905439571256L);
   }
 
+  @Test
+  public void computeIntSize() {
+    assertThat(CodedOutputStream.computeUInt32SizeNoTag(0)).isEqualTo(1);
+    assertThat(CodedOutputStream.computeUInt64SizeNoTag(0)).isEqualTo(1);
+    int i;
+    for (i = 0; i < 7; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(1);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(1);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(1);
+    }
+    for (; i < 14; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(2);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(2);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(2);
+    }
+    for (; i < 21; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(3);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(3);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(3);
+    }
+    for (; i < 28; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(4);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(4);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(4);
+    }
+    for (; i < 31; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(5);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(5);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(5);
+    }
+    for (; i < 32; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(10);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(5);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(5);
+    }
+    for (; i < 35; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(5);
+    }
+    for (; i < 42; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(6);
+    }
+    for (; i < 49; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(7);
+    }
+    for (; i < 56; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(8);
+    }
+    for (; i < 63; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(9);
+    }
+  }
+
+  @Test
+  public void computeTagSize() {
+    assertThat(CodedOutputStream.computeTagSize(0)).isEqualTo(1);
+    int i;
+    for (i = 0; i < 4; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(1);
+    }
+    for (; i < 11; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(2);
+    }
+    for (; i < 18; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(3);
+    }
+    for (; i < 25; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(4);
+    }
+    for (; i < 29; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(5);
+    }
+    // Invalid tags
+    assertThat(CodedOutputStream.computeTagSize((1 << 30) + 1)).isEqualTo(1);
+  }
+
   /** Tests writing a whole message with every field type. */
   @Test
   public void testWriteWholeMessage() throws Exception {

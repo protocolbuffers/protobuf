@@ -5298,7 +5298,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     kCcGenericServicesFieldNumber = 16,
     kJavaGenericServicesFieldNumber = 17,
     kPyGenericServicesFieldNumber = 18,
-    kPhpGenericServicesFieldNumber = 42,
     kDeprecatedFieldNumber = 23,
     kOptimizeForFieldNumber = 9,
     kCcEnableArenasFieldNumber = 31,
@@ -5571,17 +5570,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   void _internal_set_py_generic_services(bool value);
 
   public:
-  // optional bool php_generic_services = 42 [default = false];
-  bool has_php_generic_services() const;
-  void clear_php_generic_services() ;
-  bool php_generic_services() const;
-  void set_php_generic_services(bool value);
-
-  private:
-  bool _internal_php_generic_services() const;
-  void _internal_set_php_generic_services(bool value);
-
-  public:
   // optional bool deprecated = 23 [default = false];
   bool has_deprecated() const;
   void clear_deprecated() ;
@@ -5797,7 +5785,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      5, 22, 3,
+      5, 21, 3,
       202, 12>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -5834,7 +5822,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     bool cc_generic_services_;
     bool java_generic_services_;
     bool py_generic_services_;
-    bool php_generic_services_;
     bool deprecated_;
     int optimize_for_;
     bool cc_enable_arenas_;
@@ -14933,13 +14920,13 @@ inline void FileOptions::_internal_set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  bool value = (_impl_._has_bits_[0] & 0x00080000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00040000u) != 0;
   return value;
 }
 inline void FileOptions::clear_optimize_for() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.optimize_for_ = 1;
-  _impl_._has_bits_[0] &= ~0x00080000u;
+  _impl_._has_bits_[0] &= ~0x00040000u;
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.optimize_for)
@@ -14947,7 +14934,7 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() 
 }
 inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   _internal_set_optimize_for(value);
-  _impl_._has_bits_[0] |= 0x00080000u;
+  _impl_._has_bits_[0] |= 0x00040000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
@@ -15115,43 +15102,15 @@ inline void FileOptions::_internal_set_py_generic_services(bool value) {
   _impl_.py_generic_services_ = value;
 }
 
-// optional bool php_generic_services = 42 [default = false];
-inline bool FileOptions::has_php_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
-  return value;
-}
-inline void FileOptions::clear_php_generic_services() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.php_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00020000u;
-}
-inline bool FileOptions::php_generic_services() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_generic_services)
-  return _internal_php_generic_services();
-}
-inline void FileOptions::set_php_generic_services(bool value) {
-  _internal_set_php_generic_services(value);
-  _impl_._has_bits_[0] |= 0x00020000u;
-  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_generic_services)
-}
-inline bool FileOptions::_internal_php_generic_services() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.php_generic_services_;
-}
-inline void FileOptions::_internal_set_php_generic_services(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.php_generic_services_ = value;
-}
-
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00040000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
   return value;
 }
 inline void FileOptions::clear_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00040000u;
+  _impl_._has_bits_[0] &= ~0x00020000u;
 }
 inline bool FileOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.deprecated)
@@ -15159,7 +15118,7 @@ inline bool FileOptions::deprecated() const {
 }
 inline void FileOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
-  _impl_._has_bits_[0] |= 0x00040000u;
+  _impl_._has_bits_[0] |= 0x00020000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.deprecated)
 }
 inline bool FileOptions::_internal_deprecated() const {
@@ -15173,13 +15132,13 @@ inline void FileOptions::_internal_set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = true];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  bool value = (_impl_._has_bits_[0] & 0x00100000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00080000u) != 0;
   return value;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.cc_enable_arenas_ = true;
-  _impl_._has_bits_[0] &= ~0x00100000u;
+  _impl_._has_bits_[0] &= ~0x00080000u;
 }
 inline bool FileOptions::cc_enable_arenas() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.cc_enable_arenas)
@@ -15187,7 +15146,7 @@ inline bool FileOptions::cc_enable_arenas() const {
 }
 inline void FileOptions::set_cc_enable_arenas(bool value) {
   _internal_set_cc_enable_arenas(value);
-  _impl_._has_bits_[0] |= 0x00100000u;
+  _impl_._has_bits_[0] |= 0x00080000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_enable_arenas)
 }
 inline bool FileOptions::_internal_cc_enable_arenas() const {

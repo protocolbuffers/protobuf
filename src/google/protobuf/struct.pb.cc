@@ -286,12 +286,15 @@ inline void Struct::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Struct::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Struct::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
+              false,
+          },
+          &Struct::MergeImpl,
+          &Struct::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -592,12 +595,15 @@ void Value::clear_kind() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Value::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Value::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
+              false,
+          },
+          &Value::MergeImpl,
+          &Value::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -912,12 +918,15 @@ inline void ListValue::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 ListValue::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          ListValue::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
+              false,
+          },
+          &ListValue::MergeImpl,
+          &ListValue::kDescriptorMethods,
       };
   return &_data_;
 }

@@ -11,12 +11,15 @@
 
 #include "google/protobuf/message.h"
 
-#include <iostream>
-#include <stack>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <new>
+#include <string>
 
-#include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_join.h"
@@ -30,10 +33,10 @@
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection_internal.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -70,7 +73,7 @@ void Message::MergeFrom(const Message& from) {
   if (class_to == nullptr || class_to != class_from) {
     ReflectionOps::Merge(from, this);
   } else {
-    class_to->merge_to_from(*this, from);
+    class_to->full().merge_to_from(*this, from);
   }
 }
 
@@ -89,7 +92,7 @@ void Message::CopyFrom(const Message& from) {
     ABSL_DCHECK(!internal::IsDescendant(*this, from))
         << "Source of CopyFrom cannot be a descendant of the target.";
     Clear();
-    class_to->merge_to_from(*this, from);
+    class_to->full().merge_to_from(*this, from);
   } else {
     const Descriptor* descriptor = GetDescriptor();
     ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
@@ -189,9 +192,10 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).InitializationErrorString();
 }
 
-constexpr MessageLite::DescriptorMethods Message::kDescriptorMethods = {
-    GetTypeNameImpl,
-    InitializationErrorStringImpl,
+PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
+    Message::kDescriptorMethods = {
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
 };
 
 namespace internal {
@@ -209,7 +213,7 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // =============================================================================
 // MessageFactory
 
-MessageFactory::~MessageFactory() {}
+MessageFactory::~MessageFactory() = default;
 
 namespace {
 

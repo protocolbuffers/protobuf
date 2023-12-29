@@ -6710,7 +6710,7 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
         return absl::StrFormat(
             "Enum name %s has the same name as %s if you ignore case and strip "
             "out the enum name prefix (if any). (If you are using allow_alias, "
-            "please assign the same numeric value to both enums.)",
+            "please assign the same number to each enum value name.)",
             value->name(), insert_result.first->second->name());
       };
       // There are proto2 enums out there with conflicting names, so to preserve

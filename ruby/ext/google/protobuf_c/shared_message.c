@@ -32,6 +32,7 @@ uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   } else {
     upb_Arena_Free(arena);
     upb_Status_SetErrorMessage(status, "Error calculating hash");
+    return 0;
   }
 }
 

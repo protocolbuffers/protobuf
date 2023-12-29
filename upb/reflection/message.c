@@ -19,7 +19,6 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/message_def.h"
@@ -146,7 +145,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   if (ext_pool) {
     // Return any extensions that are set.
     size_t count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+    const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));

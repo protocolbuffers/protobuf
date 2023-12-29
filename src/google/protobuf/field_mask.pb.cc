@@ -165,12 +165,15 @@ inline void FieldMask::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 FieldMask::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          FieldMask::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
+              false,
+          },
+          &FieldMask::MergeImpl,
+          &FieldMask::kDescriptorMethods,
       };
   return &_data_;
 }

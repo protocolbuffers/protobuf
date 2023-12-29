@@ -15,7 +15,6 @@
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
@@ -28,7 +27,6 @@
 #include "upb/mini_table/sub.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/internal/constants.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
@@ -67,8 +65,7 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
 
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena,
-    const upb_Message_Extension** extension) {
+    int decode_options, upb_Arena* arena, const upb_Extension** extension) {
   UPB_ASSERT(upb_MiniTableField_CType(upb_MiniTableExtension_AsField(
                  ext_table)) == kUpb_CType_Message);
   *extension = _upb_Message_Getext(msg, ext_table);
@@ -102,8 +99,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
-  upb_Message_Extension* ext =
-      _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
+  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
@@ -121,7 +117,7 @@ static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
 upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
                                            int depth_limit) {
-  depth_limit = depth_limit ? depth_limit : kUpb_WireFormat_DefaultDepthLimit;
+  depth_limit = depth_limit ? depth_limit : 100;
 
   size_t size;
   upb_FindUnknownRet ret;
@@ -196,7 +192,7 @@ upb_DecodeStatus upb_Array_PromoteMessages(upb_Array* arr,
                                            int decode_options,
                                            upb_Arena* arena) {
   void** data = _upb_array_ptr(arr);
-  size_t size = arr->size;
+  size_t size = arr->UPB_PRIVATE(size);
   for (size_t i = 0; i < size; i++) {
     upb_TaggedMessagePtr tagged;
     memcpy(&tagged, &data[i], sizeof(tagged));
@@ -349,13 +345,9 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
                                                      field, arena);
     upb_Message* map_entry_message = ret.message;
-    upb_MapInsertStatus insert_status = upb_Message_InsertMapEntry(
-        map, mini_table, field, map_entry_message, arena);
-    if (insert_status == kUpb_MapInsertStatus_OutOfMemory) {
-      return kUpb_UnknownToMessage_OutOfMemory;
-    }
-    UPB_ASSUME(insert_status == kUpb_MapInsertStatus_Inserted ||
-               insert_status == kUpb_MapInsertStatus_Replaced);
+    bool insert_success = upb_Message_SetMapEntry(map, mini_table, field,
+                                                  map_entry_message, arena);
+    if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
     upb_Message_DeleteUnknown(msg, unknown.ptr, unknown.len);
   }
   return kUpb_UnknownToMessage_Ok;

@@ -6653,8 +6653,8 @@ TEST_F(ValidationErrorTest, Proto3EnumValuesConflictWithDifferentCasing) {
       "}",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "(If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   BuildFileWithErrors(
       "syntax: 'proto2'"
@@ -6666,8 +6666,8 @@ TEST_F(ValidationErrorTest, Proto3EnumValuesConflictWithDifferentCasing) {
       "}",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "(If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   // Not an error because both enums are mapped to the same value.
   BuildFile(
@@ -6693,8 +6693,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAZ: NAME: Enum name BAZ has the same name as FOO_ENUM_BAZ "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "(If you are using allow_alias, please assign the same numeric value "
-      "to both enums.)\n");
+      "(If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6706,8 +6706,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAZ: NAME: Enum name BAZ has the same name as FOOENUM_BAZ "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "(If you are using allow_alias, please assign the same numeric value "
-      "to both enums.)\n");
+      "(If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6719,8 +6719,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR__BAZ: NAME: Enum name BAR__BAZ has the same name as "
       "FOO_ENUM_BAR_BAZ if you ignore case and strip out the enum name prefix "
-      "(if any). (If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(if any). (If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6732,8 +6732,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR_BAZ: NAME: Enum name BAR_BAZ has the same name as "
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name prefix "
-      "(if any). (If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(if any). (If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   BuildFileWithErrors(
       "syntax: 'proto2'"
@@ -6745,8 +6745,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR_BAZ: NAME: Enum name BAR_BAZ has the same name as "
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name prefix "
-      "(if any). (If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(if any). (If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   // This isn't an error because the underscore will cause the PascalCase to
   // differ by case (BarBaz vs. Barbaz).
@@ -6772,8 +6772,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictLegacyBehavior) {
       "}",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "(If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6788,8 +6788,7 @@ TEST_F(ValidationErrorTest, EnumValuesConflictLegacyBehavior) {
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name "
       "prefix "
       "(if any). (If you are using allow_alias, please assign the same "
-      "numeric "
-      "value to both enums.)\n");
+      "number to each enum value name.)\n");
 
   BuildFileWithWarnings(
       "syntax: 'proto2'"
@@ -6802,8 +6801,8 @@ TEST_F(ValidationErrorTest, EnumValuesConflictLegacyBehavior) {
       "}",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "(If you are using allow_alias, please assign the same numeric "
-      "value to both enums.)\n");
+      "(If you are using allow_alias, please assign the same number "
+      "to each enum value name.)\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {

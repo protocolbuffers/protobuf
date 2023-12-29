@@ -8,6 +8,7 @@
 // Author: kenton@google.com (Kenton Varda)
 
 #include <climits>
+#include <cstdint>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -104,7 +105,7 @@ void SetSomeTypesInEmptyMessageUnknownFields(
 
 TEST(ParseVarintTest, Varint32) {
   auto test_value = [](uint32_t value, int varint_length) {
-    uint8_t buffer[10];
+    uint8_t buffer[10] = {0};
     uint8_t* p = io::CodedOutputStream::WriteVarint32ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -131,7 +132,7 @@ TEST(ParseVarintTest, Varint32) {
 
 TEST(ParseVarintTest, Varint64) {
   auto test_value = [](uint64_t value, int varint_length) {
-    uint8_t buffer[10];
+    uint8_t buffer[10] = {0};
     uint8_t* p = io::CodedOutputStream::WriteVarint64ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 

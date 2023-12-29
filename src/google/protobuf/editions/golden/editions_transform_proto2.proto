@@ -18,7 +18,6 @@ import "third_party/java_src/protobuf/current/java/com/google/protobuf/java_feat
 import "google/protobuf/cpp_features.proto";
 import "google/protobuf/editions/proto/editions_transform_proto3.proto";
 
-option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
 option java_multiple_files = true;
@@ -110,6 +109,8 @@ message TestMessage {
 }
 
 enum TestEnum {
+  option features.enum_type = CLOSED;
+
   FOO = 1; // Non-zero default
 
   BAR = 2;
