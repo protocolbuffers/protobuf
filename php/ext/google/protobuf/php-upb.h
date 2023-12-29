@@ -13666,8 +13666,8 @@ enum {
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_WIRE_INTERNAL_DECODE_H_
-#define UPB_WIRE_INTERNAL_DECODE_H_
+#ifndef UPB_WIRE_INTERNAL_DECODER_H_
+#define UPB_WIRE_INTERNAL_DECODER_H_
 
 #include "utf8_range.h"
 
@@ -13774,7 +13774,7 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 }
 
 
-#endif /* UPB_WIRE_INTERNAL_DECODE_H_ */
+#endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
 
 #ifndef UPB_WIRE_INTERNAL_ENDIAN_H_
 #define UPB_WIRE_INTERNAL_ENDIAN_H_
