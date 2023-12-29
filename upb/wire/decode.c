@@ -39,7 +39,7 @@
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
-#include "upb/wire/internal/decode.h"
+#include "upb/wire/internal/decoder.h"
 #include "upb/wire/internal/endian.h"
 #include "upb/wire/reader.h"
 

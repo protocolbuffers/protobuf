@@ -12,13 +12,13 @@ cc_library(
     srcs = [
         "decode.c",
         "encode.c",
+        "internal/constants.h",
         "internal/decode_fast.c",
+        "internal/decoder.h",
     ],
     hdrs = [
         "decode.h",
         "encode.h",
-        "internal/constants.h",
-        "internal/decode.h",
         "internal/decode_fast.h",
     ],
     copts = UPB_DEFAULT_COPTS,

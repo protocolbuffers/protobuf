@@ -27,7 +27,6 @@
 #include "upb/mini_table/sub.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/internal/constants.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
@@ -118,7 +117,7 @@ static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
 upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
                                            int depth_limit) {
-  depth_limit = depth_limit ? depth_limit : kUpb_WireFormat_DefaultDepthLimit;
+  depth_limit = depth_limit ? depth_limit : 100;
 
   size_t size;
   upb_FindUnknownRet ret;
