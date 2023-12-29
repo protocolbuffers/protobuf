@@ -283,21 +283,26 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
         reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
   }
 
-  // Prepares the container for adding elements via `AddAllocatedForParse`.
-  // It ensures we have no preallocated elements in the array.
-  //  Returns true if the invariants hold and `AddAllocatedForParse` can be
-  //  used.
+  // Returns true if there are no preallocated elements in the array.
   bool PrepareForParse() { return allocated_size() == current_size_; }
 
   // Similar to `AddAllocated` but faster.
-  // Can only be invoked after a call to `PrepareForParse` that returned `true`,
-  // or other calls to `AddAllocatedForParse`.
-  template <typename TypeHandler>
-  void AddAllocatedForParse(Value<TypeHandler>* value) {
-    ABSL_DCHECK_EQ(current_size_, allocated_size());
-    MaybeExtend();
-    element_at(current_size_++) = value;
-    if (!using_sso()) ++rep()->allocated_size;
+  //
+  // Pre-condition: PrepareForParse() is true.
+  void AddAllocatedForParse(void* value) {
+    ABSL_DCHECK(PrepareForParse());
+    if (PROTOBUF_PREDICT_FALSE(SizeAtCapacity())) {
+      *InternalExtend(1) = value;
+      ++rep()->allocated_size;
+    } else {
+      if (using_sso()) {
+        tagged_rep_or_elem_ = value;
+      } else {
+        rep()->elements[current_size_] = value;
+        ++rep()->allocated_size;
+      }
+    }
+    ExchangeCurrentSize(current_size_ + 1);
   }
 
  protected:
@@ -1202,7 +1207,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
 
   void AddAllocatedForParse(Element* p) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse<TypeHandler>(p);
+    return RepeatedPtrFieldBase::AddAllocatedForParse(p);
   }
 };
 
