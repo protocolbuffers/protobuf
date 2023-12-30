@@ -440,7 +440,7 @@ def build_targets(name):
         deps = [
             "//src/google/protobuf",
             "@com_google_absl//absl/log:absl_check",
-            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/status:statusor",
             "@system_python//:python_headers",
         ],
     )

@@ -22,12 +22,13 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 #define GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 
-#include <cstddef>
-#include <string>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include "absl/status/status.h"
+#include <memory>
+
+#include "absl/status/statusor.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/message.h"
 
@@ -128,6 +129,26 @@ struct PyProto_API {
   // can work and return their Python counterparts.
   virtual PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const = 0;
+
+  // Wraps a Descriptor in a Python object.
+  // The C++ pointer is usually borrowed from the C++ DescriptorPool: it is the
+  // responsibility of the caller to keep it alive.
+  virtual PyObject* PyMessageDescriptor_FromDescriptor(
+      const google::protobuf::Descriptor* descriptor) const = 0;
+  virtual PyObject* PyFieldDescriptor_FromDescriptor(
+      const google::protobuf::FieldDescriptor* descriptor) const = 0;
+  virtual PyObject* PyEnumDescriptor_FromDescriptor(
+      const google::protobuf::EnumDescriptor* descriptor) const = 0;
+  virtual PyObject* PyEnumValueDescriptor_FromDescriptor(
+      const google::protobuf::EnumValueDescriptor* descriptor) const = 0;
+  virtual PyObject* PyOneofDescriptor_FromDescriptor(
+      const google::protobuf::OneofDescriptor* descriptor) const = 0;
+  virtual PyObject* PyFileDescriptor_FromDescriptor(
+      const google::protobuf::FileDescriptor* file_descriptor) const = 0;
+  virtual PyObject* PyServiceDescriptor_FromDescriptor(
+      const google::protobuf::ServiceDescriptor* descriptor) const = 0;
+  virtual PyObject* PyMethodDescriptor_FromDescriptor(
+      const google::protobuf::MethodDescriptor* descriptor) const = 0;
 
  protected:
   PythonMessageMutator CreatePythonMessageMutator(Message* owned_msg,
