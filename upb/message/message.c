@@ -20,31 +20,34 @@
 
 static const size_t message_overhead = sizeof(upb_Message_InternalData);
 
-upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena) {
-  return _upb_Message_New(m, arena);
+upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
+  return _upb_Message_New(m, a);
 }
 
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
                                           size_t len, upb_Arena* arena) {
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
-  in->internal->unknown_end += len;
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
+  in->unknown_end += len;
   return true;
 }
 
 void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    in->internal->unknown_end = message_overhead;
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  if (in) {
+    in->unknown_end = message_overhead;
   }
 }
 
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
-  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    *len = in->internal->unknown_end - message_overhead;
-    return (char*)(in->internal + 1);
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  if (in) {
+    *len = in->unknown_end - message_overhead;
+    return (char*)(in + 1);
   } else {
     *len = 0;
     return NULL;
@@ -52,9 +55,10 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
 }
 
 void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  const char* internal_unknown_end =
-      UPB_PTR_AT(in->internal, in->internal->unknown_end, char);
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  const char* internal_unknown_end = UPB_PTR_AT(in, in->unknown_end, char);
+
 #ifndef NDEBUG
   size_t full_unknown_size;
   const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
@@ -63,10 +67,11 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
   UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
   UPB_ASSERT((uintptr_t)(data + len) <= (uintptr_t)internal_unknown_end);
 #endif
+
   if ((data + len) != internal_unknown_end) {
     memmove((char*)data, data + len, internal_unknown_end - data - len);
   }
-  in->internal->unknown_end -= len;
+  in->unknown_end -= len;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {

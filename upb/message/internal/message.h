@@ -98,6 +98,11 @@ UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
+UPB_INLINE upb_Message_InternalData* upb_Message_GetInternalData(
+    const struct upb_Message* msg) {
+  return upb_Message_Getinternal(msg)->internal;
+}
+
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
