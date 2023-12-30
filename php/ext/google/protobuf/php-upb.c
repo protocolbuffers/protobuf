@@ -6430,31 +6430,34 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
 
 static const size_t message_overhead = sizeof(upb_Message_InternalData);
 
-upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena) {
-  return _upb_Message_New(m, arena);
+upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
+  return _upb_Message_New(m, a);
 }
 
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
                                           size_t len, upb_Arena* arena) {
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
-  in->internal->unknown_end += len;
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
+  in->unknown_end += len;
   return true;
 }
 
 void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    in->internal->unknown_end = message_overhead;
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  if (in) {
+    in->unknown_end = message_overhead;
   }
 }
 
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
-  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    *len = in->internal->unknown_end - message_overhead;
-    return (char*)(in->internal + 1);
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  if (in) {
+    *len = in->unknown_end - message_overhead;
+    return (char*)(in + 1);
   } else {
     *len = 0;
     return NULL;
@@ -6462,9 +6465,10 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
 }
 
 void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  const char* internal_unknown_end =
-      UPB_PTR_AT(in->internal, in->internal->unknown_end, char);
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  const char* internal_unknown_end = UPB_PTR_AT(in, in->unknown_end, char);
+
 #ifndef NDEBUG
   size_t full_unknown_size;
   const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
@@ -6473,10 +6477,11 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
   UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
   UPB_ASSERT((uintptr_t)(data + len) <= (uintptr_t)internal_unknown_end);
 #endif
+
   if ((data + len) != internal_unknown_end) {
     memmove((char*)data, data + len, internal_unknown_end - data - len);
   }
-  in->internal->unknown_end -= len;
+  in->unknown_end -= len;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
@@ -15505,11 +15510,10 @@ const struct upb_Extension* _upb_Message_Getext(
 
 const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
     const struct upb_Message* msg, size_t* count) {
-  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    *count = (in->internal->size - in->internal->ext_begin) /
-             sizeof(struct upb_Extension);
-    return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  upb_Message_InternalData* in = upb_Message_GetInternalData(msg);
+  if (in) {
+    *count = (in->size - in->ext_begin) / sizeof(struct upb_Extension);
+    return UPB_PTR_AT(in, in->ext_begin, void);
   } else {
     *count = 0;
     return NULL;
@@ -15517,17 +15521,15 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
 }
 
 struct upb_Extension* _upb_Message_GetOrCreateExtension(
-    struct upb_Message* msg, const upb_MiniTableExtension* e,
-    upb_Arena* arena) {
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   struct upb_Extension* ext =
       (struct upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension),
-                                         arena))
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension), a))
     return NULL;
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(struct upb_Extension);
-  ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  upb_Message_InternalData* in = upb_Message_GetInternalData(msg);
+  in->ext_begin -= sizeof(struct upb_Extension);
+  ext = UPB_PTR_AT(in, in->ext_begin, void);
   memset(ext, 0, sizeof(struct upb_Extension));
   ext->ext = e;
   return ext;
@@ -15544,38 +15546,41 @@ const float kUpb_FltInfinity = INFINITY;
 const double kUpb_Infinity = INFINITY;
 const double kUpb_NaN = NAN;
 
-static const size_t realloc_overhead = sizeof(upb_Message_InternalData);
-
 bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* arena) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (!in->internal) {
+                                       upb_Arena* a) {
+  const size_t overhead = sizeof(upb_Message_InternalData);
+
+  upb_Message_Internal* owner = upb_Message_Getinternal(msg);
+  upb_Message_InternalData* in = owner->internal;
+  if (!in) {
     // No internal data, allocate from scratch.
-    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + realloc_overhead));
-    upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
-    if (!internal) return false;
-    internal->size = size;
-    internal->unknown_end = realloc_overhead;
-    internal->ext_begin = size;
-    in->internal = internal;
-  } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
+    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + overhead));
+    in = upb_Arena_Malloc(a, size);
+    if (!in) return false;
+
+    in->size = size;
+    in->unknown_end = overhead;
+    in->ext_begin = size;
+    owner->internal = in;
+  } else if (in->ext_begin - in->unknown_end < need) {
     // Internal data is too small, reallocate.
-    size_t new_size = upb_Log2CeilingSize(in->internal->size + need);
-    size_t ext_bytes = in->internal->size - in->internal->ext_begin;
+    size_t new_size = upb_Log2CeilingSize(in->size + need);
+    size_t ext_bytes = in->size - in->ext_begin;
     size_t new_ext_begin = new_size - ext_bytes;
-    upb_Message_InternalData* internal =
-        upb_Arena_Realloc(arena, in->internal, in->internal->size, new_size);
-    if (!internal) return false;
+    in = upb_Arena_Realloc(a, in, in->size, new_size);
+    if (!in) return false;
+
     if (ext_bytes) {
       // Need to move extension data to the end.
-      char* ptr = (char*)internal;
-      memmove(ptr + new_ext_begin, ptr + internal->ext_begin, ext_bytes);
+      char* ptr = (char*)in;
+      memmove(ptr + new_ext_begin, ptr + in->ext_begin, ext_bytes);
     }
-    internal->ext_begin = new_ext_begin;
-    internal->size = new_size;
-    in->internal = internal;
+    in->ext_begin = new_ext_begin;
+    in->size = new_size;
+    owner->internal = in;
   }
-  UPB_ASSERT(in->internal->ext_begin - in->internal->unknown_end >= need);
+
+  UPB_ASSERT(in->ext_begin - in->unknown_end >= need);
   return true;
 }
 

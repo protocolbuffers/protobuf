@@ -2325,6 +2325,11 @@ UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
+UPB_INLINE upb_Message_InternalData* upb_Message_GetInternalData(
+    const struct upb_Message* msg) {
+  return upb_Message_Getinternal(msg)->internal;
+}
+
 // Discards the unknown fields for this message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
@@ -2726,15 +2731,15 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
 
 UPB_INLINE void _upb_Message_ClearExtensionField(
     struct upb_Message* msg, const upb_MiniTableExtension* ext_l) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (!in->internal) return;
+  upb_Message_InternalData* in = upb_Message_GetInternalData(msg);
+  if (!in) return;
   const struct upb_Extension* base =
-      UPB_PTR_AT(in->internal, in->internal->ext_begin, struct upb_Extension);
+      UPB_PTR_AT(in, in->ext_begin, struct upb_Extension);
   struct upb_Extension* ext =
       (struct upb_Extension*)_upb_Message_Getext(msg, ext_l);
   if (ext) {
     *ext = *base;
-    in->internal->ext_begin += sizeof(struct upb_Extension);
+    in->ext_begin += sizeof(struct upb_Extension);
   }
 }
 
