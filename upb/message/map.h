@@ -12,7 +12,8 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
-#include "upb/message/value.h"  // IWYU pragma: export
+#include "upb/message/internal/map.h"
+#include "upb/message/value.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -38,12 +39,6 @@ UPB_API bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
 
 // Removes all entries in the map.
 UPB_API void upb_Map_Clear(upb_Map* map);
-
-typedef enum {
-  kUpb_MapInsertStatus_Inserted = 0,
-  kUpb_MapInsertStatus_Replaced = 1,
-  kUpb_MapInsertStatus_OutOfMemory = 2,
-} upb_MapInsertStatus;
 
 // Sets the given key to the given value, returning whether the key was inserted
 // or replaced. If the key was inserted, then any existing iterators will be

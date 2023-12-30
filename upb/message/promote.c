@@ -18,6 +18,7 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
@@ -154,7 +155,8 @@ static upb_DecodeStatus upb_Message_PromoteOne(upb_TaggedMessagePtr* tagged,
                                                const upb_MiniTable* mini_table,
                                                int decode_options,
                                                upb_Arena* arena) {
-  upb_Message* empty = _upb_TaggedMessagePtr_GetEmptyMessage(*tagged);
+  upb_Message* empty =
+      UPB_PRIVATE(_upb_TaggedMessagePtr_GetEmptyMessage)(*tagged);
   size_t unknown_size;
   const char* unknown_data = upb_Message_GetUnknown(empty, &unknown_size);
   upb_Message* promoted = upb_Message_New(mini_table, arena);
@@ -162,7 +164,7 @@ static upb_DecodeStatus upb_Message_PromoteOne(upb_TaggedMessagePtr* tagged,
   upb_DecodeStatus status = upb_Decode(unknown_data, unknown_size, promoted,
                                        mini_table, NULL, decode_options, arena);
   if (status == kUpb_DecodeStatus_Ok) {
-    *tagged = _upb_TaggedMessagePtr_Pack(promoted, false);
+    *tagged = UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(promoted, false);
   }
   return status;
 }

@@ -19,7 +19,6 @@
 
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
-#include "upb/message/internal/types.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/internal/decoder.h"
 

@@ -25,6 +25,7 @@ cc_library(
         "//upb:reflection",
         "//upb:wire",
         "//upb:wire_reader",
+        "//upb/message:internal",
     ],
 )
 

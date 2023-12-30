@@ -115,6 +115,7 @@ cc_library(
         ":mini_descriptor",
         ":mini_table",
         ":wire",
+        "//upb/message:internal",
     ],
 )
 
@@ -229,24 +230,6 @@ alias(
 )
 
 alias(
-    name = "message_tagged_ptr",
-    actual = "//upb/message:tagged_ptr",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "message_types",
-    actual = "//upb/message:types",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_value",
-    actual = "//upb/message:value",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "mini_descriptor",
     actual = "//upb/mini_descriptor",
     visibility = ["//visibility:public"],
@@ -357,9 +340,6 @@ upb_amalgamation(
         ":message_accessors",
         ":message_compare",
         ":message_copy",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
         ":mini_table",
         ":mini_table_compat",
@@ -370,6 +350,7 @@ upb_amalgamation(
         ":wire_reader",
         "//upb/base:internal",
         "//upb/mem:internal",
+        "//upb/message:internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
     ],
@@ -405,9 +386,6 @@ upb_amalgamation(
         ":message_accessors",
         ":message_compare",
         ":message_copy",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
         ":mini_table",
         ":mini_table_compat",
@@ -418,6 +396,7 @@ upb_amalgamation(
         ":wire_reader",
         "//upb/base:internal",
         "//upb/mem:internal",
+        "//upb/message:internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
     ],
@@ -454,9 +433,6 @@ upb_amalgamation(
         ":message_accessors",
         ":message_compare",
         ":message_copy",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
         ":mini_table",
         ":mini_table_compat",
@@ -467,6 +443,7 @@ upb_amalgamation(
         ":wire_reader",
         "//upb/base:internal",
         "//upb/mem:internal",
+        "//upb/message:internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
     ],

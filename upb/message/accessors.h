@@ -20,10 +20,10 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
-#include "upb/message/internal/types.h"
+#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/tagged_ptr.h"
-#include "upb/message/types.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/sub.h"
 
@@ -352,7 +352,8 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTableField* field,
                                            upb_Message* sub_message) {
   _upb_Message_SetTaggedMessagePtr(
-      msg, mini_table, field, _upb_TaggedMessagePtr_Pack(sub_message, false));
+      msg, mini_table, field,
+      UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(sub_message, false));
 }
 
 UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(

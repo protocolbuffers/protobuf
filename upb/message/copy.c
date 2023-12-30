@@ -24,6 +24,7 @@
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -74,9 +75,9 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
       if (is_empty) sub = UPB_PRIVATE(_upb_MiniTable_Empty)();
       UPB_ASSERT(source);
       upb_Message* clone = upb_Message_DeepClone(
-          _upb_TaggedMessagePtr_GetMessage(source), sub, arena);
+          UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(source), sub, arena);
       *(upb_TaggedMessagePtr*)value =
-          _upb_TaggedMessagePtr_Pack(clone, is_empty);
+          UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(clone, is_empty);
       return clone != NULL;
     } break;
   }
@@ -199,7 +200,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           upb_TaggedMessagePtr tagged =
               upb_Message_GetTaggedMessagePtr(src, field, NULL);
           const upb_Message* sub_message =
-              _upb_TaggedMessagePtr_GetMessage(tagged);
+              UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged);
           if (sub_message != NULL) {
             // If the message is currently in an unlinked, "empty" state we keep
             // it that way, because we don't want to deal with decode options,
@@ -215,7 +216,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             }
             _upb_Message_SetTaggedMessagePtr(
                 dst, mini_table, field,
-                _upb_TaggedMessagePtr_Pack(dst_sub_message, is_empty));
+                UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
+                                                        is_empty));
           }
         } break;
         case kUpb_CType_String:

@@ -8,7 +8,7 @@
 #ifndef UPB_MESSAGE_COMPARE_H_
 #define UPB_MESSAGE_COMPARE_H_
 
-#include "upb/message/types.h"
+#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.

@@ -12,14 +12,13 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
-#include "upb/message/types.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 const struct upb_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTableExtension* e) {
+    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
   const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
 
@@ -36,7 +35,7 @@ const struct upb_Extension* _upb_Message_Getext(
 }
 
 const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
-    const upb_Message* msg, size_t* count) {
+    const struct upb_Message* msg, size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
     *count = (in->internal->size - in->internal->ext_begin) /
@@ -49,7 +48,8 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
 }
 
 struct upb_Extension* _upb_Message_GetOrCreateExtension(
-    upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
+    struct upb_Message* msg, const upb_MiniTableExtension* e,
+    upb_Arena* arena) {
   struct upb_Extension* ext =
       (struct upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) return ext;

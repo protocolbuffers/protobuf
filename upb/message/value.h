@@ -14,7 +14,10 @@
 #include <stdint.h>
 
 #include "upb/base/string_view.h"
-#include "upb/message/tagged_ptr.h"
+#include "upb/message/internal/array.h"
+#include "upb/message/internal/map.h"
+#include "upb/message/internal/message.h"
+#include "upb/message/internal/tagged_ptr.h"
 
 typedef union {
   bool bool_val;

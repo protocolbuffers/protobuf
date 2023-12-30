@@ -12,7 +12,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
-#include "upb/message/value.h"  // IWYU pragma: export
+#include "upb/message/value.h"
 
 // Must be last.
 #include "upb/port/def.inc"

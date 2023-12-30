@@ -19,7 +19,6 @@
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
-#include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"

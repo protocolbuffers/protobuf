@@ -24,6 +24,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
@@ -32,6 +33,7 @@
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -258,7 +260,8 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_UnlinkedSubMessage);
   }
 
-  upb_TaggedMessagePtr tagged = _upb_TaggedMessagePtr_Pack(msg, is_empty);
+  upb_TaggedMessagePtr tagged =
+      UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(msg, is_empty);
   memcpy(target, &tagged, sizeof(tagged));
   return msg;
 }
@@ -271,13 +274,14 @@ static upb_Message* _upb_Decoder_ReuseSubMessage(
   UPB_ASSERT(subl);
   if (!upb_TaggedMessagePtr_IsEmpty(tagged) ||
       UPB_PRIVATE(_upb_MiniTable_IsEmpty)(subl)) {
-    return _upb_TaggedMessagePtr_GetMessage(tagged);
+    return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged);
   }
 
   // We found an empty message from a previous parse that was performed before
   // this field was linked.  But it is linked now, so we want to allocate a new
   // message of the correct type and promote data into it before continuing.
-  upb_Message* existing = _upb_TaggedMessagePtr_GetEmptyMessage(tagged);
+  upb_Message* existing =
+      UPB_PRIVATE(_upb_TaggedMessagePtr_GetEmptyMessage)(tagged);
   upb_Message* promoted = _upb_Decoder_NewSubMessage(d, subs, field, target);
   size_t size;
   const char* unknown = upb_Message_GetUnknown(existing, &size);

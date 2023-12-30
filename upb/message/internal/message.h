@@ -12,15 +12,14 @@
 ** The definitions in this file are internal to upb.
 **/
 
-#ifndef UPB_MESSAGE_INTERNAL_H_
-#define UPB_MESSAGE_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
+#define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
 #include <stdlib.h>
 #include <string.h>
 
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
-#include "upb/message/internal/types.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -39,7 +38,7 @@ extern const double kUpb_NaN;
  * these before the user's data.  The user's upb_Message* points after the
  * upb_Message_Internal. */
 
-struct upb_Message_InternalData {
+typedef struct {
   /* Total size of this structure, including the data that follows.
    * Must be aligned to 8, which is alignof(upb_Extension) */
   uint32_t size;
@@ -61,6 +60,20 @@ struct upb_Message_InternalData {
   uint32_t ext_begin;
   /* Data follows, as if there were an array:
    *   char data[size - sizeof(upb_Message_InternalData)]; */
+} upb_Message_InternalData;
+
+typedef struct {
+  union {
+    upb_Message_InternalData* internal;
+
+    // Force 8-byte alignment, since the data members may contain members that
+    // require 8-byte alignment.
+    double d;
+  };
+} upb_Message_Internal;
+
+struct upb_Message {
+  int unused;  // Placeholder cuz Windows won't compile an empty struct.
 };
 
 UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
@@ -103,4 +116,4 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MESSAGE_INTERNAL_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */

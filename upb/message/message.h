@@ -15,13 +15,13 @@
 #include <stddef.h>
 
 #include "upb/mem/arena.h"
-#include "upb/message/types.h"  // IWYU pragma: export
 #include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 typedef struct upb_Extension upb_Extension;
+typedef struct upb_Message upb_Message;
 
 #ifdef __cplusplus
 extern "C" {

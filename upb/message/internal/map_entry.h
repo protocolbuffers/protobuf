@@ -12,7 +12,7 @@
 
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
-#include "upb/message/internal/types.h"
+#include "upb/message/internal/message.h"
 
 // Map entries aren't actually stored for map fields, they are only used during
 // parsing. For parsing, it helps a lot if all map entry messages have the same

@@ -26,12 +26,14 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
+#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/internal/constants.h"
@@ -217,7 +219,8 @@ static void encode_TaggedMessagePtr(upb_encstate* e,
   if (upb_TaggedMessagePtr_IsEmpty(tagged)) {
     m = UPB_PRIVATE(_upb_MiniTable_Empty)();
   }
-  encode_message(e, _upb_TaggedMessagePtr_GetMessage(tagged), m, size);
+  encode_message(e, UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged), m,
+                 size);
 }
 
 static void encode_scalar(upb_encstate* e, const void* _field_mem,

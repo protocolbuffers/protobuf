@@ -32,11 +32,10 @@ cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:message_accessors",
-        "//upb:message_tagged_ptr",
-        "//upb:message_types",
         "//upb:mini_table",
         "//upb:port",
         "//upb/mem:internal",
+        "//upb/message:internal",
         "//upb/mini_table:internal",
     ],
 )

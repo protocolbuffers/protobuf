@@ -64,10 +64,10 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_value",
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/message:internal",
     ],
 )
 
@@ -138,12 +138,12 @@ bootstrap_cc_library(
         "//upb:message",
         "//upb:message_accessors",
         "//upb:message_copy",
-        "//upb:message_value",
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire",
         "//upb/base:internal",
+        "//upb/message:internal",
         "//upb/mini_descriptor:internal",
     ],
 )

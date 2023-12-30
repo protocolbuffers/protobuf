@@ -28,7 +28,6 @@
 #include "upb/message/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/message/types.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
