@@ -827,175 +827,571 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
 #include <stdint.h>
 
 
-#ifndef UPB_MINI_TABLE_TAGGED_PTR_H_
-#define UPB_MINI_TABLE_TAGGED_PTR_H_
+#ifndef UPB_MESSAGE_INTERNAL_ARRAY_H_
+#define UPB_MESSAGE_INTERNAL_ARRAY_H_
 
-#include <stdint.h>
-
-
-#ifndef UPB_MESSAGE_TYPES_H_
-#define UPB_MESSAGE_TYPES_H_
-
-// This typedef is in a leaf header to resolve a circular dependency between
-// messages and mini tables.
-typedef struct upb_Message {
-  int unused;  // Placeholder cuz Windows won't compile an empty struct.
-} upb_Message;
-
-#endif /* UPB_MESSAGE_TYPES_H_ */
-
-// Must be last.
-
-// When a upb_Message* is stored in a message, array, or map, it is stored in a
-// tagged form.  If the tag bit is set, the referenced upb_Message is of type
-// _kUpb_MiniTable_Empty (a sentinel message type with no fields) instead of
-// that field's true message type.  This forms the basis of what we call
-// "dynamic tree shaking."
-//
-// See the documentation for kUpb_DecodeOption_ExperimentalAllowUnlinked for
-// more information.
-
-typedef uintptr_t upb_TaggedMessagePtr;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Internal-only because empty messages cannot be created by the user.
-UPB_INLINE upb_TaggedMessagePtr _upb_TaggedMessagePtr_Pack(upb_Message* ptr,
-                                                           bool empty) {
-  UPB_ASSERT(((uintptr_t)ptr & 1) == 0);
-  return (uintptr_t)ptr | (empty ? 1 : 0);
-}
-
-// Users who enable unlinked sub-messages must use this to test whether a
-// message is empty before accessing it.  If a message is empty, it must be
-// first promoted using the interfaces in message/promote.h.
-UPB_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr) {
-  return ptr & 1;
-}
-
-UPB_INLINE upb_Message* _upb_TaggedMessagePtr_GetMessage(
-    upb_TaggedMessagePtr ptr) {
-  return (upb_Message*)(ptr & ~(uintptr_t)1);
-}
-
-UPB_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
-    upb_TaggedMessagePtr ptr) {
-  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(ptr));
-  return _upb_TaggedMessagePtr_GetMessage(ptr);
-}
-
-UPB_INLINE upb_Message* _upb_TaggedMessagePtr_GetEmptyMessage(
-    upb_TaggedMessagePtr ptr) {
-  UPB_ASSERT(upb_TaggedMessagePtr_IsEmpty(ptr));
-  return _upb_TaggedMessagePtr_GetMessage(ptr);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_TAGGED_PTR_H_ */
-
-typedef union {
-  bool bool_val;
-  float float_val;
-  double double_val;
-  int32_t int32_val;
-  int64_t int64_val;
-  uint32_t uint32_val;
-  uint64_t uint64_val;
-  const struct upb_Array* array_val;
-  const struct upb_Map* map_val;
-  const struct upb_Message* msg_val;
-  upb_StringView str_val;
-
-  // EXPERIMENTAL: A tagged upb_Message*.  Users must use this instead of
-  // msg_val if unlinked sub-messages may possibly be in use.  See the
-  // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
-  // information.
-  upb_TaggedMessagePtr tagged_msg_val;
-} upb_MessageValue;
-
-typedef union {
-  struct upb_Array* array;
-  struct upb_Map* map;
-  struct upb_Message* msg;
-} upb_MutableMessageValue;
-
-#endif /* UPB_MESSAGE_VALUE_H_ */
-
-// Must be last.
-
-typedef struct upb_Array upb_Array;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Creates a new array on the given arena that holds elements of this type.
-UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
-
-// Returns the number of elements in the array.
-UPB_API size_t upb_Array_Size(const upb_Array* arr);
-
-// Returns the given element, which must be within the array's current size.
-UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
-
-// Sets the given element, which must be within the array's current size.
-UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
-
-// Appends an element to the array. Returns false on allocation failure.
-UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
-                              upb_Arena* arena);
-
-// Moves elements within the array using memmove().
-// Like memmove(), the source and destination elements may be overlapping.
-UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
-                            size_t count);
-
-// Inserts one or more empty elements into the array.
-// Existing elements are shifted right.
-// The new elements have undefined state and must be set with `upb_Array_Set()`.
-// REQUIRES: `i <= upb_Array_Size(arr)`
-UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
-                              upb_Arena* arena);
-
-// Deletes one or more elements from the array.
-// Existing elements are shifted left.
-// REQUIRES: `i + count <= upb_Array_Size(arr)`
-UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
-
-// Changes the size of a vector. New elements are initialized to NULL/0.
-// Returns false on allocation failure.
-UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
-
-// Returns pointer to array data.
-UPB_API const void* upb_Array_DataPtr(const upb_Array* arr);
-
-// Returns mutable pointer to array data.
-UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_ARRAY_H_ */
-
-#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
 
-#ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
-#define UPB_MESSAGE_INTERNAL_EXTENSION_H_
+// Must be last.
 
+#define _UPB_ARRAY_MASK_IMM 0x4  // Frozen/immutable bit.
+#define _UPB_ARRAY_MASK_LG2 0x3  // Encoded elem size.
+#define _UPB_ARRAY_MASK_ALL (_UPB_ARRAY_MASK_IMM | _UPB_ARRAY_MASK_LG2)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// LINT.IfChange(struct_definition)
+// Our internal representation for repeated fields.
+struct upb_Array {
+  // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
+  //   0 maps to elem size 1
+  //   1 maps to elem size 4
+  //   2 maps to elem size 8
+  //   3 maps to elem size 16
+  //
+  // Bit #2 contains the frozen/immutable flag (currently unimplemented).
+  uintptr_t data;
+
+  size_t UPB_ONLYBITS(size);     // The number of elements in the array.
+  size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
+};
+
+UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(struct upb_Array* array,
+                                                     void* data, size_t lg2) {
+  UPB_ASSERT(lg2 != 1);
+  UPB_ASSERT(lg2 <= 4);
+  const size_t bits = lg2 - (lg2 != 0);
+  array->data = (uintptr_t)data | bits;
+}
+
+UPB_INLINE size_t
+UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
+  const size_t bits = array->data & _UPB_ARRAY_MASK_LG2;
+  const size_t lg2 = bits + (bits != 0);
+  return lg2;
+}
+
+UPB_INLINE const void* _upb_array_constptr(const struct upb_Array* array) {
+  UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
+  return (void*)(array->data & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
+}
+
+UPB_INLINE void* _upb_array_ptr(struct upb_Array* array) {
+  return (void*)_upb_array_constptr(array);
+}
+
+UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
+                                                         size_t init_capacity,
+                                                         int elem_size_lg2) {
+  UPB_ASSERT(elem_size_lg2 != 1);
+  UPB_ASSERT(elem_size_lg2 <= 4);
+  const size_t array_size =
+      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+  const size_t bytes = array_size + (init_capacity << elem_size_lg2);
+  struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
+  if (!array) return NULL;
+  UPB_PRIVATE(_upb_Array_SetTaggedPtr)
+  (array, UPB_PTR_AT(array, array_size, void), elem_size_lg2);
+  array->UPB_ONLYBITS(size) = 0;
+  array->UPB_PRIVATE(capacity) = init_capacity;
+  return array;
+}
+
+// Resizes the capacity of the array to be at least min_size.
+bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array, size_t min_size,
+                                     upb_Arena* arena);
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
+                                                size_t size, upb_Arena* arena) {
+  if (array->UPB_PRIVATE(capacity) < size)
+    return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
+  return true;
+}
+
+// Resize without initializing new elements.
+UPB_INLINE bool _upb_Array_ResizeUninitialized(struct upb_Array* array,
+                                               size_t size, upb_Arena* arena) {
+  UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
+             arena);  // Allow NULL arena when shrinking.
+  if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
+  array->UPB_ONLYBITS(size) = size;
+  return true;
+}
+
+// This function is intended for situations where elem_size is compile-time
+// constant or a known expression of the form (1 << lg2), so that the expression
+// i*elem_size does not result in an actual multiplication.
+UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
+                                            const void* data,
+                                            size_t elem_size) {
+  UPB_ASSERT(i < array->UPB_ONLYBITS(size));
+  UPB_ASSERT(elem_size == 1U << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array));
+  char* arr_data = (char*)_upb_array_ptr(array);
+  memcpy(arr_data + (i * elem_size), data, elem_size);
+}
+
+// LINT.ThenChange(
+//  GoogleInternalName1,
+//)
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#undef _UPB_ARRAY_MASK_IMM
+#undef _UPB_ARRAY_MASK_LG2
+#undef _UPB_ARRAY_MASK_ALL
+
+
+#endif /* UPB_MESSAGE_INTERNAL_ARRAY_H_ */
+
+#ifndef UPB_MESSAGE_INTERNAL_MAP_H_
+#define UPB_MESSAGE_INTERNAL_MAP_H_
+
+#include <stddef.h>
+#include <string.h>
+
+
+#ifndef UPB_HASH_STR_TABLE_H_
+#define UPB_HASH_STR_TABLE_H_
+
+
+/*
+ * upb_table
+ *
+ * This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
+ * This file defines very fast int->upb_value (inttable) and string->upb_value
+ * (strtable) hash tables.
+ *
+ * The table uses chained scatter with Brent's variation (inspired by the Lua
+ * implementation of hash tables).  The hash function for strings is Austin
+ * Appleby's "MurmurHash."
+ *
+ * The inttable uses uintptr_t as its key, which guarantees it can be used to
+ * store pointers or integers of at least 32 bits (upb isn't really useful on
+ * systems where sizeof(void*) < 4).
+ *
+ * The table must be homogeneous (all values of the same type).  In debug
+ * mode, we check this on insert and lookup.
+ */
+
+#ifndef UPB_HASH_COMMON_H_
+#define UPB_HASH_COMMON_H_
+
+#include <string.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* upb_value ******************************************************************/
+
+typedef struct {
+  uint64_t val;
+} upb_value;
+
+UPB_INLINE void _upb_value_setval(upb_value* v, uint64_t val) { v->val = val; }
+
+/* For each value ctype, define the following set of functions:
+ *
+ * // Get/set an int32 from a upb_value.
+ * int32_t upb_value_getint32(upb_value val);
+ * void upb_value_setint32(upb_value *val, int32_t cval);
+ *
+ * // Construct a new upb_value from an int32.
+ * upb_value upb_value_int32(int32_t val); */
+#define FUNCS(name, membername, type_t, converter)                   \
+  UPB_INLINE void upb_value_set##name(upb_value* val, type_t cval) { \
+    val->val = (converter)cval;                                      \
+  }                                                                  \
+  UPB_INLINE upb_value upb_value_##name(type_t val) {                \
+    upb_value ret;                                                   \
+    upb_value_set##name(&ret, val);                                  \
+    return ret;                                                      \
+  }                                                                  \
+  UPB_INLINE type_t upb_value_get##name(upb_value val) {             \
+    return (type_t)(converter)val.val;                               \
+  }
+
+FUNCS(int32, int32, int32_t, int32_t)
+FUNCS(int64, int64, int64_t, int64_t)
+FUNCS(uint32, uint32, uint32_t, uint32_t)
+FUNCS(uint64, uint64, uint64_t, uint64_t)
+FUNCS(bool, _bool, bool, bool)
+FUNCS(cstr, cstr, char*, uintptr_t)
+FUNCS(uintptr, uptr, uintptr_t, uintptr_t)
+FUNCS(ptr, ptr, void*, uintptr_t)
+FUNCS(constptr, constptr, const void*, uintptr_t)
+
+#undef FUNCS
+
+UPB_INLINE void upb_value_setfloat(upb_value* val, float cval) {
+  memcpy(&val->val, &cval, sizeof(cval));
+}
+
+UPB_INLINE void upb_value_setdouble(upb_value* val, double cval) {
+  memcpy(&val->val, &cval, sizeof(cval));
+}
+
+UPB_INLINE upb_value upb_value_float(float cval) {
+  upb_value ret;
+  upb_value_setfloat(&ret, cval);
+  return ret;
+}
+
+UPB_INLINE upb_value upb_value_double(double cval) {
+  upb_value ret;
+  upb_value_setdouble(&ret, cval);
+  return ret;
+}
+
+/* upb_tabkey *****************************************************************/
+
+/* Either:
+ *   1. an actual integer key, or
+ *   2. a pointer to a string prefixed by its uint32_t length, owned by us.
+ *
+ * ...depending on whether this is a string table or an int table.  We would
+ * make this a union of those two types, but C89 doesn't support statically
+ * initializing a non-first union member. */
+typedef uintptr_t upb_tabkey;
+
+UPB_INLINE char* upb_tabstr(upb_tabkey key, uint32_t* len) {
+  char* mem = (char*)key;
+  if (len) memcpy(len, mem, sizeof(*len));
+  return mem + sizeof(*len);
+}
+
+UPB_INLINE upb_StringView upb_tabstrview(upb_tabkey key) {
+  upb_StringView ret;
+  uint32_t len;
+  ret.data = upb_tabstr(key, &len);
+  ret.size = len;
+  return ret;
+}
+
+/* upb_tabval *****************************************************************/
+
+typedef struct upb_tabval {
+  uint64_t val;
+} upb_tabval;
+
+#define UPB_TABVALUE_EMPTY_INIT \
+  { -1 }
+
+/* upb_table ******************************************************************/
+
+typedef struct _upb_tabent {
+  upb_tabkey key;
+  upb_tabval val;
+
+  /* Internal chaining.  This is const so we can create static initializers for
+   * tables.  We cast away const sometimes, but *only* when the containing
+   * upb_table is known to be non-const.  This requires a bit of care, but
+   * the subtlety is confined to table.c. */
+  const struct _upb_tabent* next;
+} upb_tabent;
+
+typedef struct {
+  size_t count;       /* Number of entries in the hash part. */
+  uint32_t mask;      /* Mask to turn hash value -> bucket. */
+  uint32_t max_count; /* Max count before we hit our load limit. */
+  uint8_t size_lg2;   /* Size of the hashtable part is 2^size_lg2 entries. */
+  upb_tabent* entries;
+} upb_table;
+
+UPB_INLINE size_t upb_table_size(const upb_table* t) {
+  return t->size_lg2 ? 1 << t->size_lg2 : 0;
+}
+
+// Internal-only functions, in .h file only out of necessity.
+
+UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
+
+uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_HASH_COMMON_H_ */
+
+// Must be last.
+
+typedef struct {
+  upb_table t;
+} upb_strtable;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Initialize a table. If memory allocation failed, false is returned and
+// the table is uninitialized.
+bool upb_strtable_init(upb_strtable* table, size_t expected_size, upb_Arena* a);
+
+// Returns the number of values in the table.
+UPB_INLINE size_t upb_strtable_count(const upb_strtable* t) {
+  return t->t.count;
+}
+
+void upb_strtable_clear(upb_strtable* t);
+
+// Inserts the given key into the hashtable with the given value.
+// The key must not already exist in the hash table. The key is not required
+// to be NULL-terminated, and the table will make an internal copy of the key.
+//
+// If a table resize was required but memory allocation failed, false is
+// returned and the table is unchanged. */
+bool upb_strtable_insert(upb_strtable* t, const char* key, size_t len,
+                         upb_value val, upb_Arena* a);
+
+// Looks up key in this table, returning "true" if the key was found.
+// If v is non-NULL, copies the value for this key into *v.
+bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
+                          upb_value* v);
+
+// For NULL-terminated strings.
+UPB_INLINE bool upb_strtable_lookup(const upb_strtable* t, const char* key,
+                                    upb_value* v) {
+  return upb_strtable_lookup2(t, key, strlen(key), v);
+}
+
+// Removes an item from the table. Returns true if the remove was successful,
+// and stores the removed item in *val if non-NULL.
+bool upb_strtable_remove2(upb_strtable* t, const char* key, size_t len,
+                          upb_value* val);
+
+UPB_INLINE bool upb_strtable_remove(upb_strtable* t, const char* key,
+                                    upb_value* v) {
+  return upb_strtable_remove2(t, key, strlen(key), v);
+}
+
+// Exposed for testing only.
+bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a);
+
+/* Iteration over strtable:
+ *
+ *   intptr_t iter = UPB_STRTABLE_BEGIN;
+ *   upb_StringView key;
+ *   upb_value val;
+ *   while (upb_strtable_next2(t, &key, &val, &iter)) {
+ *      // ...
+ *   }
+ */
+
+#define UPB_STRTABLE_BEGIN -1
+
+bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
+                        upb_value* val, intptr_t* iter);
+void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter);
+void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v);
+
+/* DEPRECATED iterators, slated for removal.
+ *
+ * Iterators for string tables.  We are subject to some kind of unusual
+ * design constraints:
+ *
+ * For high-level languages:
+ *  - we must be able to guarantee that we don't crash or corrupt memory even if
+ *    the program accesses an invalidated iterator.
+ *
+ * For C++11 range-based for:
+ *  - iterators must be copyable
+ *  - iterators must be comparable
+ *  - it must be possible to construct an "end" value.
+ *
+ * Iteration order is undefined.
+ *
+ * Modifying the table invalidates iterators.  upb_{str,int}table_done() is
+ * guaranteed to work even on an invalidated iterator, as long as the table it
+ * is iterating over has not been freed.  Calling next() or accessing data from
+ * an invalidated iterator yields unspecified elements from the table, but it is
+ * guaranteed not to crash and to return real table elements (except when done()
+ * is true). */
+/* upb_strtable_iter **********************************************************/
+
+/*   upb_strtable_iter i;
+ *   upb_strtable_begin(&i, t);
+ *   for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+ *     const char *key = upb_strtable_iter_key(&i);
+ *     const upb_value val = upb_strtable_iter_value(&i);
+ *     // ...
+ *   }
+ */
+
+typedef struct {
+  const upb_strtable* t;
+  size_t index;
+} upb_strtable_iter;
+
+UPB_INLINE const upb_tabent* str_tabent(const upb_strtable_iter* i) {
+  return &i->t->t.entries[i->index];
+}
+
+void upb_strtable_begin(upb_strtable_iter* i, const upb_strtable* t);
+void upb_strtable_next(upb_strtable_iter* i);
+bool upb_strtable_done(const upb_strtable_iter* i);
+upb_StringView upb_strtable_iter_key(const upb_strtable_iter* i);
+upb_value upb_strtable_iter_value(const upb_strtable_iter* i);
+void upb_strtable_iter_setdone(upb_strtable_iter* i);
+bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
+                               const upb_strtable_iter* i2);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_HASH_STR_TABLE_H_ */
+
+// Must be last.
+
+typedef enum {
+  kUpb_MapInsertStatus_Inserted = 0,
+  kUpb_MapInsertStatus_Replaced = 1,
+  kUpb_MapInsertStatus_OutOfMemory = 2,
+} upb_MapInsertStatus;
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+struct upb_Map {
+  // Size of key and val, based on the map type.
+  // Strings are represented as '0' because they must be handled specially.
+  char key_size;
+  char val_size;
+
+  upb_strtable table;
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Converting between internal table representation and user values.
+//
+// _upb_map_tokey() and _upb_map_fromkey() are inverses.
+// _upb_map_tovalue() and _upb_map_fromvalue() are inverses.
+//
+// These functions account for the fact that strings are treated differently
+// from other types when stored in a map.
+
+UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
+  if (size == UPB_MAPTYPE_STRING) {
+    return *(upb_StringView*)key;
+  } else {
+    return upb_StringView_FromDataAndSize((const char*)key, size);
+  }
+}
+
+UPB_INLINE void _upb_map_fromkey(upb_StringView key, void* out, size_t size) {
+  if (size == UPB_MAPTYPE_STRING) {
+    memcpy(out, &key, sizeof(key));
+  } else {
+    memcpy(out, key.data, size);
+  }
+}
+
+UPB_INLINE bool _upb_map_tovalue(const void* val, size_t size,
+                                 upb_value* msgval, upb_Arena* a) {
+  if (size == UPB_MAPTYPE_STRING) {
+    upb_StringView* strp = (upb_StringView*)upb_Arena_Malloc(a, sizeof(*strp));
+    if (!strp) return false;
+    *strp = *(upb_StringView*)val;
+    *msgval = upb_value_ptr(strp);
+  } else {
+    memcpy(msgval, val, size);
+  }
+  return true;
+}
+
+UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
+  if (size == UPB_MAPTYPE_STRING) {
+    const upb_StringView* strp = (const upb_StringView*)upb_value_getptr(val);
+    memcpy(out, strp, sizeof(upb_StringView));
+  } else {
+    memcpy(out, &val, size);
+  }
+}
+
+UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
+  upb_strtable_iter it;
+  it.t = &map->table;
+  it.index = *iter;
+  upb_strtable_next(&it);
+  *iter = it.index;
+  if (upb_strtable_done(&it)) return NULL;
+  return (void*)str_tabent(&it);
+}
+
+UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
+  upb_strtable_clear(&map->table);
+}
+
+UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
+                                size_t key_size, upb_value* val) {
+  upb_StringView k = _upb_map_tokey(key, key_size);
+  return upb_strtable_remove2(&map->table, k.data, k.size, val);
+}
+
+UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
+                             size_t key_size, void* val, size_t val_size) {
+  upb_value tabval;
+  upb_StringView k = _upb_map_tokey(key, key_size);
+  bool ret = upb_strtable_lookup2(&map->table, k.data, k.size, &tabval);
+  if (ret && val) {
+    _upb_map_fromvalue(tabval, val, val_size);
+  }
+  return ret;
+}
+
+UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
+                                               const void* key, size_t key_size,
+                                               void* val, size_t val_size,
+                                               upb_Arena* a) {
+  upb_StringView strkey = _upb_map_tokey(key, key_size);
+  upb_value tabval = {0};
+  if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
+    return kUpb_MapInsertStatus_OutOfMemory;
+  }
+
+  // TODO: add overwrite operation to minimize number of lookups.
+  bool removed =
+      upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
+  if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {
+    return kUpb_MapInsertStatus_OutOfMemory;
+  }
+  return removed ? kUpb_MapInsertStatus_Replaced
+                 : kUpb_MapInsertStatus_Inserted;
+}
+
+UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
+  return map->table.t.count;
+}
+
+// Strings/bytes are special-cased in maps.
+extern char _upb_Map_CTypeSizeTable[12];
+
+UPB_INLINE size_t _upb_Map_CTypeSize(upb_CType ctype) {
+  return _upb_Map_CTypeSizeTable[ctype];
+}
+
+// Creates a new map on the given arena with this key/value type.
+struct upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_INTERNAL_MAP_H_ */
 
 /*
 ** Our memory representation for parsing tables and messages themselves.
@@ -1004,109 +1400,22 @@ UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
 ** The definitions in this file are internal to upb.
 **/
 
-#ifndef UPB_MESSAGE_INTERNAL_H_
-#define UPB_MESSAGE_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
+#define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
 #include <stdlib.h>
 #include <string.h>
 
 
-#ifndef UPB_MINI_TABLE_INTERNAL_TYPES_H_
-#define UPB_MINI_TABLE_INTERNAL_TYPES_H_
-
-typedef struct upb_Message_InternalData upb_Message_InternalData;
-
-typedef struct {
-  union {
-    upb_Message_InternalData* internal;
-
-    // Force 8-byte alignment, since the data members may contain members that
-    // require 8-byte alignment.
-    double d;
-  };
-} upb_Message_Internal;
-
-#endif  // UPB_MINI_TABLE_INTERNAL_TYPES_H_
-
-#ifndef UPB_MINI_TABLE_MESSAGE_H_
-#define UPB_MINI_TABLE_MESSAGE_H_
+#ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
+#define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
 
-#ifndef UPB_MINI_TABLE_ENUM_H_
-#define UPB_MINI_TABLE_ENUM_H_
+#ifndef UPB_MINI_TABLE_EXTENSION_H_
+#define UPB_MINI_TABLE_EXTENSION_H_
 
 #include <stdint.h>
 
-
-#ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
-#define UPB_MINI_TABLE_INTERNAL_ENUM_H_
-
-#include <stdint.h>
-
-// Must be last.
-
-struct upb_MiniTableEnum {
-  uint32_t UPB_PRIVATE(mask_limit);   // Highest that can be tested with mask.
-  uint32_t UPB_PRIVATE(value_count);  // Number of values after the bitfield.
-  uint32_t UPB_PRIVATE(data)[];       // Bitmask + enumerated values follow.
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
-    const struct upb_MiniTableEnum* e, uint32_t val) {
-  if (UPB_LIKELY(val < 64)) {
-    const uint64_t mask =
-        e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);
-    const uint64_t bit = 1ULL << val;
-    return (mask & bit) != 0;
-  }
-  if (UPB_LIKELY(val < e->UPB_PRIVATE(mask_limit))) {
-    const uint32_t mask = e->UPB_PRIVATE(data)[val / 32];
-    const uint32_t bit = 1ULL << (val % 32);
-    return (mask & bit) != 0;
-  }
-
-  // OPT: binary search long lists?
-  const uint32_t* start =
-      &e->UPB_PRIVATE(data)[e->UPB_PRIVATE(mask_limit) / 32];
-  const uint32_t* limit = &e->UPB_PRIVATE(
-      data)[e->UPB_PRIVATE(mask_limit) / 32 + e->UPB_PRIVATE(value_count)];
-  for (const uint32_t* p = start; p < limit; p++) {
-    if (*p == val) return true;
-  }
-  return false;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_INTERNAL_ENUM_H_ */
-
-// Must be last
-
-typedef struct upb_MiniTableEnum upb_MiniTableEnum;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
-                                             uint32_t val) {
-  return UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(e, val);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_ENUM_H_ */
 
 #ifndef UPB_MINI_TABLE_FIELD_H_
 #define UPB_MINI_TABLE_FIELD_H_
@@ -1457,8 +1766,8 @@ upb_MiniTableField_Type(const upb_MiniTableField* f) {
 
 #endif /* UPB_MINI_TABLE_FIELD_H_ */
 
-#ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
-#define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
+#ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
+#define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
 
 #include <stdint.h>
 
@@ -1507,6 +1816,134 @@ UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
 
 
 #endif /* UPB_MINI_TABLE_INTERNAL_SUB_H_ */
+
+// Must be last.
+
+struct upb_MiniTableExtension {
+  // Do not move this field. We need to be able to alias pointers.
+  struct upb_MiniTableField UPB_PRIVATE(field);
+
+  const struct upb_MiniTable* UPB_PRIVATE(extendee);
+  union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTableExtension_AsField)(const struct upb_MiniTableExtension* e) {
+  return (const struct upb_MiniTableField*)&e->UPB_PRIVATE(field);
+}
+
+UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
+    const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
+}
+
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTableExtension_GetSubMessage)(
+    const struct upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableSub_Message)(e->UPB_PRIVATE(sub));
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(
+    struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
+  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_INTERNAL_EXTENSION_H_ */
+
+#ifndef UPB_MINI_TABLE_MESSAGE_H_
+#define UPB_MINI_TABLE_MESSAGE_H_
+
+
+#ifndef UPB_MINI_TABLE_ENUM_H_
+#define UPB_MINI_TABLE_ENUM_H_
+
+#include <stdint.h>
+
+
+#ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
+#define UPB_MINI_TABLE_INTERNAL_ENUM_H_
+
+#include <stdint.h>
+
+// Must be last.
+
+struct upb_MiniTableEnum {
+  uint32_t UPB_PRIVATE(mask_limit);   // Highest that can be tested with mask.
+  uint32_t UPB_PRIVATE(value_count);  // Number of values after the bitfield.
+  uint32_t UPB_PRIVATE(data)[];       // Bitmask + enumerated values follow.
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
+    const struct upb_MiniTableEnum* e, uint32_t val) {
+  if (UPB_LIKELY(val < 64)) {
+    const uint64_t mask =
+        e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);
+    const uint64_t bit = 1ULL << val;
+    return (mask & bit) != 0;
+  }
+  if (UPB_LIKELY(val < e->UPB_PRIVATE(mask_limit))) {
+    const uint32_t mask = e->UPB_PRIVATE(data)[val / 32];
+    const uint32_t bit = 1ULL << (val % 32);
+    return (mask & bit) != 0;
+  }
+
+  // OPT: binary search long lists?
+  const uint32_t* start =
+      &e->UPB_PRIVATE(data)[e->UPB_PRIVATE(mask_limit) / 32];
+  const uint32_t* limit = &e->UPB_PRIVATE(
+      data)[e->UPB_PRIVATE(mask_limit) / 32 + e->UPB_PRIVATE(value_count)];
+  for (const uint32_t* p = start; p < limit; p++) {
+    if (*p == val) return true;
+  }
+  return false;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_INTERNAL_ENUM_H_ */
+
+// Must be last
+
+typedef struct upb_MiniTableEnum upb_MiniTableEnum;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Validates enum value against range defined by enum mini table.
+UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
+                                             uint32_t val) {
+  return UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(e, val);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_ENUM_H_ */
+
+#ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
+#define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
+
+#include <stdint.h>
+
 
 // Must be last.
 
@@ -1733,140 +2170,6 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
 
 // Must be last.
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern const float kUpb_FltInfinity;
-extern const double kUpb_Infinity;
-extern const double kUpb_NaN;
-
-/* Internal members of a upb_Message that track unknown fields and/or
- * extensions. We can change this without breaking binary compatibility.  We put
- * these before the user's data.  The user's upb_Message* points after the
- * upb_Message_Internal. */
-
-struct upb_Message_InternalData {
-  /* Total size of this structure, including the data that follows.
-   * Must be aligned to 8, which is alignof(upb_Extension) */
-  uint32_t size;
-
-  /* Offsets relative to the beginning of this structure.
-   *
-   * Unknown data grows forward from the beginning to unknown_end.
-   * Extension data grows backward from size to ext_begin.
-   * When the two meet, we're out of data and have to realloc.
-   *
-   * If we imagine that the final member of this struct is:
-   *   char data[size - overhead];  // overhead =
-   * sizeof(upb_Message_InternalData)
-   *
-   * Then we have:
-   *   unknown data: data[0 .. (unknown_end - overhead)]
-   *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
-  uint32_t unknown_end;
-  uint32_t ext_begin;
-  /* Data follows, as if there were an array:
-   *   char data[size - sizeof(upb_Message_InternalData)]; */
-};
-
-UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
-  return m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
-}
-
-// Inline version upb_Message_New(), for internal use.
-UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
-                                                upb_Arena* arena) {
-  size_t size = upb_msg_sizeof(mini_table);
-  void* mem = upb_Arena_Malloc(arena, size + sizeof(upb_Message_Internal));
-  if (UPB_UNLIKELY(!mem)) return NULL;
-  struct upb_Message* msg =
-      UPB_PTR_AT(mem, sizeof(upb_Message_Internal), struct upb_Message);
-  memset(mem, 0, size);
-  return msg;
-}
-
-UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
-    const struct upb_Message* msg) {
-  ptrdiff_t size = sizeof(upb_Message_Internal);
-  return (upb_Message_Internal*)((char*)msg - size);
-}
-
-// Discards the unknown fields for this message only.
-void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
-
-// Adds unknown data (serialized protobuf data) to the given message.
-// The data is copied into the message instance.
-bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
-                                          const char* data, size_t len,
-                                          upb_Arena* arena);
-
-bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* arena);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_INTERNAL_H_ */
-
-#ifndef UPB_MINI_TABLE_EXTENSION_H_
-#define UPB_MINI_TABLE_EXTENSION_H_
-
-#include <stdint.h>
-
-
-#ifndef UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
-#define UPB_MINI_TABLE_INTERNAL_EXTENSION_H_
-
-#include <stdint.h>
-
-
-// Must be last.
-
-struct upb_MiniTableExtension {
-  // Do not move this field. We need to be able to alias pointers.
-  struct upb_MiniTableField UPB_PRIVATE(field);
-
-  const struct upb_MiniTable* UPB_PRIVATE(extendee);
-  union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
-    _upb_MiniTableExtension_AsField)(const struct upb_MiniTableExtension* e) {
-  return (const struct upb_MiniTableField*)&e->UPB_PRIVATE(field);
-}
-
-UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
-    const struct upb_MiniTableExtension* e) {
-  return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
-}
-
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
-    _upb_MiniTableExtension_GetSubMessage)(
-    const struct upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableSub_Message)(e->UPB_PRIVATE(sub));
-}
-
-UPB_INLINE void UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(
-    struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_INTERNAL_EXTENSION_H_ */
-
-// Must be last.
-
 typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 
 #ifdef __cplusplus
@@ -1947,557 +2250,243 @@ const struct upb_Extension* _upb_Message_Getext(
 
 #endif /* UPB_MESSAGE_INTERNAL_EXTENSION_H_ */
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-#ifndef UPB_MESSAGE_INTERNAL_MAP_H_
-#define UPB_MESSAGE_INTERNAL_MAP_H_
-
-#include <stddef.h>
-#include <string.h>
-
-
-#ifndef UPB_HASH_STR_TABLE_H_
-#define UPB_HASH_STR_TABLE_H_
-
-
-/*
- * upb_table
- *
- * This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
- * This file defines very fast int->upb_value (inttable) and string->upb_value
- * (strtable) hash tables.
- *
- * The table uses chained scatter with Brent's variation (inspired by the Lua
- * implementation of hash tables).  The hash function for strings is Austin
- * Appleby's "MurmurHash."
- *
- * The inttable uses uintptr_t as its key, which guarantees it can be used to
- * store pointers or integers of at least 32 bits (upb isn't really useful on
- * systems where sizeof(void*) < 4).
- *
- * The table must be homogeneous (all values of the same type).  In debug
- * mode, we check this on insert and lookup.
- */
-
-#ifndef UPB_HASH_COMMON_H_
-#define UPB_HASH_COMMON_H_
-
-#include <string.h>
-
-
 // Must be last.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* upb_value ******************************************************************/
+extern const float kUpb_FltInfinity;
+extern const double kUpb_Infinity;
+extern const double kUpb_NaN;
+
+/* Internal members of a upb_Message that track unknown fields and/or
+ * extensions. We can change this without breaking binary compatibility.  We put
+ * these before the user's data.  The user's upb_Message* points after the
+ * upb_Message_Internal. */
 
 typedef struct {
-  uint64_t val;
-} upb_value;
+  /* Total size of this structure, including the data that follows.
+   * Must be aligned to 8, which is alignof(upb_Extension) */
+  uint32_t size;
 
-UPB_INLINE void _upb_value_setval(upb_value* v, uint64_t val) { v->val = val; }
-
-/* For each value ctype, define the following set of functions:
- *
- * // Get/set an int32 from a upb_value.
- * int32_t upb_value_getint32(upb_value val);
- * void upb_value_setint32(upb_value *val, int32_t cval);
- *
- * // Construct a new upb_value from an int32.
- * upb_value upb_value_int32(int32_t val); */
-#define FUNCS(name, membername, type_t, converter)                   \
-  UPB_INLINE void upb_value_set##name(upb_value* val, type_t cval) { \
-    val->val = (converter)cval;                                      \
-  }                                                                  \
-  UPB_INLINE upb_value upb_value_##name(type_t val) {                \
-    upb_value ret;                                                   \
-    upb_value_set##name(&ret, val);                                  \
-    return ret;                                                      \
-  }                                                                  \
-  UPB_INLINE type_t upb_value_get##name(upb_value val) {             \
-    return (type_t)(converter)val.val;                               \
-  }
-
-FUNCS(int32, int32, int32_t, int32_t)
-FUNCS(int64, int64, int64_t, int64_t)
-FUNCS(uint32, uint32, uint32_t, uint32_t)
-FUNCS(uint64, uint64, uint64_t, uint64_t)
-FUNCS(bool, _bool, bool, bool)
-FUNCS(cstr, cstr, char*, uintptr_t)
-FUNCS(uintptr, uptr, uintptr_t, uintptr_t)
-FUNCS(ptr, ptr, void*, uintptr_t)
-FUNCS(constptr, constptr, const void*, uintptr_t)
-
-#undef FUNCS
-
-UPB_INLINE void upb_value_setfloat(upb_value* val, float cval) {
-  memcpy(&val->val, &cval, sizeof(cval));
-}
-
-UPB_INLINE void upb_value_setdouble(upb_value* val, double cval) {
-  memcpy(&val->val, &cval, sizeof(cval));
-}
-
-UPB_INLINE upb_value upb_value_float(float cval) {
-  upb_value ret;
-  upb_value_setfloat(&ret, cval);
-  return ret;
-}
-
-UPB_INLINE upb_value upb_value_double(double cval) {
-  upb_value ret;
-  upb_value_setdouble(&ret, cval);
-  return ret;
-}
-
-/* upb_tabkey *****************************************************************/
-
-/* Either:
- *   1. an actual integer key, or
- *   2. a pointer to a string prefixed by its uint32_t length, owned by us.
- *
- * ...depending on whether this is a string table or an int table.  We would
- * make this a union of those two types, but C89 doesn't support statically
- * initializing a non-first union member. */
-typedef uintptr_t upb_tabkey;
-
-UPB_INLINE char* upb_tabstr(upb_tabkey key, uint32_t* len) {
-  char* mem = (char*)key;
-  if (len) memcpy(len, mem, sizeof(*len));
-  return mem + sizeof(*len);
-}
-
-UPB_INLINE upb_StringView upb_tabstrview(upb_tabkey key) {
-  upb_StringView ret;
-  uint32_t len;
-  ret.data = upb_tabstr(key, &len);
-  ret.size = len;
-  return ret;
-}
-
-/* upb_tabval *****************************************************************/
-
-typedef struct upb_tabval {
-  uint64_t val;
-} upb_tabval;
-
-#define UPB_TABVALUE_EMPTY_INIT \
-  { -1 }
-
-/* upb_table ******************************************************************/
-
-typedef struct _upb_tabent {
-  upb_tabkey key;
-  upb_tabval val;
-
-  /* Internal chaining.  This is const so we can create static initializers for
-   * tables.  We cast away const sometimes, but *only* when the containing
-   * upb_table is known to be non-const.  This requires a bit of care, but
-   * the subtlety is confined to table.c. */
-  const struct _upb_tabent* next;
-} upb_tabent;
+  /* Offsets relative to the beginning of this structure.
+   *
+   * Unknown data grows forward from the beginning to unknown_end.
+   * Extension data grows backward from size to ext_begin.
+   * When the two meet, we're out of data and have to realloc.
+   *
+   * If we imagine that the final member of this struct is:
+   *   char data[size - overhead];  // overhead =
+   * sizeof(upb_Message_InternalData)
+   *
+   * Then we have:
+   *   unknown data: data[0 .. (unknown_end - overhead)]
+   *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
+  uint32_t unknown_end;
+  uint32_t ext_begin;
+  /* Data follows, as if there were an array:
+   *   char data[size - sizeof(upb_Message_InternalData)]; */
+} upb_Message_InternalData;
 
 typedef struct {
-  size_t count;       /* Number of entries in the hash part. */
-  uint32_t mask;      /* Mask to turn hash value -> bucket. */
-  uint32_t max_count; /* Max count before we hit our load limit. */
-  uint8_t size_lg2;   /* Size of the hashtable part is 2^size_lg2 entries. */
-  upb_tabent* entries;
-} upb_table;
+  union {
+    upb_Message_InternalData* internal;
 
-UPB_INLINE size_t upb_table_size(const upb_table* t) {
-  return t->size_lg2 ? 1 << t->size_lg2 : 0;
-}
+    // Force 8-byte alignment, since the data members may contain members that
+    // require 8-byte alignment.
+    double d;
+  };
+} upb_Message_Internal;
 
-// Internal-only functions, in .h file only out of necessity.
-
-UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
-
-uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_HASH_COMMON_H_ */
-
-// Must be last.
-
-typedef struct {
-  upb_table t;
-} upb_strtable;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Initialize a table. If memory allocation failed, false is returned and
-// the table is uninitialized.
-bool upb_strtable_init(upb_strtable* table, size_t expected_size, upb_Arena* a);
-
-// Returns the number of values in the table.
-UPB_INLINE size_t upb_strtable_count(const upb_strtable* t) {
-  return t->t.count;
-}
-
-void upb_strtable_clear(upb_strtable* t);
-
-// Inserts the given key into the hashtable with the given value.
-// The key must not already exist in the hash table. The key is not required
-// to be NULL-terminated, and the table will make an internal copy of the key.
-//
-// If a table resize was required but memory allocation failed, false is
-// returned and the table is unchanged. */
-bool upb_strtable_insert(upb_strtable* t, const char* key, size_t len,
-                         upb_value val, upb_Arena* a);
-
-// Looks up key in this table, returning "true" if the key was found.
-// If v is non-NULL, copies the value for this key into *v.
-bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
-                          upb_value* v);
-
-// For NULL-terminated strings.
-UPB_INLINE bool upb_strtable_lookup(const upb_strtable* t, const char* key,
-                                    upb_value* v) {
-  return upb_strtable_lookup2(t, key, strlen(key), v);
-}
-
-// Removes an item from the table. Returns true if the remove was successful,
-// and stores the removed item in *val if non-NULL.
-bool upb_strtable_remove2(upb_strtable* t, const char* key, size_t len,
-                          upb_value* val);
-
-UPB_INLINE bool upb_strtable_remove(upb_strtable* t, const char* key,
-                                    upb_value* v) {
-  return upb_strtable_remove2(t, key, strlen(key), v);
-}
-
-// Exposed for testing only.
-bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a);
-
-/* Iteration over strtable:
- *
- *   intptr_t iter = UPB_STRTABLE_BEGIN;
- *   upb_StringView key;
- *   upb_value val;
- *   while (upb_strtable_next2(t, &key, &val, &iter)) {
- *      // ...
- *   }
- */
-
-#define UPB_STRTABLE_BEGIN -1
-
-bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
-                        upb_value* val, intptr_t* iter);
-void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter);
-void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v);
-
-/* DEPRECATED iterators, slated for removal.
- *
- * Iterators for string tables.  We are subject to some kind of unusual
- * design constraints:
- *
- * For high-level languages:
- *  - we must be able to guarantee that we don't crash or corrupt memory even if
- *    the program accesses an invalidated iterator.
- *
- * For C++11 range-based for:
- *  - iterators must be copyable
- *  - iterators must be comparable
- *  - it must be possible to construct an "end" value.
- *
- * Iteration order is undefined.
- *
- * Modifying the table invalidates iterators.  upb_{str,int}table_done() is
- * guaranteed to work even on an invalidated iterator, as long as the table it
- * is iterating over has not been freed.  Calling next() or accessing data from
- * an invalidated iterator yields unspecified elements from the table, but it is
- * guaranteed not to crash and to return real table elements (except when done()
- * is true). */
-/* upb_strtable_iter **********************************************************/
-
-/*   upb_strtable_iter i;
- *   upb_strtable_begin(&i, t);
- *   for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
- *     const char *key = upb_strtable_iter_key(&i);
- *     const upb_value val = upb_strtable_iter_value(&i);
- *     // ...
- *   }
- */
-
-typedef struct {
-  const upb_strtable* t;
-  size_t index;
-} upb_strtable_iter;
-
-UPB_INLINE const upb_tabent* str_tabent(const upb_strtable_iter* i) {
-  return &i->t->t.entries[i->index];
-}
-
-void upb_strtable_begin(upb_strtable_iter* i, const upb_strtable* t);
-void upb_strtable_next(upb_strtable_iter* i);
-bool upb_strtable_done(const upb_strtable_iter* i);
-upb_StringView upb_strtable_iter_key(const upb_strtable_iter* i);
-upb_value upb_strtable_iter_value(const upb_strtable_iter* i);
-void upb_strtable_iter_setdone(upb_strtable_iter* i);
-bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
-                               const upb_strtable_iter* i2);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_HASH_STR_TABLE_H_ */
-
-#ifndef UPB_MESSAGE_MAP_H_
-#define UPB_MESSAGE_MAP_H_
-
-#include <stddef.h>
-
-
-// Must be last.
-
-typedef struct upb_Map upb_Map;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Creates a new map on the given arena with the given key/value size.
-UPB_API upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type,
-                             upb_CType value_type);
-
-// Returns the number of entries in the map.
-UPB_API size_t upb_Map_Size(const upb_Map* map);
-
-// Stores a value for the given key into |*val| (or the zero value if the key is
-// not present). Returns whether the key was present. The |val| pointer may be
-// NULL, in which case the function tests whether the given key is present.
-UPB_API bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
-                         upb_MessageValue* val);
-
-// Removes all entries in the map.
-UPB_API void upb_Map_Clear(upb_Map* map);
-
-typedef enum {
-  kUpb_MapInsertStatus_Inserted = 0,
-  kUpb_MapInsertStatus_Replaced = 1,
-  kUpb_MapInsertStatus_OutOfMemory = 2,
-} upb_MapInsertStatus;
-
-// Sets the given key to the given value, returning whether the key was inserted
-// or replaced. If the key was inserted, then any existing iterators will be
-// invalidated.
-UPB_API upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
-                                           upb_MessageValue val,
-                                           upb_Arena* arena);
-
-// Sets the given key to the given value. Returns false if memory allocation
-// failed. If the key is newly inserted, then any existing iterators will be
-// invalidated.
-UPB_API_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
-                                upb_MessageValue val, upb_Arena* arena) {
-  return upb_Map_Insert(map, key, val, arena) !=
-         kUpb_MapInsertStatus_OutOfMemory;
-}
-
-// Deletes this key from the table. Returns true if the key was present.
-// If present and |val| is non-NULL, stores the deleted value.
-UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
-                            upb_MessageValue* val);
-
-// (DEPRECATED and going away soon. Do not use.)
-UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
-                                upb_MessageValue* val) {
-  return upb_Map_Delete(map, key, val);
-}
-
-// Map iteration:
-//
-// size_t iter = kUpb_Map_Begin;
-// upb_MessageValue key, val;
-// while (upb_Map_Next(map, &key, &val, &iter)) {
-//   ...
-// }
-
-#define kUpb_Map_Begin ((size_t)-1)
-
-// Advances to the next entry. Returns false if no more entries are present.
-// Otherwise returns true and populates both *key and *value.
-UPB_API bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
-                          upb_MessageValue* val, size_t* iter);
-
-// Sets the value for the entry pointed to by iter.
-// WARNING: this does not currently work for string values!
-UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
-                                   upb_MessageValue val);
-
-// DEPRECATED iterator, slated for removal.
-
-/* Map iteration:
- *
- * size_t iter = kUpb_Map_Begin;
- * while (upb_MapIterator_Next(map, &iter)) {
- *   upb_MessageValue key = upb_MapIterator_Key(map, iter);
- *   upb_MessageValue val = upb_MapIterator_Value(map, iter);
- * }
- */
-
-// Advances to the next entry. Returns false if no more entries are present.
-UPB_API bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
-
-// Returns true if the iterator still points to a valid entry, or false if the
-// iterator is past the last element. It is an error to call this function with
-// kUpb_Map_Begin (you must call next() at least once first).
-UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
-
-// Returns the key and value for this entry of the map.
-UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
-UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_MAP_H_ */
-
-// Must be last.
-
-struct upb_Map {
-  // Size of key and val, based on the map type.
-  // Strings are represented as '0' because they must be handled specially.
-  char key_size;
-  char val_size;
-
-  upb_strtable table;
+struct upb_Message {
+  int unused;  // Placeholder cuz Windows won't compile an empty struct.
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Converting between internal table representation and user values.
-//
-// _upb_map_tokey() and _upb_map_fromkey() are inverses.
-// _upb_map_tovalue() and _upb_map_fromvalue() are inverses.
-//
-// These functions account for the fact that strings are treated differently
-// from other types when stored in a map.
-
-UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
-  if (size == UPB_MAPTYPE_STRING) {
-    return *(upb_StringView*)key;
-  } else {
-    return upb_StringView_FromDataAndSize((const char*)key, size);
-  }
+UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
+  return m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
 }
 
-UPB_INLINE void _upb_map_fromkey(upb_StringView key, void* out, size_t size) {
-  if (size == UPB_MAPTYPE_STRING) {
-    memcpy(out, &key, sizeof(key));
-  } else {
-    memcpy(out, key.data, size);
-  }
+// Inline version upb_Message_New(), for internal use.
+UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
+                                                upb_Arena* arena) {
+  size_t size = upb_msg_sizeof(mini_table);
+  void* mem = upb_Arena_Malloc(arena, size + sizeof(upb_Message_Internal));
+  if (UPB_UNLIKELY(!mem)) return NULL;
+  struct upb_Message* msg =
+      UPB_PTR_AT(mem, sizeof(upb_Message_Internal), struct upb_Message);
+  memset(mem, 0, size);
+  return msg;
 }
 
-UPB_INLINE bool _upb_map_tovalue(const void* val, size_t size,
-                                 upb_value* msgval, upb_Arena* a) {
-  if (size == UPB_MAPTYPE_STRING) {
-    upb_StringView* strp = (upb_StringView*)upb_Arena_Malloc(a, sizeof(*strp));
-    if (!strp) return false;
-    *strp = *(upb_StringView*)val;
-    *msgval = upb_value_ptr(strp);
-  } else {
-    memcpy(msgval, val, size);
-  }
-  return true;
+UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
+    const struct upb_Message* msg) {
+  ptrdiff_t size = sizeof(upb_Message_Internal);
+  return (upb_Message_Internal*)((char*)msg - size);
 }
 
-UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
-  if (size == UPB_MAPTYPE_STRING) {
-    const upb_StringView* strp = (const upb_StringView*)upb_value_getptr(val);
-    memcpy(out, strp, sizeof(upb_StringView));
-  } else {
-    memcpy(out, &val, size);
-  }
-}
+// Discards the unknown fields for this message only.
+void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
-UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
-  upb_strtable_iter it;
-  it.t = &map->table;
-  it.index = *iter;
-  upb_strtable_next(&it);
-  *iter = it.index;
-  if (upb_strtable_done(&it)) return NULL;
-  return (void*)str_tabent(&it);
-}
+// Adds unknown data (serialized protobuf data) to the given message.
+// The data is copied into the message instance.
+bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
+                                          const char* data, size_t len,
+                                          upb_Arena* arena);
 
-UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
-  upb_strtable_clear(&map->table);
-}
-
-UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
-                                size_t key_size, upb_value* val) {
-  upb_StringView k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove2(&map->table, k.data, k.size, val);
-}
-
-UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
-                             size_t key_size, void* val, size_t val_size) {
-  upb_value tabval;
-  upb_StringView k = _upb_map_tokey(key, key_size);
-  bool ret = upb_strtable_lookup2(&map->table, k.data, k.size, &tabval);
-  if (ret && val) {
-    _upb_map_fromvalue(tabval, val, val_size);
-  }
-  return ret;
-}
-
-UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
-                                               const void* key, size_t key_size,
-                                               void* val, size_t val_size,
-                                               upb_Arena* a) {
-  upb_StringView strkey = _upb_map_tokey(key, key_size);
-  upb_value tabval = {0};
-  if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
-    return kUpb_MapInsertStatus_OutOfMemory;
-  }
-
-  // TODO: add overwrite operation to minimize number of lookups.
-  bool removed =
-      upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
-  if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {
-    return kUpb_MapInsertStatus_OutOfMemory;
-  }
-  return removed ? kUpb_MapInsertStatus_Replaced
-                 : kUpb_MapInsertStatus_Inserted;
-}
-
-UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
-  return map->table.t.count;
-}
-
-// Strings/bytes are special-cased in maps.
-extern char _upb_Map_CTypeSizeTable[12];
-
-UPB_INLINE size_t _upb_Map_CTypeSize(upb_CType ctype) {
-  return _upb_Map_CTypeSizeTable[ctype];
-}
-
-// Creates a new map on the given arena with this key/value type.
-struct upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
+bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
+                                       upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_MESSAGE_INTERNAL_MAP_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */
+
+#ifndef UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_
+#define UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_
+
+#include <stdint.h>
+
+
+// Must be last.
+
+typedef uintptr_t upb_TaggedMessagePtr;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Internal-only because empty messages cannot be created by the user.
+UPB_INLINE upb_TaggedMessagePtr
+UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(struct upb_Message* ptr, bool empty) {
+  UPB_ASSERT(((uintptr_t)ptr & 1) == 0);
+  return (uintptr_t)ptr | (empty ? 1 : 0);
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(
+    upb_TaggedMessagePtr ptr) {
+  return ptr & 1;
+}
+
+UPB_INLINE struct upb_Message* UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(
+    upb_TaggedMessagePtr ptr) {
+  return (struct upb_Message*)(ptr & ~(uintptr_t)1);
+}
+
+UPB_INLINE struct upb_Message* UPB_PRIVATE(
+    _upb_TaggedMessagePtr_GetNonEmptyMessage)(upb_TaggedMessagePtr ptr) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr));
+  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
+}
+
+UPB_INLINE struct upb_Message* UPB_PRIVATE(
+    _upb_TaggedMessagePtr_GetEmptyMessage)(upb_TaggedMessagePtr ptr) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr));
+  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_ */
+
+typedef union {
+  bool bool_val;
+  float float_val;
+  double double_val;
+  int32_t int32_val;
+  int64_t int64_val;
+  uint32_t uint32_val;
+  uint64_t uint64_val;
+  const struct upb_Array* array_val;
+  const struct upb_Map* map_val;
+  const struct upb_Message* msg_val;
+  upb_StringView str_val;
+
+  // EXPERIMENTAL: A tagged upb_Message*.  Users must use this instead of
+  // msg_val if unlinked sub-messages may possibly be in use.  See the
+  // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
+  // information.
+  upb_TaggedMessagePtr tagged_msg_val;
+} upb_MessageValue;
+
+typedef union {
+  struct upb_Array* array;
+  struct upb_Map* map;
+  struct upb_Message* msg;
+} upb_MutableMessageValue;
+
+#endif /* UPB_MESSAGE_VALUE_H_ */
+
+// Must be last.
+
+typedef struct upb_Array upb_Array;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Creates a new array on the given arena that holds elements of this type.
+UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
+
+// Returns the number of elements in the array.
+UPB_API size_t upb_Array_Size(const upb_Array* arr);
+
+// Returns the given element, which must be within the array's current size.
+UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
+
+// Sets the given element, which must be within the array's current size.
+UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
+
+// Appends an element to the array. Returns false on allocation failure.
+UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
+                              upb_Arena* arena);
+
+// Moves elements within the array using memmove().
+// Like memmove(), the source and destination elements may be overlapping.
+UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
+                            size_t count);
+
+// Inserts one or more empty elements into the array.
+// Existing elements are shifted right.
+// The new elements have undefined state and must be set with `upb_Array_Set()`.
+// REQUIRES: `i <= upb_Array_Size(arr)`
+UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
+                              upb_Arena* arena);
+
+// Deletes one or more elements from the array.
+// Existing elements are shifted left.
+// REQUIRES: `i + count <= upb_Array_Size(arr)`
+UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
+
+// Changes the size of a vector. New elements are initialized to NULL/0.
+// Returns false on allocation failure.
+UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
+
+// Returns pointer to array data.
+UPB_API const void* upb_Array_DataPtr(const upb_Array* arr);
+
+// Returns mutable pointer to array data.
+UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_ARRAY_H_ */
+
+#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 
 // Must be last.
 
@@ -2528,7 +2517,7 @@ extern "C" {
 // Hasbit access ///////////////////////////////////////////////////////////////
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
-    const upb_Message* msg, const upb_MiniTableField* f) {
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
   const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
@@ -2536,7 +2525,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
-    const upb_Message* msg, const upb_MiniTableField* f) {
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
   const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
@@ -2544,7 +2533,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
-    const upb_Message* msg, const upb_MiniTableField* f) {
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
   const size_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
@@ -2554,18 +2543,18 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
 // Oneof case access ///////////////////////////////////////////////////////////
 
 UPB_INLINE uint32_t* UPB_PRIVATE(_upb_Message_OneofCasePtr)(
-    upb_Message* msg, const upb_MiniTableField* f) {
+    struct upb_Message* msg, const upb_MiniTableField* f) {
   return UPB_PTR_AT(msg, UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(f),
                     uint32_t);
 }
 
 UPB_INLINE uint32_t UPB_PRIVATE(_upb_Message_GetOneofCase)(
-    const upb_Message* msg, const upb_MiniTableField* f) {
-  return *UPB_PRIVATE(_upb_Message_OneofCasePtr)((upb_Message*)msg, f);
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
+  return *UPB_PRIVATE(_upb_Message_OneofCasePtr)((struct upb_Message*)msg, f);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetOneofCase)(
-    upb_Message* msg, const upb_MiniTableField* f) {
+    struct upb_Message* msg, const upb_MiniTableField* f) {
   *UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, f) =
       upb_MiniTableField_Number(f);
 }
@@ -2574,18 +2563,18 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetOneofCase)(
 
 // LINT.ThenChange(GoogleInternalName2)
 
-UPB_INLINE void* _upb_MiniTableField_GetPtr(upb_Message* msg,
+UPB_INLINE void* _upb_MiniTableField_GetPtr(struct upb_Message* msg,
                                             const upb_MiniTableField* field) {
   return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE const void* _upb_MiniTableField_GetConstPtr(
-    const upb_Message* msg, const upb_MiniTableField* field) {
+    const struct upb_Message* msg, const upb_MiniTableField* field) {
   return (char*)msg + field->UPB_ONLYBITS(offset);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
-    upb_Message* msg, const upb_MiniTableField* field) {
+    struct upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
     UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
   } else if (upb_MiniTableField_IsInOneof(field)) {
@@ -2671,13 +2660,13 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
 // returned bool value may be ignored since it will always succeed.
 
 UPB_INLINE bool _upb_Message_HasExtensionField(
-    const upb_Message* msg, const upb_MiniTableExtension* ext) {
+    const struct upb_Message* msg, const upb_MiniTableExtension* ext) {
   UPB_ASSERT(upb_MiniTableField_HasPresence(&ext->UPB_PRIVATE(field)));
   return _upb_Message_Getext(msg, ext) != NULL;
 }
 
 UPB_INLINE bool _upb_Message_HasNonExtensionField(
-    const upb_Message* msg, const upb_MiniTableField* field) {
+    const struct upb_Message* msg, const upb_MiniTableField* field) {
   UPB_ASSERT(upb_MiniTableField_HasPresence(field));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if (upb_MiniTableField_IsInOneof(field)) {
@@ -2689,7 +2678,7 @@ UPB_INLINE bool _upb_Message_HasNonExtensionField(
 }
 
 static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
-    const upb_Message* msg, const upb_MiniTableField* field,
+    const struct upb_Message* msg, const upb_MiniTableField* field,
     const void* default_val, void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if ((upb_MiniTableField_IsInOneof(field) ||
@@ -2703,7 +2692,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 }
 
 UPB_INLINE void _upb_Message_GetExtensionField(
-    const upb_Message* msg, const upb_MiniTableExtension* mt_ext,
+    const struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
   const struct upb_Extension* ext = _upb_Message_Getext(msg, mt_ext);
   const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
@@ -2716,35 +2705,8 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   }
 }
 
-// Gets a mutable Array, Map or Message field.
-// NOTE: For repeated/map fields, the resulting upb_Array*/upb_Map* can
-// be NULL if a upb_Array/upb_Map has not been allocated yet. Array/map
-// fields do not have presence, so this is semantically identical to a
-// pointer to an empty array/map, and must be treated the same for all
-// semantic purposes.
-//
-// For message fields, the pointer is guaranteed to be NULL iff the field
-// is unset (as message fields do have presence).
-UPB_INLINE upb_MutableMessageValue _upb_Message_GetMutableField(
-    const upb_Message* msg, const upb_MiniTableField* field) {
-  UPB_ASSUME(!upb_MiniTableField_IsScalar(field) ||
-             upb_MiniTableField_IsSubMessage(field));
-
-  upb_MutableMessageValue default_val;
-  default_val.msg = NULL;
-
-  upb_MutableMessageValue ret;
-  if (upb_MiniTableField_IsExtension(field)) {
-    _upb_Message_GetExtensionField(msg, (upb_MiniTableExtension*)field,
-                                   &default_val, &ret);
-  } else {
-    _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
-  }
-  return ret;
-}
-
 UPB_INLINE void _upb_Message_SetNonExtensionField(
-    upb_Message* msg, const upb_MiniTableField* field, const void* val) {
+    struct upb_Message* msg, const upb_MiniTableField* field, const void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
@@ -2752,8 +2714,8 @@ UPB_INLINE void _upb_Message_SetNonExtensionField(
 }
 
 UPB_INLINE bool _upb_Message_SetExtensionField(
-    upb_Message* msg, const upb_MiniTableExtension* mt_ext, const void* val,
-    upb_Arena* a) {
+    struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
+    const void* val, upb_Arena* a) {
   UPB_ASSERT(a);
   struct upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
   if (!ext) return false;
@@ -2763,7 +2725,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
 }
 
 UPB_INLINE void _upb_Message_ClearExtensionField(
-    upb_Message* msg, const upb_MiniTableExtension* ext_l) {
+    struct upb_Message* msg, const upb_MiniTableExtension* ext_l) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) return;
   const struct upb_Extension* base =
@@ -2777,7 +2739,7 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
 }
 
 UPB_INLINE void _upb_Message_ClearNonExtensionField(
-    upb_Message* msg, const upb_MiniTableField* field) {
+    struct upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
     UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, field);
   } else if (upb_MiniTableField_IsInOneof(field)) {
@@ -2791,19 +2753,19 @@ UPB_INLINE void _upb_Message_ClearNonExtensionField(
 }
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
-    const upb_Message* msg, const upb_MiniTableField* field) {
+    const struct upb_Message* msg, const upb_MiniTableField* field) {
   UPB_UNUSED(msg);
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
 #ifndef NDEBUG
   upb_TaggedMessagePtr default_val = 0;
   upb_TaggedMessagePtr tagged;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
-  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(tagged));
+  UPB_ASSERT(!UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(tagged));
 #endif
 }
 
 UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
-    upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
+    struct upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
   _upb_Message_AssertMapIsUntagged(msg, field);
@@ -2830,126 +2792,192 @@ UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
 
 #endif  // UPB_MESSAGE_INTERNAL_ACCESSORS_H_
 
-#ifndef UPB_MESSAGE_INTERNAL_ARRAY_H_
-#define UPB_MESSAGE_INTERNAL_ARRAY_H_
+#ifndef UPB_MESSAGE_MAP_H_
+#define UPB_MESSAGE_MAP_H_
 
-#include <string.h>
+#include <stddef.h>
 
 
 // Must be last.
 
-#define _UPB_ARRAY_MASK_IMM 0x4  // Frozen/immutable bit.
-#define _UPB_ARRAY_MASK_LG2 0x3  // Encoded elem size.
-#define _UPB_ARRAY_MASK_ALL (_UPB_ARRAY_MASK_IMM | _UPB_ARRAY_MASK_LG2)
+typedef struct upb_Map upb_Map;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// LINT.IfChange(struct_definition)
-// Our internal representation for repeated fields.
-struct upb_Array {
-  // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
-  //   0 maps to elem size 1
-  //   1 maps to elem size 4
-  //   2 maps to elem size 8
-  //   3 maps to elem size 16
-  //
-  // Bit #2 contains the frozen/immutable flag (currently unimplemented).
-  uintptr_t data;
+// Creates a new map on the given arena with the given key/value size.
+UPB_API upb_Map* upb_Map_New(upb_Arena* a, upb_CType key_type,
+                             upb_CType value_type);
 
-  size_t UPB_ONLYBITS(size);     // The number of elements in the array.
-  size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
-};
+// Returns the number of entries in the map.
+UPB_API size_t upb_Map_Size(const upb_Map* map);
 
-UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(struct upb_Array* array,
-                                                     void* data, size_t lg2) {
-  UPB_ASSERT(lg2 != 1);
-  UPB_ASSERT(lg2 <= 4);
-  const size_t bits = lg2 - (lg2 != 0);
-  array->data = (uintptr_t)data | bits;
+// Stores a value for the given key into |*val| (or the zero value if the key is
+// not present). Returns whether the key was present. The |val| pointer may be
+// NULL, in which case the function tests whether the given key is present.
+UPB_API bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
+                         upb_MessageValue* val);
+
+// Removes all entries in the map.
+UPB_API void upb_Map_Clear(upb_Map* map);
+
+// Sets the given key to the given value, returning whether the key was inserted
+// or replaced. If the key was inserted, then any existing iterators will be
+// invalidated.
+UPB_API upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
+                                           upb_MessageValue val,
+                                           upb_Arena* arena);
+
+// Sets the given key to the given value. Returns false if memory allocation
+// failed. If the key is newly inserted, then any existing iterators will be
+// invalidated.
+UPB_API_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
+                                upb_MessageValue val, upb_Arena* arena) {
+  return upb_Map_Insert(map, key, val, arena) !=
+         kUpb_MapInsertStatus_OutOfMemory;
 }
 
-UPB_INLINE size_t
-UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
-  const size_t bits = array->data & _UPB_ARRAY_MASK_LG2;
-  const size_t lg2 = bits + (bits != 0);
-  return lg2;
+// Deletes this key from the table. Returns true if the key was present.
+// If present and |val| is non-NULL, stores the deleted value.
+UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
+                            upb_MessageValue* val);
+
+// (DEPRECATED and going away soon. Do not use.)
+UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
+                                upb_MessageValue* val) {
+  return upb_Map_Delete(map, key, val);
 }
 
-UPB_INLINE const void* _upb_array_constptr(const struct upb_Array* array) {
-  UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
-  return (void*)(array->data & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
-}
+// Map iteration:
+//
+// size_t iter = kUpb_Map_Begin;
+// upb_MessageValue key, val;
+// while (upb_Map_Next(map, &key, &val, &iter)) {
+//   ...
+// }
 
-UPB_INLINE void* _upb_array_ptr(struct upb_Array* array) {
-  return (void*)_upb_array_constptr(array);
-}
+#define kUpb_Map_Begin ((size_t)-1)
 
-UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
-                                                         size_t init_capacity,
-                                                         int elem_size_lg2) {
-  UPB_ASSERT(elem_size_lg2 != 1);
-  UPB_ASSERT(elem_size_lg2 <= 4);
-  const size_t array_size =
-      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  const size_t bytes = array_size + (init_capacity << elem_size_lg2);
-  struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
-  if (!array) return NULL;
-  UPB_PRIVATE(_upb_Array_SetTaggedPtr)
-  (array, UPB_PTR_AT(array, array_size, void), elem_size_lg2);
-  array->UPB_ONLYBITS(size) = 0;
-  array->UPB_PRIVATE(capacity) = init_capacity;
-  return array;
-}
+// Advances to the next entry. Returns false if no more entries are present.
+// Otherwise returns true and populates both *key and *value.
+UPB_API bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
+                          upb_MessageValue* val, size_t* iter);
 
-// Resizes the capacity of the array to be at least min_size.
-bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array, size_t min_size,
-                                     upb_Arena* arena);
+// Sets the value for the entry pointed to by iter.
+// WARNING: this does not currently work for string values!
+UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
+                                   upb_MessageValue val);
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
-                                                size_t size, upb_Arena* arena) {
-  if (array->UPB_PRIVATE(capacity) < size)
-    return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
-  return true;
-}
+// DEPRECATED iterator, slated for removal.
 
-// Resize without initializing new elements.
-UPB_INLINE bool _upb_Array_ResizeUninitialized(struct upb_Array* array,
-                                               size_t size, upb_Arena* arena) {
-  UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
-             arena);  // Allow NULL arena when shrinking.
-  if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
-  array->UPB_ONLYBITS(size) = size;
-  return true;
-}
+/* Map iteration:
+ *
+ * size_t iter = kUpb_Map_Begin;
+ * while (upb_MapIterator_Next(map, &iter)) {
+ *   upb_MessageValue key = upb_MapIterator_Key(map, iter);
+ *   upb_MessageValue val = upb_MapIterator_Value(map, iter);
+ * }
+ */
 
-// This function is intended for situations where elem_size is compile-time
-// constant or a known expression of the form (1 << lg2), so that the expression
-// i*elem_size does not result in an actual multiplication.
-UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
-                                            const void* data,
-                                            size_t elem_size) {
-  UPB_ASSERT(i < array->UPB_ONLYBITS(size));
-  UPB_ASSERT(elem_size == 1U << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array));
-  char* arr_data = (char*)_upb_array_ptr(array);
-  memcpy(arr_data + (i * elem_size), data, elem_size);
-}
+// Advances to the next entry. Returns false if no more entries are present.
+UPB_API bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
 
-// LINT.ThenChange(
-//  GoogleInternalName1,
-//)
+// Returns true if the iterator still points to a valid entry, or false if the
+// iterator is past the last element. It is an error to call this function with
+// kUpb_Map_Begin (you must call next() at least once first).
+UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
+
+// Returns the key and value for this entry of the map.
+UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
+UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#undef _UPB_ARRAY_MASK_IMM
-#undef _UPB_ARRAY_MASK_LG2
-#undef _UPB_ARRAY_MASK_ALL
+
+#endif /* UPB_MESSAGE_MAP_H_ */
+
+#ifndef UPB_MINI_TABLE_TAGGED_PTR_H_
+#define UPB_MINI_TABLE_TAGGED_PTR_H_
+
+#include <stdint.h>
 
 
-#endif /* UPB_MESSAGE_INTERNAL_ARRAY_H_ */
+// Public APIs for message operations that do not depend on the schema.
+//
+// MiniTable-based accessors live in accessors.h.
+
+#ifndef UPB_MESSAGE_MESSAGE_H_
+#define UPB_MESSAGE_MESSAGE_H_
+
+#include <stddef.h>
+
+
+// Must be last.
+
+typedef struct upb_Extension upb_Extension;
+typedef struct upb_Message upb_Message;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Creates a new message with the given mini_table on the given arena.
+UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
+
+// Returns a reference to the message's unknown data.
+const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
+
+// Removes partial unknown data from message.
+void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
+
+// Returns the number of extensions present in this message.
+size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_MESSAGE_H_ */
+
+// Must be last.
+
+// When a upb_Message* is stored in a message, array, or map, it is stored in a
+// tagged form. If the tag bit is set, the referenced upb_Message is of type
+// _kUpb_MiniTable_Empty (a sentinel message type with no fields) instead of
+// that field's true message type. This forms the basis of what we call
+// "dynamic tree shaking."
+//
+// See the documentation for kUpb_DecodeOption_ExperimentalAllowUnlinked for
+// more information.
+
+typedef uintptr_t upb_TaggedMessagePtr;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Users who enable unlinked sub-messages must use this to test whether a
+// message is empty before accessing it. If a message is empty, it must be
+// first promoted using the interfaces in message/promote.h.
+UPB_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr) {
+  return UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr);
+}
+
+UPB_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
+    upb_TaggedMessagePtr ptr) {
+  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetNonEmptyMessage)(ptr);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_TAGGED_PTR_H_ */
 
 #ifndef UPB_MINI_TABLE_SUB_H_
 #define UPB_MINI_TABLE_SUB_H_
@@ -3318,7 +3346,8 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTableField* field,
                                            upb_Message* sub_message) {
   _upb_Message_SetTaggedMessagePtr(
-      msg, mini_table, field, _upb_TaggedMessagePtr_Pack(sub_message, false));
+      msg, mini_table, field,
+      UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(sub_message, false));
 }
 
 UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
@@ -3470,43 +3499,6 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 
 
 #endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */
-
-// Public APIs for message operations that do not depend on the schema.
-//
-// MiniTable-based accessors live in accessors.h.
-
-#ifndef UPB_MESSAGE_MESSAGE_H_
-#define UPB_MESSAGE_MESSAGE_H_
-
-#include <stddef.h>
-
-
-// Must be last.
-
-typedef struct upb_Extension upb_Extension;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Creates a new message with the given mini_table on the given arena.
-UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
-
-// Returns a reference to the message's unknown data.
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
-
-// Removes partial unknown data from message.
-void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
-
-// Returns the number of extensions present in this message.
-size_t upb_Message_ExtensionCount(const upb_Message* msg);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_MESSAGE_H_ */
 
 #ifndef UPB_MINI_TABLE_DECODE_H_
 #define UPB_MINI_TABLE_DECODE_H_
@@ -12411,7 +12403,8 @@ UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
   if (s->entries) upb_gfree(s->entries);
 }
 
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
+                                    const struct upb_Map* map,
                                     _upb_sortedmap* sorted, upb_MapEntry* ent) {
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
@@ -12436,7 +12429,7 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 }
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
+                            const struct upb_Map* map, _upb_sortedmap* sorted);
 
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
                              const struct upb_Extension* exts, size_t count,

@@ -5688,104 +5688,6 @@ const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
 
 // Must be last.
 
-const struct upb_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTableExtension* e) {
-  size_t n;
-  const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
-
-  // For now we use linear search exclusively to find extensions.
-  // If this becomes an issue due to messages with lots of extensions,
-  // we can introduce a table of some sort.
-  for (size_t i = 0; i < n; i++) {
-    if (ext[i].ext == e) {
-      return &ext[i];
-    }
-  }
-
-  return NULL;
-}
-
-const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
-    const upb_Message* msg, size_t* count) {
-  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    *count = (in->internal->size - in->internal->ext_begin) /
-             sizeof(struct upb_Extension);
-    return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  } else {
-    *count = 0;
-    return NULL;
-  }
-}
-
-struct upb_Extension* _upb_Message_GetOrCreateExtension(
-    upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
-  struct upb_Extension* ext =
-      (struct upb_Extension*)_upb_Message_Getext(msg, e);
-  if (ext) return ext;
-  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension),
-                                         arena))
-    return NULL;
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(struct upb_Extension);
-  ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  memset(ext, 0, sizeof(struct upb_Extension));
-  ext->ext = e;
-  return ext;
-}
-
-
-#include <math.h>
-#include <string.h>
-
-
-// Must be last.
-
-const float kUpb_FltInfinity = INFINITY;
-const double kUpb_Infinity = INFINITY;
-const double kUpb_NaN = NAN;
-
-static const size_t realloc_overhead = sizeof(upb_Message_InternalData);
-
-bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
-                                       upb_Arena* arena) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (!in->internal) {
-    // No internal data, allocate from scratch.
-    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + realloc_overhead));
-    upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
-    if (!internal) return false;
-    internal->size = size;
-    internal->unknown_end = realloc_overhead;
-    internal->ext_begin = size;
-    in->internal = internal;
-  } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
-    // Internal data is too small, reallocate.
-    size_t new_size = upb_Log2CeilingSize(in->internal->size + need);
-    size_t ext_bytes = in->internal->size - in->internal->ext_begin;
-    size_t new_ext_begin = new_size - ext_bytes;
-    upb_Message_InternalData* internal =
-        upb_Arena_Realloc(arena, in->internal, in->internal->size, new_size);
-    if (!internal) return false;
-    if (ext_bytes) {
-      // Need to move extension data to the end.
-      char* ptr = (char*)internal;
-      memmove(ptr + new_ext_begin, ptr + internal->ext_begin, ext_bytes);
-    }
-    internal->ext_begin = new_ext_begin;
-    internal->size = new_size;
-    in->internal = internal;
-  }
-  UPB_ASSERT(in->internal->ext_begin - in->internal->unknown_end >= need);
-  return true;
-}
-
-
-#include <string.h>
-
-
-// Must be last.
-
 // Strings/bytes are special-cased in maps.
 char _upb_Map_CTypeSizeTable[12] = {
     [kUpb_CType_Bool] = 1,
@@ -6209,9 +6111,9 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
       if (is_empty) sub = UPB_PRIVATE(_upb_MiniTable_Empty)();
       UPB_ASSERT(source);
       upb_Message* clone = upb_Message_DeepClone(
-          _upb_TaggedMessagePtr_GetMessage(source), sub, arena);
+          UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(source), sub, arena);
       *(upb_TaggedMessagePtr*)value =
-          _upb_TaggedMessagePtr_Pack(clone, is_empty);
+          UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(clone, is_empty);
       return clone != NULL;
     } break;
   }
@@ -6334,7 +6236,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           upb_TaggedMessagePtr tagged =
               upb_Message_GetTaggedMessagePtr(src, field, NULL);
           const upb_Message* sub_message =
-              _upb_TaggedMessagePtr_GetMessage(tagged);
+              UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged);
           if (sub_message != NULL) {
             // If the message is currently in an unlinked, "empty" state we keep
             // it that way, because we don't want to deal with decode options,
@@ -6350,7 +6252,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             }
             _upb_Message_SetTaggedMessagePtr(
                 dst, mini_table, field,
-                _upb_TaggedMessagePtr_Pack(dst_sub_message, is_empty));
+                UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
+                                                        is_empty));
           }
         } break;
         case kUpb_CType_String:
@@ -12317,7 +12220,8 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_UnlinkedSubMessage);
   }
 
-  upb_TaggedMessagePtr tagged = _upb_TaggedMessagePtr_Pack(msg, is_empty);
+  upb_TaggedMessagePtr tagged =
+      UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(msg, is_empty);
   memcpy(target, &tagged, sizeof(tagged));
   return msg;
 }
@@ -12330,13 +12234,14 @@ static upb_Message* _upb_Decoder_ReuseSubMessage(
   UPB_ASSERT(subl);
   if (!upb_TaggedMessagePtr_IsEmpty(tagged) ||
       UPB_PRIVATE(_upb_MiniTable_IsEmpty)(subl)) {
-    return _upb_TaggedMessagePtr_GetMessage(tagged);
+    return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged);
   }
 
   // We found an empty message from a previous parse that was performed before
   // this field was linked.  But it is linked now, so we want to allocate a new
   // message of the correct type and promote data into it before continuing.
-  upb_Message* existing = _upb_TaggedMessagePtr_GetEmptyMessage(tagged);
+  upb_Message* existing =
+      UPB_PRIVATE(_upb_TaggedMessagePtr_GetEmptyMessage)(tagged);
   upb_Message* promoted = _upb_Decoder_NewSubMessage(d, subs, field, target);
   size_t size;
   const char* unknown = upb_Message_GetUnknown(existing, &size);
@@ -13629,7 +13534,8 @@ static void encode_TaggedMessagePtr(upb_encstate* e,
   if (upb_TaggedMessagePtr_IsEmpty(tagged)) {
     m = UPB_PRIVATE(_upb_MiniTable_Empty)();
   }
-  encode_message(e, _upb_TaggedMessagePtr_GetMessage(tagged), m, size);
+  encode_message(e, UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged), m,
+                 size);
 }
 
 static void encode_scalar(upb_encstate* e, const void* _field_mem,
@@ -15088,6 +14994,105 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
     if (!ptr) return NULL;
   }
   return ptr;
+}
+
+
+#include <string.h>
+
+
+// Must be last.
+
+const struct upb_Extension* _upb_Message_Getext(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+  size_t n;
+  const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
+
+  // For now we use linear search exclusively to find extensions.
+  // If this becomes an issue due to messages with lots of extensions,
+  // we can introduce a table of some sort.
+  for (size_t i = 0; i < n; i++) {
+    if (ext[i].ext == e) {
+      return &ext[i];
+    }
+  }
+
+  return NULL;
+}
+
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
+    const struct upb_Message* msg, size_t* count) {
+  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  if (in->internal) {
+    *count = (in->internal->size - in->internal->ext_begin) /
+             sizeof(struct upb_Extension);
+    return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  } else {
+    *count = 0;
+    return NULL;
+  }
+}
+
+struct upb_Extension* _upb_Message_GetOrCreateExtension(
+    struct upb_Message* msg, const upb_MiniTableExtension* e,
+    upb_Arena* arena) {
+  struct upb_Extension* ext =
+      (struct upb_Extension*)_upb_Message_Getext(msg, e);
+  if (ext) return ext;
+  if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension),
+                                         arena))
+    return NULL;
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  in->internal->ext_begin -= sizeof(struct upb_Extension);
+  ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  memset(ext, 0, sizeof(struct upb_Extension));
+  ext->ext = e;
+  return ext;
+}
+
+
+#include <math.h>
+#include <string.h>
+
+
+// Must be last.
+
+const float kUpb_FltInfinity = INFINITY;
+const double kUpb_Infinity = INFINITY;
+const double kUpb_NaN = NAN;
+
+static const size_t realloc_overhead = sizeof(upb_Message_InternalData);
+
+bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
+                                       upb_Arena* arena) {
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  if (!in->internal) {
+    // No internal data, allocate from scratch.
+    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + realloc_overhead));
+    upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
+    if (!internal) return false;
+    internal->size = size;
+    internal->unknown_end = realloc_overhead;
+    internal->ext_begin = size;
+    in->internal = internal;
+  } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
+    // Internal data is too small, reallocate.
+    size_t new_size = upb_Log2CeilingSize(in->internal->size + need);
+    size_t ext_bytes = in->internal->size - in->internal->ext_begin;
+    size_t new_ext_begin = new_size - ext_bytes;
+    upb_Message_InternalData* internal =
+        upb_Arena_Realloc(arena, in->internal, in->internal->size, new_size);
+    if (!internal) return false;
+    if (ext_bytes) {
+      // Need to move extension data to the end.
+      char* ptr = (char*)internal;
+      memmove(ptr + new_ext_begin, ptr + internal->ext_begin, ext_bytes);
+    }
+    internal->ext_begin = new_ext_begin;
+    internal->size = new_size;
+    in->internal = internal;
+  }
+  UPB_ASSERT(in->internal->ext_begin - in->internal->unknown_end >= need);
+  return true;
 }
 
 
