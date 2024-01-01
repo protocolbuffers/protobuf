@@ -12,6 +12,7 @@
 #include <Python.h>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -68,6 +69,11 @@ typedef struct PyDescriptorPool {
   absl::flat_hash_map<const void*, PyObject*>* descriptor_options;
   // Similar cache for features.
   absl::flat_hash_map<const void*, PyObject*>* descriptor_features;
+
+  // List of owned python object dependencies.
+  // This is useful in some cases to ensure that the C++ descriptor pool does
+  // not get deleted before this python representative does.
+  absl::flat_hash_set<PyObject*>* dependencies;
 } PyDescriptorPool;
 
 
@@ -117,6 +123,10 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
 // Wraps a C++ descriptor pool in a Python object, creates it if necessary.
 // Returns a new reference.
 PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool);
+
+// Adds a dependency to the python descriptor pool.
+// Returns true upon success, false otherwise.
+bool AddCachedPoolDependency(PyObject* py_pool, PyObject* py_dependency);
 
 // Initialize objects used by this module.
 bool InitDescriptorPool();

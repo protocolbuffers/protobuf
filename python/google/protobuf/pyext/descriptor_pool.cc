@@ -17,6 +17,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -100,6 +101,7 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->descriptor_options = new absl::flat_hash_map<const void*, PyObject*>();
   cpool->descriptor_features =
       new absl::flat_hash_map<const void*, PyObject*>();
+  cpool->dependencies = new absl::flat_hash_set<PyObject*>();
 
   cpool->py_message_factory = message_factory::NewMessageFactory(
       &PyMessageFactory_Type, cpool);
@@ -205,6 +207,10 @@ static void Dealloc(PyObject* pself) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_features;
+  for (PyObject* dependency : *self->dependencies) {
+    Py_DECREF(dependency);
+  }
+  delete self->dependencies;
   delete self->database;
   if (self->is_owned) {
     delete self->pool;
@@ -850,6 +856,20 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   }
 
   return reinterpret_cast<PyObject*>(cpool);
+}
+
+bool AddCachedPoolDependency(PyObject* py_pool, PyObject* py_dependency) {
+  if (py_dependency == nullptr) {
+    return true;
+  }
+  if (!PyObject_TypeCheck(py_pool, &PyDescriptorPool_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a DescriptorPool");
+    return false;
+  }
+  reinterpret_cast<PyDescriptorPool*>(py_pool)->dependencies->insert(
+      py_dependency);
+  Py_INCREF(py_dependency);
+  return true;
 }
 
 }  // namespace python
