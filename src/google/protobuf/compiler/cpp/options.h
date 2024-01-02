@@ -54,7 +54,12 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
+  // TODO: remove once force_pdproto lands.
+#ifdef PROTOBUF_FORCE_SPLIT
+  bool force_split = true;
+#else   // PROTOBUF_FORCE_SPLIT
   bool force_split = false;
+#endif  // !PROTOBUF_FORCE_SPLIT
   bool profile_driven_cluster_aux_subtable = false;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
