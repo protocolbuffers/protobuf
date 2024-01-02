@@ -117,12 +117,11 @@ std::string ToMultiByteUTF8String(const wchar_t* input)
 int main(int argc, char* argv[]) 
 {
   wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
-  std::string* argv_mbcs_str = new std::string [argc];
   char** argv_mbcs = new char* [argc];
   for (int i = 0; i < argc; i++)
   {
-      argv_mbcs_str[i] = ToMultiByteUTF8String(wargv[i]);
-      argv_mbcs[i] = const_cast<char*>(argv_mbcs_str[i].c_str());
+      std::string* multibyte_string = new auto(ToMultiByteUTF8String(wargv[i]));
+      argv_mbcs[i] = const_cast<char*>(multibyte_string->c_str());
   }
   return google::protobuf::compiler::ProtobufMain(argc, argv_mbcs);
 }
