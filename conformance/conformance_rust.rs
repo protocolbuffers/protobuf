@@ -5,6 +5,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use conformance_proto::conformance::{ConformanceRequest, ConformanceResponse};
+use conformance_rust_overlay_hack_proto::conformance::ConformanceRequestRustOverlayHack;
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;
@@ -39,13 +40,21 @@ fn read_little_endian_i32_from_stdin() -> Option<i32> {
 /// Returns None if we have hit an EOF that suggests the test suite is complete.
 /// Panics in any other case (e.g. an EOF in a place that would imply a
 /// programmer error in the conformance test suite).
-fn read_request_from_stdin() -> Option<ConformanceRequest> {
+fn read_request_from_stdin() -> Option<(ConformanceRequest, ConformanceRequestRustOverlayHack)> {
     let msg_len = read_little_endian_i32_from_stdin()?;
     let mut serialized = vec![0_u8; msg_len as usize];
     io::stdin().read_exact(&mut serialized).unwrap();
     let mut req = ConformanceRequest::new();
     req.deserialize(&serialized).unwrap();
-    Some(req)
+
+    // TODO: b/318373255 - Since enum accessors aren't available yet, we parse an
+    // overlay with int32 field instead of an enum so that we can check if the
+    // requested output is binary or not. This will be deleted once enum
+    // accessors are supported.
+    let mut req_overlay_hack = ConformanceRequestRustOverlayHack::new();
+    req_overlay_hack.deserialize(&serialized).unwrap();
+
+    Some((req, req_overlay_hack))
 }
 
 fn write_response_to_stdout(resp: &ConformanceResponse) {
@@ -57,16 +66,19 @@ fn write_response_to_stdout(resp: &ConformanceResponse) {
     handle.flush().unwrap();
 }
 
-fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
+fn do_test(
+    req: &ConformanceRequest,
+    req_overlay_hack: &ConformanceRequestRustOverlayHack,
+) -> ConformanceResponse {
     let mut resp = ConformanceResponse::new();
     let message_type = req.message_type();
 
-    // Enums aren't supported yet (and not in scope for v0.6) so we can't perform
-    // this check yet. Note that this causes Rust to fail every test case that asks
-    // for output that isn't wire format.
+    // TODO: b/318373255 - Use the enum once its supported.
     // if req.requested_output_format() != WireFormat.PROTOBUF {
-    //     resp.skipped_mut().set("only wire format output implemented")
-    // }
+    if req_overlay_hack.requested_output_format() != 1 {
+        resp.skipped_mut().set("only wire format output implemented");
+        return resp;
+    }
 
     let bytes = match req.protobuf_payload_opt() {
         Unset(_) => {
@@ -118,8 +130,8 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
 
 fn main() {
     let mut total_runs = 0;
-    while let Some(req) = read_request_from_stdin() {
-        let resp = do_test(&req);
+    while let Some((req, req_overlay_hack)) = read_request_from_stdin() {
+        let resp = do_test(&req, &req_overlay_hack);
         write_response_to_stdout(&resp);
         total_runs += 1;
     }
