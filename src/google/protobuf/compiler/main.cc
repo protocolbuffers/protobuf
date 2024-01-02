@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
   for (int i = 0; i < argc; i++)
   {
       std::string* multibyte_string = new auto(ToMultiByteUTF8String(wargv[i]));
-      argv_mbcs[i] = const_cast<char*>(multibyte_string->c_str());
+      argv_mbcs[i] = multibyte_string->data();
   }
   return google::protobuf::compiler::ProtobufMain(argc, argv_mbcs);
 }
