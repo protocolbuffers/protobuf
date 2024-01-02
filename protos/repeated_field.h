@@ -136,9 +136,11 @@ class RepeatedFieldProxy
   }
 
   iterator begin() const {
-    return iterator({static_cast<upb_Message**>(
-                         const_cast<void*>(upb_Array_DataPtr(this->arr_))),
-                     this->arena_});
+    return iterator(
+        {static_cast<upb_Message**>(
+             this->arr_ ? const_cast<void*>(upb_Array_DataPtr(this->arr_))
+                        : nullptr),
+         this->arena_});
   }
   iterator end() const { return begin() + this->size(); }
   reverse_iterator rbegin() const { return reverse_iterator(end()); }
