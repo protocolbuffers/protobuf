@@ -53,9 +53,8 @@ struct MockRepeatedPtrField {
   void* arena;       // 8 bytes
   int current_size;  // 4 bytes
   int total_size;    // 4 bytes
-  void* data;        // 8 bytes
 };
-ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 24);
+ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 16);
 
 struct MockRepeatedField {
   int current_size;  // 4 bytes
@@ -128,9 +127,9 @@ TEST(GeneratedMessageTest, MoreStringSize) {
     int cached_size;                               // 4 bytes
     PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
                                                    // + 0-4 bytes padding
-        MockRepeatedPtrField data;                 // 24 bytes
+        MockRepeatedPtrField data;                 // 16 bytes
   };
-  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
   EXPECT_EQ(sizeof(protobuf_unittest::MoreString), sizeof(MockGenerated));
 }
 

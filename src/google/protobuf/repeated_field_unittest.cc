@@ -1888,49 +1888,6 @@ TEST(RepeatedPtrField, IteratorConstruct_Proto) {
   EXPECT_EQ(values[1].bb(), other.Get(1).bb());
 }
 
-TEST(RepeatedPtrField, SmallOptimization) {
-  // Properties checked here are not part of the contract of RepeatedPtrField,
-  // but we test them to verify that SSO is working as expected by the
-  // implementation.
-
-  // We use an arena to easily measure memory usage, but not needed.
-  Arena arena;
-  auto* array = Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
-  EXPECT_EQ(array->Capacity(), 1);
-  EXPECT_EQ(array->SpaceUsedExcludingSelf(), 0);
-  std::string str;
-  auto usage_before = arena.SpaceUsed();
-  // We use UnsafeArenaAddAllocated just to grow the array without creating
-  // objects or causing extra cleanup costs in the arena to make the
-  // measurements simpler.
-  array->UnsafeArenaAddAllocated(&str);
-  // No backing array, just the string.
-  EXPECT_EQ(array->SpaceUsedExcludingSelf(), sizeof(str));
-  // We have not used any arena space.
-  EXPECT_EQ(usage_before, arena.SpaceUsed());
-  // Verify the string is where we think it is.
-  EXPECT_EQ(&*array->begin(), &str);
-  EXPECT_EQ(array->pointer_begin()[0], &str);
-  auto is_inlined = [array]() {
-    return std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
-           std::less<void*>{}(&*array->pointer_begin(), array + 1);
-  };
-  // The T** in pointer_begin points into the sso in the object.
-  EXPECT_TRUE(is_inlined());
-
-  // Adding a second object stops sso.
-  std::string str2;
-  array->UnsafeArenaAddAllocated(&str2);
-  EXPECT_EQ(array->Capacity(), 3);
-  // Backing array and the strings.
-  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
-            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
-  // We used some arena space now.
-  EXPECT_LT(usage_before, arena.SpaceUsed());
-  // And the pointer_begin is not in the sso anymore.
-  EXPECT_FALSE(is_inlined());
-}
-
 TEST(RepeatedPtrField, CopyAssign) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
