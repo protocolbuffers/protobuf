@@ -135,7 +135,6 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_accessors",
         "//upb:message_copy",
         "//upb:mini_descriptor",
         "//upb:mini_table",

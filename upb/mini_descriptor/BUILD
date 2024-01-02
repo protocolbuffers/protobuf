@@ -62,7 +62,7 @@ cc_test(
         "//:protobuf",
         "//upb:base",
         "//upb:mem",
-        "//upb:message_accessors",
+        "//upb:message",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire",

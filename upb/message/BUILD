@@ -19,6 +19,7 @@ load(
 cc_library(
     name = "message",
     srcs = [
+        "accessors.c",
         "array.c",
         "compat.c",
         "map.c",
@@ -26,6 +27,7 @@ cc_library(
         "message.c",
     ],
     hdrs = [
+        "accessors.h",
         "array.h",
         "compat.h",
         "map.h",
@@ -77,26 +79,6 @@ cc_library(
 )
 
 cc_library(
-    name = "accessors",
-    srcs = [
-        "accessors.c",
-    ],
-    hdrs = [
-        "accessors.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":internal",
-        ":message",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:mini_table",
-        "//upb:port",
-    ],
-)
-
-cc_library(
     name = "compare",
     srcs = [
         "compare.c",
@@ -126,7 +108,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":accessors",
         ":internal",
         ":message",
         "//upb:base",
@@ -149,7 +130,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":accessors",
         ":internal",
         ":message",
         "//upb:base",
@@ -171,7 +151,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":accessors",
         ":message",
         "//upb:port",
     ],
@@ -206,7 +185,6 @@ cc_test(
     name = "accessors_test",
     srcs = ["accessors_test.cc"],
     deps = [
-        ":accessors",
         ":message",
         "//:protobuf",
         "//upb:base",
@@ -243,7 +221,6 @@ cc_test(
     name = "copy_test",
     srcs = ["copy_test.cc"],
     deps = [
-        ":accessors",
         ":copy",
         ":internal",
         ":message",
@@ -278,7 +255,6 @@ cc_test(
     name = "promote_test",
     srcs = ["promote_test.cc"],
     deps = [
-        ":accessors",
         ":copy",
         ":internal",
         ":message",

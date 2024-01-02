@@ -111,7 +111,6 @@ cc_library(
         ":base",
         ":mem",
         ":message",
-        ":message_accessors",
         ":mini_descriptor",
         ":mini_table",
         ":wire",
@@ -184,12 +183,6 @@ alias(
 alias(
     name = "message",
     actual = "//upb/message",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_accessors",
-    actual = "//upb/message:accessors",
     visibility = ["//visibility:public"],
 )
 
@@ -289,7 +282,6 @@ cc_binary(
     deps = [
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_split64",
         ":mini_descriptor",
@@ -317,7 +309,6 @@ upb_amalgamation(
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_copy",
         ":mini_descriptor",
@@ -363,7 +354,6 @@ upb_amalgamation(
         ":json",
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_copy",
         ":mini_descriptor",
@@ -410,7 +400,6 @@ upb_amalgamation(
         ":json",
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_copy",
         ":mini_descriptor",
