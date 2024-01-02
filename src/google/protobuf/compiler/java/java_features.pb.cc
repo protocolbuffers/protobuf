@@ -373,9 +373,10 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
 }
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-        ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >,
-                            11, false>
-            java(kJavaFieldNumber, &::pb::_JavaFeatures_default_instance_);
+        ExtensionIdentifierWithFieldNumber<
+            ::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::JavaFeatures >, 11,
+            false, kJavaFieldNumber>
+            java(&::pb::_JavaFeatures_default_instance_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

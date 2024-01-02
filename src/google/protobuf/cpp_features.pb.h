@@ -239,10 +239,10 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
 
 
-static const int kCppFieldNumber = 1000;
-PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
+static constexpr int kCppFieldNumber = 1000;
+PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifierWithFieldNumber<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11,
-    false>
+    false, kCppFieldNumber>
     cpp;
 
 // ===================================================================

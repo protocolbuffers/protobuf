@@ -1496,10 +1496,6 @@ class ExtensionIdentifier {
   typedef TypeTraitsType TypeTraits;
   typedef ExtendeeType Extendee;
 
-  constexpr ExtensionIdentifier(int number,
-                                typename TypeTraits::InitType default_value)
-      : number_(number), default_value_(default_value) {}
-
   inline int number() const { return number_; }
   typename TypeTraits::ConstType default_value() const {
     return TypeTraits::FromInitType(default_value_);
@@ -1509,9 +1505,32 @@ class ExtensionIdentifier {
     return TypeTraits::FromInitType(default_value_);
   }
 
+ protected:
+  constexpr ExtensionIdentifier(int number,
+                                typename TypeTraits::InitType default_value)
+      : number_(number), default_value_(default_value) {}
+
  private:
   const int number_;
   typename TypeTraits::InitType default_value_;
+};
+
+// Actual extension identifiers emitted by the proto compiler are instances of
+// this template, which inherits from ExtensionIdentifier (so existing API of
+// ExtensionIdentifier does not break) but also provides `kFieldNumber` as a
+// compile-time constant.
+template <typename ExtendeeType, typename TypeTraitsType, FieldType field_type,
+          bool is_packed, int field_number>
+class ExtensionIdentifierWithFieldNumber
+    : public ExtensionIdentifier<ExtendeeType, TypeTraitsType, field_type,
+                                 is_packed> {
+ public:
+  static constexpr int kFieldNumber = field_number;
+
+  explicit constexpr ExtensionIdentifierWithFieldNumber(
+      typename TypeTraitsType::InitType default_value)
+      : ExtensionIdentifier<ExtendeeType, TypeTraitsType, field_type,
+                            is_packed>(field_number, default_value) {}
 };
 
 // -------------------------------------------------------------------

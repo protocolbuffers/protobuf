@@ -303,10 +303,10 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 
 
 
-static const int kJavaFieldNumber = 1001;
-PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
+static constexpr int kJavaFieldNumber = 1001;
+PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifierWithFieldNumber<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11,
-    false>
+    false, kJavaFieldNumber>
     java;
 
 // ===================================================================

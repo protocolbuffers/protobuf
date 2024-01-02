@@ -92,21 +92,22 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
   auto var = p->WithVars(variables_);
   auto annotate = p->WithAnnotations({{"name", descriptor_}});
 
-  p->Emit({{"qualifier",
-            // If this is a class member, it needs to be declared "static".
-            // Otherwise, it needs to be "extern".  In the latter case, it
-            // also needs the DLL export/import specifier.
-            IsScoped() ? "static"
-            : options_.dllexport_decl.empty()
-                ? "extern"
-                : absl::StrCat(options_.dllexport_decl, " extern")}},
-          R"cc(
-            static const int $constant_name$ = $number$;
-            $qualifier$ ::$proto_ns$::internal::ExtensionIdentifier<
-                $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
-                $packed$>
-                $name$;
-          )cc");
+  p->Emit(
+      {{"qualifier",
+        // If this is a class member, it needs to be declared "static".
+        // Otherwise, it needs to be "extern".  In the latter case, it
+        // also needs the DLL export/import specifier.
+        IsScoped() ? "static"
+        : options_.dllexport_decl.empty()
+            ? "extern"
+            : absl::StrCat(options_.dllexport_decl, " extern")}},
+      R"cc(
+        static constexpr int $constant_name$ = $number$;
+        $qualifier$ ::$proto_ns$::internal::ExtensionIdentifierWithFieldNumber<
+            $extendee$, ::$proto_ns$::internal::$type_traits$, $field_type$,
+            $packed$, $constant_name$>
+            $name$;
+      )cc");
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
@@ -165,9 +166,10 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
              p->Emit(R"cc(
                PROTOBUF_CONSTINIT$ dllexport_decl$
                    PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                       ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                           $field_type$, $packed$>
-                           $scoped_name$($constant_name$, $default_str$);
+                       ExtensionIdentifierWithFieldNumber<
+                           $extendee$, ::_pbi::$type_traits$, $field_type$,
+                           $packed$, $scope$$constant_name$>
+                           $scoped_name$($default_str$);
              )cc");
            }},
       },
