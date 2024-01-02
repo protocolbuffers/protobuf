@@ -170,20 +170,8 @@ alias(
 )
 
 alias(
-    name = "hash",
-    actual = "//upb/hash",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "json",
     actual = "//upb/json",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "lex",
-    actual = "//upb/lex",
     visibility = ["//visibility:public"],
 )
 
@@ -266,12 +254,6 @@ alias(
 )
 
 alias(
-    name = "reflection_internal",
-    actual = "//upb/reflection:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "text",
     actual = "//upb/text",
     visibility = ["//visibility:public"],
@@ -333,8 +315,6 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
-        ":lex",
         ":mem",
         ":message",
         ":message_accessors",
@@ -345,14 +325,16 @@ upb_amalgamation(
         ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
         ":wire_reader",
         "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -378,9 +360,7 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
         ":message",
         ":message_accessors",
@@ -391,14 +371,16 @@ upb_amalgamation(
         ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
         ":wire_reader",
         "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -425,9 +407,7 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
         ":message",
         ":message_accessors",
@@ -438,14 +418,16 @@ upb_amalgamation(
         ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
         ":wire_reader",
         "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],

@@ -133,7 +133,6 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:message",
         "//upb:message_accessors",
@@ -143,6 +142,7 @@ bootstrap_cc_library(
         "//upb:port",
         "//upb:wire",
         "//upb/base:internal",
+        "//upb/hash",
         "//upb/message:internal",
         "//upb/mini_descriptor:internal",
     ],
@@ -160,9 +160,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
         "//upb:mem",
         "//upb:mini_descriptor",
-        "//upb:reflection_internal",
     ],
 )
 
@@ -176,12 +176,12 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
+        ":internal",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/hash",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

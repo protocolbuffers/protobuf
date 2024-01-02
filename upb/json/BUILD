@@ -21,13 +21,13 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:lex",
         "//upb:mem",
         "//upb:message",
         "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",
+        "//upb/lex",
     ],
 )
 

@@ -20,7 +20,7 @@ cc_library(
     deps = [
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/reflection:internal",
     ],
 )
 
@@ -53,7 +53,7 @@ cc_library(
         "//upb:base",
         "//upb:descriptor_upb_proto",
         "//upb:mem",
-        "//upb:reflection_internal",
+        "//upb/reflection:internal",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -135,7 +135,7 @@ cc_test(
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/reflection:internal",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

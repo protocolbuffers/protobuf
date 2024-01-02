@@ -19,12 +19,12 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:eps_copy_input_stream",
-        "//upb:lex",
         "//upb:message",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",
         "//upb:wire_reader",
+        "//upb/lex",
         "//upb/message:internal",
     ],
 )

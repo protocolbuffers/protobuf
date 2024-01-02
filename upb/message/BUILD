@@ -67,11 +67,11 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
         "//upb/base:internal",
+        "//upb/hash",
     ],
 )
 

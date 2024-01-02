@@ -243,8 +243,8 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
         "//upb:wire",
+        "//upb/reflection:internal",
     ],
 )
 

@@ -30,9 +30,9 @@ cc_library(
     deps = [
         ":internal",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
+        "//upb/hash",
     ],
 )
 
@@ -72,9 +72,9 @@ cc_library(
     deps = [
         ":mini_table",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
+        "//upb/hash",
     ],
 )
 
