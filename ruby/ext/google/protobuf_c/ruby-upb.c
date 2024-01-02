@@ -7363,11 +7363,11 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     return ptr;
   }
 
-  /* Set presence if necessary. */
-  if (field->presence > 0) {
+  // Set presence if necessary.
+  if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(field)) {
     UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
-  } else if (field->presence < 0) {
-    /* Oneof case */
+  } else if (UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(field)) {
+    // Oneof case
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
     if (op == kUpb_DecodeOp_SubMessage &&
         *oneof_case != field->UPB_PRIVATE(number)) {
@@ -7376,7 +7376,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     *oneof_case = field->UPB_PRIVATE(number);
   }
 
-  /* Store into message. */
+  // Store into message.
   switch (op) {
     case kUpb_DecodeOp_SubMessage: {
       upb_TaggedMessagePtr* submsgp = mem;
@@ -8516,7 +8516,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
       default:
         UPB_UNREACHABLE();
     }
-  } else if (f->presence > 0) {
+  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
     // Proto2 presence: hasbit.
     return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {
