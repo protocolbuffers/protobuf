@@ -6880,7 +6880,7 @@ static const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
 }
 
 static void _upb_Decoder_MungeInt32(wireval* val) {
-  if (!UPB_PRIVATE(_upb_IsLittleEndian)()) {
+  if (!upb_IsLittleEndian()) {
     /* The next stage will memcpy(dst, &val, 4) */
     val->uint32_val = val->uint64_val;
   }
@@ -7102,7 +7102,7 @@ static const char* _upb_Decoder_DecodeFixedPacked(
   arr->UPB_PRIVATE(size) += count;
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
-  if (UPB_PRIVATE(_upb_IsLittleEndian)()) {
+  if (upb_IsLittleEndian()) {
     ptr = upb_EpsCopyInputStream_Copy(&d->input, ptr, mem, val->size);
   } else {
     int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
@@ -7426,7 +7426,7 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
   }
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
-  msg_head = UPB_PRIVATE(_upb_BigEndian64)(msg_head);
+  msg_head = upb_BigEndian64(msg_head);
   if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
     d->missing_required = true;
   }
@@ -8153,12 +8153,12 @@ static void encode_bytes(upb_encstate* e, const void* data, size_t len) {
 }
 
 static void encode_fixed64(upb_encstate* e, uint64_t val) {
-  val = UPB_PRIVATE(_upb_BigEndian64)(val);
+  val = upb_BigEndian64(val);
   encode_bytes(e, &val, sizeof(uint64_t));
 }
 
 static void encode_fixed32(upb_encstate* e, uint32_t val) {
-  val = UPB_PRIVATE(_upb_BigEndian32)(val);
+  val = upb_BigEndian32(val);
   encode_bytes(e, &val, sizeof(uint32_t));
 }
 
@@ -8209,18 +8209,18 @@ static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
   const char* data = _upb_array_constptr(arr);
   const char* ptr = data + bytes - elem_size;
 
-  if (tag || !UPB_PRIVATE(_upb_IsLittleEndian)()) {
+  if (tag || !upb_IsLittleEndian()) {
     while (true) {
       if (elem_size == 4) {
         uint32_t val;
         memcpy(&val, ptr, sizeof(val));
-        val = UPB_PRIVATE(_upb_BigEndian32)(val);
+        val = upb_BigEndian32(val);
         encode_bytes(e, &val, elem_size);
       } else {
         UPB_ASSERT(elem_size == 8);
         uint64_t val;
         memcpy(&val, ptr, sizeof(val));
-        val = UPB_PRIVATE(_upb_BigEndian64)(val);
+        val = upb_BigEndian64(val);
         encode_bytes(e, &val, elem_size);
       }
 
@@ -8575,7 +8575,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
       m->UPB_PRIVATE(required_count)) {
     uint64_t msg_head;
     memcpy(&msg_head, msg, 8);
-    msg_head = UPB_PRIVATE(_upb_BigEndian64)(msg_head);
+    msg_head = upb_BigEndian64(msg_head);
     if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
       encode_err(e, kUpb_EncodeStatus_MissingRequired);
     }

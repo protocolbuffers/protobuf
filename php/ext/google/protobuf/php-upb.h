@@ -4104,8 +4104,8 @@ UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
 //   - '1' for one-byte tags (field numbers 1-15)
 //   - '2' for two-byte tags (field numbers 16-2048)
 
-#ifndef UPB_WIRE_DECODE_INTERNAL_FAST_H_
-#define UPB_WIRE_DECODE_INTERNAL_FAST_H_
+#ifndef UPB_WIRE_INTERNAL_DECODE_FAST_H_
+#define UPB_WIRE_INTERNAL_DECODE_FAST_H_
 
 
 // Must be last.
@@ -4173,6 +4173,7 @@ TAGBYTES(o)
 TAGBYTES(r)
 
 #undef F
+#undef UTF8
 #undef TAGBYTES
 
 /* sub-message fields *********************************************************/
@@ -4195,9 +4196,9 @@ TAGBYTES(s)
 TAGBYTES(o)
 TAGBYTES(r)
 
-#undef TAGBYTES
-#undef SIZES
 #undef F
+#undef SIZES
+#undef TAGBYTES
 
 #undef UPB_PARSE_PARAMS
 
@@ -4206,7 +4207,7 @@ TAGBYTES(r)
 #endif
 
 
-#endif /* UPB_WIRE_DECODE_INTERNAL_FAST_H_ */
+#endif /* UPB_WIRE_INTERNAL_DECODE_FAST_H_ */
 // IWYU pragma: end_exports
 
 #endif  // UPB_GENERATED_CODE_SUPPORT_H_
@@ -12942,6 +12943,44 @@ void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
 
 #endif /* UPB_HASH_INT_TABLE_H_ */
 
+#ifndef UPB_BASE_INTERNAL_ENDIAN_H_
+#define UPB_BASE_INTERNAL_ENDIAN_H_
+
+#include <stdint.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool upb_IsLittleEndian(void) {
+  const int x = 1;
+  return *(char*)&x == 1;
+}
+
+UPB_INLINE uint32_t upb_BigEndian32(uint32_t val) {
+  if (upb_IsLittleEndian()) return val;
+
+  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
+         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
+}
+
+UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
+  if (upb_IsLittleEndian()) return val;
+
+  const uint64_t hi = ((uint64_t)upb_BigEndian32((uint32_t)val)) << 32;
+  const uint64_t lo = upb_BigEndian32((uint32_t)(val >> 32));
+  return hi | lo;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_INTERNAL_ENDIAN_H_ */
+
 #ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
 #define UPB_WIRE_INTERNAL_CONSTANTS_H_
 
@@ -13077,43 +13116,6 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
-
-#ifndef UPB_WIRE_INTERNAL_ENDIAN_H_
-#define UPB_WIRE_INTERNAL_ENDIAN_H_
-
-#include <stdint.h>
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE bool UPB_PRIVATE(_upb_IsLittleEndian)(void) {
-  const int x = 1;
-  return *(char*)&x == 1;
-}
-
-UPB_INLINE uint32_t UPB_PRIVATE(_upb_BigEndian32)(uint32_t val) {
-  if (UPB_PRIVATE(_upb_IsLittleEndian)()) return val;
-
-  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
-         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
-}
-
-UPB_INLINE uint64_t UPB_PRIVATE(_upb_BigEndian64)(uint64_t val) {
-  if (UPB_PRIVATE(_upb_IsLittleEndian)()) return val;
-
-  return ((uint64_t)UPB_PRIVATE(_upb_BigEndian32)((uint32_t)val) << 32) |
-         UPB_PRIVATE(_upb_BigEndian32)((uint32_t)(val >> 32));
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_WIRE_INTERNAL_ENDIAN_H_ */
 
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
@@ -13262,7 +13264,7 @@ UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
 UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
   uint32_t uval;
   memcpy(&uval, ptr, 4);
-  uval = UPB_PRIVATE(_upb_BigEndian32)(uval);
+  uval = upb_BigEndian32(uval);
   memcpy(val, &uval, 4);
   return ptr + 4;
 }
@@ -13275,7 +13277,7 @@ UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
 UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
   uint64_t uval;
   memcpy(&uval, ptr, 8);
-  uval = UPB_PRIVATE(_upb_BigEndian64)(uval);
+  uval = upb_BigEndian64(uval);
   memcpy(val, &uval, 8);
   return ptr + 8;
 }
