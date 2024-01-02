@@ -91,7 +91,6 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   base
   mem
   message
-  message_accessors
   mini_descriptor
   mini_table
   wire
