@@ -12067,108 +12067,6 @@ static UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 
 #endif  // UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
-#ifndef UPB_BASE_INTERNAL_LOG2_H_
-#define UPB_BASE_INTERNAL_LOG2_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE int upb_Log2Ceiling(int x) {
-  if (x <= 1) return 0;
-#ifdef __GNUC__
-  return 32 - __builtin_clz(x - 1);
-#else
-  int lg2 = 0;
-  while ((1 << lg2) < x) lg2++;
-  return lg2;
-#endif
-}
-
-UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
-
-#ifndef UPB_HASH_INT_TABLE_H_
-#define UPB_HASH_INT_TABLE_H_
-
-
-// Must be last.
-
-typedef struct {
-  upb_table t;              // For entries that don't fit in the array part.
-  const upb_tabval* array;  // Array part of the table. See const note above.
-  size_t array_size;        // Array part size.
-  size_t array_count;       // Array part number of elements.
-} upb_inttable;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Initialize a table. If memory allocation failed, false is returned and
-// the table is uninitialized.
-bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
-
-// Returns the number of values in the table.
-size_t upb_inttable_count(const upb_inttable* t);
-
-// Inserts the given key into the hashtable with the given value.
-// The key must not already exist in the hash table.
-// The value must not be UINTPTR_MAX.
-//
-// If a table resize was required but memory allocation failed, false is
-// returned and the table is unchanged.
-bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
-                         upb_Arena* a);
-
-// Looks up key in this table, returning "true" if the key was found.
-// If v is non-NULL, copies the value for this key into *v.
-bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v);
-
-// Removes an item from the table. Returns true if the remove was successful,
-// and stores the removed item in *val if non-NULL.
-bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val);
-
-// Updates an existing entry in an inttable.
-// If the entry does not exist, returns false and does nothing.
-// Unlike insert/remove, this does not invalidate iterators.
-bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
-
-// Optimizes the table for the current set of entries, for both memory use and
-// lookup time. Client should call this after all entries have been inserted;
-// inserting more entries is legal, but will likely require a table resize.
-void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
-
-// Iteration over inttable:
-//
-//   intptr_t iter = UPB_INTTABLE_BEGIN;
-//   uintptr_t key;
-//   upb_value val;
-//   while (upb_inttable_next(t, &key, &val, &iter)) {
-//      // ...
-//   }
-
-#define UPB_INTTABLE_BEGIN -1
-
-bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
-                       intptr_t* iter);
-void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_HASH_INT_TABLE_H_ */
-
 #ifndef UPB_JSON_DECODE_H_
 #define UPB_JSON_DECODE_H_
 
@@ -12436,24 +12334,6 @@ UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
 
 #endif  // UPB_PORT_VSNPRINTF_COMPAT_H_
 
-#ifndef UPB_LEX_STRTOD_H_
-#define UPB_LEX_STRTOD_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-double _upb_NoLocaleStrtod(const char *str, char **endptr);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_LEX_STRTOD_H_ */
-
 #ifndef UPB_PORT_ATOMIC_H_
 #define UPB_PORT_ATOMIC_H_
 
@@ -12674,6 +12554,35 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 
 #endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
+
+#ifndef UPB_BASE_INTERNAL_LOG2_H_
+#define UPB_BASE_INTERNAL_LOG2_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE int upb_Log2Ceiling(int x) {
+  if (x <= 1) return 0;
+#ifdef __GNUC__
+  return 32 - __builtin_clz(x - 1);
+#else
+  int lg2 = 0;
+  while ((1 << lg2) < x) lg2++;
+  return lg2;
+#endif
+}
+
+UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
 
 #ifndef UPB_MESSAGE_COMPARE_H_
 #define UPB_MESSAGE_COMPARE_H_
@@ -12960,683 +12869,78 @@ upb_MiniTableEquals_Status upb_MiniTable_Equals(const upb_MiniTable* src,
 
 #endif /* UPB_MINI_TABLE_COMPAT_H_ */
 
-#ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
-#define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
+#ifndef UPB_HASH_INT_TABLE_H_
+#define UPB_HASH_INT_TABLE_H_
 
 
 // Must be last.
-
-// We want to copy the options verbatim into the destination options proto.
-// We use serialize+parse as our deep copy.
-#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)           \
-  if (UPB_DESC(desc_type##_has_options)(proto)) {                             \
-    size_t size;                                                              \
-    char* pb = UPB_DESC(options_type##_serialize)(                            \
-        UPB_DESC(desc_type##_options)(proto), ctx->tmp_arena, &size);         \
-    if (!pb) _upb_DefBuilder_OomErr(ctx);                                     \
-    target =                                                                  \
-        UPB_DESC(options_type##_parse)(pb, size, _upb_DefBuilder_Arena(ctx)); \
-    if (!target) _upb_DefBuilder_OomErr(ctx);                                 \
-  } else {                                                                    \
-    target = (const UPB_DESC(options_type)*)kUpbDefOptDefault;                \
-  }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct upb_DefBuilder {
-  upb_DefPool* symtab;
-  upb_strtable feature_cache;             // Caches features by identity.
-  UPB_DESC(FeatureSet*) legacy_features;  // For computing legacy features.
-  char* tmp_buf;                          // Temporary buffer in tmp_arena.
-  size_t tmp_buf_size;                    // Size of temporary buffer.
-  upb_FileDef* file;                 // File we are building.
-  upb_Arena* arena;                  // Allocate defs here.
-  upb_Arena* tmp_arena;              // For temporary allocations.
-  upb_Status* status;                // Record errors here.
-  const upb_MiniTableFile* layout;   // NULL if we should build layouts.
-  upb_MiniTablePlatform platform;    // Platform we are targeting.
-  int enum_count;                    // Count of enums built so far.
-  int msg_count;                     // Count of messages built so far.
-  int ext_count;                     // Count of extensions built so far.
-  jmp_buf err;                       // longjmp() on error.
-};
-
-extern const char* kUpbDefOptDefault;
-
-// ctx->status has already been set elsewhere so just fail/longjmp()
-UPB_NORETURN void _upb_DefBuilder_FailJmp(upb_DefBuilder* ctx);
-
-UPB_NORETURN void _upb_DefBuilder_Errf(upb_DefBuilder* ctx, const char* fmt,
-                                       ...) UPB_PRINTF(2, 3);
-UPB_NORETURN void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx);
-
-const char* _upb_DefBuilder_MakeFullName(upb_DefBuilder* ctx,
-                                         const char* prefix,
-                                         upb_StringView name);
-
-// Given a symbol and the base symbol inside which it is defined,
-// find the symbol's definition.
-const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
-                                       const char* from_name_dbg,
-                                       const char* base, upb_StringView sym,
-                                       upb_deftype_t* type);
-
-const void* _upb_DefBuilder_Resolve(upb_DefBuilder* ctx,
-                                    const char* from_name_dbg, const char* base,
-                                    upb_StringView sym, upb_deftype_t type);
-
-char _upb_DefBuilder_ParseEscape(upb_DefBuilder* ctx, const upb_FieldDef* f,
-                                 const char** src, const char* end);
-
-const char* _upb_DefBuilder_FullToShort(const char* fullname);
-
-UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
-  if (bytes == 0) return NULL;
-  void* ret = upb_Arena_Malloc(ctx->arena, bytes);
-  if (!ret) _upb_DefBuilder_OomErr(ctx);
-  return ret;
-}
-
-// Adds a symbol |v| to the symtab, which must be a def pointer previously
-// packed with pack_def(). The def's pointer to upb_FileDef* must be set before
-// adding, so we know which entries to remove if building this file fails.
-UPB_INLINE void _upb_DefBuilder_Add(upb_DefBuilder* ctx, const char* name,
-                                    upb_value v) {
-  upb_StringView sym = {.data = name, .size = strlen(name)};
-  bool ok = _upb_DefPool_InsertSym(ctx->symtab, sym, v, ctx->status);
-  if (!ok) _upb_DefBuilder_FailJmp(ctx);
-}
-
-UPB_INLINE upb_Arena* _upb_DefBuilder_Arena(const upb_DefBuilder* ctx) {
-  return ctx->arena;
-}
-
-UPB_INLINE upb_FileDef* _upb_DefBuilder_File(const upb_DefBuilder* ctx) {
-  return ctx->file;
-}
-
-// This version of CheckIdent() is only called by other, faster versions after
-// they detect a parsing error.
-void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
-                                    bool full);
-
-// Verify a full identifier string. This is slightly more complicated than
-// verifying a relative identifier string because we must track '.' chars.
-UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
-                                               upb_StringView name) {
-  bool good = name.size > 0;
-  bool start = true;
-
-  for (size_t i = 0; i < name.size; i++) {
-    const char c = name.data[i];
-    const char d = c | 0x20;  // force lowercase
-    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
-    const bool is_dot = (c == '.') & !start;
-
-    good &= is_alpha | is_numer | is_dot;
-    start = is_dot;
-  }
-
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
-}
-
-// Returns true if the returned feature set is new and must be populated.
-bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
-                                           const UPB_DESC(FeatureSet*) parent,
-                                           upb_StringView key,
-                                           UPB_DESC(FeatureSet**) set);
-
-const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
-                                      const UPB_DESC(FeatureSet*) parent,
-                                      const UPB_DESC(FeatureSet*) child,
-                                      bool is_implicit);
-
-UPB_INLINE const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_ResolveFeatures(upb_DefBuilder* ctx,
-                                    const UPB_DESC(FeatureSet*) parent,
-                                    const UPB_DESC(FeatureSet*) child) {
-  return _upb_DefBuilder_DoResolveFeatures(ctx, parent, child, false);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
-#define UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
-bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
-const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
-
-// Allocate and initialize an array of |n| enum defs.
-upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
-                               const UPB_DESC(EnumDescriptorProto*)
-                                   const* protos,
-                               const UPB_DESC(FeatureSet*) parent_features,
-                               const upb_MessageDef* containing_type);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_ENUM_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
-#define UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
-
-// Allocate and initialize an array of |n| enum value defs owned by |e|.
-upb_EnumValueDef* _upb_EnumValueDefs_New(
-    upb_DefBuilder* ctx, const char* prefix, int n,
-    const UPB_DESC(EnumValueDescriptorProto*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, upb_EnumDef* e,
-    bool* is_sorted);
-
-const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
-                                                   int n, upb_Arena* a);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
-#define UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
-
-const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
-    const upb_FieldDef* f);
-bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
-bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
-int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
-uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f);
-void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
-                           upb_FieldDef* f);
-void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
-                                           const upb_FieldDef* f);
-
-// Allocate and initialize an array of |n| extensions (field defs).
-upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
-                                  const UPB_DESC(FieldDescriptorProto*)
-                                      const* protos,
-                                  const UPB_DESC(FeatureSet*) parent_features,
-                                  const char* prefix, upb_MessageDef* m);
-
-// Allocate and initialize an array of |n| field defs.
-upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(FieldDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 const char* prefix, upb_MessageDef* m,
-                                 bool* is_sorted);
-
-// Allocate and return a list of pointers to the |n| field defs in |ff|,
-// sorted by field number.
-const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
-                                           upb_Arena* a);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_FIELD_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_FILE_DEF_INTERNAL_H_
-#define UPB_REFLECTION_FILE_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
-    const upb_FileDef* f, int i);
-const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
-const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
-
-// upb_FileDef_Package() returns "" if f->package is NULL, this does not.
-const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
-
-void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const UPB_DESC(FileDescriptorProto) * file_proto);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_FILE_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
-#define UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_MessageDef* _upb_MessageDef_At(const upb_MessageDef* m, int i);
-bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m);
-bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
-                            upb_value v, upb_Arena* a);
-void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
-                                 const upb_FieldDef* f);
-bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
-void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m);
-void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
-                                   const upb_MessageDef* m);
-void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
-
-// Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(DescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features,
-                                     const upb_MessageDef* containing_type);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_
-#define UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
-
-// Allocate and initialize an array of |n| service defs.
-upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
-                                     const UPB_DESC(ServiceDescriptorProto*)
-                                         const* protos,
-                                     const UPB_DESC(FeatureSet*)
-                                         parent_features);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_UPB_EDITION_DEFAULTS_H_
-#define UPB_REFLECTION_UPB_EDITION_DEFAULTS_H_
-
-// This file contains the serialized FeatureSetDefaults object for
-// language-independent features and (possibly at some point) for upb-specific
-// features. This is used for feature resolution under Editions.
-// NOLINTBEGIN
-// clang-format off
-#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\021\022\014\010\001\020\002\030\002 \003(\0010\002\030\346\007\n\021\022\014\010\002\020\001\030\001 \002(\0010\001\030\347\007\n\021\022\014\010\001\020\001\030\001 \002(\0010\001\030\350\007 \346\007(\350\007"
-// clang-format on
-// NOLINTEND
-
-#endif  // UPB_REFLECTION_UPB_EDITION_DEFAULTS_H_
-
-#ifndef UPB_REFLECTION_DESC_STATE_INTERNAL_H_
-#define UPB_REFLECTION_DESC_STATE_INTERNAL_H_
-
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
-
-#include <stdint.h>
-
-
-// Must be last.
-
-// If the input buffer has at least this many bytes available, the encoder call
-// is guaranteed to succeed (as long as field number order is maintained).
-#define kUpb_MtDataEncoder_MinSize 16
 
 typedef struct {
-  char* end;  // Limit of the buffer passed as a parameter.
-  // Aliased to internal-only members in .cc.
-  char internal[32];
-} upb_MtDataEncoder;
+  upb_table t;              // For entries that don't fit in the array part.
+  const upb_tabval* array;  // Array part of the table. See const note above.
+  size_t array_size;        // Array part size.
+  size_t array_count;       // Array part number of elements.
+} upb_inttable;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Encodes field/oneof information for a given message.  The sequence of calls
-// should look like:
+// Initialize a table. If memory allocation failed, false is returned and
+// the table is uninitialized.
+bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
+
+// Returns the number of values in the table.
+size_t upb_inttable_count(const upb_inttable* t);
+
+// Inserts the given key into the hashtable with the given value.
+// The key must not already exist in the hash table.
+// The value must not be UINTPTR_MAX.
 //
-//   upb_MtDataEncoder e;
-//   char buf[256];
-//   char* ptr = buf;
-//   e.end = ptr + sizeof(buf);
-//   unit64_t msg_mod = ...; // bitwise & of kUpb_MessageModifiers or zero
-//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr, msg_mod);
-//   // Fields *must* be in field number order.
-//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
-//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
-//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+// If a table resize was required but memory allocation failed, false is
+// returned and the table is unchanged.
+bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
+                         upb_Arena* a);
+
+// Looks up key in this table, returning "true" if the key was found.
+// If v is non-NULL, copies the value for this key into *v.
+bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v);
+
+// Removes an item from the table. Returns true if the remove was successful,
+// and stores the removed item in *val if non-NULL.
+bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val);
+
+// Updates an existing entry in an inttable.
+// If the entry does not exist, returns false and does nothing.
+// Unlike insert/remove, this does not invalidate iterators.
+bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
+
+// Optimizes the table for the current set of entries, for both memory use and
+// lookup time. Client should call this after all entries have been inserted;
+// inserting more entries is legal, but will likely require a table resize.
+void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+
+// Iteration over inttable:
 //
-//   // If oneofs are present.  Oneofs must be encoded after regular fields.
-//   ptr = upb_MiniTable_StartOneof(&e, ptr)
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//
-//   ptr = upb_MiniTable_StartOneof(&e, ptr);
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
-//
-// Oneofs must be encoded after all regular fields.
-char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
-                                     uint64_t msg_mod);
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
-                                 upb_FieldType type, uint32_t field_num,
-                                 uint64_t field_mod);
-char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
-char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
-                                      uint32_t field_num);
+//   intptr_t iter = UPB_INTTABLE_BEGIN;
+//   uintptr_t key;
+//   upb_value val;
+//   while (upb_inttable_next(t, &key, &val, &iter)) {
+//      // ...
+//   }
 
-// Encodes the set of values for a given enum. The values must be given in
-// order (after casting to uint32_t), and repeats are not allowed.
-char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
-char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
-                                     uint32_t val);
-char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
+#define UPB_INTTABLE_BEGIN -1
 
-// Encodes an entire mini descriptor for an extension.
-char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
-                                        upb_FieldType type, uint32_t field_num,
-                                        uint64_t field_mod);
-
-// Encodes an entire mini descriptor for a map.
-char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
-                                  upb_FieldType key_type,
-                                  upb_FieldType value_type, uint64_t key_mod,
-                                  uint64_t value_mod);
-
-// Encodes an entire mini descriptor for a message set.
-char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
+bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
+                       intptr_t* iter);
+void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
-
-// Must be last.
-
-// Manages the storage for mini descriptor strings as they are being encoded.
-// TODO: Move some of this state directly into the encoder, maybe.
-typedef struct {
-  upb_MtDataEncoder e;
-  size_t bufsize;
-  char* buf;
-  char* ptr;
-} upb_DescState;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE void _upb_DescState_Init(upb_DescState* d) {
-  d->bufsize = kUpb_MtDataEncoder_MinSize * 2;
-  d->buf = NULL;
-  d->ptr = NULL;
-}
-
-bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_DESC_STATE_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
-#define UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
-
-
-// IWYU pragma: private, include "upb/reflection/def.h"
-
-#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
-#define UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int32_t upb_EnumReservedRange_Start(const upb_EnumReservedRange* r);
-int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_H_ */
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_EnumReservedRange* _upb_EnumReservedRange_At(const upb_EnumReservedRange* r,
-                                                 int i);
-
-// Allocate and initialize an array of |n| reserved ranges owned by |e|.
-upb_EnumReservedRange* _upb_EnumReservedRanges_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(EnumDescriptorProto_EnumReservedRange*) const* protos,
-    const upb_EnumDef* e);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_INTERNAL_STRDUP2_H_
-#define UPB_REFLECTION_INTERNAL_STRDUP2_H_
-
-#include <stddef.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Variant that works with a length-delimited rather than NULL-delimited string,
-// as supported by strtable.
-char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
-
-#ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
-#define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
-
-// Allocate and initialize an array of |n| extension ranges owned by |m|.
-upb_ExtensionRange* _upb_ExtensionRanges_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_
-#define UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i);
-void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
-                          const upb_FieldDef* f, const char* name, size_t size);
-
-// Allocate and initialize an array of |n| oneof defs owned by |m|.
-upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
-                                 const UPB_DESC(OneofDescriptorProto*)
-                                     const* protos,
-                                 const UPB_DESC(FeatureSet*) parent_features,
-                                 upb_MessageDef* m);
-
-size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
-#define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
-
-
-// IWYU pragma: private, include "upb/reflection/def.h"
-
-#ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
-#define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int32_t upb_MessageReservedRange_Start(const upb_MessageReservedRange* r);
-int32_t upb_MessageReservedRange_End(const upb_MessageReservedRange* r);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_ */
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_MessageReservedRange* _upb_MessageReservedRange_At(
-    const upb_MessageReservedRange* r, int i);
-
-// Allocate and initialize an array of |n| reserved ranges owned by |m|.
-upb_MessageReservedRange* _upb_MessageReservedRanges_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
-    const upb_MessageDef* m);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_ */
-
-#ifndef UPB_REFLECTION_METHOD_DEF_INTERNAL_H_
-#define UPB_REFLECTION_METHOD_DEF_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
-
-// Allocate and initialize an array of |n| method defs owned by |s|.
-upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
-                                   const UPB_DESC(MethodDescriptorProto*)
-                                       const* protos,
-                                   const UPB_DESC(FeatureSet*) parent_features,
-                                   upb_ServiceDef* s);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
+#endif /* UPB_HASH_INT_TABLE_H_ */
 
 #ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
 #define UPB_WIRE_INTERNAL_CONSTANTS_H_
@@ -14044,6 +13348,702 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 
 
 #endif  // UPB_WIRE_READER_H_
+
+#ifndef UPB_LEX_STRTOD_H_
+#define UPB_LEX_STRTOD_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+double _upb_NoLocaleStrtod(const char *str, char **endptr);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_LEX_STRTOD_H_ */
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
+
+#include <stdint.h>
+
+
+// Must be last.
+
+// If the input buffer has at least this many bytes available, the encoder call
+// is guaranteed to succeed (as long as field number order is maintained).
+#define kUpb_MtDataEncoder_MinSize 16
+
+typedef struct {
+  char* end;  // Limit of the buffer passed as a parameter.
+  // Aliased to internal-only members in .cc.
+  char internal[32];
+} upb_MtDataEncoder;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Encodes field/oneof information for a given message.  The sequence of calls
+// should look like:
+//
+//   upb_MtDataEncoder e;
+//   char buf[256];
+//   char* ptr = buf;
+//   e.end = ptr + sizeof(buf);
+//   unit64_t msg_mod = ...; // bitwise & of kUpb_MessageModifiers or zero
+//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr, msg_mod);
+//   // Fields *must* be in field number order.
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//
+//   // If oneofs are present.  Oneofs must be encoded after regular fields.
+//   ptr = upb_MiniTable_StartOneof(&e, ptr)
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//
+//   ptr = upb_MiniTable_StartOneof(&e, ptr);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//
+// Oneofs must be encoded after all regular fields.
+char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
+                                     uint64_t msg_mod);
+char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
+                                 upb_FieldType type, uint32_t field_num,
+                                 uint64_t field_mod);
+char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
+                                      uint32_t field_num);
+
+// Encodes the set of values for a given enum. The values must be given in
+// order (after casting to uint32_t), and repeats are not allowed.
+char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
+                                     uint32_t val);
+char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
+
+// Encodes an entire mini descriptor for an extension.
+char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
+                                        upb_FieldType type, uint32_t field_num,
+                                        uint64_t field_mod);
+
+// Encodes an entire mini descriptor for a map.
+char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
+                                  upb_FieldType key_type,
+                                  upb_FieldType value_type, uint64_t key_mod,
+                                  uint64_t value_mod);
+
+// Encodes an entire mini descriptor for a message set.
+char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
+
+#ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
+#define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
+
+
+// Must be last.
+
+// We want to copy the options verbatim into the destination options proto.
+// We use serialize+parse as our deep copy.
+#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)           \
+  if (UPB_DESC(desc_type##_has_options)(proto)) {                             \
+    size_t size;                                                              \
+    char* pb = UPB_DESC(options_type##_serialize)(                            \
+        UPB_DESC(desc_type##_options)(proto), ctx->tmp_arena, &size);         \
+    if (!pb) _upb_DefBuilder_OomErr(ctx);                                     \
+    target =                                                                  \
+        UPB_DESC(options_type##_parse)(pb, size, _upb_DefBuilder_Arena(ctx)); \
+    if (!target) _upb_DefBuilder_OomErr(ctx);                                 \
+  } else {                                                                    \
+    target = (const UPB_DESC(options_type)*)kUpbDefOptDefault;                \
+  }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct upb_DefBuilder {
+  upb_DefPool* symtab;
+  upb_strtable feature_cache;             // Caches features by identity.
+  UPB_DESC(FeatureSet*) legacy_features;  // For computing legacy features.
+  char* tmp_buf;                          // Temporary buffer in tmp_arena.
+  size_t tmp_buf_size;                    // Size of temporary buffer.
+  upb_FileDef* file;                 // File we are building.
+  upb_Arena* arena;                  // Allocate defs here.
+  upb_Arena* tmp_arena;              // For temporary allocations.
+  upb_Status* status;                // Record errors here.
+  const upb_MiniTableFile* layout;   // NULL if we should build layouts.
+  upb_MiniTablePlatform platform;    // Platform we are targeting.
+  int enum_count;                    // Count of enums built so far.
+  int msg_count;                     // Count of messages built so far.
+  int ext_count;                     // Count of extensions built so far.
+  jmp_buf err;                       // longjmp() on error.
+};
+
+extern const char* kUpbDefOptDefault;
+
+// ctx->status has already been set elsewhere so just fail/longjmp()
+UPB_NORETURN void _upb_DefBuilder_FailJmp(upb_DefBuilder* ctx);
+
+UPB_NORETURN void _upb_DefBuilder_Errf(upb_DefBuilder* ctx, const char* fmt,
+                                       ...) UPB_PRINTF(2, 3);
+UPB_NORETURN void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx);
+
+const char* _upb_DefBuilder_MakeFullName(upb_DefBuilder* ctx,
+                                         const char* prefix,
+                                         upb_StringView name);
+
+// Given a symbol and the base symbol inside which it is defined,
+// find the symbol's definition.
+const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
+                                       const char* from_name_dbg,
+                                       const char* base, upb_StringView sym,
+                                       upb_deftype_t* type);
+
+const void* _upb_DefBuilder_Resolve(upb_DefBuilder* ctx,
+                                    const char* from_name_dbg, const char* base,
+                                    upb_StringView sym, upb_deftype_t type);
+
+char _upb_DefBuilder_ParseEscape(upb_DefBuilder* ctx, const upb_FieldDef* f,
+                                 const char** src, const char* end);
+
+const char* _upb_DefBuilder_FullToShort(const char* fullname);
+
+UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
+  if (bytes == 0) return NULL;
+  void* ret = upb_Arena_Malloc(ctx->arena, bytes);
+  if (!ret) _upb_DefBuilder_OomErr(ctx);
+  return ret;
+}
+
+// Adds a symbol |v| to the symtab, which must be a def pointer previously
+// packed with pack_def(). The def's pointer to upb_FileDef* must be set before
+// adding, so we know which entries to remove if building this file fails.
+UPB_INLINE void _upb_DefBuilder_Add(upb_DefBuilder* ctx, const char* name,
+                                    upb_value v) {
+  upb_StringView sym = {.data = name, .size = strlen(name)};
+  bool ok = _upb_DefPool_InsertSym(ctx->symtab, sym, v, ctx->status);
+  if (!ok) _upb_DefBuilder_FailJmp(ctx);
+}
+
+UPB_INLINE upb_Arena* _upb_DefBuilder_Arena(const upb_DefBuilder* ctx) {
+  return ctx->arena;
+}
+
+UPB_INLINE upb_FileDef* _upb_DefBuilder_File(const upb_DefBuilder* ctx) {
+  return ctx->file;
+}
+
+// This version of CheckIdent() is only called by other, faster versions after
+// they detect a parsing error.
+void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
+                                    bool full);
+
+// Verify a full identifier string. This is slightly more complicated than
+// verifying a relative identifier string because we must track '.' chars.
+UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
+                                               upb_StringView name) {
+  bool good = name.size > 0;
+  bool start = true;
+
+  for (size_t i = 0; i < name.size; i++) {
+    const char c = name.data[i];
+    const char d = c | 0x20;  // force lowercase
+    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
+    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
+    const bool is_dot = (c == '.') & !start;
+
+    good &= is_alpha | is_numer | is_dot;
+    start = is_dot;
+  }
+
+  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+}
+
+// Returns true if the returned feature set is new and must be populated.
+bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
+                                           const UPB_DESC(FeatureSet*) parent,
+                                           upb_StringView key,
+                                           UPB_DESC(FeatureSet**) set);
+
+const UPB_DESC(FeatureSet*)
+    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
+                                      const UPB_DESC(FeatureSet*) parent,
+                                      const UPB_DESC(FeatureSet*) child,
+                                      bool is_implicit);
+
+UPB_INLINE const UPB_DESC(FeatureSet*)
+    _upb_DefBuilder_ResolveFeatures(upb_DefBuilder* ctx,
+                                    const UPB_DESC(FeatureSet*) parent,
+                                    const UPB_DESC(FeatureSet*) child) {
+  return _upb_DefBuilder_DoResolveFeatures(ctx, parent, child, false);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
+#define UPB_REFLECTION_ENUM_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
+bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
+const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
+
+// Allocate and initialize an array of |n| enum defs.
+upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
+                               const UPB_DESC(EnumDescriptorProto*)
+                                   const* protos,
+                               const UPB_DESC(FeatureSet*) parent_features,
+                               const upb_MessageDef* containing_type);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
+#define UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
+
+// Allocate and initialize an array of |n| enum value defs owned by |e|.
+upb_EnumValueDef* _upb_EnumValueDefs_New(
+    upb_DefBuilder* ctx, const char* prefix, int n,
+    const UPB_DESC(EnumValueDescriptorProto*) const* protos,
+    const UPB_DESC(FeatureSet*) parent_features, upb_EnumDef* e,
+    bool* is_sorted);
+
+const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
+                                                   int n, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
+#define UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
+
+const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
+    const upb_FieldDef* f);
+bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
+bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
+int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
+uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f);
+void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
+                           upb_FieldDef* f);
+void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
+                                           const upb_FieldDef* f);
+
+// Allocate and initialize an array of |n| extensions (field defs).
+upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
+                                  const UPB_DESC(FieldDescriptorProto*)
+                                      const* protos,
+                                  const UPB_DESC(FeatureSet*) parent_features,
+                                  const char* prefix, upb_MessageDef* m);
+
+// Allocate and initialize an array of |n| field defs.
+upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
+                                 const UPB_DESC(FieldDescriptorProto*)
+                                     const* protos,
+                                 const UPB_DESC(FeatureSet*) parent_features,
+                                 const char* prefix, upb_MessageDef* m,
+                                 bool* is_sorted);
+
+// Allocate and return a list of pointers to the |n| field defs in |ff|,
+// sorted by field number.
+const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
+                                           upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_FIELD_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_FILE_DEF_INTERNAL_H_
+#define UPB_REFLECTION_FILE_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
+    const upb_FileDef* f, int i);
+const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
+const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
+
+// upb_FileDef_Package() returns "" if f->package is NULL, this does not.
+const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
+
+void _upb_FileDef_Create(upb_DefBuilder* ctx,
+                         const UPB_DESC(FileDescriptorProto) * file_proto);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_FILE_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
+#define UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_MessageDef* _upb_MessageDef_At(const upb_MessageDef* m, int i);
+bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m);
+bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
+                            upb_value v, upb_Arena* a);
+void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
+                                 const upb_FieldDef* f);
+bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
+void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m);
+void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
+                                   const upb_MessageDef* m);
+void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
+
+// Allocate and initialize an array of |n| message defs.
+upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
+                                     const UPB_DESC(DescriptorProto*)
+                                         const* protos,
+                                     const UPB_DESC(FeatureSet*)
+                                         parent_features,
+                                     const upb_MessageDef* containing_type);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_
+#define UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
+
+// Allocate and initialize an array of |n| service defs.
+upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
+                                     const UPB_DESC(ServiceDescriptorProto*)
+                                         const* protos,
+                                     const UPB_DESC(FeatureSet*)
+                                         parent_features);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_UPB_EDITION_DEFAULTS_H_
+#define UPB_REFLECTION_UPB_EDITION_DEFAULTS_H_
+
+// This file contains the serialized FeatureSetDefaults object for
+// language-independent features and (possibly at some point) for upb-specific
+// features. This is used for feature resolution under Editions.
+// NOLINTBEGIN
+// clang-format off
+#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\021\022\014\010\001\020\002\030\002 \003(\0010\002\030\346\007\n\021\022\014\010\002\020\001\030\001 \002(\0010\001\030\347\007\n\021\022\014\010\001\020\001\030\001 \002(\0010\001\030\350\007 \346\007(\350\007"
+// clang-format on
+// NOLINTEND
+
+#endif  // UPB_REFLECTION_UPB_EDITION_DEFAULTS_H_
+
+#ifndef UPB_REFLECTION_DESC_STATE_INTERNAL_H_
+#define UPB_REFLECTION_DESC_STATE_INTERNAL_H_
+
+
+// Must be last.
+
+// Manages the storage for mini descriptor strings as they are being encoded.
+// TODO: Move some of this state directly into the encoder, maybe.
+typedef struct {
+  upb_MtDataEncoder e;
+  size_t bufsize;
+  char* buf;
+  char* ptr;
+} upb_DescState;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE void _upb_DescState_Init(upb_DescState* d) {
+  d->bufsize = kUpb_MtDataEncoder_MinSize * 2;
+  d->buf = NULL;
+  d->ptr = NULL;
+}
+
+bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_DESC_STATE_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
+#define UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_
+
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
+#define UPB_REFLECTION_ENUM_RESERVED_RANGE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t upb_EnumReservedRange_Start(const upb_EnumReservedRange* r);
+int32_t upb_EnumReservedRange_End(const upb_EnumReservedRange* r);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_H_ */
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_EnumReservedRange* _upb_EnumReservedRange_At(const upb_EnumReservedRange* r,
+                                                 int i);
+
+// Allocate and initialize an array of |n| reserved ranges owned by |e|.
+upb_EnumReservedRange* _upb_EnumReservedRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const UPB_DESC(EnumDescriptorProto_EnumReservedRange*) const* protos,
+    const upb_EnumDef* e);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_RESERVED_RANGE_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_INTERNAL_STRDUP2_H_
+#define UPB_REFLECTION_INTERNAL_STRDUP2_H_
+
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Variant that works with a length-delimited rather than NULL-delimited string,
+// as supported by strtable.
+char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
+
+#ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
+#define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
+
+// Allocate and initialize an array of |n| extension ranges owned by |m|.
+upb_ExtensionRange* _upb_ExtensionRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
+    const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_
+#define UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i);
+void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
+                          const upb_FieldDef* f, const char* name, size_t size);
+
+// Allocate and initialize an array of |n| oneof defs owned by |m|.
+upb_OneofDef* _upb_OneofDefs_New(upb_DefBuilder* ctx, int n,
+                                 const UPB_DESC(OneofDescriptorProto*)
+                                     const* protos,
+                                 const UPB_DESC(FeatureSet*) parent_features,
+                                 upb_MessageDef* m);
+
+size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
+#define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
+
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
+#define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t upb_MessageReservedRange_Start(const upb_MessageReservedRange* r);
+int32_t upb_MessageReservedRange_End(const upb_MessageReservedRange* r);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_ */
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_MessageReservedRange* _upb_MessageReservedRange_At(
+    const upb_MessageReservedRange* r, int i);
+
+// Allocate and initialize an array of |n| reserved ranges owned by |m|.
+upb_MessageReservedRange* _upb_MessageReservedRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
+    const upb_MessageDef* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_ */
+
+#ifndef UPB_REFLECTION_METHOD_DEF_INTERNAL_H_
+#define UPB_REFLECTION_METHOD_DEF_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
+
+// Allocate and initialize an array of |n| method defs owned by |s|.
+upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
+                                   const UPB_DESC(MethodDescriptorProto*)
+                                       const* protos,
+                                   const UPB_DESC(FeatureSet*) parent_features,
+                                   upb_ServiceDef* s);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
 
 // This should #undef all macros #defined in def.inc
 
