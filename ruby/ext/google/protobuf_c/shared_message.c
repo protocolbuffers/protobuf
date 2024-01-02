@@ -29,11 +29,11 @@ uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
     uint64_t ret = _upb_Hash(data, size, seed);
     upb_Arena_Free(arena);
     return ret;
-  } else {
-    upb_Arena_Free(arena);
-    upb_Status_SetErrorMessage(status, "Error calculating hash");
-    return 0;
   }
+
+  upb_Arena_Free(arena);
+  upb_Status_SetErrorMessage(status, "Error calculating hash");
+  return 0;
 }
 
 // Support function for Message_Equal
@@ -59,8 +59,9 @@ bool shared_Message_Equal(const upb_Message* m1, const upb_Message* m2,
     bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
     upb_Arena_Free(arena_tmp);
     return ret;
-  } else {
-    upb_Arena_Free(arena_tmp);
-    upb_Status_SetErrorMessage(status, "Error comparing messages");
   }
+
+  upb_Arena_Free(arena_tmp);
+  upb_Status_SetErrorMessage(status, "Error comparing messages");
+  return 0;
 }
