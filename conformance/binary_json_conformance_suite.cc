@@ -453,17 +453,15 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
     const std::string& equivalent_text_format) {
   MessageType prototype;
 
-  ConformanceRequestSetting setting1(
+  ConformanceRequestSetting binary_to_binary(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
       conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-  suite_.RunValidInputTest(setting1, equivalent_text_format);
+  suite_.RunValidInputTest(binary_to_binary, equivalent_text_format);
 
-  if (run_proto3_tests_) {
-    ConformanceRequestSetting setting2(
-        level, conformance::PROTOBUF, conformance::JSON,
-        conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-    suite_.RunValidInputTest(setting2, equivalent_text_format);
-  }
+  ConformanceRequestSetting binary_to_json(
+      level, conformance::PROTOBUF, conformance::JSON, conformance::BINARY_TEST,
+      prototype, test_name, input_protobuf);
+  suite_.RunValidInputTest(binary_to_json, equivalent_text_format);
 }
 
 template <typename MessageType>
