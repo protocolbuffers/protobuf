@@ -493,7 +493,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
       default:
         UPB_UNREACHABLE();
     }
-  } else if (f->presence > 0) {
+  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
     // Proto2 presence: hasbit.
     return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {

@@ -72,6 +72,7 @@ cc_library(
         "//upb:port",
         "//upb/base:internal",
         "//upb/hash",
+        "//upb/mini_table:internal",
     ],
 )
 
