@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/endian.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/hash/str_table.h"
@@ -37,7 +38,6 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/internal/constants.h"
-#include "upb/wire/internal/endian.h"
 #include "upb/wire/types.h"
 
 // Must be last.
@@ -130,12 +130,12 @@ static void encode_bytes(upb_encstate* e, const void* data, size_t len) {
 }
 
 static void encode_fixed64(upb_encstate* e, uint64_t val) {
-  val = UPB_PRIVATE(_upb_BigEndian64)(val);
+  val = upb_BigEndian64(val);
   encode_bytes(e, &val, sizeof(uint64_t));
 }
 
 static void encode_fixed32(upb_encstate* e, uint32_t val) {
-  val = UPB_PRIVATE(_upb_BigEndian32)(val);
+  val = upb_BigEndian32(val);
   encode_bytes(e, &val, sizeof(uint32_t));
 }
 
@@ -186,18 +186,18 @@ static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
   const char* data = _upb_array_constptr(arr);
   const char* ptr = data + bytes - elem_size;
 
-  if (tag || !UPB_PRIVATE(_upb_IsLittleEndian)()) {
+  if (tag || !upb_IsLittleEndian()) {
     while (true) {
       if (elem_size == 4) {
         uint32_t val;
         memcpy(&val, ptr, sizeof(val));
-        val = UPB_PRIVATE(_upb_BigEndian32)(val);
+        val = upb_BigEndian32(val);
         encode_bytes(e, &val, elem_size);
       } else {
         UPB_ASSERT(elem_size == 8);
         uint64_t val;
         memcpy(&val, ptr, sizeof(val));
-        val = UPB_PRIVATE(_upb_BigEndian64)(val);
+        val = upb_BigEndian64(val);
         encode_bytes(e, &val, elem_size);
       }
 
@@ -552,7 +552,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
       m->UPB_PRIVATE(required_count)) {
     uint64_t msg_head;
     memcpy(&msg_head, msg, 8);
-    msg_head = UPB_PRIVATE(_upb_BigEndian64)(msg_head);
+    msg_head = upb_BigEndian64(msg_head);
     if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
       encode_err(e, kUpb_EncodeStatus_MissingRequired);
     }

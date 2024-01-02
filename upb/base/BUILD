@@ -29,6 +29,7 @@ cc_library(
 cc_library(
     name = "internal",
     hdrs = [
+        "internal/endian.h",
         "internal/log2.h",
     ],
     copts = UPB_DEFAULT_COPTS,

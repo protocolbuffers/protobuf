@@ -8,8 +8,8 @@
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
 
+#include "upb/base/internal/endian.h"
 #include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/internal/endian.h"
 #include "upb/wire/internal/reader.h"
 #include "upb/wire/types.h"  // IWYU pragma: export
 
@@ -89,7 +89,7 @@ UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
 UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
   uint32_t uval;
   memcpy(&uval, ptr, 4);
-  uval = UPB_PRIVATE(_upb_BigEndian32)(uval);
+  uval = upb_BigEndian32(uval);
   memcpy(val, &uval, 4);
   return ptr + 4;
 }
@@ -102,7 +102,7 @@ UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
 UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
   uint64_t uval;
   memcpy(&uval, ptr, 8);
-  uval = UPB_PRIVATE(_upb_BigEndian64)(uval);
+  uval = upb_BigEndian64(uval);
   memcpy(val, &uval, 8);
   return ptr + 8;
 }

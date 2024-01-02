@@ -33,6 +33,7 @@ cc_library(
         "//upb:message_accessors",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/base:internal",
         "//upb/hash",
         "//upb/mem:internal",
         "//upb/message:internal",
@@ -43,11 +44,10 @@ cc_library(
 cc_library(
     name = "reader",
     srcs = [
+        "internal/reader.h",
         "reader.c",
     ],
     hdrs = [
-        "internal/endian.h",
-        "internal/reader.h",
         "reader.h",
         "types.h",
     ],
@@ -55,6 +55,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//upb:port",
+        "//upb/base:internal",
     ],
 )
 

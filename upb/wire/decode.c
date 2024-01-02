@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/endian.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/mem/arena.h"
@@ -42,7 +43,6 @@
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/decoder.h"
-#include "upb/wire/internal/endian.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
@@ -212,7 +212,7 @@ static const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
 }
 
 static void _upb_Decoder_MungeInt32(wireval* val) {
-  if (!UPB_PRIVATE(_upb_IsLittleEndian)()) {
+  if (!upb_IsLittleEndian()) {
     /* The next stage will memcpy(dst, &val, 4) */
     val->uint32_val = val->uint64_val;
   }
@@ -434,7 +434,7 @@ static const char* _upb_Decoder_DecodeFixedPacked(
   arr->UPB_PRIVATE(size) += count;
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
-  if (UPB_PRIVATE(_upb_IsLittleEndian)()) {
+  if (upb_IsLittleEndian()) {
     ptr = upb_EpsCopyInputStream_Copy(&d->input, ptr, mem, val->size);
   } else {
     int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
@@ -758,7 +758,7 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
   }
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
-  msg_head = UPB_PRIVATE(_upb_BigEndian64)(msg_head);
+  msg_head = upb_BigEndian64(msg_head);
   if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
     d->missing_required = true;
   }

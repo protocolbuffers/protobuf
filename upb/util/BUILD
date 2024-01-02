@@ -165,6 +165,7 @@ cc_test(
         ":compare",
         "//upb:port",
         "//upb:wire_reader",
+        "//upb/base:internal",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
