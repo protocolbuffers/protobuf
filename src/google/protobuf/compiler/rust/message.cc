@@ -7,6 +7,8 @@
 
 #include "google/protobuf/compiler/rust/message.h"
 
+#include <string>
+
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
@@ -19,12 +21,17 @@
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/oneof.h"
 #include "google/protobuf/descriptor.h"
+#include "upb_generator/mangle.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 namespace {
+
+std::string UpbMinitableName(const Descriptor& msg) {
+  return upb::generator::MessageInit(msg.full_name());
+}
 
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
@@ -126,12 +133,14 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"delete_thunk", ThunkName(ctx, msg, "delete")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
               {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+              {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
           },
           R"rs(
           fn $new_thunk$() -> $pbi$::RawMessage;
           fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
           fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
           fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
+          fn $copy_from_thunk$(dst: $pbi$::RawMessage, src: $pbi$::RawMessage);
         )rs");
       return;
 
@@ -141,11 +150,15 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"new_thunk", ThunkName(ctx, msg, "new")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
               {"deserialize_thunk", ThunkName(ctx, msg, "parse")},
+              {"minitable", UpbMinitableName(msg)},
           },
           R"rs(
           fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
           fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
           fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
+          /// Opaque wrapper for this message's MiniTable. The only valid way to
+          /// reference this static is with `std::ptr::addr_of!(..)`.
+          static $minitable$: $pbr$::OpaqueMiniTable;
       )rs");
       return;
   }
@@ -167,6 +180,41 @@ void MessageDrop(Context& ctx, const Descriptor& msg) {
 
 bool IsStringOrBytes(FieldDescriptor::Type t) {
   return t == FieldDescriptor::TYPE_STRING || t == FieldDescriptor::TYPE_BYTES;
+}
+
+void MessageSettableValue(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({{"copy_from_thunk", ThunkName(ctx, msg, "copy_from")}}, R"rs(
+        impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
+          fn set_on<'dst>(
+            self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
+            where $Msg$: 'dst {
+            unsafe { $copy_from_thunk$(mutator.inner.msg(), self.msg) };
+          }
+        }
+      )rs");
+      return;
+
+    case Kernel::kUpb:
+      ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
+        impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
+          fn set_on<'dst>(
+            self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
+            where $Msg$: 'dst {
+            unsafe { $pbr$::upb_Message_DeepCopy(
+              mutator.inner.msg(),
+              self.msg,
+              $std$::ptr::addr_of!($minitable$),
+              mutator.inner.raw_arena($pbi$::Private),
+            ) };
+          }
+        }
+      )rs");
+      return;
+  }
+
+  ABSL_LOG(FATAL) << "unreachable";
 }
 
 void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
@@ -381,7 +429,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             {"accessor_fns_for_views",
              [&] { AccessorsForViewOrMut(ctx, msg, false); }},
             {"accessor_fns_for_muts",
-             [&] { AccessorsForViewOrMut(ctx, msg, true); }}},
+             [&] { AccessorsForViewOrMut(ctx, msg, true); }},
+            {"settable_impl", [&] { MessageSettableValue(ctx, msg); }}},
            R"rs(
         #[allow(non_camel_case_types)]
         // TODO: Implement support for debug redaction
@@ -437,13 +486,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
-        impl<'a> $pb$::SettableValue<$Msg$> for $Msg$View<'a> {
-          fn set_on<'b>(self, _private: $pb$::__internal::Private, _mutator: $pb$::Mut<'b, $Msg$>)
-          where
-            $Msg$: 'b {
-            todo!()
-          }
-        }
+        $settable_impl$
 
         #[derive(Debug)]
         #[allow(dead_code)]
@@ -556,6 +599,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
        {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+       {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -588,6 +632,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         bool $deserialize_thunk$($QualifiedMsg$* msg,
                                  google::protobuf::rust_internal::SerializedData data) {
           return msg->ParseFromArray(data.data, data.len);
+        }
+
+        void $copy_from_thunk$($QualifiedMsg$* dst, const $QualifiedMsg$* src) {
+          dst->CopyFrom(*src);
         }
 
         $accessor_thunks$

@@ -288,6 +288,10 @@ impl<'msg> MutatorMessageRef<'msg> {
     pub fn msg(&self) -> RawMessage {
         self.msg
     }
+
+    pub fn raw_arena(&self, _private: Private) -> RawArena {
+        self.arena.raw()
+    }
 }
 
 pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
@@ -306,6 +310,28 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
         val.as_ptr().copy_to_nonoverlapping(start, val.len());
         &*(new_alloc as *mut _ as *mut [u8])
     }
+}
+
+/// Opaque struct containing a upb_MiniTable.
+///
+/// This wrapper is a workaround until stabilization of [`extern type`].
+/// TODO: convert to extern type once stabilized.
+/// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
+#[repr(C)]
+pub struct OpaqueMiniTable {
+    // TODO: consider importing a minitable struct declared in
+    // google3/third_party/upb/bits.
+    _data: [u8; 0],
+    _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+}
+
+extern "C" {
+    pub fn upb_Message_DeepCopy(
+        dst: RawMessage,
+        src: RawMessage,
+        mini_table: *const OpaqueMiniTable,
+        arena: RawArena,
+    );
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.
