@@ -6222,7 +6222,7 @@ JsonNameDetails GetJsonNameDetails(const FieldDescriptorProto* field,
       field->json_name() != default_json_name) {
     return {field, field->json_name(), true};
   }
-  return {field, default_json_name, false};
+  return {field, std::move(default_json_name), false};
 }
 
 bool JsonNameLooksLikeExtension(std::string name) {
