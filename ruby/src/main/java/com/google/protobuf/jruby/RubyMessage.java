@@ -202,7 +202,7 @@ public class RubyMessage extends RubyObject {
     sb.append(cname).append(colon);
 
     for (FieldDescriptor fd : descriptor.getFields()) {
-      if (fd.hasPresence() && !fields.containsKey(fd)) {
+      if (fd.hasPresence() && !(fields.containsKey(fd) || builder.hasField(fd))) {
         continue;
       }
       if (addComma) {
@@ -550,8 +550,7 @@ public class RubyMessage extends RubyObject {
       } else if (fields.containsKey(fieldDescriptor)) {
         dup.setFieldInternal(context, fieldDescriptor, fields.get(fieldDescriptor));
       } else if (this.builder.hasField(fieldDescriptor)) {
-        dup.fields.put(
-            fieldDescriptor,
+        dup.setFieldInternal(context, fieldDescriptor,
             wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
       }
     }
