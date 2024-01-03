@@ -121,7 +121,6 @@ def build_targets(name):
         deps = [
             ":proto_api",
             "//:protobuf",
-            "//src/google/protobuf:descriptor_legacy",
         ] + select({
             "//conditions:default": [],
             ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -424,6 +423,20 @@ def build_targets(name):
         maximum_edition = "2023",
         testee = "//conformance:conformance_python",
         text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
+    )
+
+    conformance_test(
+        name = "conformance_test_upb",
+        env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb"},
+        failure_list = "//conformance:failure_list_python_upb.txt",
+        target_compatible_with = select({
+            "@system_python//:none": ["@platforms//:incompatible"],
+            ":use_fast_cpp_protos": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        }),
+        maximum_edition = "2023",
+        testee = "//conformance:conformance_python",
+        text_format_failure_list = "//conformance:text_format_failure_list_python_upb.txt",
     )
 
     ################################################################################

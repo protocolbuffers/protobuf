@@ -13,6 +13,7 @@
 #define GOOGLE_PROTOBUF_COMMON_H__
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -44,27 +45,14 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 4025000
+#define GOOGLE_PROTOBUF_VERSION 4026000
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
 
-// The minimum header version which works with the current version of
-// the library.  This constant should only be used by protoc's C++ code
-// generator.
-static const int kMinHeaderVersionForLibrary = 4025000;
-
-// The minimum protoc version which works with the current version of the
-// headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 4025000
-
-// The minimum header version which works with the current version of
-// protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 4025000;
-
-// Verifies that the headers and libraries are compatible.  Use the macro
-// below to call this.
-void PROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
+// Verifies that the protobuf version a program was compiled with matches what
+// it is linked/running with. Use the macro below to call this function.
+void PROTOBUF_EXPORT VerifyVersion(int protobufVersionCompiledWith,
                                    const char* filename);
 
 // Converts a numeric version number to a string.
@@ -81,9 +69,8 @@ ProtocVersionString(int version);  // NOLINT(runtime/string)
 // to use the protobuf library) to verify that the version you link against
 // matches the headers you compiled against.  If a version mismatch is
 // detected, the process will abort.
-#define GOOGLE_PROTOBUF_VERIFY_VERSION         \
-  ::google::protobuf::internal::VerifyVersion( \
-      GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION, __FILE__)
+#define GOOGLE_PROTOBUF_VERIFY_VERSION \
+  ::google::protobuf::internal::VerifyVersion(GOOGLE_PROTOBUF_VERSION, __FILE__)
 
 // This lives in message_lite.h now, but we leave this here for any users that
 // #include common.h and not message_lite.h.

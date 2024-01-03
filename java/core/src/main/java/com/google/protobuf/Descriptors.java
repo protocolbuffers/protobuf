@@ -140,8 +140,6 @@ public final class Descriptors {
     }
 
     /** The syntax of the .proto file. */
-    @Deprecated
-    public
     enum Syntax {
       UNKNOWN("unknown"),
       PROTO2("proto2"),
@@ -156,8 +154,6 @@ public final class Descriptors {
     }
 
     /** Get the syntax of the .proto file. */
-    @Deprecated
-    public
     Syntax getSyntax() {
       if (Syntax.PROTO3.name.equals(proto.getSyntax())) {
         return Syntax.PROTO3;
@@ -1273,8 +1269,6 @@ public final class Descriptors {
      * Returns true if this field was syntactically written with "optional" in the .proto file.
      * Excludes singular proto3 fields that do not have a label.
      */
-    @Deprecated
-    public
     boolean hasOptionalKeyword() {
       return isProto3Optional
           || (file.getSyntax() == Syntax.PROTO2 && isOptional() && getContainingOneof() == null);
@@ -2843,8 +2837,6 @@ public final class Descriptors {
       return proto;
     }
 
-    @Deprecated
-    public
     boolean isSynthetic() {
       return fields.length == 1 && fields[0].isProto3Optional;
     }

@@ -17,74 +17,132 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
-  Context<Descriptor> d = field.WithDesc(field.desc().message_type());
+void SingularMessage::InMsgImpl(Context& ctx,
+                                const FieldDescriptor& field) const {
+  auto& msg = *field.message_type();
+  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(ctx, msg);
 
-  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
-
-  if (field.is_cpp()) {
-    field.Emit({{"prefix", prefix},
-                {"field", field.desc().name()},
-                {"getter_thunk", Thunk(field, "get")}},
-               R"rs(
-          pub fn r#$field$(&self) -> $prefix$View {
-            // For C++ kernel, getters automatically return the
-            // default_instance if the field is unset.
-            let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-            $prefix$View::new($pbi$::Private, submsg)
-          }
-        )rs");
-  } else {
-    field.Emit({{"prefix", prefix},
-                {"field", field.desc().name()},
-                {"getter_thunk", Thunk(field, "get")}},
-               R"rs(
-          pub fn r#$field$(&self) -> $prefix$View {
-            let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-            // For upb, getters return null if the field is unset, so we need to
-            // check for null and return the default instance manually. Note that
-            // a null ptr received from upb manifests as Option::None
-            match submsg {
+  ctx.Emit(
+      {
+          {"prefix", prefix},
+          {"field", field.name()},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"clearer_thunk", ThunkName(ctx, field, "clear")},
+          {
+              "view_body",
+              [&] {
+                if (ctx.is_upb()) {
+                  ctx.Emit({}, R"rs(
+              let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+              // For upb, getters return null if the field is unset, so we need
+              // to check for null and return the default instance manually.
+              // Note that a nullptr received from upb manifests as Option::None
+              match submsg {
                 // TODO:(b/304357029)
-                None => $prefix$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
+                None => $prefix$View::new($pbi$::Private,
+                        $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
                 Some(field) => $prefix$View::new($pbi$::Private, field),
               }
-          }
         )rs");
-  }
+                } else {
+                  ctx.Emit({}, R"rs(
+              // For C++ kernel, getters automatically return the
+              // default_instance if the field is unset.
+              let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+              $prefix$View::new($pbi$::Private, submsg)
+        )rs");
+                }
+              },
+          },
+          {"submessage_mut",
+           [&] {
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
+                 let submsg = unsafe {
+                   $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
+                 };
+                 $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                 )rs");
+             } else {
+               ctx.Emit({}, R"rs(
+                    let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
+                    $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                  )rs");
+             }
+           }},
+      },
+      R"rs(
+            pub fn r#$field$(&self) -> $prefix$View {
+              $view_body$
+            }
+
+            pub fn $field$_mut(&mut self) -> $prefix$Mut {
+              $submessage_mut$
+            }
+
+            pub fn $field$_clear(&mut self) {
+              unsafe { $clearer_thunk$(self.inner.msg) }
+            }
+        )rs");
 }
 
-void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit(
+void SingularMessage::InExternC(Context& ctx,
+                                const FieldDescriptor& field) const {
+  ctx.Emit(
       {
-          {"getter_thunk", Thunk(field, "get")},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"clearer_thunk", ThunkName(ctx, field, "clear")},
+          {"getter_mut",
+           [&] {
+             if (ctx.is_cpp()) {
+               ctx.Emit(
+                   R"rs(
+                    fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage)
+                       -> $pbi$::RawMessage;)rs");
+             } else {
+               ctx.Emit(
+                   R"rs(fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
+                                               arena: $pbi$::RawArena)
+                            -> $pbi$::RawMessage;)rs");
+             }
+           }},
           {"ReturnType",
            [&] {
-             if (field.is_cpp()) {
+             if (ctx.is_cpp()) {
                // guaranteed to have a nonnull submsg for the cpp kernel
-               field.Emit({}, "$pbi$::RawMessage;");
+               ctx.Emit({}, "$pbi$::RawMessage;");
              } else {
                // upb kernel may return NULL for a submsg, we can detect this
                // in terra rust if the option returned is None
-               field.Emit({}, "Option<$pbi$::RawMessage>;");
+               ctx.Emit({}, "Option<$pbi$::RawMessage>;");
              }
            }},
       },
       R"rs(
                   fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
+                  $getter_mut$
+                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
                )rs");
 }
 
-void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({{"QualifiedMsg",
-               cpp::QualifiedClassName(field.desc().containing_type())},
-              {"getter_thunk", Thunk(field, "get")},
-              {"field", cpp::FieldName(&field.desc())}},
-             R"cc(
-               const void* $getter_thunk$($QualifiedMsg$* msg) {
-                 return static_cast<const void*>(&msg->$field$());
-               }
-             )cc");
+void SingularMessage::InThunkCc(Context& ctx,
+                                const FieldDescriptor& field) const {
+  ctx.Emit({{"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"field", cpp::FieldName(&field)}},
+           R"cc(
+             const void* $getter_thunk$($QualifiedMsg$* msg) {
+               return static_cast<const void*>(&msg->$field$());
+             }
+             void* $getter_mut_thunk$($QualifiedMsg$* msg) {
+               return static_cast<void*>(msg->mutable_$field$());
+             }
+             void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+           )cc");
 }
 
 }  // namespace rust

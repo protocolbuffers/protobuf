@@ -13,18 +13,23 @@
 
 use std::fmt;
 
+// There are a number of manual `Debug` and similar impls instead of using their
+// derives, in order to to avoid unnecessary bounds on a generic `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+
 /// Everything in `__public` is re-exported in `protobuf.rs`.
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
-    #[cfg(upb_kernel)]
-    pub use crate::map::{MapMut, MapView};
+    pub use crate::r#enum::UnknownEnumValue;
+    pub use crate::map::{Map, MapMut, MapView};
     pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
-    pub use crate::primitive::{PrimitiveMut, SingularPrimitiveMut};
+    pub use crate::primitive::PrimitiveMut;
     pub use crate::proxied::{
         Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
     };
-    pub use crate::repeated::{RepeatedFieldRef, RepeatedMut, RepeatedView};
+    pub use crate::repeated::{ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView};
     pub use crate::string::{BytesMut, ProtoStr, ProtoStrMut};
 }
 pub use __public::*;
@@ -45,8 +50,9 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+#[path = "enum.rs"]
+mod r#enum;
 mod macros;
-#[cfg(upb_kernel)]
 mod map;
 mod optional;
 mod primitive;

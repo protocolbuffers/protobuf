@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package conformance;
+
+// Temporary hack to allow the Rust conformance test to read the requested
+// output format as an int32. This will be removed once enums accessors are
+// supported. b/318373255
+message ConformanceRequestRustOverlayHack {
+  int32 requested_output_format = 3;
+}

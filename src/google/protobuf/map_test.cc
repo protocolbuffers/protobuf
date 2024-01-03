@@ -5,15 +5,24 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include "google/protobuf/map.h"
+
 #include <array>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/internal_visibility_for_testing.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
@@ -54,7 +63,10 @@ struct is_internal_map_value_type<AlignedAs8> : std::true_type {};
 
 namespace {
 
+using ::testing::AllOf;
 using ::testing::FieldsAre;
+using ::testing::Ge;
+using ::testing::Le;
 using ::testing::UnorderedElementsAre;
 
 
@@ -158,6 +170,94 @@ TEST(MapTest, CopyConstructMessagesWithArena) {
   EXPECT_EQ(map1["1"].GetArena(), &arena);
   EXPECT_EQ(map1["2"].optional_int32(), 2);
   EXPECT_EQ(map1["2"].GetArena(), &arena);
+}
+
+TEST(MapTest, AlwaysSerializesBothEntries) {
+  for (const Message* prototype :
+       {static_cast<const Message*>(
+            &protobuf_unittest::TestI32StrMap::default_instance()),
+        static_cast<const Message*>(
+            &proto3_unittest::TestI32StrMap::default_instance())}) {
+    const FieldDescriptor* map_field =
+        prototype->GetDescriptor()->FindFieldByName("m_32_str");
+    const FieldDescriptor* map_key = map_field->message_type()->map_key();
+    const FieldDescriptor* map_value = map_field->message_type()->map_value();
+    for (bool add_key : {true, false}) {
+      for (bool add_value : {true, false}) {
+        std::unique_ptr<Message> message(prototype->New());
+        Message* entry_message =
+            message->GetReflection()->AddMessage(message.get(), map_field);
+        // Add the fields, but leave them as the default to make it easier to
+        // match.
+        if (add_key) {
+          entry_message->GetReflection()->SetInt32(entry_message, map_key, 0);
+        }
+        if (add_value) {
+          entry_message->GetReflection()->SetString(entry_message, map_value,
+                                                    "");
+        }
+        ASSERT_EQ(4, entry_message->ByteSizeLong());
+        EXPECT_EQ(entry_message->SerializeAsString(),
+                  std::string({
+                      '\010', '\0',  // key, VARINT, value=0
+                      '\022', '\0',  // value, LEN, size=0
+                  }));
+        ASSERT_EQ(6, message->ByteSizeLong());
+        EXPECT_EQ(message->SerializeAsString(),
+                  std::string({
+                      '\012', '\04',  // field=1, LEN, size=4
+                      '\010', '\0',   // key, VARINT, value=0
+                      '\022', '\0',   // value, LEN, size=0
+                  }));
+      }
+    }
+  }
+}
+
+TEST(MapTest, LoadFactorCalculationWorks) {
+  // Three stages:
+  //  - empty
+  //  - small
+  //  - large
+
+  const auto calculate = MapTestPeer::CalculateHiCutoff;
+  // empty
+  EXPECT_EQ(calculate(kGlobalEmptyTableSize), 0);
+
+  // small
+  EXPECT_EQ(calculate(2), 2);
+  EXPECT_EQ(calculate(4), 4);
+  EXPECT_EQ(calculate(8), 8);
+
+  // large
+  for (int i = 16; i < 10000; i *= 2) {
+    EXPECT_EQ(calculate(i), .75 * i) << "i=" << i;
+  }
+}
+
+TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
+  Arena arena;
+  std::vector<Map<int, int>*> values;
+
+  static constexpr int kNumFields = 100;
+  static constexpr int kNumElems = 1000;
+  for (int i = 0; i < kNumFields; ++i) {
+    values.push_back(Arena::CreateMessage<Map<int, int>>(&arena));
+    auto& field = *values.back();
+    for (int j = 0; j < kNumElems; ++j) {
+      field[j] = j;
+    }
+  }
+
+  struct MockNode : internal::NodeBase {
+    std::pair<int, int> v;
+  };
+  size_t expected =
+      values.size() * (MapTestPeer::NumBuckets(*values[0]) * sizeof(void*) +
+                       values[0]->size() * sizeof(MockNode));
+  // Use a 2% slack for other overhead. If we were not reusing the blocks, the
+  // actual value would be ~2x the cost of the bucket array.
+  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
 }
 
 // We changed the internal implementation to use a smaller size type, but the

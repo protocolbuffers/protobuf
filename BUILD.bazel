@@ -5,7 +5,7 @@ load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_librar
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
-load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
+load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 
 licenses(["notice"])
 
@@ -148,17 +148,6 @@ filegroup(
     ],
     deprecation = "Prefer :well_known_type_protos instead.",
     visibility = ["//visibility:public"],
-)
-
-internal_ruby_proto_library(
-    name = "well_known_ruby_protos",
-    srcs = [":well_known_protos"],
-    default_runtime = "",
-    includes = ["src"],
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__subpackages__",
-    ],
 )
 
 ################################################################################
@@ -522,33 +511,6 @@ internal_php_proto_library(
         "//conformance:__pkg__",
         "//php:__subpackages__",
     ],
-)
-
-internal_ruby_proto_library(
-    name = "test_messages_proto2_ruby_proto",
-    testonly = 1,
-    srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
-    includes = ["src/google/protobuf"],
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__subpackages__",
-    ],
-)
-
-internal_ruby_proto_library(
-    name = "test_messages_proto3_ruby_proto",
-    testonly = 1,
-    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
-    includes = [
-        "src/google/protobuf",
-        # The above must come first.
-        "src",
-    ],
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__subpackages__",
-    ],
-    deps = [":well_known_ruby_protos"],
 )
 
 filegroup(

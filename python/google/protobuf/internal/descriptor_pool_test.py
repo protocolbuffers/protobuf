@@ -132,6 +132,51 @@ class DescriptorPoolTestBase(object):
     self.assertRaises(KeyError, self.pool.FindFileContainingSymbol,
                       'google.protobuf.python.internal.Factory1Message.none_field')
 
+  def testCrossFileMessageTypesByName(self):
+    self.assertIs(
+        descriptor_pool_test1_pb2.DescriptorPoolTest1.DESCRIPTOR,
+        descriptor_pool_test1_pb2.DESCRIPTOR.message_types_by_name[
+            'DescriptorPoolTest1'
+        ],
+    )
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.message_types_by_name[
+          'DescriptorPoolTest1'
+      ]
+
+  def testCrossFileEnumTypesByName(self):
+    self.assertIs(
+        descriptor_pool_test1_pb2.TopLevelEnumTest1.DESCRIPTOR,
+        descriptor_pool_test1_pb2.DESCRIPTOR.enum_types_by_name[
+            'TopLevelEnumTest1'
+        ],
+    )
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.enum_types_by_name[
+          'TopLevelEnumTest1'
+      ]
+
+  def testCrossFileExtensionsByName(self):
+    self.assertIs(
+        descriptor_pool_test1_pb2.top_level_extension_test1,
+        descriptor_pool_test1_pb2.DESCRIPTOR.extensions_by_name[
+            'top_level_extension_test1'
+        ],
+    )
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.extensions_by_name[
+          'top_level_extension_test1'
+      ]
+
+  def testCrossFileServicesByName(self):
+    descriptor_pool_test1_pb2.DESCRIPTOR.services_by_name[
+        'DescriporPoolTestService'
+    ],
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.services_by_name[
+          'DescriporPoolTestService'
+      ]
+
   def testFindFileContainingSymbolFailure(self):
     with self.assertRaises(KeyError):
       self.pool.FindFileContainingSymbol('Does not exist')
@@ -1075,12 +1120,6 @@ class AddDescriptorTest(unittest.TestCase):
         pool._AddFileDescriptor(0)
 
 
-# TODO Expand these tests to upb and C++ once the DescriptorPool
-# API is unified.
-@unittest.skipIf(
-    api_implementation.Type() != 'python',
-    'Only pure python allows SetFeatureSetDefaults()',
-)
 @testing_refleaks.TestCase
 class FeatureSetDefaults(unittest.TestCase):
 
@@ -1114,9 +1153,21 @@ class FeatureSetDefaults(unittest.TestCase):
         file._GetFeatures().HasExtension(unittest_features_pb2.test)
     )
 
+  def testInvalidType(self):
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaisesRegex(TypeError, 'invalid type'):
+      pool.SetFeatureSetDefaults('Some data')
+
+  def testInvalidMessageType(self):
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaisesRegex(TypeError, 'invalid type'):
+      pool.SetFeatureSetDefaults(descriptor_pb2.FileDescriptorProto())
+
   def testInvalidEditionRange(self):
     pool = descriptor_pool.DescriptorPool()
-    with self.assertRaisesRegex(ValueError, 'Invalid edition range'):
+    with self.assertRaisesRegex(
+        ValueError, 'Invalid edition range.*2023.*PROTO2'
+    ):
       pool.SetFeatureSetDefaults(
           descriptor_pb2.FeatureSetDefaults(
               defaults=[
@@ -1134,7 +1185,9 @@ class FeatureSetDefaults(unittest.TestCase):
 
   def testNotStrictlyIncreasing(self):
     pool = descriptor_pool.DescriptorPool()
-    with self.assertRaisesRegex(ValueError, 'not strictly increasing'):
+    with self.assertRaisesRegex(
+        ValueError, 'not strictly increasing.*PROTO3.*greater.*PROTO2'
+    ):
       pool.SetFeatureSetDefaults(
           descriptor_pb2.FeatureSetDefaults(
               defaults=[
@@ -1154,7 +1207,7 @@ class FeatureSetDefaults(unittest.TestCase):
 
   def testUnknownEdition(self):
     pool = descriptor_pool.DescriptorPool()
-    with self.assertRaisesRegex(ValueError, 'Invalid edition'):
+    with self.assertRaisesRegex(ValueError, 'Invalid edition.*UNKNOWN'):
       pool.SetFeatureSetDefaults(
           descriptor_pb2.FeatureSetDefaults(
               defaults=[
@@ -1218,7 +1271,7 @@ class FeatureSetDefaults(unittest.TestCase):
     )
     pool.SetFeatureSetDefaults(defaults)
     file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
-    with self.assertRaisesRegex(TypeError, 'No valid default found'):
+    with self.assertRaisesRegex(TypeError, 'No valid default found.*PROTO2'):
       file = pool.AddSerializedFile(file_desc.SerializeToString())
       file._GetFeatures()
 
@@ -1236,7 +1289,9 @@ class FeatureSetDefaults(unittest.TestCase):
     )
     pool.SetFeatureSetDefaults(defaults)
     file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
-    with self.assertRaisesRegex(TypeError, 'earlier than the minimum'):
+    with self.assertRaisesRegex(
+        TypeError, 'PROTO2.*earlier than the minimum.*PROTO3'
+    ):
       file = pool.AddSerializedFile(file_desc.SerializeToString())
       file._GetFeatures()
 
@@ -1258,7 +1313,9 @@ class FeatureSetDefaults(unittest.TestCase):
         syntax='editions',
         edition=descriptor_pb2.Edition.EDITION_2023,
     )
-    with self.assertRaisesRegex(TypeError, 'later than the maximum'):
+    with self.assertRaisesRegex(
+        TypeError, '2023.*later than the maximum.*PROTO3'
+    ):
       file = pool.AddSerializedFile(file_desc.SerializeToString())
       file._GetFeatures()
 

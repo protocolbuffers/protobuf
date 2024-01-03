@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <string>
@@ -569,6 +570,19 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
   EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), "change1");
   test_model.mutable_child_models()->clear();
   EXPECT_EQ(test_model.mutable_child_models()->size(), 0);
+}
+
+TEST(CppGeneratedCode, EmptyRepeatedFieldProxyForMessages) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(0, test_model.child_models().size());
+  ChildModel1 child1;
+  child1.set_child_str1(kTestStr1);
+
+  EXPECT_EQ(test_model.child_models().size(), 0);
+  EXPECT_EQ(std::distance(test_model.child_models().begin(),
+                          test_model.child_models().end()),
+            0);
 }
 
 TEST(CppGeneratedCode, RepeatedFieldProxyForMessagesIndexOperator) {

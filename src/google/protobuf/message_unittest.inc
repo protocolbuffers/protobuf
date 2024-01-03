@@ -101,6 +101,24 @@ TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
 
 }
 
+TEST(MESSAGE_TEST_NAME, RoundTrip) {
+  UNITTEST::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+
+  UNITTEST::TestAllTypes copied, merged, parsed;
+  copied = message;
+  TestUtil::ExpectAllFieldsSet(copied);
+
+  merged.MergeFrom(message);
+  TestUtil::ExpectAllFieldsSet(merged);
+
+  std::string data;
+  ASSERT_TRUE(message.SerializeToString(&data));
+  ASSERT_TRUE(parsed.ParseFromString(data));
+  TestUtil::ExpectAllFieldsSet(parsed);
+}
+
 TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
   std::ofstream out;
   UNITTEST::TestAllTypes message;

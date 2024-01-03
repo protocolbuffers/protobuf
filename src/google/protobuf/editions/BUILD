@@ -1,7 +1,10 @@
 load("@rules_python//python:proto.bzl", "py_proto_library")
+load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
+load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//:protobuf.bzl", "internal_objc_proto_library")
 
 bzl_library(
     name = "defaults",
@@ -81,6 +84,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -99,10 +103,45 @@ cc_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
+internal_objc_proto_library(
+    name = "test_messages_proto2_editions_objc_proto",
+    testonly = True,
+    srcs = ["golden/test_messages_proto2_editions.proto"],
+    enable_editions = True,
+    visibility = ["//conformance:__pkg__"],
+)
+
 py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
+rust_cc_proto_library(
+    name = "test_messages_proto2_editions_rust_cc_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "test_messages_proto2_editions_rust_upb_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
+upb_c_proto_library(
+    name = "test_messages_proto2_editions_upb_proto",
+    testonly = 1,
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto2_editions_upbdefs",
+    testonly = 1,
+    visibility = ["//upb/conformance:__pkg__"],
     deps = [":test_messages_proto2_editions_proto"],
 )
 
@@ -128,11 +167,51 @@ cc_proto_library(
     deps = [":test_messages_proto3_editions_proto"],
 )
 
+internal_objc_proto_library(
+    name = "test_messages_proto3_editions_objc_proto",
+    testonly = True,
+    srcs = ["golden/test_messages_proto3_editions.proto"],
+    enable_editions = True,
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = ["//:well_known_type_protos"],
+    visibility = ["//conformance:__pkg__"],
+)
+
 py_proto_library(
     name = "test_messages_proto3_editions_py_pb2",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
+)
+
+rust_cc_proto_library(
+    name = "test_messages_proto3_editions_rust_cc_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "test_messages_proto3_editions_rust_upb_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
+upb_c_proto_library(
+    name = "test_messages_proto3_editions_upb_proto",
+    testonly = 1,
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto3_editions_upbdefs",
+    testonly = 1,
+    visibility = ["//upb/conformance:__pkg__"],
+    deps = ["test_messages_proto3_editions_proto"],
 )
 
 # Export these for conformance tests until we support py_proto_library.
@@ -168,6 +247,7 @@ cc_test(
         ":test_messages_proto3_editions_cc_proto",
         "//:protobuf",
         "//src/google/protobuf:test_textproto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -177,6 +257,7 @@ cc_test(
     srcs = ["generated_reflection_test.cc"],
     deps = [
         ":test_messages_proto2_editions_cc_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )

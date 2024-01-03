@@ -74,7 +74,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
+      _this->$field_$ = from.$field_$;
     )cc");
   }
 
@@ -167,43 +167,46 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $Enum$ $Msg$::$name$() const {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return _internal_$name$();
-    }
-    inline void $Msg$::set_$name$($Enum$ value) {
-      $PrepareSplitMessageForWrite$;
-      _internal_set_$name$(value);
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      return _internal_$name_internal$();
     }
   )cc");
 
   if (is_oneof()) {
     p->Emit(R"cc(
-      inline $Enum$ $Msg$::_internal_$name$() const {
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $PrepareSplitMessageForWrite$;
+        $assert_valid$;
+        if ($not_has_field$) {
+          clear_$oneof_name$();
+          set_has_$name_internal$();
+        }
+        $field_$ = value;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
+      inline $Enum$ $Msg$::_internal_$name_internal$() const {
         if ($has_field$) {
           return static_cast<$Enum$>($field_$);
         }
         return static_cast<$Enum$>($kDefault$);
       }
-      inline void $Msg$::_internal_set_$name$($Enum$ value) {
-        $assert_valid$;
-        if ($not_has_field$) {
-          clear_$oneof_name$();
-          set_has_$name$();
-        }
-        $field_$ = value;
-      }
     )cc");
   } else {
     p->Emit(R"cc(
-      inline $Enum$ $Msg$::_internal_$name$() const {
+      inline void $Msg$::set_$name$($Enum$ value) {
+        $PrepareSplitMessageForWrite$;
+        _internal_set_$name_internal$(value);
+        $set_hasbit$;
+        $annotate_set$;
+        // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+      }
+      inline $Enum$ $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return static_cast<$Enum$>($field_$);
       }
-      inline void $Msg$::_internal_set_$name$($Enum$ value) {
+      inline void $Msg$::_internal_set_$name_internal$($Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
-        $set_hasbit$;
         $field_$ = value;
       }
     )cc");
@@ -397,13 +400,13 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $Enum$ $Msg$::$name$(int index) const {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return static_cast<$Enum$>(_internal_$name$().Get(index));
+      return static_cast<$Enum$>(_internal_$name_internal$().Get(index));
     }
   )cc");
   p->Emit(R"cc(
     inline void $Msg$::set_$name$(int index, $Enum$ value) {
       $assert_valid$;
-      _internal_mutable_$name$()->Set(index, value);
+      _internal_mutable_$name_internal$()->Set(index, value);
       $annotate_set$
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
@@ -412,7 +415,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline void $Msg$::add_$name$($Enum$ value) {
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name$()->Add(value);
+      _internal_mutable_$name_internal$()->Add(value);
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
@@ -422,7 +425,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
   p->Emit(R"cc(
@@ -431,16 +434,17 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;
-      return _internal_mutable_$name$();
+      return _internal_mutable_$name_internal$();
     }
   )cc");
   if (should_split()) {
     p->Emit(R"cc(
-      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
+          const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
+      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
@@ -452,11 +456,12 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name$() const {
+      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
+          const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name$() {
+      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
       }

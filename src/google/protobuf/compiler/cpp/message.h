@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -20,6 +21,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -119,6 +121,9 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
   void GenerateClassData(io::Printer* p);
+  void GenerateMapEntryClassDefinition(io::Printer* p);
+  void GenerateAnyMethodDefinition(io::Printer* p);
+  void GenerateImplDefinition(io::Printer* p);
   void GenerateMergeFrom(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateCopyFrom(io::Printer* p);

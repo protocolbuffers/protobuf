@@ -9,23 +9,7 @@ require 'google/protobuf'
 require 'json'
 require 'test/unit'
 
-# ------------- generated code --------------
-
 module BasicTestProto2
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-    add_file "test_proto2.proto", syntax: :proto2 do
-      add_message "BadFieldNames" do
-        optional :dup, :int32, 1
-        optional :class, :int32, 2
-      end
-    end
-  end
-
-  BadFieldNames = pool.lookup("BadFieldNames").msgclass
-
-# ------------ test cases ---------------
-
   class MessageContainerTest < Test::Unit::TestCase
     # Required by CommonTests module to resolve proto2 proto classes used in tests.
     def proto_module
@@ -246,12 +230,12 @@ module BasicTestProto2
     def test_file_descriptor
       file_descriptor = TestMessage.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
+      assert_equal "basic_test_proto2.proto", file_descriptor.name
       assert_equal :proto2, file_descriptor.syntax
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
+      assert_equal "basic_test_proto2.proto", file_descriptor.name
       assert_equal :proto2, file_descriptor.syntax
     end
 
@@ -268,6 +252,58 @@ module BasicTestProto2
       refute msg.has_c?
       assert msg.respond_to? :has_d?
       refute msg.has_d?
+    end
+
+    def test_extension
+      message = TestExtensions.new
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, extension
+      assert_equal 0, extension.get(message)
+      extension.set message, 42
+      assert_equal 42, extension.get(message)
+    end
+
+    def test_nested_extension
+      message = TestExtensions.new
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestNestedExtension.test'
+      assert_instance_of Google::Protobuf::FieldDescriptor, extension
+      assert_equal 'test', extension.get(message)
+      extension.set message, 'another test'
+      assert_equal 'another test', extension.get(message)
+    end
+
+    def test_message_set_extension_json_roundtrip
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
+      message = TestMessageSet.new
+      ext1 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension1.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext1
+      ext2 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension2.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext2
+      ext3 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.message_set_extension3'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext3
+      ext1.set(message, ext1.subtype.msgclass.new(i: 42))
+      ext2.set(message, ext2.subtype.msgclass.new(str: 'foo'))
+      ext3.set(message, ext3.subtype.msgclass.new(text: 'bar'))
+      message_text = message.to_json
+      parsed_message = TestMessageSet.decode_json message_text
+      assert_equal message, parsed_message
+    end
+
+
+    def test_message_set_extension_roundtrip
+      message = TestMessageSet.new
+      ext1 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension1.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext1
+      ext2 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension2.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext2
+      ext3 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.message_set_extension3'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext3
+      ext1.set(message, ext1.subtype.msgclass.new(i: 42))
+      ext2.set(message, ext2.subtype.msgclass.new(str: 'foo'))
+      ext3.set(message, ext3.subtype.msgclass.new(text: 'bar'))
+      encoded_message = TestMessageSet.encode message
+      decoded_message = TestMessageSet.decode encoded_message
+      assert_equal message, decoded_message
     end
   end
 end

@@ -41,6 +41,11 @@ bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s) {
   return s->opts != (void*)kUpbDefOptDefault;
 }
 
+const UPB_DESC(FeatureSet) *
+    upb_ServiceDef_ResolvedFeatures(const upb_ServiceDef* s) {
+  return s->resolved_features;
+}
+
 const char* upb_ServiceDef_FullName(const upb_ServiceDef* s) {
   return s->full_name;
 }

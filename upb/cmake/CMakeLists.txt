@@ -91,13 +91,10 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   base
   mem
   message
-  message_accessors
-  message_accessors_internal
-  message_internal
   mini_descriptor
   mini_table
   wire
-  wire_internal)
+  /upb/message:internal)
 
 add_library(generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     

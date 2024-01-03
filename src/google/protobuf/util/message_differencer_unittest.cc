@@ -29,8 +29,10 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any_test.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -44,12 +46,31 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+class UnsetFieldsMetadataMessageDifferencerTestUtil {
+ public:
+  static void AddExplicitUnsetField(
+      const Message& message, const Reflection& reflection,
+      const FieldDescriptor& fd,
+      TextFormat::Parser::UnsetFieldsMetadata* metadata) {
+    metadata->addresses_.insert(
+        TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
+            message, reflection, fd));
+  }
+};
+}  // namespace internal
+
 namespace {
+
+using ::google::protobuf::internal::UnsetFieldsMetadataMessageDifferencerTestUtil;
 
 
 proto3_unittest::TestNoPresenceField MakeTestNoPresenceField() {
   proto3_unittest::TestNoPresenceField msg1, msg2;
   msg1.set_no_presence_bool(true);
+  msg1.set_no_presence_bool2(true);
+  msg1.set_no_presence_bool3(true);
+  msg1.set_no_presence_string("yolo");
   msg2 = msg1;
   *msg1.mutable_no_presence_nested() = msg2;
   *msg1.add_no_presence_repeated_nested() = msg2;
@@ -376,6 +397,212 @@ TEST(MessageDifferencerTest,
   EXPECT_TRUE(
       force_compare_differencer.NoPresenceFieldsCausingFailure().empty());
   EXPECT_FALSE(default_differencer.Compare(msg2, msg1));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestBooleanPresenceFieldMissingWithAddress) {
+  util::MessageDifferencer address_differencer;
+  address_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // When clearing a singular no presence field, it will be included in the
+  // comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  const Reflection* reflection1 = msg1.GetReflection();
+  const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(1);
+  TextFormat::Parser::UnsetFieldsMetadata metadata;
+  UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
+      msg1, *reflection1, *fd1, &metadata);
+  address_differencer.set_require_no_presence_fields(metadata);
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.clear_no_presence_bool();
+
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg2.clear_no_presence_bool();
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.set_no_presence_bool(true);
+
+  EXPECT_FALSE(default_differencer.Compare(msg1, msg2));
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestStringPresenceFieldMissingWithAddress) {
+  util::MessageDifferencer address_differencer;
+  address_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // When clearing a singular no presence field, it will be included in the
+  // comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  const Reflection* reflection1 = msg1.GetReflection();
+  const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(4);
+  TextFormat::Parser::UnsetFieldsMetadata metadata;
+  UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
+      msg1, *reflection1, *fd1, &metadata);
+  address_differencer.set_require_no_presence_fields(metadata);
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.clear_no_presence_string();
+
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg2.clear_no_presence_string();
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.set_no_presence_string("yolo");
+
+  EXPECT_FALSE(default_differencer.Compare(msg1, msg2));
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+}
+
+// Ensure multiple booleans are addressed distinctly. This is trivially the case
+// now, but tests against possible optimizations in the future to use bitfields.
+TEST(MessageDifferencerTest,
+     PartialEqualityTestTwoBoolsPresenceFieldMissingWithAddress) {
+  util::MessageDifferencer address_differencer;
+  address_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // When clearing a singular no presence field, it will be included in the
+  // comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  const Reflection* reflection1 = msg1.GetReflection();
+  const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(5);
+  TextFormat::Parser::UnsetFieldsMetadata metadata;
+  UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
+      msg1, *reflection1, *fd1, &metadata);
+  address_differencer.set_require_no_presence_fields(metadata);
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  // Trigger on bool2.
+  msg1.clear_no_presence_bool2();
+
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  // Triggering on bool2 still ignores bool3.
+  msg1.set_no_presence_bool2(true);
+  msg1.clear_no_presence_bool3();
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestBooleanNestedMessagePresenceFieldMissingWithAddress) {
+  util::MessageDifferencer address_differencer;
+  address_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // When clearing a singular no presence field, it will be included in the
+  // comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  const Reflection* reflection1 = msg1.no_presence_nested().GetReflection();
+  const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(1);
+  TextFormat::Parser::UnsetFieldsMetadata metadata;
+  UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
+      msg1.no_presence_nested(), *reflection1, *fd1, &metadata);
+  address_differencer.set_require_no_presence_fields(metadata);
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.mutable_no_presence_nested()->clear_no_presence_bool();
+
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg2.mutable_no_presence_nested()->clear_no_presence_bool();
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.mutable_no_presence_nested()->set_no_presence_bool(true);
+
+  EXPECT_FALSE(default_differencer.Compare(msg1, msg2));
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest,
+     PartialEqualityTestBooleanRepeatedMessagePresenceFieldMissingWithAddress) {
+  util::MessageDifferencer address_differencer;
+  address_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+
+  // This differencer is not setting force_compare_no_presence.
+  util::MessageDifferencer default_differencer;
+  default_differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  default_differencer.set_force_compare_no_presence(false);
+
+  // When clearing a singular no presence field, it will be included in the
+  // comparison.
+  proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
+  proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
+
+  const Reflection* reflection1 =
+      msg1.no_presence_repeated_nested(0).GetReflection();
+  const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(1);
+  TextFormat::Parser::UnsetFieldsMetadata metadata;
+  UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
+      msg1.no_presence_repeated_nested(0), *reflection1, *fd1, &metadata);
+  address_differencer.set_require_no_presence_fields(metadata);
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
+
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg2.mutable_no_presence_repeated_nested(0)->clear_no_presence_bool();
+
+  EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
+  EXPECT_TRUE(default_differencer.Compare(msg1, msg2));
+
+  msg1.mutable_no_presence_repeated_nested(0)->set_no_presence_bool(true);
+
+  EXPECT_FALSE(default_differencer.Compare(msg1, msg2));
+  EXPECT_FALSE(address_differencer.Compare(msg1, msg2));
 }
 
 TEST(MessageDifferencerTest,

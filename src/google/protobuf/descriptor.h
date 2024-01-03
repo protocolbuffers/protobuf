@@ -36,6 +36,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -43,6 +44,8 @@
 #include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/any_invocable.h"
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
@@ -494,10 +497,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // Never nullptr.
     const Descriptor* containing_type() const { return containing_type_; }
 
-#ifdef PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS
-
    private:
-#endif
     int start_;
     int end_;
     const ExtensionRangeOptions* options_;
@@ -1033,16 +1033,9 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class Reflection;
   friend class FieldDescriptorLegacy;
 
-
- public:
-  ABSL_DEPRECATED(
-      "Syntax is deprecated in favor of editions, please use "
-      "FieldDescriptor::has_presence instead.")
   // Returns true if this field was syntactically written with "optional" in the
   // .proto file. Excludes singular proto3 fields that do not have a label.
   bool has_optional_keyword() const;
-
- private:
 
   // Get the merged features that apply to this field.  These are specified in
   // the .proto file through the feature options in the message definition.
@@ -1216,16 +1209,9 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   friend class compiler::cpp::Formatter;
   friend class OneofDescriptorLegacy;
 
-
- public:
-  ABSL_DEPRECATED(
-      "Syntax is deprecated in favor of editions, please use "
-      "real_oneof_decl_count for now instead of is_synthetic.")
   // Returns whether this oneof was inserted by the compiler to wrap a proto3
   // optional field. If this returns true, code generators should *not* emit it.
   bool is_synthetic() const;
-
- private:
 
   // Get the merged features that apply to this oneof.  These are specified in
   // the .proto file through the feature options in the oneof definition.
@@ -1261,6 +1247,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   friend class DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
+  friend class Reflection;
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(OneofDescriptor, 56);
@@ -1866,46 +1853,9 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FileOptions& options() const;
 
-
- private:
-  // With the upcoming release of editions, syntax should not be used for
-  // business logic.  Instead, the various feature helpers defined in this file
-  // should be used to query more targeted behaviors.  For example:
-  // has_presence, is_closed, requires_utf8_validation.
-  enum
-      ABSL_DEPRECATED(
-          "Syntax is deprecated in favor of editions.  Please use targeted "
-          "feature helpers instead (e.g. has_presence, is_packed, "
-          "requires_utf8_validation, etc).")
-          Syntax
-#ifndef SWIG
-      : int
-#endif  // !SWIG
-  {
-    SYNTAX_UNKNOWN = 0,
-    SYNTAX_PROTO2 = 2,
-    SYNTAX_PROTO3 = 3,
-    SYNTAX_EDITIONS = 99,
-  };
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DEPRECATED(
-      "Syntax is deprecated in favor of editions.  Please use targeted "
-      "feature helpers instead (e.g. has_presence, is_packed, "
-      "requires_utf8_validation, etc).")
-  Syntax syntax() const;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-
-  // Define a visibility-restricted wrapper for internal use until the migration
-  // is complete.
-  friend class FileDescriptorLegacy;
-
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DEPRECATED("Syntax is deprecated in favor of editions")
-  static const char* SyntaxName(Syntax syntax);
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-
  public:
-  // Returns EDITION_UNKNOWN if syntax() is not SYNTAX_EDITIONS.
+  // Returns edition of this file.  For legacy proto2/proto3 files, special
+  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
   Edition edition() const;
 
   // Find a top-level message type by name (not full_name).  Returns nullptr if
@@ -1941,7 +1891,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // Fill the json_name field of FieldDescriptorProto for all fields. Can only
   // be called after CopyTo().
   void CopyJsonNameTo(FileDescriptorProto* proto) const;
-  // Fills in the file-level settings of this file (e.g. syntax, package,
+  // Fills in the file-level settings of this file (e.g. edition, package,
   // file options) to `proto`.
   void CopyHeadingTo(FileDescriptorProto* proto) const;
 
@@ -1983,8 +1933,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // that type accessor functions that can possibly build a dependent file
   // aren't called during the process of building the file.
   bool finished_building_;
-  // Actually a `Syntax` but stored as uint8_t to save space.
-  uint8_t syntax_;
   // This one is here to fill the padding.
   int extension_count_;
 
@@ -2208,12 +2156,8 @@ class PROTOBUF_EXPORT DescriptorPool {
     virtual void RecordError(absl::string_view filename,
                              absl::string_view element_name,
                              const Message* descriptor, ErrorLocation location,
-                             absl::string_view message) {
-      PROTOBUF_IGNORE_DEPRECATION_START
-      AddError(std::string(filename), std::string(element_name), descriptor,
-               location, std::string(message));
-      PROTOBUF_IGNORE_DEPRECATION_STOP
-    }
+                             absl::string_view message)
+        = 0;
 
     // Reports a warning in the FileDescriptorProto. Use this function if the
     // problem occurred should NOT interrupt building the FileDescriptorProto.
@@ -2228,27 +2172,8 @@ class PROTOBUF_EXPORT DescriptorPool {
                                const Message* descriptor,
                                ErrorLocation location,
                                absl::string_view message) {
-      PROTOBUF_IGNORE_DEPRECATION_START
-      AddWarning(std::string(filename), std::string(element_name), descriptor,
-                 location, std::string(message));
-      PROTOBUF_IGNORE_DEPRECATION_STOP
     }
 
-   private:
-    // These should never be called directly, but if a legacy class overrides
-    // them they'll get routed to by the Record* methods.
-    ABSL_DEPRECATED("Use RecordError")
-    virtual void AddError(const std::string& filename,
-                          const std::string& element_name,
-                          const Message* descriptor, ErrorLocation location,
-                          const std::string& message) {
-      ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
-    }
-    ABSL_DEPRECATED("Use RecordWarning")
-    virtual void AddWarning(const std::string& filename,
-                            const std::string& element_name,
-                            const Message* descriptor, ErrorLocation location,
-                            const std::string& message) {}
   };
 
   // Convert the FileDescriptorProto to real descriptors and place them in
@@ -2290,7 +2215,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // called, these defaults will be used instead.
   // FeatureSetDefaults includes a minimum/maximum supported edition, which will
   // be enforced while building proto files.
-  void SetFeatureSetDefaults(FeatureSetDefaults spec);
+  absl::Status SetFeatureSetDefaults(FeatureSetDefaults spec);
 
   // Toggles enforcement of extension declarations.
   // This enforcement is disabled by default because it requires full
@@ -2299,6 +2224,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   void EnforceExtensionDeclarations(bool enforce) {
     enforce_extension_declarations_ = enforce;
   }
+
+#ifndef SWIG
+  // Dispatch recursive builds to a callback that may stick them onto a separate
+  // thread.  This is primarily to avoid stack overflows on untrusted inputs.
+  // The dispatcher must always synchronously execute the provided callback.
+  // Asynchronous execution is undefined behavior.
+  void SetRecursiveBuildDispatcher(
+      absl::AnyInvocable<void(absl::FunctionRef<void()>) const> dispatcher) {
+    dispatcher_ = std::make_unique<
+        absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>(
+        std::move(dispatcher));
+  }
+#endif  // SWIG
+
   // Internal stuff --------------------------------------------------
   // These methods MUST NOT be called from outside the proto2 library.
   // These methods may contain hidden pitfalls and may be removed in a
@@ -2459,6 +2398,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   DescriptorDatabase* fallback_database_;
   ErrorCollector* default_error_collector_;
   const DescriptorPool* underlay_;
+
+#ifndef SWIG
+  // Dispatcher for recursive calls during builds.
+  std::unique_ptr<absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>
+      dispatcher_;
+#endif  // SWIG
 
   // This class contains a lot of hash maps with complicated types that
   // we'd like to keep out of the header.
@@ -2726,19 +2671,9 @@ inline bool FieldDescriptor::is_map() const {
   return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
-inline bool FieldDescriptor::has_optional_keyword() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  return proto3_optional_ ||
-         (file()->syntax() == FileDescriptor::SYNTAX_PROTO2 && is_optional() &&
-          !containing_oneof());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-}
-
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
-  PROTOBUF_IGNORE_DEPRECATION_START
   auto* oneof = containing_oneof();
   return oneof && !oneof->is_synthetic() ? oneof : nullptr;
-  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // To save space, index() is computed by looking at the descriptor's position
@@ -2844,12 +2779,6 @@ inline const FileDescriptor* FileDescriptor::public_dependency(
 inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
 }
-
-PROTOBUF_IGNORE_DEPRECATION_START
-inline FileDescriptor::Syntax FileDescriptor::syntax() const {
-  return static_cast<Syntax>(syntax_);
-}
-PROTOBUF_IGNORE_DEPRECATION_STOP
 
 namespace internal {
 

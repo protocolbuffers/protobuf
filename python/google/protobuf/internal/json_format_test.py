@@ -1060,7 +1060,14 @@ class JsonFormatTest(JsonFormatBase):
         json_format.Parse, text, message)
     # Time bigger than maximum time.
     message.value.seconds = 253402300800
-    self.assertRaisesRegex(OverflowError, 'date value out of range',
+    self.assertRaisesRegex(json_format.SerializeToJsonError,
+                           'Timestamp is not valid',
+                           json_format.MessageToJson, message)
+    # Nanos smaller than 0
+    message.value.seconds = 0
+    message.value.nanos = -1
+    self.assertRaisesRegex(json_format.SerializeToJsonError,
+                           'Timestamp is not valid',
                            json_format.MessageToJson, message)
     # Lower case t does not accept.
     text = '{"value": "0001-01-01t00:00:00Z"}'

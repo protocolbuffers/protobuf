@@ -547,6 +547,9 @@ void Printer::PrintImpl(absl::string_view format,
       // If we get this far, we can conclude the chunk is a substitution
       // variable; we rename the `chunk` variable to make this clear below.
       absl::string_view var = chunk.text;
+      if (substitution_listener_ != nullptr) {
+        substitution_listener_(var, opts.loc.value_or(SourceLocation()));
+      }
       if (opts.use_curly_brace_substitutions &&
           absl::ConsumePrefix(&var, "{")) {
         if (!Validate(var.size() == 1u, opts,

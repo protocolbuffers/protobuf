@@ -11,6 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_INITIALIZED;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
+import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -619,6 +620,83 @@ public class TextFormatTest {
     String expected =
         "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
             + "  optional_int32: 12345\n"
+            + "}\n";
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testPrintAny_anyWithDynamicMessageContainingExtensionTreatedAsUnknown()
+      throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build(),
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_BYTES)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllExtensions.getDescriptor().getFullName())
+            .setField(
+                descriptor.findFieldByNumber(2),
+                TestAllExtensions.newBuilder()
+                    .setExtension(optionalInt32Extension, 12345)
+                    .build()
+                    .toByteString())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected = "[type.googleapis.com/protobuf_unittest.TestAllExtensions] {\n  1: 12345\n}\n";
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testPrintAny_anyWithDynamicMessageContainingExtensionWithRegistry() throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build(),
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_BYTES)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllExtensions.getDescriptor().getFullName())
+            .setField(
+                descriptor.findFieldByNumber(2),
+                TestAllExtensions.newBuilder()
+                    .setExtension(optionalInt32Extension, 12345)
+                    .build()
+                    .toByteString())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .usingExtensionRegistry(TestUtil.getFullExtensionRegistry())
+            .printToString(testAny);
+    String expected =
+        "[type.googleapis.com/protobuf_unittest.TestAllExtensions] {\n"
+            + "  [protobuf_unittest.optional_int32_extension]: 12345\n"
             + "}\n";
     assertThat(actual).isEqualTo(expected);
   }

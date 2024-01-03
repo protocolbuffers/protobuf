@@ -16,10 +16,10 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void GenerateOneofDefinition(Context<OneofDescriptor> oneof);
-void GenerateOneofAccessors(Context<OneofDescriptor> oneof);
-void GenerateOneofExternC(Context<OneofDescriptor> oneof);
-void GenerateOneofThunkCc(Context<OneofDescriptor> oneof);
+void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof);
+void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof);
+void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof);
+void GenerateOneofThunkCc(Context& ctx, const OneofDescriptor& oneof);
 
 }  // namespace rust
 }  // namespace compiler

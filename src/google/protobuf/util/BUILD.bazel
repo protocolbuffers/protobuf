@@ -170,7 +170,6 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf",
-        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "@com_google_absl//absl/log:absl_log",

@@ -9,9 +9,10 @@
 //! exposed to through the `protobuf` path but must be public for use by
 //! generated code.
 
+pub use crate::r#enum::Enum;
 pub use crate::vtable::{
     new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, PrimitiveOptionalMutVTable,
-    PrimitiveVTable, RawVTableMutator,
+    PrimitiveVTable, PrimitiveWithRawVTable, RawVTableMutator, RawVTableOptionalMutatorData,
 };
 use std::ptr::NonNull;
 use std::slice;

@@ -29,6 +29,11 @@ UPB_API upb_DefPool* upb_DefPool_New(void);
 UPB_API const UPB_DESC(FeatureSetDefaults) *
     upb_DefPool_FeatureSetDefaults(const upb_DefPool* s);
 
+UPB_API bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
+                                               const char* serialized_defaults,
+                                               size_t serialized_len,
+                                               upb_Status* status);
+
 UPB_API const upb_MessageDef* upb_DefPool_FindMessageByName(
     const upb_DefPool* s, const char* sym);
 
@@ -51,7 +56,7 @@ const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext);
 
-const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
+UPB_API const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
                                                     const char* sym);
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
@@ -74,7 +79,7 @@ UPB_API const upb_FileDef* upb_DefPool_AddFile(
     upb_DefPool* s, const UPB_DESC(FileDescriptorProto) * file_proto,
     upb_Status* status);
 
-const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
+UPB_API const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
     const upb_DefPool* s);
 
 const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,

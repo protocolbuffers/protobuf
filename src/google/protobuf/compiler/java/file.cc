@@ -273,6 +273,14 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Annotate("classname", file_->name());
   printer->Indent();
 
+  if (options_.opensource_runtime) {
+    printer->Print("static {\n");
+    printer->Indent();
+    PrintGencodeVersionValidator(printer);
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+
   // -----------------------------------------------------------------
 
   printer->Print(

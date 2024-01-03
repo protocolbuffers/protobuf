@@ -354,9 +354,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto 
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2ftype_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2ftype_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2ftype_2eproto(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
 namespace google {
 namespace protobuf {
 const ::google::protobuf::EnumDescriptor* Field_Kind_descriptor() {
@@ -434,15 +431,8 @@ class Type::_Internal {
   using HasBits = decltype(std::declval<Type>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_);
-  static const ::google::protobuf::SourceContext& source_context(const Type* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::SourceContext& Type::_Internal::source_context(const Type* msg) {
-  return *msg->_impl_.source_context_;
-}
 void Type::clear_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
@@ -515,12 +505,15 @@ inline void Type::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Type::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Type::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
+              false,
+          },
+          &Type::MergeImpl,
+          &Type::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -673,8 +666,7 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   // .google.protobuf.SourceContext source_context = 5;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, _Internal::source_context(this),
-        _Internal::source_context(this).GetCachedSize(), target, stream);
+        5, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 6;
@@ -756,7 +748,7 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
 }
 
 
-void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Type::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
   ::google::protobuf::Arena* arena = _this->GetArena();
@@ -776,7 +768,8 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   if (!from._internal_edition().empty()) {
     _this->_internal_set_edition(from._internal_edition());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
       _this->_impl_.source_context_ =
@@ -784,11 +777,11 @@ void Type::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -823,9 +816,9 @@ void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Type::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2ftype_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2ftype_2eproto[0]);
 }
 // ===================================================================
 
@@ -902,12 +895,15 @@ inline void Field::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Field::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Field::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
+              false,
+          },
+          &Field::MergeImpl,
+          &Field::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1197,7 +1193,7 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
 }
 
 
-void Field::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Field::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Field*>(&to_msg);
   auto& from = static_cast<const Field&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
@@ -1220,19 +1216,19 @@ void Field::MergeImpl(::google::protobuf::Message& to_msg, const ::google::proto
     _this->_internal_set_default_value(from._internal_default_value());
   }
   if (from._internal_kind() != 0) {
-    _this->_internal_set_kind(from._internal_kind());
+    _this->_impl_.kind_ = from._impl_.kind_;
   }
   if (from._internal_cardinality() != 0) {
-    _this->_internal_set_cardinality(from._internal_cardinality());
+    _this->_impl_.cardinality_ = from._impl_.cardinality_;
   }
   if (from._internal_number() != 0) {
-    _this->_internal_set_number(from._internal_number());
+    _this->_impl_.number_ = from._impl_.number_;
   }
   if (from._internal_oneof_index() != 0) {
-    _this->_internal_set_oneof_index(from._internal_oneof_index());
+    _this->_impl_.oneof_index_ = from._impl_.oneof_index_;
   }
   if (from._internal_packed() != 0) {
-    _this->_internal_set_packed(from._internal_packed());
+    _this->_impl_.packed_ = from._impl_.packed_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1267,9 +1263,9 @@ void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Field::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2ftype_2eproto[1]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2ftype_2eproto[1]);
 }
 // ===================================================================
 
@@ -1278,15 +1274,8 @@ class Enum::_Internal {
   using HasBits = decltype(std::declval<Enum>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_);
-  static const ::google::protobuf::SourceContext& source_context(const Enum* msg);
-  static void set_has_source_context(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::SourceContext& Enum::_Internal::source_context(const Enum* msg) {
-  return *msg->_impl_.source_context_;
-}
 void Enum::clear_source_context() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
@@ -1357,12 +1346,15 @@ inline void Enum::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Enum::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Enum::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
+              false,
+          },
+          &Enum::MergeImpl,
+          &Enum::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1500,8 +1492,7 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   // .google.protobuf.SourceContext source_context = 4;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        4, _Internal::source_context(this),
-        _Internal::source_context(this).GetCachedSize(), target, stream);
+        4, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 5;
@@ -1577,7 +1568,7 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
 }
 
 
-void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
   ::google::protobuf::Arena* arena = _this->GetArena();
@@ -1596,7 +1587,8 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
   if (!from._internal_edition().empty()) {
     _this->_internal_set_edition(from._internal_edition());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.source_context_ != nullptr);
     if (_this->_impl_.source_context_ == nullptr) {
       _this->_impl_.source_context_ =
@@ -1604,11 +1596,11 @@ void Enum::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protob
     } else {
       _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
   if (from._internal_syntax() != 0) {
-    _this->_internal_set_syntax(from._internal_syntax());
+    _this->_impl_.syntax_ = from._impl_.syntax_;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -1642,9 +1634,9 @@ void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Enum::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2ftype_2eproto[2]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2ftype_2eproto[2]);
 }
 // ===================================================================
 
@@ -1701,12 +1693,15 @@ inline void EnumValue::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 EnumValue::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          EnumValue::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
+              false,
+          },
+          &EnumValue::MergeImpl,
+          &EnumValue::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1848,7 +1843,7 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
 }
 
 
-void EnumValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumValue*>(&to_msg);
   auto& from = static_cast<const EnumValue&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
@@ -1862,7 +1857,7 @@ void EnumValue::MergeImpl(::google::protobuf::Message& to_msg, const ::google::p
     _this->_internal_set_name(from._internal_name());
   }
   if (from._internal_number() != 0) {
-    _this->_internal_set_number(from._internal_number());
+    _this->_impl_.number_ = from._impl_.number_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1889,9 +1884,9 @@ void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata EnumValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2ftype_2eproto[3]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2ftype_2eproto[3]);
 }
 // ===================================================================
 
@@ -1900,15 +1895,8 @@ class Option::_Internal {
   using HasBits = decltype(std::declval<Option>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_);
-  static const ::google::protobuf::Any& value(const Option* msg);
-  static void set_has_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
-const ::google::protobuf::Any& Option::_Internal::value(const Option* msg) {
-  return *msg->_impl_.value_;
-}
 void Option::clear_value() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   if (_impl_.value_ != nullptr) _impl_.value_->Clear();
@@ -1966,12 +1954,15 @@ inline void Option::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Option::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Option::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
+              false,
+          },
+          &Option::MergeImpl,
+          &Option::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -2060,8 +2051,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   // .google.protobuf.Any value = 2;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, _Internal::value(this),
-        _Internal::value(this).GetCachedSize(), target, stream);
+        2, *_impl_.value_, _impl_.value_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2098,7 +2088,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
 }
 
 
-void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Option::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);
   auto& from = static_cast<const Option&>(from_msg);
   ::google::protobuf::Arena* arena = _this->GetArena();
@@ -2110,7 +2100,8 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
   if (!from._internal_name().empty()) {
     _this->_internal_set_name(from._internal_name());
   }
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     ABSL_DCHECK(from._impl_.value_ != nullptr);
     if (_this->_impl_.value_ == nullptr) {
       _this->_impl_.value_ =
@@ -2118,8 +2109,8 @@ void Option::MergeImpl(::google::protobuf::Message& to_msg, const ::google::prot
     } else {
       _this->_impl_.value_->MergeFrom(*from._impl_.value_);
     }
-    _this->_impl_._has_bits_[0] |= 0x00000001u;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -2145,9 +2136,9 @@ void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Option::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2ftype_2eproto[4]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2ftype_2eproto[4]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -2157,4 +2148,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

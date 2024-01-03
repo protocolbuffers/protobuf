@@ -33,6 +33,8 @@ namespace protobuf {
 namespace compiler {
 namespace {
 
+#define ASSERT_OK(x) ASSERT_TRUE(x.ok()) << x.message();
+
 using ::testing::HasSubstr;
 using ::testing::NotNull;
 
@@ -168,7 +170,7 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
-  pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
@@ -201,7 +203,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
-  pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());

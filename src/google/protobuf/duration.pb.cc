@@ -115,9 +115,6 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2epr
 PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fduration_2eproto_getter() {
   return &descriptor_table_google_2fprotobuf_2fduration_2eproto;
 }
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fduration_2eproto(&descriptor_table_google_2fprotobuf_2fduration_2eproto);
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -162,12 +159,15 @@ inline void Duration::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Duration::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Duration::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
+              false,
+          },
+          &Duration::MergeImpl,
+          &Duration::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -284,7 +284,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Duration::_table_ = {
 }
 
 
-void Duration::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Duration*>(&to_msg);
   auto& from = static_cast<const Duration&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
@@ -293,10 +293,10 @@ void Duration::MergeImpl(::google::protobuf::Message& to_msg, const ::google::pr
   (void) cached_has_bits;
 
   if (from._internal_seconds() != 0) {
-    _this->_internal_set_seconds(from._internal_seconds());
+    _this->_impl_.seconds_ = from._impl_.seconds_;
   }
   if (from._internal_nanos() != 0) {
-    _this->_internal_set_nanos(from._internal_nanos());
+    _this->_impl_.nanos_ = from._impl_.nanos_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -324,9 +324,9 @@ void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Duration::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fduration_2eproto_getter, &descriptor_table_google_2fprotobuf_2fduration_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fduration_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fduration_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fduration_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fduration_2eproto[0]);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
@@ -336,4 +336,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+static ::std::false_type _static_init_ PROTOBUF_UNUSED =
+    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fduration_2eproto),
+     ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

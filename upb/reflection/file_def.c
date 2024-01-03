@@ -8,9 +8,16 @@
 #include "upb/reflection/internal/file_def.h"
 
 #include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
-#include "upb/reflection/def_pool.h"
+#include "upb/base/string_view.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/file.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/message_def.h"
@@ -47,6 +54,20 @@ struct upb_FileDef {
   int ext_count;  // All exts in the file.
   upb_Syntax syntax;
 };
+
+UPB_API const char* upb_FileDef_EditionName(int edition) {
+  // TODO Synchronize this with descriptor.proto better.
+  switch (edition) {
+    case UPB_DESC(EDITION_PROTO2):
+      return "PROTO2";
+    case UPB_DESC(EDITION_PROTO3):
+      return "PROTO3";
+    case UPB_DESC(EDITION_2023):
+      return "2023";
+    default:
+      return "UNKNOWN";
+  }
+}
 
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f) {
   return f->opts;
@@ -180,11 +201,21 @@ const UPB_DESC(FeatureSet*)
 
   int min = UPB_DESC(FeatureSetDefaults_minimum_edition)(defaults);
   int max = UPB_DESC(FeatureSetDefaults_maximum_edition)(defaults);
-  if (edition < min || edition > max) {
+  if (edition < min) {
     _upb_DefBuilder_Errf(ctx,
-                         "Edition %d is outside the supported range [%d, %d] "
+                         "Edition %s is earlier than the minimum edition %s "
                          "given in the defaults",
-                         edition, min, max);
+                         upb_FileDef_EditionName(edition),
+                         upb_FileDef_EditionName(min));
+    return NULL;
+  }
+  if (edition > max) {
+    _upb_DefBuilder_Errf(ctx,
+                         "Edition %s is later than the maximum edition %s "
+                         "given in the defaults",
+                         upb_FileDef_EditionName(edition),
+                         upb_FileDef_EditionName(max));
+    return NULL;
   }
 
   size_t n;
@@ -197,6 +228,11 @@ const UPB_DESC(FeatureSet*)
       break;
     }
     ret = UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_features)(d[i]);
+  }
+  if (ret == NULL) {
+    _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
+                         upb_FileDef_EditionName(edition));
+    return NULL;
   }
   return ret;
 }
@@ -229,11 +265,12 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
-    file->ext_layouts = ctx->layout->exts;
-    if (ctx->layout->ext_count != file->ext_count) {
+    file->ext_layouts = ctx->layout->UPB_PRIVATE(exts);
+    const int mt_ext_count = upb_MiniTableFile_ExtensionCount(ctx->layout);
+    if (mt_ext_count != file->ext_count) {
       _upb_DefBuilder_Errf(ctx,
                            "Extension count did not match layout (%d vs %d)",
-                           ctx->layout->ext_count, file->ext_count);
+                           mt_ext_count, file->ext_count);
     }
   } else {
     // We are building ext layouts from scratch.

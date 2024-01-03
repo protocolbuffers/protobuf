@@ -336,6 +336,17 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
             }
             field_generators_.get(field).GeneratePropertyDeclaration(printer);
           }
+        }},
+       {"wkt_extra",
+        [&] {
+          if (!IsWKTWithObjCCategory(descriptor_)) {
+            return;
+          }
+          printer->Emit(R"objc(
+            // NOTE: There are some Objective-C specific methods/properties in
+            // GPBWellKnownTypes.h that will likey be useful.
+          )objc");
+          printer->Emit("\n");
         }}},
       R"objc(
         #pragma mark - $classname$
@@ -347,6 +358,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
         GPB_FINAL @interface $classname$ : GPBMessage
 
         $message_properties$
+        $wkt_extra$
         @end
       )objc");
   printer->Emit("\n");

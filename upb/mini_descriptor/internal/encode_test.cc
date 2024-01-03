@@ -7,13 +7,16 @@
 
 #include "upb/mini_descriptor/internal/encode.hpp"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string_view>
 #include <vector>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/internal/accessors.h"
@@ -21,11 +24,16 @@
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
-#include "upb/wire/decode.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"
 // end:google_only
+
+// Must be last.
+#include "upb/port/def.inc"
 
 namespace protobuf = ::google::protobuf;
 
@@ -37,8 +45,8 @@ TEST_P(MiniTableTest, Empty) {
   upb_MiniTable* table =
       _upb_MiniTable_Build(nullptr, 0, GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(0, table->field_count);
-  EXPECT_EQ(0, table->required_count);
+  EXPECT_EQ(0, table->UPB_PRIVATE(field_count));
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
 TEST_P(MiniTableTest, AllScalarTypes) {
@@ -54,16 +62,16 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(count, table->field_count);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
-    const upb_MiniTableField* f = &table->fields[i];
-    EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
-    EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->size);
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
   }
-  EXPECT_EQ(0, table->required_count);
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
 TEST_P(MiniTableTest, AllRepeatedTypes) {
@@ -80,16 +88,16 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(count, table->field_count);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
-    const upb_MiniTableField* f = &table->fields[i];
-    EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(kUpb_FieldMode_Array, f->mode & kUpb_FieldMode_Mask);
-    EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->size);
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
+    EXPECT_TRUE(upb_MiniTableField_IsArray(f));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
   }
-  EXPECT_EQ(0, table->required_count);
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
 TEST_P(MiniTableTest, Skips) {
@@ -108,17 +116,17 @@ TEST_P(MiniTableTest, Skips) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(count, table->field_count);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
   absl::flat_hash_set<size_t> offsets;
   for (size_t i = 0; i < field_numbers.size(); i++) {
-    const upb_MiniTableField* f = &table->fields[i];
-    EXPECT_EQ(field_numbers[i], f->number);
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(field_numbers[i], upb_MiniTableField_Number(f));
     EXPECT_EQ(kUpb_FieldType_Float, upb_MiniTableField_Type(f));
-    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
-    EXPECT_TRUE(offsets.insert(f->offset).second);
-    EXPECT_TRUE(f->offset < table->size);
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
+    EXPECT_TRUE(offsets.insert(f->UPB_PRIVATE(offset)).second);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
   }
-  EXPECT_EQ(0, table->required_count);
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
 TEST_P(MiniTableTest, AllScalarTypesOneof) {
@@ -138,22 +146,23 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
-  EXPECT_EQ(count, table->field_count);
+  EXPECT_EQ(count, table->UPB_PRIVATE(field_count));
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
-    const upb_MiniTableField* f = &table->fields[i];
-    EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
+    const upb_MiniTableField* f = &table->UPB_PRIVATE(fields)[i];
+    EXPECT_EQ(i + 1, upb_MiniTableField_Number(f));
+    EXPECT_TRUE(upb_MiniTableField_IsScalar(f));
     // For a oneof all fields have the same offset.
-    EXPECT_EQ(table->fields[0].offset, f->offset);
+    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].UPB_PRIVATE(offset),
+              f->UPB_PRIVATE(offset));
     // All presence fields should point to the same oneof case offset.
-    size_t case_ofs = _upb_oneofcase_ofs(f);
-    EXPECT_EQ(table->fields[0].presence, f->presence);
-    EXPECT_TRUE(f->offset < table->size);
-    EXPECT_TRUE(case_ofs < table->size);
-    EXPECT_TRUE(case_ofs != f->offset);
+    size_t case_ofs = UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(f);
+    EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
+    EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(case_ofs < table->UPB_PRIVATE(size));
+    EXPECT_TRUE(case_ofs != f->UPB_PRIVATE(offset));
   }
-  EXPECT_EQ(0, table->required_count);
+  EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
 TEST_P(MiniTableTest, SizeOverflow) {
@@ -233,9 +242,11 @@ TEST_P(MiniTableTest, SubsInitializedToEmpty) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(table->field_count, 2);
-  EXPECT_EQ(table->subs[0].submsg, &_kUpb_MiniTable_Empty);
-  EXPECT_EQ(table->subs[1].submsg, &_kUpb_MiniTable_Empty);
+  EXPECT_EQ(table->UPB_PRIVATE(field_count), 2);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
+      upb_MiniTableSub_Message(table->UPB_PRIVATE(subs)[0])));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
+      upb_MiniTableSub_Message(table->UPB_PRIVATE(subs)[1])));
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {
@@ -275,7 +286,8 @@ TEST_P(MiniTableTest, Extendible) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(kUpb_ExtMode_Extendable, table->ext & kUpb_ExtMode_Extendable);
+  EXPECT_EQ(kUpb_ExtMode_Extendable,
+            table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
 }
 
 // begin:google_only

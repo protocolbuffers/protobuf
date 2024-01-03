@@ -215,7 +215,7 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
-    inline const $Map$& $Msg$::_internal_$name$() const {
+    inline const $Map$& $Msg$::_internal_$name_internal$() const {
       $TsanDetectConcurrentRead$;
       return $field_$.GetMap();
     }
@@ -224,11 +224,11 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Map$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_map:$pkg.Msg.field$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
   p->Emit(R"cc(
-    inline $Map$* $Msg$::_internal_mutable_$name$() {
+    inline $Map$* $Msg$::_internal_mutable_$name_internal$() {
       $PrepareSplitMessageForWrite$;
       $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
@@ -238,7 +238,7 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
-      return _internal_mutable_$name$();
+      return _internal_mutable_$name_internal$();
     }
   )cc");
 }

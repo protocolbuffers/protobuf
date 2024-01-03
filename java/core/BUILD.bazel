@@ -2,10 +2,10 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
-load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
+load("//conformance:defs.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
@@ -85,6 +85,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/RawMessageInfo.java",
     "src/main/java/com/google/protobuf/Reader.java",
     "src/main/java/com/google/protobuf/RopeByteString.java",
+    "src/main/java/com/google/protobuf/RuntimeVersion.java",
     "src/main/java/com/google/protobuf/Schema.java",
     "src/main/java/com/google/protobuf/SchemaFactory.java",
     "src/main/java/com/google/protobuf/SchemaUtil.java",
@@ -472,6 +473,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
     "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
     "src/test/java/com/google/protobuf/MapForProto2Test.java",
@@ -485,6 +487,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/Proto2SchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java",
     "src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java",
+    "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
     "src/test/java/com/google/protobuf/ServiceTest.java",
     "src/test/java/com/google/protobuf/SingleFieldBuilderV3Test.java",
     "src/test/java/com/google/protobuf/TestBadIdentifiers.java",

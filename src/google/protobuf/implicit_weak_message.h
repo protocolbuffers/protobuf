@@ -63,10 +63,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     };
     static constexpr Data data = {
         {
-            nullptr,  // merge_impl
             nullptr,  // on_demand_register_arena_dtor
-            nullptr,  // descriptor_methods
             PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+            true,
         },
         ""};
     return &data.header;
@@ -167,7 +166,11 @@ struct WeakRepeatedPtrField {
   // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
 
-  ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
+  ~WeakRepeatedPtrField() {
+    if (weak.NeedsDestroy()) {
+      weak.DestroyProtos();
+    }
+  }
 
   typedef internal::RepeatedPtrIterator<MessageLite> iterator;
   typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;

@@ -5,19 +5,8 @@ require 'stress_pb'
 require 'test/unit'
 
 module StressTest
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-    add_message "TestMessage" do
-      proto3_optional :a,  :int32,        1
-      repeated :b,  :message,      2, "M"
-    end
-    add_message "M" do
-      proto3_optional :foo, :string, 1
-    end
-  end
-
-  TestMessage = pool.lookup("TestMessage").msgclass
-  M = pool.lookup("M").msgclass
+  TestMessage = StressTestProtos::TestMessage
+  M = StressTestProtos::M
 
   class StressTest < Test::Unit::TestCase
     def get_msg

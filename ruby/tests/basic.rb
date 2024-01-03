@@ -9,20 +9,9 @@ require 'google/protobuf'
 require 'json'
 require 'test/unit'
 
-# ------------- generated code --------------
-
 module BasicTest
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-    add_message "BadFieldNames" do
-      optional :dup, :int32, 1
-      optional :class, :int32, 2
-    end
-  end
-
-  BadFieldNames = pool.lookup("BadFieldNames").msgclass
-
-# ------------ test cases ---------------
+  TestMessage = BasicTest::TestMessage
+  Outer = BasicTest::Outer
 
   class MessageContainerTest < Test::Unit::TestCase
     # Required by CommonTests module to resolve proto3 proto classes used in tests.
@@ -32,32 +21,12 @@ module BasicTest
     include CommonTests
 
     def test_issue_8311_crash
-      Google::Protobuf::DescriptorPool.generated_pool.build do
-        add_file("inner.proto", :syntax => :proto3) do
-          add_message "Inner" do
-            # Removing either of these fixes the segfault.
-            optional :foo, :string, 1
-            optional :bar, :string, 2
-          end
-        end
-      end
-
-      Google::Protobuf::DescriptorPool.generated_pool.build do
-        add_file("outer.proto", :syntax => :proto3) do
-          add_message "Outer" do
-            repeated :inners, :message, 1, "Inner"
-          end
-        end
-      end
-
-      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
-
-      outer.new(
+      BasicTest::Outer8311.new(
           inners: []
       )['inners'].to_s
 
       assert_raises Google::Protobuf::TypeError do
-        outer.new(
+        BasicTest::Outer8311.new(
             inners: [nil]
         ).to_s
       end
@@ -83,29 +52,16 @@ module BasicTest
     end
 
     def test_issue_9507
-      pool = Google::Protobuf::DescriptorPool.new
-      pool.build do
-        add_message "NpeMessage" do
-          optional :type, :enum, 1, "TestEnum"
-          optional :other, :string, 2
-        end
-        add_enum "TestEnum" do
-          value :Something, 0
-        end
-      end
-
-      msgclass = pool.lookup("NpeMessage").msgclass
-
-      m = msgclass.new(
+      m = BasicTest::NpeMessage.new(
         other: "foo"      # must be set, but can be blank
       )
 
       begin
-        encoded = msgclass.encode(m)
+        encoded = BasicTest::NpeMessage.encode(m)
       rescue java.lang.NullPointerException
         flunk "NPE rescued"
       end
-      decoded = msgclass.decode(encoded)
+      decoded = BasicTest::NpeMessage.decode(encoded)
       decoded.inspect
       decoded.to_proto
     end
@@ -609,12 +565,12 @@ module BasicTest
     def test_file_descriptor
       file_descriptor = TestMessage.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test.proto", file_descriptor.name
+      assert_equal "basic_test.proto", file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test.proto", file_descriptor.name
+      assert_equal "basic_test.proto", file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
     end
 
@@ -729,6 +685,19 @@ module BasicTest
       oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
 
       assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
+      test_top_level_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.test_top_level_option'
+      assert_instance_of Google::Protobuf::FieldDescriptor, test_top_level_option
+      assert_equal "Custom option value", test_top_level_option.get(oneof_descriptor.options)
+    end
+
+    def test_nested_extension
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
+      test_nested_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.TestDeprecatedMessage.test_nested_option'
+      assert_instance_of Google::Protobuf::FieldDescriptor, test_nested_option
+      assert_equal "Another custom option value", test_nested_option.get(oneof_descriptor.options)
     end
 
     def test_options_deep_freeze
@@ -737,6 +706,25 @@ module BasicTest
       assert_raise FrozenError do
         descriptor.options.uninterpreted_option.push \
           Google::Protobuf::UninterpretedOption.new
+      end
+    end
+
+    def test_message_deep_freeze
+      message = TestDeprecatedMessage.new
+      omit(":internal_deep_freeze only exists under FFI") unless message.respond_to? :internal_deep_freeze, true
+      nested_message_2 = TestMessage2.new
+
+      message.map_string_msg["message"] = TestMessage2.new
+      message.repeated_msg.push(TestMessage2.new)
+
+      message.send(:internal_deep_freeze)
+
+      assert_raise FrozenError do
+        message.map_string_msg["message"].foo = "bar"
+      end
+
+      assert_raise FrozenError do
+        message.repeated_msg[0].foo = "bar"
       end
     end
   end
@@ -754,5 +742,16 @@ module BasicTest
     refute msg.has_c?
     assert_respond_to msg, :has_d?
     refute msg.has_d?
+  end
+
+  def test_string_subclass
+    str = "hello"
+    myString = Class.new(String)
+
+    m = proto_module::TestMessage.new(
+      optional_string: myString.new(str),
+    )
+
+    assert_equal str, m.optional_string
   end
 end

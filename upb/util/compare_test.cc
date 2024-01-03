@@ -15,8 +15,11 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include "upb/wire/internal/swap.h"
+#include "upb/base/internal/endian.h"
 #include "upb/wire/types.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 struct UnknownField;
 
@@ -81,11 +84,11 @@ std::string ToBinaryPayload(const UnknownFields& fields) {
       ret.append(val->val);
     } else if (const auto* val = std::get_if<Fixed64>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_64Bit, &ret);
-      uint64_t swapped = _upb_BigEndian_Swap64(val->val);
+      uint64_t swapped = upb_BigEndian64(val->val);
       ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
     } else if (const auto* val = std::get_if<Fixed32>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_32Bit, &ret);
-      uint32_t swapped = _upb_BigEndian_Swap32(val->val);
+      uint32_t swapped = upb_BigEndian32(val->val);
       ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
     } else if (const auto* val = std::get_if<Group>(&field.value)) {
       EncodeVarint(field.field_number << 3 | kUpb_WireType_StartGroup, &ret);

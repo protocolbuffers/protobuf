@@ -56,12 +56,12 @@ cc_library(
         ":names",
         ":output",
         "//:protobuf",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/strings",
         "//upb_generator:common",
         "//upb_generator:file_layout",
         "//upb_generator:keywords",
         "//upb_generator:names",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
     ],
 )
 

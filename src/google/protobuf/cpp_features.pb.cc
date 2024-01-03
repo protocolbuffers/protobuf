@@ -124,9 +124,6 @@ class CppFeatures::_Internal {
   using HasBits = decltype(std::declval<CppFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
     8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
-  static void set_has_legacy_closed_enum(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
 };
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
@@ -160,12 +157,15 @@ inline void CppFeatures::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 CppFeatures::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          CppFeatures::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+              false,
+          },
+          &CppFeatures::MergeImpl,
+          &CppFeatures::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -263,7 +263,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 0, 2> CppFeatures::_table_ = {
 }
 
 
-void CppFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google::protobuf::Message& from_msg) {
+void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<CppFeatures*>(&to_msg);
   auto& from = static_cast<const CppFeatures&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.CppFeatures)
@@ -271,9 +271,11 @@ void CppFeatures::MergeImpl(::google::protobuf::Message& to_msg, const ::google:
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if ((from._impl_._has_bits_[0] & 0x00000001u) != 0) {
-    _this->_internal_set_legacy_closed_enum(from._internal_legacy_closed_enum());
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
   }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -296,15 +298,15 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
-      file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
+  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_getter,
+                                   &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto_once,
+                                   file_level_metadata_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0]);
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
         ExtensionIdentifier<::google::protobuf::FeatureSet, ::_pbi::MessageTypeTraits< ::pb::CppFeatures >,
                             11, false>
-            cpp(kCppFieldNumber);
+            cpp(kCppFieldNumber, &::pb::_CppFeatures_default_instance_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 namespace google {

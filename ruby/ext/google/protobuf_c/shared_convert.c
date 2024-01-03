@@ -12,7 +12,7 @@
 #include "shared_convert.h"
 
 bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
-                           upb_CType type, upb_MessageDef* msgdef,
+                           upb_CType type, const upb_MessageDef* msgdef,
                            upb_Status* status) {
   switch (type) {
     case kUpb_CType_Bool:
@@ -39,7 +39,7 @@ bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
 }
 
 uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type,
-                               upb_MessageDef* msgdef, uint64_t seed,
+                               const upb_MessageDef* msgdef, uint64_t seed,
                                upb_Status* status) {
   switch (type) {
     case kUpb_CType_Bool:
