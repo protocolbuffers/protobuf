@@ -50,6 +50,7 @@ cc_library(
     deps = [
         ":def_to_proto",
         "//:protobuf",
+        "//src/google/protobuf/util:differencer",
         "//upb:base",
         "//upb:descriptor_upb_proto",
         "//upb:mem",
@@ -67,6 +68,7 @@ cc_test(
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:protobuf",
+        "//src/google/protobuf/util:differencer",
         "//upb:descriptor_upb_proto_reflection",
         "//upb:mem",
         "//upb:reflection",

@@ -32,6 +32,7 @@ cc_library(
     deps = [
         "//upb:json",
         "//upb:message",
+        "//upb:port",
         "//upb:reflection",
         "//upb:text",
         "@lua//:liblua",
@@ -44,7 +45,9 @@ cc_binary(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/strings",
     ],
 )

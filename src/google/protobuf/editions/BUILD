@@ -75,6 +75,7 @@ cc_test(
     deps = [
         ":defaults_test_embedded",
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

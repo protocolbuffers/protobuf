@@ -72,6 +72,7 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "//:protobuf",
+        "//src/google/protobuf/io",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
@@ -96,6 +97,7 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":output",
+        "//src/google/protobuf",
         "//upb_generator:keywords",
     ],
 )
