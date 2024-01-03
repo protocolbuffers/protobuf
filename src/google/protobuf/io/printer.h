@@ -24,6 +24,7 @@
 
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
@@ -449,8 +450,8 @@ class PROTOBUF_EXPORT Printer {
   // released.
   struct SourceLocation {
     static SourceLocation current() { return {}; }
-    absl::string_view file_name() { return "<unknown>"; }
-    int line() { return 0; }
+    absl::string_view file_name() const { return "<unknown>"; }
+    int line() const { return 0; }
   };
 
   static constexpr char kDefaultVariableDelimiter = '$';
@@ -655,6 +656,18 @@ class PROTOBUF_EXPORT Printer {
   void FormatInternal(absl::Span<const std::string> args, const Map& vars,
                       absl::string_view format);
 
+  // Injects a substitution listener for the lifetime of the RAII object
+  // returned.
+  // While the listener is active it will receive a callback on each
+  // substitution label found.
+  // This can be used to add basic verification on top of emit routines.
+  auto WithSubstitutionListener(
+      absl::AnyInvocable<void(absl::string_view, SourceLocation)> listener) {
+    ABSL_CHECK(substitution_listener_ == nullptr);
+    substitution_listener_ = std::move(listener);
+    return absl::MakeCleanup([this] { substitution_listener_ = nullptr; });
+  }
+
  private:
   struct PrintOptions;
   struct Format;
@@ -752,6 +765,11 @@ class PROTOBUF_EXPORT Printer {
   std::vector<
       std::function<absl::optional<AnnotationRecord>(absl::string_view)>>
       annotation_lookups_;
+
+  // If set, we invoke this when we do a label substitution. This can be used to
+  // verify consistency of the generated code while we generate it.
+  absl::AnyInvocable<void(absl::string_view, SourceLocation)>
+      substitution_listener_;
 
   // A map from variable name to [start, end) offsets in the output buffer.
   //

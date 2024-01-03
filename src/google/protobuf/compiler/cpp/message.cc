@@ -29,6 +29,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -1060,7 +1061,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   }
   if (HasInternalHasMethod(field)) {
     p->Emit(R"cc(
-      inline bool $classname$::_internal_has_$name$() const {
+      inline bool $classname$::_internal_has_$name_internal$() const {
         return $has_field$;
       }
     )cc");
@@ -1068,7 +1069,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // set_has_$name$() for oneof fields is always private; hence should not be
   // annotated.
   p->Emit(R"cc(
-    inline void $classname$::set_has_$name$() {
+    inline void $classname$::set_has_$name_internal$() {
       $oneof_case$[$oneof_index$] = k$field_name$;
     }
   )cc");
@@ -1120,22 +1121,81 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
           )cc");
 }
 
+namespace {
+
+class AccessorVerifier {
+ public:
+  using SourceLocation = io::Printer::SourceLocation;
+
+  AccessorVerifier(const FieldDescriptor* field) : field_(field) {}
+  ~AccessorVerifier() {
+    ABSL_CHECK(!needs_annotate_) << Error(SourceLocation::current());
+  }
+
+  void operator()(absl::string_view label, io::Printer::SourceLocation loc) {
+    if (label == "name" || label == "release_name") {
+      // All accessors use $name$ or $release_name$ when constructing the
+      // function name. We hook into those to determine that an accessor is
+      // starting.
+      ABSL_CHECK(!needs_annotate_) << Error(loc);
+      loc_ = loc;
+      needs_annotate_ = true;
+    } else if (absl::StartsWith(label, "annotate")) {
+      // All annotation labels start with `annotate`. Eg `annotate_get`.
+      ABSL_CHECK(needs_annotate_) << Error(loc);
+      loc_ = loc;
+      needs_annotate_ = false;
+    }
+  }
+
+ private:
+  std::string Error(SourceLocation loc) const {
+    return absl::StrFormat("Field %s printed from %s:%d (prev %s:%d)\n",
+                           field_->full_name(), loc.file_name(), loc.line(),
+                           loc_.file_name(), loc_.line());
+  }
+
+  bool needs_annotate_ = false;
+  // We keep these fields for error reporting.
+  const FieldDescriptor* field_;
+  // On error, we report two locations: the current one and the last one. This
+  // can help determine where the bug is. For example, if we see "name" twice in
+  // a row, the bug is likely in the "last" one and not the current one because
+  // it means the previous accessor didn't add the required code.
+  SourceLocation loc_;
+};
+
+}  // namespace
+
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
 
   for (auto field : FieldRange(descriptor_)) {
+    // We use a print listener to verify that the field generators properly add
+    // the right annotations. This is only a verification step aimed to prevent
+    // bugs where we have lack of test coverage. Note that this will verify the
+    // annotations even when the particular feature is not on because we look at
+    // the substitution variables, not the substitution result.
+    // The check is a state machine that verifies that every substitution for
+    // `name` is followed by one and only one for needed annotations. False
+    // positives are accessors that are using $name$ for an internal name. For
+    // those you can use $name_internal$ which is the same substitution but not
+    // tracked by the verifier.
+    const auto accessor_verifier =
+        p->WithSubstitutionListener(AccessorVerifier(field));
+
     PrintFieldComment(Formatter{p}, field, options_);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     if (field->is_repeated()) {
       p->Emit(R"cc(
-        inline int $classname$::_internal_$name$_size() const {
-          return _internal_$name$().size();
+        inline int $classname$::_internal_$name_internal$_size() const {
+          return _internal_$name_internal$().size();
         }
         inline int $classname$::$name$_size() const {
           $annotate_size$;
-          return _internal_$name$_size();
+          return _internal_$name_internal$_size();
         }
       )cc");
     } else if (field->real_containing_oneof()) {

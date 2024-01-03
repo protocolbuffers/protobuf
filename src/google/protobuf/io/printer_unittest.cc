@@ -610,6 +610,35 @@ TEST_F(PrinterTest, EmitConsumeAfter) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitWithSubstituionListener) {
+  std::vector<std::string> seen;
+  Printer printer(output());
+  const auto emit = [&] {
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            Printer::Sub{"var", "int x;"}.WithSuffix(";"),
+        },
+        R"cc(
+          void $class$::foo() { $var$; }
+          void $class$::set_foo() { $var$; }
+        )cc");
+  };
+  emit();
+  EXPECT_THAT(seen, ElementsAre());
+  {
+    auto listener = printer.WithSubstitutionListener(
+        [&](auto label, auto loc) { seen.emplace_back(label); });
+    emit();
+  }
+  EXPECT_THAT(seen, ElementsAre("class", "var", "class", "var"));
+
+  // Still works after the listener is disconnected.
+  seen.clear();
+  emit();
+  EXPECT_THAT(seen, ElementsAre());
+}
+
 TEST_F(PrinterTest, EmitConditionalFunctionCall) {
   {
     Printer printer(output());

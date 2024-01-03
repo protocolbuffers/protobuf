@@ -43,6 +43,8 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
       {"name", FieldName(field)},
+      // Same as above, but represents internal use.
+      {"name_internal", FieldName(field)},
 
       {"index", field->index()},
       {"number", field->number()},

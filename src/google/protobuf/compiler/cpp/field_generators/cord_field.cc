@@ -174,7 +174,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
   auto v = printer->WithVars(variables_);
   printer->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::_internal_$name$() const {
+    inline const ::absl::Cord& $classname$::_internal_$name_internal$() const {
       return $field$;
     }
   )cc");
@@ -183,18 +183,20 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$full_name$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
   printer->Emit(R"cc(
-    inline void $classname$::_internal_set_$name$(const ::absl::Cord& value) {
+    inline void $classname$::_internal_set_$name_internal$(
+        const ::absl::Cord& value) {
       $set_hasbit$;
       $field$ = value;
     }
   )cc");
   printer->Emit(R"cc(
     inline void $classname$::set_$name$(const ::absl::Cord& value) {
-      $PrepareSplitMessageForWrite$ _internal_set_$name$(value);
+      $PrepareSplitMessageForWrite$;
+      _internal_set_$name_internal$(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$full_name$)
     }
@@ -209,7 +211,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline ::absl::Cord* $classname$::_internal_mutable_$name$() {
+    inline ::absl::Cord* $classname$::_internal_mutable_$name_internal$() {
       $set_hasbit$;
       return &$field$;
     }
@@ -333,7 +335,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
   auto v = printer->WithVars(variables_);
   printer->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::_internal_$name$() const {
+    inline const ::absl::Cord& $classname$::_internal_$name_internal$() const {
       if ($has_field$) {
         return *$field$;
       }
@@ -345,14 +347,14 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$full_name$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
   printer->Emit(R"cc(
     inline void $classname$::set_$name$(const ::absl::Cord& value) {
       if ($not_has_field$) {
         clear_$oneof_name$();
-        set_has_$name$();
+        set_has_$name_internal$();
         $field$ = new ::absl::Cord;
         ::$proto_ns$::Arena* arena = GetArena();
         if (arena != nullptr) {
@@ -368,7 +370,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     inline void $classname$::set_$name$(::absl::string_view value) {
       if ($not_has_field$) {
         clear_$oneof_name$();
-        set_has_$name$();
+        set_has_$name_internal$();
         $field$ = new ::absl::Cord;
         ::$proto_ns$::Arena* arena = GetArena();
         if (arena != nullptr) {
@@ -381,10 +383,10 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline ::absl::Cord* $classname$::_internal_mutable_$name$() {
+    inline ::absl::Cord* $classname$::_internal_mutable_$name_internal$() {
       if ($not_has_field$) {
         clear_$oneof_name$();
-        set_has_$name$();
+        set_has_$name_internal$();
         $field$ = new ::absl::Cord;
         ::$proto_ns$::Arena* arena = GetArena();
         if (arena != nullptr) {
