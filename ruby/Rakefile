@@ -26,6 +26,8 @@ test_protos = %w[
   tests/generated_code.proto
   tests/generated_code_proto2.proto
   tests/multi_level_nesting_test.proto
+  tests/repeated_field_test.proto
+  tests/stress.proto
   tests/test_import.proto
   tests/test_import_proto2.proto
   tests/test_ruby_package.proto
@@ -64,7 +66,7 @@ unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
     output_file = proto_file.sub(/\.proto$/, "_pb.rb")
     genproto_output << output_file
     file output_file => proto_file do |file_task|
-      sh "#{protoc_command} -I../src -I. -I./tests --ruby_out=.  #{proto_file}"
+      sh "#{protoc_command} -I../src -I./tests --ruby_out=tests  #{proto_file}"
     end
   end
 end

@@ -285,3 +285,31 @@ message HelloRequest {
   optional uint32 random_name_c9 = 31;
   optional string version = 32;
 }
+
+message BadFieldNames {
+  optional int32 dup = 1;
+  optional int32 class = 2;
+}
+
+// Messages to test the fix for
+// https://github.com/protocolbuffers/protobuf/issues/8311.
+message Inner8311 {
+  // Removing either of these fixes the segfault.
+  optional string foo = 1;
+  optional string bar = 2;
+}
+
+message Outer8311 {
+  repeated Inner8311 inners = 1;
+}
+
+// Messages to test the fix for
+// https://github.com/protocolbuffers/protobuf/issues/9507
+message NpeMessage {
+  optional TestEnum9507 type = 1;
+  optional string other = 2;
+}
+
+enum TestEnum9507 {
+  Something = 0;
+}

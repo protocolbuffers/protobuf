@@ -1,9 +1,12 @@
 #!/usr/bin/ruby
 
 require 'google/protobuf'
+require 'repeated_field_test_pb'
 require 'test/unit'
 
 class RepeatedFieldTest < Test::Unit::TestCase
+  TestMessage = RepeatedFieldTestProtos::TestMessage
+  TestMessage2 = RepeatedFieldTestProtos::TestMessage2
 
   def test_acts_like_enumerator
     m = TestMessage.new
@@ -281,7 +284,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
     m.repeated_msg[3] = TestMessage2.new(:foo => 1)
     assert_equal [nil, nil, nil, TestMessage2.new(:foo => 1)], m.repeated_msg
     m.repeated_enum[3] = :A
-    assert_equal [:Default, :Default, :Default, :A], m.repeated_enum
+    assert_equal [:DEFAULT, :DEFAULT, :DEFAULT, :A], m.repeated_enum
 
     # check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
     #   arr[20] = 'spacious'
@@ -674,52 +677,4 @@ class RepeatedFieldTest < Test::Unit::TestCase
     test_msg.repeated_enum   << :A
     test_msg.repeated_enum   << :B
   end
-
-
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-
-    add_message "TestMessage" do
-      optional :optional_int32,  :int32,        1
-      optional :optional_int64,  :int64,        2
-      optional :optional_uint32, :uint32,       3
-      optional :optional_uint64, :uint64,       4
-      optional :optional_bool,   :bool,         5
-      optional :optional_float,  :float,        6
-      optional :optional_double, :double,       7
-      optional :optional_string, :string,       8
-      optional :optional_bytes,  :bytes,        9
-      optional :optional_msg,    :message,      10, "TestMessage2"
-      optional :optional_enum,   :enum,         11, "TestEnum"
-
-      repeated :repeated_int32,  :int32,        12
-      repeated :repeated_int64,  :int64,        13
-      repeated :repeated_uint32, :uint32,       14
-      repeated :repeated_uint64, :uint64,       15
-      repeated :repeated_bool,   :bool,         16
-      repeated :repeated_float,  :float,        17
-      repeated :repeated_double, :double,       18
-      repeated :repeated_string, :string,       19
-      repeated :repeated_bytes,  :bytes,        20
-      repeated :repeated_msg,    :message,      21, "TestMessage2"
-      repeated :repeated_enum,   :enum,         22, "TestEnum"
-    end
-    add_message "TestMessage2" do
-      optional :foo, :int32, 1
-    end
-
-    add_enum "TestEnum" do
-      value :Default, 0
-      value :A, 1
-      value :B, 2
-      value :C, 3
-      value :v0, 4
-    end
-  end
-
-  TestMessage = pool.lookup("TestMessage").msgclass
-  TestMessage2 = pool.lookup("TestMessage2").msgclass
-  TestEnum = pool.lookup("TestEnum").enummodule
-
-
 end

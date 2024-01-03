@@ -229,21 +229,6 @@ filegroup(
 # Tests
 ################################################################################
 
-# Define this here so the descriptor paths match what we get in Rake tests.
-internal_ruby_proto_library(
-    name = "test_ruby_protos",
-    srcs = ["//ruby/tests:test_protos"],
-    includes = [
-        ".",
-        "ruby/tests",
-        "src",
-    ],
-    visibility = [
-        "//ruby:__subpackages__",
-    ],
-    deps = [":well_known_ruby_protos"],
-)
-
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
