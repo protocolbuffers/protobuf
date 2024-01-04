@@ -95,7 +95,8 @@ message TestStringSerializer {
 }
 
 message TestMessageWithExtension {
-  extensions 100 to max;
+  extensions 100 to max
+  [verification = UNVERIFIED];
 }
 
 message TestExtension {
