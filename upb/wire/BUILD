@@ -15,6 +15,7 @@ cc_library(
         "internal/constants.h",
         "internal/decode_fast.c",
         "internal/decoder.h",
+        "required.h",
     ],
     hdrs = [
         "decode.h",

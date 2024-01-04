@@ -44,6 +44,7 @@
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/decoder.h"
 #include "upb/wire/reader.h"
+#include "upb/wire/required.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -753,14 +754,8 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m) {
   UPB_ASSERT(m->UPB_PRIVATE(required_count));
-  if (UPB_LIKELY((d->options & kUpb_DecodeOption_CheckRequired) == 0)) {
-    return ptr;
-  }
-  uint64_t msg_head;
-  memcpy(&msg_head, msg, 8);
-  msg_head = upb_BigEndian64(msg_head);
-  if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
-    d->missing_required = true;
+  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
+    d->missing_required = _upb_Message_MissingRequired(msg, m);
   }
   return ptr;
 }

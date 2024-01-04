@@ -38,6 +38,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/internal/constants.h"
+#include "upb/wire/required.h"
 #include "upb/wire/types.h"
 
 // Must be last.
@@ -550,10 +551,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
 
   if ((e->options & kUpb_EncodeOption_CheckRequired) &&
       m->UPB_PRIVATE(required_count)) {
-    uint64_t msg_head;
-    memcpy(&msg_head, msg, 8);
-    msg_head = upb_BigEndian64(msg_head);
-    if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
+    if (_upb_Message_MissingRequired(msg, m)) {
       encode_err(e, kUpb_EncodeStatus_MissingRequired);
     }
   }
