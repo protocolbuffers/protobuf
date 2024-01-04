@@ -597,8 +597,8 @@ const upb_FileDef* lupb_FileDef_check(lua_State* L, int narg) {
 
 static int lupb_FileDef_Dependency(lua_State* L) {
   const upb_FileDef* f = lupb_FileDef_check(L, 1);
-#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 501
-  int index = luaL_checkinteger(L, 2);
+#if LUA_VERSION_NUM >= 501
+  int index = lupb_checkint32(L, 2);
 #else
   int index = luaL_checkint(L, 2);
 #endif
