@@ -664,7 +664,7 @@ public class RubyMessage extends RubyObject {
               });
     }
     if (freeze) {
-      ret.deepFreeze(context);
+      ret.freeze(context);
     }
     return ret;
   }
@@ -814,16 +814,20 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
-  protected IRubyObject deepFreeze(ThreadContext context) {
+  @JRubyMethod
+  public IRubyObject freeze(ThreadContext context) {
+    if (isFrozen()) {
+      return this;
+    }
     setFrozen(true);
     for (FieldDescriptor fdef : descriptor.getFields()) {
       if (fdef.isMapField()) {
-        ((RubyMap) fields.get(fdef)).deepFreeze(context);
+        ((RubyMap) fields.get(fdef)).freeze(context);
       } else if (fdef.isRepeated()) {
-        this.getRepeatedField(context, fdef).deepFreeze(context);
+        this.getRepeatedField(context, fdef).freeze(context);
       } else if (fields.containsKey(fdef)) {
         if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
-          ((RubyMessage) fields.get(fdef)).deepFreeze(context);
+          ((RubyMessage) fields.get(fdef)).freeze(context);
         }
       }
     }

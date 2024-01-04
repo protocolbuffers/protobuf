@@ -59,8 +59,15 @@ module Google
           end
 
           def freeze
+            return self if frozen?
             super
             @arena.pin self
+            self.class.descriptor.each do |field_descriptor|
+              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
+              if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
+                get_field(field_descriptor).freeze
+              end
+            end
             self
           end
 
@@ -301,17 +308,6 @@ module Google
           # warning and are intended for use only within the gem.
 
           include Google::Protobuf::Internal::Convert
-
-          def internal_deep_freeze
-            freeze
-            self.class.descriptor.each do |field_descriptor|
-              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
-              if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
-                get_field(field_descriptor).send :internal_deep_freeze
-              end
-            end
-            self
-          end
 
           def self.setup_accessors!
             @descriptor.each do |field_descriptor|
@@ -639,7 +635,7 @@ module Google
             repeated_field = OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
               repeated_field = RepeatedField.send(:construct_for_field, field, @arena, array: array)
-              repeated_field.send :internal_deep_freeze if frozen?
+              repeated_field.freeze if frozen?
             end
             repeated_field
           end
@@ -652,7 +648,7 @@ module Google
             map_field = OBJECT_CACHE.get(map.address)
             if map_field.nil?
               map_field = Google::Protobuf::Map.send(:construct_for_field, field, @arena, map: map)
-              map_field.send :internal_deep_freeze if frozen?
+              map_field.freeze if frozen?
             end
             map_field
           end

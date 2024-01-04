@@ -100,7 +100,7 @@ module Google
           size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
           temporary_arena = Google::Protobuf::FFI.create_arena
           buffer = Google::Protobuf::FFI.message_options(self, size_ptr, temporary_arena)
-          Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+          Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).freeze
         end
       end
 
@@ -138,7 +138,7 @@ module Google
         message = OBJECT_CACHE.get(msg.address)
         if message.nil?
           message = descriptor.msgclass.send(:private_constructor, arena, msg: msg)
-          message.send :internal_deep_freeze if frozen?
+          message.freeze if frozen?
         end
         message
       end

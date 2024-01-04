@@ -826,22 +826,12 @@ static VALUE Message_to_h(VALUE _self) {
  * Freezes the message object. We have to intercept this so we can pin the
  * Ruby object into memory so we don't forget it's frozen.
  */
-static VALUE Message_freeze(VALUE _self) {
+VALUE Message_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  if (!RB_OBJ_FROZEN(_self)) {
-    Arena_Pin(self->arena, _self);
-    RB_OBJ_FREEZE(_self);
-  }
-  return _self;
-}
 
-/*
- * Deep freezes the message object recursively.
- * Internal use only.
- */
-VALUE Message_internal_deep_freeze(VALUE _self) {
-  Message* self = ruby_to_Message(_self);
-  Message_freeze(_self);
+  if (RB_OBJ_FROZEN(_self)) return _self;
+  Arena_Pin(self->arena, _self);
+  RB_OBJ_FREEZE(_self);
 
   int n = upb_MessageDef_FieldCount(self->msgdef);
   for (int i = 0; i < n; i++) {
@@ -850,11 +840,11 @@ VALUE Message_internal_deep_freeze(VALUE _self) {
 
     if (field != Qnil) {
       if (upb_FieldDef_IsMap(f)) {
-        Map_internal_deep_freeze(field);
+        Map_freeze(field);
       } else if (upb_FieldDef_IsRepeated(f)) {
-        RepeatedField_internal_deep_freeze(field);
+        RepeatedField_freeze(field);
       } else if (upb_FieldDef_IsSubMessage(f)) {
-        Message_internal_deep_freeze(field);
+        Message_freeze(field);
       }
     }
   }
@@ -963,7 +953,7 @@ VALUE Message_decode_bytes(int size, const char* bytes, int options,
     rb_raise(cParseError, "Error occurred during parsing");
   }
   if (freeze) {
-    Message_internal_deep_freeze(msg_rb);
+    Message_freeze(msg_rb);
   }
   return msg_rb;
 }

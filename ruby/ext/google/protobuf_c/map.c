@@ -563,22 +563,13 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
  * Freezes the message object. We have to intercept this so we can pin the
  * Ruby object into memory so we don't forget it's frozen.
  */
-static VALUE Map_freeze(VALUE _self) {
+VALUE Map_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  if (!RB_OBJ_FROZEN(_self)) {
-    Arena_Pin(self->arena, _self);
-    RB_OBJ_FREEZE(_self);
-  }
-  return _self;
-}
 
-/*
- * Deep freezes the map and values recursively.
- * Internal use only.
- */
-VALUE Map_internal_deep_freeze(VALUE _self) {
-  Map* self = ruby_to_Map(_self);
-  Map_freeze(_self);
+  if (RB_OBJ_FROZEN(_self)) return _self;
+  Arena_Pin(self->arena, _self);
+  RB_OBJ_FREEZE(_self);
+
   if (self->value_type_info.type == kUpb_CType_Message) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
@@ -586,7 +577,7 @@ VALUE Map_internal_deep_freeze(VALUE _self) {
     while (upb_Map_Next(self->map, &key, &val, &iter)) {
       VALUE val_val =
           Convert_UpbToRuby(val, self->value_type_info, self->arena);
-      Message_internal_deep_freeze(val_val);
+      Message_freeze(val_val);
     }
   }
   return _self;

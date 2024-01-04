@@ -174,6 +174,18 @@ module Google
       end
       alias size :length
 
+      def freeze
+        return self if frozen?
+        super
+        @arena.pin self
+        if type == :message
+          each do |element|
+            element.freeze
+          end
+        end
+        self
+      end
+
       def dup
         instance = self.class.allocate
         instance.send(:initialize, type, descriptor: descriptor, arena: arena)
@@ -251,16 +263,6 @@ module Google
       include Google::Protobuf::Internal::Convert
 
       attr :name, :arena, :array, :type, :descriptor
-
-      def internal_deep_freeze
-        freeze
-        if type == :message
-          each do |element|
-            element.send :internal_deep_freeze
-          end
-        end
-        self
-      end
 
       def internal_push(*elements)
         elements.each do |element|

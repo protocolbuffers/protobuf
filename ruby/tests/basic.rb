@@ -696,15 +696,14 @@ module BasicTest
       end
     end
 
-    def test_message_deep_freeze
+    def test_message_freeze
       message = TestDeprecatedMessage.new
-      omit(":internal_deep_freeze only exists under FFI") unless message.respond_to? :internal_deep_freeze, true
       nested_message_2 = TestMessage2.new
 
       message.map_string_msg["message"] = TestMessage2.new
       message.repeated_msg.push(TestMessage2.new)
 
-      message.send(:internal_deep_freeze)
+      message.freeze
 
       assert_raise FrozenError do
         message.map_string_msg["message"].foo = "bar"
