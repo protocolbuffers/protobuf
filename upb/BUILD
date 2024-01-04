@@ -270,27 +270,6 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# Internal C/C++ libraries #####################################################
-
-cc_binary(
-    name = "libupb.so",
-    srcs = ["upb_so.c"],
-    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
-    linkshared = 1,
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":message",
-        ":message_compare",
-        ":message_split64",
-        ":mini_descriptor",
-        ":mini_table",
-        ":port",
-        ":wire",
-    ],
-)
-
 # Amalgamation #################################################################
 
 # begin:github_only
@@ -443,7 +422,6 @@ filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "**/*.c",
             "**/*.h",
             "**/*.hpp",
         ],
