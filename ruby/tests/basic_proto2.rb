@@ -273,8 +273,21 @@ module BasicTestProto2
     def test_extension_json_separate_pool
       pool = Google::Protobuf::DescriptorPool.new
 
-      # This serialized descriptor is a subset of basic_test_proto2.proto that
-      # contains only the TestExtensions message, but no actual extensions.
+      # This serialized descriptor is a subset of basic_test_proto2.proto:
+      #
+      #   syntax = "proto2";
+      #   package basic_test_proto2;
+      #
+      #   message TestExtensions {
+      #     extensions 1 to max;
+      #   }
+      #
+      #   extend TestExtensions {
+      #     # Same extension as basic_test_proto2.proto, but with a different
+      #     # name.
+      #     optional int32 different_optional_int32_extension = 1;
+      #   }
+      #
       descriptor_data = "\n\x17\x62\x61sic_test_proto2.proto\x12\x11\x62\x61sic_test_proto2\"\x1a\n\x0eTestExtensions*\x08\x08\x01\x10\x80\x80\x80\x80\x02:M\n\"different_optional_int32_extension\x12!.basic_test_proto2.TestExtensions\x18\x01 \x01(\x05"
       pool.add_serialized_file(descriptor_data)
       message_class = pool.lookup("basic_test_proto2.TestExtensions").msgclass
