@@ -23,6 +23,7 @@
 #include <iterator>
 #include <limits>
 #include <list>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -55,6 +56,7 @@ namespace {
 
 using ::protobuf_unittest::TestAllTypes;
 using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
+using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
@@ -110,6 +112,20 @@ TEST(RepeatedPtrOverPtrsIterator, Traits) {
                             std::random_access_iterator_tag>::value));
 #endif
 }
+
+#if __cplusplus >= 202002L
+TEST(RepeatedPtrOverPtrsIterator, ToAddress) {
+  // empty container
+  RepeatedPtrField<std::string> field;
+  EXPECT_THAT(std::to_address(field.pointer_begin()), A<std::string**>());
+  EXPECT_EQ(std::to_address(field.pointer_begin()),
+            std::to_address(field.pointer_end()));
+
+  // "null" iterator
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_THAT(std::to_address(It()), A<std::string**>());
+}
+#endif
 
 TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   using It = RepeatedPtrField<std::string>::const_pointer_iterator;
