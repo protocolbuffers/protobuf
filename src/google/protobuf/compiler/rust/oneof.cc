@@ -78,15 +78,15 @@ std::string ToCamelCase(absl::string_view name) {
   return cpp::UnderscoresToCamelCase(name, /* upper initial letter */ true);
 }
 
-std::string oneofViewEnumRsName(const OneofDescriptor& oneof) {
+std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
   return ToCamelCase(oneof.name());
 }
 
-std::string oneofMutEnumRsName(const OneofDescriptor& oneof) {
+std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
   return ToCamelCase(oneof.name()) + "Mut";
 }
 
-std::string oneofCaseEnumName(const OneofDescriptor& oneof) {
+std::string OneofCaseEnumName(const OneofDescriptor& oneof) {
   // Note: This is the name used for the cpp Case enum, we use it for both
   // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
   return ToCamelCase(oneof.name()) + "Case";
@@ -167,8 +167,8 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
 
 void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
-      {{"view_enum_name", oneofViewEnumRsName(oneof)},
-       {"mut_enum_name", oneofMutEnumRsName(oneof)},
+      {{"view_enum_name", OneofViewEnumRsName(oneof)},
+       {"mut_enum_name", OneofMutEnumRsName(oneof)},
        {"view_fields",
         [&] {
           for (int i = 0; i < oneof.field_count(); ++i) {
@@ -230,7 +230,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
 
   // Note: This enum is used as the Thunk return type for getting which case is
   // used: it exactly matches the generate case enum that both cpp and upb use.
-  ctx.Emit({{"case_enum_name", oneofCaseEnumName(oneof)},
+  ctx.Emit({{"case_enum_name", OneofCaseEnumName(oneof)},
             {"cases",
              [&] {
                for (int i = 0; i < oneof.field_count(); ++i) {
@@ -258,9 +258,9 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
 void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {{"oneof_name", oneof.name()},
-       {"view_enum_name", oneofViewEnumRsName(oneof)},
-       {"mut_enum_name", oneofMutEnumRsName(oneof)},
-       {"case_enum_name", oneofCaseEnumName(oneof)},
+       {"view_enum_name", OneofViewEnumRsName(oneof)},
+       {"mut_enum_name", OneofMutEnumRsName(oneof)},
+       {"case_enum_name", OneofCaseEnumName(oneof)},
        {"view_cases",
         [&] {
           for (int i = 0; i < oneof.field_count(); ++i) {
@@ -341,7 +341,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
 void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
-          {"case_enum_rs_name", oneofCaseEnumName(oneof)},
+          {"case_enum_rs_name", OneofCaseEnumName(oneof)},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
       },
       R"rs(
@@ -353,7 +353,7 @@ void GenerateOneofThunkCc(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
           {"oneof_name", oneof.name()},
-          {"case_enum_name", oneofCaseEnumName(oneof)},
+          {"case_enum_name", OneofCaseEnumName(oneof)},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
           {"QualifiedMsg", cpp::QualifiedClassName(oneof.containing_type())},
       },
