@@ -53,7 +53,8 @@ message EvilNamesProto2 {
   optional bool has_underbar_preceding_numeric_42bar = 13;
   optional bool has_underbar_preceding_numeric_123foo42bar_baz = 14;
 
-  extensions 100 to max;
+  extensions 100 to max
+  [verification = UNVERIFIED];
 
   repeated string extension = 12;
   repeated int32 class = 15;

@@ -36,7 +36,7 @@ option java_package = "com.google.protobuf.kotlin.test";
 option java_multiple_files = true;
 
 message ExampleExtensibleMessage {
-  extensions 10 to 20;
+  extensions 10 to 20 [verification = UNVERIFIED];
 }
 
 extend ExampleExtensibleMessage {
