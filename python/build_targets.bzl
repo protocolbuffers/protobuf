@@ -85,7 +85,7 @@ def build_targets(name):
         ],
         deps = select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["//external:python_headers"],
+            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
         }),
     )
 
@@ -134,7 +134,7 @@ def build_targets(name):
             "@com_google_absl//absl/strings",
         ] + select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["//external:python_headers"],
+            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
         }),
     )
 
@@ -398,7 +398,7 @@ def build_targets(name):
         hdrs = ["google/protobuf/proto_api.h"],
         visibility = ["//visibility:public"],
         deps = [
-            "//external:python_headers",
+            "@system_python//:python_headers",
         ],
     )
 
