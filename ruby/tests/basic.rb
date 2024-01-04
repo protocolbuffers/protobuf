@@ -469,32 +469,19 @@ module BasicTest
     #end
 
     def test_to_h
-      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
+      m = TestMessage.new(
+        :optional_bool => true,
+        :optional_double => -10.100001,
+        :optional_string => 'foo',
+        :repeated_string => ['bar1', 'bar2'],
+        :repeated_msg => [TestMessage2.new(:foo => 100)]
+      )
       expected_result = {
         :optional_bool=>true,
-        :optional_bytes=>"",
         :optional_double=>-10.100001,
-        :optional_enum=>:Default,
-        :optional_float=>0.0,
-        :optional_int32=>0,
-        :optional_int64=>0,
-        :optional_msg=>nil,
-        :optional_msg2=>nil,
-        :optional_proto2_submessage=>nil,
         :optional_string=>"foo",
-        :optional_uint32=>0,
-        :optional_uint64=>0,
-        :repeated_bool=>[],
-        :repeated_bytes=>[],
-        :repeated_double=>[],
-        :repeated_enum=>[],
-        :repeated_float=>[],
-        :repeated_int32=>[],
-        :repeated_int64=>[],
-        :repeated_msg=>[{:foo => 100}],
         :repeated_string=>["bar1", "bar2"],
-        :repeated_uint32=>[],
-        :repeated_uint64=>[]
+        :repeated_msg=>[{:foo => 100}],
       }
       assert_equal expected_result, m.to_h
 

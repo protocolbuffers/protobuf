@@ -787,33 +787,29 @@ public class RubyMessage extends RubyObject {
   public IRubyObject toHash(ThreadContext context) {
     Ruby runtime = context.runtime;
     RubyHash ret = RubyHash.newHash(runtime);
-    for (FieldDescriptor fdef : this.descriptor.getFields()) {
+    build(context, 0, SINK_MAXIMUM_NESTING); // Sync Ruby data to the Builder object.
+    for (Map.Entry<FieldDescriptor, Object> field : builder.getAllFields().entrySet()) {
+      FieldDescriptor fdef = field.getKey();
       IRubyObject value = getFieldInternal(context, fdef, proto3);
 
-      if (!value.isNil()) {
-        if (fdef.isRepeated() && !fdef.isMapField()) {
-          if (!proto3 && ((RubyRepeatedField) value).size() == 0)
-            continue; // Don't output empty repeated fields for proto2
-          if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
-            value = Helpers.invoke(context, value, "to_a");
-          } else {
-            RubyArray ary = value.convertToArray();
-            for (int i = 0; i < ary.size(); i++) {
-              IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
-              ary.eltInternalSet(i, submsg);
-            }
-
-            value = ary.to_ary();
-          }
-        } else if (value.respondsTo("to_h")) {
-          value = Helpers.invoke(context, value, "to_h");
-        } else if (value.respondsTo("to_a")) {
+      if (fdef.isRepeated() && !fdef.isMapField()) {
+        if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
           value = Helpers.invoke(context, value, "to_a");
+        } else {
+          RubyArray ary = value.convertToArray();
+          for (int i = 0; i < ary.size(); i++) {
+            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+            ary.eltInternalSet(i, submsg);
+          }
+
+          value = ary.to_ary();
         }
+      } else if (value.respondsTo("to_h")) {
+        value = Helpers.invoke(context, value, "to_h");
+      } else if (value.respondsTo("to_a")) {
+        value = Helpers.invoke(context, value, "to_a");
       }
-      if (proto3 || !value.isNil()) {
-        ret.fastASet(runtime.newSymbol(fdef.getName()), value);
-      }
+      ret.fastASet(runtime.newSymbol(fdef.getName()), value);
     }
     return ret;
   }

@@ -23,6 +23,7 @@ module Google
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
       attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDescriptor], FieldDescriptor
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
+      attach_function :message_next,            :upb_Message_Next,            [:Message, Descriptor, :DefPool, :FieldDefPointer, MessageValue.by_ref, :pointer], :bool
       # MessageValue
       attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, Descriptor], :bool
       attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, Descriptor, :uint64_t], :uint64_t

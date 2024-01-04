@@ -766,58 +766,34 @@ static VALUE Message_CreateHash(const upb_Message* msg,
   if (!msg) return Qnil;
 
   VALUE hash = rb_hash_new();
-  int n = upb_MessageDef_FieldCount(m);
-  bool is_proto2;
+  size_t iter = kUpb_Message_Begin;
+  const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(m));
+  const upb_FieldDef* field;
+  upb_MessageValue val;
 
-  // We currently have a few behaviors that are specific to proto2.
-  // This is unfortunate, we should key behaviors off field attributes (like
-  // whether a field has presence), not proto2 vs. proto3. We should see if we
-  // can change this without breaking users.
-  is_proto2 = upb_MessageDef_Syntax(m) == kUpb_Syntax_Proto2;
+  while (upb_Message_Next(msg, m, pool, &field, &val, &iter)) {
+    if (upb_FieldDef_IsExtension(field)) {
+      // TODO: allow extensions once we have decided what naming scheme the
+      // symbol should use.  eg. :"[pkg.ext]"
+      continue;
+    }
 
-  for (int i = 0; i < n; i++) {
-    const upb_FieldDef* field = upb_MessageDef_Field(m, i);
     TypeInfo type_info = TypeInfo_get(field);
-    upb_MessageValue msgval;
     VALUE msg_value;
-    VALUE msg_key;
-
-    if (!is_proto2 && upb_FieldDef_IsSubMessage(field) &&
-        !upb_FieldDef_IsRepeated(field) &&
-        !upb_Message_HasFieldByDef(msg, field)) {
-      // TODO: Legacy behavior, remove when we fix the is_proto2 differences.
-      msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
-      rb_hash_aset(hash, msg_key, Qnil);
-      continue;
-    }
-
-    // Do not include fields that are not present (oneof or optional fields).
-    if (is_proto2 && upb_FieldDef_HasPresence(field) &&
-        !upb_Message_HasFieldByDef(msg, field)) {
-      continue;
-    }
-
-    msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
-    msgval = upb_Message_GetFieldByDef(msg, field);
-
-    // Proto2 omits empty map/repeated filds also.
 
     if (upb_FieldDef_IsMap(field)) {
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
       const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
       const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       upb_CType key_type = upb_FieldDef_CType(key_f);
-      msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
+      msg_value = Map_CreateHash(val.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_FieldDef_IsRepeated(field)) {
-      if (is_proto2 &&
-          (!msgval.array_val || upb_Array_Size(msgval.array_val) == 0)) {
-        continue;
-      }
-      msg_value = RepeatedField_CreateArray(msgval.array_val, type_info);
+      msg_value = RepeatedField_CreateArray(val.array_val, type_info);
     } else {
-      msg_value = Scalar_CreateHash(msgval, type_info);
+      msg_value = Scalar_CreateHash(val, type_info);
     }
 
+    VALUE msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
     rb_hash_aset(hash, msg_key, msg_value);
   }
 
