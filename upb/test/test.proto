@@ -63,7 +63,8 @@ message ModelWithExtensions {
   optional string random_name = 4;
   repeated int32 repeated_int32 = 5;
   // Reserved for unknown fields/extensions test.
-  extensions 1000 to max;
+  extensions 1000 to max
+  [verification = UNVERIFIED];
 }
 
 message ModelExtension1 {
