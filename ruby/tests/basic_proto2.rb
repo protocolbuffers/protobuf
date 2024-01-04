@@ -264,6 +264,7 @@ module BasicTestProto2
     end
 
     def test_extension_json
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
       message = TestExtensions.decode_json '{"[basic_test_proto2.optional_int32_extension]": 123}'
       extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
       assert_instance_of Google::Protobuf::FieldDescriptor, extension
@@ -271,6 +272,7 @@ module BasicTestProto2
     end
 
     def test_extension_json_separate_pool
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
       pool = Google::Protobuf::DescriptorPool.new
 
       # This serialized descriptor is a subset of basic_test_proto2.proto:
