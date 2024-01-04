@@ -743,7 +743,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     // names.
     p->Emit(R"cc(
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
-                bool _is_packed>
+                bool _is_packed,
+                typename = absl::void_t<typename _proto_TypeTraits::Singular>>
       inline bool HasExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
@@ -761,7 +762,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       }
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
-                bool _is_packed>
+                bool _is_packed,
+                typename = absl::void_t<typename _proto_TypeTraits::Repeated>>
       inline int ExtensionSize(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
