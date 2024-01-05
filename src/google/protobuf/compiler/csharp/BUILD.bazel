@@ -58,6 +58,7 @@ cc_library(
         "csharp_repeated_primitive_field.h",
         "csharp_source_generator_base.h",
         "csharp_wrapper_field.h",
+        "csharp_names.h",
     ],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
