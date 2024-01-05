@@ -340,11 +340,6 @@ class Message(object):
   def FromString(cls, s):
     raise NotImplementedError
 
-# TODO: Remove it in OSS
-  @staticmethod
-  def RegisterExtension(field_descriptor):
-    raise NotImplementedError
-
   def _SetListener(self, message_listener):
     """Internal method used by the protocol message implementation.
     Clients should not call this directly.

@@ -779,15 +779,6 @@ def _AddPropertiesForExtensions(descriptor, cls):
     pool = descriptor.file.pool
 
 def _AddStaticMethods(cls):
-  # TODO: This probably needs to be thread-safe(?)
-  def RegisterExtension(field_descriptor):
-    field_descriptor.containing_type = cls.DESCRIPTOR
-    # TODO: Use cls.MESSAGE_FACTORY.pool when available.
-    # pylint: disable=protected-access
-    cls.DESCRIPTOR.file.pool._AddExtensionDescriptor(field_descriptor)
-    _AttachFieldHelpers(cls, field_descriptor)
-  cls.RegisterExtension = staticmethod(RegisterExtension)
-
   def FromString(s):
     message = cls()
     message.MergeFromString(s)

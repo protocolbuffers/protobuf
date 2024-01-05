@@ -1855,32 +1855,6 @@ static PyObject* ByteSize(CMessage* self, PyObject* args) {
   return PyLong_FromLong(self->message->ByteSizeLong());
 }
 
-PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle) {
-  const FieldDescriptor* descriptor =
-      GetExtensionDescriptor(extension_handle);
-  if (descriptor == nullptr) {
-    return nullptr;
-  }
-  if (!PyObject_TypeCheck(cls, CMessageClass_Type)) {
-    PyErr_Format(PyExc_TypeError, "Expected a message class, got %s",
-                 cls->ob_type->tp_name);
-    return nullptr;
-  }
-  CMessageClass *message_class = reinterpret_cast<CMessageClass*>(cls);
-  if (message_class == nullptr) {
-    return nullptr;
-  }
-  // If the extension was already registered, check that it is the same.
-  const FieldDescriptor* existing_extension =
-      message_class->py_message_factory->pool->pool->FindExtensionByNumber(
-          descriptor->containing_type(), descriptor->number());
-  if (existing_extension != nullptr && existing_extension != descriptor) {
-    PyErr_SetString(PyExc_ValueError, "Double registration of Extensions");
-    return nullptr;
-  }
-  Py_RETURN_NONE;
-}
-
 static PyObject* SetInParent(CMessage* self, PyObject* args) {
   AssureWritable(self);
   Py_RETURN_NONE;
@@ -2391,8 +2365,6 @@ static PyMethodDef Methods[] = {
      "Merges a serialized message into the current message."},
     {"ParseFromString", (PyCFunction)ParseFromString, METH_O,
      "Parses a serialized message into the current message."},
-    {"RegisterExtension", (PyCFunction)RegisterExtension, METH_O | METH_CLASS,
-     "Registers an extension with the current message."},
     {"SerializePartialToString", (PyCFunction)SerializePartialToString,
      METH_VARARGS | METH_KEYWORDS,
      "Serializes the message to a string, even if it isn't initialized."},
