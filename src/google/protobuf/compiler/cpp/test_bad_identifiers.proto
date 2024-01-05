@@ -120,8 +120,7 @@ message TestConflictingSymbolNames {
   // For clashing local variables in Serialize and ByteSize calculation.
   optional string target = 38;
 
-  extensions 1000 to max
-  [verification = UNVERIFIED];  // NO_PROTO3
+  extensions 1000 to max [verification = UNVERIFIED];  // NO_PROTO3
 }
 
 message TestConflictingSymbolNamesExtension {                      // NO_PROTO3
