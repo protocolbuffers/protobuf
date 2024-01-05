@@ -23,7 +23,7 @@ fn test_fixed32_accessors() {
     assert_that!(msg.optional_fixed32_mut().get(), eq(42));
     assert_that!(msg.optional_fixed32(), eq(42));
 
-    msg.optional_fixed32_mut().clear();
+    msg.optional_fixed32_mut().set(u32::default());
     assert_that!(msg.optional_fixed32(), eq(0));
     assert_that!(msg.optional_fixed32_mut().get(), eq(0));
 }
@@ -38,7 +38,7 @@ fn test_bool_accessors() {
     assert_that!(msg.optional_bool(), eq(true));
     assert_that!(msg.optional_bool_mut().get(), eq(true));
 
-    msg.optional_bool_mut().clear();
+    msg.optional_bool_mut().set(bool::default());
     assert_that!(msg.optional_bool(), eq(false));
     assert_that!(msg.optional_bool_mut().get(), eq(false));
 }
@@ -122,66 +122,66 @@ fn test_string_accessors() {
     let mut msg = TestAllTypes::new();
     // Note: even though it's named 'optional_string', the field is actually not
     // proto3 optional, so it does not support presence.
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
     msg.optional_string_mut().set("accessors_test");
-    assert_eq!(msg.optional_string(), "accessors_test");
-    assert_eq!(msg.optional_string_mut().get(), "accessors_test");
+    assert_that!(msg.optional_string(), eq("accessors_test"));
+    assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
 
     {
         let s = String::from("hello world");
         msg.optional_string_mut().set(&s[..]);
     }
-    assert_eq!(msg.optional_string(), "hello world");
-    assert_eq!(msg.optional_string_mut().get(), "hello world");
+    assert_that!(msg.optional_string(), eq("hello world"));
+    assert_that!(msg.optional_string_mut().get(), eq("hello world"));
 
     msg.optional_string_mut().clear();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
     msg.optional_string_mut().set("");
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 }
 
 #[test]
 fn test_optional_string_accessors() {
     let mut msg = TestProto3Optional::new();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Unset("".into()));
-    assert_eq!(msg.optional_string_mut().get(), "");
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
+    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
     assert_that!(msg.optional_string_mut(), is_unset());
 
     {
         let s = String::from("hello world");
         msg.optional_string_mut().set(&s[..]);
     }
-    assert_eq!(msg.optional_string(), "hello world");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("hello world".into()));
+    assert_that!(msg.optional_string(), eq("hello world"));
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("hello world".into())));
     assert_that!(msg.optional_string_mut(), is_set());
-    assert_eq!(msg.optional_string_mut().get(), "hello world");
+    assert_that!(msg.optional_string_mut().get(), eq("hello world"));
 
     msg.optional_string_mut().or_default().set("accessors_test");
-    assert_eq!(msg.optional_string(), "accessors_test");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("accessors_test".into()));
+    assert_that!(msg.optional_string(), eq("accessors_test"));
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("accessors_test".into())));
     assert_that!(msg.optional_string_mut(), is_set());
-    assert_eq!(msg.optional_string_mut().get(), "accessors_test");
-    assert_eq!(msg.optional_string_mut().or_default().get(), "accessors_test");
+    assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
+    assert_that!(msg.optional_string_mut().or_default().get(), eq("accessors_test"));
 
     msg.optional_string_mut().clear();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Unset("".into()));
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
     assert_that!(msg.optional_string_mut(), is_unset());
 
     msg.optional_string_mut().set("");
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("".into()));
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 
     msg.optional_string_mut().clear();
     msg.optional_string_mut().or_default();
-    assert_eq!(msg.optional_string(), "");
-    assert_eq!(msg.optional_string_opt(), Optional::Set("".into()));
+    assert_that!(*msg.optional_string().as_bytes(), empty());
+    assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 }
 
 #[test]
@@ -191,18 +191,63 @@ fn test_oneof_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
+    msg.oneof_uint32_mut().set(7);
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
 
-    msg.oneof_uint32_set(None);
+    msg.oneof_uint32_mut().clear();
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_set(Some(7));
-    msg.oneof_bytes_mut().set(b"");
-    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
+    // TODO: the submessage api is still in progress so we can't yet
+    // cause a submsg to be set here.
 
-    // This should show it set to the OneofBytes but its not supported yet.
+    // msg.oneof_nested_message_mut().or_default(); // Cause the nested_message
+    // field to become set.
+
+    // assert_that!(msg.oneof_bytes_opt(),
+    // eq(Optional::Unset(_))); assert_that!(msg.oneof_field(),
+    // matches_pattern!(OneofNestedMessage(_)));
+
+    msg.oneof_uint32_mut().set(7);
+    msg.oneof_bytes_mut().set(b"123");
+    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
+    assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
+
+    msg.oneof_bytes_mut().clear();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
+}
+
+#[test]
+fn test_oneof_mut_accessors() {
+    use TestAllTypes_::OneofFieldMut::*;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
+
+    msg.oneof_uint32_mut().set(7);
+
+    match msg.oneof_field_mut() {
+        OneofUint32(mut v) => {
+            assert_that!(v.get(), eq(7));
+            v.set(8);
+            assert_that!(v.get(), eq(8));
+        }
+        f => panic!("unexpected field_mut type! {:?}", f),
+    }
+
+    // Confirm that the mut write above applies to both the field accessor and the
+    // oneof view accessor.
+    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(8)));
+    assert_that!(
+        msg.oneof_field(),
+        matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
+    );
+
+    msg.oneof_uint32_mut().clear();
+    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
+
+    msg.oneof_uint32_mut().set(7);
+    msg.oneof_bytes_mut().set(b"123");
+    assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
 }

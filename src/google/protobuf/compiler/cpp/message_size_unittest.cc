@@ -5,10 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <gmock/gmock.h>
+#include <cstdint>
+#include <string>
+
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_bases.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 
 // Must be included last.
@@ -89,7 +93,7 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     MockExtensionSet extensions;                   // 24 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes of padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
@@ -98,15 +102,28 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
 }
 
 TEST(GeneratedMessageTest, RecursiveMessageSize) {
+  // TODO: remove once synthetic_pdproto lands.
+#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
     void* a;                                       // 8 bytes
     int32_t i;                                     // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
+#else   // !PROTOBUF_FORCE_SPLIT
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    void* split;                                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+    // + 0-4 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+#endif  // PROTOBUF_FORCE_SPLIT
+
   EXPECT_EQ(sizeof(protobuf_unittest::TestRecursiveMessage),
             sizeof(MockGenerated));
 }
@@ -115,22 +132,33 @@ TEST(GeneratedMessageTest, OneStringSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        void* data;                                // 8 bytes
+    void* data;                                    // 8 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::OneString), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, MoreStringSize) {
+  // TODO: remove once synthetic_pdproto lands.
+#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        MockRepeatedPtrField data;                 // 24 bytes
+    MockRepeatedPtrField data;                     // 24 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+#else   // !PROTOBUF_FORCE_SPLIT
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int cached_size;                               // 4 bytes
+    void* split;                                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+                                                   // + 0-4 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+#endif  // PROTOBUF_FORCE_SPLIT
   EXPECT_EQ(sizeof(protobuf_unittest::MoreString), sizeof(MockGenerated));
 }
 
@@ -138,9 +166,9 @@ TEST(GeneratedMessageTest, Int32MessageSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        int32_t data;                              // 4 bytes
+    int32_t data;                                  // 4 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::Int32Message), sizeof(MockGenerated));
@@ -150,9 +178,9 @@ TEST(GeneratedMessageTest, Int64MessageSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        int64_t data;                              // 8 bytes
+    int64_t data;                                  // 8 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::Int64Message), sizeof(MockGenerated));
@@ -162,9 +190,9 @@ TEST(GeneratedMessageTest, BoolMessageSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        bool data;                                 // 1 byte
+    bool data;                                     // 1 byte
     // + 3 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
@@ -175,21 +203,23 @@ TEST(GeneratedMessageTest, OneofSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     void* foo;                                     // 8 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        uint32_t oneof_case[1];                    // 4 bytes
+    uint32_t oneof_case[1];                        // 4 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
   EXPECT_EQ(sizeof(protobuf_unittest::TestOneof), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, Oneof2Size) {
+  // TODO: remove once synthetic_pdproto lands.
+#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        void* baz_string;                          // 8 bytes
+    void* baz_string;                              // 8 bytes
     int32_t baz_int;                               // 4 bytes
                                                    // + 4 bytes padding
     void* foo;                                     // 8 bytes
@@ -197,10 +227,25 @@ TEST(GeneratedMessageTest, Oneof2Size) {
     uint32_t oneof_case[2];                        // 8 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 64);
+#else   // !PROTOBUF_FORCE_SPLIT
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+                                                   // + 0-4 bytes padding
+    void* split;                                   // 8 bytes
+    void* foo;                                     // 8 bytes
+    void* bar;                                     // 8 bytes
+    uint32_t oneof_case[2];                        // 8 bytes
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
+#endif  // PROTOBUF_FORCE_SPLIT
   EXPECT_EQ(sizeof(protobuf_unittest::TestOneof2), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, FieldOrderingsSize) {
+  // TODO: remove once synthetic_pdproto lands.
+#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
@@ -209,21 +254,34 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
     void* optional_nested_message;                 // 8 bytes
     int64_t my_int;                                // 8 bytes
     float my_float;                                // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 80);
+#else   // !PROTOBUF_FORCE_SPLIT
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    MockExtensionSet extensions;                   // 24 bytes
+    void* split;                                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+    // + 0-4 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
+#endif  // PROTOBUF_FORCE_SPLIT
   EXPECT_EQ(sizeof(protobuf_unittest::TestFieldOrderings), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, TestMessageSize) {
   // We expect the message to contain (not in this order):
+  // TODO: remove once synthetic_pdproto lands.
+#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
-        void* m4;                                  // 8 bytes
+    void* m4;                                      // 8 bytes
     int64_t m2;                                    // 8 bytes
     bool m1;                                       // 1 bytes
     bool m3;                                       // 1 bytes
@@ -232,10 +290,22 @@ TEST(GeneratedMessageTest, TestMessageSize) {
     int64_t m6;                                    // 8 bytes
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
+#else   // !PROTOBUF_FORCE_SPLIT
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    void* split;                                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+                                                   // + 0-4 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+#endif  // PROTOBUF_FORCE_SPLIT
   EXPECT_EQ(sizeof(protobuf_unittest::TestMessageSize), sizeof(MockGenerated));
 }
 
 TEST(GeneratedMessageTest, PackedTypesSize) {
+  // TODO: remove once synthetic_pdproto lands.
+#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     MockRepeatedField packed_int32;                // 16 bytes
     int packed_int32_cached_byte_size;             // 4 bytes + 4 bytes padding
@@ -259,10 +329,19 @@ TEST(GeneratedMessageTest, PackedTypesSize) {
     MockRepeatedField packed_enum;                 // 16 bytes
     int packed_enum_cached_byte_size;              // 4 bytes
     int cached_size;                               // 4 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER                   // 0-4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 16 * 15 + 8 * 6 + 8);
+#else   // !PROTOBUF_FORCE_SPLIT
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int cached_size;                               // 4 bytes + 4 bytes padding
+    void* split;                                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+    // + 0-4 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+#endif  // PROTOBUF_FORCE_SPLIT
   EXPECT_EQ(sizeof(protobuf_unittest::TestPackedTypes), sizeof(MockGenerated));
 }
 

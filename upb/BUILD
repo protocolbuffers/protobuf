@@ -8,14 +8,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
-load(
-    "//upb_generator:bootstrap_compiler.bzl",
-    "bootstrap_cc_library",
-    "bootstrap_upb_proto_library",
-)
 
 # begin:google_only
 # load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
@@ -104,27 +97,24 @@ cc_library(
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
 # This is public only because we have no way of visibility-limiting it to
-# upb_proto_library() only.  This interface is not stable and by using it you
+# upb_c_proto_library() only. This interface is not stable and by using it you
 # give up any backward compatibility guarantees.
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
     deps = [
         ":base",
         ":mem",
         ":message",
-        ":message_accessors",
-        ":message_accessors_internal",
-        ":message_internal",
         ":mini_descriptor",
         ":mini_table",
         ":wire",
-        ":wire_internal",
+        "//upb/message:internal",
     ],
 )
 
@@ -133,155 +123,9 @@ cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb/port:inc",
+        ":port_inc",
     ],
     visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    hdrs = [
-        "reflection/def.h",
-        "reflection/internal/def_pool.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    textual_hdrs = [
-        "//upb/port:inc",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":mini_descriptor",
-        ":reflection_internal",
-    ],
-)
-
-bootstrap_upb_proto_library(
-    name = "descriptor_upb_proto",
-    base_dir = "reflection/",
-    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
-    features = ["-layering_check"],
-    google3_src_files = ["net/proto2/proto/descriptor.proto"],
-    google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
-    oss_src_files = ["google/protobuf/descriptor.proto"],
-    oss_src_rules = ["//:descriptor_proto_srcs"],
-    oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
-    proto_lib_deps = ["//:descriptor_proto"],
-    visibility = ["//visibility:public"],
-)
-
-upb_proto_reflection_library(
-    name = "descriptor_upb_proto_reflection",
-    visibility = ["//visibility:public"],
-    deps = ["//:descriptor_proto"],
-)
-
-upb_minitable_proto_library(
-    name = "descriptor_upb_minitable_proto",
-    visibility = [
-        "//upb:__subpackages__",
-        # begin:github_only
-        "//python:__subpackages__",
-        # end:github_only
-    ],
-    deps = ["//:descriptor_proto"],
-)
-
-# TODO: Once we can delete the deprecated forwarding headers
-# (= everything in upb/) we can move this build target down into reflection/
-bootstrap_cc_library(
-    name = "reflection",
-    hdrs = [
-        "reflection/def.h",
-        "reflection/def.hpp",
-        "reflection/message.h",
-        "reflection/message.hpp",
-    ],
-    bootstrap_deps = [":reflection_internal"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-        ":message",
-        ":message_types",
-        ":message_value",
-        ":port",
-    ],
-)
-
-bootstrap_cc_library(
-    name = "reflection_internal",
-    srcs = [
-        "reflection/def_pool.c",
-        "reflection/def_type.c",
-        "reflection/desc_state.c",
-        "reflection/enum_def.c",
-        "reflection/enum_reserved_range.c",
-        "reflection/enum_value_def.c",
-        "reflection/extension_range.c",
-        "reflection/field_def.c",
-        "reflection/file_def.c",
-        "reflection/internal/def_builder.c",
-        "reflection/internal/def_builder.h",
-        "reflection/internal/strdup2.c",
-        "reflection/internal/strdup2.h",
-        "reflection/message.c",
-        "reflection/message_def.c",
-        "reflection/message_reserved_range.c",
-        "reflection/method_def.c",
-        "reflection/oneof_def.c",
-        "reflection/service_def.c",
-    ],
-    hdrs = [
-        "reflection/common.h",
-        "reflection/def.h",
-        "reflection/def.hpp",
-        "reflection/def_pool.h",
-        "reflection/def_type.h",
-        "reflection/enum_def.h",
-        "reflection/enum_reserved_range.h",
-        "reflection/enum_value_def.h",
-        "reflection/extension_range.h",
-        "reflection/field_def.h",
-        "reflection/file_def.h",
-        "reflection/internal/def_pool.h",
-        "reflection/internal/desc_state.h",
-        "reflection/internal/enum_def.h",
-        "reflection/internal/enum_reserved_range.h",
-        "reflection/internal/enum_value_def.h",
-        "reflection/internal/extension_range.h",
-        "reflection/internal/field_def.h",
-        "reflection/internal/file_def.h",
-        "reflection/internal/message_def.h",
-        "reflection/internal/message_reserved_range.h",
-        "reflection/internal/method_def.h",
-        "reflection/internal/oneof_def.h",
-        "reflection/internal/service_def.h",
-        "reflection/message.h",
-        "reflection/message.hpp",
-        "reflection/message_def.h",
-        "reflection/message_reserved_range.h",
-        "reflection/method_def.h",
-        "reflection/oneof_def.h",
-        "reflection/service_def.h",
-    ],
-    bootstrap_deps = [":descriptor_upb_proto"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":hash",
-        ":mem",
-        ":message",
-        ":message_accessors",
-        ":message_types",
-        ":message_value",
-        ":mini_descriptor",
-        ":mini_descriptor_internal",
-        ":mini_table",
-        ":port",
-    ],
 )
 
 # Aliases ######################################################################
@@ -294,12 +138,6 @@ alias(
 )
 
 alias(
-    name = "base_internal",
-    actual = "//upb/base:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "collections",
     actual = "//upb/collections",
     deprecation = "use upb:message instead",
@@ -307,8 +145,26 @@ alias(
 )
 
 alias(
-    name = "hash",
-    actual = "//upb/hash",
+    name = "descriptor_upb_proto",
+    actual = "//upb/reflection:descriptor_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_upb_minitable_proto",
+    actual = "//upb/reflection:descriptor_upb_minitable_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_upb_proto_reflection",
+    actual = "//upb/reflection:descriptor_upb_proto_reflection",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    actual = "//upb/reflection:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     visibility = ["//visibility:public"],
 )
 
@@ -319,21 +175,9 @@ alias(
 )
 
 alias(
-    name = "lex",
-    actual = "//upb/lex",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "mem",
     actual = "//upb/mem",
     visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "mem_internal",
-    actual = "//upb/mem:internal",
-    visibility = ["//upb:__subpackages__"],
 )
 
 alias(
@@ -343,32 +187,14 @@ alias(
 )
 
 alias(
-    name = "message_accessors",
-    actual = "//upb/message:accessors",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_accessors_internal",
-    actual = "//upb/message:accessors_internal",
+    name = "message_compare",
+    actual = "//upb/message:compare",
     visibility = ["//upb:friends"],
 )
 
 alias(
     name = "message_copy",
     actual = "//upb/message:copy",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_internal",
-    actual = "//upb/message:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_internal_types",
-    actual = "//upb/message:internal_types",
     visibility = ["//visibility:public"],
 )
 
@@ -385,33 +211,9 @@ alias(
 )
 
 alias(
-    name = "message_tagged_ptr",
-    actual = "//upb/message:tagged_ptr",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "message_types",
-    actual = "//upb/message:types",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_value",
-    actual = "//upb/message:value",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "mini_descriptor",
     actual = "//upb/mini_descriptor",
     visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "mini_descriptor_internal",
-    actual = "//upb/mini_descriptor:internal",
-    visibility = ["//upb:__subpackages__"],
 )
 
 alias(
@@ -427,14 +229,20 @@ alias(
 )
 
 alias(
-    name = "mini_table_internal",
-    actual = "//upb/mini_table:internal",
+    name = "port",
+    actual = "//upb/port",
     visibility = ["//visibility:public"],
 )
 
 alias(
-    name = "port",
-    actual = "//upb/port",
+    name = "port_inc",
+    actual = "//upb/port:inc",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "reflection",
+    actual = "//upb/reflection",
     visibility = ["//visibility:public"],
 )
 
@@ -451,20 +259,8 @@ alias(
 )
 
 alias(
-    name = "wire_internal",
-    actual = "//upb/wire:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "wire_reader",
     actual = "//upb/wire:reader",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "wire_types",
-    actual = "//upb/wire:types",
     visibility = ["//visibility:public"],
 )
 
@@ -472,48 +268,6 @@ alias(
     name = "eps_copy_input_stream",
     actual = "//upb/wire:eps_copy_input_stream",
     visibility = ["//visibility:public"],
-)
-
-# Tests ########################################################################
-
-cc_test(
-    name = "def_builder_test",
-    srcs = [
-        "reflection/common.h",
-        "reflection/def_type.h",
-        "reflection/internal/def_builder.h",
-        "reflection/internal/def_builder_test.cc",
-    ],
-    deps = [
-        ":descriptor_upb_proto",
-        ":hash",
-        ":mem",
-        ":port",
-        ":reflection",
-        ":reflection_internal",
-        "@com_google_googletest//:gtest_main",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-# Internal C/C++ libraries #####################################################
-
-cc_binary(
-    name = "libupb.so",
-    srcs = ["upb_so.c"],
-    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
-    linkshared = 1,
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":message",
-        ":message_accessors",
-        ":message_split64",
-        ":mini_descriptor",
-        ":mini_table",
-        ":port",
-    ],
 )
 
 # Amalgamation #################################################################
@@ -528,34 +282,29 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
-        ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
-        ":message_accessors",
-        ":message_internal",
-        ":message_internal_types",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
+        ":message_compare",
+        ":message_copy",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_compat",
-        ":mini_table_internal",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
-        ":wire_internal",
         ":wire_reader",
-        ":wire_types",
+        "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -565,7 +314,7 @@ cc_library(
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["@utf8_range"],
+    deps = ["//third_party/utf8_range"],
 )
 
 upb_amalgamation(
@@ -576,35 +325,31 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
-        ":message_accessors",
-        ":message_internal",
-        ":message_internal_types",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
+        ":message_compare",
+        ":message_copy",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
-        ":mini_table_internal",
+        ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
-        ":wire_internal",
         ":wire_reader",
-        ":wire_types",
+        "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -616,7 +361,7 @@ cc_library(
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["@utf8_range"],
+    deps = ["//third_party/utf8_range"],
 )
 
 upb_amalgamation(
@@ -627,34 +372,30 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
-        ":message_accessors",
-        ":message_internal",
-        ":message_internal_types",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
+        ":message_compare",
+        ":message_copy",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
-        ":mini_table_internal",
+        ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
-        ":wire_internal",
         ":wire_reader",
-        ":wire_types",
+        "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
@@ -666,7 +407,7 @@ cc_library(
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["@utf8_range"],
+    deps = ["//third_party/utf8_range"],
 )
 
 exports_files(
@@ -681,19 +422,18 @@ filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "**/*.c",
             "**/*.h",
             "**/*.hpp",
-       ],
+        ],
         exclude = [
             "**/conformance_upb.c",
             "reflection/stage0/**/*",
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only
 

@@ -44,6 +44,28 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+// Base class to keep common fields and virtual function overrides.
+class MapEntryBase : public Message {
+ protected:
+  using Message::Message;
+
+  const ClassData* GetClassData() const final {
+    ABSL_CONST_INIT static const ClassDataFull data = {
+        {
+            nullptr,  // on_demand_register_arena_dtor
+            PROTOBUF_FIELD_OFFSET(MapEntryBase, _cached_size_),
+            false,
+        },
+        &MergeImpl,
+        &kDescriptorMethods,
+    };
+    return &data;
+  }
+
+  HasBits<1> _has_bits_{};
+  mutable CachedSize _cached_size_{};
+};
+
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
 // google::protobuf::Reflection. In order to let it work with generated message
 // reflection, its in-memory type is the same as generated message with the same
@@ -73,7 +95,7 @@ namespace internal {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public Message {
+class MapEntry : public MapEntryBase {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
@@ -98,14 +120,12 @@ class MapEntry : public Message {
  public:
   constexpr MapEntry()
       : key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()),
-        _has_bits_{} {}
+        value_(ValueTypeHandler::Constinit()) {}
 
   explicit MapEntry(Arena* arena)
-      : Message(arena),
+      : MapEntryBase(arena),
         key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()),
-        _has_bits_{} {}
+        value_(ValueTypeHandler::Constinit()) {}
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
@@ -122,12 +142,6 @@ class MapEntry : public Message {
 
   // accessors ======================================================
 
-  inline const auto& key() const {
-    return KeyTypeHandler::GetExternalReference(key_);
-  }
-  inline const auto& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(value_);
-  }
   inline auto* mutable_key() {
     _has_bits_[0] |= 0x00000001u;
     return KeyTypeHandler::EnsureMutable(&key_, GetArena());
@@ -136,7 +150,6 @@ class MapEntry : public Message {
     _has_bits_[0] |= 0x00000002u;
     return ValueTypeHandler::EnsureMutable(&value_, GetArena());
   }
-
   // TODO: These methods currently differ in behavior from the ones
   // implemented via reflection. This means that a MapEntry does not behave the
   // same as an equivalent object made via DynamicMessage.
@@ -168,29 +181,9 @@ class MapEntry : public Message {
     return ptr;
   }
 
-  size_t ByteSizeLong() const final {
-    size_t size = 0;
-    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
-    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
-    _cached_size_.Set(ToCachedSize(size));
-    return size;
-  }
-
-  ::uint8_t* _InternalSerialize(::uint8_t* ptr,
-                                io::EpsCopyOutputStream* stream) const final {
-    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
-    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
-  }
-
-  bool IsInitialized() const final {
-    return ValueTypeHandler::IsInitialized(value_);
-  }
-
   Message* New(Arena* arena) const final {
     return Arena::CreateMessage<Derived>(arena);
   }
-
-  CachedSize* AccessCachedSize() const final { return &_cached_size_; }
 
  protected:
   friend class google::protobuf::Arena;
@@ -200,8 +193,6 @@ class MapEntry : public Message {
 
   KeyOnMemory key_;
   ValueOnMemory value_;
-  HasBits<1> _has_bits_;
-  mutable CachedSize _cached_size_;
 };
 
 }  // namespace internal

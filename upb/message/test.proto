@@ -14,7 +14,8 @@ package upb_test;
 import "google/protobuf/test_messages_proto3.proto";
 
 message TestExtensions {
-  extensions 1000 to max;
+  extensions 1000 to max
+  [verification = UNVERIFIED];
   extend TestExtensions {
     optional int32 optional_int32_ext = 1000;
   }
@@ -33,7 +34,8 @@ extend TestExtensions {
 message TestMessageSet {
   option message_set_wire_format = true;
 
-  extensions 4 to max;
+  extensions 4 to max
+  [verification = UNVERIFIED];
 }
 
 message MessageSetMember {

@@ -431,13 +431,13 @@ public final class Timestamps {
    * Calculate the difference between two timestamps.
    *
    * <!-- MOE:begin_intracomment_strip -->
-   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Instant} using
-   * {@link com.google.protobuf.util.JavaTimeConversions#toJavaInstant}, do the arithmetic there,
-   * and convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   *
-   * <p>This method will be deprecated once most uses have been eliminated.
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
+   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaInstant}, do the arithmetic
+   *     there, and convert back using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
    * <!-- MOE:end_intracomment_strip -->
    */
+  @Deprecated // MOE:strip_line
   public static Duration between(Timestamp from, Timestamp to) {
     checkValid(from);
     checkValid(to);
@@ -450,15 +450,14 @@ public final class Timestamps {
    * Add a duration to a timestamp.
    *
    * <!-- MOE:begin_intracomment_strip -->
-   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Instant} and
-   * {@link java.time.Duration} using {@link
-   * com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
-   * com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
-   * convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
-   *
-   * <p>This method will be deprecated once most uses have been eliminated.
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
+   *     and {@link java.time.Duration} using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
+   *     convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
    * <!-- MOE:end_intracomment_strip -->
    */
+  @Deprecated // MOE:strip_line
   public static Timestamp add(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);
@@ -471,15 +470,14 @@ public final class Timestamps {
    * Subtract a duration from a timestamp.
    *
    * <!-- MOE:begin_intracomment_strip -->
-   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Instant} and
-   * {@link java.time.Duration} using {@link
-   * com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
-   * com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
-   * convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
-   *
-   * <p>This method will be deprecated once most uses have been eliminated.
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
+   *     and {@link java.time.Duration} using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
+   *     convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
    * <!-- MOE:end_intracomment_strip -->
    */
+  @Deprecated // MOE:strip_line
   public static Timestamp subtract(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);

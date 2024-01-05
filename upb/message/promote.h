@@ -40,8 +40,7 @@ typedef enum {
 // expand support to include non-message types.
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena,
-    const upb_Message_Extension** extension);
+    int decode_options, upb_Arena* arena, const upb_Extension** extension);
 
 typedef enum {
   kUpb_FindUnknown_Ok,
@@ -59,9 +58,9 @@ typedef struct {
 
 // Finds first occurrence of unknown data by tag id in message.
 // A depth_limit of zero means to just use the upb default depth limit.
-upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
-                                             uint32_t field_number,
-                                             int depth_limit);
+upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
+                                           uint32_t field_number,
+                                           int depth_limit);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,

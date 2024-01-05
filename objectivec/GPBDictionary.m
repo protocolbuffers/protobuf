@@ -1044,6 +1044,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
 //%  GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
 //%  WriteDict##KEY_NAME##Field(outputStream, key->value##KEY_NAME, kMapKeyFieldNumber, keyDataType);
 //%  WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+//%  [outputStream flush];
 //%  [outputStream release];
 //%  return data;
 //%}
@@ -2788,6 +2789,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictUInt32Field(outputStream, key->valueUInt32, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -4518,6 +4520,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictInt32Field(outputStream, key->valueInt32, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -6248,6 +6251,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictUInt64Field(outputStream, key->valueUInt64, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -7978,6 +7982,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictInt64Field(outputStream, key->valueInt64, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -9768,6 +9773,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictStringField(outputStream, key->valueString, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -11741,6 +11747,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictBoolField(outputStream, key->valueBool, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }

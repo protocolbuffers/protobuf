@@ -17,6 +17,7 @@
 #include "google/protobuf/timestamp.upb.h"
 #include "google/protobuf/timestamp.upbdefs.h"
 #include <gtest/gtest.h>
+#include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/reflection/def.h"
@@ -57,7 +58,8 @@ TEST(Cpp, Default) {
   upb::Arena arena;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
   upb_test_TestMessage* msg = upb_test_TestMessage_new(arena.ptr());
-  size_t size = upb_JsonEncode(msg, md.ptr(), NULL, 0, NULL, 0, NULL);
+  size_t size = upb_JsonEncode(UPB_UPCAST(msg), md.ptr(), nullptr, 0, nullptr,
+                               0, nullptr);
   EXPECT_EQ(2, size);  // "{}"
 }
 
@@ -95,10 +97,10 @@ TEST(Cpp, TimestampEncoder) {
     google_protobuf_Timestamp_set_seconds(timestamp_upb, timestamp);
 
     char json[128];
-    size_t size = upb_JsonEncode(timestamp_upb, md.ptr(), NULL, 0, json,
-                                 sizeof(json), NULL);
-    bool result = upb_JsonDecode(json, size, timestamp_upb_decoded, md.ptr(),
-                                 NULL, 0, arena.ptr(), NULL);
+    size_t size = upb_JsonEncode(UPB_UPCAST(timestamp_upb), md.ptr(), nullptr,
+                                 0, json, sizeof(json), nullptr);
+    bool result = upb_JsonDecode(json, size, UPB_UPCAST(timestamp_upb_decoded),
+                                 md.ptr(), nullptr, 0, arena.ptr(), nullptr);
     const int64_t timestamp_decoded =
         google_protobuf_Timestamp_seconds(timestamp_upb_decoded);
 

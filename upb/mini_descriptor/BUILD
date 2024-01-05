@@ -23,8 +23,9 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
+        "//upb/base:internal",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -46,8 +47,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:base_internal",
         "//upb:port",
+        "//upb/base:internal",
     ],
 )
 
@@ -59,13 +60,16 @@ cc_test(
         ":internal",
         ":mini_descriptor",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
-        "//upb:message_accessors_internal",
+        "//upb:message",
         "//upb:mini_table",
+        "//upb:port",
         "//upb:wire",
+        "//upb/message:internal",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -79,8 +83,20 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
+)
+# end:github_only
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
 )
 # end:github_only

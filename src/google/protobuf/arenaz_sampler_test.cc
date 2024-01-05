@@ -401,6 +401,7 @@ TEST(ThreadSafeArenazSamplerTest, InitialBlockReportsZeroUsedAndWasted) {
   for (int i = 0; i < 10; ++i) {
     char block[kSize];
     google::protobuf::Arena arena(/*initial_block=*/block, /*initial_block_size=*/kSize);
+    benchmark::DoNotOptimize(&arena);
     sampler.Iterate([&](const ThreadSafeArenaStats& h) {
       const auto& histbin =
           h.block_histogram[ThreadSafeArenaStats::FindBin(kSize)];

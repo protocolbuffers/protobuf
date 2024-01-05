@@ -150,7 +150,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.0']
+        version: ['8.2']
 
     name: MacOS PHP ${{ matrix.version }}
     runs-on: macos-12

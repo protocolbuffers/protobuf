@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/types/span.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 
@@ -237,7 +238,7 @@ constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
 
     case WireFormatLite::TYPE_GROUP:
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 }
 
@@ -284,18 +285,30 @@ struct alignas(uint64_t) TcParseTableBase {
   // Handler for fields which are not handled by table dispatch.
   TailCallParseFunc fallback;
 
+  // A sub message's table to be prefetched.
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+  const TcParseTableBase* to_prefetch;
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+
   // This constructor exactly follows the field layout, so it's technically
   // not necessary.  However, it makes it much much easier to add or re-arrange
   // fields, because it can be overloaded with an additional constructor,
   // temporarily allowing both old and new protocol buffer headers to be
   // compiled.
-  constexpr TcParseTableBase(
-      uint16_t has_bits_offset, uint16_t extension_offset,
-      uint32_t max_field_number, uint8_t fast_idx_mask,
-      uint16_t lookup_table_offset, uint32_t skipmap32,
-      uint32_t field_entries_offset, uint16_t num_field_entries,
-      uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, TailCallParseFunc fallback)
+  constexpr TcParseTableBase(uint16_t has_bits_offset,
+                             uint16_t extension_offset,
+                             uint32_t max_field_number, uint8_t fast_idx_mask,
+                             uint16_t lookup_table_offset, uint32_t skipmap32,
+                             uint32_t field_entries_offset,
+                             uint16_t num_field_entries,
+                             uint16_t num_aux_entries, uint32_t aux_offset,
+                             const MessageLite* default_instance,
+                             TailCallParseFunc fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+                             ,
+                             const TcParseTableBase* to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+                             )
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
         max_field_number(max_field_number),
@@ -307,7 +320,13 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
-        fallback(fallback) {}
+        fallback(fallback)
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+        ,
+        to_prefetch(to_prefetch)
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  {
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -374,6 +393,9 @@ struct alignas(uint64_t) TcParseTableBase {
   const FieldEntry* field_entries_begin() const {
     return reinterpret_cast<const FieldEntry*>(
         reinterpret_cast<uintptr_t>(this) + field_entries_offset);
+  }
+  absl::Span<const FieldEntry> field_entries() const {
+    return {field_entries_begin(), num_field_entries};
   }
   FieldEntry* field_entries_begin() {
     return reinterpret_cast<FieldEntry*>(reinterpret_cast<uintptr_t>(this) +

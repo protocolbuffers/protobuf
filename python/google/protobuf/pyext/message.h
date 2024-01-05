@@ -229,10 +229,6 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs);
 
 PyObject* MergeFrom(CMessage* self, PyObject* arg);
 
-// This method does not do anything beyond checking that no other extension
-// has been registered with the same field number on this class.
-PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle);
-
 // Get a field from a message.
 PyObject* GetFieldValue(CMessage* self,
                         const FieldDescriptor* field_descriptor);

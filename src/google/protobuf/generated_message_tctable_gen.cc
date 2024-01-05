@@ -8,6 +8,7 @@
 #include "google/protobuf/generated_message_tctable_gen.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -411,13 +412,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 // We only need field names for reporting UTF-8 parsing errors, so we only
 // emit them for string fields with Utf8 transform specified.
 bool NeedsFieldNameForTable(const FieldDescriptor* field, bool is_lite) {
-  if (cpp::GetUtf8CheckMode(field, is_lite) == cpp::Utf8CheckMode::kNone)
-    return false;
-  return field->type() == FieldDescriptor::TYPE_STRING ||
-         (field->is_map() && (field->message_type()->map_key()->type() ==
-                                  FieldDescriptor::TYPE_STRING ||
-                              field->message_type()->map_value()->type() ==
-                                  FieldDescriptor::TYPE_STRING));
+  return cpp::GetUtf8CheckMode(field, is_lite) != cpp::Utf8CheckMode::kNone;
 }
 
 absl::string_view FieldNameForTable(
@@ -712,7 +707,7 @@ uint16_t MakeTypeCardForField(
         }
         break;
       default:
-        PROTOBUF_ASSUME(false);
+        Unreachable();
     }
   }
 
@@ -756,6 +751,35 @@ TailCallTableInfo::TailCallTableInfo(
     }
   }
 
+  auto is_non_cold = [](PerFieldOptions options) {
+    return options.presence_probability >= 0.005;
+  };
+  size_t num_non_cold_subtables = 0;
+  if (message_options.should_profile_driven_cluster_aux_subtable) {
+    // We found that clustering non-cold subtables to the top of aux_entries
+    // achieves the best load tests results than other strategies (e.g.,
+    // clustering all non-cold entries).
+    auto is_non_cold_subtable = [&](const FieldDescriptor* field) {
+      auto options = option_provider.GetForField(field);
+      // In the following code where we assign kSubTable to aux entries, only
+      // the following typed fields are supported.
+      return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+              field->type() == FieldDescriptor::TYPE_GROUP) &&
+             !field->is_map() && !HasLazyRep(field, options) &&
+             !options.is_implicitly_weak && options.use_direct_tcparser_table &&
+             is_non_cold(options);
+    };
+    for (const FieldDescriptor* field : ordered_fields) {
+      if (is_non_cold_subtable(field)) {
+        num_non_cold_subtables++;
+      }
+    }
+  }
+
+  size_t subtable_aux_idx_begin = aux_entries.size();
+  size_t subtable_aux_idx = aux_entries.size();
+  aux_entries.resize(aux_entries.size() + num_non_cold_subtables);
+
   // Fill in mini table entries.
   for (const FieldDescriptor* field : ordered_fields) {
     auto options = option_provider.GetForField(field);
@@ -797,12 +821,18 @@ TailCallTableInfo::TailCallTableInfo(
               TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        field_entries.back().aux_idx = aux_entries.size();
-        aux_entries.push_back({options.is_implicitly_weak ? kSubMessageWeak
-                               : options.use_direct_tcparser_table
-                                   ? kSubTable
-                                   : kSubMessage,
-                               {field}});
+        AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
+                       : options.use_direct_tcparser_table ? kSubTable
+                                                           : kSubMessage;
+        if (message_options.should_profile_driven_cluster_aux_subtable &&
+            type == kSubTable && is_non_cold(options)) {
+          aux_entries[subtable_aux_idx] = {type, {field}};
+          field_entries.back().aux_idx = subtable_aux_idx;
+          ++subtable_aux_idx;
+        } else {
+          field_entries.back().aux_idx = aux_entries.size();
+          aux_entries.push_back({type, {field}});
+        }
       }
     } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
                !cpp::HasPreservingUnknownEnumSemantics(field)) {
@@ -845,6 +875,8 @@ TailCallTableInfo::TailCallTableInfo(
       entry.inlined_string_idx = idx;
     }
   }
+  ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
+                num_non_cold_subtables);
 
   table_size_log2 = 0;  // fallback value
   int num_fast_fields = -1;

@@ -30,6 +30,8 @@ int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
 const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
 const UPB_DESC(ServiceOptions) *
     upb_ServiceDef_Options(const upb_ServiceDef* s);
+const UPB_DESC(FeatureSet) *
+    upb_ServiceDef_ResolvedFeatures(const upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

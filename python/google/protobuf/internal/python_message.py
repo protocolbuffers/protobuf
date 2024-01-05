@@ -779,15 +779,6 @@ def _AddPropertiesForExtensions(descriptor, cls):
     pool = descriptor.file.pool
 
 def _AddStaticMethods(cls):
-  # TODO: This probably needs to be thread-safe(?)
-  def RegisterExtension(field_descriptor):
-    field_descriptor.containing_type = cls.DESCRIPTOR
-    # TODO: Use cls.MESSAGE_FACTORY.pool when available.
-    # pylint: disable=protected-access
-    cls.DESCRIPTOR.file.pool._AddExtensionDescriptor(field_descriptor)
-    _AttachFieldHelpers(cls, field_descriptor)
-  cls.RegisterExtension = staticmethod(RegisterExtension)
-
   def FromString(s):
     message = cls()
     message.MergeFromString(s)
@@ -1385,15 +1376,9 @@ def _Clear(self):
 
 
 def _UnknownFields(self):
-  warnings.warn(
-      'message.UnknownFields() is deprecated. Please use the add one '
-      'feature unknown_fields.UnknownFieldSet(message) in '
-      'unknown_fields.py instead.'
-  )
-  if self._unknown_field_set is None:  # pylint: disable=protected-access
-    # pylint: disable=protected-access
-    self._unknown_field_set = containers.UnknownFieldSet()
-  return self._unknown_field_set    # pylint: disable=protected-access
+  raise NotImplementedError('Please use the add-on feaure '
+                            'unknown_fields.UnknownFieldSet(message) in '
+                            'unknown_fields.py instead.')
 
 
 def _DiscardUnknownFields(self):

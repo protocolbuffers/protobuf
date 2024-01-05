@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package repeated_field_test_protos;
+
+message TestMessage {
+  optional int32 optional_int32 = 1;
+  optional int64 optional_int64 = 2;
+  optional uint32 optional_uint32 = 3;
+  optional uint64 optional_uint64 = 4;
+  optional bool optional_bool = 5;
+  optional float optional_float = 6;
+  optional double optional_double = 7;
+  optional string optional_string = 8;
+  optional bytes optional_bytes = 9;
+  optional TestMessage2 optional_msg = 10;
+  optional TestEnum optional_enum = 11;
+  repeated int32 repeated_int32 = 12;
+  repeated int64 repeated_int64 = 13;
+  repeated uint32 repeated_uint32 = 14;
+  repeated uint64 repeated_uint64 = 15;
+  repeated bool repeated_bool = 16;
+  repeated float repeated_float = 17;
+  repeated double repeated_double = 18;
+  repeated string repeated_string = 19;
+  repeated bytes repeated_bytes = 20;
+  repeated TestMessage2 repeated_msg = 21;
+  repeated TestEnum repeated_enum = 22;
+}
+
+message TestMessage2 {
+  optional int32 foo = 1;
+}
+
+enum TestEnum {
+  DEFAULT = 0;
+  A = 1;
+  B = 2;
+  C = 3;
+  V0 = 4;
+}

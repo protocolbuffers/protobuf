@@ -7,26 +7,38 @@
 
 #include "upb/mini_descriptor/link.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/base/descriptor_constants.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
 bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  upb_MiniTableField* field,
                                  const upb_MiniTable* sub) {
-  UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
-             (uintptr_t)field <
-                 (uintptr_t)(table->fields + table->field_count));
+  UPB_ASSERT((uintptr_t)table->UPB_PRIVATE(fields) <= (uintptr_t)field &&
+             (uintptr_t)field < (uintptr_t)(table->UPB_PRIVATE(fields) +
+                                            table->UPB_PRIVATE(field_count)));
   UPB_ASSERT(sub);
 
-  const bool sub_is_map = sub->ext & kUpb_ExtMode_IsMapEntry;
+  const bool sub_is_map = sub->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
 
   switch (field->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Message:
       if (sub_is_map) {
-        const bool table_is_map = table->ext & kUpb_ExtMode_IsMapEntry;
+        const bool table_is_map =
+            table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
         if (UPB_UNLIKELY(table_is_map)) return false;
 
-        field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
+        field->UPB_PRIVATE(mode) =
+            (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
+            kUpb_FieldMode_Map;
       }
       break;
 
@@ -39,24 +51,24 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   }
 
   upb_MiniTableSub* table_sub =
-      (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
+      (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
-  // UPB_ASSERT(table_sub->submsg == &_kUpb_MiniTable_Empty);
-  table_sub->submsg = sub;
+  // UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(table_sub->submsg));
+  *table_sub = upb_MiniTableSub_FromMessage(sub);
   return true;
 }
 
 bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
                               const upb_MiniTableEnum* sub) {
-  UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
-             (uintptr_t)field <
-                 (uintptr_t)(table->fields + table->field_count));
+  UPB_ASSERT((uintptr_t)table->UPB_PRIVATE(fields) <= (uintptr_t)field &&
+             (uintptr_t)field < (uintptr_t)(table->UPB_PRIVATE(fields) +
+                                            table->UPB_PRIVATE(field_count)));
   UPB_ASSERT(sub);
 
   upb_MiniTableSub* table_sub =
-      (void*)&table->subs[field->UPB_PRIVATE(submsg_index)];
-  table_sub->subenum = sub;
+      (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
+  *table_sub = upb_MiniTableSub_FromEnum(sub);
   return true;
 }
 
@@ -65,8 +77,8 @@ uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
   uint32_t msg_count = 0;
   uint32_t enum_count = 0;
 
-  for (int i = 0; i < mt->field_count; i++) {
-    const upb_MiniTableField* f = &mt->fields[i];
+  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
+    const upb_MiniTableField* f = &mt->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
       *subs = f;
       ++subs;
@@ -74,8 +86,8 @@ uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
     }
   }
 
-  for (int i = 0; i < mt->field_count; i++) {
-    const upb_MiniTableField* f = &mt->fields[i];
+  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
+    const upb_MiniTableField* f = &mt->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
       *subs = f;
       ++subs;
@@ -96,8 +108,8 @@ bool upb_MiniTable_Link(upb_MiniTable* mt, const upb_MiniTable** sub_tables,
   uint32_t msg_count = 0;
   uint32_t enum_count = 0;
 
-  for (int i = 0; i < mt->field_count; i++) {
-    upb_MiniTableField* f = (upb_MiniTableField*)&mt->fields[i];
+  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
+    upb_MiniTableField* f = (upb_MiniTableField*)&mt->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
       const upb_MiniTable* sub = sub_tables[msg_count++];
       if (msg_count > sub_table_count) return false;
@@ -107,8 +119,8 @@ bool upb_MiniTable_Link(upb_MiniTable* mt, const upb_MiniTable** sub_tables,
     }
   }
 
-  for (int i = 0; i < mt->field_count; i++) {
-    upb_MiniTableField* f = (upb_MiniTableField*)&mt->fields[i];
+  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
+    upb_MiniTableField* f = (upb_MiniTableField*)&mt->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_IsClosedEnum(f)) {
       const upb_MiniTableEnum* sub = sub_enums[enum_count++];
       if (enum_count > sub_enum_count) return false;
