@@ -78,6 +78,12 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"ns", Namespace(field, opts)},
       {"tag_size", WireFormat::TagSize(field->number(), field->type())},
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
+      Sub("WeakDescriptorSelfPin",
+          UsingImplicitWeakDescriptor(field->file(), opts)
+              ? absl::StrCat("::", ProtobufNamespace(opts),
+                             "::internal::StrongReference(default_instance());")
+              : "")
+          .WithSuffix(";"),
   };
 
   if (const auto* oneof = field->containing_oneof()) {

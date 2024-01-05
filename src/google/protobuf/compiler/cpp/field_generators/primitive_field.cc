@@ -188,6 +188,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(R"cc(
     inline $Type$ $Msg$::$name$() const {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name_internal$();
@@ -197,6 +198,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
   if (is_oneof()) {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
+        $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
         if ($not_has_field$) {
           clear_$oneof_name$();
@@ -216,6 +218,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
   } else {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
+        $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
         _internal_set_$name_internal$(value);
         $set_hasbit$;
@@ -467,6 +470,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(R"cc(
     inline $Type$ $Msg$::$name$(int index) const {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
       return _internal_$name_internal$().Get(index);
@@ -474,6 +478,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
   )cc");
   p->Emit(R"cc(
     inline void $Msg$::set_$name$(int index, $Type$ value) {
+      $WeakDescriptorSelfPin$;
       $annotate_set$;
       _internal_mutable_$name_internal$()->Set(index, value);
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
@@ -481,6 +486,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
   )cc");
   p->Emit(R"cc(
     inline void $Msg$::add_$name$($Type$ value) {
+      $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       _internal_mutable_$name_internal$()->Add(value);
       $annotate_add$;
@@ -490,6 +496,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
   p->Emit(R"cc(
     inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
       return _internal_$name_internal$();
@@ -498,6 +505,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
   p->Emit(R"cc(
     inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;
