@@ -43,6 +43,7 @@ typedef union {
   struct upb_Array* array;
   struct upb_Map* map;
   struct upb_Message* msg;
+  void* foo;
 } upb_MutableMessageValue;
 
 #endif /* UPB_MESSAGE_VALUE_H_ */
