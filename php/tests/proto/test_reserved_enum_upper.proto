@@ -82,3 +82,4 @@ enum FALSE { ZERO74 = 0; }
 enum NULL { ZERO75 = 0; }
 enum VOID { ZERO76 = 0; }
 enum ITERABLE { ZERO77 = 0; }
+enum OBJECT { ZERO81 = 0; }

@@ -981,6 +981,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower\PBnull();
         $m = new \Lower\PBvoid();
         $m = new \Lower\PBiterable();
+        $m = new \Lower\PBObject();
 
         $m = new \Upper\PBABSTRACT();
         $m = new \Upper\PBAND();
@@ -1062,6 +1063,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper\PBNULL();
         $m = new \Upper\PBVOID();
         $m = new \Upper\PBITERABLE();
+        $m = new \Upper\PBOBJECT();
 
         $m = new \Lower_enum\PBabstract();
         $m = new \Lower_enum\PBand();

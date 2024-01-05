@@ -261,7 +261,7 @@ class GPBUtil
             "function"=>0, "global"=>0, "goto"=>0, "if"=>0, "implements"=>0,
             "include"=>0, "include_once"=>0, "instanceof"=>0, "insteadof"=>0,
             "interface"=>0, "isset"=>0, "list"=>0, "match"=>0, "namespace"=>0,
-            "new"=>0, "or"=>0, "parent"=>0, "print"=>0, "private"=>0,
+            "new"=>0, "or"=>0, "object"=>0, "parent"=>0, "print"=>0, "private"=>0,
             "protected"=>0,"public"=>0, "readonly" => 0,"require"=>0,
             "require_once"=>0,"return"=>0, "self"=>0, "static"=>0, "switch"=>0,
             "throw"=>0,"trait"=>0, "try"=>0,"unset"=>0, "use"=>0, "var"=>0,
