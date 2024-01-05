@@ -532,10 +532,10 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
 
 // These are referenced by repeated_scalar_container, and must
 // be explicitly instantiated.
-template bool CheckAndGetInteger<int32>(PyObject*, int32*);
-template bool CheckAndGetInteger<int64>(PyObject*, int64*);
-template bool CheckAndGetInteger<uint32>(PyObject*, uint32*);
-template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
+template bool CheckAndGetInteger<int32_t>(PyObject*, int32_t*);
+template bool CheckAndGetInteger<int64_t>(PyObject*, int64_t*);
+template bool CheckAndGetInteger<uint32_t>(PyObject*, uint32_t*);
+template bool CheckAndGetInteger<uint64_t>(PyObject*, uint64_t*);
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);

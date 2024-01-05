@@ -19,8 +19,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "google/protobuf/stubs/common.h"
-
 namespace google {
 namespace protobuf {
 
@@ -338,10 +336,10 @@ bool InitProto2MessageModule(PyObject *m);
 
 // These are referenced by repeated_scalar_container, and must
 // be explicitly instantiated.
-extern template bool CheckAndGetInteger<int32>(PyObject*, int32*);
-extern template bool CheckAndGetInteger<int64>(PyObject*, int64*);
-extern template bool CheckAndGetInteger<uint32>(PyObject*, uint32*);
-extern template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
+extern template bool CheckAndGetInteger<int32_t>(PyObject*, int32_t*);
+extern template bool CheckAndGetInteger<int64_t>(PyObject*, int64_t*);
+extern template bool CheckAndGetInteger<uint32_t>(PyObject*, uint32_t*);
+extern template bool CheckAndGetInteger<uint64_t>(PyObject*, uint64_t*);
 
 }  // namespace python
 }  // namespace protobuf
