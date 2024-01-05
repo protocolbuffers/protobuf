@@ -363,17 +363,17 @@ impl<'msg> InnerRepeatedMut<'msg> {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub union upb_MessageValue {
-    bool_val: bool,
-    float_val: std::ffi::c_float,
-    double_val: std::ffi::c_double,
-    uint32_val: u32,
-    int32_val: i32,
-    uint64_val: u64,
-    int64_val: i64,
-    array_val: *const std::ffi::c_void,
-    map_val: *const std::ffi::c_void,
-    msg_val: *const std::ffi::c_void,
-    str_val: PtrAndLen,
+    pub bool_val: bool,
+    pub float_val: std::ffi::c_float,
+    pub double_val: std::ffi::c_double,
+    pub uint32_val: u32,
+    pub int32_val: i32,
+    pub uint64_val: u64,
+    pub int64_val: i64,
+    pub array_val: *const std::ffi::c_void,
+    pub map_val: *const std::ffi::c_void,
+    pub msg_val: RawMessage,
+    pub str_val: PtrAndLen,
 }
 
 // Transcribed from google3/third_party/upb/upb/base/descriptor_constants.h
@@ -395,11 +395,11 @@ pub enum UpbCType {
 
 extern "C" {
     fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
-    fn upb_Array_Size(arr: RawRepeatedField) -> usize;
-    fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
-    fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
-    fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
-    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
+    pub fn upb_Array_Size(arr: RawRepeatedField) -> usize;
+    pub fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
+    pub fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
+    pub fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
+    pub fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
     fn upb_Array_MutableDataPtr(arr: RawRepeatedField) -> *mut std::ffi::c_void;
     fn upb_Array_DataPtr(arr: RawRepeatedField) -> *const std::ffi::c_void;
 }
