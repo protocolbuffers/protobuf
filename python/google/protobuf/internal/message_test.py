@@ -1012,6 +1012,12 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_int32)
 
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_int32.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_int32)
+
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_int32.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_int32)
@@ -1021,6 +1027,12 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_float)
 
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_float.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_float)
+
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_float.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_float)
@@ -1029,6 +1041,12 @@ class MessageTest(unittest.TestCase):
     """Test no-ops extending repeated string fields."""
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_string)
+
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_string.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_string)
 
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_string.extend(empty_value)
