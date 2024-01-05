@@ -975,9 +975,6 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   int options = 0;
   upb_Status status;
 
-  // TODO: use this message's pool instead.
-  const upb_DefPool* symtab = DescriptorPool_GetSymtab(generated_pool);
-
   if (argc < 1 || argc > 2) {
     rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
   }
@@ -1011,8 +1008,9 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   }
 
   upb_Status_Clear(&status);
+  const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
   if (!upb_JsonDecode(RSTRING_PTR(data), RSTRING_LEN(data),
-                      (upb_Message*)msg->msg, msg->msgdef, symtab, options,
+                      (upb_Message*)msg->msg, msg->msgdef, pool, options,
                       Arena_get(msg->arena), &status)) {
     rb_raise(cParseError, "Error occurred during parsing: %s",
              upb_Status_ErrorMessage(&status));
@@ -1091,9 +1089,6 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   size_t size;
   upb_Status status;
 
-  // TODO: use this message's pool instead.
-  const upb_DefPool* symtab = DescriptorPool_GetSymtab(generated_pool);
-
   if (argc < 1 || argc > 2) {
     rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
   }
@@ -1128,8 +1123,9 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   }
 
   upb_Status_Clear(&status);
-  size = upb_JsonEncode(msg->msg, msg->msgdef, symtab, options, buf,
-                        sizeof(buf), &status);
+  const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
+  size = upb_JsonEncode(msg->msg, msg->msgdef, pool, options, buf, sizeof(buf),
+                        &status);
 
   if (!upb_Status_IsOk(&status)) {
     rb_raise(cParseError, "Error occurred during encoding: %s",
@@ -1139,7 +1135,7 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE ret;
   if (size >= sizeof(buf)) {
     char* buf2 = malloc(size + 1);
-    upb_JsonEncode(msg->msg, msg->msgdef, symtab, options, buf2, size + 1,
+    upb_JsonEncode(msg->msg, msg->msgdef, pool, options, buf2, size + 1,
                    &status);
     ret = rb_str_new(buf2, size);
     free(buf2);

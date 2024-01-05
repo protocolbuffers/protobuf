@@ -263,6 +263,45 @@ module BasicTestProto2
       assert_equal 42, extension.get(message)
     end
 
+    def test_extension_json
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
+      message = TestExtensions.decode_json '{"[basic_test_proto2.optional_int32_extension]": 123}'
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, extension
+      assert_equal 123, extension.get(message)
+    end
+
+    def test_extension_json_separate_pool
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
+      pool = Google::Protobuf::DescriptorPool.new
+
+      # This serialized descriptor is a subset of basic_test_proto2.proto:
+      #
+      #   syntax = "proto2";
+      #   package basic_test_proto2;
+      #
+      #   message TestExtensions {
+      #     extensions 1 to max;
+      #   }
+      #
+      #   extend TestExtensions {
+      #     # Same extension as basic_test_proto2.proto, but with a different
+      #     # name.
+      #     optional int32 different_optional_int32_extension = 1;
+      #   }
+      #
+      descriptor_data = "\n\x17\x62\x61sic_test_proto2.proto\x12\x11\x62\x61sic_test_proto2\"\x1a\n\x0eTestExtensions*\x08\x08\x01\x10\x80\x80\x80\x80\x02:M\n\"different_optional_int32_extension\x12!.basic_test_proto2.TestExtensions\x18\x01 \x01(\x05"
+      pool.add_serialized_file(descriptor_data)
+      message_class = pool.lookup("basic_test_proto2.TestExtensions").msgclass
+      extension = pool.lookup 'basic_test_proto2.different_optional_int32_extension'
+
+      message = message_class.decode_json '{"[basic_test_proto2.different_optional_int32_extension]": 123}'
+      assert_equal 123, extension.get(message)
+
+      message2 = message_class.decode_json(message_class.encode_json(message))
+      assert_equal 123, extension.get(message2)
+    end
+
     def test_nested_extension
       message = TestExtensions.new
       extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestNestedExtension.test'
