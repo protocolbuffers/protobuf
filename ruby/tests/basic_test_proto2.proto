@@ -190,7 +190,8 @@ message MyStruct {
 }
 
 message TestExtensions {
-  extensions 1 to max;
+  extensions 1 to max
+  [verification = UNVERIFIED];
 }
 
 message TestNestedExtension {
@@ -207,7 +208,8 @@ extend TestExtensions {
 message TestMessageSet {
   option message_set_wire_format = true;
 
-  extensions 4 to max;
+  extensions 4 to max
+  [verification = UNVERIFIED];
 }
 
 message TestMessageSetExtension1 {
