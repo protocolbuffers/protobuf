@@ -695,19 +695,11 @@ message FieldOptions {
   // call from multiple threads concurrently, while non-const methods continue
   // to require exclusive access.
   //
-  // Note that implementations may choose not to check required fields within
-  // a lazy sub-message.  That is, calling IsInitialized() on the outer message
-  // may return true even if the inner message has missing required fields.
-  // This is necessary because otherwise the inner message would have to be
-  // parsed in order to perform the check, defeating the purpose of lazy
-  // parsing.  An implementation which chooses not to check required fields
-  // must be consistent about it.  That is, for any particular sub-message, the
-  // implementation must either *always* check its required fields, or *never*
-  // check its required fields, regardless of whether or not the message has
-  // been parsed.
-  //
-  // As of May 2022, lazy verifies the contents of the byte stream during
-  // parsing.  An invalid byte stream will cause the overall parsing to fail.
+  // Note that lazy message fields are still eagerly verified to check
+  // ill-formed wireformat or missing required fields. Calling IsInitialized()
+  // on the outer message would fail if the inner message has missing required
+  // fields. Failed verification would result in parsing failure (except when
+  // uninitialized messages are acceptable).
   optional bool lazy = 5 [default = false];
 
   // unverified_lazy does no correctness checks on the byte stream. This should
