@@ -19,9 +19,11 @@ module StressTest
       data = TestMessage.encode(m)
       100_000.times do
         mnew = TestMessage.decode(data)
-        mnew = mnew.dup
+        mnew2 = mnew.dup
         assert_equal m.inspect, mnew.inspect
         assert_equal data, TestMessage.encode(mnew)
+        assert_equal m.inspect, mnew2.inspect
+        assert_equal data, TestMessage.encode(mnew2)
       end
     end
   end
