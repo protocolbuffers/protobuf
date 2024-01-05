@@ -20,6 +20,13 @@ fn test_nested_enum_values() {
 }
 
 #[test]
+fn test_isolated_nested_enum() {
+    // Ensure that the enum is generated even when it's the only nested type for the
+    // message.
+    assert_that!(i32::from(proto2_unittest::TestRequiredEnumNoMask_::NestedEnum::Foo), eq(2));
+}
+
+#[test]
 fn test_enum_value_name_same_as_enum() {
     assert_that!(i32::from(enums::TestEnumValueNameSameAsEnum::TestEnumValueNameSameAsEnum), eq(1));
 }
