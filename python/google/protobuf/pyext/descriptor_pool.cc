@@ -482,100 +482,6 @@ static PyObject* FindAllExtensions(PyObject* self, PyObject* arg) {
   return result.release();
 }
 
-// These functions should not exist -- the only valid way to create
-// descriptors is to call Add() or AddSerializedFile().
-// But these AddDescriptor() functions were created in Python and some people
-// call them, so we support them for now for compatibility.
-// However we do check that the existing descriptor already exists in the pool,
-// which appears to always be true for existing calls -- but then why do people
-// call a function that will just be a no-op?
-// TODO: Need to investigate further.
-
-static PyObject* AddFileDescriptor(PyObject* self, PyObject* descriptor) {
-  const FileDescriptor* file_descriptor =
-      PyFileDescriptor_AsDescriptor(descriptor);
-  if (!file_descriptor) {
-    return nullptr;
-  }
-  if (file_descriptor !=
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindFileByName(
-          file_descriptor->name())) {
-    PyErr_Format(PyExc_ValueError,
-                 "The file descriptor %s does not belong to this pool",
-                 file_descriptor->name().c_str());
-    return nullptr;
-  }
-  Py_RETURN_NONE;
-}
-
-static PyObject* AddDescriptor(PyObject* self, PyObject* descriptor) {
-  const Descriptor* message_descriptor =
-      PyMessageDescriptor_AsDescriptor(descriptor);
-  if (!message_descriptor) {
-    return nullptr;
-  }
-  if (message_descriptor !=
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMessageTypeByName(
-          message_descriptor->full_name())) {
-    PyErr_Format(PyExc_ValueError,
-                 "The message descriptor %s does not belong to this pool",
-                 message_descriptor->full_name().c_str());
-    return nullptr;
-  }
-  Py_RETURN_NONE;
-}
-
-static PyObject* AddEnumDescriptor(PyObject* self, PyObject* descriptor) {
-  const EnumDescriptor* enum_descriptor =
-      PyEnumDescriptor_AsDescriptor(descriptor);
-  if (!enum_descriptor) {
-    return nullptr;
-  }
-  if (enum_descriptor !=
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindEnumTypeByName(
-          enum_descriptor->full_name())) {
-    PyErr_Format(PyExc_ValueError,
-                 "The enum descriptor %s does not belong to this pool",
-                 enum_descriptor->full_name().c_str());
-    return nullptr;
-  }
-  Py_RETURN_NONE;
-}
-
-static PyObject* AddExtensionDescriptor(PyObject* self, PyObject* descriptor) {
-  const FieldDescriptor* extension_descriptor =
-      PyFieldDescriptor_AsDescriptor(descriptor);
-  if (!extension_descriptor) {
-    return nullptr;
-  }
-  if (extension_descriptor !=
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindExtensionByName(
-          extension_descriptor->full_name())) {
-    PyErr_Format(PyExc_ValueError,
-                 "The extension descriptor %s does not belong to this pool",
-                 extension_descriptor->full_name().c_str());
-    return nullptr;
-  }
-  Py_RETURN_NONE;
-}
-
-static PyObject* AddServiceDescriptor(PyObject* self, PyObject* descriptor) {
-  const ServiceDescriptor* service_descriptor =
-      PyServiceDescriptor_AsDescriptor(descriptor);
-  if (!service_descriptor) {
-    return nullptr;
-  }
-  if (service_descriptor !=
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindServiceByName(
-          service_descriptor->full_name())) {
-    PyErr_Format(PyExc_ValueError,
-                 "The service descriptor %s does not belong to this pool",
-                 service_descriptor->full_name().c_str());
-    return nullptr;
-  }
-  Py_RETURN_NONE;
-}
-
 // The code below loads new Descriptors from a serialized FileDescriptorProto.
 static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
@@ -688,17 +594,6 @@ static PyMethodDef Methods[] = {
      "Adds a serialized FileDescriptorProto to this pool."},
     {"SetFeatureSetDefaults", SetFeatureSetDefaults, METH_O,
      "Sets the default feature mappings used during the build."},
-
-    {"AddFileDescriptor", AddFileDescriptor, METH_O,
-     "No-op. Add() must have been called before."},
-    {"AddDescriptor", AddDescriptor, METH_O,
-     "No-op. Add() must have been called before."},
-    {"AddEnumDescriptor", AddEnumDescriptor, METH_O,
-     "No-op. Add() must have been called before."},
-    {"AddExtensionDescriptor", AddExtensionDescriptor, METH_O,
-     "No-op. Add() must have been called before."},
-    {"AddServiceDescriptor", AddServiceDescriptor, METH_O,
-     "No-op. Add() must have been called before."},
 
     {"FindFileByName", FindFileByName, METH_O,
      "Searches for a file descriptor by its .proto name."},
