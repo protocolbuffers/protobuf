@@ -806,6 +806,7 @@ impl_bytes_partial_cmp!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
 
     // TODO: Add unit tests
 
@@ -822,29 +823,32 @@ mod tests {
 
     #[test]
     fn proto_str_debug() {
-        assert_eq!(&format!("{:?}", test_proto_str(b"Hello There")), "\"Hello There\"");
-        assert_eq!(
+        assert_that!(&format!("{:?}", test_proto_str(b"Hello There")), eq("\"Hello There\""));
+        assert_that!(
             &format!(
                 "{:?}",
                 test_proto_str(b"Hello\xC0\x80 There\xE6\x83 Goodbye\xf4\x8d\x93\xaa"),
             ),
-            "\"Hello\\xC0\\x80 There\\xE6\\x83 Goodbye\\u{10d4ea}\"",
+            eq("\"Hello\\xC0\\x80 There\\xE6\\x83 Goodbye\\u{10d4ea}\""),
         );
     }
 
     #[test]
     fn proto_str_display() {
-        assert_eq!(&test_proto_str(b"Hello There").to_string(), "Hello There");
-        assert_eq!(
+        assert_that!(&test_proto_str(b"Hello There").to_string(), eq("Hello There"));
+        assert_that!(
             &test_proto_str(b"Hello\xC0\x80 There\xE6\x83 Goodbye\xf4\x8d\x93\xaa").to_string(),
-            "Hello�� There� Goodbye\u{10d4ea}",
+            eq("Hello�� There� Goodbye\u{10d4ea}"),
         );
     }
 
     #[test]
     fn proto_str_to_rust_str() {
-        assert_eq!(test_proto_str(b"hello").to_str(), Ok("hello"));
-        assert_eq!(test_proto_str("ศไทย中华Việt Nam".as_bytes()).to_str(), Ok("ศไทย中华Việt Nam"));
+        assert_that!(test_proto_str(b"hello").to_str(), eq(Ok("hello")));
+        assert_that!(
+            test_proto_str("ศไทย中华Việt Nam".as_bytes()).to_str(),
+            eq(Ok("ศไทย中华Việt Nam"))
+        );
         for expect_fail in [
             &b"Hello\xC2 There\xFF Goodbye"[..],
             b"Hello\xC0\x80 There\xE6\x83 Goodbye",
@@ -854,16 +858,20 @@ mod tests {
             b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar",
             b"\xED\xA0\x80foo\xED\xBF\xBFbar",
         ] {
-            assert_eq!(test_proto_str(expect_fail).to_str(), Err(Utf8Error(())), "{expect_fail:?}");
+            assert_that!(
+                test_proto_str(expect_fail).to_str(),
+                eq(Err(Utf8Error(()))),
+                "{expect_fail:?}"
+            );
         }
     }
 
     #[test]
     fn proto_str_to_cow() {
-        assert_eq!(test_proto_str(b"hello").to_cow_lossy(), Cow::Borrowed("hello"));
-        assert_eq!(
+        assert_that!(test_proto_str(b"hello").to_cow_lossy(), eq(Cow::Borrowed("hello")));
+        assert_that!(
             test_proto_str("ศไทย中华Việt Nam".as_bytes()).to_cow_lossy(),
-            Cow::Borrowed("ศไทย中华Việt Nam")
+            eq(Cow::Borrowed("ศไทย中华Việt Nam"))
         );
         for (bytes, lossy_str) in [
             (&b"Hello\xC2 There\xFF Goodbye"[..], "Hello� There� Goodbye"),
@@ -875,8 +883,8 @@ mod tests {
             (b"\xED\xA0\x80foo\xED\xBF\xBFbar", "���foo���bar"),
         ] {
             let cow = test_proto_str(bytes).to_cow_lossy();
-            assert!(matches!(cow, Cow::Owned(_)));
-            assert_eq!(&*cow, lossy_str, "{bytes:?}");
+            assert_that!(cow, matches_pattern!(Cow::Owned(_)));
+            assert_that!(&*cow, eq(lossy_str), "{bytes:?}");
         }
     }
 
@@ -885,11 +893,11 @@ mod tests {
         macro_rules! assert_chunks {
             ($bytes:expr, $($chunks:expr),* $(,)?) => {
                 let bytes = $bytes;
-                let chunks: &[Result<&str, &[u8]>] = &[$($chunks),*];
+                let chunks: &[std::result::Result<&str, &[u8]>] = &[$($chunks),*];
                 let s = test_proto_str(bytes);
                 let mut got_chunks = s.utf8_chunks();
                 let mut expected_chars = chunks.iter().copied();
-                assert!(got_chunks.eq(expected_chars), "{bytes:?} -> {chunks:?}");
+                assert_that!(got_chunks.eq(expected_chars), eq(true), "{bytes:?} -> {chunks:?}");
             };
         }
         assert_chunks!(b"hello", Ok("hello"));
@@ -968,7 +976,7 @@ mod tests {
                 let s = test_proto_str(bytes);
                 let mut got_chars = s.chars();
                 let mut expected_chars = chars.into_iter();
-                assert!(got_chars.eq(expected_chars), "{bytes:?} -> {chars:?}");
+                assert_that!(got_chars.eq(expected_chars), eq(true), "{bytes:?} -> {chars:?}");
             };
         }
         assert_chars!(b"hello", ['h', 'e', 'l', 'l', 'o']);
