@@ -255,6 +255,38 @@ TEST(Proto3OptionalTest, OptionalFields) {
   EXPECT_EQ(serialized.size(), 0);
 }
 
+TEST(Proto3ArenaTest, CheckMessageFieldIsCleared) {
+  Arena arena;
+  auto msg = Arena::CreateMessage<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_optional_foreign_message();
+  child->set_c(100);
+  msg->Clear();
+
+  EXPECT_EQ(child->c(), 0);
+}
+
+TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
+#ifndef PROTOBUF_FORCE_CLEAR_ONEOF_ARENA_MESSAGE
+  GTEST_SKIP() << "arena allocated oneof message fields are not cleared.";
+#endif
+
+  Arena arena;
+  auto msg = Arena::CreateMessage<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_oneof_nested_message();
+  child->set_bb(100);
+  msg->Clear();
+
+  EXPECT_EQ(child->bb(), 0);
+}
+
 TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
   const Descriptor* d = protobuf_unittest::TestProto3Optional::descriptor();
 

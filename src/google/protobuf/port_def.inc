@@ -450,6 +450,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_CLEAR_ONEOF_ARENA_MESSAGE
+#error PROTOBUF_FORCE_CLEAR_ONEOF_ARENA_MESSAGE was previously defined
+#endif
+
 // Force copy the default string to a string field so that non-optimized builds
 // have harder-to-rely-on address stability.
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
