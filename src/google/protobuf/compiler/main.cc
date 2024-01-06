@@ -106,7 +106,7 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace google
 
 #ifdef _MSC_VER
-std::string ToMultiByteUTF8String(const wchar_t* input)
+std::string ToMultiByteUtf8String(const wchar_t* input)
 {
     int size = WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0, NULL, NULL);
     std::string result(size, 0);
@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
   char** argv_mbcs = new char* [argc];
   for (int i = 0; i < argc; i++)
   {
-      std::string* multibyte_string = new auto(ToMultiByteUTF8String(wargv[i]));
+      std::string* multibyte_string = new auto(ToMultiByteUtf8String(wargv[i]));
       argv_mbcs[i] = multibyte_string->data();
   }
   return google::protobuf::compiler::ProtobufMain(argc, argv_mbcs);
