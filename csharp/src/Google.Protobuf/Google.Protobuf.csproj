@@ -8,7 +8,7 @@
     <VersionPrefix>3.25.0</VersionPrefix>
     <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
-    <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
+    <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50;net6.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -28,7 +28,7 @@
     <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>	  
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net8.0' ">
     <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING</DefineConstants>
   </PropertyGroup>
 
@@ -36,7 +36,7 @@
     <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SIMD</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0"/>
     <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0"/>
@@ -46,10 +46,17 @@
     <PackageReference Include="System.Memory" Version="4.5.3"/>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Memory" Version="4.5.3"/>
     <!-- Needed for netcoreapp3.1 to work correctly. .NET is not able to load the assembly without this -->
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2"/>
   </ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0'">
+	    <PackageReference Include="System.Memory" Version="4.5.5"/>
+	    <!-- Needed for netcoreapp3.1 to work correctly. .NET is not able to load the assembly without this -->
+	    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0"/>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="8.0.0"/>
+		<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.3"/>
+    </ItemGroup>
 
 </Project>
