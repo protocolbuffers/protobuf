@@ -1296,16 +1296,25 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
   WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
-  printer->Print("public object $name$Kt {\n", "name", descriptor_->name());
-  printer->Indent();
-  GenerateKotlinDsl(printer);
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    if (IsMapEntry(descriptor_->nested_type(i))) continue;
-    ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
-        .GenerateKotlinMembers(printer);
-  }
-  printer->Outdent();
-  printer->Print("}\n");
+  printer->Emit(
+      {
+          io::Printer::Sub{"name_kt", absl::StrCat(descriptor_->name(), "Kt")}
+              .AnnotatedAs(descriptor_),
+          {"body",
+           [&]() {
+             GenerateKotlinDsl(printer);
+             for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+               if (IsMapEntry(descriptor_->nested_type(i))) continue;
+               ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
+                   .GenerateKotlinMembers(printer);
+             }
+           }},
+      },
+      R"kt(
+    public object $name_kt$ {
+      $body$;
+    }
+  )kt");
 }
 
 void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
