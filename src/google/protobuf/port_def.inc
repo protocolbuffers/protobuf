@@ -442,10 +442,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
 #endif
 
-#ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
-#error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
-#endif
-
 #ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
 #error PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG was previously defined
 #endif
