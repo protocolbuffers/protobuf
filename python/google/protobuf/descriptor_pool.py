@@ -47,22 +47,6 @@ from google.protobuf.internal import python_message
 _USE_C_DESCRIPTORS = descriptor._USE_C_DESCRIPTORS  # pylint: disable=protected-access
 
 
-def _Deprecated(func):
-  """Mark functions as deprecated."""
-
-  def NewFunc(*args, **kwargs):
-    warnings.warn(
-        'Call to deprecated function %s(). Note: Do add unlinked descriptors '
-        'to descriptor_pool is wrong. Please use Add() or AddSerializedFile() '
-        'instead. This function will be removed soon.' % func.__name__,
-        category=DeprecationWarning)
-    return func(*args, **kwargs)
-  NewFunc.__name__ = func.__name__
-  NewFunc.__doc__ = func.__doc__
-  NewFunc.__dict__.update(func.__dict__)
-  return NewFunc
-
-
 def _NormalizeFullyQualifiedName(name):
   """Remove leading period from fully-qualified type name.
 
@@ -207,12 +191,6 @@ class DescriptorPool(object):
     file_desc.serialized_pb = serialized_file_desc_proto
     return file_desc
 
-  # Add Descriptor to descriptor pool is deprecated. Please use Add()
-  # or AddSerializedFile() to add a FileDescriptorProto instead.
-  @_Deprecated
-  def AddDescriptor(self, desc):
-    self._AddDescriptor(desc)
-
   # Never call this method. It is for internal usage only.
   def _AddDescriptor(self, desc):
     """Adds a Descriptor to the pool, non-recursively.
@@ -267,12 +245,6 @@ class DescriptorPool(object):
         self._top_enum_values[full_name] = enum_value
     self._AddFileDescriptor(enum_desc.file)
 
-  # Add ServiceDescriptor to descriptor pool is deprecated. Please use Add()
-  # or AddSerializedFile() to add a FileDescriptorProto instead.
-  @_Deprecated
-  def AddServiceDescriptor(self, service_desc):
-    self._AddServiceDescriptor(service_desc)
-
   # Never call this method. It is for internal usage only.
   def _AddServiceDescriptor(self, service_desc):
     """Adds a ServiceDescriptor to the pool.
@@ -287,12 +259,6 @@ class DescriptorPool(object):
     self._CheckConflictRegister(service_desc, service_desc.full_name,
                                 service_desc.file.name)
     self._service_descriptors[service_desc.full_name] = service_desc
-
-  # Add ExtensionDescriptor to descriptor pool is deprecated. Please use Add()
-  # or AddSerializedFile() to add a FileDescriptorProto instead.
-  @_Deprecated
-  def AddExtensionDescriptor(self, extension):
-    self._AddExtensionDescriptor(extension)
 
   # Never call this method. It is for internal usage only.
   def _AddExtensionDescriptor(self, extension):
@@ -342,10 +308,6 @@ class DescriptorPool(object):
     if hasattr(extension.containing_type, '_concrete_class'):
       python_message._AttachFieldHelpers(
           extension.containing_type._concrete_class, extension)
-
-  @_Deprecated
-  def AddFileDescriptor(self, file_desc):
-    self._InternalAddFileDescriptor(file_desc)
 
   # Never call this method. It is for internal usage only.
   def _InternalAddFileDescriptor(self, file_desc):

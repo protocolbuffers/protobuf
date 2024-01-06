@@ -1727,7 +1727,7 @@ class RepeatedPtrOverPtrsIterator {
 
   // dereferenceable
   reference operator*() const { return *reinterpret_cast<Element*>(it_); }
-  pointer operator->() const { return &(operator*()); }
+  pointer operator->() const { return reinterpret_cast<Element*>(it_); }
 
   // {inc,dec}rementable
   iterator& operator++() {

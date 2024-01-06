@@ -3,10 +3,10 @@ syntax = "proto3";
 package stress_test_protos;
 
 message TestMessage {
-  int32 a = 1;
+  optional int32 a = 1;
   repeated M b = 2;
 }
 
 message M {
-  string foo = 1;
+  optional string foo = 1;
 }

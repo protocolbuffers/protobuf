@@ -16,18 +16,18 @@ option java_package = "";
 // be serialized using a single ExtensionWriter#writeUntil call.
 message TestMessageWithManyExtensionRanges {
   // First extension range: ends at field number 3 (exclusive)
-  extensions 1 to 2;
+  extensions 1 to 2 [verification = UNVERIFIED];
 
   int32 foo = 3;
   int32 bar = 5;
 
   // Second extension range: ends at field number 13 (exclusive)
-  extensions 6;
-  extensions 8;
-  extensions 10 to 12;
+  extensions 6 [verification = UNVERIFIED];
+  extensions 8 [verification = UNVERIFIED];
+  extensions 10 to 12 [verification = UNVERIFIED];
 
   int32 baz = 23;
 
   // Third extension range: ends at field number 43 (exclusive)
-  extensions 42;
+  extensions 42 [verification = UNVERIFIED];
 }

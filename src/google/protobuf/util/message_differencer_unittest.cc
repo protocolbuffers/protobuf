@@ -50,12 +50,9 @@ namespace internal {
 class UnsetFieldsMetadataMessageDifferencerTestUtil {
  public:
   static void AddExplicitUnsetField(
-      const Message& message, const Reflection& reflection,
-      const FieldDescriptor& fd,
+      const Message& message, const FieldDescriptor& fd,
       TextFormat::Parser::UnsetFieldsMetadata* metadata) {
-    metadata->addresses_.insert(
-        TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-            message, reflection, fd));
+    metadata->ids_.insert(metadata->GetUnsetFieldId(message, fd));
   }
 };
 }  // namespace internal
@@ -414,11 +411,10 @@ TEST(MessageDifferencerTest,
   proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
   proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
 
-  const Reflection* reflection1 = msg1.GetReflection();
   const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(1);
   TextFormat::Parser::UnsetFieldsMetadata metadata;
   UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
-      msg1, *reflection1, *fd1, &metadata);
+      msg1, *fd1, &metadata);
   address_differencer.set_require_no_presence_fields(metadata);
 
   EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
@@ -455,11 +451,10 @@ TEST(MessageDifferencerTest,
   proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
   proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
 
-  const Reflection* reflection1 = msg1.GetReflection();
   const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(4);
   TextFormat::Parser::UnsetFieldsMetadata metadata;
   UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
-      msg1, *reflection1, *fd1, &metadata);
+      msg1, *fd1, &metadata);
   address_differencer.set_require_no_presence_fields(metadata);
 
   EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
@@ -498,11 +493,10 @@ TEST(MessageDifferencerTest,
   proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
   proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
 
-  const Reflection* reflection1 = msg1.GetReflection();
   const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(5);
   TextFormat::Parser::UnsetFieldsMetadata metadata;
   UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
-      msg1, *reflection1, *fd1, &metadata);
+      msg1, *fd1, &metadata);
   address_differencer.set_require_no_presence_fields(metadata);
 
   EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
@@ -537,11 +531,10 @@ TEST(MessageDifferencerTest,
   proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
   proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
 
-  const Reflection* reflection1 = msg1.no_presence_nested().GetReflection();
   const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(1);
   TextFormat::Parser::UnsetFieldsMetadata metadata;
   UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
-      msg1.no_presence_nested(), *reflection1, *fd1, &metadata);
+      msg1.no_presence_nested(), *fd1, &metadata);
   address_differencer.set_require_no_presence_fields(metadata);
 
   EXPECT_TRUE(address_differencer.Compare(msg1, msg2));
@@ -578,12 +571,10 @@ TEST(MessageDifferencerTest,
   proto3_unittest::TestNoPresenceField msg1 = MakeTestNoPresenceField();
   proto3_unittest::TestNoPresenceField msg2 = MakeTestNoPresenceField();
 
-  const Reflection* reflection1 =
-      msg1.no_presence_repeated_nested(0).GetReflection();
   const FieldDescriptor* fd1 = msg1.GetDescriptor()->FindFieldByNumber(1);
   TextFormat::Parser::UnsetFieldsMetadata metadata;
   UnsetFieldsMetadataMessageDifferencerTestUtil::AddExplicitUnsetField(
-      msg1.no_presence_repeated_nested(0), *reflection1, *fd1, &metadata);
+      msg1.no_presence_repeated_nested(0), *fd1, &metadata);
   address_differencer.set_require_no_presence_fields(metadata);
 
   EXPECT_TRUE(address_differencer.Compare(msg1, msg2));

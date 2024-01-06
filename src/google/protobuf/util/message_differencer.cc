@@ -759,9 +759,9 @@ bool MessageDifferencer::ShouldCompareNoPresence(
   const bool compare_no_presence_by_address =
       !field2->is_repeated() && !field2->has_presence() &&
       ValidMissingField(*field2) &&
-      require_no_presence_fields_.addresses_.contains(
-          TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-              message1, reflection1, *field2));
+      require_no_presence_fields_.ids_.contains(
+          TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(message1,
+                                                                   *field2));
   return compare_no_presence_by_address;
 }
 

@@ -390,9 +390,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
              }},
             {"nested_in_msg",
              [&] {
-               // If we have no nested types or oneofs, bail out without
+               // If we have no nested types, enums, or oneofs, bail out without
                // emitting an empty mod SomeMsg_.
-               if (msg.nested_type_count() == 0 &&
+               if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
                    msg.real_oneof_decl_count() == 0) {
                  return;
                }

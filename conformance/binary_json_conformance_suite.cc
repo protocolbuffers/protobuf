@@ -1671,77 +1671,67 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
-  if (!run_proto3_tests_) {
-    RunValidJsonTestWithValidator(
-        "StoresDefaultPrimitive", REQUIRED,
-        R"({
-        "FieldName13": 0
-      })",
-        [](const Json::Value& value) { return value.isMember("FieldName13"); });
-    std::vector<const FieldDescriptor*> extensions;
-    MessageType::GetDescriptor()->file()->pool()->FindAllExtensions(
-        MessageType::GetDescriptor(), &extensions);
-    RunValidJsonTestWithValidator("FieldNameExtension", RECOMMENDED,
-                                  absl::Substitute(R"({
-        "[$0]": 1
-      })",
-                                                   extensions[0]->full_name()),
-                                  [&](const Json::Value& value) {
-                                    return value.isMember(absl::StrCat(
-                                        "[", extensions[0]->full_name(), "]"));
-                                  });
-    return;
-  }
   RunValidJsonTest("HelloWorld", REQUIRED,
                    "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
   // NOTE: The spec for JSON support is still being sorted out, these may not
   // all be correct.
-
   RunJsonTestsForFieldNameConvention();
   RunJsonTestsForNonRepeatedTypes();
   RunJsonTestsForRepeatedTypes();
   RunJsonTestsForNullTypes();
-  RunJsonTestsForWrapperTypes();
-  RunJsonTestsForFieldMask();
-  RunJsonTestsForStruct();
-  RunJsonTestsForValue();
-  RunJsonTestsForAny();
+
+  if (run_proto3_tests_) {
+    RunJsonTestsForWrapperTypes();
+    RunJsonTestsForFieldMask();
+    RunJsonTestsForStruct();
+    RunJsonTestsForValue();
+    RunJsonTestsForAny();
+  } else {
+    // Currently Proto2 only, but should also be run on Proto3-optional.
+    RunJsonTestsForStoresDefaultPrimitive();
+  }
+
   RunJsonTestsForUnknownEnumStringValues();
 
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNumber", REQUIRED,
-                                R"({
-        "unknown": 1
-      })",
-                                "");
+                                R"({"unknown": 1})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonString", REQUIRED,
-                                R"({
-        "unknown": "a"
-      })",
-                                "");
+                                R"({"unknown": "a"})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonTrue", REQUIRED,
-                                R"({
-        "unknown": true
-      })",
-                                "");
+                                R"({"unknown": true})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonFalse", REQUIRED,
-                                R"({
-        "unknown": false
-      })",
-                                "");
+                                R"({"unknown": false})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNull", REQUIRED,
-                                R"({
-        "unknown": null
-      })",
-                                "");
+                                R"({"unknown": null})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonObject", REQUIRED,
-                                R"({
-        "unknown": {"a": 1}
-      })",
-                                "");
+                                R"({"unknown": {"a": 1}})", "");
 
   ExpectParseFailureForJson("RejectTopLevelNull", REQUIRED, "null");
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<
+    MessageType>::RunJsonTestsForStoresDefaultPrimitive() {
+  RunValidJsonTestWithValidator(
+      "StoresDefaultPrimitive", REQUIRED,
+      R"({
+          "FieldName13": 0
+        })",
+      [](const Json::Value& value) { return value.isMember("FieldName13"); });
+  std::vector<const FieldDescriptor*> extensions;
+  MessageType::GetDescriptor()->file()->pool()->FindAllExtensions(
+      MessageType::GetDescriptor(), &extensions);
+  RunValidJsonTestWithValidator("FieldNameExtension", RECOMMENDED,
+                                absl::Substitute(R"({
+          "[$0]": 1
+        })",
+                                                 extensions[0]->full_name()),
+                                [&](const Json::Value& value) {
+                                  return value.isMember(absl::StrCat(
+                                      "[", extensions[0]->full_name(), "]"));
+                                });
 }
 
 template <typename MessageType>
@@ -2009,12 +1999,14 @@ void BinaryAndJsonConformanceSuiteImpl<
                value.isMember("fieldName15") && value.isMember("fieldName16") &&
                value.isMember("fieldName17") && value.isMember("FieldName18");
       });
-  RunValidJsonTestWithValidator(
-      "SkipsDefaultPrimitive", REQUIRED,
-      R"({
-        "FieldName13": 0
-      })",
-      [](const Json::Value& value) { return !value.isMember("FieldName13"); });
+
+  if (run_proto3_tests_) {
+    RunValidJsonTestWithValidator("SkipsDefaultPrimitive", REQUIRED,
+                                  R"({"FieldName13": 0})",
+                                  [](const Json::Value& value) {
+                                    return !value.isMember("FieldName13");
+                                  });
+  }
 }
 
 template <typename MessageType>
@@ -2271,19 +2263,23 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
                    "optional_nested_enum: FOO");
+
   // Enum fields with alias
-  RunValidJsonTest("EnumFieldWithAlias", REQUIRED,
-                   R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
-  RunValidJsonTest("EnumFieldWithAliasUseAlias", REQUIRED,
-                   R"({"optionalAliasedEnum": "MOO"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
-  RunValidJsonTest("EnumFieldWithAliasLowerCase", REQUIRED,
-                   R"({"optionalAliasedEnum": "moo"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
-  RunValidJsonTest("EnumFieldWithAliasDifferentCase", REQUIRED,
-                   R"({"optionalAliasedEnum": "bAz"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
+  if (run_proto3_tests_) {
+    RunValidJsonTest("EnumFieldWithAlias", REQUIRED,
+                     R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+    RunValidJsonTest("EnumFieldWithAliasUseAlias", REQUIRED,
+                     R"({"optionalAliasedEnum": "MOO"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+    RunValidJsonTest("EnumFieldWithAliasLowerCase", REQUIRED,
+                     R"({"optionalAliasedEnum": "moo"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+    RunValidJsonTest("EnumFieldWithAliasDifferentCase", REQUIRED,
+                     R"({"optionalAliasedEnum": "bAz"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+  }
+
   // Enum values must be represented as strings.
   ExpectParseFailureForJson("EnumFieldNotQuoted", REQUIRED,
                             R"({"optionalNestedEnum": FOO})");
@@ -2292,13 +2288,16 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalNestedEnum": 0})", "optional_nested_enum: FOO");
   RunValidJsonTest("EnumFieldNumericValueNonZero", REQUIRED,
                    R"({"optionalNestedEnum": 1})", "optional_nested_enum: BAR");
-  // Unknown enum values are represented as numeric values.
-  RunValidJsonTestWithValidator(
-      "EnumFieldUnknownValue", REQUIRED, R"({"optionalNestedEnum": 123})",
-      [](const Json::Value& value) {
-        return value["optionalNestedEnum"].type() == Json::intValue &&
-               value["optionalNestedEnum"].asInt() == 123;
-      });
+
+  if (run_proto3_tests_) {
+    // Unknown enum values are represented as numeric values.
+    RunValidJsonTestWithValidator(
+        "EnumFieldUnknownValue", REQUIRED, R"({"optionalNestedEnum": 123})",
+        [](const Json::Value& value) {
+          return value["optionalNestedEnum"].type() == Json::intValue &&
+                 value["optionalNestedEnum"].asInt() == 123;
+        });
+  }
 
   // String fields.
   RunValidJsonTest("StringField", REQUIRED,
@@ -3000,18 +2999,18 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
     }
   ]
       )");
-  RunValidJsonTestWithValidator(
-      "NullValueInOtherOneofOldFormat", RECOMMENDED,
-      R"({"oneofNullValue": "NULL_VALUE"})", [](const Json::Value& value) {
-        return (value.isMember("oneofNullValue") &&
-                value["oneofNullValue"].isNull());
-      });
-  RunValidJsonTestWithValidator(
-      "NullValueInOtherOneofNewFormat", RECOMMENDED,
-      R"({"oneofNullValue": null})", [](const Json::Value& value) {
-        return (value.isMember("oneofNullValue") &&
-                value["oneofNullValue"].isNull());
-      });
+  RunValidJsonTestWithValidator("NullValueInOtherOneofOldFormat", RECOMMENDED,
+                                R"({"oneofNullValue": "NULL_VALUE"})",
+                                [](const Json::Value& value) {
+                                  return (value.isMember("oneofNullValue") &&
+                                          value["oneofNullValue"].isNull());
+                                });
+  RunValidJsonTestWithValidator("NullValueInOtherOneofNewFormat", RECOMMENDED,
+                                R"({"oneofNullValue": null})",
+                                [](const Json::Value& value) {
+                                  return (value.isMember("oneofNullValue") &&
+                                          value["oneofNullValue"].isNull());
+                                });
   RunValidJsonTestWithValidator(
       "NullValueInNormalMessage", RECOMMENDED, R"({"optionalNullValue": null})",
       [](const Json::Value& value) { return value.empty(); });

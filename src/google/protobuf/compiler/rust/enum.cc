@@ -35,12 +35,12 @@ namespace rust {
 
 namespace {
 
-std::string enumName(const EnumDescriptor& desc) {
+std::string EnumName(const EnumDescriptor& desc) {
   return cpp::UnderscoresToCamelCase(desc.name(), /*cap first letter=*/true);
 }
 
 // Constructs input for `EnumValues` from an enum descriptor.
-std::vector<std::pair<absl::string_view, int32_t>> enumValuesInput(
+std::vector<std::pair<absl::string_view, int32_t>> EnumValuesInput(
     const EnumDescriptor& desc) {
   std::vector<std::pair<absl::string_view, int32_t>> result;
   result.reserve(static_cast<size_t>(desc.value_count()));
@@ -165,10 +165,10 @@ std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
 }
 
 void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
-  std::string name = enumName(desc);
+  std::string name = EnumName(desc);
   ABSL_CHECK(desc.value_count() > 0);
   std::vector<RustEnumValue> values =
-      EnumValues(desc.name(), enumValuesInput(desc));
+      EnumValues(desc.name(), EnumValuesInput(desc));
   ABSL_CHECK(!values.empty());
 
   ctx.Emit(

@@ -1367,12 +1367,6 @@ static PyObject* PyUpb_FileDescriptor_GetPublicDependencies(PyObject* _self,
   return PyUpb_GenericSequence_New(&funcs, self->def, self->pool);
 }
 
-static PyObject* PyUpb_FileDescriptor_GetEdition(PyObject* _self,
-                                                 void* closure) {
-  PyUpb_DescriptorBase* self = (void*)_self;
-  return PyLong_FromLong(upb_FileDef_Edition(self->def));
-}
-
 static PyObject* PyUpb_FileDescriptor_GetHasOptions(PyObject* _self,
                                                     void* closure) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1421,7 +1415,6 @@ static PyGetSetDef PyUpb_FileDescriptor_Getters[] = {
     {"public_dependencies", PyUpb_FileDescriptor_GetPublicDependencies, NULL,
      "Dependencies"},
     {"has_options", PyUpb_FileDescriptor_GetHasOptions, NULL, "Has Options"},
-    {"edition", PyUpb_FileDescriptor_GetEdition, (setter)NULL, "Edition"},
     {NULL},
 };
 
