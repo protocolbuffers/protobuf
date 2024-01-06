@@ -989,11 +989,14 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
   (void)cached_has_bits;
 
   // repeated .google.protobuf.Value values = 1;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_values_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_values_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_values().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            1, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1016,8 +1019,7 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
   // repeated .google.protobuf.Value values = 1;
   total_size += 1UL * this->_internal_values_size();
   for (const auto& msg : this->_internal_values()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
