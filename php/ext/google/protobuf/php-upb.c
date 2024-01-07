@@ -7657,8 +7657,8 @@ static const char* _upb_Decoder_DecodeEnumPacked(
   return ptr;
 }
 
-upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
-                                    const upb_MiniTableField* field) {
+static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
+                                           const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
   const size_t lg2 = UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
   upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
@@ -7734,10 +7734,11 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
   }
 }
 
-upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
-  /* Maps descriptor type -> upb map size.  */
+static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
+                                       const upb_MiniTable* entry) {
+  // Maps descriptor type -> upb map size
   static const uint8_t kSizeInMap[] = {
-      [0] = -1,  // invalid descriptor type */
+      [0] = -1,  // invalid descriptor type
       [kUpb_FieldType_Double] = 8,
       [kUpb_FieldType_Float] = 4,
       [kUpb_FieldType_Int64] = 8,
@@ -8130,7 +8131,7 @@ found:
   return &t->UPB_PRIVATE(fields)[idx];
 }
 
-int _upb_Decoder_GetVarintOp(const upb_MiniTableField* field) {
+static int _upb_Decoder_GetVarintOp(const upb_MiniTableField* field) {
   static const int8_t kVarintOps[] = {
       [kUpb_FakeFieldType_FieldNotFound] = kUpb_DecodeOp_UnknownField,
       [kUpb_FieldType_Double] = kUpb_DecodeOp_UnknownField,
@@ -8185,12 +8186,12 @@ static void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
   *op = kUpb_DecodeOp_UnknownField;
 }
 
-int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
-                                const upb_MiniTableField* field) {
+static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
+                                       const upb_MiniTableField* field) {
   enum { kRepeatedBase = 19 };
 
   static const int8_t kDelimitedOps[] = {
-      /* For non-repeated field type. */
+      // For non-repeated field type.
       [kUpb_FakeFieldType_FieldNotFound] =
           kUpb_DecodeOp_UnknownField,  // Field not found.
       [kUpb_FieldType_Double] = kUpb_DecodeOp_UnknownField,
@@ -8212,7 +8213,7 @@ int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kUpb_FieldType_SInt32] = kUpb_DecodeOp_UnknownField,
       [kUpb_FieldType_SInt64] = kUpb_DecodeOp_UnknownField,
       [kUpb_FakeFieldType_MessageSetItem] = kUpb_DecodeOp_UnknownField,
-      // For repeated field type. */
+      // For repeated field type.
       [kRepeatedBase + kUpb_FieldType_Double] = OP_FIXPCK_LG2(3),
       [kRepeatedBase + kUpb_FieldType_Float] = OP_FIXPCK_LG2(2),
       [kRepeatedBase + kUpb_FieldType_Int64] = OP_VARPCK_LG2(3),
