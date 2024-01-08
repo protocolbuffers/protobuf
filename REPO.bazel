@@ -1,0 +1,11 @@
+# This file is read by Bazel 7 and newer, both if Protobuf is the main
+# repository and if it is an external repository.
+repo(
+    features = [
+        # Protobuf cc_* targets do not specify all dependencies from which they
+        # include headers. This causes builds of downstream projects with
+        # --feature=layering_check to fail, which can be avoided by disabling
+        # the feature for the entire repository.
+        "-layering_check",
+    ],
+)
