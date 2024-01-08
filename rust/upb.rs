@@ -578,77 +578,62 @@ impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
     }
 }
 
-macro_rules! generate_map_key_ops_traits {
-    ($($t:ty, $sized_t:ty;)*) => {
-        paste! {
-            $(
-                pub trait [< MapWith $t:camel KeyOps >] : Proxied {
-                    fn new_map(a: RawArena) -> RawMap;
-                    fn clear(m: RawMap) {
-                        unsafe { upb_Map_Clear(m) }
-                    }
-                    fn size(m: RawMap) -> usize {
-                        unsafe { upb_Map_Size(m) }
-                    }
-                    fn insert(m: RawMap, a: RawArena, key: $sized_t, value: View<'_, Self>) -> bool;
-                    fn get<'msg>(m: RawMap, key: $sized_t) -> Option<View<'msg, Self>>;
-                    fn remove(m: RawMap, key: $sized_t) -> bool;
-                }
+pub trait ProxiedInMapValue<K>: Proxied
+where
+    K: Proxied + ?Sized,
+{
+    fn new_map(a: RawArena) -> RawMap;
+    fn clear(m: RawMap) {
+        unsafe { upb_Map_Clear(m) }
+    }
+    fn size(m: RawMap) -> usize {
+        unsafe { upb_Map_Size(m) }
+    }
+    fn insert(m: RawMap, a: RawArena, key: View<'_, K>, value: View<'_, Self>) -> bool;
+    fn get<'a>(m: RawMap, key: View<'_, K>) -> Option<View<'a, Self>>;
+    fn remove(m: RawMap, key: View<'_, K>) -> bool;
+}
 
-                impl<'msg, V: [< MapWith $t:camel KeyOps >] + ?Sized> MapInner<'msg, $t, V> {
-
-                    pub fn new(arena: &'msg mut Arena) -> Self {
-                        MapInner {
-                            raw: V::new_map(arena.raw()),
-                            arena,
-                            _phantom_key: PhantomData,
-                            _phantom_value: PhantomData
-                        }
-                    }
-
-                    pub fn size(&self) -> usize {
-                        V::size(self.raw)
-                    }
-
-                    pub fn clear(&mut self) {
-                        V::clear(self.raw)
-                    }
-
-                    pub fn get<'a>(&self, key: $sized_t) -> Option<View<'a, V>> {
-                        V::get(self.raw, key)
-                    }
-
-                    pub fn remove(&mut self, key: $sized_t) -> bool {
-                        V::remove(self.raw, key)
-                    }
-
-                    pub fn insert(&mut self, key: $sized_t, value: View<'_, V>) -> bool {
-                        V::insert(self.raw, self.arena.raw(), key, value)
-                    }
-                }
-            )*
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MapInner<'msg, K, V> {
+    pub fn new(arena: &'msg mut Arena) -> Self {
+        MapInner {
+            raw: V::new_map(arena.raw()),
+            arena,
+            _phantom_key: PhantomData,
+            _phantom_value: PhantomData,
         }
+    }
+
+    pub fn size(&self) -> usize {
+        V::size(self.raw)
+    }
+
+    pub fn clear(&mut self) {
+        V::clear(self.raw)
+    }
+
+    pub fn get<'a>(&self, key: View<'_, K>) -> Option<View<'a, V>> {
+        V::get(self.raw, key)
+    }
+
+    pub fn remove(&mut self, key: View<'_, K>) -> bool {
+        V::remove(self.raw, key)
+    }
+
+    pub fn insert(&mut self, key: View<'_, K>, value: View<'_, V>) -> bool {
+        V::insert(self.raw, self.arena.raw(), key, value)
     }
 }
 
-generate_map_key_ops_traits!(
-    i32, i32;
-    u32, u32;
-    i64, i64;
-    u64, u64;
-    bool, bool;
-    ProtoStr, &ProtoStr;
-);
-
-macro_rules! impl_scalar_map_key_op_for_scalar_values {
-    ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, $trait:ident for $($t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
+macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
+    ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, for $($t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
          $(
-            impl $trait for $t {
+            impl ProxiedInMapValue<$key_t> for $t {
                 fn new_map(a: RawArena) -> RawMap {
                     unsafe { upb_Map_New(a, $key_upb_tag, $upb_tag) }
                 }
 
-                fn insert(m: RawMap, a: RawArena, key: $key_t, value: View<'_, Self>) -> bool {
+                fn insert(m: RawMap, a: RawArena, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     unsafe {
                         upb_Map_Set(
                             m,
@@ -659,7 +644,7 @@ macro_rules! impl_scalar_map_key_op_for_scalar_values {
                     }
                 }
 
-                fn get<'msg>(m: RawMap, key: $key_t) -> Option<View<'msg, Self>> {
+                fn get<'a>(m: RawMap, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let mut val = $msg_val($zero_val);
                     let found = unsafe {
                         upb_Map_Get(m, $key_msg_val(key), &mut val)
@@ -670,7 +655,7 @@ macro_rules! impl_scalar_map_key_op_for_scalar_values {
                     Some($from_msg_val(val))
                 }
 
-                fn remove(m: RawMap, key: $key_t) -> bool {
+                fn remove(m: RawMap, key: View<'_, $key_t>) -> bool {
                     let mut val = $msg_val($zero_val);
                     unsafe {
                         upb_Map_Delete(m, $key_msg_val(key), &mut val)
@@ -701,11 +686,11 @@ fn msg_to_str<'msg>(msg: upb_MessageValue) -> &'msg ProtoStr {
     unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
 }
 
-macro_rules! impl_map_key_ops_for_scalar_values {
+macro_rules! impl_ProxiedInMapValue_for_key_types {
     ($($t:ty, $t_sized:ty, $key_msg_val:expr, $upb_tag:expr;)*) => {
         paste! {
             $(
-                impl_scalar_map_key_op_for_scalar_values!($t_sized, $key_msg_val, $upb_tag, [< MapWith $t:camel KeyOps >] for
+                impl_ProxiedInMapValue_for_non_generated_value_types!($t, $key_msg_val, $upb_tag, for
                     f32, scalar_to_msg!(float_val), scalar_from_msg!(float_val),  UpbCType::Float, 0f32;
                     f64, scalar_to_msg!(double_val), scalar_from_msg!(double_val),  UpbCType::Double, 0f64;
                     i32, scalar_to_msg!(int32_val), scalar_from_msg!(int32_val),  UpbCType::Int32, 0i32;
@@ -720,7 +705,7 @@ macro_rules! impl_map_key_ops_for_scalar_values {
     }
 }
 
-impl_map_key_ops_for_scalar_values!(
+impl_ProxiedInMapValue_for_key_types!(
     i32, i32, scalar_to_msg!(int32_val), UpbCType::Int32;
     u32, u32, scalar_to_msg!(uint32_val), UpbCType::UInt32;
     i64, i64, scalar_to_msg!(int64_val), UpbCType::Int64;

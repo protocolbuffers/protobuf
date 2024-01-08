@@ -6,14 +6,10 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    Mut, MutProxy, ProtoStr, Proxied, SettableValue, View, ViewProxy,
+    Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::Private,
-    __runtime::{
-        MapInner, MapWithBoolKeyOps, MapWithI32KeyOps, MapWithI64KeyOps, MapWithProtoStrKeyOps,
-        MapWithU32KeyOps, MapWithU64KeyOps,
-    },
+    __runtime::{MapInner, ProxiedInMapValue},
 };
-use paste::paste;
 use std::marker::PhantomData;
 
 #[repr(transparent)]
@@ -83,122 +79,80 @@ impl<'msg, K: ?Sized, V: ?Sized> std::ops::Deref for MapMut<'msg, K, V> {
 // `MapView` (`View<'_, Map>>) and `MapMut` (Mut<'_, Map>).
 pub struct Map<K: ?Sized, V: ?Sized>(PhantomData<K>, PhantomData<V>);
 
-macro_rules! impl_proxied_for_map_keys {
-  ($(key_type $t:ty;)*) => {
-    paste! { $(
-      impl<V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized> Proxied for Map<$t, V>{
-        type View<'msg> = MapView<'msg, $t, V> where V: 'msg;
-        type Mut<'msg> = MapMut<'msg, $t, V> where V: 'msg;
-      }
-
-      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> SettableValue<Map<$t, V>> for MapView<'msg, $t, V> {
-        fn set_on<'b>(self, _private: Private, mut mutator: Mut<'b, Map<$t, V>>)
-        where
-          Map<$t, V>: 'b {
-          mutator.copy_from(self);
-        }
-      }
-
-      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> ViewProxy<'msg> for MapView<'msg, $t, V> {
-        type Proxied = Map<$t, V>;
-
-        fn as_view(&self) -> View<'_, Self::Proxied> {
-          *self
-        }
-
-        fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-        where 'msg: 'shorter,
-        {
-            MapView { inner: self.inner }
-        }
-      }
-
-      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> ViewProxy<'msg> for MapMut<'msg, $t, V> {
-        type Proxied = Map<$t, V>;
-
-        fn as_view(&self) -> View<'_, Self::Proxied> {
-          **self
-        }
-
-        fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-        where 'msg: 'shorter,
-        {
-          *self.into_mut::<'shorter>()
-        }
-      }
-
-      impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MutProxy<'msg> for MapMut<'msg, $t, V> {
-        fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-            MapMut { inner: self.inner }
-        }
-
-        fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-        where 'msg: 'shorter,
-        {
-            MapMut { inner: self.inner }
-        }
-      }
-    )* }
-  }
+impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxied for Map<K, V> {
+    type View<'msg> = MapView<'msg, K, V> where K: 'msg, V: 'msg;
+    type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
 }
 
-impl_proxied_for_map_keys!(
-  key_type i32;
-  key_type u32;
-  key_type i64;
-  key_type u64;
-  key_type bool;
-  key_type ProtoStr;
-);
-
-macro_rules! impl_scalar_map_keys {
-  ($(key_type $t:ty;)*) => {
-      paste! { $(
-        impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MapView<'msg, $t, V> {
-          pub fn get<'b>(&self, key: $t) -> Option<View<'b, V>> {
-            self.inner.get(key)
-          }
-
-          pub fn len(&self) -> usize {
-            self.inner.size()
-          }
-
-          pub fn is_empty(&self) -> bool {
-            self.len() == 0
-          }
-        }
-
-        impl<'msg, V: [< MapWith $t:camel KeyOps >] + Proxied + ?Sized + 'msg> MapMut<'msg, $t, V> {
-          pub fn insert(&mut self, key: $t, value: View<'_, V>) -> bool {
-            self.inner.insert(key, value)
-          }
-
-          pub fn remove<'b>(&mut self, key: $t) -> bool {
-            self.inner.remove(key)
-          }
-
-          pub fn clear(&mut self) {
-            self.inner.clear()
-          }
-
-          pub fn copy_from(&mut self, _src: MapView<'_, $t, V>) {
-            todo!("implement b/28530933");
-          }
-        }
-      )* }
-  };
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> SettableValue<Map<K, V>>
+    for MapView<'msg, K, V>
+{
+    fn set_on<'b>(self, _private: Private, mut mutator: Mut<'b, Map<K, V>>)
+    where
+        Map<K, V>: 'b,
+    {
+        mutator.copy_from(self);
+    }
 }
 
-impl_scalar_map_keys!(
-  key_type i32;
-  key_type u32;
-  key_type i64;
-  key_type u64;
-  key_type bool;
-);
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg>
+    for MapView<'msg, K, V>
+{
+    type Proxied = Map<K, V>;
 
-impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapView<'msg, ProtoStr, V> {
-    pub fn get(&self, key: impl Into<&'msg ProtoStr>) -> Option<View<'_, V>> {
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        *self
+    }
+
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        MapView { inner: self.inner }
+    }
+}
+
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg>
+    for MapMut<'msg, K, V>
+{
+    type Proxied = Map<K, V>;
+
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        **self
+    }
+
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        *self.into_mut::<'shorter>()
+    }
+}
+
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MutProxy<'msg>
+    for MapMut<'msg, K, V>
+{
+    fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
+        MapMut { inner: self.inner }
+    }
+
+    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        MapMut { inner: self.inner }
+    }
+}
+
+impl<'msg, K, V> MapView<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
+    where
+        K: 'a,
+    {
         self.inner.get(key.into())
     }
 
@@ -211,12 +165,27 @@ impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapView<'msg, Pro
     }
 }
 
-impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapMut<'msg, ProtoStr, V> {
-    pub fn insert(&mut self, key: impl Into<&'msg ProtoStr>, value: View<'_, V>) -> bool {
-        self.inner.insert(key.into(), value)
+impl<'msg, K, V> MapMut<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    pub fn insert<'a, 'b>(
+        &mut self,
+        key: impl Into<View<'a, K>>,
+        value: impl Into<View<'b, V>>,
+    ) -> bool
+    where
+        K: 'a,
+        V: 'b,
+    {
+        self.inner.insert(key.into(), value.into())
     }
 
-    pub fn remove(&mut self, key: impl Into<&'msg ProtoStr>) -> bool {
+    pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool
+    where
+        K: 'a,
+    {
         self.inner.remove(key.into())
     }
 
@@ -224,7 +193,14 @@ impl<'msg, V: MapWithProtoStrKeyOps + Proxied + ?Sized + 'msg> MapMut<'msg, Prot
         self.inner.clear()
     }
 
-    pub fn copy_from(&mut self, _src: MapView<'_, ProtoStr, V>) {
+    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<V>>
+    where
+        K: 'a,
+    {
+        self.as_view().get(key)
+    }
+
+    pub fn copy_from(&mut self, _src: MapView<'_, K, V>) {
         todo!("implement b/28530933");
     }
 }
@@ -239,6 +215,8 @@ mod tests {
     fn test_proxied_scalar() {
         let mut map_mut = MapMut::from_inner(Private, new_map_i32_i64());
         map_mut.insert(1, 2);
+        assert_that!(map_mut.get(1), eq(Some(2)));
+
         let map_view_1 = map_mut.as_view();
         assert_that!(map_view_1.len(), eq(1));
         assert_that!(map_view_1.get(1), eq(Some(2)));
@@ -261,13 +239,13 @@ mod tests {
     #[test]
     fn test_proxied_str() {
         let mut map_mut = MapMut::from_inner(Private, new_map_str_str());
-        map_mut.insert("a", "b".into());
+        map_mut.insert("a", "b");
 
         let map_view_1 = map_mut.as_view();
         assert_that!(map_view_1.len(), eq(1));
         assert_that!(map_view_1.get("a").unwrap(), eq("b"));
 
-        map_mut.insert("c", "d".into());
+        map_mut.insert("c", "d");
 
         let map_view_2 = map_mut.into_view();
         assert_that!(map_view_2.len(), eq(2));
