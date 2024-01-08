@@ -13,12 +13,13 @@
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/message_def.h"
@@ -98,7 +99,13 @@ bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
-  upb_Message_ClearField(msg, upb_FieldDef_MiniTable(f));
+  const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
+
+  if (upb_MiniTableField_IsExtension(m_f)) {
+    upb_Message_ClearExtension(msg, (const upb_MiniTableExtension*)m_f);
+  } else {
+    upb_Message_ClearBaseField(msg, m_f);
+  }
 }
 
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m) {

@@ -278,29 +278,32 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   return true;
 }
 
-UPB_INLINE void _upb_Message_ClearExtensionField(
-    struct upb_Message* msg, const upb_MiniTableExtension* ext_l) {
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearBaseField)(
+    struct upb_Message* msg, const upb_MiniTableField* f) {
+  if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
+    UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, f);
+  } else if (upb_MiniTableField_IsInOneof(f)) {
+    uint32_t* ptr = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, f);
+    if (*ptr != upb_MiniTableField_Number(f)) return;
+    *ptr = 0;
+  }
+  const char zeros[16] = {0};
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (f, UPB_PRIVATE(_upb_Message_DataPtr)(msg, f), zeros);
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e) {
   upb_Message_InternalData* in = upb_Message_GetInternalData(msg);
   if (!in) return;
   const struct upb_Extension* base =
       UPB_PTR_AT(in, in->ext_begin, struct upb_Extension);
   struct upb_Extension* ext =
-      (struct upb_Extension*)_upb_Message_Getext(msg, ext_l);
+      (struct upb_Extension*)_upb_Message_Getext(msg, e);
   if (ext) {
     *ext = *base;
     in->ext_begin += sizeof(struct upb_Extension);
   }
-}
-
-UPB_INLINE void _upb_Message_ClearNonExtensionField(
-    struct upb_Message* msg, const upb_MiniTableField* f) {
-  if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
-    UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, f);
-  } else if (upb_MiniTableField_IsInOneof(f)) {
-    if (!UPB_PRIVATE(_upb_Message_ClearOneofCase)(msg, f)) return;
-  }
-  void* data = UPB_PRIVATE(_upb_Message_DataPtr)(msg, f);
-  UPB_PRIVATE(_upb_MiniTableField_DataClear)(f, data);
 }
 
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(

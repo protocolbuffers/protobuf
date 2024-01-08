@@ -85,7 +85,7 @@ TEST(GeneratedCode, HazzersProto2) {
   EXPECT_EQ(false, upb_Message_HasField(UPB_UPCAST(msg), optional_bool_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_bool(msg, true);
   EXPECT_EQ(true, upb_Message_HasField(UPB_UPCAST(msg), optional_bool_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_bool_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_bool_field);
   EXPECT_EQ(false, upb_Message_HasField(UPB_UPCAST(msg), optional_bool_field));
   EXPECT_EQ(
       false,
@@ -103,7 +103,7 @@ TEST(GeneratedCode, HazzersProto2) {
       strlen(kTestStr1),
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_string(msg)
           .size);
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_string_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_string_field);
   EXPECT_EQ(false,
             upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
@@ -119,7 +119,7 @@ TEST(GeneratedCode, HazzersProto2) {
       msg, arena);
   EXPECT_EQ(true,
             upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_message_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(false,
             upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
   EXPECT_EQ(
@@ -148,12 +148,12 @@ TEST(GeneratedCode, HazzersProto2) {
             upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
   EXPECT_EQ(true,
             upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_oneof_uint32_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_oneof_uint32_field);
   EXPECT_EQ(false,
             upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
   EXPECT_EQ(true,
             upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_oneof_string_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_oneof_string_field);
   EXPECT_EQ(false,
             upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
   EXPECT_EQ(false,
@@ -251,7 +251,7 @@ TEST(GeneratedCode, Strings) {
   std::string read_value = std::string(value.data, value.size);
   EXPECT_EQ(kTestStr1, read_value);
   // Clear.
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_string_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_string_field);
   EXPECT_EQ(false,
             upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
@@ -308,7 +308,7 @@ TEST(GeneratedCode, SubMessage) {
           kFieldOptionalNestedMessageA);
   EXPECT_EQ(5, upb_Message_GetInt32(sub_message, nested_message_a_field, 0));
 
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_message_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(
       nullptr,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(

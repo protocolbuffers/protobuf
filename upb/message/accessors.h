@@ -34,21 +34,27 @@
 extern "C" {
 #endif
 
-UPB_API_INLINE void upb_Message_ClearField(upb_Message* msg,
-                                           const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    _upb_Message_ClearExtensionField(msg, ext);
-  } else {
-    _upb_Message_ClearNonExtensionField(msg, field);
-  }
-}
+// Functions ending in BaseField() take a (upb_MiniTableField*) argument
+// and work only on non-extension fields.
+//
+// Functions ending in Extension() take a (upb_MiniTableExtension*) argument
+// and work only on extensions.
 
 UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
-                                      const upb_MiniTable* l) {
+                                      const upb_MiniTable* m) {
   // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
   char* mem = (char*)msg - sizeof(upb_Message_Internal);
-  memset(mem, 0, upb_msg_sizeof(l));
+  memset(mem, 0, upb_msg_sizeof(m));
+}
+
+UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
+                                               const upb_MiniTableField* f) {
+  UPB_PRIVATE(_upb_Message_ClearBaseField)(msg, f);
+}
+
+UPB_API_INLINE void upb_Message_ClearExtension(
+    upb_Message* msg, const upb_MiniTableExtension* e) {
+  UPB_PRIVATE(_upb_Message_ClearExtension)(msg, e);
 }
 
 UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
