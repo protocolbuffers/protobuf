@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
@@ -22,10 +21,11 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/php/names.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -87,10 +87,6 @@ void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
                             const Options& options);
 void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
-void GenerateServiceDocComment(io::Printer* printer,
-                               const ServiceDescriptor* service);
-void GenerateServiceMethodDocComment(io::Printer* printer,
-                              const MethodDescriptor* method);
 
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
@@ -345,17 +341,6 @@ std::string LegacyReadOnlyGeneratedClassFileName(std::string php_namespace,
   return absl::StrCat(desc->name(), ".php");
 }
 
-std::string GeneratedServiceFileName(const ServiceDescriptor* service,
-                                     const Options& options) {
-  std::string result = FullClassName(service, options);
-  for (int i = 0; i < result.size(); i++) {
-    if (result[i] == '\\') {
-      result[i] = '/';
-    }
-  }
-  return absl::StrCat(result, "Interface", ".php");
-}
-
 std::string IntToString(int32_t value) {
   std::ostringstream os;
   os << value;
@@ -537,8 +522,20 @@ void Outdent(io::Printer* printer) {
   printer->Outdent();
 }
 
-void GenerateField(const FieldDescriptor* field, io::Printer* printer,
-                   const Options& options) {
+bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
+                   const Options& options, std::string* error) {
+  if (field->is_required()) {
+    *error = absl::StrCat("Can't generate PHP code for required field ",
+                          field->full_name(), ".\n");
+    return false;
+  }
+  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+    *error = absl::StrCat("Can't generate PHP code for group field ",
+                          field->full_name(),
+                          ".  Use regular message encoding instead.\n");
+    return false;
+  }
+
   if (field->is_repeated()) {
     GenerateFieldDocComment(printer, field, options, kFieldProperty);
     printer->Print(
@@ -546,7 +543,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
         "name", field->name());
   } else if (field->real_containing_oneof()) {
     // Oneof fields are handled by GenerateOneofField.
-    return;
+    return true;
   } else {
     std::string initial_value =
         field->has_presence() ? "null" : DefaultForField(field);
@@ -556,6 +553,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
         "name", field->name(),
         "initial_value", initial_value);
   }
+  return true;
 }
 
 void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
@@ -781,16 +779,6 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   }
   printer->Print("->finalizeToPool();\n\n");
   Outdent(printer);
-}
-
-void GenerateServiceMethod(const MethodDescriptor* method,
-                           io::Printer* printer) {
-  printer->Print(
-        "public function ^camel_name^(\\^request_name^ $request);\n\n",
-        "camel_name", UnderscoresToCamelCase(method->name(), false),
-        "request_name", FullClassName(
-          method->input_type(), false)
-  );
 }
 
 void GenerateMessageToPool(absl::string_view name_prefix,
@@ -1270,9 +1258,17 @@ void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
       "fullname", classname);
 }
 
-void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
+bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
-                      GeneratorContext* generator_context) {
+                      GeneratorContext* generator_context, std::string* error) {
+  if (en->is_closed()) {
+    *error = absl::StrCat("Can't generate PHP code for closed enum ",
+                          en->full_name(),
+                          ".  Please use either proto3 or editions without "
+                          "`enum_type = CLOSED`.\n");
+    return false;
+  }
+
   std::string filename = GeneratedClassFileName(en, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
@@ -1403,15 +1399,18 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "old", en->name());
     LegacyReadOnlyGenerateClassFile(file, en, options, generator_context);
   }
+
+  return true;
 }
 
-void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
+bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
                          const Options& options,
-                         GeneratorContext* generator_context) {
+                         GeneratorContext* generator_context,
+                         std::string* error) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
   if (message->options().map_entry()) {
-    return;
+    return true;
   }
 
   std::string filename = GeneratedClassFileName(message, options);
@@ -1461,7 +1460,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Field and oneof definitions.
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    GenerateField(field, &printer, options);
+    if (!GenerateField(field, &printer, options, error)) {
+      return false;
+    }
   }
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
@@ -1533,77 +1534,38 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
-    GenerateMessageFile(file, message->nested_type(i), options,
-                        generator_context);
+    if (!GenerateMessageFile(file, message->nested_type(i), options,
+                             generator_context, error)) {
+      return false;
+    }
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
-    GenerateEnumFile(file, message->enum_type(i), options, generator_context);
+    if (!GenerateEnumFile(file, message->enum_type(i), options,
+                          generator_context, error)) {
+      return false;
+    }
   }
+  return true;
 }
 
-void GenerateServiceFile(
-    const FileDescriptor* file, const ServiceDescriptor* service,
-    const Options& options, GeneratorContext* generator_context) {
-  std::string filename = GeneratedServiceFileName(service, options);
-  std::unique_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
-  io::Printer printer(output.get(), '^');
-
-  GenerateHead(file, &printer);
-
-  std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of('\\');
-
-  if (!file->options().php_namespace().empty() ||
-      (!file->options().has_php_namespace() && !file->package().empty()) ||
-      lastindex != std::string::npos) {
-    printer.Print(
-        "namespace ^name^;\n\n",
-        "name", fullname.substr(0, lastindex));
-  }
-
-  GenerateServiceDocComment(&printer, service);
-
-  if (lastindex != std::string::npos) {
-    printer.Print(
-        "interface ^name^\n"
-        "{\n",
-        "name", fullname.substr(lastindex + 1));
-  } else {
-    printer.Print(
-        "interface ^name^\n"
-        "{\n",
-        "name", fullname);
-  }
-
-  Indent(&printer);
-
-  for (int i = 0; i < service->method_count(); i++) {
-    const MethodDescriptor* method = service->method(i);
-    GenerateServiceMethodDocComment(&printer, method);
-    GenerateServiceMethod(method, &printer);
-  }
-
-  Outdent(&printer);
-  printer.Print("}\n\n");
-}
-
-void GenerateFile(const FileDescriptor* file, const Options& options,
-                  GeneratorContext* generator_context) {
+bool GenerateFile(const FileDescriptor* file, const Options& options,
+                  GeneratorContext* generator_context, std::string* error) {
   GenerateMetadataFile(file, options, generator_context);
 
   for (int i = 0; i < file->message_type_count(); i++) {
-    GenerateMessageFile(file, file->message_type(i), options,
-                        generator_context);
-  }
-  for (int i = 0; i < file->enum_type_count(); i++) {
-    GenerateEnumFile(file, file->enum_type(i), options, generator_context);
-  }
-  if (file->options().php_generic_services()) {
-    for (int i = 0; i < file->service_count(); i++) {
-      GenerateServiceFile(file, file->service(i), options, generator_context);
+    if (!GenerateMessageFile(file, file->message_type(i), options,
+                             generator_context, error)) {
+      return false;
     }
   }
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    if (!GenerateEnumFile(file, file->enum_type(i), options, generator_context,
+                          error)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 static std::string EscapePhpdoc(absl::string_view input) {
@@ -1752,19 +1714,6 @@ void GenerateMessageConstructorDocComment(io::Printer* printer,
   printer->Print(" */\n");
 }
 
-void GenerateServiceDocComment(io::Printer* printer,
-                               const ServiceDescriptor* service) {
-  printer->Print("/**\n");
-  if (service->options().deprecated()) {
-    printer->Print(" * @deprecated\n");
-  }
-  GenerateDocCommentBody(printer, service);
-  printer->Print(
-    " * Protobuf type <code>^fullname^</code>\n"
-    " */\n",
-    "fullname", EscapePhpdoc(service->full_name()));
-}
-
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
                              const Options& options, int function_type) {
   // In theory we should have slightly different comments for setters, getters,
@@ -1853,26 +1802,6 @@ void GenerateEnumValueDocComment(io::Printer* printer,
     " * Generated from protobuf enum <code>^def^</code>\n"
     " */\n",
     "def", EscapePhpdoc(FirstLineOf(value->DebugString())));
-}
-
-void GenerateServiceMethodDocComment(io::Printer* printer,
-                                     const MethodDescriptor* method) {
-  printer->Print("/**\n");
-  GenerateDocCommentBody(printer, method);
-  if (method->options().deprecated()) {
-    printer->Print(" * @deprecated\n");
-  }
-  printer->Print(
-    " * Method <code>^method_name^</code>\n"
-    " *\n",
-    "method_name", EscapePhpdoc(UnderscoresToCamelCase(method->name(), false)));
-  printer->Print(
-    " * @param \\^input_type^ $request\n",
-    "input_type", EscapePhpdoc(FullClassName(method->input_type(), false)));
-  printer->Print(
-    " * @return \\^return_type^\n"
-    " */\n",
-    "return_type", EscapePhpdoc(FullClassName(method->output_type(), false)));
 }
 
 std::string FilenameCName(const FileDescriptor* file) {
@@ -2283,18 +2212,7 @@ bool Generator::Generate(const FileDescriptor* file, const Options& options,
     return false;
   }
 
-  if (!options.is_descriptor &&
-      FileDescriptorLegacy(file).syntax() !=
-          FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
-    *error =
-        "Can only generate PHP code for proto3 .proto files.\n"
-        "Please add 'syntax = \"proto3\";' to the top of your .proto file.\n";
-    return false;
-  }
-
-  GenerateFile(file, options, generator_context);
-
-  return true;
+  return GenerateFile(file, options, generator_context, error);
 }
 
 bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,

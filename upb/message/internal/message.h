@@ -12,17 +12,14 @@
 ** The definitions in this file are internal to upb.
 **/
 
-#ifndef UPB_MESSAGE_INTERNAL_H_
-#define UPB_MESSAGE_INTERNAL_H_
+#ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
+#define UPB_MESSAGE_INTERNAL_MESSAGE_H_
 
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
-#include "upb/message/internal/types.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -41,9 +38,9 @@ extern const double kUpb_NaN;
  * these before the user's data.  The user's upb_Message* points after the
  * upb_Message_Internal. */
 
-struct upb_Message_InternalData {
+typedef struct {
   /* Total size of this structure, including the data that follows.
-   * Must be aligned to 8, which is alignof(upb_Message_Extension) */
+   * Must be aligned to 8, which is alignof(upb_Extension) */
   uint32_t size;
 
   /* Offsets relative to the beginning of this structure.
@@ -63,39 +60,60 @@ struct upb_Message_InternalData {
   uint32_t ext_begin;
   /* Data follows, as if there were an array:
    *   char data[size - sizeof(upb_Message_InternalData)]; */
+} upb_Message_InternalData;
+
+typedef struct {
+  union {
+    upb_Message_InternalData* internal;
+
+    // Force 8-byte alignment, since the data members may contain members that
+    // require 8-byte alignment.
+    double d;
+  };
+} upb_Message_Internal;
+
+struct upb_Message {
+  int unused;  // Placeholder cuz Windows won't compile an empty struct.
 };
 
-/* Maps upb_CType -> memory size. */
-extern char _upb_CTypeo_size[12];
-
-UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* t) {
-  return t->size + sizeof(upb_Message_Internal);
+UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
+  return m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
 }
 
 // Inline version upb_Message_New(), for internal use.
-UPB_INLINE upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
-                                         upb_Arena* arena) {
+UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
+                                                upb_Arena* arena) {
   size_t size = upb_msg_sizeof(mini_table);
   void* mem = upb_Arena_Malloc(arena, size + sizeof(upb_Message_Internal));
   if (UPB_UNLIKELY(!mem)) return NULL;
-  upb_Message* msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_Message);
+  struct upb_Message* msg =
+      UPB_PTR_AT(mem, sizeof(upb_Message_Internal), struct upb_Message);
   memset(mem, 0, size);
   return msg;
 }
 
 UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
-    const upb_Message* msg) {
+    const struct upb_Message* msg) {
   ptrdiff_t size = sizeof(upb_Message_Internal);
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
+UPB_INLINE upb_Message_InternalData* upb_Message_GetInternalData(
+    const struct upb_Message* msg) {
+  return upb_Message_Getinternal(msg)->internal;
+}
+
 // Discards the unknown fields for this message only.
-void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
+void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance.
-bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                             upb_Arena* arena);
+bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
+                                          const char* data, size_t len,
+                                          upb_Arena* arena);
+
+bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
+                                       upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -103,4 +121,4 @@ bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MESSAGE_INTERNAL_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */

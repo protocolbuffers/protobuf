@@ -41,36 +41,19 @@ namespace protobuf {
 
 namespace internal {
 
-void VerifyVersion(int headerVersion,
-                   int minLibraryVersion,
-                   const char* filename) {
-  if (GOOGLE_PROTOBUF_VERSION < minLibraryVersion) {
-    // Library is too old for headers.
+void VerifyVersion(int protobufVersionCompiledWith, const char* filename) {
+  // If the user's program is linked against a different version of Protobuf,
+  // GOOGLE_PROTOBUF_VERSION will have a different value.
+  if (GOOGLE_PROTOBUF_VERSION != protobufVersionCompiledWith) {
     ABSL_LOG(FATAL)
-        << "This program requires version " << VersionString(minLibraryVersion)
-        << " of the Protocol Buffer runtime library, but the installed version "
-           "is "
+        << "This program was compiled with Protobuf C++ version "
+        << VersionString(protobufVersionCompiledWith)
+        << ", but the linked version is "
         << VersionString(GOOGLE_PROTOBUF_VERSION)
-        << ".  Please update "
-           "your library.  If you compiled the program yourself, make sure "
-           "that "
+        << ".  Please update your library.  If you compiled the program "
+           "yourself, make sure that"
            "your headers are from the same version of Protocol Buffers as your "
            "link-time library.  (Version verification failed in \""
-        << filename << "\".)";
-  }
-  if (headerVersion < kMinHeaderVersionForLibrary) {
-    // Headers are too old for library.
-    ABSL_LOG(FATAL)
-        << "This program was compiled against version "
-        << VersionString(headerVersion)
-        << " of the Protocol Buffer runtime "
-           "library, which is not compatible with the installed version ("
-        << VersionString(GOOGLE_PROTOBUF_VERSION)
-        << ").  Contact the program "
-           "author for an update.  If you compiled the program yourself, make "
-           "sure that your headers are from the same version of Protocol "
-           "Buffers "
-           "as your link-time library.  (Version verification failed in \""
         << filename << "\".)";
   }
 }

@@ -26,10 +26,6 @@
 #include "google/protobuf/thread_safe_arena.h"
 
 
-#ifdef ADDRESS_SANITIZER
-#include <sanitizer/asan_interface.h>
-#endif  // ADDRESS_SANITIZER
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -91,11 +87,9 @@ class GetDeallocator {
         space_allocated_(space_allocated) {}
 
   void operator()(SizedPtr mem) const {
-#ifdef ADDRESS_SANITIZER
     // This memory was provided by the underlying allocator as unpoisoned,
     // so return it in an unpoisoned state.
-    ASAN_UNPOISON_MEMORY_REGION(mem.p, mem.n);
-#endif  // ADDRESS_SANITIZER
+    PROTOBUF_UNPOISON_MEMORY_REGION(mem.p, mem.n);
     if (dealloc_) {
       dealloc_(mem.p, mem.n);
     } else {
@@ -272,9 +266,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
-#ifdef ADDRESS_SANITIZER
-  ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
-#endif  // ADDRESS_SANITIZER
+  PROTOBUF_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
 }
 
 uint64_t SerialArena::SpaceUsed() const {
@@ -681,10 +673,8 @@ ThreadSafeArena::~ThreadSafeArena() {
   size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
   if (alloc_policy_.is_user_owned_initial_block()) {
-#ifdef ADDRESS_SANITIZER
     // Unpoison the initial block, now that it's going back to the user.
-    ASAN_UNPOISON_MEMORY_REGION(mem.p, mem.n);
-#endif  // ADDRESS_SANITIZER
+    PROTOBUF_UNPOISON_MEMORY_REGION(mem.p, mem.n);
     space_allocated += mem.n;
   } else if (mem.n > 0) {
     GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);

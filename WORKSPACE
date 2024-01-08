@@ -1,5 +1,10 @@
 workspace(name = "com_google_protobuf")
 
+# An explicit self-reference to work around changes in Bazel 7.0
+# See https://github.com/bazelbuild/bazel/issues/19973#issuecomment-1787814450
+# buildifier: disable=duplicated-name
+local_repository(name = "com_google_protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -22,6 +27,10 @@ rules_java_toolchains()
 load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
 
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
 
 # Bazel platform rules.
 http_archive(
@@ -93,6 +102,15 @@ load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
+http_archive(
+    name = "rules_ruby",
+    urls = [
+      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+    ],
+    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
+    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+)
+
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
 
 ruby_runtime("system_ruby")
@@ -163,25 +181,26 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
 
-load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
-
-utf8_range_deps()
-
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "d9002dd3cd6437017f08593124fdd1b13b3473c7b929ceb0e60d317cb9346118",
-    strip_prefix = "rules_fuzzing-0.3.2",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.2.zip"],
+    sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
+    strip_prefix = "rules_fuzzing-0.4.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
+    patches = ["//third_party:rules_fuzzing.patch"],
+    patch_args = ["-p1"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
 
 rules_fuzzing_dependencies()
 
-bind(
-    name = "python_headers",
-    actual = "@system_python//:python_headers",
-)
+load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
+
+rules_fuzzing_init()
+
+load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
+
+fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",

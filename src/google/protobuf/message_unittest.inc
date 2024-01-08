@@ -101,6 +101,24 @@ TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
 
 }
 
+TEST(MESSAGE_TEST_NAME, RoundTrip) {
+  UNITTEST::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  TestUtil::ExpectAllFieldsSet(message);
+
+  UNITTEST::TestAllTypes copied, merged, parsed;
+  copied = message;
+  TestUtil::ExpectAllFieldsSet(copied);
+
+  merged.MergeFrom(message);
+  TestUtil::ExpectAllFieldsSet(merged);
+
+  std::string data;
+  ASSERT_TRUE(message.SerializeToString(&data));
+  ASSERT_TRUE(parsed.ParseFromString(data));
+  TestUtil::ExpectAllFieldsSet(parsed);
+}
+
 TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
   std::ofstream out;
   UNITTEST::TestAllTypes message;
@@ -1937,9 +1955,10 @@ TEST(MESSAGE_TEST_NAME, TestRegressionInlinedStringAuxIdxMismatchOnFastParser) {
   if (table != nullptr &&
       table->fast_entry(1)->target() == internal::TcParser::FastSiS1) {
     // optional string str1 = 1;
+    // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(1)->bits.aux_idx(), 1);
     // optional InlinedStringIdxRegressionProto sub = 2;
-    EXPECT_EQ(table->fast_entry(2)->bits.aux_idx(), 2);
+    EXPECT_EQ(table->fast_entry(2)->bits.aux_idx(), 1);
     // optional string str2 = 3;
     // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(3)->bits.aux_idx(), 2);

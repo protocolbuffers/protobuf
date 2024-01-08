@@ -20,7 +20,9 @@ jobs:
           - name: OpenJDK 8
             version: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version
+            # TODO: b/318555165 - enable the layering check. Currently it does
+            # not work correctly with the toolchain in this Docker image.
+            targets: //java/... //java/internal:java_version --features=-layering_check
           - name: OpenJDK 11
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
@@ -63,7 +65,9 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: java_linux/8
-          bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone
+          # TODO: b/318555165 - enable the layering check. Currently it does
+          # not work correctly with the toolchain in this Docker image.
+          bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
 
   protobuf-bom:
     name: Protobuf Maven BOM

@@ -352,27 +352,15 @@ class TimeUtilTest(TimeUtilTestBase):
     )
 
   def testNanosOneSecond(self):
-    # TODO: b/301980950 - Test error behavior instead once ToDatetime validates
-    # that nanos are in expected range.
     tz = _TZ_PACIFIC
     ts = timestamp_pb2.Timestamp(nanos=1_000_000_000)
-    self.assertEqual(ts.ToDatetime(), datetime.datetime(1970, 1, 1, 0, 0, 1))
-    self.assertEqual(
-        ts.ToDatetime(tz), datetime.datetime(1969, 12, 31, 16, 0, 1, tzinfo=tz)
-    )
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
+                           ts.ToDatetime)
 
   def testNanosNegativeOneSecond(self):
-    # TODO: b/301980950 - Test error behavior instead once ToDatetime validates
-    # that nanos are in expected range.
-    tz = _TZ_PACIFIC
     ts = timestamp_pb2.Timestamp(nanos=-1_000_000_000)
-    self.assertEqual(
-        ts.ToDatetime(), datetime.datetime(1969, 12, 31, 23, 59, 59)
-    )
-    self.assertEqual(
-        ts.ToDatetime(tz),
-        datetime.datetime(1969, 12, 31, 15, 59, 59, tzinfo=tz),
-    )
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
+                           ts.ToDatetime)
 
   def testTimedeltaConversion(self):
     message = duration_pb2.Duration()
@@ -421,8 +409,10 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertRaisesRegex(ValueError, 'year (0 )?is out of range',
                            message.FromJsonString, '0000-01-01T00:00:00Z')
     message.seconds = 253402300800
-    self.assertRaisesRegex(OverflowError, 'date value out of range',
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
                            message.ToJsonString)
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
+                           message.FromSeconds, -62135596801)
 
   def testInvalidDuration(self):
     message = duration_pb2.Duration()

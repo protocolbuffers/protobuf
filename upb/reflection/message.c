@@ -7,17 +7,21 @@
 
 #include "upb/reflection/message.h"
 
+#include <stdint.h>
 #include <string.h>
 
-#include "upb/hash/common.h"
+#include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
-#include "upb/reflection/def_type.h"
-#include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/message_def.h"
 #include "upb/reflection/oneof_def.h"
 
@@ -47,9 +51,7 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
 upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
                                            const upb_FieldDef* f) {
   upb_MessageValue default_val = upb_FieldDef_Default(f);
-  upb_MessageValue ret;
-  _upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), &default_val, &ret);
-  return ret;
+  return upb_Message_GetField(msg, upb_FieldDef_MiniTable(f), default_val);
 }
 
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
@@ -93,11 +95,17 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
-  return _upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), &val, a);
+  return upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), val, a);
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
-  upb_Message_ClearField(msg, upb_FieldDef_MiniTable(f));
+  const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
+
+  if (upb_MiniTableField_IsExtension(m_f)) {
+    upb_Message_ClearExtension(msg, (const upb_MiniTableExtension*)m_f);
+  } else {
+    upb_Message_ClearBaseField(msg, m_f);
+  }
 }
 
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m) {
@@ -121,7 +129,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     if (upb_MiniTableField_HasPresence(field)) {
       if (!upb_Message_HasFieldByDef(msg, f)) continue;
     } else {
-      switch (upb_FieldMode_Get(field)) {
+      switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
         case kUpb_FieldMode_Map:
           if (!val.map_val || upb_Map_Size(val.map_val) == 0) continue;
           break;
@@ -129,7 +137,8 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
           if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
           break;
         case kUpb_FieldMode_Scalar:
-          if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
+          if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, &val))
+            continue;
           break;
       }
     }
@@ -143,7 +152,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   if (ext_pool) {
     // Return any extensions that are set.
     size_t count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+    const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));

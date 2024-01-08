@@ -48,7 +48,6 @@ UCS2_MAXUNICODE = 65535
 
 warnings.simplefilter('error', DeprecationWarning)
 
-
 @_parameterized.named_parameters(('_proto2', unittest_pb2),
                                 ('_proto3', unittest_proto3_arena_pb2))
 @testing_refleaks.TestCase
@@ -1013,6 +1012,12 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_int32)
 
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_int32.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_int32)
+
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_int32.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_int32)
@@ -1022,6 +1027,12 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_float)
 
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_float.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_float)
+
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_float.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_float)
@@ -1030,6 +1041,12 @@ class MessageTest(unittest.TestCase):
     """Test no-ops extending repeated string fields."""
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_string)
+
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_string.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_string)
 
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_string.extend(empty_value)
@@ -1340,6 +1357,17 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
+
+  def testDel(self):
+    msg = unittest_pb2.TestAllTypes()
+
+    # Fields cannot be deleted.
+    with self.assertRaises(AttributeError):
+      del msg.optional_int32
+    with self.assertRaises(AttributeError):
+      del msg.optional_bool
+    with self.assertRaises(AttributeError):
+      del msg.repeated_nested_message
 
   def testAssignInvalidEnum(self):
     """Assigning an invalid enum number is not allowed in proto2."""

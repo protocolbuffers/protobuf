@@ -31,13 +31,6 @@
 from google.protobuf.internal.message_test import *
 import unittest
 
-MessageTest.testExtendFloatWithNothing_proto2.__unittest_skip__ = True
-MessageTest.testExtendFloatWithNothing_proto3.__unittest_skip__ = True
-MessageTest.testExtendInt32WithNothing_proto2.__unittest_skip__ = True
-MessageTest.testExtendInt32WithNothing_proto3.__unittest_skip__ = True
-MessageTest.testExtendStringWithNothing_proto2.__unittest_skip__ = True
-MessageTest.testExtendStringWithNothing_proto3.__unittest_skip__ = True
-
 # Python/C++ customizes the C++ TextFormat to always print trailing ".0" for
 # floats. upb doesn't do this, it matches C++ TextFormat.
 MessageTest.testFloatPrinting_proto2.__unittest_expecting_failure__ = True

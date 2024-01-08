@@ -39,10 +39,6 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
                                 io::EpsCopyOutputStream* stream) const final;
 
  protected:
-  internal::CachedSize* AccessCachedSize() const final {
-    return &_cached_size_;
-  }
-
   constexpr ZeroFieldsBase() {}
   explicit ZeroFieldsBase(Arena* arena) : Message(arena) {}
   ZeroFieldsBase(const ZeroFieldsBase&) = delete;
@@ -51,7 +47,7 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
   const ClassData* GetClassData() const final;
 
-  static void MergeImpl(Message& to, const Message& from);
+  static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);
 

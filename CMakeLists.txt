@@ -79,7 +79,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "4.24.0")
+set(protobuf_VERSION_STRING "4.25.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -279,6 +279,8 @@ endif (MSVC)
 include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
+  # Support #include-ing other top-level directories, i.e. upb_generator.
+  ${protobuf_SOURCE_DIR}
   ${protobuf_SOURCE_DIR}/src)
 
 set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")

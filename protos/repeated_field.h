@@ -1,35 +1,14 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef UPB_PROTOS_REPEATED_FIELD_H_
 #define UPB_PROTOS_REPEATED_FIELD_H_
+
+#include <assert.h>
 
 #include <cstddef>
 #include <iterator>
@@ -43,13 +22,9 @@
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
-#include "upb/message/types.h"
-
-// Must be last:
-#include "upb/port/def.inc"
+#include "upb/message/message.h"
 
 namespace protos {
-
 namespace internal {
 
 // Shared implementation of repeated fields for absl::string_view and
@@ -161,9 +136,11 @@ class RepeatedFieldProxy
   }
 
   iterator begin() const {
-    return iterator({static_cast<upb_Message**>(
-                         const_cast<void*>(upb_Array_DataPtr(this->arr_))),
-                     this->arena_});
+    return iterator(
+        {static_cast<upb_Message**>(
+             this->arr_ ? const_cast<void*>(upb_Array_DataPtr(this->arr_))
+                        : nullptr),
+         this->arena_});
   }
   iterator end() const { return begin() + this->size(); }
   reverse_iterator rbegin() const { return reverse_iterator(end()); }
@@ -208,9 +185,9 @@ class RepeatedFieldStringProxy
   void push_back(T t) {
     upb_MessageValue message_value;
     // Copy string to arena.
-    UPB_ASSERT(this->arena_);
+    assert(this->arena_);
     char* data = (char*)upb_Arena_Malloc(this->arena_, t.size());
-    UPB_ASSERT(data);
+    assert(data);
     memcpy(data, t.data(), t.size());
     message_value.str_val = upb_StringView_FromDataAndSize(data, t.size());
     upb_Array_Append(this->arr_, message_value, this->arena_);
@@ -319,7 +296,5 @@ class RepeatedField {
 };
 
 }  // namespace protos
-
-#include "upb/port/undef.inc"
 
 #endif  // UPB_PROTOS_REPEATED_FIELD_H_

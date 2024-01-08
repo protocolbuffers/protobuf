@@ -102,8 +102,8 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//protos_generator:__pkg__"],
     deps = [
+        ":mangle",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "@com_google_absl//absl/strings",
     ],
@@ -128,7 +128,6 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mini_descriptor",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
@@ -190,6 +189,20 @@ bootstrap_cc_library(
     ],
 )
 
+cc_library(
+    name = "mangle",
+    srcs = ["mangle.cc"],
+    hdrs = ["mangle.h"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = [
+        "//rust:__subpackages__",
+        "//upb:friends",
+    ],
+    deps = [
+        "@com_google_absl//absl/strings",
+    ],
+)
+
 cc_binary(
     name = "libupb_generator.so",
     srcs = ["upb_generator_so.c"],
@@ -230,8 +243,8 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
         "//upb:wire",
+        "//upb/reflection:internal",
     ],
 )
 
@@ -252,9 +265,8 @@ bootstrap_cc_binary(
     deps = [
         "//upb:base",
         "//upb:mem",
-        "//upb:mini_table_internal",
         "//upb:port",
-        "//upb:wire_types",
+        "//upb:wire_reader",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
@@ -291,9 +303,9 @@ bootstrap_cc_binary(
     deps = [
         "//upb:base",
         "//upb:mem",
-        "//upb:mini_table_internal",
+        "//upb:mini_table",
         "//upb:port",
-        "//upb:wire_types",
+        "//upb:wire_reader",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",

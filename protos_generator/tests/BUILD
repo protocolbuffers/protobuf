@@ -1,5 +1,5 @@
-# Copyright (c) 2009-2021, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2023 Google LLC.  All rights reserved.
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -124,12 +124,13 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         # begin:google_only
-#         ":legacy_name_test_proto",
+        #         ":legacy_name_test_proto",
         # end:google_only
         ":no_package_upb_cc_proto",
         ":test_model_upb_cc_proto",
         ":test_model_upb_proto",
         ":naming_conflict_upb_cc_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

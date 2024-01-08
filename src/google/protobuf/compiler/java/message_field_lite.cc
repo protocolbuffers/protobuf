@@ -19,7 +19,6 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 
@@ -309,7 +308,8 @@ void ImmutableMessageFieldLiteGenerator::GenerateKotlinDslMembers(
 }
 
 void ImmutableMessageFieldLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
-  if (FieldDescriptorLegacy(descriptor_).has_optional_keyword()) {
+  if (descriptor_->has_presence() &&
+      descriptor_->real_containing_oneof() == nullptr) {
     printer->Print(variables_,
                    "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
                    "  get() = $kt_dsl_builder$.$name$OrNull\n");

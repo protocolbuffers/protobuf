@@ -88,6 +88,9 @@ struct FirstSerialArena {
 // used.
 class PROTOBUF_EXPORT SerialArena {
  public:
+  static constexpr size_t kBlockHeaderSize =
+      ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
+
   void CleanupList();
   size_t FreeStringBlocks() {
     // On the active block delete all strings skipping the unused instances.
@@ -273,6 +276,24 @@ class PROTOBUF_EXPORT SerialArena {
   std::vector<void*> PeekCleanupListForTesting();
 
  private:
+  friend class ThreadSafeArena;
+
+  // See comments for cached_blocks_.
+  struct CachedBlock {
+    // Simple linked list.
+    CachedBlock* next;
+  };
+
+  static constexpr ptrdiff_t kPrefetchForwardsDegree = ABSL_CACHELINE_SIZE * 16;
+  static constexpr ptrdiff_t kPrefetchBackwardsDegree = ABSL_CACHELINE_SIZE * 6;
+
+  // Constructor is private as only New() should be used.
+  inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
+
+  // Constructors to handle the first SerialArena.
+  inline explicit SerialArena(ThreadSafeArena& parent);
+  inline SerialArena(FirstSerialArena, ArenaBlock* b, ThreadSafeArena& parent);
+
   bool MaybeAllocateString(void*& p);
   ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
 
@@ -287,9 +308,6 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
-
-  static constexpr ptrdiff_t kPrefetchForwardsDegree = ABSL_CACHELINE_SIZE * 16;
-  static constexpr ptrdiff_t kPrefetchBackwardsDegree = ABSL_CACHELINE_SIZE * 6;
 
   // Prefetch the next kPrefetchForwardsDegree bytes after `prefetch_ptr_` and
   // up to `prefetch_limit_`, if `next` is within kPrefetchForwardsDegree bytes
@@ -335,9 +353,6 @@ class PROTOBUF_EXPORT SerialArena {
     }
   }
 
- private:
-  friend class ThreadSafeArena;
-
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
   // The `parent` arena must outlive the serial arena, which is guaranteed
@@ -361,6 +376,29 @@ class PROTOBUF_EXPORT SerialArena {
         space_allocated_.load(std::memory_order_relaxed) + space_allocated,
         std::memory_order_relaxed);
   }
+
+  // Helper getters/setters to handle relaxed operations on atomic variables.
+  ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }
+  const ArenaBlock* head() const {
+    return head_.load(std::memory_order_relaxed);
+  }
+
+  char* ptr() { return ptr_.load(std::memory_order_relaxed); }
+  const char* ptr() const { return ptr_.load(std::memory_order_relaxed); }
+  void set_ptr(char* ptr) { return ptr_.store(ptr, std::memory_order_relaxed); }
+  PROTOBUF_ALWAYS_INLINE void set_range(char* ptr, char* limit) {
+    set_ptr(ptr);
+    prefetch_ptr_ = ptr;
+    limit_ = limit;
+    prefetch_limit_ = limit;
+  }
+
+  void* AllocateAlignedFallback(size_t n);
+  void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
+                                           void (*destructor)(void*));
+  void AddCleanupFallback(void* elem, void (*destructor)(void*));
+  inline void AllocateNewBlock(size_t n);
+  inline void Init(ArenaBlock* b, size_t offset);
 
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.
@@ -397,46 +435,8 @@ class PROTOBUF_EXPORT SerialArena {
   // this free list.
   // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
   // The array of freelists is grown when needed in `ReturnArrayMemory()`.
-  struct CachedBlock {
-    // Simple linked list.
-    CachedBlock* next;
-  };
   uint8_t cached_block_length_ = 0;
   CachedBlock** cached_blocks_ = nullptr;
-
-  // Helper getters/setters to handle relaxed operations on atomic variables.
-  ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }
-  const ArenaBlock* head() const {
-    return head_.load(std::memory_order_relaxed);
-  }
-
-  char* ptr() { return ptr_.load(std::memory_order_relaxed); }
-  const char* ptr() const { return ptr_.load(std::memory_order_relaxed); }
-  void set_ptr(char* ptr) { return ptr_.store(ptr, std::memory_order_relaxed); }
-  PROTOBUF_ALWAYS_INLINE void set_range(char* ptr, char* limit) {
-    set_ptr(ptr);
-    prefetch_ptr_ = ptr;
-    limit_ = limit;
-    prefetch_limit_ = limit;
-  }
-
-  // Constructor is private as only New() should be used.
-  inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
-
-  // Constructors to handle the first SerialArena.
-  inline explicit SerialArena(ThreadSafeArena& parent);
-  inline SerialArena(FirstSerialArena, ArenaBlock* b, ThreadSafeArena& parent);
-
-  void* AllocateAlignedFallback(size_t n);
-  void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*));
-  void AddCleanupFallback(void* elem, void (*destructor)(void*));
-  inline void AllocateNewBlock(size_t n);
-  inline void Init(ArenaBlock* b, size_t offset);
-
- public:
-  static constexpr size_t kBlockHeaderSize =
-      ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 };
 
 inline PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {

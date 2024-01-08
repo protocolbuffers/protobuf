@@ -22,6 +22,7 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 def use_cpp_toolchain():
     return ["@bazel_tools//tools/cpp:toolchain_type"]
+
 # end:github_only
 
 # Generic support code #########################################################
@@ -267,7 +268,6 @@ _upb_cc_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = use_cpp_toolchain(),
-    incompatible_use_toolchain_transition = True,
 )
 
 upb_cc_proto_library = rule(

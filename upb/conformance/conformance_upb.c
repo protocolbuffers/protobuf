@@ -16,8 +16,11 @@
 
 #include "conformance/conformance.upb.h"
 #include "conformance/conformance.upbdefs.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.upbdefs.h"
+#include "google/protobuf/editions/golden/test_messages_proto3_editions.upbdefs.h"
 #include "google/protobuf/test_messages_proto2.upbdefs.h"
 #include "google/protobuf/test_messages_proto3.upbdefs.h"
+#include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/reflection/message.h"
@@ -289,9 +292,9 @@ bool DoTestIo(upb_DefPool* symtab) {
   test_count++;
 
   if (verbose) {
-    debug_print("Request", c.request,
+    debug_print("Request", UPB_UPCAST(c.request),
                 conformance_ConformanceRequest_getmsgdef(symtab), &c);
-    debug_print("Response", c.response,
+    debug_print("Response", UPB_UPCAST(c.response),
                 conformance_ConformanceResponse_getmsgdef(symtab), &c);
     fprintf(stderr, "\n");
   }
@@ -309,9 +312,19 @@ int main(void) {
       symtab, &google_protobuf_test_messages_proto2_proto_upbdefinit, true);
   _upb_DefPool_LoadDefInitEx(
       symtab, &google_protobuf_test_messages_proto3_proto_upbdefinit, true);
+  _upb_DefPool_LoadDefInitEx(
+      symtab,
+      &google_protobuf_editions_golden_test_messages_proto2_editions_proto_upbdefinit,
+      true);
+  _upb_DefPool_LoadDefInitEx(
+      symtab,
+      &google_protobuf_editions_golden_test_messages_proto3_editions_proto_upbdefinit,
+      true);
 #else
   protobuf_test_messages_proto2_TestAllTypesProto2_getmsgdef(symtab);
+  protobuf_test_messages_editions_proto2_TestAllTypesProto2_getmsgdef(symtab);
   protobuf_test_messages_proto3_TestAllTypesProto3_getmsgdef(symtab);
+  protobuf_test_messages_editions_proto3_TestAllTypesProto3_getmsgdef(symtab);
 #endif
 
   while (1) {

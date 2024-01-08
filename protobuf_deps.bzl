@@ -68,14 +68,6 @@ def protobuf_deps():
             build_file = Label("//:third_party/jsoncpp.BUILD"),
         )
 
-    if not native.existing_rule("utf8_range"):
-        _github_archive(
-            name = "utf8_range",
-            repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
-            sha256 = "568988b5f7261ca181468dba38849fabf59dd9200fb2ed4b2823da187ef84d8c",
-        )
-
     if not native.existing_rule("rules_cc"):
         http_archive(
             name = "rules_cc",
@@ -110,14 +102,6 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
         )
 
-    if not native.existing_rule("rules_ruby"):
-        _github_archive(
-            name = "rules_ruby",
-            repo = "https://github.com/protocolbuffers/rules_ruby",
-            commit = "b7f3e9756f3c45527be27bc38840d5a1ba690436",
-            sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
-        )
-
     if not native.existing_rule("rules_jvm_external"):
         http_archive(
             name = "rules_jvm_external",
@@ -139,8 +123,8 @@ def protobuf_deps():
     if not native.existing_rule("build_bazel_rules_apple"):
         http_archive(
             name = "build_bazel_rules_apple",
-            sha256 = "f94e6dddf74739ef5cb30f000e13a2a613f6ebfa5e63588305a71fce8a8a9911",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/1.1.3/rules_apple.1.1.3.tar.gz",
+            sha256 = "34c41bfb59cdaea29ac2df5a2fa79e5add609c71bb303b2ebb10985f93fa20e7",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.1.1/rules_apple.3.1.1.tar.gz",
         )
 
     if not native.existing_rule("io_bazel_rules_kotlin"):

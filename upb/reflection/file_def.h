@@ -19,11 +19,14 @@
 extern "C" {
 #endif
 
+UPB_API const char* upb_FileDef_EditionName(int edition);
+
 const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
 UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f);
+const UPB_DESC(FeatureSet) * upb_FileDef_ResolvedFeatures(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
 UPB_DESC(Edition) upb_FileDef_Edition(const upb_FileDef* f);
 UPB_API const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);

@@ -201,6 +201,24 @@ typedef NS_ENUM(NSInteger, GPBWellKnownTypesErrorCode) {
  */
 - (nullable GPBMessage *)unpackMessageClass:(Class)messageClass error:(NSError **)errorPtr;
 
+/**
+ * Unpacks the serialized message as if it was an instance of the given class.
+ *
+ * @note When checking type_url, the base URL is not checked, only the fully
+ *       qualified name.
+ *
+ * @param messageClass The class to use to deserialize the contained message.
+ * @param extensionRegistry The extension registry to use to look up extensions.
+ * @param errorPtr     Pointer to an error that will be populated if something
+ *                     goes wrong.
+ *
+ * @return An instance of the given class populated with the contained data, or
+ *         nil on failure.
+ */
+- (nullable GPBMessage *)unpackMessageClass:(Class)messageClass
+                          extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                                      error:(NSError **)errorPtr;
+
 @end
 
 NS_ASSUME_NONNULL_END

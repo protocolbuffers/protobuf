@@ -1,16 +1,21 @@
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
     "rust_proto_library",
     "rust_upb_proto_library",
 )
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_CC_PROTO_TARGET = "//src/google/protobuf:cc_test_protos"
+
 UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_PROTO3_CC_TARGET = "//src/google/protobuf:cc_test_protos"
+
 UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_PROTO3_OPTIONAL_CC_TARGET = "//src/google/protobuf:cc_test_protos"
 
 alias(
@@ -49,7 +54,7 @@ rust_proto_library(
     name = "unittest_proto3_rust_proto",
     testonly = True,
     visibility = [
-        "//rust/test/shared:__subpackages__",
+        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
     ],
     deps = [
         UNITTEST_PROTO3_TARGET,
@@ -59,20 +64,14 @@ rust_proto_library(
 rust_cc_proto_library(
     name = "unittest_proto3_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_CC_TARGET],
 )
 
 rust_upb_proto_library(
     name = "unittest_proto3_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_TARGET],
 )
 
@@ -80,7 +79,7 @@ rust_proto_library(
     name = "unittest_proto3_optional_rust_proto",
     testonly = True,
     visibility = [
-        "//rust/test/shared:__subpackages__",
+        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
     ],
     deps = [
         UNITTEST_PROTO3_OPTIONAL_TARGET,
@@ -90,20 +89,14 @@ rust_proto_library(
 rust_cc_proto_library(
     name = "unittest_proto3_optional_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_OPTIONAL_CC_TARGET],
 )
 
 rust_upb_proto_library(
     name = "unittest_proto3_optional_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
 )
 
@@ -187,6 +180,59 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "edition2023_proto",
+    testonly = True,
+    srcs = ["edition2023.proto"],
+)
+
+cc_proto_library(
+    name = "edition2023_cc_proto",
+    testonly = True,
+    deps = [":edition2023_proto"],
+)
+
+rust_cc_proto_library(
+    name = "edition2023_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "edition2023_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition2023_proto"],
+)
+
+proto_library(
+    name = "enums_proto",
+    testonly = True,
+    srcs = ["enums.proto"],
+    deps = ["//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto"],
+)
+
+cc_proto_library(
+    name = "enums_cc_proto",
+    testonly = True,
+    deps = [":enums_proto"],
+)
+
+rust_cc_proto_library(
+    name = "enums_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":enums_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "enums_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":enums_proto"],
+)
+
+proto_library(
     name = "no_package_import_proto",
     testonly = True,
     srcs = ["no_package_import.proto"],
@@ -250,20 +296,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "package_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":package_cc_proto"],
 )
 
 rust_upb_proto_library(
     name = "package_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":package_proto"],
 )
 
@@ -282,20 +322,14 @@ cc_proto_library(
 rust_cc_proto_library(
     name = "reserved_cc_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":reserved_cc_proto"],
 )
 
 rust_upb_proto_library(
     name = "reserved_upb_rust_proto",
     testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":reserved_proto"],
 )
 
@@ -329,4 +363,28 @@ rust_upb_proto_library(
         "//rust/test/upb:__subpackages__",
     ],
     deps = [":nested_proto"],
+)
+
+cc_proto_library(
+    name = "map_unittest_cc_proto",
+    testonly = True,
+    deps = ["//src/google/protobuf:map_unittest_proto"],
+)
+
+rust_cc_proto_library(
+    name = "map_unittest_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":map_unittest_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "map_unittest_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:map_unittest_proto"],
 )

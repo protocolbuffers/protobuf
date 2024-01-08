@@ -102,6 +102,18 @@ message CodeGeneratorResponse {
     FEATURE_SUPPORTS_EDITIONS = 2;
   }
 
+  // The minimum edition this plugin supports.  This will be treated as an
+  // Edition enum, but we want to allow unknown values.  It should be specified
+  // according the edition enum value, *not* the edition number.  Only takes
+  // effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
+  optional int32 minimum_edition = 3;
+
+  // The maximum edition this plugin supports.  This will be treated as an
+  // Edition enum, but we want to allow unknown values.  It should be specified
+  // according the edition enum value, *not* the edition number.  Only takes
+  // effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
+  optional int32 maximum_edition = 4;
+
   // Represents a single generated file.
   message File {
     // The file name, relative to the output directory.  The name must not

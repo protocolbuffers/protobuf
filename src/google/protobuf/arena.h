@@ -10,7 +10,10 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
+#include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <new>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -26,8 +29,11 @@ using type_info = ::type_info;
 #include <typeinfo>
 #endif
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
+#include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -48,6 +54,9 @@ class Message;  // defined in message.h
 class MessageLite;
 template <typename Key, typename T>
 class Map;
+namespace internal {
+struct RepeatedFieldBase;
+}  // namespace internal
 
 namespace arena_metrics {
 
@@ -65,6 +74,7 @@ struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
 class LazyField;             // defined in lazy_field.h
 class EpsCopyInputStream;    // defined in parse_context.h
+class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 class TcParser;              // defined in generated_message_tctable_impl.h
 
@@ -209,7 +219,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       internal::ThreadSafeArena::kBlockHeaderSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
-  inline ~Arena() {}
+  inline ~Arena() = default;
 
   // API to create proto2 message objects on the arena. If the arena passed in
   // is nullptr, then a heap allocated object is returned. Type T must be a
@@ -223,36 +233,50 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // allocation protocol, documented above.
   template <typename T, typename... Args>
   PROTOBUF_ALWAYS_INLINE static T* CreateMessage(Arena* arena, Args&&... args) {
+    using Type = std::remove_const_t<T>;
     static_assert(
-        is_arena_constructable<T>::value,
+        is_arena_constructable<Type>::value,
         "CreateMessage can only construct types that are ArenaConstructable");
-    // We must delegate to CreateMaybeMessage() and NOT CreateMessageInternal()
-    // because protobuf generated classes specialize CreateMaybeMessage() and we
-    // need to use that specialization for code size reasons.
-    return Arena::CreateMaybeMessage<T>(arena, static_cast<Args&&>(args)...);
+#ifdef __cpp_if_constexpr
+    constexpr auto construct_type = GetConstructType<T, Args&&...>();
+    // We delegate to DefaultConstruct/CopyConstruct where appropriate
+    // because protobuf generated classes have external templates for these
+    // functions for code size reasons.
+    // When `if constexpr` is not available always use the fallback.
+    if constexpr (construct_type == ConstructType::kDefault) {
+      return static_cast<Type*>(DefaultConstruct<Type>(arena));
+    } else if constexpr (construct_type == ConstructType::kCopy) {
+      return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
+    }
+#endif
+    return CreateMessageInternal<Type>(arena, std::forward<Args>(args)...);
   }
 
-  // API to create any objects on the arena. Note that only the object will
-  // be created on the arena; the underlying ptrs (in case of a proto2 message)
-  // will be still heap allocated. Proto messages should usually be allocated
-  // with CreateMessage<T>() instead.
+  // API to create any objects on the arena.
   //
-  // Note that even if T satisfies the arena message construction protocol
-  // (InternalArenaConstructable_ trait and optional DestructorSkippable_
-  // trait), as described above, this function does not follow the protocol;
-  // instead, it treats T as a black-box type, just as if it did not have these
-  // traits. Specifically, T's constructor arguments will always be only those
-  // passed to Create<T>() -- no additional arena pointer is implicitly added.
-  // Furthermore, the destructor will always be called at arena destruction time
-  // (unless the destructor is trivial). Hence, from T's point of view, it is as
-  // if the object were allocated on the heap (except that the underlying memory
-  // is obtained from the arena).
+  // If an object is arena-constructable, this API behaves like
+  // Arena::CreateMessage. Arena constructable types are expected to accept
+  // Arena* as the first argument and one is implicitly added by the API.
+  //
+  // If the object is not arena-constructable, only the object will be created
+  // on the arena; the underlying ptrs will be still heap allocated.
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
-    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
-      return new T(std::forward<Args>(args)...);
-    }
-    return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
+    return absl::utility_internal::IfConstexprElse<
+        is_arena_constructable<T>::value>(
+        // Arena-constructable
+        [arena](auto&&... args) {
+          return CreateMessage<T>(arena, std::forward<Args>(args)...);
+        },
+        // Non arena-constructable
+        [arena](auto&&... args) {
+          if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+            return new T(std::forward<Args>(args)...);
+          }
+          return new (arena->AllocateInternal<T>())
+              T(std::forward<Args>(args)...);
+        },
+        std::forward<Args>(args)...);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely
@@ -471,6 +495,36 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
  private:
   internal::ThreadSafeArena impl_;
 
+  enum class ConstructType { kUnknown, kDefault, kCopy, kMove };
+  // Overload set to detect which kind of construction is going to happen for a
+  // specific set of input arguments. This is used to dispatch to different
+  // helper functions.
+  template <typename T>
+  static auto ProbeConstructType()
+      -> std::integral_constant<ConstructType, ConstructType::kDefault>;
+  template <typename T>
+  static auto ProbeConstructType(const T&)
+      -> std::integral_constant<ConstructType, ConstructType::kCopy>;
+  template <typename T>
+  static auto ProbeConstructType(T&)
+      -> std::integral_constant<ConstructType, ConstructType::kCopy>;
+  template <typename T>
+  static auto ProbeConstructType(const T&&)
+      -> std::integral_constant<ConstructType, ConstructType::kCopy>;
+  template <typename T>
+  static auto ProbeConstructType(T&&)
+      -> std::integral_constant<ConstructType, ConstructType::kMove>;
+  template <typename T, typename... U>
+  static auto ProbeConstructType(U&&...)
+      -> std::integral_constant<ConstructType, ConstructType::kUnknown>;
+
+  template <typename T, typename... Args>
+  static constexpr auto GetConstructType() {
+    return std::is_base_of<MessageLite, T>::value
+               ? decltype(ProbeConstructType<T>(std::declval<Args>()...))::value
+               : ConstructType::kUnknown;
+  }
+
   void ReturnArrayMemory(void* p, size_t size) {
     impl_.ReturnArrayMemory(p, size);
   }
@@ -517,31 +571,21 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  // CreateMessage<T> requires that T supports arenas, but this private method
-  // works whether or not T supports arenas. These are not exposed to user code
-  // as it can cause confusing API usages, and end up having double free in
-  // user code. These are used only internally from LazyField and Repeated
-  // fields, since they are designed to work in all mode combinations.
-  template <typename Msg, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static Msg* DoCreateMaybeMessage(Arena* arena,
-                                                          std::true_type,
-                                                          Args&&... args) {
-    return CreateMessageInternal<Msg>(arena, std::forward<Args>(args)...);
-  }
-
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* DoCreateMaybeMessage(Arena* arena,
-                                                        std::false_type,
-                                                        Args&&... args) {
-    return Create<T>(arena, std::forward<Args>(args)...);
-  }
-
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateMaybeMessage(Arena* arena,
-                                                      Args&&... args) {
-    return DoCreateMaybeMessage<T>(arena, is_arena_constructable<T>(),
-                                   std::forward<Args>(args)...);
-  }
+  // DefaultConstruct/CopyConstruct:
+  //
+  // Functions with a generic signature to support taking the address in generic
+  // contexts, like RepeatedPtrField, etc.
+  // These are also used as a hook for `extern template` instantiations where
+  // codegen can offload the instantiations to the respective .pb.cc files. This
+  // has two benefits:
+  //  - It reduces the library bloat as callers don't have to instantiate the
+  //  function.
+  //  - It allows the optimizer to see the constructors called to
+  //  further optimize the instantiation.
+  template <typename T>
+  static void* DefaultConstruct(Arena* arena);
+  template <typename T>
+  static void* CopyConstruct(Arena* arena, const void* from);
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
@@ -620,7 +664,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename Type>
   friend class internal::GenericTypeHandler;
   friend class internal::InternalMetadata;  // For user_arena().
-  friend class internal::LazyField;        // For CreateMaybeMessage.
+  friend class internal::LazyField;         // For DefaultConstruct.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;
@@ -629,8 +673,28 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename>
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
+  friend class internal::UntypedMapBase;        // For ReturnArenaMemory
+
   friend struct internal::ArenaTestPeer;
 };
+
+// DefaultConstruct/CopyConstruct
+//
+// IMPORTANT: These have to be defined out of line and without an `inline`
+// keyword to make sure the `extern template` suppresses instantiations.
+template <typename T>
+PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
+  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
+                               : ::operator new(sizeof(T));
+  return new (mem) T(arena);
+}
+
+template <typename T>
+PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
+  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
+                               : ::operator new(sizeof(T));
+  return new (mem) T(arena, *static_cast<const T*>(from));
+}
 
 template <>
 inline void* Arena::AllocateInternal<std::string, false>() {

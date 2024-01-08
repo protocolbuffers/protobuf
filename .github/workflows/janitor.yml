@@ -28,3 +28,51 @@ jobs:
             echo "Closing #$pr..."
             gh pr close --comment "Auto-closing Copybara pull request" --delete-branch "$pr"
           done
+
+  stale-others:
+    name: Close stale non-copybara PRs and issues
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write # allow the action to comment on, add labels to, and close issues
+      pull-requests: write # allow the action to comment on, add labels to, and close PRs
+    steps:
+      - uses: actions/stale@b69b346013879cedbf50c69f572cd85439a41936
+        with:
+          stale-issue-message: >
+            We triage inactive PRs and issues in order to make it easier to find
+            active work. If this issue should remain active or becomes active
+            again, please add a comment.
+
+
+            This issue is labeled `inactive` because the last activity was over
+            90 days ago.
+          close-issue-message: >
+            We triage inactive PRs and issues in order to make it easier to find
+            active work. If this issue should remain active or becomes active
+            again, please reopen it.
+
+
+            This issue was closed and archived because there has been no new
+            activity in the 14 days since the `inactive` label was added.
+          stale-pr-message: >
+            We triage inactive PRs and issues in order to make it easier to find
+            active work. If this PR should remain active, please add a comment.
+
+
+            This PR is labeled `inactive` because the last activity was over 90
+            days ago. This PR will be closed and archived after 14 additional
+            days without activity.
+          close-pr-message: >
+            We triage inactive PRs and issues in order to make it easier to find
+            active work. If this PR should remain active or becomes active
+            again, please reopen it.
+
+
+            This PR was closed and archived because there has been no new
+            activity in the 14 days since the `inactive` label was added.
+          stale-issue-label: 'inactive'
+          stale-pr-label: 'inactive'
+          exempt-issue-labels: 'help wanted'
+          days-before-stale: 90
+          days-before-close: 14
+          operations-per-run: 100

@@ -7,10 +7,17 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMessage, RawRepeatedField};
+use crate::ProtoStr;
+use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::{
+    Mut, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, SettableValue, View,
+};
+use core::fmt::Debug;
 use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
+use std::convert::identity;
+use std::ffi::c_int;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
@@ -135,10 +142,19 @@ impl fmt::Debug for SerializedData {
     }
 }
 
+impl SettableValue<[u8]> for SerializedData {
+    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
+    where
+        [u8]: 'msg,
+    {
+        mutator.set(self.as_ref())
+    }
+}
+
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'a, T> = crate::vtable::RawVTableMutator<'a, T>;
+pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -171,149 +187,303 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: msg.msg, _phantom: PhantomData }
     }
 
+    pub fn from_parent(
+        _private: Private,
+        _parent_msg: &'msg mut MessageInner,
+        message_field_ptr: RawMessage,
+    ) -> Self {
+        MutatorMessageRef { msg: message_field_ptr, _phantom: PhantomData }
+    }
+
     pub fn msg(&self) -> RawMessage {
         self.msg
     }
 }
 
-pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
-    _msg_ref: MutatorMessageRef<'a>,
-    val: &'a [u8],
-) -> &'a [u8] {
+pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
+    _msg_ref: MutatorMessageRef<'msg>,
+    val: &'msg [u8],
+) -> &'msg [u8] {
     // Nothing to do, the message manages its own string memory for C++.
     val
 }
 
-/// RepeatedField impls delegate out to `extern "C"` functions exposed by
-/// `cpp_api.h` and store either a RepeatedField* or a RepeatedPtrField*
-/// depending on the type.
+/// The raw type-erased pointer version of `RepeatedMut`.
 ///
-/// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants:
-///
-/// - No concurrent mutation for any two fields in a message: this means
-///   mutators cannot be `Send` but are `Sync`.
-/// - If there are multiple accessible `Mut` to a single message at a time, they
-///   must be different fields, and not be in the same oneof. As such, a `Mut`
-///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
-///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
-#[derive(Debug)]
-pub struct RepeatedField<'msg, T: ?Sized> {
-    inner: RepeatedFieldInner<'msg>,
-    _phantom: PhantomData<&'msg mut T>,
-}
-
-/// CPP runtime-specific arguments for initializing a RepeatedField.
-/// See RepeatedField comment about mutation invariants for when this type can
-/// be copied.
+/// Contains a `proto2::RepeatedField*` or `proto2::RepeatedPtrField*`.
 #[derive(Clone, Copy, Debug)]
-pub struct RepeatedFieldInner<'msg> {
-    pub raw: RawRepeatedField,
-    pub _phantom: PhantomData<&'msg ()>,
+pub struct InnerRepeatedMut<'msg> {
+    pub(crate) raw: RawRepeatedField,
+    _phantom: PhantomData<&'msg ()>,
 }
 
-impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
-    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
-        RepeatedField { inner, _phantom: PhantomData }
+impl<'msg> InnerRepeatedMut<'msg> {
+    #[doc(hidden)]
+    pub fn new(_private: Private, raw: RawRepeatedField) -> Self {
+        InnerRepeatedMut { raw, _phantom: PhantomData }
     }
 }
 
-// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
-// This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
-impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
-impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
-    fn clone(&self) -> RepeatedField<'msg, T> {
+macro_rules! impl_repeated_primitives {
+    (@impl $($t:ty => [
+        $new_thunk:ident,
+        $free_thunk:ident,
+        $add_thunk:ident,
+        $size_thunk:ident,
+        $get_thunk:ident,
+        $set_thunk:ident,
+        $clear_thunk:ident,
+        $copy_from_thunk:ident $(,)?
+    ]),* $(,)?) => {
+        $(
+            extern "C" {
+                fn $new_thunk() -> RawRepeatedField;
+                fn $free_thunk(f: RawRepeatedField);
+                fn $add_thunk(f: RawRepeatedField, v: $t);
+                fn $size_thunk(f: RawRepeatedField) -> usize;
+                fn $get_thunk(f: RawRepeatedField, i: usize) -> $t;
+                fn $set_thunk(f: RawRepeatedField, i: usize, v: $t);
+                fn $clear_thunk(f: RawRepeatedField);
+                fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
+            }
+
+            unsafe impl ProxiedInRepeated for $t {
+                #[allow(dead_code)]
+                fn repeated_new(_: Private) -> Repeated<$t> {
+                    unsafe {
+                        Repeated::from_inner(InnerRepeatedMut::new(Private, $new_thunk()))
+                    }
+                }
+                #[allow(dead_code)]
+                unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
+                    unsafe { $free_thunk(f.as_mut().as_raw(Private)) }
+                }
+                fn repeated_len(f: View<Repeated<$t>>) -> usize {
+                    unsafe { $size_thunk(f.as_raw(Private)) }
+                }
+                fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
+                    unsafe { $add_thunk(f.as_raw(Private), v) }
+                }
+                fn repeated_clear(mut f: Mut<Repeated<$t>>) {
+                    unsafe { $clear_thunk(f.as_raw(Private)) }
+                }
+                unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
+                    unsafe { $get_thunk(f.as_raw(Private), i) }
+                }
+                unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
+                    unsafe { $set_thunk(f.as_raw(Private), i, v) }
+                }
+                fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
+                    unsafe { $copy_from_thunk(src.as_raw(Private), dest.as_raw(Private)) }
+                }
+            }
+        )*
+    };
+    ($($t:ty),* $(,)?) => {
+        paste!{
+            impl_repeated_primitives!(@impl $(
+                $t => [
+                    [< __pb_rust_RepeatedField_ $t _new >],
+                    [< __pb_rust_RepeatedField_ $t _free >],
+                    [< __pb_rust_RepeatedField_ $t _add >],
+                    [< __pb_rust_RepeatedField_ $t _size >],
+                    [< __pb_rust_RepeatedField_ $t _get >],
+                    [< __pb_rust_RepeatedField_ $t _set >],
+                    [< __pb_rust_RepeatedField_ $t _clear >],
+                    [< __pb_rust_RepeatedField_ $t _copy_from >],
+                ],
+            )*);
+        }
+    };
+}
+
+impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool);
+
+/// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
+pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedView<E>,
+) -> RepeatedView<c_int> {
+    // SAFETY: the implementer of `Enum` has promised that this
+    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    unsafe { RepeatedView::from_raw(private, repeated.as_raw(Private)) }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>`.
+///
+/// Writing an unknown value is sound because all enums
+/// are representationally open.
+pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    mut repeated: RepeatedMut<E>,
+) -> RepeatedMut<i32> {
+    // SAFETY: the implementer of `Enum` has promised that this
+    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    unsafe {
+        RepeatedMut::from_inner(
+            private,
+            InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
+    pub raw: RawMap,
+    pub _phantom_key: PhantomData<&'msg mut K>,
+    pub _phantom_value: PhantomData<&'msg mut V>,
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
+impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
+    fn clone(&self) -> MapInner<'msg, K, V> {
         *self
     }
 }
 
-pub trait RepeatedScalarOps {
-    fn new_repeated_field() -> RawRepeatedField;
-    fn push(f: RawRepeatedField, v: Self);
-    fn len(f: RawRepeatedField) -> usize;
-    fn get(f: RawRepeatedField, i: usize) -> Self;
-    fn set(f: RawRepeatedField, i: usize, v: Self);
-    fn copy_from(src: RawRepeatedField, dst: RawRepeatedField);
+pub trait ProxiedInMapValue<K>: Proxied
+where
+    K: Proxied + ?Sized,
+{
+    fn new_map() -> RawMap;
+    fn clear(m: RawMap);
+    fn size(m: RawMap) -> usize;
+    fn insert(m: RawMap, key: View<'_, K>, value: View<'_, Self>) -> bool;
+    fn get<'msg>(m: RawMap, key: View<'_, K>) -> Option<View<'msg, Self>>;
+    fn remove(m: RawMap, key: View<'_, K>) -> bool;
 }
 
-macro_rules! impl_repeated_scalar_ops {
-    ($($t: ty),*) => {
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Default for MapInner<'msg, K, V> {
+    fn default() -> Self {
+        MapInner { raw: V::new_map(), _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+}
+
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MapInner<'msg, K, V> {
+    pub fn size(&self) -> usize {
+        V::size(self.raw)
+    }
+
+    pub fn clear(&mut self) {
+        V::clear(self.raw)
+    }
+
+    pub fn get<'a>(&self, key: View<'_, K>) -> Option<View<'a, V>> {
+        V::get(self.raw, key)
+    }
+
+    pub fn remove(&mut self, key: View<'_, K>) -> bool {
+        V::remove(self.raw, key)
+    }
+
+    pub fn insert(&mut self, key: View<'_, K>, value: View<'_, V>) -> bool {
+        V::insert(self.raw, key, value);
+        true
+    }
+}
+
+macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
+    ($key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, for $($t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr, $zero_val:literal;)*) => {
         paste! { $(
             extern "C" {
-                fn [< __pb_rust_RepeatedField_ $t _new >]() -> RawRepeatedField;
-                fn [< __pb_rust_RepeatedField_ $t _add >](f: RawRepeatedField, v: $t);
-                fn [< __pb_rust_RepeatedField_ $t _size >](f: RawRepeatedField) -> usize;
-                fn [< __pb_rust_RepeatedField_ $t _get >](f: RawRepeatedField, i: usize) -> $t;
-                fn [< __pb_rust_RepeatedField_ $t _set >](f: RawRepeatedField, i: usize, v: $t);
-                fn [< __pb_rust_RepeatedField_ $t _copy_from >](src: RawRepeatedField, dst: RawRepeatedField);
+                fn [< __pb_rust_Map_ $key_t _ $t _new >]() -> RawMap;
+                fn [< __pb_rust_Map_ $key_t _ $t _clear >](m: RawMap);
+                fn [< __pb_rust_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
+                fn [< __pb_rust_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t);
+                fn [< __pb_rust_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< __pb_rust_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
-            impl RepeatedScalarOps for $t {
-                fn new_repeated_field() -> RawRepeatedField {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _new >]() }
+
+            impl ProxiedInMapValue<$key_t> for $t {
+                fn new_map() -> RawMap {
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _new >]() }
                 }
-                fn push(f: RawRepeatedField, v: Self) {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _add >](f, v) }
+
+                fn clear(m: RawMap) {
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _clear >](m) }
                 }
-                fn len(f: RawRepeatedField) -> usize {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _size >](f) }
+
+                fn size(m: RawMap) -> usize {
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _size >](m) }
                 }
-                fn get(f: RawRepeatedField, i: usize) -> Self {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _get >](f, i) }
+
+                fn insert(m: RawMap, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                    let ffi_key = $to_ffi_key(key);
+                    let ffi_value = $to_ffi_value(value);
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _insert >](m, ffi_key, ffi_value) }
+                    true
                 }
-                fn set(f: RawRepeatedField, i: usize, v: Self) {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _set >](f, i, v) }
+
+                fn get<'msg>(m: RawMap, key: View<'_, $key_t>) -> Option<View<'msg, Self>> {
+                    let ffi_key = $to_ffi_key(key);
+                    let mut ffi_value = $to_ffi_value($zero_val);
+                    let found = unsafe { [< __pb_rust_Map_ $key_t _ $t _get >](m, ffi_key, &mut ffi_value) };
+                    if !found {
+                        return None;
+                    }
+                    Some($from_ffi_value(ffi_value))
                 }
-                fn copy_from(src: RawRepeatedField, dst: RawRepeatedField) {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _copy_from >](src, dst) }
+
+                fn remove(m: RawMap, key: View<'_, $key_t>) -> bool {
+                    let ffi_key = $to_ffi_key(key);
+                    let mut ffi_value = $to_ffi_value($zero_val);
+                    unsafe { [< __pb_rust_Map_ $key_t _ $t _remove >](m, ffi_key, &mut ffi_value) }
                 }
             }
-        )* }
-    };
+         )* }
+    }
 }
 
-impl_repeated_scalar_ops!(i32, u32, i64, u64, f32, f64, bool);
+fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
+    val.into().as_bytes().into()
+}
 
-impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
-    #[allow(clippy::new_without_default, dead_code)]
-    /// new() is not currently used in our normal pathways, it is only used
-    /// for testing. Existing `RepeatedField<>`s are owned by, and retrieved
-    /// from, the containing `Message`.
-    pub fn new() -> Self {
-        Self::from_inner(
-            Private,
-            RepeatedFieldInner::<'msg> { raw: T::new_repeated_field(), _phantom: PhantomData },
-        )
-    }
-    pub fn push(&mut self, val: T) {
-        T::push(self.inner.raw, val)
-    }
-    pub fn len(&self) -> usize {
-        T::len(self.inner.raw)
-    }
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-    pub fn get(&self, index: usize) -> Option<T> {
-        if index >= self.len() {
-            return None;
+fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
+    unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
+}
+
+macro_rules! impl_ProxiedInMapValue_for_key_types {
+    ($($t:ty, $ffi_t:ty, $to_ffi_key:expr;)*) => {
+        paste! {
+            $(
+                impl_ProxiedInMapValue_for_non_generated_value_types!($t, $ffi_t, $to_ffi_key, for
+                    f32, f32, identity, identity, 0f32;
+                    f64, f64, identity, identity, 0f64;
+                    i32, i32, identity, identity, 0i32;
+                    u32, u32, identity, identity, 0u32;
+                    i64, i64, identity, identity, 0i64;
+                    u64, u64, identity, identity, 0u64;
+                    bool, bool, identity, identity, false;
+                    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str, "";
+                );
+            )*
         }
-        Some(T::get(self.inner.raw, index))
     }
-    pub fn set(&mut self, index: usize, val: T) {
-        if index >= self.len() {
-            return;
-        }
-        T::set(self.inner.raw, index, val)
-    }
-    pub fn copy_from(&mut self, src: &RepeatedField<'_, T>) {
-        T::copy_from(src.inner.raw, self.inner.raw)
-    }
+}
+
+impl_ProxiedInMapValue_for_key_types!(
+    i32, i32, identity;
+    u32, u32, identity;
+    i64, i64, identity;
+    u64, u64, identity;
+    bool, bool, identity;
+    ProtoStr, PtrAndLen, str_to_ptrlen;
+);
+
+#[cfg(test)]
+pub(crate) fn new_map_i32_i64() -> MapInner<'static, i32, i64> {
+    Default::default()
+}
+
+#[cfg(test)]
+pub(crate) fn new_map_str_str() -> MapInner<'static, ProtoStr, ProtoStr> {
+    Default::default()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
     use std::boxed::Box;
 
     // We need to allocate the byte array so SerializedData can own it and
@@ -327,30 +497,95 @@ mod tests {
     #[test]
     fn test_serialized_data_roundtrip() {
         let (ptr, len) = allocate_byte_array(b"Hello world");
-        let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len: len };
-        assert_eq!(&*serialized_data, b"Hello world");
+        let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len };
+        assert_that!(&*serialized_data, eq(b"Hello world"));
     }
 
     #[test]
-    fn repeated_field() {
-        let mut r = RepeatedField::<i32>::new();
-        assert_eq!(r.len(), 0);
-        r.push(32);
-        assert_eq!(r.get(0), Some(32));
+    fn i32_i32_map() {
+        let mut map: MapInner<'_, i32, i32> = Default::default();
+        assert_that!(map.size(), eq(0));
 
-        let mut r = RepeatedField::<u32>::new();
-        assert_eq!(r.len(), 0);
-        r.push(32);
-        assert_eq!(r.get(0), Some(32));
+        assert_that!(map.insert(1, 2), eq(true));
+        assert_that!(map.get(1), eq(Some(2)));
+        assert_that!(map.get(3), eq(None));
+        assert_that!(map.size(), eq(1));
 
-        let mut r = RepeatedField::<f64>::new();
-        assert_eq!(r.len(), 0);
-        r.push(0.1234f64);
-        assert_eq!(r.get(0), Some(0.1234));
+        assert_that!(map.remove(1), eq(true));
+        assert_that!(map.size(), eq(0));
+        assert_that!(map.remove(1), eq(false));
 
-        let mut r = RepeatedField::<bool>::new();
-        assert_eq!(r.len(), 0);
-        r.push(true);
-        assert_eq!(r.get(0), Some(true));
+        assert_that!(map.insert(4, 5), eq(true));
+        assert_that!(map.insert(6, 7), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn i64_f64_map() {
+        let mut map: MapInner<'_, i64, f64> = Default::default();
+        assert_that!(map.size(), eq(0));
+
+        assert_that!(map.insert(1, 2.5), eq(true));
+        assert_that!(map.get(1), eq(Some(2.5)));
+        assert_that!(map.get(3), eq(None));
+        assert_that!(map.size(), eq(1));
+
+        assert_that!(map.remove(1), eq(true));
+        assert_that!(map.size(), eq(0));
+        assert_that!(map.remove(1), eq(false));
+
+        assert_that!(map.insert(4, 5.1), eq(true));
+        assert_that!(map.insert(6, 7.2), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn str_str_map() {
+        let mut map = MapInner::<'_, ProtoStr, ProtoStr>::default();
+        assert_that!(map.size(), eq(0));
+
+        map.insert("fizz".into(), "buzz".into());
+        assert_that!(map.size(), eq(1));
+        assert_that!(map.remove("fizz".into()), eq(true));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn u64_str_map() {
+        let mut map = MapInner::<'_, u64, ProtoStr>::default();
+        assert_that!(map.size(), eq(0));
+
+        map.insert(1, "fizz".into());
+        map.insert(2, "buzz".into());
+        assert_that!(map.size(), eq(2));
+        assert_that!(map.remove(1), eq(true));
+        assert_that!(map.get(1), eq(None));
+        map.clear();
+        assert_that!(map.size(), eq(0));
+    }
+
+    #[test]
+    fn test_all_maps_can_be_constructed() {
+        macro_rules! gen_proto_values {
+            ($key_t:ty, $($value_t:ty),*) => {
+                $(
+                    let map = MapInner::<'_, $key_t, $value_t>::default();
+                    assert_that!(map.size(), eq(0));
+                )*
+            }
+        }
+
+        macro_rules! gen_proto_keys {
+            ($($key_t:ty),*) => {
+                $(
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr);
+                )*
+            }
+        }
+
+        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
     }
 }

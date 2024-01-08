@@ -394,6 +394,9 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,
                                const TcParseTableBase* table);
+  static const char* ParseLoopInlined(MessageLite* msg, const char* ptr,
+                                      ParseContext* ctx,
+                                      const TcParseTableBase* table);
 
   // Functions referenced by generated fast tables (numeric types):
   //   F: fixed      V: varint     Z: zigzag
@@ -942,6 +945,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
   SyncHasbits(msg, hasbits, table);
   return ptr;
 }
+
+// Prints the type card as or of labels, using known higher level labels.
+// Used for code generation, but also useful for debugging.
+PROTOBUF_EXPORT std::string TypeCardToString(uint16_t type_card);
 
 }  // namespace internal
 }  // namespace protobuf

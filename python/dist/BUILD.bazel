@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
@@ -216,7 +217,7 @@ pkg_files(
 
 pkg_files(
     name = "utf8_range_source_files",
-    srcs = ["@utf8_range//:utf8_range_srcs"],
+    srcs = ["//third_party/utf8_range:utf8_range_srcs"],
     prefix = "utf8_range",
 )
 
@@ -281,6 +282,7 @@ genrule(
     srcs = [":source_tarball"],
     outs = ["protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION],
     cmd = """
+        export PYTHONPATH=$$PWD/external/pip_deps_setuptools/site-packages
         set -eux
         tar -xzvf $(location :source_tarball)
         cd protobuf/
@@ -292,6 +294,7 @@ genrule(
         "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
+    tools = [requirement("setuptools")],
 )
 
 py_wheel(
@@ -310,6 +313,7 @@ py_wheel(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
@@ -365,6 +369,7 @@ py_wheel(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     distribution = "protobuf",
     extra_distinfo_files = {
