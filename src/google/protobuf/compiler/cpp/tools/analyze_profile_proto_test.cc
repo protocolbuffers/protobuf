@@ -95,6 +95,32 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
                "  string optional_string: INLINE\n");
 }
 
+TEST(AnalyzeProfileProtoTest, UnlikelyPresent) {
+  AccessInfo info = ParseTextOrDie(R"pb(
+    language: "cpp"
+    message {
+      name: "google::protobuf::compiler::tools::AnalyzeThis"
+      count: 100
+      field { name: "id" getters_count: 0 }
+      field { name: "optional_string" getters_count: 0 }
+      field { name: "optional_child" getters_count: 100 }
+      field { name: "repeated_string" getters_count: 0 }
+      field { name: "repeated_child" getters_count: 0 }
+      field { name: "nested" getters_count: 0 }
+    }
+  )pb");
+  AnalyzeProfileProtoOptions options;
+  options.print_unused_threshold = false;
+  options.pool = DescriptorPool::generated_pool();
+  EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
+               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
+               "  int32 id: SPLIT\n"
+               "  string optional_string: SPLIT\n"
+               "  string[] repeated_string: SPLIT\n"
+               "  AnalyzeChild[] repeated_child: SPLIT\n"
+               "  Nested nested: SPLIT\n");
+}
+
 TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndRarelyUsed) {
   // Note that the logic pics a 50th percentile threshold which we need to
   // exceed, making testing slightly awkward
