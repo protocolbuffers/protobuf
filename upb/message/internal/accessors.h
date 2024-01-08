@@ -311,8 +311,8 @@ UPB_INLINE void _upb_Message_AssertMapIsUntagged(
   UPB_UNUSED(msg);
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
 #ifndef NDEBUG
-  upb_TaggedMessagePtr default_val = 0;
-  upb_TaggedMessagePtr tagged;
+  uintptr_t default_val = 0;
+  uintptr_t tagged;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
   UPB_ASSERT(!UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(tagged));
 #endif
