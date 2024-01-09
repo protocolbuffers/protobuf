@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_NAMING_H__
 
+#include <array>
 #include <string>
 
 #include "absl/strings/string_view.h"
@@ -39,6 +40,7 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field);
 
 std::string EnumRsName(const EnumDescriptor& desc);
+std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
 std::string OneofMutEnumRsName(const OneofDescriptor& oneof);
@@ -74,6 +76,26 @@ std::string SnakeToUpperCamelCase(absl::string_view input);
 
 // Converts a SCREAMING_SNAKE_CASE string to an UpperCamelCase string.
 std::string ScreamingSnakeToUpperCamelCase(absl::string_view input);
+
+// Given a fixed prefix, this will repeatedly strip provided
+// string_views if they start with the prefix, the prefix in UpperCamel, or
+// the prefix in snake_case.
+class MultiCasePrefixStripper final {
+ public:
+  explicit MultiCasePrefixStripper(absl::string_view prefix);
+
+  // Strip a prefix from the name in UpperCamel or snake_case, if present.
+  // If there is an underscore after the prefix, that will also be stripped.
+  // The stripping is case-insensitive.
+  absl::string_view StripPrefix(absl::string_view name) const;
+
+ private:
+  std::array<std::string, 3> prefixes_;
+};
+
+// More efficient overload if a stripper is already constructed.
+std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
+                            absl::string_view value_name);
 
 }  // namespace rust
 }  // namespace compiler

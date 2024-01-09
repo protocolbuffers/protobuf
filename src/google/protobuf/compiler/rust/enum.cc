@@ -17,12 +17,9 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
@@ -52,17 +49,7 @@ std::vector<std::pair<absl::string_view, int32_t>> EnumValuesInput(
 std::vector<RustEnumValue> EnumValues(
     absl::string_view enum_name,
     absl::Span<const std::pair<absl::string_view, int32_t>> values) {
-  // Enum values may have a prefix of the name of the enum stripped from the
-  // value names in the gencode. This prefix is flexible:
-  // - It can be the original enum name, the name as UpperCamel, or snake_case.
-  // - The stripped prefix may also end in an underscore.
-
-  // The set of prefixes that will be stripped.
-  std::initializer_list<std::string> prefixes = {
-      std::string(enum_name),
-      ScreamingSnakeToUpperCamelCase(enum_name),
-      CamelToSnakeCase(enum_name),
-  };
+  MultiCasePrefixStripper stripper(enum_name);
 
   absl::flat_hash_set<std::string> seen_by_name;
   absl::flat_hash_map<int32_t, RustEnumValue*> seen_by_number;
@@ -74,32 +61,9 @@ std::vector<RustEnumValue> EnumValues(
   seen_by_number.reserve(values.size());
 
   for (const auto& name_and_number : values) {
-    absl::string_view base_value_name = name_and_number.first;
-    for (absl::string_view prefix : prefixes) {
-      if (absl::StartsWithIgnoreCase(base_value_name, prefix)) {
-        base_value_name.remove_prefix(prefix.size());
-
-        // Also strip a joining underscore, if present.
-        absl::ConsumePrefix(&base_value_name, "_");
-
-        // Only strip one prefix.
-        break;
-      }
-    }
-
-    if (base_value_name.empty()) {
-      // The enum value name has a similar name to the enum - don't strip.
-      base_value_name = name_and_number.first;
-    }
-
     int32_t number = name_and_number.second;
     std::string rust_value_name =
-        ScreamingSnakeToUpperCamelCase(base_value_name);
-
-    // Invalid identifiers are prefixed with `_`.
-    if (absl::ascii_isdigit(rust_value_name[0])) {
-      rust_value_name = absl::StrCat("_", rust_value_name);
-    }
+        EnumValueRsName(stripper, name_and_number.first);
 
     if (seen_by_name.contains(rust_value_name)) {
       // Don't add an alias with the same normalized name.

@@ -10,13 +10,16 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -257,6 +260,29 @@ std::string EnumRsName(const EnumDescriptor& desc) {
   return SnakeToUpperCamelCase(desc.name());
 }
 
+std::string EnumValueRsName(const EnumValueDescriptor& value) {
+  MultiCasePrefixStripper stripper(value.type()->name());
+  return EnumValueRsName(stripper, value.name());
+}
+
+std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
+                            absl::string_view value_name) {
+  // Enum values may have a prefix of the name of the enum stripped from the
+  // value names in the gencode. This prefix is flexible:
+  // - It can be the original enum name, the name as UpperCamel, or snake_case.
+  // - The stripped prefix may also end in an underscore.
+  auto stripped = stripper.StripPrefix(value_name);
+
+  auto name = ScreamingSnakeToUpperCamelCase(stripped);
+  ABSL_CHECK(!name.empty());
+
+  // Invalid identifiers are prefixed with `_`.
+  if (absl::ascii_isdigit(name[0])) {
+    name = absl::StrCat("_", name);
+  }
+  return name;
+}
+
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
   return SnakeToUpperCamelCase(oneof.name());
 }
@@ -316,6 +342,34 @@ std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
     }
   }
   return result;
+}
+
+MultiCasePrefixStripper::MultiCasePrefixStripper(absl::string_view prefix)
+    : prefixes_{
+          std::string(prefix),
+          ScreamingSnakeToUpperCamelCase(prefix),
+          CamelToSnakeCase(prefix),
+      } {}
+
+absl::string_view MultiCasePrefixStripper::StripPrefix(
+    absl::string_view name) const {
+  absl::string_view start_name = name;
+  for (absl::string_view prefix : prefixes_) {
+    if (absl::StartsWithIgnoreCase(name, prefix)) {
+      name.remove_prefix(prefix.size());
+
+      // Also strip a joining underscore, if present.
+      absl::ConsumePrefix(&name, "_");
+
+      // Only strip one prefix.
+      break;
+    }
+  }
+
+  if (name.empty()) {
+    return start_name;
+  }
+  return name;
 }
 
 }  // namespace rust
