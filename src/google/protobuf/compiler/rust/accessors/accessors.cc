@@ -71,8 +71,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
             " (defined in a separate Rust crate) are not supported");
       }
       if (field.is_repeated()) {
-        return std::make_unique<UnsupportedField>(
-            "repeated enum not supported");
+        return std::make_unique<RepeatedScalar>();
       }
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_BYTES:
