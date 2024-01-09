@@ -303,6 +303,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
+  // Allocates memory block of size "x * sz" where x is at least 1 and at most
+  // n. Returns pointer to allocated memory and "x".
+  internal::SizedPtr AllocateUpToN(size_t sz, size_t n) {
+    return impl_.AllocateUpToN(sz, n);
+  }
+
   // Create an array of object type T on the arena *without* invoking the
   // constructor of T. If `arena` is null, then the return value should be freed
   // with `delete[] x;` (or `::operator delete[](x);`).
@@ -587,6 +593,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   static void* CopyConstruct(Arena* arena, const void* from);
 
+  template <typename T>
+  static void* PlacementCopyConstruct(void* mem, Arena* arena,
+                                      const void* from);
+
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
     return InternalHelper<T>::Construct(
@@ -693,6 +703,12 @@ template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));
+  return new (mem) T(arena, *static_cast<const T*>(from));
+}
+
+template <typename T>
+PROTOBUF_NOINLINE void* Arena::PlacementCopyConstruct(void* mem, Arena* arena,
+                                                      const void* from) {
   return new (mem) T(arena, *static_cast<const T*>(from));
 }
 

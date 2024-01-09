@@ -1768,18 +1768,17 @@ TEST(RepeatedPtrField, MergeFrom) {
   RepeatedPtrField<std::string> source, destination;
   source.Add()->assign("4");
   source.Add()->assign("5");
+  source.Add()->assign("too loooooooooooooooooooooooooooooooong to fit in sso");
   destination.Add()->assign("1");
   destination.Add()->assign("2");
   destination.Add()->assign("3");
 
   destination.MergeFrom(source);
 
-  ASSERT_EQ(5, destination.size());
-  EXPECT_EQ("1", destination.Get(0));
-  EXPECT_EQ("2", destination.Get(1));
-  EXPECT_EQ("3", destination.Get(2));
-  EXPECT_EQ("4", destination.Get(3));
-  EXPECT_EQ("5", destination.Get(4));
+  EXPECT_THAT(
+      destination,
+      ElementsAre("1", "2", "3", "4", "5",
+                  "too loooooooooooooooooooooooooooooooong to fit in sso"));
 }
 
 

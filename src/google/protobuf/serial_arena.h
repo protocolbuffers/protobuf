@@ -75,6 +75,11 @@ struct FirstSerialArena {
   explicit FirstSerialArena() = default;
 };
 
+struct PtrWithSize {
+  void* ptr;
+  size_t size;
+};
+
 // A simple arena allocator. Calls to allocate functions must be properly
 // serialized by the caller, hence this class cannot be used as a general
 // purpose allocator in a multi-threaded program. It serves as a building block
@@ -147,6 +152,21 @@ class PROTOBUF_EXPORT SerialArena {
     return AllocateAlignedFallback(n);
   }
 
+  // Allocates bytes "x * sz" bytes where x is in [1; n]. Returns memory and x.
+  SizedPtr AllocateUpToN(size_t sz, size_t n) {
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(sz));
+    ABSL_DCHECK_GE(limit_, ptr());
+
+    void* ptr;
+    size_t allocated = MaybeAllocateUpToN(sz, n, &ptr);
+    if (PROTOBUF_PREDICT_TRUE(allocated != 0)) {
+      return {ptr, allocated};
+    }
+    // Head does not have enough space even for a single element, allocate a new
+    // block.
+    return {AllocateAlignedFallback(n * sz), n * sz};
+  }
+
  private:
   static inline PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n,
                                                                   size_t a) {
@@ -212,6 +232,23 @@ class PROTOBUF_EXPORT SerialArena {
     new_node->next = cached_head;
     cached_head = new_node;
     PROTOBUF_POISON_MEMORY_REGION(p, size);
+  }
+
+  // Allocates bytes "x * sz" bytes where x is in [0; n].
+  size_t MaybeAllocateUpToN(size_t sz, size_t n, void** out) {
+    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(sz));
+    ABSL_DCHECK_GE(limit_, ptr());
+    char* ret = ptr();
+    size_t max_elements = std::min((limit_ - ret) / sz, n);
+    if (PROTOBUF_PREDICT_FALSE(max_elements == 0)) {
+      return 0;
+    }
+    PROTOBUF_UNPOISON_MEMORY_REGION(ret, max_elements * sz);
+    *out = ret;
+    char* next = ret + max_elements * sz;
+    set_ptr(next);
+    MaybePrefetchForwards(next);
+    return max_elements * sz;
   }
 
  public:

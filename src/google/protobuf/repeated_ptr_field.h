@@ -272,7 +272,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       return MergeFrom<MessageLite>(from);
     }
 #endif
-    MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
+    MergeFromConcreteMessage(from, Arena::PlacementCopyConstruct<T>, sizeof(T));
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -577,10 +577,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class internal::SwapFieldHelper;
 
   // Concrete Arena enabled copy function used to copy messages instances.
-  // This follows the `Arena::CreateMaybeMessage` signature so that the compiler
-  // can have the inlined call into the out of line copy function(s) simply pass
-  // the address of `Arena::CreateMaybeMessage` 'as is'.
-  using CopyFn = void* (*)(Arena*, const void*);
+  using CopyFn = void* (*)(void*, Arena*, const void*);
 
   struct Rep {
     int allocated_size;
@@ -693,7 +690,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Appends all messages from `from` to this instance, using the
   // provided `copy_fn` copy function to copy existing messages.
   void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from,
-                                CopyFn copy_fn);
+                                CopyFn copy_fn, size_t element_size);
 
   // Extends capacity by at least |extend_amount|.
   //

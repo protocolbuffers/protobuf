@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <new>
 #include <string>
 
 #include "absl/base/prefetch.h"
@@ -178,6 +179,7 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
     (*dst)->assign(**src);
   }
   if (Arena* const arena = arena_) {
+    // TODO: batch arena allocations similar to messages.
     for (; src < end; ++dst, ++src) {
       *dst = Arena::Create<std::string>(arena, **src);
     }
@@ -211,7 +213,7 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
 }
 
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
-    const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
+    const RepeatedPtrFieldBase& from, CopyFn copy_fn, size_t element_size) {
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
   void** dst = InternalReserve(new_size);
@@ -223,8 +225,21 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     src += recycled;
   }
   Arena* arena = GetArena();
-  for (; src < end; ++src, ++dst) {
-    *dst = copy_fn(arena, *src);
+  if (arena == nullptr) {
+    for (; src < end; ++src, ++dst) {
+      *dst = copy_fn(::operator new(element_size), arena, *src);
+    }
+  } else {
+    // Elements on arena never change owner nor their address. We can allocate
+    // memory for elements contiguously.
+    while (src != end) {
+      // Let arena decide best allocation size.
+      auto block = arena->AllocateUpToN(element_size, end - src);
+      char* first = static_cast<char*>(block.p);
+      for (char* last = first + block.n; first != last; first += element_size) {
+        *dst++ = copy_fn(first, arena, *src++);
+      }
+    }
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {

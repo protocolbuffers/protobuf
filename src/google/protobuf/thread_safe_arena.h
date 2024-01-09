@@ -74,6 +74,15 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     }
   }
 
+  SizedPtr AllocateUpToN(size_t sz, size_t n) {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateUpToN(sz, n);
+    } else {
+      return AllocateUpToNFallback(sz, n);
+    }
+  }
+
   void ReturnArrayMemory(void* p, size_t size) {
     SerialArena* arena;
     if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
@@ -186,6 +195,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
+
+  SizedPtr AllocateUpToNFallback(size_t sz, size_t n);
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.
