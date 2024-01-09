@@ -50,21 +50,21 @@ build --incompatible_use_cc_configure_from_rules_cc
 build --incompatible_use_host_features
 
 # We cannot yet build successfully with the following flags:
-#   --incompatible_check_testonly_for_output_files
-#   --incompatible_config_setting_private_default_visibility
-#   --incompatible_disable_starlark_host_transitions
-#   --incompatible_disallow_struct_provider_syntax
-#   --incompatible_no_implicit_file_export
-#   --incompatible_no_rule_outputs_param
-#   --incompatible_stop_exporting_language_modules
-#   --incompatible_strict_action_env
-#   --incompatible_visibility_private_attributes_at_definition
+build --incompatible_check_testonly_for_output_files
+build --incompatible_config_setting_private_default_visibility
+build --incompatible_disable_starlark_host_transitions
+build --incompatible_disallow_struct_provider_syntax
+build --incompatible_no_implicit_file_export
+# build --incompatible_no_rule_outputs_param
+# build --incompatible_stop_exporting_language_modules
+build --incompatible_strict_action_env
+build --incompatible_visibility_private_attributes_at_definition
 
 # We might be compatible with these flags, but they are not available in all
 # Bazel versions we are currently using:
-#   --incompatible_disable_objc_library_transition
-#   --incompatible_fail_on_unknown_attributes
-#   --incompatible_merge_fixed_and_default_shell_env
+# build --incompatible_disable_objc_library_transition
+# build --incompatible_fail_on_unknown_attributes
+# build --incompatible_merge_fixed_and_default_shell_env
 
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
