@@ -73,7 +73,7 @@ fn test_nested_muts() {
 }
 
     let mut outer_msg = Outer::new();
-    let inner_msg: InnerMut<'_> = outer_msg.inner_mut();
+    let mut inner_msg: InnerMut<'_> = outer_msg.inner_mut();
     assert_that!(
         inner_msg,
         matches_pattern!(InnerMut{

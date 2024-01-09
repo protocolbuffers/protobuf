@@ -304,7 +304,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
                // TODO: check mutational pathway genn'd correctly
                if (is_mut) {
                  ctx.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
+                  pub fn r#$field$_mut(&mut self) -> $pb$::Mut<'_, $RsType$> {
                     static VTABLE: $pbi$::$vtable$$optional_type_args$ =
                       $pbi$::$vtable$::new(
                         $pbi$::Private,
