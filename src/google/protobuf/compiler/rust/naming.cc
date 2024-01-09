@@ -121,6 +121,38 @@ std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
   return thunkName;
 }
 
+std::string RustModule(Context& ctx, const FileDescriptor& file,
+                       const Descriptor* containing_type) {
+  std::vector<std::string> modules;
+
+  std::vector<std::string> package_modules =
+      absl::StrSplit(file.package(), '.', absl::SkipEmpty());
+
+  modules.insert(modules.begin(), package_modules.begin(),
+                 package_modules.end());
+
+  // Innermost to outermost order.
+  std::vector<std::string> modules_from_containing_types;
+  const Descriptor* parent = containing_type;
+  while (parent != nullptr) {
+    modules_from_containing_types.push_back(absl::StrCat(parent->name(), "_"));
+    parent = parent->containing_type();
+  }
+
+  // Add the modules from containing messages (rbegin/rend to get them in outer
+  // to inner order).
+  modules.insert(modules.end(), modules_from_containing_types.rbegin(),
+                 modules_from_containing_types.rend());
+
+  // If there is any modules at all, push an empty string on the end so that
+  // we get the trailing ::
+  if (!modules.empty()) {
+    modules.push_back("");
+  }
+
+  return absl::StrJoin(modules, "::");
+}
+
 }  // namespace
 
 std::string ThunkName(Context& ctx, const FieldDescriptor& field,
@@ -176,44 +208,12 @@ std::string PrimitiveRsTypeName(const FieldDescriptor& field) {
   return "";
 }
 
-// Constructs a string of the Rust modules which will contain the message.
-//
-// Example: Given a message 'NestedMessage' which is defined in package 'x.y'
-// which is inside 'ParentMessage', the message will be placed in the
-// x::y::ParentMessage_ Rust module, so this function will return the string
-// "x::y::ParentMessage_::".
-//
-// If the message has no package and no containing messages then this returns
-// empty string.
 std::string RustModule(Context& ctx, const Descriptor& msg) {
-  std::vector<std::string> modules;
+  return RustModule(ctx, *msg.file(), msg.containing_type());
+}
 
-  std::vector<std::string> package_modules =
-      absl::StrSplit(msg.file()->package(), '.', absl::SkipEmpty());
-
-  modules.insert(modules.begin(), package_modules.begin(),
-                 package_modules.end());
-
-  // Innermost to outermost order.
-  std::vector<std::string> modules_from_containing_types;
-  const Descriptor* parent = msg.containing_type();
-  while (parent != nullptr) {
-    modules_from_containing_types.push_back(absl::StrCat(parent->name(), "_"));
-    parent = parent->containing_type();
-  }
-
-  // Add the modules from containing messages (rbegin/rend to get them in outer
-  // to inner order).
-  modules.insert(modules.end(), modules_from_containing_types.rbegin(),
-                 modules_from_containing_types.rend());
-
-  // If there is any modules at all, push an empty string on the end so that
-  // we get the trailing ::
-  if (!modules.empty()) {
-    modules.push_back("");
-  }
-
-  return absl::StrJoin(modules, "::");
+std::string RustModule(Context& ctx, const EnumDescriptor& enum_) {
+  return RustModule(ctx, *enum_.file(), enum_.containing_type());
 }
 
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
@@ -223,6 +223,11 @@ std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg) {
   return absl::StrCat(RustModule(ctx, msg), msg.name());
+}
+
+std::string GetCrateRelativeQualifiedPath(Context& ctx,
+                                          const EnumDescriptor& enum_) {
+  return absl::StrCat(RustModule(ctx, enum_), EnumRsName(enum_));
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
