@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -22,7 +23,7 @@ namespace rust {
 // Both strings and bytes are represented as a byte string literal, i.e. in the
 // format `b"default value here"`. It is the caller's responsibility to convert
 // the byte literal to an actual string, if needed.
-std::string DefaultValue(const FieldDescriptor& field);
+std::string DefaultValue(Context& ctx, const FieldDescriptor& field);
 
 }  // namespace rust
 }  // namespace compiler

@@ -25,7 +25,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
           {"field", field.name()},
           {"Scalar", RsTypePath(ctx, field)},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},
-          {"default_value", DefaultValue(field)},
+          {"default_value", DefaultValue(ctx, field)},
           {"getter",
            [&] {
              ctx.Emit({}, R"rs(

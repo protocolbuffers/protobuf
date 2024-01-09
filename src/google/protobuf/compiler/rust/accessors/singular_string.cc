@@ -68,7 +68,7 @@ void SingularString::InMsgImpl(Context& ctx,
                    {
                        {"field", field.name()},
                        {"proxied_type", proxied_type},
-                       {"default_val", DefaultValue(field)},
+                       {"default_val", DefaultValue(ctx, field)},
                        {"view_type", proxied_type},
                        {"transform_field_entry",
                         [&] {

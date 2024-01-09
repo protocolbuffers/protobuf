@@ -204,6 +204,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         ":context",
+        ":naming",
         "//src/google/protobuf",
         "//src/google/protobuf/io:tokenizer",
         "@com_google_absl//absl/log:absl_check",
