@@ -1104,19 +1104,34 @@ class PROTOBUF_EXPORT Reflection final {
   const T& GetRawNonOneof(const Message& message,
                           const FieldDescriptor* field) const;
   template <class T>
-  T* MutableRawNonOneof(Message* message, const FieldDescriptor* field) const;
-
+  const T& GetRawSplit(const Message& message,
+                       const FieldDescriptor* field) const;
   template <typename Type>
   const Type& GetRaw(const Message& message,
                      const FieldDescriptor* field) const;
+
+  void* MutableRawNonOneofImpl(Message* message,
+                               const FieldDescriptor* field) const;
+  void* MutableRawSplitImpl(Message* message,
+                            const FieldDescriptor* field) const;
+  void* MutableRawImpl(Message* message, const FieldDescriptor* field) const;
+
   template <typename Type>
-  inline Type* MutableRaw(Message* message, const FieldDescriptor* field) const;
+  Type* MutableRawNonOneof(Message* message,
+                           const FieldDescriptor* field) const {
+    return reinterpret_cast<Type*>(MutableRawNonOneofImpl(message, field));
+  }
+  template <typename Type>
+  Type* MutableRaw(Message* message, const FieldDescriptor* field) const {
+    return reinterpret_cast<Type*>(MutableRawImpl(message, field));
+  }
+
   template <typename Type>
   const Type& DefaultRaw(const FieldDescriptor* field) const;
 
   const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
 
-  inline const uint32_t* GetHasBits(const Message& message) const;
+  const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;
   uint32_t GetOneofCase(const Message& message,
                         const OneofDescriptor* oneof_descriptor) const;
@@ -1135,9 +1150,8 @@ class PROTOBUF_EXPORT Reflection final {
 
   inline bool IsInlined(const FieldDescriptor* field) const;
 
-  inline bool HasBit(const Message& message,
-                     const FieldDescriptor* field) const;
-  inline void SetBit(Message* message, const FieldDescriptor* field) const;
+  bool HasBit(const Message& message, const FieldDescriptor* field) const;
+  void SetBit(Message* message, const FieldDescriptor* field) const;
   inline void ClearBit(Message* message, const FieldDescriptor* field) const;
   inline void SwapBit(Message* message1, Message* message2,
                       const FieldDescriptor* field) const;
@@ -1187,8 +1201,7 @@ class PROTOBUF_EXPORT Reflection final {
                             const FieldDescriptor* field) const;
   inline void SetOneofCase(Message* message,
                            const FieldDescriptor* field) const;
-  inline void ClearOneofField(Message* message,
-                              const FieldDescriptor* field) const;
+  void ClearOneofField(Message* message, const FieldDescriptor* field) const;
 
   template <typename Type>
   inline const Type& GetField(const Message& message,
@@ -1528,12 +1541,21 @@ void** Reflection::MutableSplitField(Message* message) const {
 
 namespace internal {
 
+// In some cases, (Get|Mutable)Raw may be called with a type that is different
+// from the final type; e.g. char. As a defensive coding to this unfortunate
+// practices, we should only assume extra indirection (or a lack thereof) for
+// the well known, complex types.
 template <typename T>
 bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
-  const bool ret = std::is_base_of<RepeatedFieldBase, T>() ||
-                   std::is_base_of<RepeatedPtrFieldBase, T>();
-  ABSL_DCHECK_EQ(SplitFieldHasExtraIndirection(field), ret);
-  return ret;
+  if (std::is_base_of<RepeatedFieldBase, T>() ||
+      std::is_base_of<RepeatedPtrFieldBase, T>()) {
+    ABSL_DCHECK(SplitFieldHasExtraIndirection(field));
+    return true;
+  } else if (std::is_base_of<MessageLite, T>()) {
+    ABSL_DCHECK(!SplitFieldHasExtraIndirection(field));
+    return false;
+  }
+  return SplitFieldHasExtraIndirection(field);
 }
 
 class RawMessageBase : public Message {
@@ -1545,19 +1567,43 @@ class RawMessageBase : public Message {
 }  // namespace internal
 
 template <typename Type>
-const Type& Reflection::GetRaw(const Message& message,
-                               const FieldDescriptor* field) const {
-  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
-      << "Field = " << field->full_name();
-  const uint32_t field_offset = schema_.GetFieldOffset(field);
-  if (!schema_.IsSplit(field)) {
-    return internal::GetConstRefAtOffset<Type>(message, field_offset);
-  }
+const Type& Reflection::GetRawSplit(const Message& message,
+                                    const FieldDescriptor* field) const {
+  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
+
   const void* split = GetSplitField(&message);
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
   if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
     return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
   }
   return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
+}
+
+template <class Type>
+const Type& Reflection::GetRawNonOneof(const Message& message,
+                                       const FieldDescriptor* field) const {
+  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+    return GetRawSplit<Type>(message, field);
+  }
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  return internal::GetConstRefAtOffset<Type>(message, field_offset);
+}
+
+template <typename Type>
+const Type& Reflection::GetRaw(const Message& message,
+                               const FieldDescriptor* field) const {
+  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+      << "Field = " << field->full_name();
+
+  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+    return GetRawNonOneof<Type>(message, field);
+  }
+
+  // Oneof fields are not split.
+  ABSL_DCHECK(!schema_.IsSplit(field));
+
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
+  return internal::GetConstRefAtOffset<Type>(message, field_offset);
 }
 
 template <typename T>
