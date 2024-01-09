@@ -284,6 +284,12 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
           ? "unsafe { __pb::ProtoStr::from_utf8_unchecked(res).into() }"
           : "res";
 
+  // TODO: support enums which are defined in other crates.
+  auto enum_ = field.enum_type();
+  if (enum_ != nullptr && !IsInCurrentlyGeneratingCrate(ctx, *enum_)) {
+    return;
+  }
+
   ctx.Emit({{"field", fieldName},
             {"getter_thunk", getter_thunk},
             {"setter_thunk", setter_thunk},
@@ -335,9 +341,7 @@ void AccessorsForViewOrMut(Context& ctx, const Descriptor& msg, bool is_mut) {
     // TODO - add cord support
     if (field.options().has_ctype()) continue;
     // TODO
-    if (field.type() == FieldDescriptor::TYPE_ENUM ||
-        field.type() == FieldDescriptor::TYPE_GROUP)
-      continue;
+    if (field.type() == FieldDescriptor::TYPE_GROUP) continue;
     GetterForViewOrMut(ctx, field, is_mut);
     ctx.printer().PrintRaw("\n");
   }

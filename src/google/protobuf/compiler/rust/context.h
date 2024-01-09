@@ -117,6 +117,7 @@ class Context {
 
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message);
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_);
 
 }  // namespace rust
 }  // namespace compiler

@@ -15,6 +15,11 @@ message Outer {
       optional bool flag = 1;
     }
 
+    enum InnerEnum {
+      INNER_ENUM_UNSPECIFIED = 0;
+      INNER_ENUM_FOO = 1;
+    }
+
     optional double double = 1;
     optional float float = 2;
     optional int32 int32 = 3;
@@ -31,6 +36,7 @@ message Outer {
     optional string string = 14;
     optional bytes bytes = 15;
     optional InnerSubMsg innersubmsg = 16;
+    optional InnerEnum inner_enum = 17;
 
     message SuperInner {
       message DuperInner {

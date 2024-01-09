@@ -76,6 +76,10 @@ bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message) {
   return IsInCurrentlyGeneratingCrate(ctx, *message.file());
 }
 
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_) {
+  return IsInCurrentlyGeneratingCrate(ctx, *enum_.file());
+}
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

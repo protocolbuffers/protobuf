@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -117,6 +119,13 @@ void SingularScalar::InMsgImpl(Context& ctx,
 
 void SingularScalar::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
+  // In order to soundly pass a Rust type to C/C++ as a function argument,
+  // the types must be FFI-compatible.
+  // This requires special consideration for enums, which aren't trivial
+  // primitive types. Rust protobuf enums are defined as `#[repr(transparent)]`
+  // over `i32`, making them ABI-compatible with `int32_t`.
+  // Upb defines enum thunks as taking `int32_t`, and so we can pass Rust enums
+  // directly to thunks without any cast.
   ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
             {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
@@ -141,8 +150,21 @@ void SingularScalar::InExternC(Context& ctx,
 
 void SingularScalar::InThunkCc(Context& ctx,
                                const FieldDescriptor& field) const {
+  std::string scalar;
+  auto enum_ = field.enum_type();
+  if (enum_ != nullptr) {
+    // The C++ runtime defines its thunks as receiving enum types.
+    // This is fine since:
+    // - the C++ runtime represents enums as `int`
+    // - the C++ runtime guarantees `int` is a `int32_t`.
+    // - Rust gencode defines enums as `#[repr(transparent)]` over `i32`.
+    scalar = cpp::QualifiedClassName(enum_);
+  } else {
+    scalar = cpp::PrimitiveTypeName(field.cpp_type());
+  }
+
   ctx.Emit({{"field", cpp::FieldName(&field)},
-            {"Scalar", cpp::PrimitiveTypeName(field.cpp_type())},
+            {"Scalar", scalar},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
             {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
