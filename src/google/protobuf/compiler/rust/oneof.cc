@@ -92,15 +92,13 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_FLOAT:
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
-      return PrimitiveRsTypeName(field);
+      return RsTypePath(ctx, field);
     case FieldDescriptor::TYPE_BYTES:
       return "&'msg [u8]";
     case FieldDescriptor::TYPE_STRING:
       return "&'msg ::__pb::ProtoStr";
     case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat(
-          "::__pb::View<'msg, crate::",
-          GetCrateRelativeQualifiedPath(ctx, *field.message_type()), ">");
+      return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
       return "";
@@ -130,12 +128,8 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_BOOL:
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_STRING:
-      return absl::StrCat("::__pb::Mut<'msg, ", PrimitiveRsTypeName(field),
-                          ">");
     case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat(
-          "::__pb::Mut<'msg, crate::",
-          GetCrateRelativeQualifiedPath(ctx, *field.message_type()), ">");
+      return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
       return "";

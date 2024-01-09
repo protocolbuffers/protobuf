@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -19,8 +21,7 @@ namespace rust {
 
 void SingularMessage::InMsgImpl(Context& ctx,
                                 const FieldDescriptor& field) const {
-  auto& msg = *field.message_type();
-  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(ctx, msg);
+  std::string prefix = RsTypePath(ctx, field);
 
   ctx.Emit(
       {

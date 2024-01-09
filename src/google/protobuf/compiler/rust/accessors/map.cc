@@ -22,8 +22,8 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
   auto& value_type = *field.message_type()->map_value();
 
   ctx.Emit({{"field", field.name()},
-            {"Key", PrimitiveRsTypeName(key_type)},
-            {"Value", PrimitiveRsTypeName(value_type)},
+            {"Key", RsTypePath(ctx, key_type)},
+            {"Value", RsTypePath(ctx, value_type)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",

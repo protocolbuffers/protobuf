@@ -25,7 +25,7 @@ void SingularString::InMsgImpl(Context& ctx,
   std::string hazzer_thunk = ThunkName(ctx, field, "has");
   std::string getter_thunk = ThunkName(ctx, field, "get");
   std::string setter_thunk = ThunkName(ctx, field, "set");
-  std::string proxied_type = PrimitiveRsTypeName(field);
+  std::string proxied_type = RsTypePath(ctx, field);
   auto transform_view = [&] {
     if (field.type() == FieldDescriptor::TYPE_STRING) {
       ctx.Emit(R"rs(

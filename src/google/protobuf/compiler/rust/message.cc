@@ -233,7 +233,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
     if (!IsInCurrentlyGeneratingCrate(ctx, msg)) {
       return;
     }
-    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(ctx, msg);
+    auto prefix = RsTypePath(ctx, field);
     ctx.Emit(
         {
             {"prefix", prefix},
@@ -270,7 +270,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
     return;
   }
 
-  auto rsType = PrimitiveRsTypeName(field);
+  auto rsType = RsTypePath(ctx, field);
   auto asRef = IsStringOrBytes(fieldType) ? ".as_ref()" : "";
   auto vtable =
       IsStringOrBytes(fieldType) ? "BytesMutVTable" : "PrimitiveVTable";

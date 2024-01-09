@@ -175,7 +175,7 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
                       op);
 }
 
-std::string PrimitiveRsTypeName(const FieldDescriptor& field) {
+std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
   switch (field.type()) {
     case FieldDescriptor::TYPE_BOOL:
       return "bool";
@@ -201,6 +201,14 @@ std::string PrimitiveRsTypeName(const FieldDescriptor& field) {
       return "[u8]";
     case FieldDescriptor::TYPE_STRING:
       return "::__pb::ProtoStr";
+    case FieldDescriptor::TYPE_MESSAGE:
+      // TODO: Fix depending on types from other proto_libraries.
+      return absl::StrCat(
+          "crate::", GetCrateRelativeQualifiedPath(ctx, *field.message_type()));
+    case FieldDescriptor::TYPE_ENUM:
+      // TODO: Fix depending on types from other proto_libraries.
+      return absl::StrCat(
+          "crate::", GetCrateRelativeQualifiedPath(ctx, *field.enum_type()));
     default:
       break;
   }

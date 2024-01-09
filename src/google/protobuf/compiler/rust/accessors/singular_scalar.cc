@@ -23,7 +23,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
   ctx.Emit(
       {
           {"field", field.name()},
-          {"Scalar", PrimitiveRsTypeName(field)},
+          {"Scalar", RsTypePath(ctx, field)},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},
           {"default_value", DefaultValue(field)},
           {"getter",
@@ -117,7 +117,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
 
 void SingularScalar::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
-  ctx.Emit({{"Scalar", PrimitiveRsTypeName(field)},
+  ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
             {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"setter_thunk", ThunkName(ctx, field, "set")},
