@@ -120,8 +120,8 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         ":context",
+        ":naming",
         "//src/google/protobuf",
-        "//src/google/protobuf/compiler/cpp:names_internal",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
@@ -151,6 +151,7 @@ cc_library(
         ":context",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names_internal",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],

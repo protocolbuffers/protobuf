@@ -24,8 +24,8 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/types/span.h"
-#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -34,11 +34,6 @@ namespace compiler {
 namespace rust {
 
 namespace {
-
-std::string EnumName(const EnumDescriptor& desc) {
-  return cpp::UnderscoresToCamelCase(desc.name(), /*cap first letter=*/true);
-}
-
 // Constructs input for `EnumValues` from an enum descriptor.
 std::vector<std::pair<absl::string_view, int32_t>> EnumValuesInput(
     const EnumDescriptor& desc) {
@@ -126,46 +121,8 @@ std::vector<RustEnumValue> EnumValues(
   return result;
 }
 
-std::string CamelToSnakeCase(absl::string_view input) {
-  std::string result;
-  result.reserve(input.size() + 4);  // No reallocation for 4 _
-  bool is_first_character = true;
-  bool last_char_was_underscore = false;
-  for (const char c : input) {
-    if (!is_first_character && absl::ascii_isupper(c) &&
-        !last_char_was_underscore) {
-      result += '_';
-    }
-    last_char_was_underscore = c == '_';
-    result += absl::ascii_tolower(c);
-    is_first_character = false;
-  }
-  return result;
-}
-
-std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
-  std::string result;
-  bool cap_next_letter = true;
-  for (const char c : input) {
-    if (absl::ascii_isalpha(c)) {
-      if (cap_next_letter) {
-        result += absl::ascii_toupper(c);
-      } else {
-        result += absl::ascii_tolower(c);
-      }
-      cap_next_letter = false;
-    } else if (absl::ascii_isdigit(c)) {
-      result += c;
-      cap_next_letter = true;
-    } else {
-      cap_next_letter = true;
-    }
-  }
-  return result;
-}
-
 void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
-  std::string name = EnumName(desc);
+  std::string name = EnumRsName(desc);
   ABSL_CHECK(desc.value_count() > 0);
   std::vector<RustEnumValue> values =
       EnumValues(desc.name(), EnumValuesInput(desc));

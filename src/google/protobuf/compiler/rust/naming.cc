@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
@@ -18,6 +19,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
@@ -236,6 +238,71 @@ std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
   }
 
   return comment;
+}
+
+std::string EnumRsName(const EnumDescriptor& desc) {
+  return SnakeToUpperCamelCase(desc.name());
+}
+
+std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
+  return SnakeToUpperCamelCase(oneof.name());
+}
+
+std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
+  return SnakeToUpperCamelCase(oneof.name()) + "Mut";
+}
+
+std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
+  // Note: This is the name used for the cpp Case enum, we use it for both
+  // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
+  return SnakeToUpperCamelCase(oneof.name()) + "Case";
+}
+
+std::string OneofCaseRsName(const FieldDescriptor& oneof_field) {
+  return SnakeToUpperCamelCase(oneof_field.name());
+}
+
+std::string CamelToSnakeCase(absl::string_view input) {
+  std::string result;
+  result.reserve(input.size() + 4);  // No reallocation for 4 _
+  bool is_first_character = true;
+  bool last_char_was_underscore = false;
+  for (const char c : input) {
+    if (!is_first_character && absl::ascii_isupper(c) &&
+        !last_char_was_underscore) {
+      result += '_';
+    }
+    last_char_was_underscore = c == '_';
+    result += absl::ascii_tolower(c);
+    is_first_character = false;
+  }
+  return result;
+}
+
+std::string SnakeToUpperCamelCase(absl::string_view input) {
+  return cpp::UnderscoresToCamelCase(input, /*cap first letter=*/true);
+}
+
+std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
+  std::string result;
+  result.reserve(input.size());
+  bool cap_next_letter = true;
+  for (const char c : input) {
+    if (absl::ascii_isalpha(c)) {
+      if (cap_next_letter) {
+        result += absl::ascii_toupper(c);
+      } else {
+        result += absl::ascii_tolower(c);
+      }
+      cap_next_letter = false;
+    } else if (absl::ascii_isdigit(c)) {
+      result += c;
+      cap_next_letter = true;
+    } else {
+      cap_next_letter = true;
+    }
+  }
+  return result;
 }
 
 }  // namespace rust

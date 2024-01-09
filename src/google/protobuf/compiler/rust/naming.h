@@ -35,12 +35,30 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
 
 std::string PrimitiveRsTypeName(const FieldDescriptor& field);
 
+std::string EnumRsName(const EnumDescriptor& desc);
+
+std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
+std::string OneofMutEnumRsName(const OneofDescriptor& oneof);
+std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
+std::string OneofCaseRsName(const FieldDescriptor& oneof_field);
+
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);
 
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
+
+// TODO: Unify these with other case-conversion functions.
+
+// Converts an UpperCamel or lowerCamel string to a snake_case string.
+std::string CamelToSnakeCase(absl::string_view input);
+
+// Converts a snake_case string to an UpperCamelCase string.
+std::string SnakeToUpperCamelCase(absl::string_view input);
+
+// Converts a SCREAMING_SNAKE_CASE string to an UpperCamelCase string.
+std::string ScreamingSnakeToUpperCamelCase(absl::string_view input);
 
 }  // namespace rust
 }  // namespace compiler
