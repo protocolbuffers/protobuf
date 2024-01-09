@@ -11,13 +11,22 @@ use nested_proto::nest::Outer_::InnerMut;
 use nested_proto::nest::Outer_::InnerView;
 
 #[test]
-fn test_deeply_nested_definition() {
+fn test_deeply_nested_message() {
     let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
             ::CantBelieveItsSoInner::new();
     assert_that!(deep.num(), eq(0));
 
     let outer_msg = Outer::new();
     assert_that!(outer_msg.deep().num(), eq(0));
+}
+
+#[test]
+fn test_deeply_nested_enum() {
+    let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
+            ::JustWayTooInner::default();
+    assert_that!(i32::from(deep), eq(0));
+
+    // TODO: Test deeply nested enum field access.
 }
 
 #[test]

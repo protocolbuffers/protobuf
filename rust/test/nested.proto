@@ -38,6 +38,10 @@ message Outer {
           message CantBelieveItsSoInner {
             optional int32 num = 99;
           }
+
+          enum JustWayTooInner {
+            JUST_WAY_TOO_INNER_UNSPECIFIED = 0;
+          }
         }
       }
     }
@@ -45,6 +49,9 @@ message Outer {
   optional Inner inner = 1;
   optional .nest.Outer.Inner.SuperInner.DuperInner.EvenMoreInner
       .CantBelieveItsSoInner deep = 2;
+
+  optional .nest.Outer.Inner.SuperInner.DuperInner.EvenMoreInner.JustWayTooInner
+      deep_enum = 4;
 
   optional NotInside notinside = 3;
 }
