@@ -86,27 +86,6 @@ public class RubyFileDescriptor extends RubyObject {
     return name == null ? context.nil : context.runtime.newString(name);
   }
 
-  /*
-   * call-seq:
-   *     FileDescriptor.syntax => syntax
-   *
-   * Returns this file descriptors syntax.
-   *
-   * Valid syntax versions are:
-   *     :proto2 or :proto3.
-   */
-  @JRubyMethod(name = "syntax")
-  public IRubyObject getSyntax(ThreadContext context) {
-    switch (LegacyFileDescriptor.getSyntax(fileDescriptor)) {
-      case PROTO2:
-        return context.runtime.newSymbol("proto2");
-      case PROTO3:
-        return context.runtime.newSymbol("proto3");
-      default:
-        return context.nil;
-    }
-  }
-
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
     RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);

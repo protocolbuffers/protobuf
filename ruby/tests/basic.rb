@@ -553,12 +553,10 @@ module BasicTest
       file_descriptor = TestMessage.descriptor.file_descriptor
       refute_nil file_descriptor
       assert_equal "basic_test.proto", file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
       assert_equal "basic_test.proto", file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
     end
 
     def test_map_freeze
@@ -637,6 +635,17 @@ module BasicTest
       assert_raises NoMethodError do
         msg.map_string_int32_as_value = :boom
       end
+    end
+
+    def test_has_presence
+      assert_true TestMessage.descriptor.lookup("optional_int32").has_presence?
+      assert_false TestMessage.descriptor.lookup("repeated_int32").has_presence?
+      assert_false TestSingularFields.descriptor.lookup("singular_int32").has_presence?
+    end
+
+    def test_is_packed
+      assert_false TestMessage.descriptor.lookup("optional_int32").is_packed?
+      assert_true TestMessage.descriptor.lookup("repeated_int32").is_packed?
     end
 
     def test_file_descriptor_options
