@@ -1,6 +1,7 @@
 load("@rules_python//python:proto.bzl", "py_proto_library")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
+load("//tools/build_defs/js/jspb_proto_library:rules.bzl", "jspb_proto_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
