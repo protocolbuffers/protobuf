@@ -8,6 +8,7 @@
 #ifndef UPB_MESSAGE_INTERNAL_ARRAY_H_
 #define UPB_MESSAGE_INTERNAL_ARRAY_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/mem/arena.h"
@@ -33,7 +34,7 @@ struct upb_Array {
   //   3 maps to elem size 16
   //
   // Bit #2 contains the frozen/immutable flag (currently unimplemented).
-  uintptr_t data;
+  uintptr_t UPB_ONLYBITS(data);
 
   size_t UPB_ONLYBITS(size);     // The number of elements in the array.
   size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
@@ -44,19 +45,19 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(struct upb_Array* array,
   UPB_ASSERT(lg2 != 1);
   UPB_ASSERT(lg2 <= 4);
   const size_t bits = lg2 - (lg2 != 0);
-  array->data = (uintptr_t)data | bits;
+  array->UPB_ONLYBITS(data) = (uintptr_t)data | bits;
 }
 
 UPB_INLINE size_t
 UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
-  const size_t bits = array->data & _UPB_ARRAY_MASK_LG2;
+  const size_t bits = array->UPB_ONLYBITS(data) & _UPB_ARRAY_MASK_LG2;
   const size_t lg2 = bits + (bits != 0);
   return lg2;
 }
 
 UPB_INLINE const void* _upb_array_constptr(const struct upb_Array* array) {
   UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
-  return (void*)(array->data & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
+  return (void*)(array->UPB_ONLYBITS(data) & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
 }
 
 UPB_INLINE void* _upb_array_ptr(struct upb_Array* array) {
