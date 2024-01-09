@@ -110,8 +110,8 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
         match msg {
           None => Err($pb$::ParseError),
           Some(msg) => {
-            // This assignment causes self.arena to be dropped and to deallocate
-            // any previous message pointed/owned to by self.inner.msg.
+            //~ This assignment causes self.arena to be dropped and to deallocate
+            //~ any previous message pointed/owned to by self.inner.msg.
             self.inner.arena = arena;
             self.inner.msg = msg;
             Ok(())
@@ -437,7 +437,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             {"settable_impl", [&] { MessageSettableValue(ctx, msg); }}},
            R"rs(
         #[allow(non_camel_case_types)]
-        // TODO: Implement support for debug redaction
+        //~ TODO: Implement support for debug redaction
         #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner

@@ -36,11 +36,11 @@ void SingularMessage::InMsgImpl(Context& ctx,
                 if (ctx.is_upb()) {
                   ctx.Emit({}, R"rs(
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-              // For upb, getters return null if the field is unset, so we need
-              // to check for null and return the default instance manually.
-              // Note that a nullptr received from upb manifests as Option::None
+              //~ For upb, getters return null if the field is unset, so we need
+              //~ to check for null and return the default instance manually.
+              //~ Note that a nullptr received from upb manifests as Option::None
               match submsg {
-                // TODO:(b/304357029)
+                //~ TODO:(b/304357029)
                 None => $prefix$View::new($pbi$::Private,
                         $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
                 Some(field) => $prefix$View::new($pbi$::Private, field),
@@ -48,8 +48,8 @@ void SingularMessage::InMsgImpl(Context& ctx,
         )rs");
                 } else {
                   ctx.Emit({}, R"rs(
-              // For C++ kernel, getters automatically return the
-              // default_instance if the field is unset.
+              //~ For C++ kernel, getters automatically return the
+              //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
               $prefix$View::new($pbi$::Private, submsg)
         )rs");
