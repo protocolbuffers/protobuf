@@ -357,8 +357,6 @@ void FileGenerator::Generate(io::Printer* printer) {
   if (HasDescriptorMethods(file_, context_->EnforceLite())) {
     if (immutable_api_) {
       GenerateDescriptorInitializationCodeForImmutable(printer);
-    } else {
-      GenerateDescriptorInitializationCodeForMutable(printer);
     }
   } else {
     printer->Print("static {\n");
@@ -491,109 +489,6 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   printer->Print("}\n");
 }
 
-void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
-    io::Printer* printer) {
-  printer->Print(
-      "public static com.google.protobuf.Descriptors.FileDescriptor\n"
-      "    getDescriptor() {\n"
-      "  return descriptor;\n"
-      "}\n"
-      "private static final com.google.protobuf.Descriptors.FileDescriptor\n"
-      "    descriptor;\n"
-      "static {\n");
-  printer->Indent();
-
-  printer->Print(
-      "descriptor = $immutable_package$.$descriptor_classname$.descriptor;\n",
-      "immutable_package", FileJavaPackage(file_, true, options_),
-      "descriptor_classname", name_resolver_->GetDescriptorClassName(file_));
-
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    message_generators_[i]->GenerateStaticVariableInitializers(printer);
-  }
-  for (int i = 0; i < file_->extension_count(); i++) {
-    extension_generators_[i]->GenerateNonNestedInitializationCode(printer);
-  }
-
-  // Check if custom options exist. If any, try to load immutable classes since
-  // custom options are only represented with immutable messages.
-  FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
-  std::string file_data;
-  file_proto.SerializeToString(&file_data);
-  FieldDescriptorSet extensions;
-  CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
-
-  if (!extensions.empty()) {
-    // Try to load immutable messages' outer class. Its initialization code
-    // will take care of interpreting custom options.
-    printer->Print(
-        "try {\n"
-        // Note that we have to load the immutable class dynamically here as
-        // we want the mutable code to be independent from the immutable code
-        // at compile time. It is required to implement dual-compile for
-        // mutable and immutable API in blaze.
-        "  java.lang.Class<?> immutableClass = java.lang.Class.forName(\n"
-        "      \"$immutable_classname$\");\n"
-        "} catch (java.lang.ClassNotFoundException e) {\n",
-        "immutable_classname", name_resolver_->GetImmutableClassName(file_));
-    printer->Indent();
-
-    // The immutable class can not be found. We try our best to collect all
-    // custom option extensions to interpret the custom options.
-    printer->Print(
-        "com.google.protobuf.ExtensionRegistry registry =\n"
-        "    com.google.protobuf.ExtensionRegistry.newInstance();\n"
-        "com.google.protobuf.MessageLite defaultExtensionInstance = null;\n");
-
-    for (const FieldDescriptor* field : extensions) {
-      std::string scope;
-      if (field->extension_scope() != NULL) {
-        scope = absl::StrCat(
-            name_resolver_->GetMutableClassName(field->extension_scope()),
-            ".getDescriptor()");
-      } else {
-        scope =
-            absl::StrCat(FileJavaPackage(field->file(), true, options_), ".",
-                         name_resolver_->GetDescriptorClassName(field->file()),
-                         ".descriptor");
-      }
-      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        printer->Print(
-            "defaultExtensionInstance = com.google.protobuf.Internal\n"
-            "    .getDefaultInstance(\"$class$\");\n"
-            "if (defaultExtensionInstance != null) {\n"
-            "  registry.add(\n"
-            "      $scope$.getExtensions().get($index$),\n"
-            "      (com.google.protobuf.Message) defaultExtensionInstance);\n"
-            "}\n",
-            "scope", scope, "index", absl::StrCat(field->index()), "class",
-            name_resolver_->GetImmutableClassName(field->message_type()));
-      } else {
-        printer->Print("registry.add($scope$.getExtensions().get($index$));\n",
-                       "scope", scope, "index", absl::StrCat(field->index()));
-      }
-    }
-    printer->Print(
-        "com.google.protobuf.Descriptors.FileDescriptor\n"
-        "    .internalUpdateFileDescriptor(descriptor, registry);\n");
-
-    printer->Outdent();
-    printer->Print("}\n");
-  }
-
-  // Force descriptor initialization of all dependencies.
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    if (ShouldIncludeDependency(file_->dependency(i), false)) {
-      std::string dependency =
-          name_resolver_->GetMutableClassName(file_->dependency(i));
-      printer->Print("$dependency$.getDescriptor();\n", "dependency",
-                     dependency);
-    }
-  }
-
-  printer->Outdent();
-  printer->Print("}\n");
-}
 
 template <typename GeneratorClass, typename DescriptorClass>
 static void GenerateSibling(
