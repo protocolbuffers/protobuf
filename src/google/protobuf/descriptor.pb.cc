@@ -1887,23 +1887,23 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "ile\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n"
     "\010semantic\030\005 \001(\01626.google.protobuf.Genera"
     "tedCodeInfo.Annotation.Semantic\"(\n\010Seman"
-    "tic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS\020\002*\377\001\n\007Ed"
+    "tic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS\020\002*\222\002\n\007Ed"
     "ition\022\023\n\017EDITION_UNKNOWN\020\000\022\023\n\016EDITION_PR"
     "OTO2\020\346\007\022\023\n\016EDITION_PROTO3\020\347\007\022\021\n\014EDITION_"
-    "2023\020\350\007\022\027\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023EDIT"
-    "ION_2_TEST_ONLY\020\002\022\035\n\027EDITION_99997_TEST_"
-    "ONLY\020\235\215\006\022\035\n\027EDITION_99998_TEST_ONLY\020\236\215\006\022"
-    "\035\n\027EDITION_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDITIO"
-    "N_MAX\020\377\377\377\377\007B~\n\023com.google.protobufB\020Desc"
-    "riptorProtosH\001Z-google.golang.org/protob"
-    "uf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google."
-    "Protobuf.Reflection"
+    "2023\020\350\007\022\021\n\014EDITION_2024\020\351\007\022\027\n\023EDITION_1_"
+    "TEST_ONLY\020\001\022\027\n\023EDITION_2_TEST_ONLY\020\002\022\035\n\027"
+    "EDITION_99997_TEST_ONLY\020\235\215\006\022\035\n\027EDITION_9"
+    "9998_TEST_ONLY\020\236\215\006\022\035\n\027EDITION_99999_TEST"
+    "_ONLY\020\237\215\006\022\023\n\013EDITION_MAX\020\377\377\377\377\007B~\n\023com.go"
+    "ogle.protobufB\020DescriptorProtosH\001Z-googl"
+    "e.golang.org/protobuf/types/descriptorpb"
+    "\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    9539,
+    9558,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -2342,7 +2342,7 @@ const ::google::protobuf::EnumDescriptor* Edition_descriptor() {
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];
 }
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
-    196608u, 458752u, 99997u, 999u, 99999u, 998u, 1000u, 99998u, 2147483647u, };
+    196608u, 524288u, 99997u, 1000u, 99999u, 999u, 1001u, 99998u, 2147483647u, 998u, };
 bool Edition_IsValid(int value) {
   return ::_pbi::ValidateEnum(value, Edition_internal_data_);
 }
