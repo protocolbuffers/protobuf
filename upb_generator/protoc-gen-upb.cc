@@ -13,22 +13,21 @@
 #include <cstdlib>
 #include <limits>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
 #include "upb_generator/common.h"
@@ -261,7 +260,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
-          return _upb_Message_HasExtensionField((upb_Message*)msg, &$3);
+          return upb_Message_HasExtension((upb_Message*)msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
@@ -416,7 +415,7 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
             const upb_MiniTableField field = $2;
-            return _upb_Message_HasNonExtensionField(UPB_UPCAST(msg), &field);
+            return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
           }
         )cc",
         msg_name, resolved_name, FieldInitializer(pools, field, options));

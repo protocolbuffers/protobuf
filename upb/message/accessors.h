@@ -57,14 +57,14 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   UPB_PRIVATE(_upb_Message_ClearExtension)(msg, e);
 }
 
-UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
-                                         const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    return _upb_Message_HasExtensionField(msg, ext);
-  } else {
-    return _upb_Message_HasNonExtensionField(msg, field);
-  }
+UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
+                                             const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_Message_HasBaseField)(msg, f);
+}
+
+UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
+                                             const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_Message_HasExtension)(msg, e);
 }
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(

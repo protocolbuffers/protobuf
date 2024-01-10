@@ -80,10 +80,12 @@ TEST(GeneratedCode, DeepCloneMessageScalarAndString) {
   // After cloning overwrite values and destroy source arena for MSAN.
   memset(string_in_arena, 0, sizeof(kTestStr1));
   upb_Arena_Free(source_arena);
-  EXPECT_TRUE(upb_Message_HasField(UPB_UPCAST(clone), optional_int32_field));
+  EXPECT_TRUE(
+      upb_Message_HasBaseField(UPB_UPCAST(clone), optional_int32_field));
   EXPECT_EQ(upb_Message_GetInt32(UPB_UPCAST(clone), optional_int32_field, 0),
             kTestInt32);
-  EXPECT_TRUE(upb_Message_HasField(UPB_UPCAST(clone), optional_string_field));
+  EXPECT_TRUE(
+      upb_Message_HasBaseField(UPB_UPCAST(clone), optional_string_field));
   EXPECT_EQ(upb_Message_GetString(UPB_UPCAST(clone), optional_string_field,
                                   upb_StringView_FromDataAndSize(nullptr, 0))
                 .size,
@@ -120,7 +122,8 @@ TEST(GeneratedCode, DeepCloneMessageSubMessage) {
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(nested,
                                                                        0);
   upb_Arena_Free(source_arena);
-  EXPECT_TRUE(upb_Message_HasField(UPB_UPCAST(clone), nested_message_field));
+  EXPECT_TRUE(
+      upb_Message_HasBaseField(UPB_UPCAST(clone), nested_message_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*
       cloned_nested =
           (protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*)

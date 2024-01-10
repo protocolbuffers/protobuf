@@ -372,7 +372,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   const upb_MiniTableField* submsg_field =
       upb_MiniTable_FindFieldByNumber(mini_table, 5);
   ASSERT_TRUE(submsg_field != nullptr);
-  EXPECT_TRUE(upb_Message_HasField(msg, submsg_field));
+  EXPECT_TRUE(upb_Message_HasBaseField(msg, submsg_field));
   upb_TaggedMessagePtr tagged =
       upb_Message_GetTaggedMessagePtr(msg, submsg_field, nullptr);
   EXPECT_TRUE(upb_TaggedMessagePtr_IsEmpty(tagged));

@@ -265,6 +265,7 @@ bootstrap_cc_binary(
     deps = [
         "//upb:base",
         "//upb:mem",
+        "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
         "@com_google_absl//absl/container:flat_hash_map",
