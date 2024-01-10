@@ -129,6 +129,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Adds SerialArena to the chunked list. May create a new chunk.
   void AddSerialArena(void* id, SerialArena* serial);
 
+  void UnpoisonAllArenaBlocks() const;
+
   // Members are declared here to track sizeof(ThreadSafeArena) and hotness
   // centrally.
 

@@ -932,6 +932,7 @@ message TestOneof2 {
   message NestedMessage {
     optional int64 moo_int = 1;
     repeated int32 corge_int = 2;
+    optional NestedMessage child = 3;
   }
 
   enum NestedEnum {
