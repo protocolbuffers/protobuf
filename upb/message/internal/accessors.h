@@ -111,12 +111,12 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_ClearOneofCase)(
 
 // LINT.ThenChange(GoogleInternalName2)
 
-UPB_INLINE void* UPB_PRIVATE(_upb_Message_DataPtr)(
+UPB_INLINE void* UPB_PRIVATE(_upb_Message_MutableDataPtr)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (char*)msg + f->UPB_ONLYBITS(offset);
 }
 
-UPB_INLINE const void* UPB_PRIVATE(_upb_Message_ConstDataPtr)(
+UPB_INLINE const void* UPB_PRIVATE(_upb_Message_DataPtr)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   return (const char*)msg + f->UPB_ONLYBITS(offset);
 }
@@ -242,7 +242,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
     return;
   }
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (field, val, UPB_PRIVATE(_upb_Message_ConstDataPtr)(msg, field));
+  (field, val, UPB_PRIVATE(_upb_Message_DataPtr)(msg, field));
 }
 
 UPB_INLINE void _upb_Message_GetExtensionField(
@@ -290,7 +290,7 @@ UPB_INLINE void _upb_Message_SetNonExtensionField(
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (field, UPB_PRIVATE(_upb_Message_DataPtr)(msg, field), val);
+  (field, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, field), val);
 }
 
 UPB_INLINE bool _upb_Message_SetExtensionField(
@@ -315,7 +315,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearBaseField)(
   }
   const char zeros[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (f, UPB_PRIVATE(_upb_Message_DataPtr)(msg, f), zeros);
+  (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), zeros);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
