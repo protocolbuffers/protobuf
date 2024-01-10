@@ -25,7 +25,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
-#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
@@ -256,7 +255,7 @@ std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
 }
 
 void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
-                               const Options& options, Output& output) {
+                               Output& output) {
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
@@ -308,31 +307,6 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
         CTypeConst(ext), ExtensionIdentBase(ext), ext.name(),
         MessageName(ext.containing_type()), ExtensionLayout(ext),
         GetFieldRep(pools, ext));
-
-    // Message extensions also have a Msg_mutable_foo() accessor that will
-    // create the sub-message if it doesn't already exist.
-    if (ext.ctype() == kUpb_CType_Message &&
-        !UPB_DESC(MessageOptions_map_entry)(ext.containing_type().options())) {
-      output(
-          R"cc(
-            UPB_INLINE struct $0* $1_mutable_$2(struct $3* msg,
-                                                upb_Arena* arena) {
-              const upb_MiniTableExtension* ext = &$4;
-              UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
-              UPB_ASSUME(upb_MiniTableField_IsSubMessage(&ext->UPB_PRIVATE(field)));
-              UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
-                             &ext->UPB_PRIVATE(field)) == $5);
-              upb_Message* ret;
-              bool ok = _upb_Message_GetOrCreateExtensionSubmessage(
-                  (upb_Message*)msg, ext, &ret, arena);
-              if (!ok) return NULL;
-              return ($0*)ret;
-            }
-          )cc",
-          MessageName(ext.message_type()), ExtensionIdentBase(ext), ext.name(),
-          MessageName(ext.containing_type()), ExtensionLayout(ext),
-          GetFieldRep(pools, ext));
-    }
   }
 }
 
@@ -952,7 +926,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 
   for (auto ext : this_file_exts) {
-    GenerateExtensionInHeader(pools, ext, options, output);
+    GenerateExtensionInHeader(pools, ext, output);
   }
 
   if (absl::string_view(file.name()) == "google/protobuf/descriptor.proto" ||

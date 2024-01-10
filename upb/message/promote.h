@@ -42,15 +42,6 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, const upb_Extension** extension);
 
-// Returns a mutable message extension, promotes an unknown field to a mutable
-// extension, or creates a new extension.
-//
-// TODO Only supports extension fields that are messages,
-// expand support to include non-message types.
-upb_GetExtension_Status upb_MiniTable_GetOrPromoteOrCreateExtension(
-    upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena, upb_Extension** extension);
-
 typedef enum {
   kUpb_FindUnknown_Ok,
   kUpb_FindUnknown_NotPresent,

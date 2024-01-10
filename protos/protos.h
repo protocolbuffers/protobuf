@@ -18,7 +18,6 @@
 #include "upb/message/copy.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
-#include "upb/message/promote.h"
 #include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
@@ -428,25 +427,6 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return GetExtension(protos::Ptr(message), id);
-}
-
-template <int&..., typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>, typename = EnableIfMutableProto<T>>
-absl::StatusOr<Ptr<Extension>> MutableExtension(
-    Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  upb_Arena* arena = ::protos::internal::GetArena(message);
-  upb_Extension* ext;
-  upb_GetExtension_Status status = upb_MiniTable_GetOrPromoteOrCreateExtension(
-      internal::GetInternalMsg(message), id.mini_table_ext(), 0, arena, &ext);
-  if (status == kUpb_GetExtension_OutOfMemory) {
-    return MessageAllocationError();
-  } else if (status != kUpb_GetExtension_Ok) {
-    return ExtensionNotFoundError(
-        upb_MiniTableExtension_Number(id.mini_table_ext()));
-  }
-  return Ptr<Extension>(::protos::internal::CreateMessageProxy<Extension>(
-      static_cast<upb_Message*>(ext->data.ptr), arena));
 }
 
 template <typename T>

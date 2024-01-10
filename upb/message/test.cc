@@ -104,13 +104,6 @@ TEST(MessageTest, Extensions) {
                              defpool.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
   VerifyMessage(ext_msg3);
-
-  // Test setters and mutable accessors
-  upb_test_TestExtensions* ext_msg4 = upb_test_TestExtensions_new(arena.ptr());
-  upb_test_TestExtensions_set_optional_int32_ext(ext_msg4, 123, arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
-      upb_test_mutable_optional_msg_ext(ext_msg4, arena.ptr()), 456);
-  VerifyMessage(ext_msg4);
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
