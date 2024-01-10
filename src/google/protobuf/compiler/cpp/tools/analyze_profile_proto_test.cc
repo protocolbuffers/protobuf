@@ -184,12 +184,12 @@ TEST(AnalyzeProfileProtoTest, PrintStatistics) {
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
                R"(Message google::protobuf::compiler::tools::AnalyzeThis
-  int32 id: RARELY_USED
-  string optional_string: RARELY_USED
-  string[] repeated_string: LIKELY_PRESENT RARELY_USED
-  AnalyzeChild optional_child: LIKELY_PRESENT RARELY_USED LAZY
-  AnalyzeChild[] repeated_child: LIKELY_PRESENT RARELY_USED
-  Nested nested: RARELY_USED
+  int32 id: RARELY_USED(100)
+  string optional_string: RARELY_USED(100)
+  string[] repeated_string: LIKELY_PRESENT RARELY_USED(100)
+  AnalyzeChild optional_child: LIKELY_PRESENT RARELY_USED(1) LAZY
+  AnalyzeChild[] repeated_child: LIKELY_PRESENT RARELY_USED(100)
+  Nested nested: RARELY_USED(100)
 ========
 singular_lazy_num=1
 singular_lazy_0usage_num=0
