@@ -257,13 +257,6 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-alias(
-    name = "protobuf_nowkt",
-    actual = "//src/google/protobuf:protobuf_nowkt",
-    deprecation = "Use //:protobuf instead",
-    visibility = ["//visibility:public"],
-)
-
 # The "lite" runtime works for .proto files that specify the option:
 #     optimize_for = LITE_RUNTIME;
 #

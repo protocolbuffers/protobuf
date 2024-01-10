@@ -105,8 +105,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_jvm_external",
             repo = "https://github.com/bazelbuild/rules_jvm_external",
-            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            commit = "e6c1ff21e002bf97a7b1c07d63edd508a8dc9659",  # 5.3
+            integrity = "sha256-XYDxsseOmlM0isvtVqo0ZuRHt2F7juvkxOCgy2IWDHI=",
         )
 
     if not native.existing_rule("rules_pkg"):
@@ -131,6 +131,14 @@ def protobuf_deps():
             name = "io_bazel_rules_kotlin",
             urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.8.1/rules_kotlin_release.tgz"],
             sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
+        )
+
+    if not native.existing_rule("rules_license"):
+        _github_archive(
+            name = "rules_license",
+            repo = "https://github.com/bazelbuild/rules_license",
+            commit = "e160ce519a3ab82d407bc57a0f0b0510d61a3a59",  # 0.0.7
+            integrity = "sha256-3W8kDrNRce68vvXWJiRo2ItSYSpOsC+wHgrWJc2Gj3g=",
         )
 
     # Python Downloads
