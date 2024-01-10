@@ -824,6 +824,47 @@ TEST(CppGeneratedCode, GetExtensionOnImmutableChild) {
             ::protos::GetExtension(recursive_child, theme).value()->ext_name());
 }
 
+TEST(CppGeneratedCode, MutableExtension) {
+  ::protos::Arena arena;
+  ::protos::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(false, ::protos::HasExtension(model, theme));
+  absl::StatusOr<::protos::Ptr<ThemeExtension>> extension1 =
+      ::protos::MutableExtension(model, theme);
+  EXPECT_EQ(true, extension1.ok());
+  (*extension1)->set_ext_name("Hello World");
+  EXPECT_EQ("Hello World",
+            ::protos::GetExtension(model, theme).value()->ext_name());
+}
+
+TEST(CppGeneratedCode, MutableExtensionOnMutableChild) {
+  TestModel model;
+  ::protos::Ptr<TestModel> mutable_recursive_child =
+      model.mutable_recursive_child();
+  EXPECT_EQ(false, ::protos::HasExtension(mutable_recursive_child, theme));
+  absl::StatusOr<::protos::Ptr<ThemeExtension>> extension1 =
+      ::protos::MutableExtension(mutable_recursive_child, theme);
+  EXPECT_EQ(true, extension1.ok());
+  (*extension1)->set_ext_name("Hello World");
+  EXPECT_EQ("Hello World",
+            ::protos::GetExtension(mutable_recursive_child, theme)
+                .value()
+                ->ext_name());
+}
+
+TEST(CppGeneratedCode, MutableExtensionOnImmutableChild) {
+  TestModel model;
+  ::protos::Ptr<TestModel> mutable_recursive_child =
+      model.mutable_recursive_child();
+  EXPECT_EQ(false, ::protos::HasExtension(mutable_recursive_child, theme));
+  absl::StatusOr<::protos::Ptr<ThemeExtension>> extension1 =
+      ::protos::MutableExtension(mutable_recursive_child, theme);
+  EXPECT_EQ(true, extension1.ok());
+  (*extension1)->set_ext_name("Hello World");
+  ::protos::Ptr<const TestModel> recursive_child = model.recursive_child();
+  EXPECT_EQ("Hello World",
+            ::protos::GetExtension(recursive_child, theme).value()->ext_name());
+}
+
 TEST(CppGeneratedCode, SerializeUsingArena) {
   TestModel model;
   model.set_str1("Hello World");

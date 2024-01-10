@@ -64,17 +64,11 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   return ret;
 }
 
-upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
+// Promotes unknown data to an extension by finding the field number in unknown
+// data and decoding it.
+static upb_GetExtension_Status upb_MiniTable_PromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena, const upb_Extension** extension) {
-  UPB_ASSERT(upb_MiniTableField_CType(upb_MiniTableExtension_AsField(
-                 ext_table)) == kUpb_CType_Message);
-  *extension = _upb_Message_Getext(msg, ext_table);
-  if (*extension) {
-    return kUpb_GetExtension_Ok;
-  }
-
-  // Check unknown fields, if available promote.
+    int decode_options, upb_Arena* arena, upb_Extension** extension) {
   int field_number = upb_MiniTableExtension_Number(ext_table);
   upb_FindUnknownRet result = upb_Message_FindUnknown(msg, field_number, 0);
   if (result.status != kUpb_FindUnknown_Ok) {
@@ -98,16 +92,70 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     case kUpb_UnknownToMessage_Ok:
       break;
   }
-  upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
   upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
-  memcpy(&ext->data, &extension_msg, sizeof(extension_msg));
+  ext->data.ptr = parse_result.message;
   *extension = ext;
   const char* delete_ptr = upb_Message_GetUnknown(msg, &len) + ofs;
   upb_Message_DeleteUnknown(msg, delete_ptr, result.len);
+  return kUpb_GetExtension_Ok;
+}
+
+upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
+    upb_Message* msg, const upb_MiniTableExtension* ext_table,
+    int decode_options, upb_Arena* arena, const upb_Extension** extension) {
+  UPB_ASSERT(upb_MiniTableField_CType(upb_MiniTableExtension_AsField(
+                 ext_table)) == kUpb_CType_Message);
+  *extension = _upb_Message_Getext(msg, ext_table);
+  if (*extension) {
+    return kUpb_GetExtension_Ok;
+  }
+
+  // Check unknown fields, if available promote.
+  upb_Extension* ext;
+  upb_GetExtension_Status promote_result = upb_MiniTable_PromoteExtension(
+      msg, ext_table, decode_options, arena, &ext);
+  if (promote_result == kUpb_GetExtension_Ok) {
+    *extension = ext;
+  }
+  return promote_result;
+}
+
+upb_GetExtension_Status upb_MiniTable_GetOrPromoteOrCreateExtension(
+    upb_Message* msg, const upb_MiniTableExtension* ext_table,
+    int decode_options, upb_Arena* arena, upb_Extension** extension) {
+  UPB_ASSERT(upb_MiniTableField_CType(upb_MiniTableExtension_AsField(
+                 ext_table)) == kUpb_CType_Message);
+  const upb_Extension* const_extension = _upb_Message_Getext(msg, ext_table);
+  if (const_extension) {
+    // Extension exists on the message, get the mutable version of it.
+    *extension = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
+    return kUpb_GetExtension_Ok;
+  }
+
+  // Check unknown fields, if available promote.
+  upb_GetExtension_Status promote_result = upb_MiniTable_PromoteExtension(
+      msg, ext_table, decode_options, arena, extension);
+  if (promote_result != kUpb_GetExtension_NotPresent) {
+    return promote_result;
+  }
+
+  // Extension not found, create a new default message.
+  const upb_MiniTable* extension_table =
+      upb_MiniTableExtension_GetSubMessage(ext_table);
+  upb_Message* extension_msg = upb_Message_New(extension_table, arena);
+  if (!extension_msg) {
+    return kUpb_GetExtension_OutOfMemory;
+  }
+  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
+  if (!ext) {
+    return kUpb_GetExtension_OutOfMemory;
+  }
+  ext->data.ptr = extension_msg;
+  *extension = ext;
   return kUpb_GetExtension_Ok;
 }
 
