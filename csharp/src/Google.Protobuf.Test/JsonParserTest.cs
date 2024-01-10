@@ -949,6 +949,14 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void UnknownStringEnumValue_Invalid()
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"singleNestedEnum\": \"UNKNOWN_VALUE\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => parser.Parse<TestAllTypes>(json));
+        }
+
+        [Test]
         [TestCase("5")]
         [TestCase("\"text\"")]
         [TestCase("[0, 1, 2]")]
