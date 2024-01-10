@@ -74,15 +74,22 @@ namespace Google.Protobuf.Conformance
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
                         if (request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest)
                         {
-                            return new ConformanceResponse { Skipped = "CSharp doesn't support skipping unknown fields in json parsing." };
+                            var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry).WithIgnoreUnknownFields(true));
+                            message = request.MessageType switch
+                            {
+                                "protobuf_test_messages.proto3.TestAllTypesProto3" => parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload),
+                                "protobuf_test_messages.proto2.TestAllTypesProto2" => parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload),
+                                _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                            };
+                        } else {
+                            var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
+                            message = request.MessageType switch
+                            {
+                                "protobuf_test_messages.proto3.TestAllTypesProto3" => parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload),
+                                "protobuf_test_messages.proto2.TestAllTypesProto2" => parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload),
+                                _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                            };
                         }
-                        var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
-                        message = request.MessageType switch
-                        {
-                            "protobuf_test_messages.proto3.TestAllTypesProto3" => parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload),
-                            "protobuf_test_messages.proto2.TestAllTypesProto2" => parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload),
-                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
-                        };
                         break;
                     case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
                         message = request.MessageType switch
