@@ -225,10 +225,11 @@ class _Printer(object):
       if self.including_default_value_fields:
         message_descriptor = message.DESCRIPTOR
         for field in message_descriptor.fields:
-          # Singular message fields and oneof fields will not be affected.
-          if ((field.label != descriptor.FieldDescriptor.LABEL_REPEATED and
-               field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE) or
-              field.containing_oneof):
+          # Non-repeated fields with presence will not be affected.
+          if (
+              field.label != descriptor.FieldDescriptor.LABEL_REPEATED
+              and field.has_presence
+          ):
             continue
           if self.preserving_proto_field_name:
             name = field.name
