@@ -2610,6 +2610,32 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   }
 }
 
+// Gets a extension message or creates a default message and sets the extension
+// if it doesn't already exist.
+UPB_INLINE bool _upb_Message_GetOrCreateExtensionSubmessage(
+    struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
+    struct upb_Message** val, upb_Arena* a) {
+  const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
+  UPB_ASSUME(upb_MiniTableField_IsExtension(f));
+  const struct upb_Extension* const_ext = _upb_Message_Getext(msg, mt_ext);
+  if (const_ext) {
+    // Extension exists, get a mutable version of it.
+    struct upb_Extension* ext =
+        _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
+    *val = (struct upb_Message*)ext->data.ptr;
+    return true;
+  }
+  // Extension doesn't exist, create a new message and set it.
+  struct upb_Message* ext_msg =
+      _upb_Message_New(upb_MiniTableExtension_GetSubMessage(mt_ext), a);
+  if (!ext_msg) return false;
+  struct upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, mt_ext, a);
+  if (!ext) return false;
+  ext->data.ptr = ext_msg;
+  *val = ext_msg;
+  return true;
+}
+
 UPB_INLINE void _upb_Message_SetNonExtensionField(
     struct upb_Message* msg, const upb_MiniTableField* field, const void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
