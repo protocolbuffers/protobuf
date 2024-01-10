@@ -221,6 +221,9 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 
 // Returns true if "message" is a descendant of "root".
 PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
+
+// Either poison (ASAN) or clear the message tree from "root".
+inline void PoisonOrClearMessages(Message& root);
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -1023,10 +1026,15 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsSplit(field);
   }
 
+  // If ASAN is enabled, recursively poisons memory regions for the message tree
+  // from "root".
+  void PoisonMessages(const Message& root) const;
+
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
   friend class internal::ReflectionVisit;
   friend bool internal::IsDescendant(Message& root, const Message& message);
+  friend void internal::PoisonOrClearMessages(Message& root);
 
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;
@@ -1610,6 +1618,15 @@ class RawMessageBase : public Message {
   using Message::Message;
   virtual size_t SpaceUsedLong() const = 0;
 };
+
+inline void PoisonOrClearMessages(Message& root) {
+#ifndef PROTOBUF_ASAN
+  root.Clear();
+#else
+  const Reflection* reflection = root.GetReflection();
+  reflection->PoisonMessages(root);
+#endif
+}
 
 }  // namespace internal
 

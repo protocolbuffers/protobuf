@@ -1502,6 +1502,46 @@ TEST(ArenaTest, MutableMessageReflection) {
 #endif  // PROTOBUF_RTTI
 
 
+TEST(ArenaTest, ClearOneofMessageOnArena) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestOneof2>(&arena);
+  // Intentionally nested to force poisoning recursively to catch the access.
+  auto* child =
+      message->mutable_foo_message()->mutable_child()->mutable_child();
+  child->set_moo_int(100);
+  message->clear_foo_message();
+#ifdef PROTOBUF_ASAN
+#if GTEST_HAS_DEATH_TEST
+  EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
+#endif
+#else
+  EXPECT_EQ(child->moo_int(), 0);
+#endif
+}
+
+TEST(ArenaTest, CopyValuesWithinOneof) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestOneof>(&arena);
+  auto* foo = message->mutable_foogroup();
+  foo->set_a(100);
+  foo->set_b("hello world");
+  message->set_foo_string(message->foogroup().b());
+
+#ifndef PROTOBUF_ASAN
+  // As a debug hardening measure, `set_foo_string` would clear `foo` in
+  // (!NDEBUG && !ASAN) and the copy wouldn't work.
+  EXPECT_TRUE(message->foo_string().empty());
+#endif
+}
+
 void FillArenaAwareFields(TestAllTypes* message) {
   std::string test_string = "hello world";
   message->set_optional_int32(42);

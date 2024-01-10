@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include "absl/strings/match.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -253,6 +254,44 @@ TEST(Proto3OptionalTest, OptionalFields) {
   EXPECT_FALSE(msg.has_optional_int32());
   msg.SerializeToString(&serialized);
   EXPECT_EQ(serialized.size(), 0);
+}
+
+TEST(Proto3ArenaTest, CheckMessageFieldIsCleared) {
+  Arena arena;
+  auto msg = Arena::Create<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_optional_foreign_message();
+  child->set_c(100);
+  msg->Clear();
+
+  EXPECT_EQ(child->c(), 0);
+}
+
+TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto msg = Arena::Create<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_oneof_nested_message();
+  child->set_bb(100);
+  msg->Clear();
+
+#ifdef PROTOBUF_ASAN
+#if GTEST_HAS_DEATH_TEST
+  EXPECT_DEATH(EXPECT_EQ(child->bb(), 100), "use-after-poison");
+#endif
+#else
+  EXPECT_EQ(child->bb(), 0);
+#endif
 }
 
 TEST(Proto3OptionalTest, OptionalFieldDescriptor) {

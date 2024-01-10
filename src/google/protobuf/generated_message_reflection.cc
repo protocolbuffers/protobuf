@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>  // IWYU pragma: keep for operator delete
+#include <queue>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -43,6 +44,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -1285,6 +1287,39 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
   if (schema_.HasExtensionSet()) {
     MutableExtensionSet(lhs)->InternalSwap(MutableExtensionSet(rhs));
+  }
+}
+
+void Reflection::PoisonMessages(const Message& root) const {
+  struct PoisonNode {
+    explicit PoisonNode(const Message& msg)
+        : ptr(static_cast<const void*>(&msg)), size(GetSize(msg)) {}
+
+    static uint32_t GetSize(const Message& msg) {
+      return msg.GetReflection()->schema_.GetObjectSize();
+    }
+
+    const void* ptr;
+    uint32_t size;
+  };
+
+  std::vector<PoisonNode> nodes;
+  nodes.emplace_back(root);
+
+  std::queue<const Message*> queue;
+  queue.push(&root);
+
+  while (!queue.empty()) {
+    const Message* curr = queue.front();
+    queue.pop();
+    internal::VisitMessageFields(*curr, [&](const Message& msg) {
+      queue.push(&msg);
+      nodes.emplace_back(msg);
+    });
+  }
+
+  for (auto it = nodes.rbegin(), end = nodes.rend(); it != end; ++it) {
+    PROTOBUF_POISON_MEMORY_REGION(it->ptr, it->size);
   }
 }
 
