@@ -459,10 +459,16 @@ absl::Status WriteFields(JsonWriter& writer, const Msg<Traits>& msg,
 
     bool has = Traits::GetSize(field, msg) > 0;
     if (writer.options().always_print_primitive_fields) {
-      bool is_singular_message =
-          !Traits::IsRepeated(field) &&
-          Traits::FieldType(field) == FieldDescriptor::TYPE_MESSAGE;
-      has |= !is_singular_message && !Traits::IsOneof(field);
+      if (Traits::FieldFullName(field) == "implicit_x") {
+        ABSL_LOG(FATAL) << Traits::FieldFullName(field) << " "
+                        << "IsOneOf: " << Traits::IsOneof(field) << " "
+                        << "IsRepeated: " << Traits::IsRepeated(field) << " "
+                        << "IsOptional: " << Traits::IsOptional(field) << " "
+                        << "IsProto3Syntax: " << Traits::IsProto3Syntax(field)
+                        << " " << "IsImplicitPresence: "
+                        << Traits::IsImplicitPresence(field);
+      }
+      has |= Traits::IsRepeated(field) || Traits::IsImplicitPresence(field);
     }
 
     if (has) {

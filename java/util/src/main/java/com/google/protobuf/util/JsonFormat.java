@@ -29,7 +29,6 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -979,18 +978,10 @@ public class JsonFormat {
       if (alwaysOutputDefaultValueFields || !includingDefaultValueFields.isEmpty()) {
         fieldsToPrint = new TreeMap<FieldDescriptor, Object>(message.getAllFields());
         for (FieldDescriptor field : message.getDescriptorForType().getFields()) {
-          if (field.isOptional()) {
-            if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
-                && !message.hasField(field)) {
-              // Always skip empty optional message fields. If not we will recurse indefinitely if
-              // a message has itself as a sub-field.
-              continue;
-            }
-            OneofDescriptor oneof = field.getContainingOneof();
-            if (oneof != null && !message.hasField(field)) {
-              // Skip all oneof fields except the one that is actually set
-              continue;
-            }
+          // The options to emit default value fields only applies to repeated fields and
+          // fields without presence.
+          if (!field.isRepeated() && field.hasPresence() && !message.hasField(field)) {
+            continue;
           }
           if (!fieldsToPrint.containsKey(field)
               && (alwaysOutputDefaultValueFields || includingDefaultValueFields.contains(field))) {

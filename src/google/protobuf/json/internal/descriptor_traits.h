@@ -237,6 +237,11 @@ struct Proto2Descriptor {
     }
   }
 
+  static bool IsProto3Syntax(Field f) {
+    ABSL_LOG(FATAL) << "IsProto3Syntax is not implemented";
+    return false;
+  }
+
   static const Desc& ContainingType(Field f) { return *f->containing_type(); }
 
   static bool IsMap(Field f) { return f->is_map(); }
@@ -430,12 +435,18 @@ struct Proto3Type {
            google::protobuf::Field::CARDINALITY_REPEATED;
   }
 
+  static bool IsProto3Syntax(Field f) {
+    return f->parent().proto().syntax() == google::protobuf::SYNTAX_PROTO3;
+  }
+
   static bool IsOptional(Field f) {
     // Implicit presence requires this weird check: in proto3, everything is
-    // implicit presence, except for things that are members of oneofs,
-    // which is how proto3 optional is represented.
+    // implicit presence, except for things that are members of a oneof
+    // (including synthetic optionals which are how proto3 optional is
+    // represented) and messages.
     if (f->parent().proto().syntax() == google::protobuf::SYNTAX_PROTO3) {
-      return f->proto().oneof_index() != 0;
+      return f->proto().oneof_index() != 0 ||
+             f->proto().kind() == google::protobuf::Field::TYPE_MESSAGE;
     }
 
     return f->proto().cardinality() ==

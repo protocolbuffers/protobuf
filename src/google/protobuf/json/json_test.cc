@@ -238,40 +238,13 @@ TEST_P(JsonTest, TestDefaultValues) {
   EXPECT_THAT(
       ToJson(protobuf_unittest::TestAllTypes(), options),
       IsOkAndHolds(
-          R"({"optionalInt32":0,"optionalInt64":"0","optionalUint32":0,)"
-          R"("optionalUint64":"0","optionalSint32":0,"optionalSint64":"0","optionalFixed32":0,)"
-          R"("optionalFixed64":"0","optionalSfixed32":0,"optionalSfixed64":"0",)"
-          R"("optionalFloat":0,"optionalDouble":0,"optionalBool":false,"optionalString":"",)"
-          R"("optionalBytes":"","optionalgroup":null,"optionalNestedEnum":"FOO","optionalForeignEnum":"FOREIGN_FOO",)"
-          R"("optionalImportEnum":"IMPORT_FOO","optionalStringPiece":"","optionalCord":"",)"
-          R"("repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
+          R"({"repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
           R"("repeatedSint32":[],"repeatedSint64":[],"repeatedFixed32":[],"repeatedFixed64":[],)"
           R"("repeatedSfixed32":[],"repeatedSfixed64":[],"repeatedFloat":[],"repeatedDouble":[],)"
           R"("repeatedBool":[],"repeatedString":[],"repeatedBytes":[],"repeatedgroup":[],)"
           R"("repeatedNestedMessage":[],"repeatedForeignMessage":[],"repeatedImportMessage":[],)"
           R"("repeatedNestedEnum":[],"repeatedForeignEnum":[],"repeatedImportEnum":[],)"
-          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[],"defaultInt32":41,)"
-          R"("defaultInt64":"42","defaultUint32":43,"defaultUint64":"44","defaultSint32":-45,)"
-          R"("defaultSint64":"46","defaultFixed32":47,"defaultFixed64":"48","defaultSfixed32":49,)"
-          R"("defaultSfixed64":"-50","defaultFloat":51.5,"defaultDouble":52000,"defaultBool":true,)"
-          R"("defaultString":"hello","defaultBytes":"d29ybGQ=","defaultNestedEnum":"BAR",)"
-          R"("defaultForeignEnum":"FOREIGN_BAR","defaultImportEnum":"IMPORT_BAR",)"
-          R"("defaultStringPiece":"abc","defaultCord":"123"})"));
-
-  EXPECT_THAT(
-      ToJson(protobuf_unittest::TestExtremeDefaultValues(), options),
-      IsOkAndHolds(
-          R"({"escapedBytes":"XDAwMFwwMDFcMDA3XDAxMFwwMTRcblxyXHRcMDEzXFxcJ1wiXDM3Ng==")"
-          R"(,"largeUint32":4294967295,"largeUint64":"18446744073709551615",)"
-          R"("smallInt32":-2147483647,"smallInt64":"-9223372036854775807",)"
-          R"("utf8String":"ሴ","zeroFloat":0,"oneFloat":1,"smallFloat":1.5,)"
-          R"("negativeOneFloat":-1,"negativeFloat":-1.5,"largeFloat":2e+08,)"
-          R"("smallNegativeFloat":-8e-28,"infDouble":0,"negInfDouble":0,)"
-          R"("nanDouble":0,"infFloat":0,"negInfFloat":0,"nanFloat":0,)"
-          R"("cppTrigraph":"? ? ?? ?? ??? ??/ ??-","reallySmallInt32":-2147483648)"
-          R"(,"reallySmallInt64":"-9223372036854775808","stringWithZero":"hel\u0000lo")"
-          R"(,"bytesWithZero":"d29yXDAwMGxk","stringPieceWithZero":"ab\u0000c")"
-          R"(,"cordWithZero":"12\u00003","replacementString":"${unknown}"})"));
+          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[]})"));
 }
 
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
@@ -373,7 +346,7 @@ TEST_P(JsonTest, TestPrintProto2EnumAsIntWithDefaultValue) {
   print_options.always_print_primitive_fields = true;
 
   auto printed = ToJson(orig, print_options);
-  ASSERT_THAT(printed, IsOkAndHolds("{\"enumValue\":2}"));
+  ASSERT_THAT(printed, IsOkAndHolds("{}"));
 
   auto parsed = ToProto<protobuf_unittest::TestDefaultEnumValue>(*printed);
   ASSERT_OK(parsed);
