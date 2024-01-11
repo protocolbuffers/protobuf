@@ -138,8 +138,11 @@ class TextFormat;
 namespace internal {
 struct FuzzPeer;
 struct DescriptorTable;
+template <bool is_oneof>
+struct DynamicFieldInfoHelper;
 class MapFieldBase;
 class MessageUtil;
+class ReflectionVisit;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
@@ -979,6 +982,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
+  friend class internal::ReflectionVisit;
   friend bool internal::IsDescendant(Message& root, const Message& message);
 
   const Descriptor* const descriptor_;
@@ -1034,6 +1038,8 @@ class PROTOBUF_EXPORT Reflection final {
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
   friend class internal::SwapFieldHelper;
+  template <bool is_oneof>
+  friend struct internal::DynamicFieldInfoHelper;
   friend struct internal::FuzzPeer;
   // Needed for implementing text format for map.
   friend class internal::MapFieldPrinterHelper;
