@@ -7,6 +7,10 @@
 
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
+# begin:google_only
+# package(default_applicable_licenses = ["//upb:license"])
+# end:google_only
+
 cc_library(
     name = "collections",
     hdrs = [
