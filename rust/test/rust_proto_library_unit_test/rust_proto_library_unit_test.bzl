@@ -1,15 +1,58 @@
 """This module contains unit tests for rust_proto_library and its aspect."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 load("//rust:aspects.bzl", "RustProtoInfo")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 
-def _find_action_with_mnemonic(actions, mnemonic):
-    action = [a for a in actions if a.mnemonic == mnemonic]
-    if not action:
-        fail("Couldn't find action with mnemonic {} among {}".format(mnemonic, actions))
-    return action[0]
+def _find_actions_with_mnemonic(actions, mnemonic):
+    actions = [a for a in actions if a.mnemonic == mnemonic]
+    if not actions:
+        fail("Couldn't find action with mnemonic {} among {}".format(
+            mnemonic,
+            [a.mnemonic for a in actions],
+        ))
+    return actions
+
+def _check_crate_mapping(actions, target_name):
+    fw_actions = _find_actions_with_mnemonic(actions, "FileWrite")
+    crate_mapping_action = None
+    for a in fw_actions:
+        outputs = a.outputs.to_list()
+        output = [o for o in outputs if o.basename == target_name + ".rust_crate_mapping"]
+        if output:
+            crate_mapping_action = a
+    if not crate_mapping_action:
+        fail("Couldn't find action outputting {}.rust_crate_mapping among {}".format(
+            target_name,
+            fw_actions,
+        ))
+    expected_content = """grandparent_proto
+2
+rust/test/rust_proto_library_unit_test/grandparent1.proto
+rust/test/rust_proto_library_unit_test/grandparent2.proto
+parent_proto
+1
+rust/test/rust_proto_library_unit_test/parent.proto
+"""
+    if crate_mapping_action.content != expected_content:
+        fail("The crate mapping file content didn't match. Was: {}".format(
+            crate_mapping_action.content,
+        ))
+
+    protoc_action = [
+        a
+        for a in actions
+        for i in a.inputs.to_list()
+        if "rust_crate_mapping" in i.basename
+    ]
+    if not protoc_action:
+        fail("Couldn't find action with the rust_crate_mapping as input")
+    if protoc_action[0].mnemonic != "GenProto":
+        fail(
+            "Action that had rust_crate_mapping as input wasn't a GenProto action, but {}",
+            protoc_action[0].mnemonic,
+        )
 
 def _find_rust_lib_input(inputs, target_name):
     inputs = inputs.to_list()
@@ -54,7 +97,10 @@ def _rust_upb_aspect_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
     actions = target_under_test[ActionsInfo].actions
-    rustc_action = _find_action_with_mnemonic(actions, "Rustc")
+    rustc_action = _find_actions_with_mnemonic(actions, "Rustc")[0]
+
+    # The protoc action needs to be given the crate mapping file
+    _check_crate_mapping(actions, "child_proto")
 
     # The action needs to have the Rust runtime as an input
     _find_rust_lib_input(rustc_action.inputs, "protobuf")
@@ -83,9 +129,11 @@ def _rust_cc_aspect_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
     actions = target_under_test[ActionsInfo].actions
-    rustc_action = _find_action_with_mnemonic(actions, "Rustc")
+    rustc_action = _find_actions_with_mnemonic(actions, "Rustc")[0]
 
-    # The action needs to have the Rust runtime as an input
+    _check_crate_mapping(actions, "child_proto")
+
+    # The rustc action needs to have the Rust runtime as an input
     _find_rust_lib_input(rustc_action.inputs, "protobuf")
 
     # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
@@ -114,7 +162,15 @@ def rust_proto_library_unit_test(name):
 
     Args:
       name: name of the test suite"""
-    native.proto_library(name = "parent_proto", srcs = ["parent.proto"])
+    native.proto_library(
+        name = "grandparent_proto",
+        srcs = ["grandparent1.proto", "grandparent2.proto"],
+    )
+    native.proto_library(
+        name = "parent_proto",
+        srcs = ["parent.proto"],
+        deps = [":grandparent_proto"],
+    )
     native.proto_library(name = "child_proto", srcs = ["child.proto"], deps = [":parent_proto"])
     cc_proto_library(name = "child_cc_proto", deps = [":child_proto"])
 

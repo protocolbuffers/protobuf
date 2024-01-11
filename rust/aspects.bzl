@@ -15,18 +15,67 @@ proto_common = proto_common_do_not_use
 
 visibility(["//rust/..."])
 
+CrateMappingInfo = provider(
+    doc = "Struct mapping crate name to the .proto import paths",
+    fields = {
+        "crate_name": "Crate name of the proto_library target",
+        "import_paths": "Import path used in .proto files of dependants to import the .proto " +
+                        "file of the current proto_library.",
+    },
+)
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
     fields = {
         "dep_variant_info": "DepVariantInfo for the compiled Rust gencode (also covers its " +
                             "transitive dependencies)",
+        "crate_mapping": "depset(CrateMappingInfo) containing mappings of all transitive " +
+                         "dependencies of the current proto_library.",
     },
 )
+
+def _register_crate_mapping_write_action(name, actions, crate_mappings):
+    """Registers an action that generates a crate mapping for a proto_library.
+
+    Args:
+        name: The name of the target being analyzed.
+        actions: The context's actions object.
+        crate_mappings: depset(CrateMappingInfo) to be rendered.
+            This sequence should already have duplicates removed.
+
+    Returns:
+        The generated `File` with the crate mapping.
+    """
+    mapping_file = actions.declare_file(
+        "{}.rust_crate_mapping".format(name),
+    )
+    content = actions.args()
+    content.set_param_file_format("multiline")
+    content.add_all(crate_mappings, map_each = _render_text_crate_mapping)
+    actions.write(content = content, output = mapping_file)
+
+    return mapping_file
+
+def _render_text_crate_mapping(mapping):
+    """Renders the mapping to an easily parseable file for a crate mapping.
+
+    Args:
+        mapping (CrateMappingInfo): A single crate mapping.
+
+    Returns:
+        A string containing the crate mapping for the target in simple format:
+            <crate_name>\n
+            <number of lines to follow>\n
+            <one import path per line>\n
+    """
+    crate_name = mapping.crate_name
+    import_paths = mapping.import_paths
+    return "\n".join(([crate_name, str(len(import_paths))] + list(import_paths)))
 
 def _generate_rust_gencode(
         ctx,
         proto_info,
         proto_lang_toolchain,
+        crate_mapping,
         is_upb):
     """Generates Rust gencode
 
@@ -37,6 +86,8 @@ def _generate_rust_gencode(
         proto_info (ProtoInfo): ProtoInfo of the proto_library target for which we are generating
                     gencode
         proto_lang_toolchain (ProtoLangToolchainInfo): proto lang toolchain for Rust
+        crate_mapping (File): File containing the mapping from .proto file import path to its
+                      corresponding containing Rust crate name.
         is_upb (Bool): True when generating gencode for UPB, False otherwise.
     Returns:
         rs_outputs (([File], [File]): tuple(generated Rust files, generated C++ thunks).
@@ -55,10 +106,20 @@ def _generate_rust_gencode(
             proto_info = proto_info,
             extension = ".pb.thunks.cc",
         )
+    additional_args = ctx.actions.args()
+
+    additional_args.add(
+        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={}".format(
+            "upb" if is_upb else "cpp",
+            crate_mapping.path,
+        ),
+    )
 
     proto_common.compile(
         actions = ctx.actions,
         proto_info = proto_info,
+        additional_inputs = depset(direct = [crate_mapping]),
+        additional_args = additional_args,
         generated_files = rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
         plugin_output = ctx.bin_dir.path,
@@ -211,6 +272,12 @@ def _rust_cc_proto_aspect_impl(target, ctx):
     """Implements the Rust protobuf aspect logic for C++ kernel."""
     return _rust_proto_aspect_common(target, ctx, is_upb = False)
 
+def get_import_path(f):
+    if hasattr(proto_common, "get_import_path"):
+        return proto_common.get_import_path(f)
+    else:
+        return f.path
+
 def _rust_proto_aspect_common(target, ctx, is_upb):
     if RustProtoInfo in target:
         return []
@@ -231,10 +298,25 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         unsupported_features = ctx.disabled_features,
     )
 
+    proto_srcs = getattr(ctx.rule.files, "srcs", [])
+    proto_deps = getattr(ctx.rule.attr, "deps", [])
+    transitive_crate_mappings = []
+    for dep in proto_deps:
+        rust_proto_info = dep[RustProtoInfo]
+        transitive_crate_mappings.append(rust_proto_info.crate_mapping)
+
+    mapping_for_current_target = depset(transitive = transitive_crate_mappings)
+    crate_mapping_file = _register_crate_mapping_write_action(
+        target.label.name,
+        ctx.actions,
+        mapping_for_current_target,
+    )
+
     (gencode, thunks) = _generate_rust_gencode(
         ctx,
         target[ProtoInfo],
         proto_lang_toolchain,
+        crate_mapping_file,
         is_upb,
     )
 
@@ -259,17 +341,25 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     )
     dep_variant_info_for_native_gencode = DepVariantInfo(cc_info = thunks_cc_info)
 
-    proto_dep = getattr(ctx.rule.attr, "deps", [])
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = gencode[0],
         extra_srcs = gencode[1:],
         deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + (
-            [proto_dep[0][RustProtoInfo].dep_variant_info] if proto_dep else []
+            [proto_deps[0][RustProtoInfo].dep_variant_info] if proto_deps else []
         ),
     )
-    return [RustProtoInfo(dep_variant_info = dep_variant_info)]
+    return [RustProtoInfo(
+        dep_variant_info = dep_variant_info,
+        crate_mapping = depset(
+            direct = [CrateMappingInfo(
+                crate_name = target.label.name,
+                import_paths = tuple([get_import_path(f) for f in proto_srcs]),
+            )],
+            transitive = transitive_crate_mappings,
+        ),
+    )]
 
 def _make_proto_library_aspect(is_upb):
     return aspect(
@@ -319,7 +409,9 @@ def _make_proto_library_aspect(is_upb):
                 cfg = "exec",
             ),
             "_proto_lang_toolchain": attr.label(
-                default = Label(("//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain")),
+                default = Label(
+                    "//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain",
+                ),
             ),
         },
         fragments = ["cpp"],
