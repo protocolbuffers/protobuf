@@ -227,15 +227,16 @@ namespace Google.Protobuf.Reflection {
             "aWxlGAIgASgJEg0KBWJlZ2luGAMgASgFEgsKA2VuZBgEIAEoBRJICghzZW1h",
             "bnRpYxgFIAEoDjI2Lmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5m",
             "by5Bbm5vdGF0aW9uLlNlbWFudGljIigKCFNlbWFudGljEggKBE5PTkUQABIH",
-            "CgNTRVQQARIJCgVBTElBUxACKv8BCgdFZGl0aW9uEhMKD0VESVRJT05fVU5L",
+            "CgNTRVQQARIJCgVBTElBUxACKpICCgdFZGl0aW9uEhMKD0VESVRJT05fVU5L",
             "Tk9XThAAEhMKDkVESVRJT05fUFJPVE8yEOYHEhMKDkVESVRJT05fUFJPVE8z",
-            "EOcHEhEKDEVESVRJT05fMjAyMxDoBxIXChNFRElUSU9OXzFfVEVTVF9PTkxZ",
-            "EAESFwoTRURJVElPTl8yX1RFU1RfT05MWRACEh0KF0VESVRJT05fOTk5OTdf",
-            "VEVTVF9PTkxZEJ2NBhIdChdFRElUSU9OXzk5OTk4X1RFU1RfT05MWRCejQYS",
-            "HQoXRURJVElPTl85OTk5OV9URVNUX09OTFkQn40GEhMKC0VESVRJT05fTUFY",
-            "EP////8HQn4KE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2NyaXB0b3JQcm90",
-            "b3NIAVotZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMvZGVzY3Jp",
-            "cHRvcnBi+AEBogIDR1BCqgIaR29vZ2xlLlByb3RvYnVmLlJlZmxlY3Rpb24="));
+            "EOcHEhEKDEVESVRJT05fMjAyMxDoBxIRCgxFRElUSU9OXzIwMjQQ6QcSFwoT",
+            "RURJVElPTl8xX1RFU1RfT05MWRABEhcKE0VESVRJT05fMl9URVNUX09OTFkQ",
+            "AhIdChdFRElUSU9OXzk5OTk3X1RFU1RfT05MWRCdjQYSHQoXRURJVElPTl85",
+            "OTk5OF9URVNUX09OTFkQno0GEh0KF0VESVRJT05fOTk5OTlfVEVTVF9PTkxZ",
+            "EJ+NBhITCgtFRElUSU9OX01BWBD/////B0J+ChNjb20uZ29vZ2xlLnByb3Rv",
+            "YnVmQhBEZXNjcmlwdG9yUHJvdG9zSAFaLWdvb2dsZS5nb2xhbmcub3JnL3By",
+            "b3RvYnVmL3R5cGVzL2Rlc2NyaXB0b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Q",
+            "cm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -291,6 +292,7 @@ namespace Google.Protobuf.Reflection {
     /// comparison.
     /// </summary>
     [pbr::OriginalName("EDITION_2023")] _2023 = 1000,
+    [pbr::OriginalName("EDITION_2024")] _2024 = 1001,
     /// <summary>
     /// Placeholder editions for testing feature resolution.  These should not be
     /// used or relyed on outside of tests.
