@@ -99,6 +99,10 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_STRING:
       return "&'msg ::__pb::ProtoStr";
     case FieldDescriptor::TYPE_MESSAGE:
+      // TODO: support messages which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
+        return "";
+      }
       return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
@@ -135,6 +139,10 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_STRING:
       return "::__pb::ProtoStrMut<'msg>";
     case FieldDescriptor::TYPE_MESSAGE:
+      // TODO: support messages which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
+        return "";
+      }
       return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
