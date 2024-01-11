@@ -11,12 +11,20 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/lex/round_trip.h"
+#include "upb/message/array.h"
 #include "upb/message/internal/map_sorter.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/message/value.h"
+#include "upb/mini_table/internal/map_entry.h"
 #include "upb/port/vsnprintf_compat.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -277,8 +285,8 @@ static void txtenc_map(txtenc* e, const upb_Map* map, const upb_FieldDef* f) {
     _upb_mapsorter_pushmap(&e->sorter, upb_FieldDef_Type(key_f), map, &sorted);
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       upb_MessageValue key, val;
-      memcpy(&key, &ent.data.k, sizeof(key));
-      memcpy(&val, &ent.data.v, sizeof(val));
+      memcpy(&key, &ent.k, sizeof(key));
+      memcpy(&val, &ent.v, sizeof(val));
       txtenc_mapentry(e, key, val, f);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
@@ -369,7 +377,7 @@ static const char* txtenc_unknown(txtenc* e, const char* ptr,
           e->overflow = start_overflow;
           const char* str = ptr;
           ptr = upb_EpsCopyInputStream_ReadString(stream, &str, size, NULL);
-          assert(ptr);
+          UPB_ASSERT(ptr);
           txtenc_string(e, (upb_StringView){.data = str, .size = size}, true);
         }
         break;

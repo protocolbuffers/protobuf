@@ -60,7 +60,6 @@ cc_library(
         "internal/array.h",
         "internal/extension.h",
         "internal/map.h",
-        "internal/map_entry.h",
         "internal/map_sorter.h",
         "internal/message.h",
         "internal/tagged_ptr.h",

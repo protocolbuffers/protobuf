@@ -18,6 +18,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//upb:base",
         "//upb:eps_copy_input_stream",
         "//upb:message",
         "//upb:port",
@@ -26,6 +27,7 @@ cc_library(
         "//upb:wire_reader",
         "//upb/lex",
         "//upb/message:internal",
+        "//upb/mini_table:internal",
     ],
 )
 

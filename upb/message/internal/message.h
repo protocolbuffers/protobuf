@@ -20,6 +20,7 @@
 
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
+#include "upb/mini_table/internal/types.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -33,14 +34,12 @@ extern const float kUpb_FltInfinity;
 extern const double kUpb_Infinity;
 extern const double kUpb_NaN;
 
-/* Internal members of a upb_Message that track unknown fields and/or
- * extensions. We can change this without breaking binary compatibility.  We put
- * these before the user's data.  The user's upb_Message* points after the
- * upb_Message_Internal. */
+// Internal members of a upb_Message that track unknown fields and/or
+// extensions. We can change this without breaking binary compatibility.
 
-typedef struct {
-  /* Total size of this structure, including the data that follows.
-   * Must be aligned to 8, which is alignof(upb_Extension) */
+typedef struct upb_Message_Internal {
+  // Total size of this structure, including the data that follows.
+  // Must be aligned to 8, which is alignof(upb_Extension)
   uint32_t size;
 
   /* Offsets relative to the beginning of this structure.
@@ -50,8 +49,7 @@ typedef struct {
    * When the two meet, we're out of data and have to realloc.
    *
    * If we imagine that the final member of this struct is:
-   *   char data[size - overhead];  // overhead =
-   * sizeof(upb_Message_InternalData)
+   *   char data[size - overhead];  // overhead = sizeof(upb_Message_Internal)
    *
    * Then we have:
    *   unknown data: data[0 .. (unknown_end - overhead)]
@@ -59,48 +57,17 @@ typedef struct {
   uint32_t unknown_end;
   uint32_t ext_begin;
   /* Data follows, as if there were an array:
-   *   char data[size - sizeof(upb_Message_InternalData)]; */
-} upb_Message_InternalData;
-
-typedef struct {
-  union {
-    upb_Message_InternalData* internal;
-
-    // Force 8-byte alignment, since the data members may contain members that
-    // require 8-byte alignment.
-    double d;
-  };
+   *   char data[size - sizeof(upb_Message_Internal)]; */
 } upb_Message_Internal;
 
-struct upb_Message {
-  int unused;  // Placeholder cuz Windows won't compile an empty struct.
-};
-
-UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* m) {
-  return m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
-}
-
 // Inline version upb_Message_New(), for internal use.
-UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
-                                                upb_Arena* arena) {
-  size_t size = upb_msg_sizeof(mini_table);
-  void* mem = upb_Arena_Malloc(arena, size + sizeof(upb_Message_Internal));
-  if (UPB_UNLIKELY(!mem)) return NULL;
-  struct upb_Message* msg =
-      UPB_PTR_AT(mem, sizeof(upb_Message_Internal), struct upb_Message);
-  memset(mem, 0, size);
+UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
+                                                upb_Arena* a) {
+  const int size = m->UPB_PRIVATE(size);
+  struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
+  if (UPB_UNLIKELY(!msg)) return NULL;
+  memset(msg, 0, size);
   return msg;
-}
-
-UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(
-    const struct upb_Message* msg) {
-  ptrdiff_t size = sizeof(upb_Message_Internal);
-  return (upb_Message_Internal*)((char*)msg - size);
-}
-
-UPB_INLINE upb_Message_InternalData* upb_Message_GetInternalData(
-    const struct upb_Message* msg) {
-  return upb_Message_Getinternal(msg)->internal;
 }
 
 // Discards the unknown fields for this message only.

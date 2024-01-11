@@ -42,9 +42,7 @@ extern "C" {
 
 UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
                                       const upb_MiniTable* m) {
-  // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
-  char* mem = (char*)msg - sizeof(upb_Message_Internal);
-  memset(mem, 0, upb_msg_sizeof(m));
+  UPB_PRIVATE(_upb_Message_Clear)(msg, m);
 }
 
 UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
