@@ -184,8 +184,6 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
   variables_["descriptor"] = absl::StrCat(
       name_resolver->GetImmutableClassName(descriptor_->file()), ".internal_",
       UniqueFileScopeIdentifier(descriptor_->message_type()), "_descriptor, ");
-  variables_["ver"] = GeneratedCodeVersionSuffix();
-
   variables_["get_has_field_bit_builder"] = GenerateGetBit(builder_bit_index_);
   variables_["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builder_bit_index_);
@@ -1132,7 +1130,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
 void ImmutableMapFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "com.google.protobuf.GeneratedMessage$ver$\n"
+                 "com.google.protobuf.GeneratedMessage\n"
                  "  .serialize$short_key_type$MapTo(\n"
                  "    output,\n"
                  "    internalGet$capitalized_name$(),\n"
