@@ -519,7 +519,7 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
 pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> {
     // TODO: Consider creating a static empty array in C.
 
-    // Use `i32` for a shared empty repeated for all repeated types on a thread.
+    // Use `i32` for a shared empty repeated for all repeated types in the program.
     static EMPTY_REPEATED_VIEW: OnceLock<RepeatedView<'static, i32>> = OnceLock::new();
 
     // SAFETY:
