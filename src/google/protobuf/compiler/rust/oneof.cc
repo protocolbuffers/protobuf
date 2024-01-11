@@ -74,6 +74,7 @@ namespace rust {
 // }
 
 namespace {
+// A user-friendly rust type for a view of this field with lifetime 'msg.
 std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
   if (field.options().has_ctype()) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
@@ -108,6 +109,7 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
   return "";
 }
 
+// A user-friendly rust type for a mutator of this field with lifetime 'msg.
 std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
   if (field.options().has_ctype()) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
@@ -126,8 +128,12 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_FLOAT:
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
+      return absl::StrCat("::__pb::PrimitiveMut<'msg, ", RsTypePath(ctx, field),
+                          ">");
     case FieldDescriptor::TYPE_BYTES:
+      return "::__pb::BytesMut<'msg>";
     case FieldDescriptor::TYPE_STRING:
+      return "::__pb::ProtoStrMut<'msg>";
     case FieldDescriptor::TYPE_MESSAGE:
       return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
