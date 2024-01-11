@@ -424,6 +424,10 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
         "_clinit_autosplit_dinit_$method_num$();\n",
         "private static void _clinit_autosplit_dinit_$method_num$() {\n");
   }
+  // Feature resolution for Java features uses extension registry
+  // which must happen after internalInit() from
+  // GenerateNonNestedInitializationCode
+  printer->Print("descriptor.resolveAllFeatures();\n");
 
   // Proto compiler builds a DescriptorPool, which holds all the descriptors to
   // generate, when processing the ".proto" files. We call this DescriptorPool

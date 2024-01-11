@@ -86,6 +86,7 @@ void SharedCodeGenerator::Generate(
         "  * an incomplete descriptor for internal use only. */\n"
         "  public static com.google.protobuf.Descriptors.FileDescriptor "
         "getDescriptor() {\n"
+        "    descriptor.resolveAllFeatures();\n"
         "    return descriptor;\n"
         "  }\n"
         "  static {\n",
