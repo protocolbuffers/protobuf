@@ -49,6 +49,7 @@ const uint32_t kFieldOptionalBool = 13;
 const uint32_t kFieldOptionalString = 14;
 const uint32_t kFieldOptionalNestedMessage = 18;
 const uint32_t kFieldOptionalRepeatedInt32 = 31;
+const uint32_t kFieldOptionalRepeatedNestedMessage = 48;
 const uint32_t kFieldOptionalNestedMessageA = 1;
 const uint32_t kFieldOptionalOneOfUInt32 = 111;
 const uint32_t kFieldOptionalOneOfString = 113;
@@ -398,6 +399,28 @@ TEST(GeneratedCode, RepeatedScalar) {
                                                                       &len);
   EXPECT_EQ(0, len);
   EXPECT_EQ(true, zero_length_array != nullptr);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, RepeatedMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  const upb_MiniTableField* repeated_nested_message_field =
+      find_proto2_field(kFieldOptionalRepeatedNestedMessage);
+  upb_Message* nested_message = (upb_Message*)
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(arena);
+
+  upb_Array* array = upb_Message_GetOrCreateMutableArray(
+      UPB_UPCAST(msg), repeated_nested_message_field, arena);
+  upb_MessageValue new_value;
+  new_value.msg_val = nested_message;
+  EXPECT_TRUE(upb_Array_Append(array, new_value, arena));
+
+  EXPECT_EQ(nested_message, upb_Array_GetMutable(array, 0).msg);
+  EXPECT_EQ(nested_message, upb_Array_Get(array, 0).msg_val);
 
   upb_Arena_Free(arena);
 }

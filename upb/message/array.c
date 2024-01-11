@@ -40,6 +40,15 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   return ret;
 }
 
+upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i) {
+  upb_MutableMessageValue ret;
+  char* data = _upb_array_ptr(arr);
+  const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
+  UPB_ASSERT(i < arr->UPB_PRIVATE(size));
+  memcpy(&ret, data + (i << lg2), 1 << lg2);
+  return ret;
+}
+
 void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
   char* data = _upb_array_ptr(arr);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
