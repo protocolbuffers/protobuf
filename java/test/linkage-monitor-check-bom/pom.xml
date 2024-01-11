@@ -63,12 +63,12 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-bigquery</artifactId>
-        <version>2.29.0</version>
+        <version>2.35.0</version>
       </dependency>
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-bigtable</artifactId>
-        <version>2.24.1</version>
+        <version>2.30.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
