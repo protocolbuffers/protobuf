@@ -193,7 +193,7 @@ upb_DecodeStatus upb_Array_PromoteMessages(upb_Array* arr,
                                            const upb_MiniTable* mini_table,
                                            int decode_options,
                                            upb_Arena* arena) {
-  void** data = _upb_array_ptr(arr);
+  void** data = upb_Array_MutableDataPtr(arr);
   size_t size = arr->UPB_PRIVATE(size);
   for (size_t i = 0; i < size; i++) {
     upb_TaggedMessagePtr tagged;

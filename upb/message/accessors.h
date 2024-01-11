@@ -417,8 +417,10 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, field, arena);
-  if (!arr || !_upb_Array_ResizeUninitialized(arr, size, arena)) return NULL;
-  return _upb_array_ptr(arr);
+  if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, size, arena)) {
+    return NULL;
+  }
+  return upb_Array_MutableDataPtr(arr);
 }
 
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(

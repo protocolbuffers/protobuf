@@ -183,7 +183,7 @@ static void encode_tag(upb_encstate* e, uint32_t field_number,
 static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
                               size_t elem_size, uint32_t tag) {
   size_t bytes = arr->UPB_PRIVATE(size) * elem_size;
-  const char* data = _upb_array_constptr(arr);
+  const char* data = upb_Array_DataPtr(arr);
   const char* ptr = data + bytes - elem_size;
 
   if (tag || !upb_IsLittleEndian()) {
@@ -321,7 +321,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 
 #define VARINT_CASE(ctype, encode)                                         \
   {                                                                        \
-    const ctype* start = _upb_array_constptr(arr);                         \
+    const ctype* start = upb_Array_DataPtr(arr);                           \
     const ctype* ptr = start + arr->UPB_PRIVATE(size);                     \
     uint32_t tag =                                                         \
         packed ? 0 : (f->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint; \
@@ -366,7 +366,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       VARINT_CASE(int64_t, encode_zz64(*ptr));
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes: {
-      const upb_StringView* start = _upb_array_constptr(arr);
+      const upb_StringView* start = upb_Array_DataPtr(arr);
       const upb_StringView* ptr = start + arr->UPB_PRIVATE(size);
       do {
         ptr--;
@@ -377,7 +377,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       return;
     }
     case kUpb_FieldType_Group: {
-      const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
+      const upb_TaggedMessagePtr* start = upb_Array_DataPtr(arr);
       const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
@@ -393,7 +393,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       return;
     }
     case kUpb_FieldType_Message: {
-      const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
+      const upb_TaggedMessagePtr* start = upb_Array_DataPtr(arr);
       const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);

@@ -55,13 +55,15 @@ UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
   return lg2;
 }
 
-UPB_INLINE const void* _upb_array_constptr(const struct upb_Array* array) {
+UPB_INLINE const void* UPB_PRIVATE(_upb_Array_DataPtr)(
+    const struct upb_Array* array) {
   UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
   return (void*)(array->UPB_ONLYBITS(data) & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
 }
 
-UPB_INLINE void* _upb_array_ptr(struct upb_Array* array) {
-  return (void*)_upb_array_constptr(array);
+UPB_INLINE void* UPB_PRIVATE(_upb_Array_MutableDataPtr)(
+    struct upb_Array* array) {
+  return (void*)UPB_PRIVATE(_upb_Array_DataPtr)(array);
 }
 
 UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
@@ -93,8 +95,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
 }
 
 // Resize without initializing new elements.
-UPB_INLINE bool _upb_Array_ResizeUninitialized(struct upb_Array* array,
-                                               size_t size, upb_Arena* arena) {
+UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
+    struct upb_Array* array, size_t size, upb_Arena* arena) {
   UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
              arena);  // Allow NULL arena when shrinking.
   if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
@@ -110,8 +112,12 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
                                             size_t elem_size) {
   UPB_ASSERT(i < array->UPB_ONLYBITS(size));
   UPB_ASSERT(elem_size == 1U << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array));
-  char* arr_data = (char*)_upb_array_ptr(array);
+  char* arr_data = (char*)UPB_PRIVATE(_upb_Array_MutableDataPtr)(array);
   memcpy(arr_data + (i * elem_size), data, elem_size);
+}
+
+UPB_INLINE size_t UPB_PRIVATE(_upb_Array_Size)(const struct upb_Array* arr) {
+  return arr->UPB_ONLYBITS(size);
 }
 
 // LINT.ThenChange(
