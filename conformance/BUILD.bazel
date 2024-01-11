@@ -1,16 +1,16 @@
 # Conformance testing for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "objc_library")
-load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
-load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
-load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load(
     "@rules_pkg//:mappings.bzl",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
+load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
+load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 exports_files([
     "bazel_conformance_test_runner.sh",
@@ -144,9 +144,15 @@ cc_library(
     includes = ["."],
     deps = [
         ":conformance_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ],
@@ -158,13 +164,21 @@ cc_library(
     srcs = ["binary_json_conformance_suite.cc"],
     hdrs = ["binary_json_conformance_suite.h"],
     deps = [
+        ":conformance_cc_proto",
         ":conformance_test",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/editions:test_messages_proto2_editions_cc_proto",
         "//src/google/protobuf/editions:test_messages_proto3_editions_cc_proto",
+        "//src/google/protobuf/json",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@jsoncpp",
     ],
 )
@@ -178,6 +192,7 @@ cc_library(
         ":conformance_test",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "//src/google/protobuf",
         "//src/google/protobuf/editions:test_messages_proto2_editions_cc_proto",
         "//src/google/protobuf/editions:test_messages_proto3_editions_cc_proto",
         "@com_google_absl//absl/log:absl_log",
@@ -209,8 +224,16 @@ cc_binary(
         "//:protobuf",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/editions:test_messages_proto2_editions_cc_proto",
         "//src/google/protobuf/editions:test_messages_proto3_editions_cc_proto",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
     ],

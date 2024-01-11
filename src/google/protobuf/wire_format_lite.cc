@@ -637,9 +637,18 @@ static size_t VarintSize(const T* data, const int n) {
       "Cannot SignExtended unsigned types");
   static_assert(!(SignExtended && ZigZag),
                 "Cannot SignExtended and ZigZag on the same type");
-  uint32_t sum = n;
+  // This approach is only faster when vectorized, and the vectorized
+  // implementation only works in units of the platform's vector width, and is
+  // only faster once a certain number of iterations are used. Normally the
+  // compiler generates two loops - one partially unrolled vectorized loop that
+  // processes big chunks, and a second "epilogue" scalar loop to finish up the
+  // remainder. This is done manually here so that the faster scalar
+  // implementation is used for small inputs and for the epilogue.
+  int vectorN = n & -32;
+  uint32_t sum = vectorN;
   uint32_t msb_sum = 0;
-  for (int i = 0; i < n; i++) {
+  int i = 0;
+  for (; i < vectorN; i++) {
     uint32_t x = data[i];
     if (ZigZag) {
       x = WireFormatLite::ZigZagEncode32(x);
@@ -655,6 +664,19 @@ static size_t VarintSize(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+// Clang is not smart enough to see that this loop doesn't run many times
+// NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+  for (; i < n; i++) {
+    uint32_t x = data[i];
+    if (ZigZag) {
+      sum += WireFormatLite::SInt32Size(x);
+    } else if (SignExtended) {
+      sum += WireFormatLite::Int32Size(x);
+    } else {
+      sum += WireFormatLite::UInt32Size(x);
+    }
+  }
   if (SignExtended) sum += msb_sum * 5;
   return sum;
 }
@@ -665,8 +687,10 @@ static size_t VarintSize64(const T* data, const int n) {
   // is_unsigned<T> => !ZigZag
   static_assert(!ZigZag || !std::is_unsigned<T>::value,
                 "Cannot ZigZag encode unsigned types");
-  uint64_t sum = n;
-  for (int i = 0; i < n; i++) {
+  int vectorN = n & -32;
+  uint64_t sum = vectorN;
+  int i = 0;
+  for (; i < vectorN; i++) {
     uint64_t x = data[i];
     if (ZigZag) {
       x = WireFormatLite::ZigZagEncode64(x);
@@ -681,6 +705,17 @@ static size_t VarintSize64(const T* data, const int n) {
     if (x > 0x3FFF) sum++;
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
+  }
+// Clang is not smart enough to see that this loop doesn't run many times
+// NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+  for (; i < n; i++) {
+    uint64_t x = data[i];
+    if (ZigZag) {
+      sum += WireFormatLite::SInt64Size(x);
+    } else {
+      sum += WireFormatLite::UInt64Size(x);
+    }
   }
   return sum;
 }
@@ -749,12 +784,9 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
 
 #endif
 
-// Micro benchmarks show that the SSE improved loop only starts beating
-// the normal loop on Haswell platforms and then only for >32 ints. We
-// disable this for now. Some specialized users might find it worthwhile to
-// enable this.
-#define USE_SSE_FOR_64_BIT_INTEGER_ARRAYS 0
-#if USE_SSE_FOR_64_BIT_INTEGER_ARRAYS
+// Micro benchmarks show that the vectorizable loop only starts beating
+// the normal loop when 256-bit vector registers are available.
+#if defined(__AVX2__) && defined(__clang__)
 size_t WireFormatLite::Int64Size(const RepeatedField<int64_t>& value) {
   return VarintSize64<false>(value.data(), value.size());
 }

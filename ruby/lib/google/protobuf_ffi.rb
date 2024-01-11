@@ -21,7 +21,6 @@ require 'google/protobuf/ffi/map'
 require 'google/protobuf/ffi/object_cache'
 require 'google/protobuf/ffi/repeated_field'
 require 'google/protobuf/ffi/message'
-require 'google/protobuf/descriptor_dsl'
 
 module Google
   module Protobuf

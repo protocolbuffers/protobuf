@@ -191,11 +191,6 @@ load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "inst
 
 fuzzing_py_deps_install_deps()
 
-bind(
-    name = "python_headers",
-    actual = "@system_python//:python_headers",
-)
-
 http_archive(
     name = "rules_rust",
     sha256 = "9ecd0f2144f0a24e6bc71ebcc50a1ee5128cedeceb32187004532c9710cb2334",

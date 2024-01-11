@@ -4,8 +4,8 @@
 
 # Most rules are under google/protobuf. This package exists for convenience.
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("//upb/cmake:build_defs.bzl", "staleness_test")
 load("//conformance:defs.bzl", "conformance_test")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 pkg_files(
     name = "dist_files",

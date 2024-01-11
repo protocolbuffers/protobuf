@@ -40,8 +40,7 @@ typedef enum {
 // expand support to include non-message types.
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena,
-    const upb_Message_Extension** extension);
+    int decode_options, upb_Arena* arena, const upb_Extension** extension);
 
 typedef enum {
   kUpb_FindUnknown_Ok,

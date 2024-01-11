@@ -190,6 +190,8 @@ module Google
                :str_val, StringView
       end
 
+      Upb_Message_Begin = -1
+
       class MutableMessageValue < ::FFI::Union
         layout :map, :Map,
                :msg, :Message,

@@ -10,8 +10,8 @@
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_WIRE_INTERNAL_DECODE_H_
-#define UPB_WIRE_INTERNAL_DECODE_H_
+#ifndef UPB_WIRE_INTERNAL_DECODER_H_
+#define UPB_WIRE_INTERNAL_DECODER_H_
 
 #include "upb/mem/internal/arena.h"
 #include "upb/message/internal/message.h"
@@ -33,7 +33,10 @@ typedef struct upb_Decoder {
   uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
   uint16_t options;
   bool missing_required;
-  upb_Arena arena;
+  union {
+    upb_Arena arena;
+    void* foo[UPB_ARENA_SIZE_HACK];
+  };
   upb_DecodeStatus status;
   jmp_buf err;
 
@@ -56,26 +59,7 @@ extern const uint8_t upb_utf8_offsets[];
 
 UPB_INLINE
 bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
-  const char* end = ptr + len;
-
-  // Check 8 bytes at a time for any non-ASCII char.
-  while (end - ptr >= 8) {
-    uint64_t data;
-    memcpy(&data, ptr, 8);
-    if (data & 0x8080808080808080) goto non_ascii;
-    ptr += 8;
-  }
-
-  // Check one byte at a time for non-ASCII.
-  while (ptr < end) {
-    if (*ptr & 0x80) goto non_ascii;
-    ptr++;
-  }
-
-  return true;
-
-non_ascii:
-  return utf8_range2((const unsigned char*)ptr, end - ptr) == 0;
+  return utf8_range_IsValid(ptr, len);
 }
 
 const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
@@ -140,4 +124,4 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_INTERNAL_DECODE_H_ */
+#endif /* UPB_WIRE_INTERNAL_DECODER_H_ */

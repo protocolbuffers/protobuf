@@ -325,12 +325,15 @@ inline void Api::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Api::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Api::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
+              false,
+          },
+          &Api::MergeImpl,
+          &Api::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -456,19 +459,25 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   }
 
   // repeated .google.protobuf.Method methods = 2;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_methods_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_methods_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_methods().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            2, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   // repeated .google.protobuf.Option options = 3;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_options_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_options().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            3, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   // string version = 4;
@@ -487,11 +496,14 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   }
 
   // repeated .google.protobuf.Mixin mixins = 6;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_mixins_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_mixins_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_mixins().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            6, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 7;
@@ -521,20 +533,17 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   // repeated .google.protobuf.Method methods = 2;
   total_size += 1UL * this->_internal_methods_size();
   for (const auto& msg : this->_internal_methods()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.Option options = 3;
   total_size += 1UL * this->_internal_options_size();
   for (const auto& msg : this->_internal_options()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.Mixin mixins = 6;
   total_size += 1UL * this->_internal_mixins_size();
   for (const auto& msg : this->_internal_mixins()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // string name = 1;
   if (!this->_internal_name().empty()) {
@@ -714,12 +723,15 @@ inline void Method::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Method::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Method::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
+              false,
+          },
+          &Method::MergeImpl,
+          &Method::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -868,11 +880,14 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
   }
 
   // repeated .google.protobuf.Option options = 6;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_options_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_options_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_options().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(6, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            6, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 7;
@@ -902,8 +917,7 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
   // repeated .google.protobuf.Option options = 6;
   total_size += 1UL * this->_internal_options_size();
   for (const auto& msg : this->_internal_options()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // string name = 1;
   if (!this->_internal_name().empty()) {
@@ -1061,12 +1075,15 @@ inline void Mixin::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Mixin::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Mixin::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
+              false,
+          },
+          &Mixin::MergeImpl,
+          &Mixin::kDescriptorMethods,
       };
   return &_data_;
 }

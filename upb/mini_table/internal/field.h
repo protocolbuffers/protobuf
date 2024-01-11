@@ -20,7 +20,7 @@
 // LINT.IfChange(struct_definition)
 struct upb_MiniTableField {
   uint32_t UPB_ONLYBITS(number);
-  uint16_t offset;
+  uint16_t UPB_ONLYBITS(offset);
   int16_t presence;  // If >0, hasbit_index.  If <0, ~oneof_index
 
   // Indexes into `upb_MiniTable.subs`
@@ -130,16 +130,21 @@ UPB_PRIVATE(_upb_MiniTableField_CType)(const struct upb_MiniTableField* f) {
   return upb_FieldType_CType(UPB_PRIVATE(_upb_MiniTableField_Type)(f));
 }
 
-UPB_INLINE char _upb_MiniTableField_HasbitMask(
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(
     const struct upb_MiniTableField* f) {
-  UPB_ASSERT(f->presence > 0);
+  return f->presence > 0;
+}
+
+UPB_INLINE char UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
   const size_t index = f->presence;
   return 1 << (index % 8);
 }
 
-UPB_INLINE size_t
-_upb_MiniTableField_HasbitOffset(const struct upb_MiniTableField* f) {
-  UPB_ASSERT(f->presence > 0);
+UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
   const size_t index = f->presence;
   return index / 8;
 }
@@ -174,8 +179,13 @@ UPB_PRIVATE(_upb_MiniTableField_Number)(const struct upb_MiniTableField* f) {
   return f->UPB_ONLYBITS(number);
 }
 
-UPB_INLINE size_t
-_upb_MiniTableField_OneofOffset(const struct upb_MiniTableField* f) {
+UPB_INLINE uint16_t
+UPB_PRIVATE(_upb_MiniTableField_Offset)(const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(offset);
+}
+
+UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(
+    const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(f));
   return ~(ptrdiff_t)f->presence;
 }
@@ -198,7 +208,8 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(
 
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
     const struct upb_MiniTableField* f) {
-  return upb_FieldType_SizeLg2((upb_FieldType)f->UPB_PRIVATE(descriptortype));
+  const upb_FieldType field_type = UPB_PRIVATE(_upb_MiniTableField_Type)(f);
+  return UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
 }
 
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table_field.ts)

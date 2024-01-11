@@ -181,8 +181,8 @@ void WriteModelPublicDeclaration(
   output(
       R"cc(
         private:
-        const void* msg() const { return msg_; }
-        void* msg() { return msg_; }
+        const upb_Message* msg() const { return UPB_UPCAST(msg_); }
+        upb_Message* msg() { return UPB_UPCAST(msg_); }
 
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
@@ -242,9 +242,10 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
   output(
       R"cc(
         private:
-        void* msg() const { return msg_; }
+        upb_Message* msg() const { return UPB_UPCAST(msg_); }
 
-        $0Proxy(void* msg, upb_Arena* arena) : internal::$0Access(($1*)msg, arena) {}
+        $0Proxy(upb_Message* msg, upb_Arena* arena)
+            : internal::$0Access(($1*)msg, arena) {}
         friend $0::Proxy(::protos::CreateMessage<$0>(::protos::Arena& arena));
         friend $0::Proxy(::protos::internal::CreateMessageProxy<$0>(
             upb_Message*, upb_Arena*));
@@ -295,9 +296,9 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
       R"cc(
         private:
         using AsNonConst = $0Proxy;
-        const void* msg() const { return msg_; }
+        const upb_Message* msg() const { return UPB_UPCAST(msg_); }
 
-        $0CProxy(const void* msg, upb_Arena* arena)
+        $0CProxy(const upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena){};
         friend struct ::protos::internal::PrivateAccess;
         friend class RepeatedFieldProxy;
@@ -340,7 +341,7 @@ void WriteMessageImplementation(
           }
           $0::$0(const $0& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
@@ -354,7 +355,7 @@ void WriteMessageImplementation(
           }
           $0& $0::operator=(const $3& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {

@@ -163,14 +163,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Used to remove `RepeatedPtrField::GetArena() const`.
-// Owner: ezb@
-#define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
-
-// Used to lock down wrong ctype usages in proto file.
-// Owner: jieluo@
-#define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
-
 #endif
 
 // Defines the Protobuf C++ Version for checking version compatibility at
@@ -440,10 +432,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
 #error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
-#endif
-
-#ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
-#error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
 #endif
 
 #ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG

@@ -61,7 +61,7 @@ void PrintEnumVerifierLogic(
 
 // Prints the Protobuf Java Version validator checking that the runtime and
 // gencode versions are compatible.
-void PrintGencodeVersionValidator(io::Printer* printer);
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.

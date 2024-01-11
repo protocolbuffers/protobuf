@@ -8,7 +8,8 @@
 #ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
-#include "upb/message/types.h"
+#include <stdint.h>
+
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/sub.h"
 
@@ -16,8 +17,9 @@
 #include "upb/port/def.inc"
 
 struct upb_Decoder;
+struct upb_Message;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     upb_Message* msg, intptr_t table,
+                                     struct upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
 typedef struct {
   uint64_t field_data;
@@ -39,6 +41,7 @@ typedef enum {
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
+
 // LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
   const union upb_MiniTableSub* UPB_PRIVATE(subs);

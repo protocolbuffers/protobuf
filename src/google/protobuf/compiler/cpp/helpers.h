@@ -802,7 +802,10 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 
 inline std::string SimpleBaseClass(const Descriptor* desc,
                                    const Options& options) {
+  // The only base class we have derived from `Message`.
   if (!HasDescriptorMethods(desc->file(), options)) return "";
+  // We don't use the base class to be able to inject the weak descriptor pins.
+  if (UsingImplicitWeakDescriptor(desc->file(), options)) return "";
   if (desc->extension_range_count() != 0) return "";
   // Don't use a simple base class if the field tracking is enabled. This
   // ensures generating all methods to track.

@@ -85,7 +85,7 @@ def build_targets(name):
         ],
         deps = select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["//external:python_headers"],
+            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
         }),
     )
 
@@ -120,10 +120,21 @@ def build_targets(name):
         ],
         deps = [
             ":proto_api",
-            "//:protobuf",
+            "//src/google/protobuf",
+            "//src/google/protobuf:port",
+            "//src/google/protobuf:protobuf_lite",
+            "//src/google/protobuf/io",
+            "//src/google/protobuf/io:tokenizer",
+            "//src/google/protobuf/stubs:lite",
+            "//src/google/protobuf/util:differencer",
+            "@com_google_absl//absl/container:flat_hash_map",
+            "@com_google_absl//absl/log:absl_check",
+            "@com_google_absl//absl/log:absl_log",
+            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/strings",
         ] + select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["//external:python_headers"],
+            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
         }),
     )
 
@@ -387,7 +398,7 @@ def build_targets(name):
         hdrs = ["google/protobuf/proto_api.h"],
         visibility = ["//visibility:public"],
         deps = [
-            "//external:python_headers",
+            "@system_python//:python_headers",
         ],
     )
 

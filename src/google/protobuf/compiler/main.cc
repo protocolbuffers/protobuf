@@ -96,7 +96,7 @@ int ProtobufMain(int argc, char* argv[]) {
 
   // Rust
   rust::RustGenerator rust_generator;
-  cli.RegisterGenerator("--rust_out", &rust_generator,
+  cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
                         "Generate Rust sources.");
   return cli.Run(argc, argv);
 }

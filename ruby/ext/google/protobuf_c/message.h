@@ -78,7 +78,7 @@ VALUE Message_decode_bytes(int size, const char* bytes, int options,
                            VALUE klass, bool freeze);
 
 // Recursively freeze message
-VALUE Message_internal_deep_freeze(VALUE _self);
+VALUE Message_freeze(VALUE _self);
 
 // Call at startup to register all types in this module.
 void Message_register(VALUE protobuf);

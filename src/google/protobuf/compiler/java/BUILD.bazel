@@ -14,7 +14,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf",
     ],
 )
 
@@ -37,10 +37,18 @@ cc_library(
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":java_features_bootstrap",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:versions",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -50,8 +58,11 @@ cc_library(
     hdrs = ["java_features.pb.h"],
     strip_include_prefix = "/src",
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf:arena",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
     ],
 )
 
@@ -128,14 +139,22 @@ cc_library(
         ":java_features_bootstrap",
         ":names",
         ":names_internal",
+        "//src/google/protobuf",
         "//src/google/protobuf:arena",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/compiler:versions",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -162,8 +181,10 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

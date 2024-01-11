@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -17,38 +19,37 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
-  Context<Descriptor> d = field.WithDesc(field.desc().message_type());
+void SingularMessage::InMsgImpl(Context& ctx,
+                                const FieldDescriptor& field) const {
+  std::string prefix = RsTypePath(ctx, field);
 
-  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(d);
-
-  field.Emit(
+  ctx.Emit(
       {
           {"prefix", prefix},
-          {"field", field.desc().name()},
-          {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "get_mut")},
-          {"clearer_thunk", Thunk(field, "clear")},
+          {"field", field.name()},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"clearer_thunk", ThunkName(ctx, field, "clear")},
           {
               "view_body",
               [&] {
-                if (field.is_upb()) {
-                  field.Emit({}, R"rs(
+                if (ctx.is_upb()) {
+                  ctx.Emit({}, R"rs(
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-              // For upb, getters return null if the field is unset, so we need
-              // to check for null and return the default instance manually.
-              // Note that a nullptr received from upb manifests as Option::None
+              //~ For upb, getters return null if the field is unset, so we need
+              //~ to check for null and return the default instance manually.
+              //~ Note that a nullptr received from upb manifests as Option::None
               match submsg {
-                // TODO:(b/304357029)
+                //~ TODO:(b/304357029)
                 None => $prefix$View::new($pbi$::Private,
                         $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
                 Some(field) => $prefix$View::new($pbi$::Private, field),
               }
         )rs");
                 } else {
-                  field.Emit({}, R"rs(
-              // For C++ kernel, getters automatically return the
-              // default_instance if the field is unset.
+                  ctx.Emit({}, R"rs(
+              //~ For C++ kernel, getters automatically return the
+              //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
               $prefix$View::new($pbi$::Private, submsg)
         )rs");
@@ -57,15 +58,15 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
           },
           {"submessage_mut",
            [&] {
-             if (field.is_upb()) {
-               field.Emit({}, R"rs(
+             if (ctx.is_upb()) {
+               ctx.Emit({}, R"rs(
                  let submsg = unsafe {
                    $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
                  };
                  $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
                  )rs");
              } else {
-               field.Emit({}, R"rs(
+               ctx.Emit({}, R"rs(
                     let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
                     $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
                   )rs");
@@ -87,21 +88,22 @@ void SingularMessage::InMsgImpl(Context<FieldDescriptor> field) const {
         )rs");
 }
 
-void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit(
+void SingularMessage::InExternC(Context& ctx,
+                                const FieldDescriptor& field) const {
+  ctx.Emit(
       {
-          {"getter_thunk", Thunk(field, "get")},
-          {"getter_mut_thunk", Thunk(field, "get_mut")},
-          {"clearer_thunk", Thunk(field, "clear")},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"clearer_thunk", ThunkName(ctx, field, "clear")},
           {"getter_mut",
            [&] {
-             if (field.is_cpp()) {
-               field.Emit(
+             if (ctx.is_cpp()) {
+               ctx.Emit(
                    R"rs(
                     fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage)
                        -> $pbi$::RawMessage;)rs");
              } else {
-               field.Emit(
+               ctx.Emit(
                    R"rs(fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
                                                arena: $pbi$::RawArena)
                             -> $pbi$::RawMessage;)rs");
@@ -109,13 +111,13 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
            }},
           {"ReturnType",
            [&] {
-             if (field.is_cpp()) {
+             if (ctx.is_cpp()) {
                // guaranteed to have a nonnull submsg for the cpp kernel
-               field.Emit({}, "$pbi$::RawMessage;");
+               ctx.Emit({}, "$pbi$::RawMessage;");
              } else {
                // upb kernel may return NULL for a submsg, we can detect this
                // in terra rust if the option returned is None
-               field.Emit({}, "Option<$pbi$::RawMessage>;");
+               ctx.Emit({}, "Option<$pbi$::RawMessage>;");
              }
            }},
       },
@@ -126,22 +128,22 @@ void SingularMessage::InExternC(Context<FieldDescriptor> field) const {
                )rs");
 }
 
-void SingularMessage::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({{"QualifiedMsg",
-               cpp::QualifiedClassName(field.desc().containing_type())},
-              {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "get_mut")},
-              {"clearer_thunk", Thunk(field, "clear")},
-              {"field", cpp::FieldName(&field.desc())}},
-             R"cc(
-               const void* $getter_thunk$($QualifiedMsg$* msg) {
-                 return static_cast<const void*>(&msg->$field$());
-               }
-               void* $getter_mut_thunk$($QualifiedMsg$* msg) {
-                 return static_cast<void*>(msg->mutable_$field$());
-               }
-               void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-             )cc");
+void SingularMessage::InThunkCc(Context& ctx,
+                                const FieldDescriptor& field) const {
+  ctx.Emit({{"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"field", cpp::FieldName(&field)}},
+           R"cc(
+             const void* $getter_thunk$($QualifiedMsg$* msg) {
+               return static_cast<const void*>(&msg->$field$());
+             }
+             void* $getter_mut_thunk$($QualifiedMsg$* msg) {
+               return static_cast<void*>(msg->mutable_$field$());
+             }
+             void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+           )cc");
 }
 
 }  // namespace rust

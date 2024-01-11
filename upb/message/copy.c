@@ -19,14 +19,12 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
-#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -77,9 +75,9 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
       if (is_empty) sub = UPB_PRIVATE(_upb_MiniTable_Empty)();
       UPB_ASSERT(source);
       upb_Message* clone = upb_Message_DeepClone(
-          _upb_TaggedMessagePtr_GetMessage(source), sub, arena);
+          UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(source), sub, arena);
       *(upb_TaggedMessagePtr*)value =
-          _upb_TaggedMessagePtr_Pack(clone, is_empty);
+          UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(clone, is_empty);
       return clone != NULL;
     } break;
   }
@@ -107,8 +105,7 @@ upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
     if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
       return NULL;
     }
-    if (upb_Map_Insert(cloned_map, key, val, arena) ==
-        kUpb_MapInsertStatus_OutOfMemory) {
+    if (!upb_Map_Set(cloned_map, key, val, arena)) {
       return NULL;
     }
   }
@@ -142,9 +139,9 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
 
 upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
                                const upb_MiniTable* sub, upb_Arena* arena) {
-  size_t size = array->size;
-  upb_Array* cloned_array =
-      UPB_PRIVATE(_upb_Array_New)(arena, size, upb_CType_SizeLg2(value_type));
+  const size_t size = array->UPB_PRIVATE(size);
+  const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(value_type);
+  upb_Array* cloned_array = UPB_PRIVATE(_upb_Array_New)(arena, size, lg2);
   if (!cloned_array) {
     return NULL;
   }
@@ -180,9 +177,8 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
 }
 
 static bool upb_Clone_ExtensionValue(
-    const upb_MiniTableExtension* mini_table_ext,
-    const upb_Message_Extension* source, upb_Message_Extension* dest,
-    upb_Arena* arena) {
+    const upb_MiniTableExtension* mini_table_ext, const upb_Extension* source,
+    upb_Extension* dest, upb_Arena* arena) {
   dest->data = source->data;
   return upb_Clone_MessageValue(
       &dest->data,
@@ -204,7 +200,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           upb_TaggedMessagePtr tagged =
               upb_Message_GetTaggedMessagePtr(src, field, NULL);
           const upb_Message* sub_message =
-              _upb_TaggedMessagePtr_GetMessage(tagged);
+              UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged);
           if (sub_message != NULL) {
             // If the message is currently in an unlinked, "empty" state we keep
             // it that way, because we don't want to deal with decode options,
@@ -220,7 +216,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             }
             _upb_Message_SetTaggedMessagePtr(
                 dst, mini_table, field,
-                _upb_TaggedMessagePtr_Pack(dst_sub_message, is_empty));
+                UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
+                                                        is_empty));
           }
         } break;
         case kUpb_CType_String:
@@ -258,11 +255,11 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   }
   // Clone extensions.
   size_t ext_count;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(src, &ext_count);
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(src, &ext_count);
   for (size_t i = 0; i < ext_count; ++i) {
-    const upb_Message_Extension* msg_ext = &ext[i];
+    const upb_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-    upb_Message_Extension* dst_ext =
+    upb_Extension* dst_ext =
         _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
     if (upb_MiniTableField_IsScalar(field)) {

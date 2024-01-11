@@ -13,6 +13,7 @@
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
 #include "upb/base/status.hpp"
+#include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
 #include "upb/mem/arena.h"
@@ -27,8 +28,8 @@ static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
 
   upb_test_Box* box = upb_test_Box_new(a);
   int options = 0;
-  bool ok = upb_JsonDecode(json, strlen(json), box, m.ptr(), defpool.ptr(),
-                           options, a, status.ptr());
+  bool ok = upb_JsonDecode(json, strlen(json), UPB_UPCAST(box), m.ptr(),
+                           defpool.ptr(), options, a, status.ptr());
   return ok ? box : nullptr;
 }
 

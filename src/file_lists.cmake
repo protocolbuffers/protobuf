@@ -390,6 +390,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/unsupported_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/naming.cc
@@ -398,6 +399,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
 )
 
 # @//pkg:protoc
@@ -503,6 +505,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/naming.h
@@ -512,6 +515,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
 )
 
 # @//src/google/protobuf:well_known_type_protos
@@ -663,6 +667,7 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.h

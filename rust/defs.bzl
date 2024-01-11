@@ -3,13 +3,13 @@
 Disclaimer: This project is experimental, under heavy development, and should not
 be used yet."""
 
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:aspects.bzl",
     "RustProtoInfo",
     "rust_cc_proto_library_aspect",
     "rust_upb_proto_library_aspect",
 )
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 visibility([
     "//experimental/...",
@@ -72,7 +72,11 @@ def _rust_proto_library_impl(ctx):
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
     dep_variant_info = rust_proto_info.dep_variant_info
-    return [dep_variant_info.crate_info, dep_variant_info.dep_info, dep_variant_info.cc_info]
+    return [
+        dep_variant_info.crate_info,
+        dep_variant_info.dep_info,
+        dep_variant_info.cc_info,
+    ]
 
 def _make_rust_proto_library(is_upb):
     return rule(

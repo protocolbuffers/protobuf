@@ -2156,12 +2156,8 @@ class PROTOBUF_EXPORT DescriptorPool {
     virtual void RecordError(absl::string_view filename,
                              absl::string_view element_name,
                              const Message* descriptor, ErrorLocation location,
-                             absl::string_view message) {
-      PROTOBUF_IGNORE_DEPRECATION_START
-      AddError(std::string(filename), std::string(element_name), descriptor,
-               location, std::string(message));
-      PROTOBUF_IGNORE_DEPRECATION_STOP
-    }
+                             absl::string_view message)
+        = 0;
 
     // Reports a warning in the FileDescriptorProto. Use this function if the
     // problem occurred should NOT interrupt building the FileDescriptorProto.
@@ -2176,27 +2172,8 @@ class PROTOBUF_EXPORT DescriptorPool {
                                const Message* descriptor,
                                ErrorLocation location,
                                absl::string_view message) {
-      PROTOBUF_IGNORE_DEPRECATION_START
-      AddWarning(std::string(filename), std::string(element_name), descriptor,
-                 location, std::string(message));
-      PROTOBUF_IGNORE_DEPRECATION_STOP
     }
 
-   private:
-    // These should never be called directly, but if a legacy class overrides
-    // them they'll get routed to by the Record* methods.
-    ABSL_DEPRECATED("Use RecordError")
-    virtual void AddError(const std::string& filename,
-                          const std::string& element_name,
-                          const Message* descriptor, ErrorLocation location,
-                          const std::string& message) {
-      ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
-    }
-    ABSL_DEPRECATED("Use RecordWarning")
-    virtual void AddWarning(const std::string& filename,
-                            const std::string& element_name,
-                            const Message* descriptor, ErrorLocation location,
-                            const std::string& message) {}
   };
 
   // Convert the FileDescriptorProto to real descriptors and place them in

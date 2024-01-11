@@ -203,11 +203,14 @@ class DynamicMessage final : public Message {
   Message* New(Arena* arena) const override;
 
   const ClassData* GetClassData() const final {
-    ABSL_CONST_INIT static const ClassData data = {
+    ABSL_CONST_INIT static const ClassDataFull data = {
+        {
+            nullptr,  // on_demand_register_arena_dtor
+            PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
+            false,
+        },
         &MergeImpl,
-        nullptr,  // on_demand_register_arena_dtor
         &kDescriptorMethods,
-        PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
     };
     return &data;
   }

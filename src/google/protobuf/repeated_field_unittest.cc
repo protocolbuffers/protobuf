@@ -23,6 +23,7 @@
 #include <iterator>
 #include <limits>
 #include <list>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -55,6 +56,7 @@ namespace {
 
 using ::protobuf_unittest::TestAllTypes;
 using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
+using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
@@ -110,6 +112,20 @@ TEST(RepeatedPtrOverPtrsIterator, Traits) {
                             std::random_access_iterator_tag>::value));
 #endif
 }
+
+#if __cplusplus >= 202002L
+TEST(RepeatedPtrOverPtrsIterator, ToAddress) {
+  // empty container
+  RepeatedPtrField<std::string> field;
+  EXPECT_THAT(std::to_address(field.pointer_begin()), A<std::string**>());
+  EXPECT_EQ(std::to_address(field.pointer_begin()),
+            std::to_address(field.pointer_end()));
+
+  // "null" iterator
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_THAT(std::to_address(It()), A<std::string**>());
+}
+#endif
 
 TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   using It = RepeatedPtrField<std::string>::const_pointer_iterator;
@@ -1035,7 +1051,7 @@ TEST(Movable, Works) {
   EXPECT_FALSE(internal::IsMovable<NonMovable>::value);
 }
 
-TEST(RepeatedField, MoveAdd) {
+TEST(RepeatedPtrField, MoveAdd) {
   RepeatedPtrField<TestAllTypes> field;
   TestAllTypes test_all_types;
   auto* optional_nested_message =
@@ -1911,9 +1927,12 @@ TEST(RepeatedPtrField, SmallOptimization) {
   // Verify the string is where we think it is.
   EXPECT_EQ(&*array->begin(), &str);
   EXPECT_EQ(array->pointer_begin()[0], &str);
+  auto is_inlined = [array]() {
+    return std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
+           std::less<void*>{}(&*array->pointer_begin(), array + 1);
+  };
   // The T** in pointer_begin points into the sso in the object.
-  EXPECT_TRUE(std::less_equal<void*>{}(array, &*array->pointer_begin()));
-  EXPECT_TRUE(std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+  EXPECT_TRUE(is_inlined());
 
   // Adding a second object stops sso.
   std::string str2;
@@ -1925,8 +1944,7 @@ TEST(RepeatedPtrField, SmallOptimization) {
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.
-  EXPECT_FALSE(std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
-               std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+  EXPECT_FALSE(is_inlined());
 }
 
 TEST(RepeatedPtrField, CopyAssign) {

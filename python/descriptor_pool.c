@@ -12,6 +12,7 @@
 #include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/base/upcast.h"
 #include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
 
@@ -147,8 +148,7 @@ bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) { return true; }
 static bool PyUpb_DescriptorPool_LoadDependentFiles(
     PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
   size_t n;
-  const upb_StringView* deps =
-      google_protobuf_FileDescriptorProto_dependency(proto, &n);
+  const upb_StringView* deps = google_protobuf_FileDescriptorProto_dependency(proto, &n);
   for (size_t i = 0; i < n; i++) {
     const upb_FileDef* dep = upb_DefPool_FindFileByNameWithSize(
         self->symtab, deps[i].data, deps[i].size);
@@ -191,14 +191,13 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   if (file) {
     // If the existing file is equal to the new file, then silently ignore the
     // duplicate add.
-    google_protobuf_FileDescriptorProto* existing =
-        upb_FileDef_ToProto(file, arena);
+    google_protobuf_FileDescriptorProto* existing = upb_FileDef_ToProto(file, arena);
     if (!existing) {
       PyErr_SetNone(PyExc_MemoryError);
       goto done;
     }
     const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
-    if (upb_Message_IsEqual(proto, existing, m)) {
+    if (upb_Message_IsEqual(UPB_UPCAST(proto), UPB_UPCAST(existing), m)) {
       result = PyUpb_FileDescriptor_Get(file);
       goto done;
     }

@@ -190,12 +190,15 @@ inline void JavaFeatures::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 JavaFeatures::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          JavaFeatures::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
+              false,
+          },
+          &JavaFeatures::MergeImpl,
+          &JavaFeatures::kDescriptorMethods,
       };
   return &_data_;
 }

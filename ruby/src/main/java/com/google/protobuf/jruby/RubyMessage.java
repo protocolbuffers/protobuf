@@ -203,7 +203,7 @@ public class RubyMessage extends RubyObject {
     sb.append(cname).append(colon);
 
     for (FieldDescriptor fd : descriptor.getFields()) {
-      if (fd.hasPresence() && !fields.containsKey(fd)) {
+      if (fd.hasPresence() && !(fields.containsKey(fd) || builder.hasField(fd))) {
         continue;
       }
       if (addComma) {
@@ -551,7 +551,8 @@ public class RubyMessage extends RubyObject {
       } else if (fields.containsKey(fieldDescriptor)) {
         dup.setFieldInternal(context, fieldDescriptor, fields.get(fieldDescriptor));
       } else if (this.builder.hasField(fieldDescriptor)) {
-        dup.fields.put(
+        dup.setFieldInternal(
+            context,
             fieldDescriptor,
             wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
       }
@@ -664,7 +665,7 @@ public class RubyMessage extends RubyObject {
               });
     }
     if (freeze) {
-      ret.deepFreeze(context);
+      ret.freeze(context);
     }
     return ret;
   }
@@ -787,47 +788,47 @@ public class RubyMessage extends RubyObject {
   public IRubyObject toHash(ThreadContext context) {
     Ruby runtime = context.runtime;
     RubyHash ret = RubyHash.newHash(runtime);
-    for (FieldDescriptor fdef : this.descriptor.getFields()) {
+    build(context, 0, SINK_MAXIMUM_NESTING); // Sync Ruby data to the Builder object.
+    for (Map.Entry<FieldDescriptor, Object> field : builder.getAllFields().entrySet()) {
+      FieldDescriptor fdef = field.getKey();
       IRubyObject value = getFieldInternal(context, fdef, proto3);
 
-      if (!value.isNil()) {
-        if (fdef.isRepeated() && !fdef.isMapField()) {
-          if (!proto3 && ((RubyRepeatedField) value).size() == 0)
-            continue; // Don't output empty repeated fields for proto2
-          if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
-            value = Helpers.invoke(context, value, "to_a");
-          } else {
-            RubyArray ary = value.convertToArray();
-            for (int i = 0; i < ary.size(); i++) {
-              IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
-              ary.eltInternalSet(i, submsg);
-            }
-
-            value = ary.to_ary();
-          }
-        } else if (value.respondsTo("to_h")) {
-          value = Helpers.invoke(context, value, "to_h");
-        } else if (value.respondsTo("to_a")) {
+      if (fdef.isRepeated() && !fdef.isMapField()) {
+        if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
           value = Helpers.invoke(context, value, "to_a");
+        } else {
+          RubyArray ary = value.convertToArray();
+          for (int i = 0; i < ary.size(); i++) {
+            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+            ary.eltInternalSet(i, submsg);
+          }
+
+          value = ary.to_ary();
         }
+      } else if (value.respondsTo("to_h")) {
+        value = Helpers.invoke(context, value, "to_h");
+      } else if (value.respondsTo("to_a")) {
+        value = Helpers.invoke(context, value, "to_a");
       }
-      if (proto3 || !value.isNil()) {
-        ret.fastASet(runtime.newSymbol(fdef.getName()), value);
-      }
+      ret.fastASet(runtime.newSymbol(fdef.getName()), value);
     }
     return ret;
   }
 
-  protected IRubyObject deepFreeze(ThreadContext context) {
+  @JRubyMethod
+  public IRubyObject freeze(ThreadContext context) {
+    if (isFrozen()) {
+      return this;
+    }
     setFrozen(true);
     for (FieldDescriptor fdef : descriptor.getFields()) {
       if (fdef.isMapField()) {
-        ((RubyMap) fields.get(fdef)).deepFreeze(context);
+        ((RubyMap) fields.get(fdef)).freeze(context);
       } else if (fdef.isRepeated()) {
-        this.getRepeatedField(context, fdef).deepFreeze(context);
+        this.getRepeatedField(context, fdef).freeze(context);
       } else if (fields.containsKey(fdef)) {
         if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
-          ((RubyMessage) fields.get(fdef)).deepFreeze(context);
+          ((RubyMessage) fields.get(fdef)).freeze(context);
         }
       }
     }

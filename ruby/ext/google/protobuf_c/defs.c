@@ -489,7 +489,7 @@ static VALUE FileDescriptor_alloc(VALUE klass) {
  * call-seq:
  *     FileDescriptor.new => file
  *
- * Returns a new file descriptor. The syntax must be set before it's passed
+ * Returns a new file descriptor. May
  * to a builder.
  */
 static VALUE FileDescriptor_initialize(VALUE _self, VALUE cookie,
@@ -521,28 +521,6 @@ static VALUE FileDescriptor_name(VALUE _self) {
 
 /*
  * call-seq:
- *     FileDescriptor.syntax => syntax
- *
- * Returns this file descriptors syntax.
- *
- * Valid syntax versions are:
- *     :proto2 or :proto3.
- */
-static VALUE FileDescriptor_syntax(VALUE _self) {
-  FileDescriptor* self = ruby_to_FileDescriptor(_self);
-
-  switch (upb_FileDef_Syntax(self->filedef)) {
-    case kUpb_Syntax_Proto3:
-      return ID2SYM(rb_intern("proto3"));
-    case kUpb_Syntax_Proto2:
-      return ID2SYM(rb_intern("proto2"));
-    default:
-      return Qnil;
-  }
-}
-
-/*
- * call-seq:
  *     FileDescriptor.options => options
  *
  * Returns the `FileOptions` for this `FileDescriptor`.
@@ -564,7 +542,6 @@ static void FileDescriptor_register(VALUE module) {
   rb_define_alloc_func(klass, FileDescriptor_alloc);
   rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
-  rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
   rb_define_method(klass, "options", FileDescriptor_options, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
@@ -738,6 +715,28 @@ static VALUE FieldDescriptor_default(VALUE _self) {
 
 /*
  * call-seq:
+ *     FieldDescriptor.has_presence? => bool
+ *
+ * Returns whether this field tracks presence.
+ */
+static VALUE FieldDescriptor_has_presence(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  return upb_FieldDef_HasPresence(self->fielddef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
+ *     FieldDescriptor.is_packed? => bool
+ *
+ * Returns whether this is a repeated field that uses packed encoding.
+ */
+static VALUE FieldDescriptor_is_packed(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  return upb_FieldDef_IsPacked(self->fielddef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
  *     FieldDescriptor.json_name => json_name
  *
  * Returns this field's json_name, as a Ruby string, or nil if not yet set.
@@ -862,7 +861,7 @@ static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  const upb_MessageDef* msg = Message_Get(msg_rb, &m);
+  const upb_Message* msg = Message_Get(msg_rb, &m);
 
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
@@ -882,7 +881,7 @@ static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  upb_MessageDef* msg = Message_GetMutable(msg_rb, &m);
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
 
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
@@ -903,7 +902,7 @@ static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  upb_MessageDef* msg = Message_GetMutable(msg_rb, &m);
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
   upb_Arena* arena = Arena_get(Message_GetArena(msg_rb));
   upb_MessageValue msgval;
 
@@ -943,6 +942,8 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "name", FieldDescriptor_name, 0);
   rb_define_method(klass, "type", FieldDescriptor__type, 0);
   rb_define_method(klass, "default", FieldDescriptor_default, 0);
+  rb_define_method(klass, "has_presence?", FieldDescriptor_has_presence, 0);
+  rb_define_method(klass, "is_packed?", FieldDescriptor_is_packed, 0);
   rb_define_method(klass, "json_name", FieldDescriptor_json_name, 0);
   rb_define_method(klass, "label", FieldDescriptor_label, 0);
   rb_define_method(klass, "number", FieldDescriptor_number, 0);
@@ -1165,6 +1166,17 @@ static VALUE EnumDescriptor_file_descriptor(VALUE _self) {
 
 /*
  * call-seq:
+ *     EnumDescriptor.is_closed? => bool
+ *
+ * Returns whether this enum is open or closed.
+ */
+static VALUE EnumDescriptor_is_closed(VALUE _self) {
+  EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
+  return upb_EnumDef_IsClosed(self->enumdef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
  *     EnumDescriptor.name => name
  *
  * Returns the name of this enum type.
@@ -1275,6 +1287,7 @@ static void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
+  rb_define_method(klass, "is_closed?", EnumDescriptor_is_closed, 0);
   rb_define_method(klass, "options", EnumDescriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);

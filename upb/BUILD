@@ -111,13 +111,10 @@ cc_library(
         ":base",
         ":mem",
         ":message",
-        ":message_accessors",
-        ":message_accessors_internal",
-        ":message_internal",
         ":mini_descriptor",
         ":mini_table",
         ":wire",
-        ":wire_internal",
+        "//upb/message:internal",
     ],
 )
 
@@ -137,12 +134,6 @@ cc_library(
 alias(
     name = "base",
     actual = "//upb/base",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "base_internal",
-    actual = "//upb/base:internal",
     visibility = ["//visibility:public"],
 )
 
@@ -178,20 +169,8 @@ alias(
 )
 
 alias(
-    name = "hash",
-    actual = "//upb/hash",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "json",
     actual = "//upb/json",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "lex",
-    actual = "//upb/lex",
     visibility = ["//visibility:public"],
 )
 
@@ -202,44 +181,20 @@ alias(
 )
 
 alias(
-    name = "mem_internal",
-    actual = "//upb/mem:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "message",
     actual = "//upb/message",
     visibility = ["//visibility:public"],
 )
 
 alias(
-    name = "message_accessors",
-    actual = "//upb/message:accessors",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_accessors_internal",
-    actual = "//upb/message:accessors_internal",
+    name = "message_compare",
+    actual = "//upb/message:compare",
     visibility = ["//upb:friends"],
 )
 
 alias(
     name = "message_copy",
     actual = "//upb/message:copy",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_internal",
-    actual = "//upb/message:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_internal_types",
-    actual = "//upb/message:internal_types",
     visibility = ["//visibility:public"],
 )
 
@@ -256,33 +211,9 @@ alias(
 )
 
 alias(
-    name = "message_tagged_ptr",
-    actual = "//upb/message:tagged_ptr",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "message_types",
-    actual = "//upb/message:types",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_value",
-    actual = "//upb/message:value",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "mini_descriptor",
     actual = "//upb/mini_descriptor",
     visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "mini_descriptor_internal",
-    actual = "//upb/mini_descriptor:internal",
-    visibility = ["//upb:__subpackages__"],
 )
 
 alias(
@@ -295,12 +226,6 @@ alias(
     name = "mini_table_compat",
     actual = "//upb/mini_table:compat",
     visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "mini_table_internal",
-    actual = "//upb/mini_table:internal",
-    visibility = ["//visibility:public"],
 )
 
 alias(
@@ -322,12 +247,6 @@ alias(
 )
 
 alias(
-    name = "reflection_internal",
-    actual = "//upb/reflection:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "text",
     actual = "//upb/text",
     visibility = ["//visibility:public"],
@@ -340,20 +259,8 @@ alias(
 )
 
 alias(
-    name = "wire_internal",
-    actual = "//upb/wire:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "wire_reader",
     actual = "//upb/wire:reader",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "wire_types",
-    actual = "//upb/wire:types",
     visibility = ["//visibility:public"],
 )
 
@@ -361,26 +268,6 @@ alias(
     name = "eps_copy_input_stream",
     actual = "//upb/wire:eps_copy_input_stream",
     visibility = ["//visibility:public"],
-)
-
-# Internal C/C++ libraries #####################################################
-
-cc_binary(
-    name = "libupb.so",
-    srcs = ["upb_so.c"],
-    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
-    linkshared = 1,
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":message",
-        ":message_accessors",
-        ":message_split64",
-        ":mini_descriptor",
-        ":mini_table",
-        ":port",
-    ],
 )
 
 # Amalgamation #################################################################
@@ -395,35 +282,29 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
-        ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
-        ":message_accessors",
+        ":message_compare",
         ":message_copy",
-        ":message_internal",
-        ":message_internal_types",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
         ":mini_table_compat",
-        ":mini_table_internal",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
-        ":wire_internal",
         ":wire_reader",
-        ":wire_types",
+        "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -444,36 +325,31 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
-        ":message_accessors",
+        ":message_compare",
         ":message_copy",
-        ":message_internal",
-        ":message_internal_types",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
-        ":mini_table_internal",
+        ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
-        ":wire_internal",
         ":wire_reader",
-        ":wire_types",
+        "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -496,35 +372,30 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":base_internal",
         ":descriptor_upb_minitable_proto",
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
-        ":mem_internal",
         ":message",
-        ":message_accessors",
+        ":message_compare",
         ":message_copy",
-        ":message_internal",
-        ":message_internal_types",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
-        ":mini_descriptor_internal",
         ":mini_table",
-        ":mini_table_internal",
+        ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
-        ":wire_internal",
         ":wire_reader",
-        ":wire_types",
+        "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
@@ -551,19 +422,18 @@ filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "**/*.c",
             "**/*.h",
             "**/*.hpp",
-       ],
+        ],
         exclude = [
             "**/conformance_upb.c",
             "reflection/stage0/**/*",
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only
 

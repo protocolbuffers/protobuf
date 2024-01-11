@@ -376,12 +376,15 @@ inline void Version::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Version::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Version::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
+              false,
+          },
+          &Version::MergeImpl,
+          &Version::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -684,12 +687,15 @@ inline void CodeGeneratorRequest::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 CodeGeneratorRequest::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          CodeGeneratorRequest::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
+              false,
+          },
+          &CodeGeneratorRequest::MergeImpl,
+          &CodeGeneratorRequest::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -819,19 +825,25 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_proto_file_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_proto_file_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_proto_file().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            15, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_source_file_descriptors_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_source_file_descriptors_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_source_file_descriptors().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(17, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            17, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -860,14 +872,12 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   total_size += 1UL * this->_internal_proto_file_size();
   for (const auto& msg : this->_internal_proto_file()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
   total_size += 2UL * this->_internal_source_file_descriptors_size();
   for (const auto& msg : this->_internal_source_file_descriptors()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
@@ -929,10 +939,8 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 }
 
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file()))
-    return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_source_file_descriptors()))
-    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file())) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(_internal_source_file_descriptors())) return false;
   return true;
 }
 
@@ -1026,12 +1034,15 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 CodeGeneratorResponse_File::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          CodeGeneratorResponse_File::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
+              false,
+          },
+          &CodeGeneratorResponse_File::MergeImpl,
+          &CodeGeneratorResponse_File::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1343,12 +1354,15 @@ inline void CodeGeneratorResponse::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 CodeGeneratorResponse::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          CodeGeneratorResponse::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
+              false,
+          },
+          &CodeGeneratorResponse::MergeImpl,
+          &CodeGeneratorResponse::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -1481,11 +1495,14 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_file_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_file_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_file().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(15, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            15, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1508,8 +1525,7 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   total_size += 1UL * this->_internal_file_size();
   for (const auto& msg : this->_internal_file()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {

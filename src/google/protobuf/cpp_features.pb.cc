@@ -157,12 +157,15 @@ inline void CppFeatures::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 CppFeatures::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          CppFeatures::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+              false,
+          },
+          &CppFeatures::MergeImpl,
+          &CppFeatures::kDescriptorMethods,
       };
   return &_data_;
 }

@@ -18,7 +18,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
-#include "upb/message/types.h"
+#include "upb/message/message.h"
 
 namespace protos {
 namespace internal {

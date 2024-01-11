@@ -195,12 +195,15 @@ inline void Any::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Any::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Any::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
+              false,
+          },
+          &Any::MergeImpl,
+          &Any::kDescriptorMethods,
       };
   return &_data_;
 }

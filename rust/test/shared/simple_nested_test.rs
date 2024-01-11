@@ -9,15 +9,26 @@ use googletest::prelude::*;
 use nested_proto::nest::Outer;
 use nested_proto::nest::Outer_::InnerMut;
 use nested_proto::nest::Outer_::InnerView;
+use nested_proto::nest::Outer_::Inner_::InnerEnum;
 
 #[test]
-fn test_deeply_nested_definition() {
+fn test_deeply_nested_message() {
     let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
             ::CantBelieveItsSoInner::new();
     assert_that!(deep.num(), eq(0));
 
     let outer_msg = Outer::new();
     assert_that!(outer_msg.deep().num(), eq(0));
+}
+
+#[test]
+fn test_deeply_nested_enum() {
+    use nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_::JustWayTooInner;
+    let deep = JustWayTooInner::default();
+    assert_that!(i32::from(deep), eq(0));
+
+    let outer_msg = Outer::new();
+    assert_that!(outer_msg.deep_enum(), eq(JustWayTooInner::Unspecified));
 }
 
 #[test]
@@ -40,6 +51,7 @@ fn test_nested_views() {
     assert_that!(*inner_msg.string().as_bytes(), empty());
     assert_that!(*inner_msg.bytes(), empty());
     assert_that!(inner_msg.innersubmsg().flag(), eq(false));
+    assert_that!(inner_msg.inner_enum(), eq(InnerEnum::Unspecified));
 }
 
 #[test]
@@ -52,7 +64,7 @@ fn test_nested_muts() {
     // new:
     //   set_and_test_mut!(inner_msg => double_mut, 543.21);
     macro_rules! set_and_test_mut {
-    ( $a:expr => $($target_mut:ident, $val:literal;)* ) => {
+    ( $a:expr => $($target_mut:ident, $val:expr;)* ) => {
         $(
           $a.$target_mut().set($val);
           assert_that!($a.$target_mut().get(), eq($val));
@@ -61,7 +73,7 @@ fn test_nested_muts() {
 }
 
     let mut outer_msg = Outer::new();
-    let inner_msg: InnerMut<'_> = outer_msg.inner_mut();
+    let mut inner_msg: InnerMut<'_> = outer_msg.inner_mut();
     assert_that!(
         inner_msg,
         matches_pattern!(InnerMut{
@@ -77,10 +89,12 @@ fn test_nested_muts() {
             fixed64(): eq(0),
             sfixed32(): eq(0),
             sfixed64(): eq(0),
-            bool(): eq(false)
+            bool(): eq(false),
+            inner_enum(): eq(InnerEnum::Unspecified)
         })
     );
     assert_that!(inner_msg.string_mut().get(), eq(""));
+    assert_that!(inner_msg.bytes_mut().get(), eq(b""));
 
     set_and_test_mut!(inner_msg =>
         double_mut, 543.21;
@@ -95,8 +109,9 @@ fn test_nested_muts() {
         fixed64_mut, 999;
         bool_mut, true;
         string_mut, "hi";
+        bytes_mut, b"bye";
+        inner_enum_mut, InnerEnum::Foo;
     );
-    // TODO: add mutation test for bytes
 }
 
 #[test]

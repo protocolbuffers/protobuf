@@ -19,14 +19,13 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:eps_copy_input_stream",
-        "//upb:lex",
         "//upb:message",
-        "//upb:message_internal",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",
         "//upb:wire_reader",
-        "//upb:wire_types",
+        "//upb/lex",
+        "//upb/message:internal",
     ],
 )
 
@@ -40,8 +39,8 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only

@@ -341,13 +341,11 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
   printer->Indent();
 
-  if (context_->options().opensource_runtime) {
-    printer->Print("static {\n");
-    printer->Indent();
-    PrintGencodeVersionValidator(printer);
-    printer->Outdent();
-    printer->Print("}\n");
-  }
+  printer->Print("static {\n");
+  printer->Indent();
+  PrintGencodeVersionValidator(printer, context_->options().opensource_runtime);
+  printer->Outdent();
+  printer->Print("}\n");
 
   // Using builder_type, instead of Builder, prevents the Builder class from
   // being loaded into PermGen space when the default instance is created.
@@ -1296,16 +1294,25 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
   WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
-  printer->Print("public object $name$Kt {\n", "name", descriptor_->name());
-  printer->Indent();
-  GenerateKotlinDsl(printer);
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    if (IsMapEntry(descriptor_->nested_type(i))) continue;
-    ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
-        .GenerateKotlinMembers(printer);
-  }
-  printer->Outdent();
-  printer->Print("}\n");
+  printer->Emit(
+      {
+          io::Printer::Sub{"name_kt", absl::StrCat(descriptor_->name(), "Kt")}
+              .AnnotatedAs(descriptor_),
+          {"body",
+           [&]() {
+             GenerateKotlinDsl(printer);
+             for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+               if (IsMapEntry(descriptor_->nested_type(i))) continue;
+               ImmutableMessageGenerator(descriptor_->nested_type(i), context_)
+                   .GenerateKotlinMembers(printer);
+             }
+           }},
+      },
+      R"kt(
+    public object $name_kt$ {
+      $body$;
+    }
+  )kt");
 }
 
 void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(

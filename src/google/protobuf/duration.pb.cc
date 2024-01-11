@@ -159,12 +159,15 @@ inline void Duration::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Duration::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Duration::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
+              false,
+          },
+          &Duration::MergeImpl,
+          &Duration::kDescriptorMethods,
       };
   return &_data_;
 }

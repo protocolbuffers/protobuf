@@ -1613,7 +1613,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           protected FieldDescriptor loadDescriptor() {
             try {
               Class clazz = singularType.getClassLoader().loadClass(descriptorOuterClass);
-              FileDescriptor file = (FileDescriptor) clazz.getField("descriptor").get(null);
+              FileDescriptor file = (FileDescriptor) clazz.getMethod("getDescriptor").invoke(null);
               return file.findExtensionByName(extensionName);
             } catch (Exception e) {
               throw new RuntimeException(

@@ -85,6 +85,68 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+# C++ targets for the well-known types
+
+alias(
+    name = "any_cc_proto",
+    actual = "//src/google/protobuf:any_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "api_cc_proto",
+    actual = "//src/google/protobuf:api_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "duration_cc_proto",
+    actual = "//src/google/protobuf:duration_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "empty_cc_proto",
+    actual = "//src/google/protobuf:empty_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_cc_proto",
+    actual = "//src/google/protobuf:field_mask_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "source_context_cc_proto",
+    actual = "//src/google/protobuf:source_context_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "struct_cc_proto",
+    actual = "//src/google/protobuf:struct_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "timestamp_cc_proto",
+    actual = "//src/google/protobuf:timestamp_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_cc_proto",
+    actual = "//src/google/protobuf:type_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wrappers_cc_proto",
+    actual = "//src/google/protobuf:wrappers_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
 # Source files: these are aliases to a filegroup, not a `proto_library`.
 #
 # (This is _probably_ not what you want.)
@@ -190,8 +252,15 @@ cc_binary(
 # Expose the runtime for the proto_lang_toolchain so that it can also be used in
 # a user-defined proto_lang_toolchain.
 alias(
+    name = "protobuf",
+    actual = "//src/google/protobuf",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "protobuf_nowkt",
     actual = "//src/google/protobuf:protobuf_nowkt",
+    deprecation = "Use //:protobuf instead",
     visibility = ["//visibility:public"],
 )
 
@@ -208,23 +277,6 @@ alias(
     name = "protobuf_lite",
     actual = "//src/google/protobuf:protobuf_lite",
     visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "protobuf",
-    copts = COPTS,
-    linkopts = LINK_OPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/util:delimited_message_util",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:field_mask_util",
-        "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:time_util",
-        "//src/google/protobuf/util:type_resolver_util",
-    ],
 )
 
 # This provides just the header files for use in projects that need to build
@@ -324,7 +376,7 @@ proto_lang_toolchain(
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
-    runtime = "//src/google/protobuf:protobuf_nowkt",
+    runtime = "//src/google/protobuf",
     visibility = ["//visibility:public"],
 )
 

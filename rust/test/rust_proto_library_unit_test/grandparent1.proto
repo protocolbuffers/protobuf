@@ -5,11 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_MESSAGE_TYPES_H_
-#define UPB_MESSAGE_TYPES_H_
+syntax = "proto2";
 
-// This typedef is in a leaf header to resolve a circular dependency between
-// messages and mini tables.
-typedef void upb_Message;
-
-#endif /* UPB_MESSAGE_TYPES_H_ */
+package third_party_protobuf_rust_test_rust_proto_library_unit_test;

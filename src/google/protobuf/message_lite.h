@@ -523,29 +523,46 @@ class PROTOBUF_EXPORT MessageLite {
     std::string (*get_type_name)(const MessageLite&);
     std::string (*initialization_error_string)(const MessageLite&);
   };
+  struct ClassDataFull;
+  // Note: The order of arguments in the functions is chosen so that it has
+  // the same ABI as the member function that calls them. Eg the `this`
+  // pointer becomes the first argument in the free function.
   struct ClassData {
-    // Note: The order of arguments in the functions is chosen so that it has
-    // the same ABI as the member function that calls them. Eg the `this`
-    // pointer becomes the first argument in the free function.
-    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
-    // LITE objects (ie !descriptor_methods) collocate their name as a
-    // char[] just beyond the ClassData.
-    const DescriptorMethods* descriptor_methods;
 
     // Offset of the CachedSize member.
     uint32_t cached_size_offset;
+    // LITE objects (ie !descriptor_methods) collocate their name as a
+    // char[] just beyond the ClassData.
+    bool is_lite;
 
-    constexpr ClassData(void (*merge_to_from)(MessageLite& to,
-                                              const MessageLite&),
-                        void (*on_demand_register_arena_dtor)(MessageLite&,
+    constexpr ClassData(void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
-                        const DescriptorMethods* descriptor_methods,
-                        uint32_t cached_size_offset)
-        : merge_to_from(merge_to_from),
-          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
-          descriptor_methods(descriptor_methods),
-          cached_size_offset(cached_size_offset) {}
+                        uint32_t cached_size_offset, bool is_lite)
+        : on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          cached_size_offset(cached_size_offset),
+          is_lite(is_lite) {}
+
+    const ClassDataFull& full() const {
+      return *static_cast<const ClassDataFull*>(this);
+    }
+  };
+  template <size_t N>
+  struct ClassDataLite {
+    ClassData header;
+    const char type_name[N];
+  };
+  struct ClassDataFull : ClassData {
+    constexpr ClassDataFull(ClassData base,
+                            void (*merge_to_from)(MessageLite& to,
+                                                  const MessageLite& from_msg),
+                            const DescriptorMethods* descriptor_methods)
+        : ClassData(base),
+          merge_to_from(merge_to_from),
+          descriptor_methods(descriptor_methods) {}
+
+    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+    const DescriptorMethods* descriptor_methods;
   };
 
   // GetClassData() returns a pointer to a ClassData struct which

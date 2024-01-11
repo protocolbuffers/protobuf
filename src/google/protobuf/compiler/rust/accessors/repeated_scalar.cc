@@ -17,88 +17,96 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void RepeatedScalar::InMsgImpl(Context<FieldDescriptor> field) const {
-  field.Emit({{"field", field.desc().name()},
-              {"Scalar", PrimitiveRsTypeName(field.desc())},
-              {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "get_mut")},
-              {"getter",
-               [&] {
-                 if (field.is_upb()) {
-                   field.Emit({}, R"rs(
+void RepeatedScalar::InMsgImpl(Context& ctx,
+                               const FieldDescriptor& field) const {
+  ctx.Emit({{"field", field.name()},
+            {"Scalar", RsTypePath(ctx, field)},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"getter",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
                     pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
-                      let inner = unsafe {
+                      unsafe {
                         $getter_thunk$(
                           self.inner.msg,
                           /* optional size pointer */ std::ptr::null(),
                         ) }
-                        .map_or_else(|| unsafe {$pbr$::empty_array()}, |raw| {
-                          $pbr$::RepeatedFieldInner{ raw, arena: &self.inner.arena }
-                        });
-                      $pb$::RepeatedView::from_inner($pbi$::Private, inner)
+                        .map_or_else(
+                          $pbr$::empty_array::<$Scalar$>,
+                          |raw| unsafe {
+                            $pb$::RepeatedView::from_raw($pbi$::Private, raw)
+                          }
+                        )
                     }
                   )rs");
-                 } else {
-                   field.Emit({}, R"rs(
+               } else {
+                 ctx.Emit({}, R"rs(
                     pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
-                      $pb$::RepeatedView::from_inner(
-                        $pbi$::Private,
-                        $pbr$::RepeatedFieldInner{
-                          raw: unsafe { $getter_thunk$(self.inner.msg) },
-                          _phantom: std::marker::PhantomData,
-                        },
-                      )
-                    }
-                  )rs");
-                 }
-               }},
-              {"clearer_thunk", Thunk(field, "clear")},
-              {"field_mutator_getter",
-               [&] {
-                 if (field.is_upb()) {
-                   field.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
-                      $pb$::RepeatedMut::from_inner(
-                        $pbi$::Private,
-                        $pbr$::RepeatedFieldInner{
-                          raw: unsafe { $getter_mut_thunk$(
-                            self.inner.msg,
-                            /* optional size pointer */ std::ptr::null(),
-                            self.inner.arena.raw(),
-                          ) },
-                          arena: &self.inner.arena,
-                        },
-                      )
-                    }
-                  )rs");
-                 } else {
-                   field.Emit({}, R"rs(
-                      pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
-                        $pb$::RepeatedMut::from_inner(
+                      unsafe {
+                        $pb$::RepeatedView::from_raw(
                           $pbi$::Private,
-                          $pbr$::RepeatedFieldInner{
-                            raw: unsafe { $getter_mut_thunk$(self.inner.msg)},
-                            _phantom: std::marker::PhantomData,
-                          },
+                          unsafe { $getter_thunk$(self.inner.msg) },
                         )
                       }
+                    }
+                  )rs");
+               }
+             }},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"field_mutator_getter",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
+                    pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                      unsafe {
+                        $pb$::RepeatedMut::from_inner(
+                          $pbi$::Private,
+                          $pbr$::InnerRepeatedMut::new(
+                            $pbi$::Private,
+                            $getter_mut_thunk$(
+                              self.inner.msg,
+                              /* optional size pointer */ std::ptr::null(),
+                              self.inner.arena.raw(),
+                            ),
+                            &self.inner.arena,
+                          ),
+                        )
+                      }
+                    }
+                  )rs");
+               } else {
+                 ctx.Emit({}, R"rs(
+                      pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                        unsafe {
+                          $pb$::RepeatedMut::from_inner(
+                            $pbi$::Private,
+                            $pbr$::InnerRepeatedMut::new(
+                              $pbi$::Private,
+                              $getter_mut_thunk$(self.inner.msg),
+                            ),
+                          )
+                        }
+                      }
                     )rs");
-                 }
-               }}},
-             R"rs(
+               }
+             }}},
+           R"rs(
           $getter$
           $field_mutator_getter$
         )rs");
 }
 
-void RepeatedScalar::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit({{"Scalar", PrimitiveRsTypeName(field.desc())},
-              {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "get_mut")},
-              {"getter",
-               [&] {
-                 if (field.is_upb()) {
-                   field.Emit(R"rs(
+void RepeatedScalar::InExternC(Context& ctx,
+                               const FieldDescriptor& field) const {
+  ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"getter",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit(R"rs(
                     fn $getter_mut_thunk$(
                       raw_msg: $pbi$::RawMessage,
                       size: *const usize,
@@ -110,44 +118,45 @@ void RepeatedScalar::InExternC(Context<FieldDescriptor> field) const {
                       size: *const usize,
                     ) -> Option<$pbi$::RawRepeatedField>;
                   )rs");
-                 } else {
-                   field.Emit(R"rs(
+               } else {
+                 ctx.Emit(R"rs(
                     fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawRepeatedField;
                     fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::RawRepeatedField;
                   )rs");
-                 }
-               }},
-              {"clearer_thunk", Thunk(field, "clear")}},
-             R"rs(
+               }
+             }},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")}},
+           R"rs(
           fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
           $getter$
         )rs");
 }
 
-void RepeatedScalar::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({{"field", cpp::FieldName(&field.desc())},
-              {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
-              {"QualifiedMsg",
-               cpp::QualifiedClassName(field.desc().containing_type())},
-              {"clearer_thunk", Thunk(field, "clear")},
-              {"getter_thunk", Thunk(field, "get")},
-              {"getter_mut_thunk", Thunk(field, "get_mut")},
-              {"impls",
-               [&] {
-                 field.Emit(
-                     R"cc(
-                       void $clearer_thunk$($QualifiedMsg$* msg) {
-                         msg->clear_$field$();
-                       }
-                       google::protobuf::RepeatedField<$Scalar$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
-                         return msg->mutable_$field$();
-                       }
-                       const google::protobuf::RepeatedField<$Scalar$>& $getter_thunk$($QualifiedMsg$& msg) {
-                         return msg.$field$();
-                       }
-                     )cc");
-               }}},
-             "$impls$");
+void RepeatedScalar::InThunkCc(Context& ctx,
+                               const FieldDescriptor& field) const {
+  ctx.Emit({{"field", cpp::FieldName(&field)},
+            {"Scalar", cpp::PrimitiveTypeName(field.cpp_type())},
+            {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"impls",
+             [&] {
+               ctx.Emit(
+                   R"cc(
+                     void $clearer_thunk$($QualifiedMsg$* msg) {
+                       msg->clear_$field$();
+                     }
+                     google::protobuf::RepeatedField<$Scalar$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
+                       return msg->mutable_$field$();
+                     }
+                     const google::protobuf::RepeatedField<$Scalar$>* $getter_thunk$(
+                         const $QualifiedMsg$* msg) {
+                       return &msg->$field$();
+                     }
+                   )cc");
+             }}},
+           "$impls$");
 }
 
 }  // namespace rust

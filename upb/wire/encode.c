@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/endian.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/hash/str_table.h"
@@ -26,6 +27,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
+#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
@@ -36,7 +38,6 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/internal/constants.h"
-#include "upb/wire/internal/swap.h"
 #include "upb/wire/types.h"
 
 // Must be last.
@@ -129,12 +130,12 @@ static void encode_bytes(upb_encstate* e, const void* data, size_t len) {
 }
 
 static void encode_fixed64(upb_encstate* e, uint64_t val) {
-  val = _upb_BigEndian_Swap64(val);
+  val = upb_BigEndian64(val);
   encode_bytes(e, &val, sizeof(uint64_t));
 }
 
 static void encode_fixed32(upb_encstate* e, uint32_t val) {
-  val = _upb_BigEndian_Swap32(val);
+  val = upb_BigEndian32(val);
   encode_bytes(e, &val, sizeof(uint32_t));
 }
 
@@ -181,22 +182,22 @@ static void encode_tag(upb_encstate* e, uint32_t field_number,
 
 static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
                               size_t elem_size, uint32_t tag) {
-  size_t bytes = arr->size * elem_size;
+  size_t bytes = arr->UPB_PRIVATE(size) * elem_size;
   const char* data = _upb_array_constptr(arr);
   const char* ptr = data + bytes - elem_size;
 
-  if (tag || !_upb_IsLittleEndian()) {
+  if (tag || !upb_IsLittleEndian()) {
     while (true) {
       if (elem_size == 4) {
         uint32_t val;
         memcpy(&val, ptr, sizeof(val));
-        val = _upb_BigEndian_Swap32(val);
+        val = upb_BigEndian32(val);
         encode_bytes(e, &val, elem_size);
       } else {
         UPB_ASSERT(elem_size == 8);
         uint64_t val;
         memcpy(&val, ptr, sizeof(val));
-        val = _upb_BigEndian_Swap64(val);
+        val = upb_BigEndian64(val);
         encode_bytes(e, &val, elem_size);
       }
 
@@ -218,7 +219,8 @@ static void encode_TaggedMessagePtr(upb_encstate* e,
   if (upb_TaggedMessagePtr_IsEmpty(tagged)) {
     m = UPB_PRIVATE(_upb_MiniTable_Empty)();
   }
-  encode_message(e, _upb_TaggedMessagePtr_GetMessage(tagged), m, size);
+  encode_message(e, UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(tagged), m,
+                 size);
 }
 
 static void encode_scalar(upb_encstate* e, const void* _field_mem,
@@ -309,18 +311,18 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
 static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTableSub* subs,
                          const upb_MiniTableField* f) {
-  const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
+  const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
   bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = e->limit - e->ptr;
 
-  if (arr == NULL || arr->size == 0) {
+  if (arr == NULL || arr->UPB_PRIVATE(size) == 0) {
     return;
   }
 
 #define VARINT_CASE(ctype, encode)                                         \
   {                                                                        \
     const ctype* start = _upb_array_constptr(arr);                         \
-    const ctype* ptr = start + arr->size;                                  \
+    const ctype* ptr = start + arr->UPB_PRIVATE(size);                     \
     uint32_t tag =                                                         \
         packed ? 0 : (f->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint; \
     do {                                                                   \
@@ -365,7 +367,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes: {
       const upb_StringView* start = _upb_array_constptr(arr);
-      const upb_StringView* ptr = start + arr->size;
+      const upb_StringView* ptr = start + arr->UPB_PRIVATE(size);
       do {
         ptr--;
         encode_bytes(e, ptr->data, ptr->size);
@@ -376,7 +378,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     }
     case kUpb_FieldType_Group: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
-      const upb_TaggedMessagePtr* ptr = start + arr->size;
+      const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
@@ -392,7 +394,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
     }
     case kUpb_FieldType_Message: {
       const upb_TaggedMessagePtr* start = _upb_array_constptr(arr);
-      const upb_TaggedMessagePtr* ptr = start + arr->size;
+      const upb_TaggedMessagePtr* ptr = start + arr->UPB_PRIVATE(size);
       const upb_MiniTable* subm =
           upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
@@ -432,7 +434,7 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
 static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTableSub* subs,
                        const upb_MiniTableField* f) {
-  const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
+  const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
   const upb_MiniTable* layout =
       upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(layout->UPB_PRIVATE(field_count) == 2);
@@ -467,7 +469,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
                                 const upb_MiniTableField* f) {
   if (f->presence == 0) {
     // Proto3 presence or map/array.
-    const void* mem = UPB_PTR_AT(msg, f->offset, void);
+    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
     switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
       case kUpb_FieldRep_1Byte: {
         char ch;
@@ -491,7 +493,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
       default:
         UPB_UNREACHABLE();
     }
-  } else if (f->presence > 0) {
+  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
     // Proto2 presence: hasbit.
     return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
   } else {
@@ -512,15 +514,15 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
       encode_map(e, msg, subs, field);
       break;
     case kUpb_FieldMode_Scalar:
-      encode_scalar(e, UPB_PTR_AT(msg, field->offset, void), subs, field);
+      encode_scalar(e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), subs,
+                    field);
       break;
     default:
       UPB_UNREACHABLE();
   }
 }
 
-static void encode_msgset_item(upb_encstate* e,
-                               const upb_Message_Extension* ext) {
+static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
   size_t size;
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   encode_message(e, ext->data.ptr,
@@ -532,12 +534,12 @@ static void encode_msgset_item(upb_encstate* e,
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
 }
 
-static void encode_ext(upb_encstate* e, const upb_Message_Extension* ext,
+static void encode_ext(upb_encstate* e, const upb_Extension* ext,
                        bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
     encode_msgset_item(e, ext);
   } else {
-    encode_field(e, &ext->data, &ext->ext->UPB_PRIVATE(sub),
+    encode_field(e, (upb_Message*)&ext->data, &ext->ext->UPB_PRIVATE(sub),
                  &ext->ext->UPB_PRIVATE(field));
   }
 }
@@ -550,7 +552,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
       m->UPB_PRIVATE(required_count)) {
     uint64_t msg_head;
     memcpy(&msg_head, msg, 8);
-    msg_head = _upb_BigEndian_Swap64(msg_head);
+    msg_head = upb_BigEndian64(msg_head);
     if (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~msg_head) {
       encode_err(e, kUpb_EncodeStatus_MissingRequired);
     }
@@ -570,7 +572,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * these in field number order relative to normal fields or even to each
      * other. */
     size_t ext_count;
-    const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
+    const upb_Extension* ext =
+        UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
     if (ext_count) {
       if (e->options & kUpb_EncodeOption_Deterministic) {
         _upb_sortedmap sorted;
@@ -580,7 +583,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
         }
         _upb_mapsorter_popmap(&e->sorter, &sorted);
       } else {
-        const upb_Message_Extension* end = ext + ext_count;
+        const upb_Extension* end = ext + ext_count;
         for (; ext != end; ext++) {
           encode_ext(e, ext, m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
         }
@@ -604,7 +607,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
 }
 
 static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
-                                           const void* const msg,
+                                           const upb_Message* const msg,
                                            const upb_MiniTable* const l,
                                            char** const buf,
                                            size_t* const size) {
@@ -632,7 +635,7 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
   return encoder->status;
 }
 
-upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
+upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size) {
   upb_encstate e;

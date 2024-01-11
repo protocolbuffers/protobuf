@@ -390,8 +390,9 @@ void ImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "public fun ${$clear$kt_capitalized_name$$}$() {\n"
-                 "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
+                 "  $kt_dsl_builder$.clear$capitalized_name$()\n"
                  "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options(),

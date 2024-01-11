@@ -11,8 +11,8 @@ use unittest_proto::proto2_unittest::TestAllTypes;
 #[test]
 fn serialize_deserialize_message() {
     let mut msg = TestAllTypes::new();
-    msg.optional_int64_set(Some(42));
-    msg.optional_bool_set(Some(true));
+    msg.optional_int64_mut().set(42);
+    msg.optional_bool_mut().set(true);
     msg.optional_bytes_mut().set(b"serialize deserialize test");
 
     let serialized = msg.serialize();
@@ -36,4 +36,14 @@ fn deserialize_error() {
     let mut msg = TestAllTypes::new();
     let data = b"not a serialized proto";
     assert!(msg.deserialize(&*data).is_err());
+}
+
+#[test]
+fn set_bytes_with_serialized_data() {
+    let mut msg = TestAllTypes::new();
+    msg.optional_int64_mut().set(42);
+    msg.optional_bool_mut().set(true);
+    let mut msg2 = TestAllTypes::new();
+    msg2.optional_bytes_mut().set(msg.serialize());
+    assert_that!(msg2.optional_bytes(), eq(msg.serialize().as_ref()));
 }

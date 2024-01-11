@@ -17,10 +17,19 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const upb_Message_Extension* upb_Message_FindExtensionByNumber(
-    const upb_Message* msg, uint32_t field_number) {
-  size_t count = 0;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
+const upb_Extension* upb_Message_ExtensionByIndex(const upb_Message* msg,
+                                                  size_t index) {
+  size_t count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+
+  UPB_ASSERT(index < count);
+  return &ext[index];
+}
+
+const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
+                                                       uint32_t field_number) {
+  size_t count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
 
   while (count--) {
     if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;

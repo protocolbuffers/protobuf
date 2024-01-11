@@ -7,10 +7,15 @@ load(
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_CC_PROTO_TARGET = "//src/google/protobuf:cc_test_protos"
+
 UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_PROTO3_CC_TARGET = "//src/google/protobuf:cc_test_protos"
+
 UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
+
 UNITTEST_PROTO3_OPTIONAL_CC_TARGET = "//src/google/protobuf:cc_test_protos"
 
 alias(
@@ -201,9 +206,37 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "enums_proto",
+    testonly = True,
+    srcs = ["enums.proto"],
+    deps = ["//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto"],
+)
+
+cc_proto_library(
+    name = "enums_cc_proto",
+    testonly = True,
+    deps = [":enums_proto"],
+)
+
+rust_cc_proto_library(
+    name = "enums_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":enums_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "enums_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":enums_proto"],
+)
+
+proto_library(
     name = "no_package_import_proto",
     testonly = True,
     srcs = ["no_package_import.proto"],
+    deps = ["//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto"],
 )
 
 proto_library(
@@ -214,7 +247,10 @@ proto_library(
         "no_package_other.proto",
     ],
     exports = [":no_package_import_proto"],
-    deps = [":no_package_import_proto"],
+    deps = [
+        ":no_package_import_proto",
+        "//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto",
+    ],
 )
 
 cc_proto_library(

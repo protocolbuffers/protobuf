@@ -286,12 +286,15 @@ inline void Struct::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Struct::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Struct::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
+              false,
+          },
+          &Struct::MergeImpl,
+          &Struct::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -592,12 +595,15 @@ void Value::clear_kind() {
 
 const ::google::protobuf::MessageLite::ClassData*
 Value::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          Value::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
+              false,
+          },
+          &Value::MergeImpl,
+          &Value::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -912,12 +918,15 @@ inline void ListValue::SharedDtor() {
 
 const ::google::protobuf::MessageLite::ClassData*
 ListValue::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::ClassData
-      _data_ = {
-          ListValue::MergeImpl,
-           nullptr,  // OnDemandRegisterArenaDtor
-           &::google::protobuf::Message::kDescriptorMethods,
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
+              false,
+          },
+          &ListValue::MergeImpl,
+          &ListValue::kDescriptorMethods,
       };
   return &_data_;
 }
@@ -980,11 +989,14 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
   (void)cached_has_bits;
 
   // repeated .google.protobuf.Value values = 1;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_values_size()); i < n; i++) {
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this->_internal_values_size());
+       i < n; i++) {
     const auto& repfield = this->_internal_values().Get(i);
-    target = ::google::protobuf::internal::WireFormatLite::
-        InternalWriteMessage(1, repfield, repfield.GetCachedSize(), target, stream);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            1, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1007,8 +1019,7 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
   // repeated .google.protobuf.Value values = 1;
   total_size += 1UL * this->_internal_values_size();
   for (const auto& msg : this->_internal_values()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }

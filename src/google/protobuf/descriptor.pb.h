@@ -665,6 +665,7 @@ enum Edition : int {
   EDITION_PROTO2 = 998,
   EDITION_PROTO3 = 999,
   EDITION_2023 = 1000,
+  EDITION_2024 = 1001,
   EDITION_1_TEST_ONLY = 1,
   EDITION_2_TEST_ONLY = 2,
   EDITION_99997_TEST_ONLY = 99997,
@@ -5298,7 +5299,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     kCcGenericServicesFieldNumber = 16,
     kJavaGenericServicesFieldNumber = 17,
     kPyGenericServicesFieldNumber = 18,
-    kPhpGenericServicesFieldNumber = 42,
     kDeprecatedFieldNumber = 23,
     kOptimizeForFieldNumber = 9,
     kCcEnableArenasFieldNumber = 31,
@@ -5571,17 +5571,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   void _internal_set_py_generic_services(bool value);
 
   public:
-  // optional bool php_generic_services = 42 [default = false];
-  bool has_php_generic_services() const;
-  void clear_php_generic_services() ;
-  bool php_generic_services() const;
-  void set_php_generic_services(bool value);
-
-  private:
-  bool _internal_php_generic_services() const;
-  void _internal_set_php_generic_services(bool value);
-
-  public:
   // optional bool deprecated = 23 [default = false];
   bool has_deprecated() const;
   void clear_deprecated() ;
@@ -5797,7 +5786,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      5, 22, 3,
+      5, 21, 3,
       202, 12>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -5834,7 +5823,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     bool cc_generic_services_;
     bool java_generic_services_;
     bool py_generic_services_;
-    bool php_generic_services_;
     bool deprecated_;
     int optimize_for_;
     bool cc_enable_arenas_;
@@ -10796,8 +10784,8 @@ inline void FileDescriptorProto::set_dependency(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, absl::string_view value) {
-  _internal_mutable_dependency()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_dependency()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const std::string& value) {
@@ -10824,7 +10812,8 @@ inline void FileDescriptorProto::add_dependency(const char* value, std::size_t s
 }
 inline void FileDescriptorProto::add_dependency(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_dependency()->Add()->assign(value.data(), value.size());
+  _internal_mutable_dependency()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -10884,8 +10873,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_public_dependency();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_public_dependency()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+FileDescriptorProto::_internal_public_dependency() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.public_dependency_;
 }
@@ -10929,8 +10918,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutabl
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_weak_dependency();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::_internal_weak_dependency()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+FileDescriptorProto::_internal_weak_dependency() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.weak_dependency_;
 }
@@ -12205,8 +12194,8 @@ inline void DescriptorProto::set_reserved_name(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, absl::string_view value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_reserved_name()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const std::string& value) {
@@ -12233,7 +12222,8 @@ inline void DescriptorProto::add_reserved_name(const char* value, std::size_t si
 }
 inline void DescriptorProto::add_reserved_name(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
+  _internal_mutable_reserved_name()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -13860,8 +13850,8 @@ inline void EnumDescriptorProto::set_reserved_name(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, absl::string_view value) {
-  _internal_mutable_reserved_name()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_reserved_name()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const std::string& value) {
@@ -13888,7 +13878,8 @@ inline void EnumDescriptorProto::add_reserved_name(const char* value, std::size_
 }
 inline void EnumDescriptorProto::add_reserved_name(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_reserved_name()->Add()->assign(value.data(), value.size());
+  _internal_mutable_reserved_name()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -14933,13 +14924,13 @@ inline void FileOptions::_internal_set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  bool value = (_impl_._has_bits_[0] & 0x00080000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00040000u) != 0;
   return value;
 }
 inline void FileOptions::clear_optimize_for() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.optimize_for_ = 1;
-  _impl_._has_bits_[0] &= ~0x00080000u;
+  _impl_._has_bits_[0] &= ~0x00040000u;
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.optimize_for)
@@ -14947,7 +14938,7 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() 
 }
 inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   _internal_set_optimize_for(value);
-  _impl_._has_bits_[0] |= 0x00080000u;
+  _impl_._has_bits_[0] |= 0x00040000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
@@ -15115,43 +15106,15 @@ inline void FileOptions::_internal_set_py_generic_services(bool value) {
   _impl_.py_generic_services_ = value;
 }
 
-// optional bool php_generic_services = 42 [default = false];
-inline bool FileOptions::has_php_generic_services() const {
-  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
-  return value;
-}
-inline void FileOptions::clear_php_generic_services() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.php_generic_services_ = false;
-  _impl_._has_bits_[0] &= ~0x00020000u;
-}
-inline bool FileOptions::php_generic_services() const {
-  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_generic_services)
-  return _internal_php_generic_services();
-}
-inline void FileOptions::set_php_generic_services(bool value) {
-  _internal_set_php_generic_services(value);
-  _impl_._has_bits_[0] |= 0x00020000u;
-  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_generic_services)
-}
-inline bool FileOptions::_internal_php_generic_services() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
-  return _impl_.php_generic_services_;
-}
-inline void FileOptions::_internal_set_php_generic_services(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _impl_.php_generic_services_ = value;
-}
-
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  bool value = (_impl_._has_bits_[0] & 0x00040000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00020000u) != 0;
   return value;
 }
 inline void FileOptions::clear_deprecated() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.deprecated_ = false;
-  _impl_._has_bits_[0] &= ~0x00040000u;
+  _impl_._has_bits_[0] &= ~0x00020000u;
 }
 inline bool FileOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.deprecated)
@@ -15159,7 +15122,7 @@ inline bool FileOptions::deprecated() const {
 }
 inline void FileOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
-  _impl_._has_bits_[0] |= 0x00040000u;
+  _impl_._has_bits_[0] |= 0x00020000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.deprecated)
 }
 inline bool FileOptions::_internal_deprecated() const {
@@ -15173,13 +15136,13 @@ inline void FileOptions::_internal_set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = true];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  bool value = (_impl_._has_bits_[0] & 0x00100000u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00080000u) != 0;
   return value;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   _impl_.cc_enable_arenas_ = true;
-  _impl_._has_bits_[0] &= ~0x00100000u;
+  _impl_._has_bits_[0] &= ~0x00080000u;
 }
 inline bool FileOptions::cc_enable_arenas() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.cc_enable_arenas)
@@ -15187,7 +15150,7 @@ inline bool FileOptions::cc_enable_arenas() const {
 }
 inline void FileOptions::set_cc_enable_arenas(bool value) {
   _internal_set_cc_enable_arenas(value);
-  _impl_._has_bits_[0] |= 0x00100000u;
+  _impl_._has_bits_[0] |= 0x00080000u;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_enable_arenas)
 }
 inline bool FileOptions::_internal_cc_enable_arenas() const {
@@ -16530,7 +16493,8 @@ inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets()
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_targets();
 }
-inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets() const {
+inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets()
+    const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.targets_;
 }
@@ -18613,8 +18577,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_path()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+SourceCodeInfo_Location::_internal_path() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.path_;
 }
@@ -18658,8 +18622,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mu
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_span();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::_internal_span()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+SourceCodeInfo_Location::_internal_span() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.span_;
 }
@@ -18858,8 +18822,8 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, co
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, absl::string_view value) {
-  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_leading_detached_comments()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const std::string& value) {
@@ -18886,7 +18850,8 @@ inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* v
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_leading_detached_comments()->Add()->assign(value.data(), value.size());
+  _internal_mutable_leading_detached_comments()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
@@ -19003,8 +18968,8 @@ inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotatio
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
   return _internal_mutable_path();
 }
-inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::_internal_path()
-    const {
+inline const ::google::protobuf::RepeatedField<::int32_t>&
+GeneratedCodeInfo_Annotation::_internal_path() const {
   PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
   return _impl_.path_;
 }

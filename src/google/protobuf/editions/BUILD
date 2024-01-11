@@ -1,4 +1,5 @@
 load("@rules_python//python:proto.bzl", "py_proto_library")
+load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
@@ -74,6 +75,7 @@ cc_test(
     deps = [
         ":defaults_test_embedded",
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
@@ -83,6 +85,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -111,6 +114,20 @@ internal_objc_proto_library(
 
 py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
+rust_cc_proto_library(
+    name = "test_messages_proto2_editions_rust_cc_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "test_messages_proto2_editions_rust_upb_proto",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto2_editions_proto"],
@@ -171,6 +188,20 @@ py_proto_library(
     deps = [":test_messages_proto3_editions_proto"],
 )
 
+rust_cc_proto_library(
+    name = "test_messages_proto3_editions_rust_cc_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "test_messages_proto3_editions_rust_upb_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
 upb_c_proto_library(
     name = "test_messages_proto3_editions_upb_proto",
     testonly = 1,
@@ -217,6 +248,7 @@ cc_test(
         ":test_messages_proto3_editions_cc_proto",
         "//:protobuf",
         "//src/google/protobuf:test_textproto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -226,6 +258,7 @@ cc_test(
     srcs = ["generated_reflection_test.cc"],
     deps = [
         ":test_messages_proto2_editions_cc_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )

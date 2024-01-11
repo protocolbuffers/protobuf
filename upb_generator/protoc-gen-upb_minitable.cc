@@ -27,7 +27,6 @@
 #include "upb/base/string_view.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
@@ -286,7 +285,8 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
   //
   // - |presence| is either hasbit index or field number for oneofs.
 
-  uint64_t data = static_cast<uint64_t>(mt_f->offset) << 48 | expected_tag;
+  uint64_t data =
+      static_cast<uint64_t>(mt_f->UPB_PRIVATE(offset)) << 48 | expected_tag;
 
   if (field.IsSequence()) {
     // No hasbit/oneof-related fields.

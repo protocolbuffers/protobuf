@@ -11,7 +11,6 @@
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
-#include "upb/mini_table/internal/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -5,12 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+#define UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+
+#include <stdint.h>
 
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
-#include "upb/message/internal/types.h"
+#include "upb/message/internal/message.h"
 
 // Map entries aren't actually stored for map fields, they are only used during
 // parsing. For parsing, it helps a lot if all map entry messages have the same
@@ -40,4 +42,4 @@ typedef struct {
   upb_MapEntryData data;
 } upb_MapEntry;
 
-#endif  // UPB_COLLECTIONS_INTERNAL_MAP_ENTRY_H_
+#endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_

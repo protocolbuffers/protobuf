@@ -313,8 +313,8 @@ inline void FieldMask::set_paths(int index, const char* value,
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::set_paths(int index, absl::string_view value) {
-  _internal_mutable_paths()->Mutable(index)->assign(value.data(),
-                                                     value.size());
+  _internal_mutable_paths()->Mutable(index)->assign(
+      value.data(), value.size());
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::add_paths(const std::string& value) {
@@ -341,7 +341,8 @@ inline void FieldMask::add_paths(const char* value, std::size_t size) {
 }
 inline void FieldMask::add_paths(absl::string_view value) {
   PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  _internal_mutable_paths()->Add()->assign(value.data(), value.size());
+  _internal_mutable_paths()->Add()->assign(value.data(),
+                                                     value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FieldMask.paths)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&

@@ -297,12 +297,9 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 }
 }  // namespace
 
-const void* TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-    const Message& message, const Reflection& reflection,
-    const FieldDescriptor& fd) {
-  // reflection->GetRaw() is a simple cast for any non-repeated type, so for
-  // simplicity we just pass in char as the template argument.
-  return &reflection.GetRaw<char>(message, &fd);
+auto TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
+    const Message& message, const FieldDescriptor& fd) -> Id {
+  return {&message, &fd};
 }
 
 // ===========================================================================
@@ -845,20 +842,19 @@ class TextFormat::Parser::ParserImpl {
 // the message and the new value are the default. If the existing field value is
 // not the default, setting it to the default should not be treated as a no-op.
 // The pointer of this is kept in no_op_fields_ for bookkeeping.
-#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                            \
-  if (field->is_repeated()) {                                              \
-    reflection->Add##CPPTYPE(message, field, VALUE);                       \
-  } else {                                                                 \
-    if (no_op_fields_ && !field->has_presence() &&                         \
-        field->default_value_##CPPTYPELCASE() ==                           \
-            reflection->Get##CPPTYPE(*message, field) &&                   \
-        field->default_value_##CPPTYPELCASE() == VALUE) {                  \
-      no_op_fields_->addresses_.insert(                                    \
-          UnsetFieldsMetadata::GetUnsetFieldAddress(*message, *reflection, \
-                                                    *field));              \
-    } else {                                                               \
-      reflection->Set##CPPTYPE(message, field, std::move(VALUE));          \
-    }                                                                      \
+#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                    \
+  if (field->is_repeated()) {                                      \
+    reflection->Add##CPPTYPE(message, field, VALUE);               \
+  } else {                                                         \
+    if (no_op_fields_ && !field->has_presence() &&                 \
+        field->default_value_##CPPTYPELCASE() ==                   \
+            reflection->Get##CPPTYPE(*message, field) &&           \
+        field->default_value_##CPPTYPELCASE() == VALUE) {          \
+      no_op_fields_->ids_.insert(                                  \
+          UnsetFieldsMetadata::GetUnsetFieldId(*message, *field)); \
+    } else {                                                       \
+      reflection->Set##CPPTYPE(message, field, std::move(VALUE));  \
+    }                                                              \
   }
 
     switch (field->cpp_type()) {
@@ -1654,13 +1650,22 @@ namespace {
 // Returns true if `ch` needs to be escaped in TextFormat, independent of any
 // UTF-8 validity issues.
 bool DefinitelyNeedsEscape(unsigned char ch) {
-  if (ch < 32) return true;
+  if (ch >= 0x80) {
+    return false;  // High byte; no escapes necessary if UTF-8 is valid.
+  }
+
+  if (!absl::ascii_isprint(ch)) {
+    return true;  // Unprintable characters need escape.
+  }
+
   switch (ch) {
     case '\"':
     case '\'':
     case '\\':
+      // These characters need escapes despite being printable.
       return true;
   }
+
   return false;
 }
 

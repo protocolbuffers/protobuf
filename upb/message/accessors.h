@@ -20,15 +20,11 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
-#include "upb/message/internal/types.h"
+#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/tagged_ptr.h"
-#include "upb/message/types.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/enum.h"
-#include "upb/mini_table/extension.h"
-#include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
 // Must be last.
@@ -38,31 +34,37 @@
 extern "C" {
 #endif
 
-UPB_API_INLINE void upb_Message_ClearField(upb_Message* msg,
-                                           const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    _upb_Message_ClearExtensionField(msg, ext);
-  } else {
-    _upb_Message_ClearNonExtensionField(msg, field);
-  }
-}
+// Functions ending in BaseField() take a (upb_MiniTableField*) argument
+// and work only on non-extension fields.
+//
+// Functions ending in Extension() take a (upb_MiniTableExtension*) argument
+// and work only on extensions.
 
 UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
-                                      const upb_MiniTable* l) {
+                                      const upb_MiniTable* m) {
   // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
   char* mem = (char*)msg - sizeof(upb_Message_Internal);
-  memset(mem, 0, upb_msg_sizeof(l));
+  memset(mem, 0, upb_msg_sizeof(m));
 }
 
-UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
-                                         const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    return _upb_Message_HasExtensionField(msg, ext);
-  } else {
-    return _upb_Message_HasNonExtensionField(msg, field);
-  }
+UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
+                                               const upb_MiniTableField* f) {
+  UPB_PRIVATE(_upb_Message_ClearBaseField)(msg, f);
+}
+
+UPB_API_INLINE void upb_Message_ClearExtension(
+    upb_Message* msg, const upb_MiniTableExtension* e) {
+  UPB_PRIVATE(_upb_Message_ClearExtension)(msg, e);
+}
+
+UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
+                                             const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_Message_HasBaseField)(msg, f);
+}
+
+UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
+                                             const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_Message_HasExtension)(msg, e);
 }
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
@@ -356,7 +358,8 @@ UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTableField* field,
                                            upb_Message* sub_message) {
   _upb_Message_SetTaggedMessagePtr(
-      msg, mini_table, field, _upb_TaggedMessagePtr_Pack(sub_message, false));
+      msg, mini_table, field,
+      UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(sub_message, false));
 }
 
 UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
@@ -364,13 +367,14 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
-  upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
+  upb_Message* sub_message =
+      *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
         mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
-    *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
+    *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*) = sub_message;
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   }
   return sub_message;
@@ -448,15 +452,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
 }
 
 // Updates a map entry given an entry message.
-upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
-                                               const upb_MiniTable* mini_table,
-                                               const upb_MiniTableField* field,
-                                               upb_Message* map_entry_message,
-                                               upb_Arena* arena);
-
-// Compares two messages by serializing them and calling memcmp().
-bool upb_Message_IsExactlyEqual(const upb_Message* m1, const upb_Message* m2,
-                                const upb_MiniTable* layout);
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
+                             const upb_MiniTableField* field,
+                             upb_Message* map_entry_message, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
