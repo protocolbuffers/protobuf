@@ -73,6 +73,7 @@ cc_test(
         ":lite",
         ":stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",

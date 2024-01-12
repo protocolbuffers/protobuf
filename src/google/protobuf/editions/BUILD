@@ -79,6 +79,7 @@ cc_test(
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@bazel_tools//tools/cpp/runfiles",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
