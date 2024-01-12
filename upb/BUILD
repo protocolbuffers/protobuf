@@ -79,20 +79,6 @@ package_group(
     packages = ["//..."],
 )
 
-cc_library(
-    name = "upb",
-    hdrs = [
-        "upb.hpp",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    deprecation = "use upb:base and/or upb:mem instead",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-    ],
-)
-
 # Common support routines used by generated code.  This library has no
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
@@ -134,13 +120,6 @@ cc_library(
 alias(
     name = "base",
     actual = "//upb/base",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "collections",
-    actual = "//upb/collections",
-    deprecation = "use upb:message instead",
     visibility = ["//visibility:public"],
 )
 
@@ -423,7 +402,6 @@ filegroup(
     srcs = glob(
         [
             "**/*.h",
-            "**/*.hpp",
         ],
         exclude = [
             "**/conformance_upb.c",
