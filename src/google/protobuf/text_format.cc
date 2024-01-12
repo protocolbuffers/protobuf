@@ -1706,14 +1706,17 @@ size_t SkipPassthroughBytes(absl::string_view val) {
   return val.size();
 }
 
-void HardenedPrintString(absl::string_view src,
-                         TextFormat::BaseTextGenerator* generator) {
+}  // namespace
+
+void TextFormat::Printer::HardenedPrintString(
+    absl::string_view src, TextFormat::BaseTextGenerator* generator) {
   // Print as UTF-8, while guarding against any invalid UTF-8 in the string
   // field.
   //
   // If in the future we have a guaranteed invariant that invalid UTF-8 will
   // never be present, we could avoid the UTF-8 check here.
 
+  generator->PrintLiteral("\"");
   while (!src.empty()) {
     size_t n = SkipPassthroughBytes(src);
     if (n != 0) {
@@ -1727,9 +1730,8 @@ void HardenedPrintString(absl::string_view src,
     generator->PrintString(absl::CEscape(src.substr(0, 1)));
     src.remove_prefix(1);
   }
+  generator->PrintLiteral("\"");
 }
-
-}  // namespace
 
 // ===========================================================================
 //  An internal field value printer that escape UTF8 strings.
@@ -1738,9 +1740,7 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
  public:
   void PrintString(const std::string& val,
                    TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("\"");
-    HardenedPrintString(val, generator);
-    generator->PrintLiteral("\"");
+    TextFormat::Printer::HardenedPrintString(val, generator);
   }
   void PrintBytes(const std::string& val,
                   TextFormat::BaseTextGenerator* generator) const override {

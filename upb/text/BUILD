@@ -18,12 +18,12 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//third_party/utf8_range",
         "//upb:base",
         "//upb:eps_copy_input_stream",
         "//upb:message",
         "//upb:port",
         "//upb:reflection",
-        "//upb:wire",
         "//upb:wire_reader",
         "//upb/lex",
         "//upb/message:internal",

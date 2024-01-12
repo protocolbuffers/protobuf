@@ -2606,6 +2606,30 @@ class ValidTypeNamesTest(unittest.TestCase):
     self.assertImportFromName(pb.repeated_nested_message, 'Composite')
 
 
+# We can only test this case under proto2, because proto3 will reject invalid
+# UTF-8 in the parser, so there should be no way of creating a string field
+# that contains invalid UTF-8.
+#
+# We also can't test it in pure-Python, which validates all string fields for
+# UTF-8 even when the spec says it shouldn't.
+@unittest.skipIf(api_implementation.Type() == 'python',
+                 'Python can\'t create invalid UTF-8 strings')
+@testing_refleaks.TestCase
+class InvalidUtf8Test(unittest.TestCase):
+
+  def testInvalidUtf8Printing(self):
+    one_bytes = unittest_pb2.OneBytes()
+    one_bytes.data = b'ABC\xff123'
+    one_string = unittest_pb2.OneString()
+    one_string.ParseFromString(one_bytes.SerializeToString())
+    self.assertIn('data: "ABC\\377123"', str(one_string))
+
+  def testValidUtf8Printing(self):
+    self.assertIn('data: "€"', str(unittest_pb2.OneString(data='€')))  # 2 byte
+    self.assertIn('data: "￡"', str(unittest_pb2.OneString(data='￡')))  # 3 byte
+    self.assertIn('data: "🙂"', str(unittest_pb2.OneString(data='🙂')))  # 4 byte
+
+
 @testing_refleaks.TestCase
 class PackedFieldTest(unittest.TestCase):
 
