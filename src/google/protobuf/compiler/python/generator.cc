@@ -544,8 +544,8 @@ void Generator::PrintFileDescriptor() const {
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
-  m["syntax"] = GetLegacySyntaxName(file_->edition());
-  m["edition"] = Edition_Name(file_->edition());
+  m["syntax"] = GetLegacySyntaxName(GetEdition(*file_));
+  m["edition"] = Edition_Name(GetEdition(*file_));
   m["options"] = OptionsValue(proto_.options().SerializeAsString());
   m["serialized_descriptor"] = absl::CHexEscape(file_descriptor_serialized_);
   if (GeneratingDescriptorProto()) {

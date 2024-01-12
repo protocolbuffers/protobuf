@@ -145,6 +145,7 @@ cc_library(
     deps = [
         ":conformance_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
