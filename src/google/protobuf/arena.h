@@ -587,6 +587,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   static void* CopyConstruct(Arena* arena, const void* from);
 
+  // Common part of DefaultConstruct/CopyConstruct.
+  static void* AllocateForConstruction(Arena* arena, size_t n);
+
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
     return InternalHelper<T>::Construct(
@@ -684,16 +687,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 // keyword to make sure the `extern template` suppresses instantiations.
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : ::operator new(sizeof(T));
-  return new (mem) T(arena);
+  return new (AllocateForConstruction(arena, sizeof(T))) T(arena);
 }
 
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : ::operator new(sizeof(T));
-  return new (mem) T(arena, *static_cast<const T*>(from));
+  return new (AllocateForConstruction(arena, sizeof(T)))
+      T(arena, *static_cast<const T*>(from));
 }
 
 template <>

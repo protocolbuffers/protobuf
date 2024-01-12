@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <new>
 #include <string>
 #include <typeinfo>
 #include <vector>
@@ -908,6 +909,11 @@ void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
 
 std::vector<void*> Arena::PeekCleanupListForTesting() {
   return impl_.PeekCleanupListForTesting();
+}
+
+void* Arena::AllocateForConstruction(Arena* arena, size_t n) {
+  return PROTOBUF_PREDICT_TRUE(arena != nullptr) ? arena->AllocateAligned(n)
+                                                 : ::operator new(n);
 }
 
 }  // namespace protobuf
