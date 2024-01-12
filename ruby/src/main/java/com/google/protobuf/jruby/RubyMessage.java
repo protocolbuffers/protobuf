@@ -41,8 +41,6 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyOneofDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import com.google.protobuf.util.JsonFormat;
@@ -74,8 +72,6 @@ public class RubyMessage extends RubyObject {
     this.builder = DynamicMessage.newBuilder(descriptor);
     this.fields = new HashMap<FieldDescriptor, IRubyObject>();
     this.oneofCases = new HashMap<OneofDescriptor, FieldDescriptor>();
-    this.proto3 =
-        LegacyFileDescriptor.getSyntax(descriptor.getFile()) == LegacyFileDescriptor.Syntax.PROTO3;
   }
 
   /*
@@ -644,15 +640,15 @@ public class RubyMessage extends RubyObject {
           e.getMessage());
     }
 
-    if (!ret.proto3) {
-      // Need to reset unknown values in repeated enum fields
-      ret.builder
-          .getUnknownFields()
-          .asMap()
-          .forEach(
-              (i, values) -> {
-                FieldDescriptor fd = ret.builder.getDescriptorForType().findFieldByNumber(i);
-                if (fd != null && fd.isRepeated() && fd.getType() == FieldDescriptor.Type.ENUM) {
+    ret.builder
+        .getUnknownFields()
+        .asMap()
+        .forEach(
+            (i, values) -> {
+              FieldDescriptor fd = ret.builder.getDescriptorForType().findFieldByNumber(i);
+              if (fd != null && fd.isRepeated() && fd.getType() == FieldDescriptor.Type.ENUM) {
+                // Need to reset unknown values in repeated enum fields
+                if (fd.legacyEnumFieldTreatedAsClosed()) {
                   EnumDescriptor ed = fd.getEnumType();
                   values
                       .getVarintList()
@@ -662,8 +658,8 @@ public class RubyMessage extends RubyObject {
                                 fd, ed.findValueByNumberCreatingIfUnknown(value.intValue()));
                           });
                 }
-              });
-    }
+              }
+            });
     if (freeze) {
       ret.freeze(context);
     }
@@ -791,7 +787,7 @@ public class RubyMessage extends RubyObject {
     build(context, 0, SINK_MAXIMUM_NESTING); // Sync Ruby data to the Builder object.
     for (Map.Entry<FieldDescriptor, Object> field : builder.getAllFields().entrySet()) {
       FieldDescriptor fdef = field.getKey();
-      IRubyObject value = getFieldInternal(context, fdef, proto3);
+      IRubyObject value = getFieldInternal(context, fdef, !fdef.hasPresence());
 
       if (fdef.isRepeated() && !fdef.isMapField()) {
         if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
@@ -1342,7 +1338,7 @@ public class RubyMessage extends RubyObject {
         // Keep track of what Oneofs are set
         if (value.isNil()) {
           oneofCases.remove(oneofDescriptor);
-          if (!LegacyOneofDescriptor.isSynthetic(oneofDescriptor)) {
+          if (fieldDescriptor.getRealContainingOneof() != null) {
             addValue = false;
           }
         } else {
@@ -1506,5 +1502,4 @@ public class RubyMessage extends RubyObject {
   private RubyClass cRepeatedField;
   private RubyClass cMap;
   private boolean ignoreUnknownFieldsOnInit = false;
-  private boolean proto3;
 }
