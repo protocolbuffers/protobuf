@@ -285,6 +285,22 @@ fn test_oneof_accessors() {
 }
 
 #[test]
+fn test_oneof_enum_accessors() {
+    use unittest_proto3::proto3_unittest::{
+        TestOneof2,
+        TestOneof2_::{Foo, NestedEnum},
+    };
+
+    let mut msg = TestOneof2::new();
+    assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
+    assert_that!(msg.foo(), matches_pattern!(Foo::not_set(_)));
+
+    msg.foo_enum_mut().set(NestedEnum::Bar);
+    assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
+    assert_that!(msg.foo(), matches_pattern!(Foo::FooEnum(eq(NestedEnum::Bar))));
+}
+
+#[test]
 fn test_oneof_mut_accessors() {
     use TestAllTypes_::OneofFieldMut::*;
 
@@ -316,4 +332,20 @@ fn test_oneof_mut_accessors() {
     msg.oneof_uint32_mut().set(7);
     msg.oneof_bytes_mut().set(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
+}
+
+#[test]
+fn test_oneof_mut_enum_accessors() {
+    use unittest_proto3::proto3_unittest::{
+        TestOneof2,
+        TestOneof2_::{FooMut, NestedEnum},
+    };
+
+    let mut msg = TestOneof2::new();
+    assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
+    assert_that!(msg.foo_mut(), matches_pattern!(FooMut::not_set(_)));
+
+    msg.foo_enum_mut().set(NestedEnum::Bar);
+    assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
+    assert_that!(msg.foo_mut(), matches_pattern!(FooMut::FooEnum(_)));
 }

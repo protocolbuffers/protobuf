@@ -104,7 +104,12 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
         return "";
       }
       return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
-    case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
+    case FieldDescriptor::TYPE_ENUM:
+      // TODO: support enums which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.enum_type())) {
+        return "";
+      }
+      return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
       return "";
   }
@@ -144,7 +149,12 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
         return "";
       }
       return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
-    case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
+    case FieldDescriptor::TYPE_ENUM:
+      // TODO: support enums which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.enum_type())) {
+        return "";
+      }
+      return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
       return "";
   }

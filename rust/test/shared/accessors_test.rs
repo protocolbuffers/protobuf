@@ -820,37 +820,42 @@ fn test_default_import_enum_accessors() {
 
 #[test]
 fn test_oneof_accessors() {
-    use TestAllTypes_::OneofField::*;
+    use unittest_proto::proto2_unittest::TestOneof2_::{Foo::*, NestedEnum};
 
-    let mut msg = TestAllTypes::new();
-    assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
+    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    assert_that!(msg.foo(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
-    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
-    assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
+    msg.foo_int_mut().set(7);
+    assert_that!(msg.foo_int_opt(), eq(Optional::Set(7)));
+    assert_that!(msg.foo(), matches_pattern!(FooInt(eq(7))));
 
-    msg.oneof_uint32_mut().clear();
-    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
-    assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
+    msg.foo_int_mut().clear();
+    assert_that!(msg.foo_int_opt(), eq(Optional::Unset(0)));
+    assert_that!(msg.foo(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
-    msg.oneof_bytes_mut().set(b"123");
-    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
+    msg.foo_int_mut().set(7);
+    msg.foo_bytes_mut().set(b"123");
+    assert_that!(msg.foo_int_opt(), eq(Optional::Unset(0)));
 
-    assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
+    assert_that!(msg.foo(), matches_pattern!(FooBytes(eq(b"123"))));
+
+    msg.foo_enum_mut().set(NestedEnum::Foo);
+    assert_that!(msg.foo(), matches_pattern!(FooEnum(eq(NestedEnum::Foo))));
+
+    // TODO: Add oneof message tests
 }
 
 #[test]
 fn test_oneof_mut_accessors() {
-    use TestAllTypes_::OneofFieldMut::*;
+    use unittest_proto::proto2_unittest::TestOneof2_::{Foo, FooMut::*, NestedEnum};
 
-    let mut msg = TestAllTypes::new();
-    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
+    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    assert_that!(msg.foo_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
+    msg.foo_int_mut().set(7);
 
-    match msg.oneof_field_mut() {
-        OneofUint32(mut v) => {
+    match msg.foo_mut() {
+        FooInt(mut v) => {
             assert_that!(v.get(), eq(7));
             v.set(8);
             assert_that!(v.get(), eq(8));
@@ -860,18 +865,84 @@ fn test_oneof_mut_accessors() {
 
     // Confirm that the mut write above applies to both the field accessor and the
     // oneof view accessor.
-    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(8)));
-    assert_that!(
-        msg.oneof_field(),
-        matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
-    );
+    assert_that!(msg.foo_int_opt(), eq(Optional::Set(8)));
+    assert_that!(msg.foo(), matches_pattern!(Foo::FooInt(_)));
 
-    msg.oneof_uint32_mut().clear();
-    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
+    msg.foo_int_mut().clear();
+    assert_that!(msg.foo_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
-    msg.oneof_bytes_mut().set(b"123");
-    assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
+    msg.foo_int_mut().set(7);
+    msg.foo_bytes_mut().set(b"123");
+    assert_that!(msg.foo_mut(), matches_pattern!(FooBytes(_)));
+
+    msg.foo_enum_mut().set(NestedEnum::Baz);
+    assert_that!(msg.foo_mut(), matches_pattern!(FooEnum(_)));
+
+    // TODO: Add oneof message tests
+}
+
+#[test]
+fn test_oneof_default_accessors() {
+    use unittest_proto::proto2_unittest::TestOneof2_::{Bar::*, NestedEnum};
+
+    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    assert_that!(msg.bar(), matches_pattern!(not_set(_)));
+
+    msg.bar_int_mut().set(7);
+    assert_that!(msg.bar_int_opt(), eq(Optional::Set(7)));
+    assert_that!(msg.bar(), matches_pattern!(BarInt(eq(7))));
+
+    msg.bar_int_mut().clear();
+    assert_that!(msg.bar_int_opt(), eq(Optional::Unset(5)));
+    assert_that!(msg.bar(), matches_pattern!(not_set(_)));
+
+    msg.bar_int_mut().set(7);
+    msg.bar_bytes_mut().set(b"123");
+    assert_that!(msg.bar_int_opt(), eq(Optional::Unset(5)));
+    assert_that!(msg.bar_enum_opt(), eq(Optional::Unset(NestedEnum::Bar)));
+    assert_that!(msg.bar(), matches_pattern!(BarBytes(eq(b"123"))));
+
+    msg.bar_enum_mut().set(NestedEnum::Baz);
+    assert_that!(msg.bar(), matches_pattern!(BarEnum(eq(NestedEnum::Baz))));
+    assert_that!(msg.bar_int_opt(), eq(Optional::Unset(5)));
+
+    // TODO: Add oneof message tests
+}
+
+#[test]
+fn test_oneof_default_mut_accessors() {
+    use unittest_proto::proto2_unittest::TestOneof2_::{Bar, BarMut::*, NestedEnum};
+
+    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    assert_that!(msg.bar_mut(), matches_pattern!(not_set(_)));
+
+    msg.bar_int_mut().set(7);
+
+    match msg.bar_mut() {
+        BarInt(mut v) => {
+            assert_that!(v.get(), eq(7));
+            v.set(8);
+            assert_that!(v.get(), eq(8));
+        }
+        f => panic!("unexpected field_mut type! {:?}", f),
+    }
+
+    // Confirm that the mut write above applies to both the field accessor and the
+    // oneof view accessor.
+    assert_that!(msg.bar_int_opt(), eq(Optional::Set(8)));
+    assert_that!(msg.bar(), matches_pattern!(Bar::BarInt(_)));
+
+    msg.bar_int_mut().clear();
+    assert_that!(msg.bar_mut(), matches_pattern!(not_set(_)));
+
+    msg.bar_int_mut().set(7);
+    msg.bar_bytes_mut().set(b"123");
+    assert_that!(msg.bar_mut(), matches_pattern!(BarBytes(_)));
+
+    msg.bar_enum_mut().set(NestedEnum::Baz);
+    assert_that!(msg.bar_mut(), matches_pattern!(BarEnum(_)));
+
+    // TODO: Add oneof message tests
 }
 
 #[test]
