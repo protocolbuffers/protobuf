@@ -344,7 +344,7 @@ impl ProtoStr {
     /// [`U+FFFD REPLACEMENT CHARACTER`].
     ///
     /// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
-    pub fn chars(&self) -> impl Iterator<Item = char> + '_ {
+    pub fn chars(&self) -> impl Iterator<Item = char> + '_ + fmt::Debug {
         Utf8Chunks::new(self.as_bytes()).flat_map(|chunk| {
             let mut yield_replacement_char = !chunk.invalid().is_empty();
             chunk.valid().chars().chain(iter::from_fn(move || {

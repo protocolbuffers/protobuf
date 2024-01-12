@@ -12,7 +12,7 @@
 
 namespace upb {
 
-class Status {
+class Status final {
  public:
   Status() { upb_Status_Clear(&status_); }
 

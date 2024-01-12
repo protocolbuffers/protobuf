@@ -12,6 +12,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
+#include "upb/message/internal/array.h"
 #include "upb/message/value.h"
 
 // Must be last.
@@ -27,10 +28,16 @@ extern "C" {
 UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
 
 // Returns the number of elements in the array.
-UPB_API size_t upb_Array_Size(const upb_Array* arr);
+UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_Size)(arr);
+}
 
 // Returns the given element, which must be within the array's current size.
 UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
+
+// Returns a mutating pointer to the given element, which must be within the
+// array's current size.
+UPB_API upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i);
 
 // Sets the given element, which must be within the array's current size.
 UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
@@ -61,10 +68,14 @@ UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
 // Returns pointer to array data.
-UPB_API const void* upb_Array_DataPtr(const upb_Array* arr);
+UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_DataPtr)(arr);
+}
 
 // Returns mutable pointer to array data.
-UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
+UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_MutableDataPtr)(arr);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -144,6 +144,7 @@ bootstrap_cc_library(
         "//upb/hash",
         "//upb/message:internal",
         "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
     ],
 )
 

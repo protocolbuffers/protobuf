@@ -82,7 +82,7 @@ public class GeneratedMessageTest {
 
   @After
   public void tearDown() {
-    GeneratedMessageV3.setAlwaysUseFieldBuildersForTesting(false);
+    GeneratedMessage.setAlwaysUseFieldBuildersForTesting(false);
   }
 
   @Test
@@ -1102,7 +1102,7 @@ public class GeneratedMessageTest {
 
   @Test
   public void testInvalidations() throws Exception {
-    GeneratedMessageV3.setAlwaysUseFieldBuildersForTesting(true);
+    GeneratedMessage.setAlwaysUseFieldBuildersForTesting(true);
     TestAllTypes.NestedMessage nestedMessage1 = TestAllTypes.NestedMessage.newBuilder().build();
     TestAllTypes.NestedMessage nestedMessage2 = TestAllTypes.NestedMessage.newBuilder().build();
 
@@ -1845,10 +1845,10 @@ public class GeneratedMessageTest {
       UnittestProto.getDescriptor().findExtensionByName("repeated_nested_message_extension");
 
   // A compile-time check that TestAllExtensions.Builder does in fact extend
-  // GeneratedMessageV3.ExtendableBuilder. The tests below assume that it does.
+  // GeneratedMessage.ExtendableBuilder. The tests below assume that it does.
   static {
     @SuppressWarnings("unused")
-    Class<? extends GeneratedMessageV3.ExtendableBuilder<?, ?>> ignored =
+    Class<? extends GeneratedMessage.ExtendableBuilder<?, ?>> ignored =
         TestAllExtensions.Builder.class;
   }
 

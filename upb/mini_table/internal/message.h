@@ -12,12 +12,12 @@
 
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/sub.h"
+#include "upb/mini_table/internal/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 struct upb_Decoder;
-struct upb_Message;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
                                      struct upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
@@ -138,17 +138,16 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
   return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f) != NULL;
 }
 
-// Computes a bitmask in which the |m->required_count| lowest bits are set,
-// except that we skip the lowest bit (because upb never uses hasbit 0).
+// Computes a bitmask in which the |m->required_count| lowest bits are set.
 //
 // Sample output:
-//    RequiredMask(1) => 0b10 (0x2)
-//    RequiredMask(5) => 0b111110 (0x3e)
+//    RequiredMask(1) => 0b1 (0x1)
+//    RequiredMask(5) => 0b11111 (0x1f)
 UPB_INLINE uint64_t
 UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const struct upb_MiniTable* m) {
   int n = m->UPB_PRIVATE(required_count);
-  UPB_ASSERT(0 < n && n <= 63);
-  return ((1ULL << n) - 1) << 1;
+  UPB_ASSERT(0 < n && n <= 64);
+  return (1ULL << n) - 1;
 }
 
 #ifdef __cplusplus

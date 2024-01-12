@@ -46,7 +46,6 @@ impl<'msg, T: ?Sized> Debug for RepeatedView<'msg, T> {
 }
 
 /// Mutates the elements in a `repeated` field of `T`.
-#[repr(transparent)]
 pub struct RepeatedMut<'msg, T: ?Sized> {
     pub(crate) inner: InnerRepeatedMut<'msg>,
     _phantom: PhantomData<&'msg mut T>,
@@ -58,12 +57,9 @@ impl<'msg, T: ?Sized> Deref for RepeatedMut<'msg, T> {
     type Target = RepeatedView<'msg, T>;
     fn deref(&self) -> &Self::Target {
         // SAFETY:
-        //   - `Repeated{View,Mut}<'msg, T>` are both `#[repr(transparent)]` over
-        //     `RepeatedField<'msg, T>`.
-        //   - `Repeated{View,Mut}<'msg, T>` are both `#[repr(transparent)]` over
-        //     `RepeatedField<'msg, T>`.
-        //   - `RepeatedField` is a type alias for `NonNull`.
-        unsafe { &*(self as *const Self as *const RepeatedView<'msg, T>) }
+        //   - `RepeatedView<'msg, T>` is `#[repr(transparent)]` over
+        //     `RawRepeatedField`.
+        unsafe { &*(&self.inner.raw as *const RawRepeatedField as *const RepeatedView<'msg, T>) }
     }
 }
 

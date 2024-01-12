@@ -468,7 +468,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       }
       if (field.proto().kind() == Field::TYPE_STRING) {
         if (desc_->proto().syntax() == google::protobuf::SYNTAX_PROTO3 &&
-            utf8_range::IsStructurallyValid(buf)) {
+            !utf8_range::IsStructurallyValid(buf)) {
           return MakeProto3Utf8Error();
         }
       }

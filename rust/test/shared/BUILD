@@ -187,8 +187,8 @@ rust_test(
 )
 
 rust_test(
-    name = "nested_messages_cpp_test",
-    srcs = ["nested_messages_test.rs"],
+    name = "nested_types_cpp_test",
+    srcs = ["nested_types_test.rs"],
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
@@ -197,8 +197,8 @@ rust_test(
 )
 
 rust_test(
-    name = "nested_messages_upb_test",
-    srcs = ["nested_messages_test.rs"],
+    name = "nested_types_upb_test",
+    srcs = ["nested_types_test.rs"],
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",

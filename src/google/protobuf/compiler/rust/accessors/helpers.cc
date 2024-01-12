@@ -15,6 +15,8 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
 
@@ -23,7 +25,7 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-std::string DefaultValue(const FieldDescriptor& field) {
+std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
   switch (field.type()) {
     case FieldDescriptor::TYPE_DOUBLE:
       if (std::isfinite(field.default_value_double())) {
@@ -74,9 +76,20 @@ std::string DefaultValue(const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_BYTES:
       return absl::StrFormat("b\"%s\"",
                              absl::CHexEscape(field.default_value_string()));
+    case FieldDescriptor::TYPE_ENUM:
+      // `$EnumName$::default()` might seem like the right choice here, but
+      // it is not. The default value for the enum type isn't the same as the
+      // field, since in `syntax = "proto2"`, an enum field can have a default
+      // value other than the first listed in the enum.
+      //
+      // Even in cases where there is no custom field default, `default()` can't
+      // be used. This is because the vtables for field mutators store the
+      // default value. They are `static`s which are constructed with a `const`
+      // expression. Trait methods in a `const` context aren't currently stable.
+      return absl::StrCat(RsTypePath(ctx, field),
+                          "::", EnumValueRsName(*field.default_value_enum()));
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
-    case FieldDescriptor::TYPE_ENUM:
       ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
   }
   ABSL_LOG(FATAL) << "unreachable";

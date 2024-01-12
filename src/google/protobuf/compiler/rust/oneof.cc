@@ -74,24 +74,7 @@ namespace rust {
 // }
 
 namespace {
-std::string ToCamelCase(absl::string_view name) {
-  return cpp::UnderscoresToCamelCase(name, /* upper initial letter */ true);
-}
-
-std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
-  return ToCamelCase(oneof.name());
-}
-
-std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
-  return ToCamelCase(oneof.name()) + "Mut";
-}
-
-std::string OneofCaseEnumName(const OneofDescriptor& oneof) {
-  // Note: This is the name used for the cpp Case enum, we use it for both
-  // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
-  return ToCamelCase(oneof.name()) + "Case";
-}
-
+// A user-friendly rust type for a view of this field with lifetime 'msg.
 std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
   if (field.options().has_ctype()) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
@@ -110,15 +93,17 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_FLOAT:
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
-      return PrimitiveRsTypeName(field);
+      return RsTypePath(ctx, field);
     case FieldDescriptor::TYPE_BYTES:
       return "&'msg [u8]";
     case FieldDescriptor::TYPE_STRING:
       return "&'msg ::__pb::ProtoStr";
     case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat(
-          "::__pb::View<'msg, crate::",
-          GetCrateRelativeQualifiedPath(ctx, *field.message_type()), ">");
+      // TODO: support messages which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
+        return "";
+      }
+      return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
       return "";
@@ -128,6 +113,7 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
   return "";
 }
 
+// A user-friendly rust type for a mutator of this field with lifetime 'msg.
 std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
   if (field.options().has_ctype()) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
@@ -146,14 +132,18 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_FLOAT:
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
-    case FieldDescriptor::TYPE_BYTES:
-    case FieldDescriptor::TYPE_STRING:
-      return absl::StrCat("::__pb::Mut<'msg, ", PrimitiveRsTypeName(field),
+      return absl::StrCat("::__pb::PrimitiveMut<'msg, ", RsTypePath(ctx, field),
                           ">");
+    case FieldDescriptor::TYPE_BYTES:
+      return "::__pb::BytesMut<'msg>";
+    case FieldDescriptor::TYPE_STRING:
+      return "::__pb::ProtoStrMut<'msg>";
     case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat(
-          "::__pb::Mut<'msg, crate::",
-          GetCrateRelativeQualifiedPath(ctx, *field.message_type()), ">");
+      // TODO: support messages which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
+        return "";
+      }
+      return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
     case FieldDescriptor::TYPE_ENUM:   // TODO: b/300257770 - Support enums.
     case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
       return "";
@@ -177,7 +167,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
             if (rs_type.empty()) {
               continue;
             }
-            ctx.Emit({{"name", ToCamelCase(field.name())},
+            ctx.Emit({{"name", OneofCaseRsName(field)},
                       {"type", rs_type},
                       {"number", std::to_string(field.number())}},
                      R"rs($name$($type$) = $number$,
@@ -192,7 +182,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
             if (rs_type.empty()) {
               continue;
             }
-            ctx.Emit({{"name", ToCamelCase(field.name())},
+            ctx.Emit({{"name", OneofCaseRsName(field)},
                       {"type", rs_type},
                       {"number", std::to_string(field.number())}},
                      R"rs($name$($type$) = $number$,
@@ -230,12 +220,12 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
 
   // Note: This enum is used as the Thunk return type for getting which case is
   // used: it exactly matches the generate case enum that both cpp and upb use.
-  ctx.Emit({{"case_enum_name", OneofCaseEnumName(oneof)},
+  ctx.Emit({{"case_enum_name", OneofCaseEnumRsName(oneof)},
             {"cases",
              [&] {
                for (int i = 0; i < oneof.field_count(); ++i) {
                  auto& field = *oneof.field(i);
-                 ctx.Emit({{"name", ToCamelCase(field.name())},
+                 ctx.Emit({{"name", OneofCaseRsName(field)},
                            {"number", std::to_string(field.number())}},
                           R"rs($name$ = $number$,
                 )rs");
@@ -260,7 +250,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
       {{"oneof_name", oneof.name()},
        {"view_enum_name", OneofViewEnumRsName(oneof)},
        {"mut_enum_name", OneofMutEnumRsName(oneof)},
-       {"case_enum_name", OneofCaseEnumName(oneof)},
+       {"case_enum_name", OneofCaseEnumRsName(oneof)},
        {"view_cases",
         [&] {
           for (int i = 0; i < oneof.field_count(); ++i) {
@@ -271,7 +261,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
             }
             ctx.Emit(
                 {
-                    {"case", ToCamelCase(field.name())},
+                    {"case", OneofCaseRsName(field)},
                     {"rs_getter", field.name()},
                     {"type", rs_type},
                 },
@@ -290,7 +280,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
               continue;
             }
             ctx.Emit(
-                {{"case", ToCamelCase(field.name())},
+                {{"case", OneofCaseRsName(field)},
                  {"rs_mut_getter", field.name() + "_mut"},
                  {"type", rs_type},
 
@@ -341,7 +331,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
 void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
-          {"case_enum_rs_name", OneofCaseEnumName(oneof)},
+          {"case_enum_rs_name", OneofCaseEnumRsName(oneof)},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
       },
       R"rs(
@@ -353,7 +343,7 @@ void GenerateOneofThunkCc(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
           {"oneof_name", oneof.name()},
-          {"case_enum_name", OneofCaseEnumName(oneof)},
+          {"case_enum_name", OneofCaseEnumRsName(oneof)},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
           {"QualifiedMsg", cpp::QualifiedClassName(oneof.containing_type())},
       },

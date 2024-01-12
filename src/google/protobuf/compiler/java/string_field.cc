@@ -59,14 +59,11 @@ void SetPrimitiveVariables(
   (*variables)["null_check"] =
       "if (value == null) { throw new NullPointerException(); }";
   (*variables)["isStringEmpty"] =
-      absl::StrCat("com.google.protobuf.GeneratedMessage",
-                   GeneratedCodeVersionSuffix(), ".isStringEmpty");
+      "com.google.protobuf.GeneratedMessage.isStringEmpty";
   (*variables)["writeString"] =
-      absl::StrCat("com.google.protobuf.GeneratedMessage",
-                   GeneratedCodeVersionSuffix(), ".writeString");
+      "com.google.protobuf.GeneratedMessage.writeString";
   (*variables)["computeStringSize"] =
-      absl::StrCat("com.google.protobuf.GeneratedMessage",
-                   GeneratedCodeVersionSuffix(), ".computeStringSize");
+      "com.google.protobuf.GeneratedMessage.computeStringSize";
 
   // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler

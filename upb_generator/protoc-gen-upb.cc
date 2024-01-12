@@ -13,21 +13,20 @@
 #include <cstdlib>
 #include <limits>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
 #include "upb_generator/common.h"
@@ -214,16 +213,20 @@ std::string MapValueCType(upb::FieldDefPtr map_field) {
   return CType(map_field.message_type().map_value());
 }
 
-std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
-  return map_field.message_type().map_key().ctype() == kUpb_CType_String
+std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
+  return ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes
              ? "0"
              : absl::StrCat("sizeof(", expr, ")");
 }
 
+std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
+  const upb_CType ctype = map_field.message_type().map_key().ctype();
+  return MapKeyValueSize(ctype, expr);
+}
+
 std::string MapValueSize(upb::FieldDefPtr map_field, absl::string_view expr) {
-  return map_field.message_type().map_value().ctype() == kUpb_CType_String
-             ? "0"
-             : absl::StrCat("sizeof(", expr, ")");
+  const upb_CType ctype = map_field.message_type().map_value().ctype();
+  return MapKeyValueSize(ctype, expr);
 }
 
 std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field,
@@ -260,7 +263,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
-          return _upb_Message_HasExtensionField((upb_Message*)msg, &$3);
+          return upb_Message_HasExtension((upb_Message*)msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
@@ -269,7 +272,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
   output(
       R"cc(
         UPB_INLINE void $0_clear_$1(struct $2* msg) {
-          _upb_Message_ClearExtensionField((upb_Message*)msg, &$3);
+          upb_Message_ClearExtension((upb_Message*)msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
@@ -390,7 +393,7 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
             const upb_MiniTableField field = $2;
-            return _upb_Message_HasNonExtensionField(UPB_UPCAST(msg), &field);
+            return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
           }
         )cc",
         msg_name, resolved_name, FieldInitializer(pools, field, options));
@@ -411,7 +414,7 @@ void GenerateClear(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE void $0_clear_$1($0* msg) {
           const upb_MiniTableField field = $2;
-          _upb_Message_ClearNonExtensionField(UPB_UPCAST(msg), &field);
+          upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
         }
       )cc",
       msg_name, resolved_name, FieldInitializer(pools, field, options));
@@ -506,7 +509,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           const upb_Array* arr = upb_Message_GetArray(UPB_UPCAST(msg), &field);
           if (arr) {
             if (size) *size = arr->UPB_PRIVATE(size);
-            return ($0 const*)_upb_array_constptr(arr);
+            return ($0 const*)upb_Array_DataPtr(arr);
           } else {
             if (size) *size = 0;
             return NULL;
@@ -654,7 +657,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           upb_Array* arr = upb_Message_GetMutableArray(UPB_UPCAST(msg), &field);
           if (arr) {
             if (size) *size = arr->UPB_PRIVATE(size);
-            return ($0*)_upb_array_ptr(arr);
+            return ($0*)upb_Array_MutableDataPtr(arr);
           } else {
             if (size) *size = 0;
             return NULL;
@@ -680,7 +683,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             upb_MiniTableField field = $4;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(
                 UPB_UPCAST(msg), &field, arena);
-            if (!arr || !_upb_Array_ResizeUninitialized(
+            if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
                             arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return NULL;
             }
@@ -701,7 +704,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             upb_MiniTableField field = $3;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(
                 UPB_UPCAST(msg), &field, arena);
-            if (!arr || !_upb_Array_ResizeUninitialized(
+            if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
                             arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return false;
             }

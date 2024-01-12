@@ -370,21 +370,23 @@ bool Convert_PhpToUpb(zval* php_val, upb_MessageValue* upb_val, TypeInfo type,
       return to_bool(php_val, &upb_val->bool_val);
     case kUpb_CType_String:
     case kUpb_CType_Bytes: {
-      char* ptr;
-      size_t size;
-
       if (!to_string(php_val)) return false;
 
-      size = Z_STRLEN_P(php_val);
+      char* ptr = Z_STRVAL_P(php_val);
+      size_t size = Z_STRLEN_P(php_val);
+
+      if (type.type == kUpb_CType_String && !utf8_range_IsValid(ptr, size)) {
+        zend_throw_exception_ex(NULL, 0, "Invalid UTF-8 in string data");
+        return false;
+      }
 
       // If arena is NULL we reference the input zval.
       // The resulting upb_StringView will only be value while the zval is
       // alive.
       if (arena) {
-        ptr = upb_Arena_Malloc(arena, size);
-        memcpy(ptr, Z_STRVAL_P(php_val), size);
-      } else {
-        ptr = Z_STRVAL_P(php_val);
+        char* copy = upb_Arena_Malloc(arena, size);
+        memcpy(copy, ptr, size);
+        ptr = copy;
       }
 
       upb_val->str_val = upb_StringView_FromDataAndSize(ptr, size);

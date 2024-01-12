@@ -20,7 +20,7 @@ namespace rust {
 void RepeatedScalar::InMsgImpl(Context& ctx,
                                const FieldDescriptor& field) const {
   ctx.Emit({{"field", field.name()},
-            {"Scalar", PrimitiveRsTypeName(field)},
+            {"Scalar", RsTypePath(ctx, field)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
@@ -100,7 +100,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
 
 void RepeatedScalar::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
-  ctx.Emit({{"Scalar", PrimitiveRsTypeName(field)},
+  ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",

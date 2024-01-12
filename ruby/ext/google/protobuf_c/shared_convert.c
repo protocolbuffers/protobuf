@@ -35,6 +35,7 @@ bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
       return shared_Message_Equal(val1.msg_val, val2.msg_val, msgdef, status);
     default:
       upb_Status_SetErrorMessage(status, "Internal error, unexpected type");
+      return false;
   }
 }
 
@@ -60,5 +61,6 @@ uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type,
       return shared_Message_Hash(val.msg_val, msgdef, seed, status);
     default:
       upb_Status_SetErrorMessage(status, "Internal error, unexpected type");
+      return 0;
   }
 }

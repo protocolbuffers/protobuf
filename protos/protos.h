@@ -345,8 +345,8 @@ void ClearExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   static_assert(!std::is_const_v<T>, "");
-  _upb_Message_ClearExtensionField(internal::GetInternalMsg(message),
-                                   id.mini_table_ext());
+  upb_Message_ClearExtension(internal::GetInternalMsg(message),
+                             id.mini_table_ext());
 }
 
 template <typename T, typename Extendee, typename Extension,

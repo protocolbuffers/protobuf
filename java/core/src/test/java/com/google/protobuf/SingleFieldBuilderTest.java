@@ -16,17 +16,17 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Tests for {@link SingleFieldBuilderV3}. This tests basic functionality. More extensive testing is
+ * Tests for {@link SingleFieldBuilder}. This tests basic functionality. More extensive testing is
  * provided via other tests that exercise the builder.
  */
 @RunWith(JUnit4.class)
-public class SingleFieldBuilderV3Test {
+public class SingleFieldBuilderTest {
 
   @Test
   public void testBasicUseAndInvalidations() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<>(TestAllTypes.getDefaultInstance(), mockParent, false);
+    SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilder<>(TestAllTypes.getDefaultInstance(), mockParent, false);
     assertThat(builder.getMessage()).isSameInstanceAs(TestAllTypes.getDefaultInstance());
     assertThat(builder.getBuilder().buildPartial()).isEqualTo(TestAllTypes.getDefaultInstance());
     assertThat(mockParent.getInvalidationCount()).isEqualTo(0);
@@ -49,8 +49,8 @@ public class SingleFieldBuilderV3Test {
   @Test
   public void testSetMessage() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<>(TestAllTypes.getDefaultInstance(), mockParent, false);
+    SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilder<>(TestAllTypes.getDefaultInstance(), mockParent, false);
     builder.setMessage(TestAllTypes.newBuilder().setOptionalInt32(0).build());
     assertThat(builder.getMessage().getOptionalInt32()).isEqualTo(0);
 
@@ -71,8 +71,8 @@ public class SingleFieldBuilderV3Test {
   @Test
   public void testClear() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<>(TestAllTypes.getDefaultInstance(), mockParent, false);
+    SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilder<>(TestAllTypes.getDefaultInstance(), mockParent, false);
     builder.setMessage(TestAllTypes.newBuilder().setOptionalInt32(0).build());
     assertThat(TestAllTypes.getDefaultInstance()).isNotSameInstanceAs(builder.getMessage());
     builder.clear();
@@ -87,8 +87,8 @@ public class SingleFieldBuilderV3Test {
   @Test
   public void testMerge() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<>(TestAllTypes.getDefaultInstance(), mockParent, false);
+    SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilder<>(TestAllTypes.getDefaultInstance(), mockParent, false);
 
     // Merge into default field.
     builder.mergeFrom(TestAllTypes.getDefaultInstance());

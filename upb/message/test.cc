@@ -669,7 +669,7 @@ TEST(MessageTest, MapField) {
 // TEST(FuzzTest, TooManyRequiredFields) {
 //   DecodeEncodeArbitrarySchemaAndPayload(
 //       {{"$ N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N "
-//         "N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N"},
+//         "N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N N"},
 //        {},
 //        "",
 //        {}},

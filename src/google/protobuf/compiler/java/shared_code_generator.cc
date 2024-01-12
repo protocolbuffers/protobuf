@@ -86,6 +86,7 @@ void SharedCodeGenerator::Generate(
         "  * an incomplete descriptor for internal use only. */\n"
         "  public static com.google.protobuf.Descriptors.FileDescriptor "
         "getDescriptor() {\n"
+        "    descriptor.resolveAllFeatures();\n"
         "    return descriptor;\n"
         "  }\n"
         "  static {\n",
@@ -94,9 +95,7 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
-    if (options_.opensource_runtime) {
-      PrintGencodeVersionValidator(printer.get());
-    }
+    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime);
     printer->Outdent();
     printer->Outdent();
     printer->Print(

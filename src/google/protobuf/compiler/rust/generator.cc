@@ -83,15 +83,15 @@ void EmitClosingOfPackageModules(Context& ctx, absl::string_view pkg) {
   }
 }
 
-// Emits `pub use <internal submodule name>::Msg` for all messages of a
-// `non_primary_src` into the `primary_file`.
+// Emits `pub use <internal submodule name>::Type` for all messages and enums of
+// a `non_primary_src` into the `primary_file`.
 //
 // `non_primary_src` has to be a non-primary src of the current `proto_library`.
-void EmitPubUseOfOwnMessages(Context& ctx, const FileDescriptor& primary_file,
-                             const FileDescriptor& non_primary_src) {
+void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
+                          const FileDescriptor& non_primary_src) {
+  auto mod = RustInternalModuleName(ctx, non_primary_src);
   for (int i = 0; i < non_primary_src.message_type_count(); ++i) {
     auto& msg = *non_primary_src.message_type(i);
-    auto mod = RustInternalModuleName(ctx, non_primary_src);
     ctx.Emit({{"mod", mod}, {"Msg", msg.name()}},
              R"rs(
                         pub use crate::$mod$::$Msg$;
@@ -100,17 +100,24 @@ void EmitPubUseOfOwnMessages(Context& ctx, const FileDescriptor& primary_file,
                         pub use crate::$mod$::$Msg$Mut;
                       )rs");
   }
+  for (int i = 0; i < non_primary_src.enum_type_count(); ++i) {
+    auto& enum_ = *non_primary_src.enum_type(i);
+    ctx.Emit({{"mod", mod}, {"Enum", EnumRsName(enum_)}},
+             R"rs(
+                        pub use crate::$mod$::$Enum$;
+                      )rs");
+  }
 }
 
-// Emits `pub use <crate_name>::<public package>::Msg` for all messages of a
-// `dep` into the `primary_file`. This should only be called for 'import public'
-// deps.
+// Emits `pub use <crate_name>::<public package>::Type` for all messages and
+// enums of a `dep` into the `primary_file`. This should only be called for
+// 'import public' deps.
 //
 // `dep` is a primary src of a dependency of the current `proto_library`.
 // TODO: Add support for public import of non-primary srcs of deps.
-void EmitPubUseForImportedMessages(Context& ctx,
-                                   const FileDescriptor& primary_file,
-                                   const FileDescriptor& dep) {
+void EmitPubUseForImportedTypes(Context& ctx,
+                                const FileDescriptor& primary_file,
+                                const FileDescriptor& dep) {
   std::string crate_name = GetCrateName(ctx, dep);
   for (int i = 0; i < dep.message_type_count(); ++i) {
     auto& msg = *dep.message_type(i);
@@ -119,6 +126,14 @@ void EmitPubUseForImportedMessages(Context& ctx,
              R"rs(
                         pub use $crate$::$pkg::Msg$;
                         pub use $crate$::$pkg::Msg$View;
+                      )rs");
+  }
+  for (int i = 0; i < dep.enum_type_count(); ++i) {
+    auto& enum_ = *dep.enum_type(i);
+    auto path = GetCrateRelativeQualifiedPath(ctx, enum_);
+    ctx.Emit({{"crate", crate_name}, {"pkg::Enum", path}},
+             R"rs(
+                        pub use $crate$::$pkg::Enum$;
                       )rs");
   }
 }
@@ -137,7 +152,7 @@ void EmitPublicImports(Context& ctx, const FileDescriptor& primary_file) {
     if (IsInCurrentlyGeneratingCrate(ctx, dep_file)) {
       return;
     }
-    EmitPubUseForImportedMessages(ctx, primary_file, dep_file);
+    EmitPubUseForImportedTypes(ctx, primary_file, dep_file);
   }
 }
 
@@ -185,7 +200,7 @@ std::vector<const FileDescriptor*> ReexportMessagesFromSubmodules(
 
     EmitOpeningOfPackageModules(ctx, package);
     for (const FileDescriptor* c : fds) {
-      EmitPubUseOfOwnMessages(ctx, primary_file, *c);
+      EmitPubUseOfOwnTypes(ctx, primary_file, *c);
     }
     EmitClosingOfPackageModules(ctx, package);
   }
@@ -249,7 +264,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
     for (const FileDescriptor* non_primary_file :
          non_primary_srcs_in_primary_package) {
-      EmitPubUseOfOwnMessages(ctx, *file, *non_primary_file);
+      EmitPubUseOfOwnTypes(ctx, *file, *non_primary_file);
     }
   }
 

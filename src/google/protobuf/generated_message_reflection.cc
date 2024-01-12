@@ -15,16 +15,18 @@
 #include <atomic>
 #include <cstdint>
 #include <cstring>
+#include <new>  // IWYU pragma: keep for operator delete
 #include <string>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "absl/base/casts.h"
-#include "absl/container/flat_hash_map.h"
+#include "absl/base/const_init.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -37,10 +39,11 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -636,7 +639,7 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
   uint32_t index = r->schema_.InlinedStringIndex(field);
-  ABSL_DCHECK_GT(index, 0);
+  ABSL_DCHECK_GT(index, 0u);
   uint32_t* lhs_array = r->MutableInlinedStringDonatedArray(lhs);
   uint32_t* rhs_array = r->MutableInlinedStringDonatedArray(rhs);
   uint32_t* lhs_state = &lhs_array[index / 32];
@@ -1889,7 +1892,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
           const uint32_t index = schema_.InlinedStringIndex(field);
-          ABSL_DCHECK_GT(index, 0);
+          ABSL_DCHECK_GT(index, 0u);
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
@@ -1950,7 +1953,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         if (IsInlined(field)) {
           auto* str = MutableField<InlinedStringField>(message, field);
           const uint32_t index = schema_.InlinedStringIndex(field);
-          ABSL_DCHECK_GT(index, 0);
+          ABSL_DCHECK_GT(index, 0u);
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
@@ -2659,20 +2662,6 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 // These simple template accessors obtain pointers (or references) to
 // the given field.
 
-template <class Type>
-const Type& Reflection::GetRawNonOneof(const Message& message,
-                                       const FieldDescriptor* field) const {
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  if (!schema_.IsSplit(field)) {
-    return GetConstRefAtOffset<Type>(message, field_offset);
-  }
-  const void* split = GetSplitField(&message);
-  if (SplitFieldHasExtraIndirection(field)) {
-    return **GetConstPointerAtOffset<Type*>(split, field_offset);
-  }
-  return *GetConstPointerAtOffset<Type>(split, field_offset);
-}
-
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
   ABSL_DCHECK_NE(message, schema_.default_instance_);
   void** split = MutableSplitField(message);
@@ -2705,38 +2694,42 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
   return ptr;
 }
 
-template <class Type>
-Type* Reflection::MutableRawNonOneof(Message* message,
-                                     const FieldDescriptor* field) const {
+void* Reflection::MutableRawSplitImpl(Message* message,
+                                      const FieldDescriptor* field) const {
+  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
+
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  if (!schema_.IsSplit(field)) {
-    return GetPointerAtOffset<Type>(message, field_offset);
-  }
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
   if (SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
-                          *GetPointerAtOffset<Type*>(*split, field_offset),
+                          *GetPointerAtOffset<void*>(*split, field_offset),
                           message->GetArena());
   }
-  return GetPointerAtOffset<Type>(*split, field_offset);
+  return GetPointerAtOffset<void>(*split, field_offset);
 }
 
-template <typename Type>
-Type* Reflection::MutableRaw(Message* message,
-                             const FieldDescriptor* field) const {
+void* Reflection::MutableRawNonOneofImpl(Message* message,
+                                         const FieldDescriptor* field) const {
+  if (PROTOBUF_PREDICT_FALSE(schema_.IsSplit(field))) {
+    return MutableRawSplitImpl(message, field);
+  }
+
+  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  return GetPointerAtOffset<void>(message, field_offset);
+}
+
+void* Reflection::MutableRawImpl(Message* message,
+                                 const FieldDescriptor* field) const {
+  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+    return MutableRawNonOneofImpl(message, field);
+  }
+
+  // Oneof fields are not split.
+  ABSL_DCHECK(!schema_.IsSplit(field));
+
   const uint32_t field_offset = schema_.GetFieldOffset(field);
-  if (!schema_.IsSplit(field)) {
-    return GetPointerAtOffset<Type>(message, field_offset);
-  }
-  PrepareSplitMessageForWrite(message);
-  void** split = MutableSplitField(message);
-  if (SplitFieldHasExtraIndirection(field)) {
-    return AllocIfDefault(field,
-                          *GetPointerAtOffset<Type*>(*split, field_offset),
-                          message->GetArena());
-  }
-  return GetPointerAtOffset<Type>(*split, field_offset);
+  return GetPointerAtOffset<void>(message, field_offset);
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
@@ -2801,7 +2794,7 @@ uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
 bool Reflection::IsInlinedStringDonated(const Message& message,
                                         const FieldDescriptor* field) const {
   uint32_t index = schema_.InlinedStringIndex(field);
-  ABSL_DCHECK_GT(index, 0);
+  ABSL_DCHECK_GT(index, 0u);
   return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message), index);
 }
 
@@ -2834,7 +2827,7 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
   ABSL_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
   // Swap donation status bit.
   uint32_t index = schema_.InlinedStringIndex(field);
-  ABSL_DCHECK_GT(index, 0);
+  ABSL_DCHECK_GT(index, 0u);
   if (rhs_donated) {
     SetInlinedStringDonated(index, lhs_array);
     ClearInlinedStringDonated(index, rhs_array);
@@ -3590,7 +3583,7 @@ namespace {
 // all the allocated reflection instances.
 struct MetadataOwner {
   ~MetadataOwner() {
-    for (auto range : metadata_arrays_) {
+    for (auto range : metadata_arrays) {
       for (const Metadata* m = range.first; m < range.second; m++) {
         delete m->reflection;
       }
@@ -3598,9 +3591,9 @@ struct MetadataOwner {
   }
 
   void AddArray(const Metadata* begin, const Metadata* end) {
-    mu_.Lock();
-    metadata_arrays_.push_back(std::make_pair(begin, end));
-    mu_.Unlock();
+    mu.Lock();
+    metadata_arrays.push_back(std::make_pair(begin, end));
+    mu.Unlock();
   }
 
   static MetadataOwner* Instance() {
@@ -3611,8 +3604,8 @@ struct MetadataOwner {
  private:
   MetadataOwner() = default;  // private because singleton
 
-  absl::Mutex mu_;
-  std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
+  absl::Mutex mu;
+  std::vector<std::pair<const Metadata*, const Metadata*>> metadata_arrays;
 };
 
 void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {

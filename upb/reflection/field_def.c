@@ -237,7 +237,7 @@ const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
   }
 }
 
-const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
+const upb_MiniTableExtension* upb_FieldDef_MiniTableExtension(
     const upb_FieldDef* f) {
   UPB_ASSERT(upb_FieldDef_IsExtension(f));
   const upb_FileDef* file = upb_FieldDef_File(f);
@@ -731,7 +731,7 @@ static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
 
   if (ctx->layout) {
     UPB_ASSERT(upb_MiniTableExtension_Number(
-                   _upb_FieldDef_ExtensionMiniTable(f)) == f->number_);
+                   upb_FieldDef_MiniTableExtension(f)) == f->number_);
   }
 }
 
@@ -923,7 +923,7 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
 
 void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
                                            const upb_FieldDef* f) {
-  const upb_MiniTableExtension* ext = _upb_FieldDef_ExtensionMiniTable(f);
+  const upb_MiniTableExtension* ext = upb_FieldDef_MiniTableExtension(f);
 
   if (ctx->layout) {
     UPB_ASSERT(upb_FieldDef_Number(f) == upb_MiniTableExtension_Number(ext));

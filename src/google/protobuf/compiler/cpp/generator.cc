@@ -376,7 +376,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
     }
 
-#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
     if (field.options().has_ctype()) {
       if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
@@ -391,7 +390,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
         }
       }
     }
-#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
   });
   return status;
 }

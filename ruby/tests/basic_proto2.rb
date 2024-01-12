@@ -231,12 +231,10 @@ module BasicTestProto2
       file_descriptor = TestMessage.descriptor.file_descriptor
       refute_nil file_descriptor
       assert_equal "basic_test_proto2.proto", file_descriptor.name
-      assert_equal :proto2, file_descriptor.syntax
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
       assert_equal "basic_test_proto2.proto", file_descriptor.name
-      assert_equal :proto2, file_descriptor.syntax
     end
 
     def test_oneof_fields_respond_to? # regression test for issue 9202
@@ -252,6 +250,11 @@ module BasicTestProto2
       refute msg.has_c?
       assert msg.respond_to? :has_d?
       refute msg.has_d?
+    end
+
+    def test_is_packed
+      assert_false TestMessage.descriptor.lookup("optional_int32").is_packed?
+      assert_false TestMessage.descriptor.lookup("repeated_int32").is_packed?
     end
 
     def test_extension

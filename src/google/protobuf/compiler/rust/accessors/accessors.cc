@@ -63,6 +63,17 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
         return std::make_unique<RepeatedScalar>();
       }
       return std::make_unique<SingularScalar>();
+    case FieldDescriptor::TYPE_ENUM:
+      // TODO: support enums which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.enum_type())) {
+        return std::make_unique<UnsupportedField>(
+            "enum fields that are imported from another proto_library"
+            " (defined in a separate Rust crate) are not supported");
+      }
+      if (field.is_repeated()) {
+        return std::make_unique<RepeatedScalar>();
+      }
+      return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_STRING:
       if (field.is_repeated()) {
@@ -73,16 +84,13 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       if (field.is_repeated()) {
         return std::make_unique<UnsupportedField>("repeated msg not supported");
       }
-      if (!ctx.generator_context().is_file_in_current_crate(
-              *field.message_type()->file())) {
+      // TODO: support messages which are defined in other crates.
+      if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
         return std::make_unique<UnsupportedField>(
             "message fields that are imported from another proto_library"
             " (defined in a separate Rust crate) are not supported");
       }
       return std::make_unique<SingularMessage>();
-
-    case FieldDescriptor::TYPE_ENUM:
-      return std::make_unique<UnsupportedField>("enum not supported");
 
     case FieldDescriptor::TYPE_GROUP:
       return std::make_unique<UnsupportedField>("group not supported");

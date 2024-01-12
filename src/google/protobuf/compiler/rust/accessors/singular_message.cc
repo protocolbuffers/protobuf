@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -19,12 +21,11 @@ namespace rust {
 
 void SingularMessage::InMsgImpl(Context& ctx,
                                 const FieldDescriptor& field) const {
-  auto& msg = *field.message_type();
-  auto prefix = "crate::" + GetCrateRelativeQualifiedPath(ctx, msg);
-
+  // fully qualified message name with modules prefixed
+  std::string msg_type = RsTypePath(ctx, field);
   ctx.Emit(
       {
-          {"prefix", prefix},
+          {"msg_type", msg_type},
           {"field", field.name()},
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
@@ -35,22 +36,22 @@ void SingularMessage::InMsgImpl(Context& ctx,
                 if (ctx.is_upb()) {
                   ctx.Emit({}, R"rs(
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-              // For upb, getters return null if the field is unset, so we need
-              // to check for null and return the default instance manually.
-              // Note that a nullptr received from upb manifests as Option::None
+              //~ For upb, getters return null if the field is unset, so we need
+              //~ to check for null and return the default instance manually.
+              //~ Note that a nullptr received from upb manifests as Option::None
               match submsg {
-                // TODO:(b/304357029)
-                None => $prefix$View::new($pbi$::Private,
+                //~ TODO:(b/304357029)
+                None => $msg_type$View::new($pbi$::Private,
                         $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
-                Some(field) => $prefix$View::new($pbi$::Private, field),
+                Some(field) => $msg_type$View::new($pbi$::Private, field),
               }
         )rs");
                 } else {
                   ctx.Emit({}, R"rs(
-              // For C++ kernel, getters automatically return the
-              // default_instance if the field is unset.
+              //~ For C++ kernel, getters automatically return the
+              //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.inner.msg) };
-              $prefix$View::new($pbi$::Private, submsg)
+              $msg_type$View::new($pbi$::Private, submsg)
         )rs");
                 }
               },
@@ -62,22 +63,22 @@ void SingularMessage::InMsgImpl(Context& ctx,
                  let submsg = unsafe {
                    $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
                  };
-                 $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                 $msg_type$Mut::new($pbi$::Private, &mut self.inner, submsg)
                  )rs");
              } else {
                ctx.Emit({}, R"rs(
                     let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
-                    $prefix$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                    $msg_type$Mut::new($pbi$::Private, &mut self.inner, submsg)
                   )rs");
              }
            }},
       },
       R"rs(
-            pub fn r#$field$(&self) -> $prefix$View {
+            pub fn r#$field$(&self) -> $msg_type$View {
               $view_body$
             }
 
-            pub fn $field$_mut(&mut self) -> $prefix$Mut {
+            pub fn $field$_mut(&mut self) -> $msg_type$Mut {
               $submessage_mut$
             }
 

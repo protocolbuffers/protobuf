@@ -60,8 +60,10 @@ class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 class FeatureSet;
 namespace internal {
-class FieldSkipper;  // wire_format_lite.h
+class FieldSkipper;     // wire_format_lite.h
+class ReflectionVisit;  // message_reflection_util.h
 class WireFormat;
+struct DynamicExtensionInfoHelper;
 void InitializeLazyExtensionSet();
 }  // namespace internal
 }  // namespace protobuf
@@ -530,6 +532,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class RepeatedEnumTypeTraits;
 
   friend class google::protobuf::Reflection;
+  friend class google::protobuf::internal::ReflectionVisit;
+  friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
 
   friend void internal::InitializeLazyExtensionSet();

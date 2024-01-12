@@ -47,6 +47,7 @@
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -480,7 +481,7 @@ TEST_F(FileDescriptorTest, Edition) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(file->edition(), Edition::EDITION_PROTO2);
+    EXPECT_EQ(FileDescriptorLegacy(file).edition(), Edition::EDITION_PROTO2);
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("", other.syntax());
@@ -491,7 +492,7 @@ TEST_F(FileDescriptorTest, Edition) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(file->edition(), Edition::EDITION_PROTO3);
+    EXPECT_EQ(FileDescriptorLegacy(file).edition(), Edition::EDITION_PROTO3);
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("proto3", other.syntax());
@@ -503,8 +504,7 @@ TEST_F(FileDescriptorTest, Edition) {
     DescriptorPool pool;
     const FileDescriptor* file = pool.BuildFile(proto);
     ASSERT_TRUE(file != nullptr);
-    EXPECT_EQ(file->edition(), Edition::EDITION_2023);
-    EXPECT_EQ(file->edition(), EDITION_2023);
+    EXPECT_EQ(FileDescriptorLegacy(file).edition(), Edition::EDITION_2023);
     FileDescriptorProto other;
     file->CopyTo(&other);
     EXPECT_EQ("editions", other.syntax());

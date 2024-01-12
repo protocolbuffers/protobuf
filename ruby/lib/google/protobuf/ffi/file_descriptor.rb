@@ -10,7 +10,6 @@ module Google
     class FFI
       # FileDescriptor
       attach_function :file_def_name,   :upb_FileDef_Name,   [:FileDef], :string
-      attach_function :file_def_syntax, :upb_FileDef_Syntax, [:FileDef], Syntax
       attach_function :file_def_pool,   :upb_FileDef_Pool,   [:FileDef], :DefPool
       attach_function :file_options,    :FileDescriptor_serialized_options,  [:FileDef, :pointer, Internal::Arena], :pointer
     end
@@ -29,17 +28,6 @@ module Google
 
       def inspect
         "#{self.class.name}: #{name}"
-      end
-
-      def syntax
-        case Google::Protobuf::FFI.file_def_syntax(@file_def)
-        when :Proto3
-          :proto3
-        when :Proto2
-          :proto2
-        else
-          nil
-        end
       end
 
       def name

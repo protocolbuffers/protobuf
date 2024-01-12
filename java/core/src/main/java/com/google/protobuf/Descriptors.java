@@ -164,16 +164,8 @@ public final class Descriptors {
     }
 
     /** Get the edition of the .proto file. */
-    public Edition getEdition() {
+    Edition getEdition() {
       return proto.getEdition();
-    }
-
-    /** Gets the name of the edition as specified in the .proto file. */
-    public String getEditionName() {
-      if (proto.getEdition().equals(Edition.EDITION_UNKNOWN)) {
-        return "";
-      }
-      return proto.getEdition().name().substring("EDITION_".length());
     }
 
     public void copyHeadingTo(FileDescriptorProto.Builder protoBuilder) {

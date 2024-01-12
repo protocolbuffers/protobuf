@@ -7,6 +7,10 @@ load(
     "upb_proto_reflection_library",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//upb:license"])
+# end:google_only
+
 cc_library(
     name = "json",
     srcs = [

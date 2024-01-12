@@ -11,7 +11,7 @@ use googletest::prelude::*;
 use matchers::{is_set, is_unset};
 use protobuf::Optional;
 use unittest_proto3::proto3_unittest::{TestAllTypes, TestAllTypes_};
-use unittest_proto3_optional::proto2_unittest::TestProto3Optional;
+use unittest_proto3_optional::proto2_unittest::{TestProto3Optional, TestProto3Optional_};
 
 #[test]
 fn test_fixed32_accessors() {
@@ -182,6 +182,72 @@ fn test_optional_string_accessors() {
     msg.optional_string_mut().or_default();
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
+}
+
+#[test]
+fn test_nested_enum_accessors() {
+    use TestAllTypes_::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Zero));
+
+    msg.optional_nested_enum_mut().set(NestedEnum::Baz);
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Baz));
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
+
+    msg.optional_nested_enum_mut().set(NestedEnum::default());
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Zero));
+}
+
+#[test]
+fn test_optional_nested_enum_accessors() {
+    use TestProto3Optional_::NestedEnum;
+
+    let mut msg = TestProto3Optional::new();
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Unspecified)));
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
+
+    msg.optional_nested_enum_mut().set(NestedEnum::Baz);
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Baz));
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Baz)));
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
+
+    msg.optional_nested_enum_mut().set(NestedEnum::default());
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Unspecified)));
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
+
+    msg.optional_nested_enum_mut().clear();
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Unspecified)));
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
+
+    let mut field_mut = msg.optional_nested_enum_mut().or_default();
+    assert_that!(field_mut.get(), eq(NestedEnum::Unspecified));
+    field_mut.set(NestedEnum::Bar);
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Bar));
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
+    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Bar));
+}
+
+#[test]
+fn test_foreign_enum_accessors() {
+    use unittest_proto3::proto3_unittest::ForeignEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
+    assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignZero));
+
+    msg.optional_foreign_enum_mut().set(ForeignEnum::ForeignBaz);
+    assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBaz));
+    assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignBaz));
+
+    msg.optional_foreign_enum_mut().set(ForeignEnum::default());
+    assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
+    assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignZero));
 }
 
 #[test]

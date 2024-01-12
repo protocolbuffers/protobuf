@@ -35,7 +35,7 @@ message TestUtf8Proto3StringEnforceUtf8False {
 }
 
 message TestUtf8RepeatedProto3StringEnforceUtf8False {
-  optional string data = 1;
+  repeated string data = 1;
 }
 
 message TestUtf8Proto3StringEnforceUtf8FalseMixed {

@@ -440,7 +440,8 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
                   stream << " " << analysis.presence << "_PRESENT";
                 }
                 if (analysis.usage != PDProtoScale::kDefault) {
-                  stream << " " << analysis.usage << "_USED";
+                  stream << " " << analysis.usage << "_USED("
+                         << analysis.usage_count << ")";
                 }
               }
               if (optimized != PDProtoOptimization::kNone) {

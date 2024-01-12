@@ -30,8 +30,8 @@ class Arena {
   std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> ptr_;
 };
 
-// InlinedArena seeds the arenas with a predefined amount of memory.  No
-// heap memory will be allocated until the initial block is exceeded.
+// InlinedArena seeds the arenas with a predefined amount of memory. No heap
+// memory will be allocated until the initial block is exceeded.
 template <int N>
 class InlinedArena : public Arena {
  public:
@@ -43,8 +43,8 @@ class InlinedArena : public Arena {
   }
 
  private:
-  InlinedArena(const InlinedArena*) = delete;
-  InlinedArena& operator=(const InlinedArena*) = delete;
+  InlinedArena(const InlinedArena&) = delete;
+  InlinedArena& operator=(const InlinedArena&) = delete;
 
   char initial_block_[N];
 };

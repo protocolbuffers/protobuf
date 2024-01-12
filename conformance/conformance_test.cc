@@ -24,6 +24,7 @@
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 
@@ -142,7 +143,8 @@ ConformanceTestSuite::ConformanceRequestSetting::NewTestMessage() const {
 
 std::string
 ConformanceTestSuite::ConformanceRequestSetting::GetSyntaxIdentifier() const {
-  switch (prototype_message_.GetDescriptor()->file()->edition()) {
+  switch (FileDescriptorLegacy(prototype_message_.GetDescriptor()->file())
+              .edition()) {
     case Edition::EDITION_PROTO3:
       return "Proto3";
     case Edition::EDITION_PROTO2:

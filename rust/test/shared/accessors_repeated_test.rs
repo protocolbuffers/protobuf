@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use unittest_proto::proto2_unittest::TestAllTypes;
+use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
 
 macro_rules! generate_repeated_numeric_test {
   ($(($t: ty, $field: ident)),*) => {
@@ -34,19 +34,19 @@ macro_rules! generate_repeated_numeric_test {
 
               assert_that!(
                   mutator.iter().collect::<Vec<_>>(),
-                  eq(vec![2 as $t, 1 as $t, 0 as $t])
+                  elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
               );
               assert_that!(
                   (*mutator).into_iter().collect::<Vec<_>>(),
-                  eq(vec![2 as $t, 1 as $t, 0 as $t])
+                  elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
               );
 
               for i in 0..mutator.len() {
                   mutator.set(i, 0 as $t);
               }
               assert_that!(
-                  msg.[<repeated_ $field _mut >]().iter().all(|v| v == (0 as $t)),
-                  eq(true)
+                  msg.[<repeated_ $field _mut >]().iter().collect::<Vec<_>>(),
+                  each(eq(0 as $t))
               );
           }
 
@@ -99,13 +99,53 @@ fn test_repeated_bool_accessors() {
     mutator.set(2, false);
     assert_that!(mutator.get(2), some(eq(false)));
 
-    assert_that!(mutator.iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
-    assert_that!((*mutator).into_iter().collect::<Vec<_>>(), eq(vec![false, true, false]));
+    assert_that!(mutator.iter().collect::<Vec<_>>(), elements_are![eq(false), eq(true), eq(false)]);
+    assert_that!(
+        (*mutator).into_iter().collect::<Vec<_>>(),
+        elements_are![eq(false), eq(true), eq(false)]
+    );
 
     for i in 0..mutator.len() {
         mutator.set(i, false);
     }
-    assert_that!(msg.repeated_bool().iter().all(|v| v), eq(false));
+    assert_that!(msg.repeated_bool().iter().collect::<Vec<_>>(), each(eq(false)));
+}
+
+#[test]
+fn test_repeated_enum_accessors() {
+    use TestAllTypes_::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.repeated_nested_enum().len(), eq(0));
+    assert_that!(msg.repeated_nested_enum().get(0), none());
+
+    let mut mutator = msg.repeated_nested_enum_mut();
+    mutator.push(NestedEnum::Foo);
+    assert_that!(mutator.len(), eq(1));
+    assert_that!(mutator.get(0), some(eq(NestedEnum::Foo)));
+    mutator.set(0, NestedEnum::Bar);
+    assert_that!(mutator.get(0), some(eq(NestedEnum::Bar)));
+    mutator.push(NestedEnum::Baz);
+
+    mutator.push(NestedEnum::Foo);
+    mutator.set(2, NestedEnum::Neg);
+    assert_that!(mutator.get(2), some(eq(NestedEnum::Neg)));
+    mutator.set(2, NestedEnum::Foo);
+    assert_that!(mutator.get(2), some(eq(NestedEnum::Foo)));
+
+    assert_that!(
+        mutator.iter().collect::<Vec<_>>(),
+        elements_are![eq(NestedEnum::Bar), eq(NestedEnum::Baz), eq(NestedEnum::Foo)]
+    );
+    assert_that!(
+        (*mutator).into_iter().collect::<Vec<_>>(),
+        elements_are![eq(NestedEnum::Bar), eq(NestedEnum::Baz), eq(NestedEnum::Foo)]
+    );
+
+    for i in 0..mutator.len() {
+        mutator.set(i, NestedEnum::Foo);
+    }
+    assert_that!(msg.repeated_nested_enum().iter().collect::<Vec<_>>(), each(eq(NestedEnum::Foo)));
 }
 
 #[test]

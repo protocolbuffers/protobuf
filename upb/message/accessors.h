@@ -34,31 +34,35 @@
 extern "C" {
 #endif
 
-UPB_API_INLINE void upb_Message_ClearField(upb_Message* msg,
-                                           const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    _upb_Message_ClearExtensionField(msg, ext);
-  } else {
-    _upb_Message_ClearNonExtensionField(msg, field);
-  }
-}
+// Functions ending in BaseField() take a (upb_MiniTableField*) argument
+// and work only on non-extension fields.
+//
+// Functions ending in Extension() take a (upb_MiniTableExtension*) argument
+// and work only on extensions.
 
 UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
-                                      const upb_MiniTable* l) {
-  // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
-  char* mem = (char*)msg - sizeof(upb_Message_Internal);
-  memset(mem, 0, upb_msg_sizeof(l));
+                                      const upb_MiniTable* m) {
+  UPB_PRIVATE(_upb_Message_Clear)(msg, m);
 }
 
-UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
-                                         const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    return _upb_Message_HasExtensionField(msg, ext);
-  } else {
-    return _upb_Message_HasNonExtensionField(msg, field);
-  }
+UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
+                                               const upb_MiniTableField* f) {
+  UPB_PRIVATE(_upb_Message_ClearBaseField)(msg, f);
+}
+
+UPB_API_INLINE void upb_Message_ClearExtension(
+    upb_Message* msg, const upb_MiniTableExtension* e) {
+  UPB_PRIVATE(_upb_Message_ClearExtension)(msg, e);
+}
+
+UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
+                                             const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_Message_HasBaseField)(msg, f);
+}
+
+UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
+                                             const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_Message_HasExtension)(msg, e);
 }
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
@@ -411,8 +415,10 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, field, arena);
-  if (!arr || !_upb_Array_ResizeUninitialized(arr, size, arena)) return NULL;
-  return _upb_array_ptr(arr);
+  if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, size, arena)) {
+    return NULL;
+  }
+  return upb_Array_MutableDataPtr(arr);
 }
 
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(

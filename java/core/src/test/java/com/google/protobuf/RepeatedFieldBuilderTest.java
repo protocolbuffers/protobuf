@@ -19,17 +19,17 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Tests for {@link RepeatedFieldBuilderV3}. This tests basic functionality. More extensive testing is
+ * Tests for {@link RepeatedFieldBuilder}. This tests basic functionality. More extensive testing is
  * provided via other tests that exercise the builder.
  */
 @RunWith(JUnit4.class)
-public class RepeatedFieldBuilderV3Test {
+public class RepeatedFieldBuilderTest {
 
   @Test
   public void testBasicUse() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        newRepeatedFieldBuilderV3(mockParent);
+    RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        newRepeatedFieldBuilder(mockParent);
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(0).build());
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(1).build());
     assertThat(builder.getMessage(0).getOptionalInt32()).isEqualTo(0);
@@ -50,8 +50,8 @@ public class RepeatedFieldBuilderV3Test {
   @Test
   public void testGoingBackAndForth() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        newRepeatedFieldBuilderV3(mockParent);
+    RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        newRepeatedFieldBuilder(mockParent);
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(0).build());
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(1).build());
     assertThat(builder.getMessage(0).getOptionalInt32()).isEqualTo(0);
@@ -80,8 +80,8 @@ public class RepeatedFieldBuilderV3Test {
   @Test
   public void testVariousMethods() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        newRepeatedFieldBuilderV3(mockParent);
+    RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        newRepeatedFieldBuilder(mockParent);
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(1).build());
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(2).build());
     builder.addBuilder(0, TestAllTypes.getDefaultInstance()).setOptionalInt32(0);
@@ -122,8 +122,8 @@ public class RepeatedFieldBuilderV3Test {
   @Test
   public void testLists() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
-        newRepeatedFieldBuilderV3(mockParent);
+    RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        newRepeatedFieldBuilder(mockParent);
     builder.addMessage(TestAllTypes.newBuilder().setOptionalInt32(1).build());
     builder.addMessage(0, TestAllTypes.newBuilder().setOptionalInt32(0).build());
     assertThat(builder.getMessage(0).getOptionalInt32()).isEqualTo(0);
@@ -160,9 +160,9 @@ public class RepeatedFieldBuilderV3Test {
     }
   }
 
-  private RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>
-      newRepeatedFieldBuilderV3(AbstractMessage.BuilderParent parent) {
-    return new RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
+  private RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>
+      newRepeatedFieldBuilder(GeneratedMessage.BuilderParent parent) {
+    return new RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
         Collections.<TestAllTypes>emptyList(), false, parent, false);
   }
 }

@@ -62,7 +62,7 @@ static const char* fastdecode_dispatch(UPB_PARSE_PARAMS) {
   int overrun;
   switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
-      *(uint32_t*)msg |= hasbits;  // Sync hasbits.
+      ((uint32_t*)msg)[2] |= hasbits;  // Sync hasbits.
       const upb_MiniTable* m = decode_totablep(table);
       return UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
                  ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
@@ -169,7 +169,7 @@ static void* fastdecode_resizearr(upb_Decoder* d, void* dst,
     size_t old_bytes = old_capacity * valbytes;
     size_t new_capacity = old_capacity * 2;
     size_t new_bytes = new_capacity * valbytes;
-    char* old_ptr = _upb_array_ptr(farr->arr);
+    char* old_ptr = upb_Array_MutableDataPtr(farr->arr);
     char* new_ptr = upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
     uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
     UPB_PRIVATE(_upb_Array_SetTaggedPtr)(farr->arr, new_ptr, elem_size_lg2);
@@ -193,7 +193,8 @@ UPB_FORCEINLINE
 static void fastdecode_commitarr(void* dst, fastdecode_arr* farr,
                                  int valbytes) {
   farr->arr->UPB_PRIVATE(size) =
-      (size_t)((char*)dst - (char*)_upb_array_ptr(farr->arr)) / valbytes;
+      (size_t)((char*)dst - (char*)upb_Array_MutableDataPtr(farr->arr)) /
+      valbytes;
 }
 
 UPB_FORCEINLINE
@@ -252,7 +253,7 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
       upb_Array** arr_p = fastdecode_fieldmem(msg, *data);
       char* begin;
-      *(uint32_t*)msg |= *hasbits;
+      ((uint32_t*)msg)[2] |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
         farr->arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, 8, elem_size_lg2);
@@ -260,7 +261,7 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       } else {
         farr->arr = *arr_p;
       }
-      begin = _upb_array_ptr(farr->arr);
+      begin = upb_Array_MutableDataPtr(farr->arr);
       farr->end = begin + (farr->arr->UPB_PRIVATE(capacity) * valbytes);
       *data = _upb_FastDecoder_LoadTag(ptr);
       return begin + (farr->arr->UPB_PRIVATE(size) * valbytes);
@@ -546,10 +547,10 @@ TAGBYTES(p)
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);            \
     }                                                                       \
   } else {                                                                  \
-    _upb_Array_ResizeUninitialized(arr, elems, &d->arena);                  \
+    UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, elems, &d->arena);     \
   }                                                                         \
                                                                             \
-  char* dst = _upb_array_ptr(arr);                                          \
+  char* dst = upb_Array_MutableDataPtr(arr);                                \
   memcpy(dst, ptr, size);                                                   \
   arr->UPB_PRIVATE(size) = elems;                                           \
                                                                             \
@@ -868,7 +869,7 @@ TAGBYTES(r)
 UPB_INLINE
 upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
                                 int msg_ceil_bytes) {
-  size_t size = m->UPB_PRIVATE(size) + sizeof(upb_Message_Internal);
+  size_t size = m->UPB_PRIVATE(size);
   char* msg_data;
   if (UPB_LIKELY(msg_ceil_bytes > 0 &&
                  UPB_PRIVATE(_upb_ArenaHas)(&d->arena) >= msg_ceil_bytes)) {
@@ -882,7 +883,7 @@ upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
     msg_data = (char*)upb_Arena_Malloc(&d->arena, size);
     memset(msg_data, 0, size);
   }
-  return msg_data + sizeof(upb_Message_Internal);
+  return (upb_Message*)msg_data;
 }
 
 typedef struct {
@@ -928,7 +929,7 @@ static const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e,
                             sizeof(upb_Message*), card);                  \
                                                                           \
   if (card == CARD_s) {                                                   \
-    *(uint32_t*)msg |= hasbits;                                           \
+    ((uint32_t*)msg)[2] |= hasbits;                                       \
     hasbits = 0;                                                          \
   }                                                                       \
                                                                           \

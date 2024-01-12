@@ -17,7 +17,7 @@
 #include "upb/mem/alloc.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
-#include "upb/message/internal/map_entry.h"
+#include "upb/mini_table/internal/map_entry.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -58,9 +58,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
   upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->data.k, map->key_size);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
   upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->data.v, map->val_size);
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
   return true;
 }
 

@@ -156,6 +156,11 @@ class PROTOC_EXPORT CodeGenerator {
     return ::google::protobuf::internal::InternalFeatureHelper::GetUnresolvedFeatures(
         descriptor, extension);
   }
+
+  // Retrieves the edition of a built file descriptor.
+  static Edition GetEdition(const FileDescriptor& file) {
+    return ::google::protobuf::internal::InternalFeatureHelper::GetEdition(file);
+  }
 };
 
 // CodeGenerators generate one or more files in a given directory.  This

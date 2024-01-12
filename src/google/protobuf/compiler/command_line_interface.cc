@@ -991,8 +991,8 @@ bool ContainsProto3Optional(const Descriptor* desc) {
   return false;
 }
 
-bool ContainsProto3Optional(const FileDescriptor* file) {
-  if (file->edition() == Edition::EDITION_PROTO3) {
+bool ContainsProto3Optional(Edition edition, const FileDescriptor* file) {
+  if (edition == Edition::EDITION_PROTO3) {
     for (int i = 0; i < file->message_type_count(); i++) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;
@@ -1600,7 +1600,8 @@ bool CommandLineInterface::ParseInputFiles(
     if (!experimental_editions_ &&
         !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
         !absl::StartsWith(parsed_file->name(), "upb/")) {
-      if (parsed_file->edition() >= Edition::EDITION_2023) {
+      if (::google::protobuf::internal::InternalFeatureHelper::GetEdition(*parsed_file) >=
+          Edition::EDITION_2023) {
         std::cerr
             << parsed_file->name()
             << ": This file uses editions, but --experimental_editions has not "
@@ -2533,7 +2534,8 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
   if (!supports_proto3_optional) {
     for (const auto fd : parsed_files) {
-      if (ContainsProto3Optional(fd)) {
+      if (ContainsProto3Optional(
+              ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd), fd)) {
         std::cerr << fd->name()
                   << ": is a proto3 file that contains optional fields, but "
                      "code generator "
@@ -2558,7 +2560,9 @@ bool CommandLineInterface::EnforceEditionsSupport(
     return true;
   }
   for (const auto* fd : parsed_files) {
-    if (fd->edition() < Edition::EDITION_2023) {
+    Edition edition =
+        ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
+    if (edition < Edition::EDITION_2023) {
       // Legacy proto2/proto3 files don't need any checks.
       continue;
     }
@@ -2576,19 +2580,19 @@ bool CommandLineInterface::EnforceEditionsSupport(
           fd->name(), codegen_name);
       return false;
     }
-    if (fd->edition() < minimum_edition) {
+    if (edition < minimum_edition) {
       std::cerr << absl::Substitute(
           "$0: is a file using edition $2, which isn't supported by code "
           "generator $1.  Please upgrade your file to at least edition $3.",
-          fd->name(), codegen_name, fd->edition(), minimum_edition);
+          fd->name(), codegen_name, edition, minimum_edition);
       return false;
     }
-    if (fd->edition() > maximum_edition) {
+    if (edition > maximum_edition) {
       std::cerr << absl::Substitute(
           "$0: is a file using edition $2, which isn't supported by code "
           "generator $1.  Please ask the owner of this code generator to add "
           "support or switch back to a maximum of edition $3.",
-          fd->name(), codegen_name, fd->edition(), maximum_edition);
+          fd->name(), codegen_name, edition, maximum_edition);
       return false;
     }
   }

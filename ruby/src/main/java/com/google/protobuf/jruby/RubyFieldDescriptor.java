@@ -94,6 +94,28 @@ public class RubyFieldDescriptor extends RubyObject {
 
   /*
    * call-seq:
+   *     FieldDescriptor.has_presence? => bool
+   *
+   * Returns whether this field tracks presence.
+   */
+  @JRubyMethod(name = "has_presence?")
+  public IRubyObject hasPresence(ThreadContext context) {
+    return this.descriptor.hasPresence() ? context.runtime.getTrue() : context.runtime.getFalse();
+  }
+
+  /*
+   * call-seq:
+   *     FieldDescriptor.is_packed? => bool
+   *
+   * Returns whether this is a repeated field that uses packed encoding.
+   */
+  @JRubyMethod(name = "is_packed?")
+  public IRubyObject isPacked(ThreadContext context) {
+    return this.descriptor.isPacked() ? context.runtime.getTrue() : context.runtime.getFalse();
+  }
+
+  /*
+   * call-seq:
    *     FieldDescriptor.name => name
    *
    * Returns the name of this field as a Ruby String, or nil if it is not set.

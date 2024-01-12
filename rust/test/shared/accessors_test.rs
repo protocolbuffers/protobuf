@@ -668,7 +668,7 @@ fn test_nonempty_default_string_accessors() {
 
 #[test]
 fn test_singular_msg_field() {
-    use crate::TestAllTypes_::{NestedMessageMut, NestedMessageView};
+    use TestAllTypes_::{NestedMessageMut, NestedMessageView};
 
     let mut msg = TestAllTypes::new();
     let msg_view: NestedMessageView = msg.optional_nested_message();
@@ -678,6 +678,144 @@ fn test_singular_msg_field() {
     let msg_mut: NestedMessageMut = msg.optional_nested_message_mut();
     // test reading an int inside a mut
     assert_that!(msg_mut.bb(), eq(0));
+}
+
+#[test]
+fn test_optional_nested_enum_accessors() {
+    use TestAllTypes_::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Foo)));
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Foo));
+
+    msg.optional_nested_enum_mut().set(NestedEnum::Neg);
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Neg)));
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Neg));
+
+    msg.optional_nested_enum_mut().clear();
+    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Foo)));
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Foo));
+}
+
+#[test]
+fn test_default_nested_enum_accessors() {
+    use TestAllTypes_::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.default_nested_enum(), eq(NestedEnum::Bar));
+    assert_that!(msg.default_nested_enum_mut().get(), eq(NestedEnum::Bar));
+    assert_that!(msg.default_nested_enum_mut().is_set(), eq(false));
+    assert_that!(msg.default_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Bar)));
+
+    msg.default_nested_enum_mut().set(NestedEnum::Baz);
+    assert_that!(msg.default_nested_enum(), eq(NestedEnum::Baz));
+    assert_that!(msg.default_nested_enum_mut().get(), eq(NestedEnum::Baz));
+    assert_that!(msg.default_nested_enum_mut().is_set(), eq(true));
+    assert_that!(msg.default_nested_enum_opt(), eq(Optional::Set(NestedEnum::Baz)));
+
+    msg.default_nested_enum_mut().clear();
+    assert_that!(msg.default_nested_enum(), eq(NestedEnum::Bar));
+    assert_that!(msg.default_nested_enum_mut().get(), eq(NestedEnum::Bar));
+    assert_that!(msg.default_nested_enum_mut().is_set(), eq(false));
+    assert_that!(msg.default_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Bar)));
+
+    msg.default_nested_enum_mut().or_default();
+    assert_that!(msg.default_nested_enum(), eq(NestedEnum::Bar));
+    assert_that!(msg.default_nested_enum_mut().get(), eq(NestedEnum::Bar));
+    assert_that!(msg.default_nested_enum_mut().is_set(), eq(true));
+    assert_that!(msg.default_nested_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
+}
+
+#[test]
+fn test_optional_foreign_enum_accessors() {
+    use unittest_proto::proto2_unittest::ForeignEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_foreign_enum_opt(), eq(Optional::Unset(ForeignEnum::ForeignFoo)));
+    assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignFoo));
+
+    msg.optional_foreign_enum_mut().set(ForeignEnum::ForeignBax);
+    assert_that!(msg.optional_foreign_enum_opt(), eq(Optional::Set(ForeignEnum::ForeignBax)));
+    assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignBax));
+
+    msg.optional_foreign_enum_mut().clear();
+    assert_that!(msg.optional_foreign_enum_opt(), eq(Optional::Unset(ForeignEnum::ForeignFoo)));
+    assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignFoo));
+}
+
+#[test]
+fn test_default_foreign_enum_accessors() {
+    use unittest_proto::proto2_unittest::ForeignEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.default_foreign_enum(), eq(ForeignEnum::ForeignBar));
+    assert_that!(msg.default_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBar));
+    assert_that!(msg.default_foreign_enum_mut().is_set(), eq(false));
+    assert_that!(msg.default_foreign_enum_opt(), eq(Optional::Unset(ForeignEnum::ForeignBar)));
+
+    msg.default_foreign_enum_mut().set(ForeignEnum::ForeignBaz);
+    assert_that!(msg.default_foreign_enum(), eq(ForeignEnum::ForeignBaz));
+    assert_that!(msg.default_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBaz));
+    assert_that!(msg.default_foreign_enum_mut().is_set(), eq(true));
+    assert_that!(msg.default_foreign_enum_opt(), eq(Optional::Set(ForeignEnum::ForeignBaz)));
+
+    msg.default_foreign_enum_mut().clear();
+    assert_that!(msg.default_foreign_enum(), eq(ForeignEnum::ForeignBar));
+    assert_that!(msg.default_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBar));
+    assert_that!(msg.default_foreign_enum_mut().is_set(), eq(false));
+    assert_that!(msg.default_foreign_enum_opt(), eq(Optional::Unset(ForeignEnum::ForeignBar)));
+
+    msg.default_foreign_enum_mut().or_default();
+    assert_that!(msg.default_foreign_enum(), eq(ForeignEnum::ForeignBar));
+    assert_that!(msg.default_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBar));
+    assert_that!(msg.default_foreign_enum_mut().is_set(), eq(true));
+    assert_that!(msg.default_foreign_enum_opt(), eq(Optional::Set(ForeignEnum::ForeignBar)));
+}
+
+#[test]
+fn test_optional_import_enum_accessors() {
+    use unittest_proto::proto2_unittest_import::ImportEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportFoo)));
+    assert_that!(msg.optional_import_enum(), eq(ImportEnum::ImportFoo));
+
+    msg.optional_import_enum_mut().set(ImportEnum::ImportBar);
+    assert_that!(msg.optional_import_enum_opt(), eq(Optional::Set(ImportEnum::ImportBar)));
+    assert_that!(msg.optional_import_enum(), eq(ImportEnum::ImportBar));
+
+    msg.optional_import_enum_mut().clear();
+    assert_that!(msg.optional_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportFoo)));
+    assert_that!(msg.optional_import_enum(), eq(ImportEnum::ImportFoo));
+}
+
+#[test]
+fn test_default_import_enum_accessors() {
+    use unittest_proto::proto2_unittest_import::ImportEnum;
+
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));
+    assert_that!(msg.default_import_enum_mut().get(), eq(ImportEnum::ImportBar));
+    assert_that!(msg.default_import_enum_mut().is_set(), eq(false));
+    assert_that!(msg.default_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportBar)));
+
+    msg.default_import_enum_mut().set(ImportEnum::ImportBaz);
+    assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBaz));
+    assert_that!(msg.default_import_enum_mut().get(), eq(ImportEnum::ImportBaz));
+    assert_that!(msg.default_import_enum_mut().is_set(), eq(true));
+    assert_that!(msg.default_import_enum_opt(), eq(Optional::Set(ImportEnum::ImportBaz)));
+
+    msg.default_import_enum_mut().clear();
+    assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));
+    assert_that!(msg.default_import_enum_mut().get(), eq(ImportEnum::ImportBar));
+    assert_that!(msg.default_import_enum_mut().is_set(), eq(false));
+    assert_that!(msg.default_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportBar)));
+
+    msg.default_import_enum_mut().or_default();
+    assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));
+    assert_that!(msg.default_import_enum_mut().get(), eq(ImportEnum::ImportBar));
+    assert_that!(msg.default_import_enum_mut().is_set(), eq(true));
+    assert_that!(msg.default_import_enum_opt(), eq(Optional::Set(ImportEnum::ImportBar)));
 }
 
 #[test]

@@ -19,8 +19,6 @@ extern "C" {
 
 upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
 
-const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
-    const upb_FieldDef* f);
 bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
 bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
 int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);

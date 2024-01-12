@@ -145,7 +145,7 @@ upb_Array* upb_Array_DeepClone(const upb_Array* array, upb_CType value_type,
   if (!cloned_array) {
     return NULL;
   }
-  if (!_upb_Array_ResizeUninitialized(cloned_array, size, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(cloned_array, size, arena)) {
     return NULL;
   }
   for (size_t i = 0; i < size; ++i) {
@@ -191,7 +191,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                upb_Arena* arena) {
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
-  memcpy(dst, src, mini_table->UPB_PRIVATE(size));
+  memcpy(dst + 1, src + 1, mini_table->UPB_PRIVATE(size) - sizeof(upb_Message));
   for (size_t i = 0; i < mini_table->UPB_PRIVATE(field_count); ++i) {
     const upb_MiniTableField* field = &mini_table->UPB_PRIVATE(fields)[i];
     if (upb_MiniTableField_IsScalar(field)) {

@@ -158,7 +158,6 @@ module Google
       attach_function :oneof_count,          :upb_MessageDef_OneofCount,              [Descriptor], :int
       attach_function :message_options,      :Descriptor_serialized_options,          [Descriptor, :pointer, Internal::Arena], :pointer
       attach_function :get_well_known_type,  :upb_MessageDef_WellKnownType,           [Descriptor], WellKnown
-      attach_function :message_def_syntax,   :upb_MessageDef_Syntax,                  [Descriptor], Syntax
       attach_function :find_msg_def_by_name, :upb_MessageDef_FindByNameWithSize,      [Descriptor, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool
     end
   end

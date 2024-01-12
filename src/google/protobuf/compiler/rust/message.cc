@@ -110,8 +110,8 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
         match msg {
           None => Err($pb$::ParseError),
           Some(msg) => {
-            // This assignment causes self.arena to be dropped and to deallocate
-            // any previous message pointed/owned to by self.inner.msg.
+            //~ This assignment causes self.arena to be dropped and to deallocate
+            //~ any previous message pointed/owned to by self.inner.msg.
             self.inner.arena = arena;
             self.inner.msg = msg;
             Ok(())
@@ -233,7 +233,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
     if (!IsInCurrentlyGeneratingCrate(ctx, msg)) {
       return;
     }
-    auto prefix = "crate::" + GetCrateRelativeQualifiedPath(ctx, msg);
+    auto prefix = RsTypePath(ctx, field);
     ctx.Emit(
         {
             {"prefix", prefix},
@@ -270,7 +270,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
     return;
   }
 
-  auto rsType = PrimitiveRsTypeName(field);
+  auto rsType = RsTypePath(ctx, field);
   auto asRef = IsStringOrBytes(fieldType) ? ".as_ref()" : "";
   auto vtable =
       IsStringOrBytes(fieldType) ? "BytesMutVTable" : "PrimitiveVTable";
@@ -283,6 +283,12 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
       IsStringOrBytes(fieldType)
           ? "unsafe { __pb::ProtoStr::from_utf8_unchecked(res).into() }"
           : "res";
+
+  // TODO: support enums which are defined in other crates.
+  auto enum_ = field.enum_type();
+  if (enum_ != nullptr && !IsInCurrentlyGeneratingCrate(ctx, *enum_)) {
+    return;
+  }
 
   ctx.Emit({{"field", fieldName},
             {"getter_thunk", getter_thunk},
@@ -298,7 +304,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
                // TODO: check mutational pathway genn'd correctly
                if (is_mut) {
                  ctx.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&self) -> $pb$::Mut<'_, $RsType$> {
+                  pub fn r#$field$_mut(&mut self) -> $pb$::Mut<'_, $RsType$> {
                     static VTABLE: $pbi$::$vtable$$optional_type_args$ =
                       $pbi$::$vtable$::new(
                         $pbi$::Private,
@@ -335,9 +341,7 @@ void AccessorsForViewOrMut(Context& ctx, const Descriptor& msg, bool is_mut) {
     // TODO - add cord support
     if (field.options().has_ctype()) continue;
     // TODO
-    if (field.type() == FieldDescriptor::TYPE_ENUM ||
-        field.type() == FieldDescriptor::TYPE_GROUP)
-      continue;
+    if (field.type() == FieldDescriptor::TYPE_GROUP) continue;
     GetterForViewOrMut(ctx, field, is_mut);
     ctx.printer().PrintRaw("\n");
   }
@@ -433,7 +437,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             {"settable_impl", [&] { MessageSettableValue(ctx, msg); }}},
            R"rs(
         #[allow(non_camel_case_types)]
-        // TODO: Implement support for debug redaction
+        //~ TODO: Implement support for debug redaction
         #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner

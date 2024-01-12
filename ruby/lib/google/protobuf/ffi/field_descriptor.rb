@@ -156,6 +156,14 @@ module Google
         @has_presence ||= Google::Protobuf::FFI.get_has_presence(self)
       end
 
+      ##
+      # Tests if this is a repeated field that uses packed encoding.
+      #
+      # @return [Boolean] True iff this field is packed
+      def is_packed?
+        @is_packed ||= Google::Protobuf::FFI.get_is_packed(self)
+      end
+
       # @param msg [Google::Protobuf::Message]
       def clear(msg)
         if msg.class.descriptor != Google::Protobuf::FFI.get_containing_message_def(self)
@@ -304,6 +312,7 @@ module Google
       attach_function :get_default,                :upb_FieldDef_Default,               [FieldDescriptor], MessageValue.by_value
       attach_function :get_subtype_as_enum,        :upb_FieldDef_EnumSubDef,            [FieldDescriptor], EnumDescriptor
       attach_function :get_has_presence,           :upb_FieldDef_HasPresence,           [FieldDescriptor], :bool
+      attach_function :get_is_packed,              :upb_FieldDef_IsPacked,              [FieldDescriptor], :bool
       attach_function :is_map,                     :upb_FieldDef_IsMap,                 [FieldDescriptor], :bool
       attach_function :is_repeated,                :upb_FieldDef_IsRepeated,            [FieldDescriptor], :bool
       attach_function :is_sub_message,             :upb_FieldDef_IsSubMessage,          [FieldDescriptor], :bool
