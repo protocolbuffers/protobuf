@@ -361,50 +361,6 @@ public final class Descriptors {
     }
 
     /**
-     * This method is for backward compatibility with generated code which passed an
-     * InternalDescriptorAssigner.
-     */
-    @Deprecated
-    public static void internalBuildGeneratedFileFrom(
-        final String[] descriptorDataParts,
-        final FileDescriptor[] dependencies,
-        final InternalDescriptorAssigner descriptorAssigner) {
-      final byte[] descriptorBytes = latin1Cat(descriptorDataParts);
-
-      FileDescriptorProto proto;
-      try {
-        proto = FileDescriptorProto.parseFrom(descriptorBytes);
-      } catch (InvalidProtocolBufferException e) {
-        throw new IllegalArgumentException(
-            "Failed to parse protocol buffer descriptor for generated code.", e);
-      }
-
-      final FileDescriptor result;
-      try {
-        // When building descriptors for generated code, we allow unknown
-        // dependencies by default.
-        result = buildFrom(proto, dependencies, true);
-      } catch (DescriptorValidationException e) {
-        throw new IllegalArgumentException(
-            "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
-      }
-
-      final ExtensionRegistry registry = descriptorAssigner.assignDescriptors(result);
-
-      if (registry != null) {
-        // We must re-parse the proto using the registry.
-        try {
-          proto = FileDescriptorProto.parseFrom(descriptorBytes, registry);
-        } catch (InvalidProtocolBufferException e) {
-          throw new IllegalArgumentException(
-              "Failed to parse protocol buffer descriptor for generated code.", e);
-        }
-
-        result.setProto(proto);
-      }
-    }
-
-    /**
      * This method is to be called by generated code only. It is equivalent to {@code buildFrom}
      * except that the {@code FileDescriptorProto} is encoded in protocol buffer wire format.
      */
@@ -428,22 +384,6 @@ public final class Descriptors {
         throw new IllegalArgumentException(
             "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
       }
-    }
-
-    /**
-     * This method is for backward compatibility with generated code which passed an
-     * InternalDescriptorAssigner.
-     */
-    @Deprecated
-    public static void internalBuildGeneratedFileFrom(
-        final String[] descriptorDataParts,
-        final Class<?> descriptorOuterClass,
-        final String[] dependencyClassNames,
-        final String[] dependencyFileNames,
-        final InternalDescriptorAssigner descriptorAssigner) {
-      FileDescriptor[] dependencies =
-          findDescriptors(descriptorOuterClass, dependencyClassNames, dependencyFileNames);
-      internalBuildGeneratedFileFrom(descriptorDataParts, dependencies, descriptorAssigner);
     }
 
     /**
@@ -2011,6 +1951,7 @@ public final class Descriptors {
    * number. In generated Java code, all values with the same number after the first become aliases
    * of the first. However, they still have independent EnumValueDescriptors.
    */
+  @SuppressWarnings("ShouldNotSubclass")
   public static final class EnumValueDescriptor extends GenericDescriptor
       implements Internal.EnumLite {
     static final Comparator<EnumValueDescriptor> BY_NUMBER =
