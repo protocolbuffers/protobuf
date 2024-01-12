@@ -148,6 +148,7 @@ cc_library(
         ":code_generator",
         ":importer",
         ":retention",
+        ":versions",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler/allowlists",

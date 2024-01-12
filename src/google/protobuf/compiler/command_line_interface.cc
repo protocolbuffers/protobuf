@@ -22,6 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/feature_resolver.h"
 
