@@ -7,26 +7,32 @@
 
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
-    __internal::Private,
-    __runtime::{MapInner, ProxiedInMapValue},
+    __internal::{Private, RawMap},
+    __runtime::InnerMapMut,
 };
 use std::marker::PhantomData;
+use std::ops::Deref;
 
 #[repr(transparent)]
 pub struct MapView<'msg, K: ?Sized, V: ?Sized> {
-    inner: MapInner<'msg, K, V>,
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'msg, K, V>) -> Self {
-        Self { inner }
-    }
+    pub raw: RawMap,
+    _phantom_key: PhantomData<&'msg K>,
+    _phantom_value: PhantomData<&'msg V>,
 }
 
 impl<'msg, K: ?Sized, V: ?Sized> Copy for MapView<'msg, K, V> {}
 impl<'msg, K: ?Sized, V: ?Sized> Clone for MapView<'msg, K, V> {
     fn clone(&self) -> Self {
         *self
+    }
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> Deref for MapMut<'msg, K, V> {
+    type Target = MapView<'msg, K, V>;
+    fn deref(&self) -> &Self::Target {
+        // SAFETY:
+        //   - `MapView<'msg, K, V>` is `#[repr(transparent)]` over `RawMap`.
+        unsafe { &*(&self.inner.raw as *const RawMap as *const MapView<'msg, K, V>) }
     }
 }
 
@@ -42,15 +48,10 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapView<'msg, K, V> {
     }
 }
 
-#[repr(transparent)]
 pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
-    inner: MapInner<'msg, K, V>,
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
-    pub fn from_inner(_private: Private, inner: MapInner<'msg, K, V>) -> Self {
-        Self { inner }
-    }
+    pub(crate) inner: InnerMapMut<'msg>,
+    _phantom_key: PhantomData<&'msg K>,
+    _phantom_value: PhantomData<&'msg V>,
 }
 
 unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapMut<'msg, K, V> {}
@@ -64,20 +65,37 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
     }
 }
 
-impl<'msg, K: ?Sized, V: ?Sized> std::ops::Deref for MapMut<'msg, K, V> {
-    type Target = MapView<'msg, K, V>;
-    fn deref(&self) -> &Self::Target {
+pub struct Map<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> {
+    pub(crate) inner: InnerMapMut<'static>,
+    _phantom_key: PhantomData<K>,
+    _phantom_value: PhantomData<V>,
+}
+
+impl<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> Drop for Map<K, V> {
+    fn drop(&mut self) {
         // SAFETY:
-        //   - `Map{View,Mut}<'msg, T>` are both `#[repr(transparent)]` over
-        //     `MapInner<'msg, T>`.
-        //   - `MapInner` is a type alias for `NonNull`.
-        unsafe { &*(self as *const Self as *const MapView<'msg, K, V>) }
+        // - `drop` is only called once.
+        // - 'map_free` is only called here.
+        unsafe { V::map_free(Private, self) }
     }
 }
 
-// This is a ZST type so we can implement `Proxied`. Users will work with
-// `MapView` (`View<'_, Map>>) and `MapMut` (Mut<'_, Map>).
-pub struct Map<K: ?Sized, V: ?Sized>(PhantomData<K>, PhantomData<V>);
+pub trait ProxiedInMapValue<K>: Proxied
+where
+    K: Proxied + ?Sized,
+{
+    fn map_new(_private: Private) -> Map<K, Self>;
+
+    /// # Safety
+    /// - After `map_free`, no other methods on the input are safe to call.
+    unsafe fn map_free(_private: Private, map: &mut Map<K, Self>);
+
+    fn map_clear(map: Mut<'_, Map<K, Self>>);
+    fn map_len(map: View<'_, Map<K, Self>>) -> usize;
+    fn map_insert(map: Mut<'_, Map<K, Self>>, key: View<'_, K>, value: View<'_, Self>) -> bool;
+    fn map_get<'a>(map: View<'a, Map<K, Self>>, key: View<'_, K>) -> Option<View<'a, Self>>;
+    fn map_remove(map: Mut<'_, Map<K, Self>>, key: View<'_, K>) -> bool;
+}
 
 impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxied for Map<K, V> {
     type View<'msg> = MapView<'msg, K, V> where K: 'msg, V: 'msg;
@@ -108,7 +126,7 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg
     where
         'msg: 'shorter,
     {
-        MapView { inner: self.inner }
+        MapView { raw: self.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 }
 
@@ -118,14 +136,14 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg
     type Proxied = Map<K, V>;
 
     fn as_view(&self) -> View<'_, Self::Proxied> {
-        **self
+        MapView { raw: self.inner.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 
     fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
         'msg: 'shorter,
     {
-        *self.into_mut::<'shorter>()
+        MapView { raw: self.inner.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 }
 
@@ -133,14 +151,41 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MutProxy<'msg>
     for MapMut<'msg, K, V>
 {
     fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-        MapMut { inner: self.inner }
+        MapMut { inner: self.inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 
     fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
     where
         'msg: 'shorter,
     {
-        MapMut { inner: self.inner }
+        MapMut { inner: self.inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+}
+
+impl<K, V> Map<K, V>
+where
+    K: Proxied + ?Sized,
+    V: ProxiedInMapValue<K> + ?Sized,
+{
+    #[allow(dead_code)]
+    pub(crate) fn new() -> Self {
+        V::map_new(Private)
+    }
+
+    pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
+        MapMut { inner: self.inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+
+    pub fn as_view(&self) -> MapView<'_, K, V> {
+        MapView { raw: self.inner.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+
+    /// # Safety
+    /// - `inner` must be valid to read and write from for `'static`.
+    /// - There must be no aliasing references or mutations on the same
+    ///   underlying object.
+    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'static>) -> Self {
+        Self { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
     }
 }
 
@@ -149,18 +194,30 @@ where
     K: Proxied + ?Sized + 'msg,
     V: ProxiedInMapValue<K> + ?Sized + 'msg,
 {
-    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
+    #[doc(hidden)]
+    pub fn as_raw(&self, _private: Private) -> RawMap {
+        self.raw
+    }
+
+    /// # Safety
+    /// - `raw` must be valid to read from for `'msg`.
+    #[doc(hidden)]
+    pub unsafe fn from_raw(_private: Private, raw: RawMap) -> Self {
+        Self { raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+
+    pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
     where
         K: 'a,
     {
-        self.inner.get(key.into())
+        V::map_get(self, key.into())
     }
 
-    pub fn len(&self) -> usize {
-        self.inner.size()
+    pub fn len(self) -> usize {
+        V::map_len(self)
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub fn is_empty(self) -> bool {
         self.len() == 0
     }
 }
@@ -170,6 +227,12 @@ where
     K: Proxied + ?Sized + 'msg,
     V: ProxiedInMapValue<K> + ?Sized + 'msg,
 {
+    /// # Safety
+    /// - `inner` must be valid to read and write from for `'msg`.
+    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'msg>) -> Self {
+        Self { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+
     pub fn insert<'a, 'b>(
         &mut self,
         key: impl Into<View<'a, K>>,
@@ -179,25 +242,25 @@ where
         K: 'a,
         V: 'b,
     {
-        self.inner.insert(key.into(), value.into())
+        V::map_insert(self.as_mut(), key.into(), value.into())
     }
 
     pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool
     where
         K: 'a,
     {
-        self.inner.remove(key.into())
+        V::map_remove(self.as_mut(), key.into())
     }
 
     pub fn clear(&mut self) {
-        self.inner.clear()
+        V::map_clear(self.as_mut())
     }
 
     pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<V>>
     where
         K: 'a,
     {
-        self.as_view().get(key)
+        V::map_get(self.as_view(), key.into())
     }
 
     pub fn copy_from(&mut self, _src: MapView<'_, K, V>) {
@@ -208,12 +271,13 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::__runtime::{new_map_i32_i64, new_map_str_str};
+    use crate::ProtoStr;
     use googletest::prelude::*;
 
     #[test]
     fn test_proxied_scalar() {
-        let mut map_mut = MapMut::from_inner(Private, new_map_i32_i64());
+        let mut map: Map<i32, i64> = Map::new();
+        let mut map_mut = map.as_mut();
         map_mut.insert(1, 2);
         assert_that!(map_mut.get(1), eq(Some(2)));
 
@@ -238,7 +302,8 @@ mod tests {
 
     #[test]
     fn test_proxied_str() {
-        let mut map_mut = MapMut::from_inner(Private, new_map_str_str());
+        let mut map: Map<ProtoStr, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
         map_mut.insert("a", "b");
 
         let map_view_1 = map_mut.as_view();
@@ -261,8 +326,31 @@ mod tests {
     }
 
     #[test]
+    fn test_all_maps_can_be_constructed() {
+        macro_rules! gen_proto_values {
+            ($key_t:ty, $($value_t:ty),*) => {
+                $(
+                    let map = Map::<$key_t, $value_t>::new();
+                    assert_that!(map.as_view().len(), eq(0));
+                )*
+            }
+        }
+
+        macro_rules! gen_proto_keys {
+            ($($key_t:ty),*) => {
+                $(
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr);
+                )*
+            }
+        }
+
+        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
+    }
+
+    #[test]
     fn test_dbg() {
-        let map_view = MapView::from_inner(Private, new_map_i32_i64());
-        assert_that!(format!("{:?}", map_view), eq("MapView(\"i32\", \"i64\")"));
+        let mut map = Map::<i32, f64>::new();
+        assert_that!(format!("{:?}", map.as_view()), eq("MapView(\"i32\", \"f64\")"));
+        assert_that!(format!("{:?}", map.as_mut()), eq("MapMut(\"i32\", \"f64\")"));
     }
 }

@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
-    Mut, ProtoStr, Proxied, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, SettableValue,
-    View, ViewProxy,
+    Map, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -536,92 +536,41 @@ pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> 
     }
 }
 
-/// Returns a static thread-local empty MapInner for use in a
-/// MapView.
-///
-/// # Safety
-/// The returned map must never be mutated.
-///
-/// TODO: Split MapInner into mut and const variants to
-/// enforce safety. The returned array must never be mutated.
-pub unsafe fn empty_map<K: ?Sized + 'static, V: ?Sized + 'static>() -> MapInner<'static, K, V> {
-    fn new_map_inner() -> MapInner<'static, i32, i32> {
-        // TODO: Consider creating empty map in C.
-        let arena = Box::leak::<'static>(Box::new(Arena::new()));
-        // Provide `i32` as a placeholder type.
-        MapInner::<'static, i32, i32>::new(arena)
-    }
-    thread_local! {
-        static MAP: MapInner<'static, i32, i32> = new_map_inner();
-    }
-
-    MAP.with(|inner| MapInner {
-        raw: inner.raw,
-        arena: inner.arena,
-        _phantom_key: PhantomData,
-        _phantom_value: PhantomData,
-    })
-}
-
-#[derive(Debug)]
-pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
-    pub raw: RawMap,
-    pub arena: &'msg Arena,
-    pub _phantom_key: PhantomData<&'msg mut K>,
-    pub _phantom_value: PhantomData<&'msg mut V>,
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
-impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
-    fn clone(&self) -> MapInner<'msg, K, V> {
-        *self
-    }
-}
-
-pub trait ProxiedInMapValue<K>: Proxied
+/// Returns a static empty MapView.
+pub fn empty_map<K, V>() -> MapView<'static, K, V>
 where
     K: Proxied + ?Sized,
+    V: ProxiedInMapValue<K> + ?Sized,
 {
-    fn new_map(a: RawArena) -> RawMap;
-    fn clear(m: RawMap) {
-        unsafe { upb_Map_Clear(m) }
+    // TODO: Consider creating a static empty map in C.
+
+    // Use `i32` for a shared empty map for all map types.
+    static EMPTY_MAP_VIEW: OnceLock<MapView<'static, i32, i32>> = OnceLock::new();
+
+    // SAFETY:
+    // - Because the map is never mutated, the map type is unused and therefore
+    //   valid for `T`.
+    // - The view is leaked for `'static`.
+    unsafe {
+        MapView::from_raw(
+            Private,
+            EMPTY_MAP_VIEW
+                .get_or_init(|| Box::leak(Box::new(Map::new())).as_mut().into_view())
+                .as_raw(Private),
+        )
     }
-    fn size(m: RawMap) -> usize {
-        unsafe { upb_Map_Size(m) }
-    }
-    fn insert(m: RawMap, a: RawArena, key: View<'_, K>, value: View<'_, Self>) -> bool;
-    fn get<'a>(m: RawMap, key: View<'_, K>) -> Option<View<'a, Self>>;
-    fn remove(m: RawMap, key: View<'_, K>) -> bool;
 }
 
-impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MapInner<'msg, K, V> {
-    pub fn new(arena: &'msg mut Arena) -> Self {
-        MapInner {
-            raw: V::new_map(arena.raw()),
-            arena,
-            _phantom_key: PhantomData,
-            _phantom_value: PhantomData,
-        }
-    }
+#[derive(Clone, Copy, Debug)]
+pub struct InnerMapMut<'msg> {
+    pub(crate) raw: RawMap,
+    raw_arena: RawArena,
+    _phantom: PhantomData<&'msg Arena>,
+}
 
-    pub fn size(&self) -> usize {
-        V::size(self.raw)
-    }
-
-    pub fn clear(&mut self) {
-        V::clear(self.raw)
-    }
-
-    pub fn get<'a>(&self, key: View<'_, K>) -> Option<View<'a, V>> {
-        V::get(self.raw, key)
-    }
-
-    pub fn remove(&mut self, key: View<'_, K>) -> bool {
-        V::remove(self.raw, key)
-    }
-
-    pub fn insert(&mut self, key: View<'_, K>, value: View<'_, V>) -> bool {
-        V::insert(self.raw, self.arena.raw(), key, value)
+impl<'msg> InnerMapMut<'msg> {
+    pub fn new(_private: Private, raw: RawMap, raw_arena: RawArena) -> Self {
+        InnerMapMut { raw, raw_arena, _phantom: PhantomData }
     }
 }
 
@@ -629,25 +578,59 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
     ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, for $($t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
          $(
             impl ProxiedInMapValue<$key_t> for $t {
-                fn new_map(a: RawArena) -> RawMap {
-                    unsafe { upb_Map_New(a, $key_upb_tag, $upb_tag) }
-                }
+                fn map_new(_private: Private) -> Map<$key_t, Self> {
+                    let arena = Arena::new();
+                    let raw_arena = arena.raw();
+                    std::mem::forget(arena);
 
-                fn insert(m: RawMap, a: RawArena, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     unsafe {
-                        upb_Map_Set(
-                            m,
-                            $key_msg_val(key),
-                            $msg_val(value),
-                            a
+                        Map::from_inner(
+                            Private,
+                            InnerMapMut {
+                                raw: upb_Map_New(raw_arena, $key_upb_tag, $upb_tag),
+                                raw_arena,
+                                _phantom: PhantomData
+                            }
                         )
                     }
                 }
 
-                fn get<'a>(m: RawMap, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
+                unsafe fn map_free(_private: Private, map: &mut Map<$key_t, Self>) {
+                    // SAFETY:
+                    // - `map.inner.raw_arena` is a live `upb_Arena*`
+                    // - This function is only called once for `map` in `Drop`.
+                    unsafe {
+                        upb_Arena_Free(map.inner.raw_arena);
+                    }
+                }
+
+                fn map_clear(map: Mut<'_, Map<$key_t, Self>>) {
+                    unsafe {
+                        upb_Map_Clear(map.inner.raw);
+                    }
+                }
+
+                fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
+                    unsafe {
+                        upb_Map_Size(map.raw)
+                    }
+                }
+
+                fn map_insert(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                    unsafe {
+                        upb_Map_Set(
+                            map.inner.raw,
+                            $key_msg_val(key),
+                            $msg_val(value),
+                            map.inner.raw_arena
+                        )
+                    }
+                }
+
+                fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let mut val = $msg_val($zero_val);
                     let found = unsafe {
-                        upb_Map_Get(m, $key_msg_val(key), &mut val)
+                        upb_Map_Get(map.raw, ($key_msg_val)(key), &mut val)
                     };
                     if !found {
                         return None;
@@ -655,10 +638,10 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     Some($from_msg_val(val))
                 }
 
-                fn remove(m: RawMap, key: View<'_, $key_t>) -> bool {
+                fn map_remove(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
                     let mut val = $msg_val($zero_val);
                     unsafe {
-                        upb_Map_Delete(m, $key_msg_val(key), &mut val)
+                        upb_Map_Delete(map.inner.raw, $key_msg_val(key), &mut val)
                     }
                 }
             }
@@ -733,18 +716,6 @@ extern "C" {
 }
 
 #[cfg(test)]
-pub(crate) fn new_map_i32_i64() -> MapInner<'static, i32, i64> {
-    let arena = Box::leak::<'static>(Box::new(Arena::new()));
-    MapInner::<'static, i32, i64>::new(arena)
-}
-
-#[cfg(test)]
-pub(crate) fn new_map_str_str() -> MapInner<'static, ProtoStr, ProtoStr> {
-    let arena = Box::leak::<'static>(Box::new(Arena::new()));
-    MapInner::<'static, ProtoStr, ProtoStr>::new(arena)
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
     use googletest::prelude::*;
@@ -769,97 +740,5 @@ mod tests {
             )
         };
         assert_that!(&*serialized_data, eq(b"Hello world"));
-    }
-
-    #[test]
-    fn i32_i32_map() {
-        let mut arena = Arena::new();
-        let mut map = MapInner::<'_, i32, i32>::new(&mut arena);
-        assert_that!(map.size(), eq(0));
-
-        assert_that!(map.insert(1, 2), eq(true));
-        assert_that!(map.get(1), eq(Some(2)));
-        assert_that!(map.get(3), eq(None));
-        assert_that!(map.size(), eq(1));
-
-        assert_that!(map.remove(1), eq(true));
-        assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(false));
-
-        assert_that!(map.insert(4, 5), eq(true));
-        assert_that!(map.insert(6, 7), eq(true));
-        map.clear();
-        assert_that!(map.size(), eq(0));
-    }
-
-    #[test]
-    fn i64_f64_map() {
-        let mut arena = Arena::new();
-        let mut map = MapInner::<'_, i64, f64>::new(&mut arena);
-        assert_that!(map.size(), eq(0));
-
-        assert_that!(map.insert(1, 2.5), eq(true));
-        assert_that!(map.get(1), eq(Some(2.5)));
-        assert_that!(map.get(3), eq(None));
-        assert_that!(map.size(), eq(1));
-
-        assert_that!(map.remove(1), eq(true));
-        assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(false));
-
-        assert_that!(map.insert(4, 5.1), eq(true));
-        assert_that!(map.insert(6, 7.2), eq(true));
-        map.clear();
-        assert_that!(map.size(), eq(0));
-    }
-
-    #[test]
-    fn str_str_map() {
-        let mut arena = Arena::new();
-        let mut map = MapInner::<'_, ProtoStr, ProtoStr>::new(&mut arena);
-        assert_that!(map.size(), eq(0));
-
-        map.insert("fizz".into(), "buzz".into());
-        assert_that!(map.size(), eq(1));
-        assert_that!(map.remove("fizz".into()), eq(true));
-        map.clear();
-        assert_that!(map.size(), eq(0));
-    }
-
-    #[test]
-    fn u64_str_map() {
-        let mut arena = Arena::new();
-        let mut map = MapInner::<'_, u64, ProtoStr>::new(&mut arena);
-        assert_that!(map.size(), eq(0));
-
-        map.insert(1, "fizz".into());
-        map.insert(2, "buzz".into());
-        assert_that!(map.size(), eq(2));
-        assert_that!(map.remove(1), eq(true));
-        map.clear();
-        assert_that!(map.size(), eq(0));
-    }
-
-    #[test]
-    fn test_all_maps_can_be_constructed() {
-        macro_rules! gen_proto_values {
-            ($key_t:ty, $($value_t:ty),*) => {
-                let mut arena = Arena::new();
-                $(
-                    let map = MapInner::<'_, $key_t, $value_t>::new(&mut arena);
-                    assert_that!(map.size(), eq(0));
-                )*
-            }
-        }
-
-        macro_rules! gen_proto_keys {
-            ($($key_t:ty),*) => {
-                $(
-                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr);
-                )*
-            }
-        }
-
-        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
     }
 }

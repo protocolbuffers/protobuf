@@ -59,6 +59,10 @@ expose_repeated_field_methods(int64_t, i64);
       __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_new() {                  \
     return new google::protobuf::Map<key_ty, value_ty>();                                \
   }                                                                            \
+  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_free(                   \
+      google::protobuf::Map<key_ty, value_ty>* m) {                                      \
+    delete m;                                                                  \
+  }                                                                            \
   void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_clear(                  \
       google::protobuf::Map<key_ty, value_ty>* m) {                                      \
     m->clear();                                                                \

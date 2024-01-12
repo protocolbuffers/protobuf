@@ -31,29 +31,23 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
                     pub fn r#$field$(&self)
-                      -> $pb$::View<'_, $pb$::Map<$Key$, $Value$>> {
-                      let inner = unsafe {
+                      -> $pb$::MapView<'_, $Key$, $Value$> {
+                      unsafe {
                         $getter_thunk$(self.inner.msg)
-                      }.map_or_else(|| unsafe {$pbr$::empty_map()}, |raw| {
-                        $pbr$::MapInner{
-                          raw,
-                          arena: &self.inner.arena,
-                          _phantom_key: std::marker::PhantomData,
-                          _phantom_value: std::marker::PhantomData,
-                        }
-                      });
-                      $pb$::MapView::from_inner($pbi$::Private, inner)
+                          .map_or_else(
+                            $pbr$::empty_map::<$Key$, $Value$>,
+                            |raw| $pb$::MapView::from_raw($pbi$::Private, raw)
+                          )
+                      }
                     })rs");
                } else {
                  ctx.Emit({}, R"rs(
                     pub fn r#$field$(&self)
-                      -> $pb$::View<'_, $pb$::Map<$Key$, $Value$>> {
-                      let inner = $pbr$::MapInner {
-                        raw: unsafe { $getter_thunk$(self.inner.msg) },
-                        _phantom_key: std::marker::PhantomData,
-                        _phantom_value: std::marker::PhantomData,
-                      };
-                      $pb$::MapView::from_inner($pbi$::Private, inner)
+                      -> $pb$::MapView<'_, $Key$, $Value$> {
+                      unsafe {
+                        $pb$::MapView::from_raw($pbi$::Private,
+                          $getter_thunk$(self.inner.msg))
+                      }
                     })rs");
                }
              }},
@@ -62,29 +56,22 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
                     pub fn r#$field$_mut(&mut self)
-                      -> $pb$::Mut<'_, $pb$::Map<$Key$, $Value$>> {
+                      -> $pb$::MapMut<'_, $Key$, $Value$> {
                       let raw = unsafe {
                         $getter_mut_thunk$(self.inner.msg,
                                            self.inner.arena.raw())
                       };
-                      let inner = $pbr$::MapInner{
-                        raw,
-                        arena: &self.inner.arena,
-                        _phantom_key: std::marker::PhantomData,
-                        _phantom_value: std::marker::PhantomData,
-                      };
-                      $pb$::MapMut::from_inner($pbi$::Private, inner)
+                      let inner = $pbr$::InnerMapMut::new($pbi$::Private,
+                        raw, self.inner.arena.raw());
+                      unsafe { $pb$::MapMut::from_inner($pbi$::Private, inner) }
                     })rs");
                } else {
                  ctx.Emit({}, R"rs(
                     pub fn r#$field$_mut(&mut self)
-                      -> $pb$::Mut<'_, $pb$::Map<$Key$, $Value$>> {
-                      let inner = $pbr$::MapInner {
-                        raw: unsafe { $getter_mut_thunk$(self.inner.msg) },
-                        _phantom_key: std::marker::PhantomData,
-                        _phantom_value: std::marker::PhantomData,
-                      };
-                      $pb$::MapMut::from_inner($pbi$::Private, inner)
+                      -> $pb$::MapMut<'_, $Key$, $Value$> {
+                      let inner = $pbr$::InnerMapMut::new($pbi$::Private,
+                        unsafe { $getter_mut_thunk$(self.inner.msg) });
+                      unsafe { $pb$::MapMut::from_inner($pbi$::Private, inner) }
                     })rs");
                }
              }}},
