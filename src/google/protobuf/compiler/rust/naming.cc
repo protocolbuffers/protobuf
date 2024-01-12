@@ -41,8 +41,7 @@ std::string GetUnderscoreDelimitedFullName(Context& ctx,
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
   absl::string_view path = dep.name();
-  auto basename = path.substr(path.rfind('/') + 1);
-  return absl::StrReplaceAll(basename, {{".", "_"}, {"-", "_"}});
+  return std::string(ctx.generator_context().ImportPathToCrateName(path));
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {

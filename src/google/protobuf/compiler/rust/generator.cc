@@ -7,15 +7,16 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
-#include <iterator>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -23,6 +24,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/crate_mapping.h"
 #include "google/protobuf/compiler/rust/enum.h"
 #include "google/protobuf/compiler/rust/message.h"
 #include "google/protobuf/compiler/rust/naming.h"
@@ -30,7 +32,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -156,8 +157,8 @@ void EmitPublicImports(Context& ctx, const FileDescriptor& primary_file) {
   }
 }
 
-// Emits submodule declarations so `rustc` can find non primary sources from the
-// primary file.
+// Emits submodule declarations so `rustc` can find non primary sources from
+// the primary file.
 void DeclareSubmodulesForNonPrimarySrcs(
     Context& ctx, const FileDescriptor& primary_file,
     absl::Span<const FileDescriptor* const> non_primary_srcs) {
@@ -179,8 +180,9 @@ void DeclareSubmodulesForNonPrimarySrcs(
   }
 }
 
-// Emits `pub use <...>::Msg` for all messages in non primary sources into their
-// corresponding packages (each source file can declare a different package).
+// Emits `pub use <...>::Msg` for all messages in non primary sources into
+// their corresponding packages (each source file can declare a different
+// package).
 //
 // Returns the non-primary sources that should be reexported from the package of
 // the primary file.
@@ -222,7 +224,15 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   std::vector<const FileDescriptor*> files_in_current_crate;
   generator_context->ListParsedFiles(&files_in_current_crate);
 
-  RustGeneratorContext rust_generator_context(&files_in_current_crate);
+  absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
+      import_path_to_crate_name = GetImportPathToCrateNameMap(&*opts);
+  if (!import_path_to_crate_name.ok()) {
+    *error = std::string(import_path_to_crate_name.status().message());
+    return false;
+  }
+
+  RustGeneratorContext rust_generator_context(&files_in_current_crate,
+                                              &*import_path_to_crate_name);
 
   Context ctx_without_printer(&*opts, &rust_generator_context, nullptr);
 

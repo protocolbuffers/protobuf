@@ -65,6 +65,15 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
                          kernel_arg->second));
   }
 
+  auto mapping_arg = absl::c_find_if(
+      args, [](auto& arg) { return arg.first == "bazel_crate_mapping"; });
+  if (mapping_arg == args.end()) {
+    return absl::InvalidArgumentError(
+        "Mandatory option `mapping` missing, please specify mapping file "
+        "path.");
+  }
+  opts.mapping_file_path = mapping_arg->second;
+
   return opts;
 }
 

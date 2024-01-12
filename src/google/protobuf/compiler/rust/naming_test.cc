@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -27,7 +28,8 @@ TEST(RustProtoNaming, RustInternalModuleName) {
 
   const Options opts = {Kernel::kUpb};
   std::vector<const google::protobuf::FileDescriptor*> files{fd};
-  const RustGeneratorContext rust_generator_context(&files);
+  absl::flat_hash_map<std::string, std::string> mapping;
+  const RustGeneratorContext rust_generator_context(&files, &mapping);
   std::string output;
   StringOutputStream stream{&output};
   Printer printer(&stream);

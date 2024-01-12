@@ -17,6 +17,7 @@ cc_library(
     ],
     deps = [
         ":context",
+        ":crate_mapping",
         ":enum",
         ":message",
         ":naming",
@@ -29,13 +30,48 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "crate_mapping",
+    srcs = ["crate_mapping.cc"],
+    hdrs = ["crate_mapping.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        "//src/google/protobuf",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "crate_mapping_unittest",
+    srcs = ["crate_mapping_unittest.cc"],
+    deps = [
+        ":context",
+        ":crate_mapping",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -104,6 +140,8 @@ cc_library(
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",

@@ -243,5 +243,6 @@ cc_dist_library(
         "//src/google/protobuf/compiler:command_line_interface_tester",
         "//src/google/protobuf/compiler:mock_code_generator",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
     ],
 )
