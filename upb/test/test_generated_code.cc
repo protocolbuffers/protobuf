@@ -20,6 +20,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/array.h"
+#include "upb/message/map.h"
 #include "upb/test/test.upb.h"
 
 // Must be last.
@@ -922,4 +923,23 @@ TEST(GeneratedCode, Extensions) {
 
   ASSERT_EQ(size1, size2);
   ASSERT_EQ(0, memcmp(pb1, pb2, size1));
+}
+
+TEST(GeneratedCode, Maps) {
+  upb::Arena arena;
+  upb_test_ModelWithMaps* msg = upb_test_ModelWithMaps_new(arena.ptr());
+
+  auto sb = _upb_test_ModelWithMaps_map_sb_mutable_upb_map(msg, arena.ptr());
+  auto ss = _upb_test_ModelWithMaps_map_ss_mutable_upb_map(msg, arena.ptr());
+  auto ii = _upb_test_ModelWithMaps_map_ii_mutable_upb_map(msg, arena.ptr());
+
+  ASSERT_NE(sb, nullptr);
+  ASSERT_NE(ss, nullptr);
+  ASSERT_NE(ii, nullptr);
+
+  upb_MessageValue key, val;
+  key.str_val = test_str_view;
+  val.str_val = test_str_view2;
+
+  upb_Map_Set(sb, key, val, arena.ptr());
 }

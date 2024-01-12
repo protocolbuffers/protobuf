@@ -213,16 +213,20 @@ std::string MapValueCType(upb::FieldDefPtr map_field) {
   return CType(map_field.message_type().map_value());
 }
 
-std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
-  return map_field.message_type().map_key().ctype() == kUpb_CType_String
+std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
+  return ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes
              ? "0"
              : absl::StrCat("sizeof(", expr, ")");
 }
 
+std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
+  const upb_CType ctype = map_field.message_type().map_key().ctype();
+  return MapKeyValueSize(ctype, expr);
+}
+
 std::string MapValueSize(upb::FieldDefPtr map_field, absl::string_view expr) {
-  return map_field.message_type().map_value().ctype() == kUpb_CType_String
-             ? "0"
-             : absl::StrCat("sizeof(", expr, ")");
+  const upb_CType ctype = map_field.message_type().map_value().ctype();
+  return MapKeyValueSize(ctype, expr);
 }
 
 std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field,
