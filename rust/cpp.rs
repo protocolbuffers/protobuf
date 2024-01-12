@@ -317,7 +317,7 @@ pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
 pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
     private: Private,
     mut repeated: RepeatedMut<E>,
-) -> RepeatedMut<i32> {
+) -> RepeatedMut<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
     // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
     unsafe {
