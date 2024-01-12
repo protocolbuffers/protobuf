@@ -63,12 +63,12 @@ void SingularMessage::InMsgImpl(Context& ctx,
                  let submsg = unsafe {
                    $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
                  };
-                 $msg_type$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                 $msg_type$Mut::from_parent($pbi$::Private, &mut self.inner, submsg)
                  )rs");
              } else {
                ctx.Emit({}, R"rs(
                     let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
-                    $msg_type$Mut::new($pbi$::Private, &mut self.inner, submsg)
+                    $msg_type$Mut::from_parent($pbi$::Private, &mut self.inner, submsg)
                   )rs");
              }
            }},

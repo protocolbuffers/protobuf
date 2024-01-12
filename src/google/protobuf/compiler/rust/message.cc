@@ -497,7 +497,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl<'a> $Msg$Mut<'a> {
           #[doc(hidden)]
-          pub fn new(_private: $pbi$::Private,
+          pub fn from_parent(_private: $pbi$::Private,
                      parent: &'a mut $pbr$::MessageInner,
                      msg: $pbi$::RawMessage)
             -> Self {
@@ -505,6 +505,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
               inner: $pbr$::MutatorMessageRef::from_parent(
                        $pbi$::Private, parent, msg)
             }
+          }
+          #[doc(hidden)]
+          pub fn new(_private: $pbi$::Private, msg: &'a mut $pbr$::MessageInner) -> Self {
+            Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
           $accessor_fns_for_muts$
         }
@@ -542,6 +546,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
           pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
             $Msg::deserialize$
+          }
+
+          pub fn as_view(&self) -> $Msg$View {
+            $Msg$View::new($pbi$::Private, self.inner.msg)
+          }
+
+          pub fn as_mut(&mut self) -> $Msg$Mut {
+            $Msg$Mut::new($pbi$::Private, &mut self.inner)
           }
 
           $accessor_fns$

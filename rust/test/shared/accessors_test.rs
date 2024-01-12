@@ -10,7 +10,7 @@
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
 use protobuf::Optional;
-use unittest_proto::proto2_unittest::{NestedTestAllTypes, TestAllTypes, TestAllTypes_};
+use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
 
 #[test]
 fn test_default_accessors() {
@@ -948,11 +948,11 @@ fn test_oneof_default_mut_accessors() {
 #[test]
 fn test_set_message_from_view() {
     use protobuf::MutProxy;
-    let mut m1 = NestedTestAllTypes::new();
 
-    let mut m2 = NestedTestAllTypes::new();
-    m2.payload_mut().optional_int32_mut().set(1);
+    let mut m1 = TestAllTypes::new();
+    m1.optional_int32_mut().set(1);
+    let mut m2 = TestAllTypes::new();
+    m2.as_mut().set(m1.as_view());
 
-    m1.payload_mut().set(m2.payload());
-    assert_that!(m1.payload().optional_int32(), eq(1));
+    assert_that!(m2.optional_int32(), eq(1i32));
 }
