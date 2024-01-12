@@ -2344,6 +2344,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   const std::string& type_url = reflection->GetString(message, type_url_field);
   std::string url_prefix;
   std::string full_type_name;
+
   if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
     return false;
   }
