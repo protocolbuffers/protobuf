@@ -67,18 +67,6 @@ endif()
 enable_testing()
 
 
-add_library(upb INTERFACE
-    
-)
-target_include_directories(upb INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
-)
-target_link_libraries(upb INTERFACE
-  base
-  mem)
-
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
     
 )
