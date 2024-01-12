@@ -50,7 +50,7 @@ static void PrintHexDigit(char digit, protobuf::io::Printer* printer) {
   printer->WriteRaw(&text, 1);
 }
 
-static void IsPrint(int ch) {
+static bool IsPrint(int ch) {
   // isprint(ch) with negative values is UB.
   return ch < 0 ? false : isprint(ch);
 }
