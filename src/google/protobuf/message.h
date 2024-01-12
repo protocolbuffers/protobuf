@@ -921,13 +921,13 @@ class PROTOBUF_EXPORT Reflection final {
   //   of field->message_type() (if message_type != nullptr).
   // We use 2 routine rather than 4 (const vs mutable) x (scalar vs pointer).
   void* MutableRawRepeatedField(Message* message, const FieldDescriptor* field,
-                                FieldDescriptor::CppType, int ctype,
-                                const Descriptor* message_type) const;
+                                FieldDescriptor::CppType cpptype, int ctype,
+                                const Descriptor* desc) const;
 
   const void* GetRawRepeatedField(const Message& message,
                                   const FieldDescriptor* field,
                                   FieldDescriptor::CppType cpptype, int ctype,
-                                  const Descriptor* message_type) const;
+                                  const Descriptor* desc) const;
 
   // The following methods are used to implement (Mutable)RepeatedFieldRef.
   // A Ref object will store a raw pointer to the repeated field data (obtained
