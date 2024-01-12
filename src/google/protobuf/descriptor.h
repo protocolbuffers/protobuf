@@ -277,6 +277,11 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
           FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
     return descriptor.proto_features_->GetExtension(extension);
   }
+
+  // Provides a restricted view exclusively to code generators to query the
+  // edition of files being processed.  While most people should never write
+  // edition-dependent code, generators frequently will need to.
+  static Edition GetEdition(const FileDescriptor& desc);
 };
 
 PROTOBUF_EXPORT absl::string_view ShortEditionName(Edition edition);
@@ -1853,11 +1858,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FileOptions& options() const;
 
- public:
-  // Returns edition of this file.  For legacy proto2/proto3 files, special
-  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
-  Edition edition() const;
-
   // Find a top-level message type by name (not full_name).  Returns nullptr if
   // not found.
   const Descriptor* FindMessageTypeByName(absl::string_view name) const;
@@ -1924,8 +1924,15 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   bool GetSourceLocation(const std::vector<int>& path,
                          SourceLocation* out_location) const;
 
+
+ private:
+  // Returns edition of this file.  For legacy proto2/proto3 files, special
+  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
+  Edition edition() const;
+
  private:
   friend class Symbol;
+  friend class FileDescriptorLegacy;
   typedef FileOptions OptionsType;
 
   bool is_placeholder_;

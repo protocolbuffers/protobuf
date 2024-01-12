@@ -649,6 +649,18 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "descriptor_legacy",
+    hdrs = ["descriptor_legacy.h"],
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":protobuf",
+    ],
+)
+
 filegroup(
     name = "well_known_type_protos",
     srcs = [
@@ -1110,6 +1122,7 @@ cc_test(
     deps = [
         ":any_cc_proto",
         ":cc_test_protos",
+        ":descriptor_legacy",
         ":port",
         ":protobuf",
         ":test_textproto",

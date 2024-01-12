@@ -264,10 +264,11 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
   return result;
 }
 
-FileGenerator::FileGenerator(const FileDescriptor* file,
+FileGenerator::FileGenerator(Edition edition, const FileDescriptor* file,
                              const GenerationOptions& generation_options,
                              CommonState& common_state)
-    : file_(file),
+    : edition_(edition),
+      file_(file),
       generation_options_(generation_options),
       common_state_(&common_state),
       root_class_name_(FileClassName(file)),
@@ -777,7 +778,7 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
     // mode.
     syntax = "GPBFileSyntaxUnknown";
   } else {
-    switch (file_->edition()) {
+    switch (edition_) {
       case Edition::EDITION_UNKNOWN:
         syntax = "GPBFileSyntaxUnknown";
         break;

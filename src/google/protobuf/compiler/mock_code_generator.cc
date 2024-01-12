@@ -215,7 +215,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     maximum_edition_ = Edition::EDITION_PROTO2;
   }
 
-  if (file->edition() >= Edition::EDITION_2023 &&
+  if (GetEdition(*file) >= Edition::EDITION_2023 &&
       (suppressed_features_ & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
     internal::VisitDescriptors(*file, [&](const auto& descriptor) {
       const FeatureSet& features = GetResolvedSourceFeatures(descriptor);

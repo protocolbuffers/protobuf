@@ -201,6 +201,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:port",
         "//src/google/protobuf:source_context_cc_proto",
         "//src/google/protobuf:type_cc_proto",
@@ -226,6 +227,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:type_cc_proto",
         "//src/google/protobuf:wrappers_cc_proto",
