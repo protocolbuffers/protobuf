@@ -14,6 +14,7 @@
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -38,6 +39,9 @@ class AccessorGenerator {
                                                 const FieldDescriptor& field);
 
   void GenerateMsgImpl(Context& ctx, const FieldDescriptor& field) const {
+    ctx.Emit({{"comment", FieldInfoComment(ctx, field)}}, R"rs(
+      // $comment$
+    )rs");
     InMsgImpl(ctx, field);
   }
   void GenerateExternC(Context& ctx, const FieldDescriptor& field) const {

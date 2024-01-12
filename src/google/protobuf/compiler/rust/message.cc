@@ -363,11 +363,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             {"accessor_fns",
              [&] {
                for (int i = 0; i < msg.field_count(); ++i) {
-                 auto& field = *msg.field(i);
-                 ctx.Emit({{"comment", FieldInfoComment(ctx, field)}}, R"rs(
-                 // $comment$
-               )rs");
-                 GenerateAccessorMsgImpl(ctx, field);
+                 GenerateAccessorMsgImpl(ctx, *msg.field(i));
                  ctx.printer().PrintRaw("\n");
                }
              }},
