@@ -2985,9 +2985,8 @@ class SourceInfoTest : public ParserTest {
 
   void TearDown() override {
     for (auto& kv : spans_) {
-      EXPECT_TRUE(kv.second.empty())
-          << "Forgot to call HasSpan() for "
-          << (*kv.second.begin())->DebugString() << " spans.";
+      EXPECT_TRUE(kv.second.empty()) << "Forgot to call HasSpan() for "
+                                     << **kv.second.begin() << " spans.";
     }
   }
 
