@@ -65,7 +65,7 @@ jobs:
             flags: --define=use_fast_cpp_protos=true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
-    runs-on: macos-12
+    runs-on: macos-11
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -88,7 +88,7 @@ jobs:
           source venv/bin/activate
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@bazel-expunge
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:

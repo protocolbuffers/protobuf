@@ -317,18 +317,18 @@ jobs:
       matrix:
         include:
           - name: MacOS Bazel
-            os: macos-12
-            cache_key: macos-12
+            os: macos-11
+            cache_key: macos-11
             bazel: test //src/... //third_party/utf8_range/...
           # TODO Enable these once mac setup is working for Bazel 7
           #- name: MacOS Bazel 7
-          #  os: macos-12
+          #  os: macos-11
           #  cache_key: macos-12-bazel7
           #  bazel: test //src/... //third_party/utf8_range/...
           #  bazel_version: '7.0.0'
           - name: MacOS Apple Silicon (build only) Bazel
-            os: macos-12
-            cache_key: macos-12-arm
+            os: macos-11
+            cache_key: macos-11-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
@@ -349,7 +349,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
@@ -361,11 +361,10 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          # TODO: investigate and fix
-          # - name: MacOS CMake
-          #   os: macos-12
-          #   flags: -DCMAKE_CXX_STANDARD=14
-          #   cache-prefix: macos-cmake
+          - name: MacOS CMake
+            os: macos-11
+            flags: -DCMAKE_CXX_STANDARD=14
+            cache-prefix: macos-cmake
           - name: Windows CMake
             os: windows-2022
             flags: >-
@@ -443,7 +442,7 @@ jobs:
       # Install phase.
       - name: Configure CMake for install
         if: matrix.install-flags
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
@@ -465,7 +464,7 @@ jobs:
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON 

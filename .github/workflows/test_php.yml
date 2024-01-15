@@ -153,7 +153,7 @@ jobs:
         version: ['8.2']
 
     name: MacOS PHP ${{ matrix.version }}
-    runs-on: macos-12
+    runs-on: macos-11
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -181,7 +181,7 @@ jobs:
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -193,7 +193,7 @@ jobs:
             popd
 
       - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}

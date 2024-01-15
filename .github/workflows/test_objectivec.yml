@@ -29,7 +29,7 @@ jobs:
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
 
     name: Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
-    runs-on: macos-12
+    runs-on: macos-11
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
@@ -45,7 +45,7 @@ jobs:
           support-modules: true
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@bazel-expunge
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -72,7 +72,7 @@ jobs:
         PLATFORM: ["ios", "macos", "tvos"]
         CONFIGURATION: ["Debug", "Release"]
     name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
-    runs-on: macos-12
+    runs-on: macos-11
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
@@ -81,7 +81,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Pod lib lint
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -115,14 +115,14 @@ jobs:
         - platform: "macOS"
           bazel_targets: //objectivec/...
     name: Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
-    runs-on: macos-12
+    runs-on: macos-11
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@bazel-expunge
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}

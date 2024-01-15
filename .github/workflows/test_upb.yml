@@ -92,7 +92,7 @@ jobs:
           - { name: "macOS", bazel-command: "test" }
           - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
     name: ${{ matrix.config.name }}
-    runs-on: macos-12
+    runs-on: macos-11
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -106,7 +106,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: "upb-bazel-macos"
+          bazel-cache: "upb-bazel-macos-11"
           bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/...
           version: 6.3.0
 
@@ -174,11 +174,11 @@ jobs:
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'binary' }
+          - { os: macos-11, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source' }
-          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'source' }
+          - { os: macos-11, python-version: "3.12", architecture: x64, type: 'source' }
 
           # Windows uses the full API up until Python 3.10.
           - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
