@@ -6532,7 +6532,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 
 /* Max size 32 is google.protobuf.FileOptions */
 /* Max size 64 is google.protobuf.FileOptions */
-#define _UPB_MAXOPT_SIZE UPB_SIZE(104, 192)
+#define _UPB_MAXOPT_SIZE UPB_SIZE(112, 200)
 
 #ifdef __cplusplus
 }  /* extern "C" */

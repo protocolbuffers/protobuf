@@ -41,7 +41,7 @@ public final class RuntimeVersion {
    * @param gencodeDomain the domain where Protobuf Java code was generated.
    * @throws ProtobufRuntimeVersionException if gencodeDomain is not the same as DOMAIN.
    */
-  public static void validateProtobufGencodeDomain(RuntimeDomain gencodeDomain) {
+  public static void validateProtobufGencodeDomain(RuntimeDomain gencodeDomain, String location) {
     // Check the environmental variable, and temporarily disable validation if it's set to true.
     String disableFlag = java.lang.System.getenv("TEMORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
     if ((disableFlag != null && disableFlag.equals("true"))) {
@@ -51,9 +51,9 @@ public final class RuntimeVersion {
     if (gencodeDomain != DOMAIN) {
       throw new ProtobufRuntimeVersionException(
           String.format(
-              "Mismatched Protobuf Gencode/Runtime domains: gencode %s, runtime %s. Cross-domain"
-                  + " usage of Protobuf is not supported.",
-              gencodeDomain, DOMAIN));
+              "Detected mismatched Protobuf Gencode/Runtime domains when loading %s: gencode %s,"
+                  + " runtime %s. Cross-domain usage of Protobuf is not supported.",
+              location, gencodeDomain, DOMAIN));
     }
   }
 
@@ -73,7 +73,7 @@ public final class RuntimeVersion {
    * @throws ProtobufRuntimeVersionException if versions are incompatible.
    */
   public static void validateProtobufGencodeVersion(
-      RuntimeDomain domain, int major, int minor, int patch, String suffix) {
+      RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
 
     // Check that version numbers are valid.
     if (major < 0 || minor < 0 || patch < 0) {
@@ -81,34 +81,34 @@ public final class RuntimeVersion {
           "Invalid gencode version: " + versionString(major, minor, patch, suffix));
     }
 
-    validateProtobufGencodeDomain(domain);
+    validateProtobufGencodeDomain(domain, location);
 
     String gencodeVersionString = versionString(major, minor, patch, suffix);
     // Check that runtime major version is the same as the gencode major version.
     if (major != MAJOR) {
       throw new ProtobufRuntimeVersionException(
           String.format(
-              "Mismatched Protobuf Gencode/Runtime major versions: gencode %s, runtime %s. Same"
-                  + " major version is required.",
-              gencodeVersionString, VERSION_STRING));
+              "Detected mismatched Protobuf Gencode/Runtime major versions when loading %s: gencode"
+                  + " %s, runtime %s. Same major version is required.",
+              location, gencodeVersionString, VERSION_STRING));
     }
 
     // Check that runtime version is newer than the gencode version.
     if (MINOR < minor || (MINOR == minor && PATCH < patch)) {
       throw new ProtobufRuntimeVersionException(
           String.format(
-              "Protobuf Java runtime version cannot be older than the gencode version:"
-                  + "gencode %s, runtime %s.",
-              gencodeVersionString, VERSION_STRING));
+              "Detected incompatible Protobuf Gencode/Runtime versions when loading %s: gencode %s,"
+                  + " runtime %s. Runtime version cannot be older than the linked gencode version.",
+              location, gencodeVersionString, VERSION_STRING));
     }
 
     // Check that runtime version suffix is the same as the gencode version suffix.
     if (!suffix.equals(SUFFIX)) {
       throw new ProtobufRuntimeVersionException(
           String.format(
-              "Mismatched Protobuf Gencode/Runtime version suffixes: gencode %s, runtime %s."
-                  + " Version suffixes must be the same.",
-              gencodeVersionString, VERSION_STRING));
+              "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading %s:"
+                  + " gencode %s, runtime %s. Version suffixes must be the same.",
+              location, gencodeVersionString, VERSION_STRING));
     }
   }
 
@@ -126,4 +126,6 @@ public final class RuntimeVersion {
   private static String versionString(int major, int minor, int patch, String suffix) {
     return String.format("%d.%d.%d%s", major, minor, patch, suffix);
   }
+
+  private RuntimeVersion() {}
 }

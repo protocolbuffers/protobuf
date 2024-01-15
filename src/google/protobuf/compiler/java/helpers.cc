@@ -85,7 +85,8 @@ void PrintEnumVerifierLogic(
                  absl::StrCat(enum_verifier_string, terminating_string));
 }
 
-void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime) {
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  absl::string_view location) {
   if (oss_runtime) {
     const auto& version = GetProtobufJavaVersion();
     printer->Print(
@@ -94,16 +95,20 @@ void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime) {
         "  $major$,\n"
         "  $minor$,\n"
         "  $patch$,\n"
-        "  $suffix$);\n",
+        "  $suffix$,\n"
+        "  $location$);\n",
         "major", absl::StrCat("/* major= */ ", version.major()), "minor",
         absl::StrCat("/* minor= */ ", version.minor()), "patch",
         absl::StrCat("/* patch= */ ", version.patch()), "suffix",
-        absl::StrCat("/* suffix= */ \"", version.suffix(), "\""));
+        absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+        absl::StrCat("/* location= */ \"", location, "\""));
   } else {
     printer->Print(
         "com.google.protobuf.RuntimeVersion.validateProtobufGencodeDomain(\n"
         "  "
-        "com.google.protobuf.RuntimeVersion.RuntimeDomain.GOOGLE_INTERNAL);\n");
+        "com.google.protobuf.RuntimeVersion.RuntimeDomain.GOOGLE_INTERNAL,\n"
+        "  $location$);\n",
+        "location", absl::StrCat("/* location= */ \"", location, "\""));
   }
 }
 

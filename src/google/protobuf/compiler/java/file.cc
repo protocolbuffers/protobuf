@@ -275,7 +275,9 @@ void FileGenerator::Generate(io::Printer* printer) {
 
   printer->Print("static {\n");
   printer->Indent();
-  PrintGencodeVersionValidator(printer, options_.opensource_runtime);
+  PrintGencodeVersionValidator(printer, options_.opensource_runtime,
+                               absl::StrCat("Protobuf generated Java class ",
+                                            java_package_, ".", classname_));
   printer->Outdent();
   printer->Print("}\n");
 
@@ -500,7 +502,7 @@ static void GenerateSibling(
     const DescriptorClass* descriptor, GeneratorContext* context,
     std::vector<std::string>* file_list, bool annotate_code,
     std::vector<std::string>* annotation_list, const std::string& name_suffix,
-    GeneratorClass* generator,
+    GeneratorClass* generator, bool opensource_runtime,
     void (GeneratorClass::*pfn)(io::Printer* printer)) {
   std::string filename =
       absl::StrCat(package_dir, descriptor->name(), name_suffix, ".java");
@@ -519,8 +521,10 @@ static void GenerateSibling(
       "// source: $filename$\n"
       "\n",
       "filename", descriptor->file()->name());
-  printer.Print("// Protobuf Java Version: $protobuf_java_version$\n",
-                "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
+  if (opensource_runtime) {
+    printer.Print("// Protobuf Java Version: $protobuf_java_version$\n",
+                  "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
+  }
   if (!java_package.empty()) {
     printer.Print(
         "package $package$;\n"
@@ -550,14 +554,14 @@ void FileGenerator::GenerateSiblings(
         GenerateSibling<EnumGenerator>(
             package_dir, java_package_, file_->enum_type(i), context, file_list,
             options_.annotate_code, annotation_list, "", &generator,
-            &EnumGenerator::Generate);
+            options_.opensource_runtime, &EnumGenerator::Generate);
       } else {
         EnumLiteGenerator generator(file_->enum_type(i), immutable_api_,
                                     context_.get());
         GenerateSibling<EnumLiteGenerator>(
             package_dir, java_package_, file_->enum_type(i), context, file_list,
             options_.annotate_code, annotation_list, "", &generator,
-            &EnumLiteGenerator::Generate);
+            options_.opensource_runtime, &EnumLiteGenerator::Generate);
       }
     }
     for (int i = 0; i < file_->message_type_count(); i++) {
@@ -565,12 +569,14 @@ void FileGenerator::GenerateSiblings(
         GenerateSibling<MessageGenerator>(
             package_dir, java_package_, file_->message_type(i), context,
             file_list, options_.annotate_code, annotation_list, "OrBuilder",
-            message_generators_[i].get(), &MessageGenerator::GenerateInterface);
+            message_generators_[i].get(), options_.opensource_runtime,
+            &MessageGenerator::GenerateInterface);
       }
       GenerateSibling<MessageGenerator>(
           package_dir, java_package_, file_->message_type(i), context,
           file_list, options_.annotate_code, annotation_list, "",
-          message_generators_[i].get(), &MessageGenerator::Generate);
+          message_generators_[i].get(), options_.opensource_runtime,
+          &MessageGenerator::Generate);
     }
     if (HasGenericServices(file_, context_->EnforceLite())) {
       for (int i = 0; i < file_->service_count(); i++) {
@@ -579,7 +585,7 @@ void FileGenerator::GenerateSiblings(
         GenerateSibling<ServiceGenerator>(
             package_dir, java_package_, file_->service(i), context, file_list,
             options_.annotate_code, annotation_list, "", generator.get(),
-            &ServiceGenerator::Generate);
+            options_.opensource_runtime, &ServiceGenerator::Generate);
       }
     }
   }

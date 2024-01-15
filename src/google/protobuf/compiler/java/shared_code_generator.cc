@@ -100,7 +100,9 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
-    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime);
+    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime,
+                                 absl::StrCat("Protobuf generated Java class ",
+                                              java_package, ".", classname));
     printer->Outdent();
     printer->Outdent();
     printer->Print(

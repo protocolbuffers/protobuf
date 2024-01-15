@@ -24,7 +24,7 @@ public final class RuntimeVersionTest {
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
                 RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN, 1, -2, -3, ""));
+                    RuntimeVersion.DOMAIN, 1, -2, -3, "", "dummy"));
     assertThat(thrown).hasMessageThat().contains("Invalid gencode version: 1.-2.-3");
   }
 
@@ -35,15 +35,17 @@ public final class RuntimeVersionTest {
     RuntimeVersion.ProtobufRuntimeVersionException thrown =
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () -> RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain));
-    assertThat(thrown).hasMessageThat().contains("Mismatched Protobuf Gencode/Runtime domains");
+            () -> RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain, "testing.Bar"));
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains("Detected mismatched Protobuf Gencode/Runtime domains when loading testing.Bar");
   }
 
   @Test
   public void versionValidation_sameDomainAllowed() {
 
     RuntimeVersion.RuntimeDomain gencodeDomain = RuntimeVersion.RuntimeDomain.PUBLIC;
-    RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain);
+    RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain, "dummy");
   }
 
   @Test
@@ -58,10 +60,12 @@ public final class RuntimeVersionTest {
                     gencodeMajor,
                     RuntimeVersion.MINOR,
                     RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX));
+                    RuntimeVersion.SUFFIX,
+                    "testing.Bar"));
     assertThat(thrown)
         .hasMessageThat()
-        .contains("Mismatched Protobuf Gencode/Runtime major versions");
+        .contains(
+            "Detected mismatched Protobuf Gencode/Runtime major versions when loading testing.Bar");
   }
 
   @Test
@@ -71,7 +75,8 @@ public final class RuntimeVersionTest {
         RuntimeVersion.MAJOR,
         RuntimeVersion.MINOR,
         RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX);
+        RuntimeVersion.SUFFIX,
+        "dummy");
   }
 
   @Test
@@ -82,7 +87,8 @@ public final class RuntimeVersionTest {
         RuntimeVersion.MAJOR,
         gencodeMinor,
         RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX);
+        RuntimeVersion.SUFFIX,
+        "dummy");
   }
 
   @Test
@@ -97,10 +103,12 @@ public final class RuntimeVersionTest {
                     RuntimeVersion.MAJOR,
                     gencodeMinor,
                     RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX));
+                    RuntimeVersion.SUFFIX,
+                    "testing.Bar"));
     assertThat(thrown)
         .hasMessageThat()
-        .contains("Protobuf Java runtime version cannot be older than the gencode version");
+        .contains(
+            "Detected incompatible Protobuf Gencode/Runtime versions when loading testing.Bar");
 
     int gencodePatch = RuntimeVersion.PATCH + 1;
     thrown =
@@ -112,10 +120,12 @@ public final class RuntimeVersionTest {
                     RuntimeVersion.MAJOR,
                     RuntimeVersion.MINOR,
                     gencodePatch,
-                    RuntimeVersion.SUFFIX));
+                    RuntimeVersion.SUFFIX,
+                    "testing.Foo"));
     assertThat(thrown)
         .hasMessageThat()
-        .contains("Protobuf Java runtime version cannot be older than the gencode version");
+        .contains(
+            "Detected incompatible Protobuf Gencode/Runtime versions when loading testing.Foo");
   }
 
   @Test
@@ -130,9 +140,12 @@ public final class RuntimeVersionTest {
                     RuntimeVersion.MAJOR,
                     RuntimeVersion.MINOR,
                     RuntimeVersion.PATCH,
-                    gencodeSuffix));
+                    gencodeSuffix,
+                    "testing.Bar"));
     assertThat(thrown)
         .hasMessageThat()
-        .contains("Mismatched Protobuf Gencode/Runtime version suffixes");
+        .contains(
+            "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading"
+                + " testing.Bar");
   }
 }
