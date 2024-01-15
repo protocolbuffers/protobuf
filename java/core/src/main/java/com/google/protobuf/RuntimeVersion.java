@@ -29,6 +29,7 @@ public final class RuntimeVersion {
   public static final int MINOR = 26;
   public static final int PATCH = 0;
   public static final String SUFFIX = "-dev";
+
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
 
   /**

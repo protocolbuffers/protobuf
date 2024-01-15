@@ -75,7 +75,7 @@ public final class RuntimeVersionTest {
   }
 
   @Test
-  public void versionValidation_NewerRuntimeVersionAllowed() {
+  public void versionValidation_newerRuntimeVersionAllowed() {
     int gencodeMinor = RuntimeVersion.MINOR - 1;
     RuntimeVersion.validateProtobufGencodeVersion(
         RuntimeVersion.DOMAIN,
@@ -86,7 +86,7 @@ public final class RuntimeVersionTest {
   }
 
   @Test
-  public void versionValidation_OlderRuntimeVersionDisallowed() {
+  public void versionValidation_olderRuntimeVersionDisallowed() {
     int gencodeMinor = RuntimeVersion.MINOR + 1;
     RuntimeVersion.ProtobufRuntimeVersionException thrown =
         assertThrows(
