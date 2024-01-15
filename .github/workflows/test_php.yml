@@ -167,7 +167,7 @@ jobs:
         run: brew install coreutils gd
 
       - name: Pin PHP version
-        uses: shivammathur/setup-php@7fdd3ece872ec7ec4c098ae5ab7637d5e0a96067 # 2.26.0
+        uses: shivammathur/setup-php@6d7209f44a25a59e904b1ee9f3b0c33ab2cd888d # 2.29.0
         with:
           php-version: ${{ matrix.version }}
 
