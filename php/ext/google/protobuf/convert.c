@@ -251,6 +251,36 @@ bool Convert_PhpToInt64(const zval* php_val, int64_t* i64) {
   }
 }
 
+bool Convert_PhpToUint64(const zval* php_val, uint64_t* u64) {
+  switch (Z_TYPE_P(php_val)) {
+    case IS_LONG:
+      *u64 = Z_LVAL_P(php_val);
+      return true;
+    case IS_DOUBLE: {
+      double dbl = Z_DVAL_P(php_val);
+      if (dbl < 0 || dbl > 9223372036854774784.0) {
+        zend_throw_exception_ex(NULL, 0, "Out of range");
+        return false;
+      }
+      *u64 = dbl; /* must be guarded, overflow here is UB */
+      return true;
+    }
+    case IS_STRING: {
+      const char* buf = Z_STRVAL_P(php_val);
+      // PHP would accept scientific notation here, but we're going to be a
+      // little more discerning and only accept pure integers.
+      bool ok = buftouint64(buf, buf + Z_STRLEN_P(php_val), u64);
+      if (!ok) {
+        throw_conversion_exception("integer", php_val);
+      }
+      return ok;
+    }
+    default:
+      throw_conversion_exception("integer", php_val);
+      return false;
+  }
+}
+
 static bool to_double(zval* php_val, double* dbl) {
   switch (Z_TYPE_P(php_val)) {
     case IS_LONG:
@@ -333,6 +363,7 @@ static bool to_string(zval* from) {
 bool Convert_PhpToUpb(zval* php_val, upb_MessageValue* upb_val, TypeInfo type,
                       upb_Arena* arena) {
   int64_t i64;
+  uint64_t u64;
 
   if (Z_ISREF_P(php_val)) {
     ZVAL_DEREF(php_val);
@@ -349,10 +380,10 @@ bool Convert_PhpToUpb(zval* php_val, upb_MessageValue* upb_val, TypeInfo type,
       upb_val->int32_val = i64;
       return true;
     case kUpb_CType_UInt64:
-      if (!Convert_PhpToInt64(php_val, &i64)) {
+      if (!Convert_PhpToUint64(php_val, &u64)) {
         return false;
       }
-      upb_val->uint64_val = i64;
+      upb_val->uint64_val = u64;
       return true;
     case kUpb_CType_UInt32:
       if (!Convert_PhpToInt64(php_val, &i64)) {
@@ -417,11 +448,17 @@ void Convert_UpbToPhp(upb_MessageValue upb_val, zval* php_val, TypeInfo type,
       break;
     case kUpb_CType_UInt64:
 #if SIZEOF_ZEND_LONG == 8
-      ZVAL_LONG(php_val, upb_val.uint64_val);
+      if (upb_val.uint64_val > ZEND_LONG_MAX) {
+        char buf[20];
+        int size = sprintf(buf, "%llu", upb_val.uint64_val);
+        ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
+      } else {
+        ZVAL_LONG(php_val, upb_val.uint64_val);
+      }
 #else
     {
       char buf[20];
-      int size = sprintf(buf, "%lld", (int64_t)upb_val.uint64_val);
+      int size = sprintf(buf, "%lld", upb_val.int64_val);
       ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
     }
 #endif

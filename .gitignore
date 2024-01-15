@@ -133,7 +133,8 @@ conformance/*.class
 
 # php test output
 composer.lock
-php/.phpunit.result.cache
+.phpunit.result.cache
+php/tmp/
 php/tests/.phpunit.result.cache
 php/tests/generated/
 php/tests/old_protoc
@@ -143,9 +144,11 @@ php/tests/core
 php/tests/vgcore*
 php/tests/multirequest.result
 php/tests/nohup.out
-php/tests/.phpunit.result.cache
 php/tests/phpunit-*
+php/ext/google/protobuf/BUILD_STAMP
+php/ext/google/protobuf/*.dep
 php/ext/google/protobuf/.libs/
+php/ext/google/protobuf/Makefile
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
 php/ext/google/protobuf/Makefile.objects
@@ -153,13 +156,16 @@ php/ext/google/protobuf/acinclude.m4
 php/ext/google/protobuf/build/
 php/ext/google/protobuf/bundled_php.c
 php/ext/google/protobuf/config.h
-php/ext/google/protobuf/config.h.in~
+php/ext/google/protobuf/config.h.in*
 php/ext/google/protobuf/config.nice
+php/ext/google/protobuf/configure
 php/ext/google/protobuf/configure.ac
 php/ext/google/protobuf/configure.in
 php/ext/google/protobuf/mkinstalldirs
 php/ext/google/protobuf/run-tests.php
+php/ext/google/protobuf/php_test_results*
 php/ext/google/protobuf/third_party/
+php/ext/google/protobuf/autom4te.cache/
 vendor/
 
 # Ignore the bazel symlinks
