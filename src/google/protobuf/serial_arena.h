@@ -223,14 +223,15 @@ class PROTOBUF_EXPORT SerialArena {
     // ret + n may point out of the block bounds, or ret may be nullptr.
     // Both computations have undefined behavior when done on pointers,
     // so do them on uintptr_t instead.
-    uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
-    if (PROTOBUF_PREDICT_FALSE(next > reinterpret_cast<uintptr_t>(limit_))) {
+    if (PROTOBUF_PREDICT_FALSE(reinterpret_cast<uintptr_t>(ret) + n >
+                               reinterpret_cast<uintptr_t>(limit_))) {
       return false;
     }
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
     *out = ret;
-    set_ptr(reinterpret_cast<char*>(next));
-    MaybePrefetchForwards(reinterpret_cast<char*>(next));
+    char* next = ret + n;
+    set_ptr(next);
+    MaybePrefetchForwards(next);
     return true;
   }
 
@@ -248,16 +249,17 @@ class PROTOBUF_EXPORT SerialArena {
     n = ArenaAlignDefault::Ceil(n);
     char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.
-    uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
-    if (PROTOBUF_PREDICT_FALSE(next + cleanup::Size(destructor) >
+    if (PROTOBUF_PREDICT_FALSE(reinterpret_cast<uintptr_t>(ret) + n +
+                                   cleanup::Size(destructor) >
                                reinterpret_cast<uintptr_t>(limit_))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
-    set_ptr(reinterpret_cast<char*>(next));
+    char* next = ret + n;
+    set_ptr(next);
     AddCleanupFromExisting(ret, destructor);
     ABSL_DCHECK_GE(limit_, ptr());
-    MaybePrefetchForwards(reinterpret_cast<char*>(next));
+    MaybePrefetchForwards(next);
     return ret;
   }
 
