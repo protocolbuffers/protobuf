@@ -503,6 +503,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_case.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/helpers.h
