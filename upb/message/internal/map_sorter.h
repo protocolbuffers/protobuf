@@ -17,7 +17,7 @@
 #include "upb/mem/alloc.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
-#include "upb/mini_table/internal/map_entry.h"
+#include "upb/message/internal/map_entry.h"
 
 // Must be last.
 #include "upb/port/def.inc"

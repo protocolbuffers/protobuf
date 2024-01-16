@@ -36,6 +36,7 @@ cc_library(
         "//upb/hash",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_table:internal",
     ],
 )

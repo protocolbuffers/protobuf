@@ -27,7 +27,7 @@ cc_library(
         "//upb:wire_reader",
         "//upb/lex",
         "//upb/message:internal",
-        "//upb/mini_table:internal",
+        "//upb/message:types",
     ],
 )
 

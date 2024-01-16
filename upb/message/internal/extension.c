@@ -12,6 +12,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.

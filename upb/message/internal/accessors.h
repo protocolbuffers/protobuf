@@ -19,6 +19,7 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/tagged_ptr.h"
+#include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"

@@ -12,6 +12,7 @@
 
 #include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
+#include "upb/message/internal/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

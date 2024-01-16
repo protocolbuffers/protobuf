@@ -46,11 +46,9 @@ cc_library(
         "internal/extension.h",
         "internal/field.h",
         "internal/file.h",
-        "internal/map_entry.h",
         "internal/message.h",
         "internal/size_log2.h",
         "internal/sub.h",
-        "internal/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -59,6 +57,7 @@ cc_library(
         "//upb:mem",
         "//upb:port",
         "//upb/hash",
+        "//upb/message:types",
     ],
 )
 

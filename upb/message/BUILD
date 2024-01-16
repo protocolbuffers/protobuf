@@ -40,6 +40,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":types",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -67,6 +68,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":types",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -152,6 +154,20 @@ cc_library(
     deps = [
         ":message",
         "//upb:port",
+    ],
+)
+
+cc_library(
+    name = "types",
+    hdrs = [
+        "internal/map_entry.h",
+        "internal/types.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb:base",
+        "//upb/hash",
     ],
 )
 

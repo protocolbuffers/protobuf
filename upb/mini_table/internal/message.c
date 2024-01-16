@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include "upb/mini_table/internal/types.h"
+#include "upb/message/internal/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

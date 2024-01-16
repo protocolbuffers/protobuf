@@ -20,7 +20,6 @@
 
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
-#include "upb/mini_table/internal/types.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -56,8 +55,8 @@ typedef struct upb_Message_Internal {
    *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
   uint32_t unknown_end;
   uint32_t ext_begin;
-  /* Data follows, as if there were an array:
-   *   char data[size - sizeof(upb_Message_Internal)]; */
+  // Data follows, as if there were an array:
+  //   char data[size - sizeof(upb_Message_Internal)];
 } upb_Message_Internal;
 
 // Inline version upb_Message_New(), for internal use.

@@ -12,12 +12,12 @@
 
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/sub.h"
-#include "upb/mini_table/internal/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 struct upb_Decoder;
+struct upb_Message;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
                                      struct upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
