@@ -34,6 +34,9 @@ rust/test/rust_proto_library_unit_test/grandparent2.proto
 parent_proto
 1
 rust/test/rust_proto_library_unit_test/parent.proto
+parent2_proto
+1
+rust/test/rust_proto_library_unit_test/parent2.proto
 """
     if crate_mapping_action.content != expected_content:
         fail("The crate mapping file content didn't match. Was: {}".format(
@@ -105,6 +108,10 @@ def _rust_upb_aspect_test_impl(ctx):
     # The action needs to have the Rust runtime as an input
     _find_rust_lib_input(rustc_action.inputs, "protobuf")
 
+    # The action needs to have rlibs for direct deps
+    _find_rust_lib_input(rustc_action.inputs, "parent")
+    _find_rust_lib_input(rustc_action.inputs, "parent2")
+
     # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
     asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))
 
@@ -136,6 +143,10 @@ def _rust_cc_aspect_test_impl(ctx):
     # The rustc action needs to have the Rust runtime as an input
     _find_rust_lib_input(rustc_action.inputs, "protobuf")
 
+    # The action needs to have rlibs for direct deps
+    _find_rust_lib_input(rustc_action.inputs, "parent")
+    _find_rust_lib_input(rustc_action.inputs, "parent2")
+
     # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
     asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))
 
@@ -166,12 +177,20 @@ def rust_proto_library_unit_test(name):
         name = "grandparent_proto",
         srcs = ["grandparent1.proto", "grandparent2.proto"],
     )
+
     native.proto_library(
         name = "parent_proto",
         srcs = ["parent.proto"],
         deps = [":grandparent_proto"],
     )
-    native.proto_library(name = "child_proto", srcs = ["child.proto"], deps = [":parent_proto"])
+
+    native.proto_library(name = "parent2_proto", srcs = ["parent2.proto"])
+
+    native.proto_library(
+        name = "child_proto",
+        srcs = ["child.proto"],
+        deps = [":parent_proto", ":parent2_proto"],
+    )
     cc_proto_library(name = "child_cc_proto", deps = [":child_proto"])
 
     _test_upb_aspect()

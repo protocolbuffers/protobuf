@@ -14,7 +14,6 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -56,7 +55,7 @@ void EmitOpeningOfPackageModules(Context& ctx, absl::string_view pkg) {
     ctx.Emit({{"segment", segment}},
              R"rs(
            #[allow(non_snake_case)]
-           pub mod $segment$ {
+           pub mod r#$segment$ {
            )rs");
   }
 }
@@ -79,7 +78,7 @@ void EmitClosingOfPackageModules(Context& ctx, absl::string_view pkg) {
 
   for (absl::string_view segment : segments) {
     ctx.Emit({{"segment", segment}}, R"rs(
-      } // mod $segment$
+      } // mod r#$segment$
     )rs");
   }
 }
@@ -95,17 +94,17 @@ void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
     auto& msg = *non_primary_src.message_type(i);
     ctx.Emit({{"mod", mod}, {"Msg", msg.name()}},
              R"rs(
-                        pub use crate::$mod$::$Msg$;
+                        pub use crate::r#$mod$::$Msg$;
                         // TODO Address use for imported crates
-                        pub use crate::$mod$::$Msg$View;
-                        pub use crate::$mod$::$Msg$Mut;
+                        pub use crate::r#$mod$::$Msg$View;
+                        pub use crate::r#$mod$::$Msg$Mut;
                       )rs");
   }
   for (int i = 0; i < non_primary_src.enum_type_count(); ++i) {
     auto& enum_ = *non_primary_src.enum_type(i);
     ctx.Emit({{"mod", mod}, {"Enum", EnumRsName(enum_)}},
              R"rs(
-                        pub use crate::$mod$::$Enum$;
+                        pub use crate::r#$mod$::$Enum$;
                       )rs");
   }
 }

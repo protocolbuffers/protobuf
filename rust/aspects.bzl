@@ -347,7 +347,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         src = gencode[0],
         extra_srcs = gencode[1:],
         deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + (
-            [proto_deps[0][RustProtoInfo].dep_variant_info] if proto_deps else []
+            [d[RustProtoInfo].dep_variant_info for d in proto_deps]
         ),
     )
     return [RustProtoInfo(
