@@ -23,8 +23,9 @@ namespace rust {
 
 absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
 GetImportPathToCrateNameMap(const Options* opts) {
+  absl::flat_hash_map<std::string, std::string> mapping;
   if (opts->mapping_file_path.empty()) {
-    return absl::InvalidArgumentError("Mapping file path is not specified");
+    return mapping;
   }
   std::string mapping_contents;
   absl::Status status =
@@ -33,7 +34,6 @@ GetImportPathToCrateNameMap(const Options* opts) {
     return status;
   }
 
-  absl::flat_hash_map<std::string, std::string> mapping;
   std::vector<absl::string_view> lines =
       absl::StrSplit(mapping_contents, '\n', absl::SkipEmpty());
   size_t len = lines.size();

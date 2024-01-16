@@ -15,6 +15,7 @@
 
 using google::protobuf::compiler::rust::Options;
 using testing::Eq;
+using testing::IsEmpty;
 using testing::UnorderedElementsAreArray;
 
 namespace google {
@@ -70,14 +71,11 @@ TEST(RustGenerator, GetImportPathToCrateNameMapSimple) {
   EXPECT_THAT(result.value(), UnorderedElementsAreArray(expected));
 }
 
-TEST(RustGenerator,
-     GetImportPathToCrateNameMapErrorsOnNotSpecifiedMappingFile) {
+TEST(RustGenerator, GetImportPathToCrateNameMapForEmptyMappingFile) {
   const Options opts = {Kernel::kUpb};
   auto result = GetImportPathToCrateNameMap(&opts);
-  EXPECT_FALSE(result.ok());
-  EXPECT_THAT(result.status().code(), Eq(absl::StatusCode::kInvalidArgument));
-  EXPECT_THAT(result.status().message(),
-              Eq("Mapping file path is not specified"));
+  EXPECT_TRUE(result.ok());
+  EXPECT_THAT(result.value(), IsEmpty());
 }
 
 TEST(RustGenerator, GetImportPathToCrateNameMapErrorsOnMissingFile) {
