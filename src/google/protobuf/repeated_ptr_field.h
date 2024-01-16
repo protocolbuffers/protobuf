@@ -1331,8 +1331,7 @@ inline Element* RepeatedPtrField<Element>::Mutable(int index)
 }
 
 template <typename Element>
-PROTOBUF_NOINLINE Element* RepeatedPtrField<Element>::Add()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline Element* RepeatedPtrField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::Add<TypeHandler>();
 }
 
