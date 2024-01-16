@@ -1115,22 +1115,6 @@ UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
 #include <string.h>
 
 
-#ifndef UPB_MINI_TABLE_INTERNAL_TYPES_H_
-#define UPB_MINI_TABLE_INTERNAL_TYPES_H_
-
-// This definition exists here (instead of in upb/message/) as an optimization
-// so that minitable code can cleanly know the size of a upb_Message - which is
-// also the minimum size of a minitable.
-
-struct upb_Message {
-  union {
-    struct upb_Message_Internal* internal;
-    double d;  // Forces same size for 32-bit/64-bit builds
-  };
-};
-
-#endif /* UPB_MINI_TABLE_INTERNAL_TYPES_H_ */
-
 #ifndef UPB_MINI_TABLE_MESSAGE_H_
 #define UPB_MINI_TABLE_MESSAGE_H_
 
@@ -1619,6 +1603,7 @@ UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
 // Must be last.
 
 struct upb_Decoder;
+struct upb_Message;
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
                                      struct upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
@@ -1869,8 +1854,8 @@ typedef struct upb_Message_Internal {
    *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
   uint32_t unknown_end;
   uint32_t ext_begin;
-  /* Data follows, as if there were an array:
-   *   char data[size - sizeof(upb_Message_Internal)]; */
+  // Data follows, as if there were an array:
+  //   char data[size - sizeof(upb_Message_Internal)];
 } upb_Message_Internal;
 
 // Inline version upb_Message_New(), for internal use.
@@ -2529,6 +2514,18 @@ UPB_INLINE struct upb_Message* UPB_PRIVATE(
 
 
 #endif /* UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_ */
+
+#ifndef UPB_MESSAGE_INTERNAL_TYPES_H_
+#define UPB_MESSAGE_INTERNAL_TYPES_H_
+
+struct upb_Message {
+  union {
+    struct upb_Message_Internal* internal;
+    double d;  // Forces same size for 32-bit/64-bit builds
+  };
+};
+
+#endif /* UPB_MESSAGE_INTERNAL_TYPES_H_ */
 
 // Must be last.
 
@@ -12313,8 +12310,8 @@ const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
 #include <stdlib.h>
 
 
-#ifndef UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_H_
-#define UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+#define UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
 
 #include <stdint.h>
 
@@ -12343,7 +12340,7 @@ typedef struct {
   } v;
 } upb_MapEntry;
 
-#endif  // UPB_MINI_TABLE_INTERNAL_MAP_ENTRY_H_
+#endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
 
 // Must be last.
 
