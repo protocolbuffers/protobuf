@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
@@ -38,18 +39,22 @@ class AccessorGenerator {
   static std::unique_ptr<AccessorGenerator> For(Context& ctx,
                                                 const FieldDescriptor& field);
 
-  void GenerateMsgImpl(Context& ctx, const FieldDescriptor& field) const {
+  void GenerateMsgImpl(Context& ctx, const FieldDescriptor& field,
+                       AccessorCase accessor_case) const {
     ctx.Emit({{"comment", FieldInfoComment(ctx, field)}}, R"rs(
       // $comment$
     )rs");
-    InMsgImpl(ctx, field);
+    InMsgImpl(ctx, field, accessor_case);
+    ctx.printer().PrintRaw("\n");
   }
   void GenerateExternC(Context& ctx, const FieldDescriptor& field) const {
     InExternC(ctx, field);
+    ctx.printer().PrintRaw("\n");
   }
   void GenerateThunkCc(Context& ctx, const FieldDescriptor& field) const {
     ABSL_CHECK(ctx.is_cpp());
     InThunkCc(ctx, field);
+    ctx.printer().PrintRaw("\n");
   }
 
  private:
@@ -58,8 +63,10 @@ class AccessorGenerator {
   // functions. For example, consider calling `field.printer.WithVars()` as a
   // prologue to inject variables automatically.
 
-  // Called inside the main inherent `impl Msg {}` block.
-  virtual void InMsgImpl(Context& ctx, const FieldDescriptor& field) const {}
+  // Called inside the `impl Msg {}`, `impl MsgMut {}` and `impl MsgView`
+  // blocks.
+  virtual void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                         AccessorCase accessor_case) const {}
 
   // Called inside of a message's `extern "C" {}` block.
   virtual void InExternC(Context& ctx, const FieldDescriptor& field) const {}
@@ -72,7 +79,8 @@ class AccessorGenerator {
 class SingularScalar final : public AccessorGenerator {
  public:
   ~SingularScalar() override = default;
-  void InMsgImpl(Context& ctx, const FieldDescriptor& field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
   void InExternC(Context& ctx, const FieldDescriptor& field) const override;
   void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
@@ -80,7 +88,8 @@ class SingularScalar final : public AccessorGenerator {
 class SingularString final : public AccessorGenerator {
  public:
   ~SingularString() override = default;
-  void InMsgImpl(Context& ctx, const FieldDescriptor& field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
   void InExternC(Context& ctx, const FieldDescriptor& field) const override;
   void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
@@ -88,7 +97,8 @@ class SingularString final : public AccessorGenerator {
 class SingularMessage final : public AccessorGenerator {
  public:
   ~SingularMessage() override = default;
-  void InMsgImpl(Context& ctx, const FieldDescriptor& field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
   void InExternC(Context& ctx, const FieldDescriptor& field) const override;
   void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
@@ -96,7 +106,8 @@ class SingularMessage final : public AccessorGenerator {
 class RepeatedScalar final : public AccessorGenerator {
  public:
   ~RepeatedScalar() override = default;
-  void InMsgImpl(Context& ctx, const FieldDescriptor& field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
   void InExternC(Context& ctx, const FieldDescriptor& field) const override;
   void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
@@ -105,7 +116,8 @@ class UnsupportedField final : public AccessorGenerator {
  public:
   explicit UnsupportedField(std::string reason) : reason_(std::move(reason)) {}
   ~UnsupportedField() override = default;
-  void InMsgImpl(Context& ctx, const FieldDescriptor& field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
 
  private:
   std::string reason_;
@@ -114,7 +126,8 @@ class UnsupportedField final : public AccessorGenerator {
 class Map final : public AccessorGenerator {
  public:
   ~Map() override = default;
-  void InMsgImpl(Context& ctx, const FieldDescriptor& field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
   void InExternC(Context& ctx, const FieldDescriptor& field) const override;
   void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };

@@ -9,6 +9,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
@@ -19,22 +20,20 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void SingularMessage::InMsgImpl(Context& ctx,
-                                const FieldDescriptor& field) const {
+void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                                AccessorCase accessor_case) const {
   // fully qualified message name with modules prefixed
   std::string msg_type = RsTypePath(ctx, field);
-  ctx.Emit(
-      {
-          {"msg_type", msg_type},
-          {"field", field.name()},
-          {"getter_thunk", ThunkName(ctx, field, "get")},
-          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
-          {"clearer_thunk", ThunkName(ctx, field, "clear")},
-          {
-              "view_body",
-              [&] {
-                if (ctx.is_upb()) {
-                  ctx.Emit({}, R"rs(
+  ctx.Emit({{"msg_type", msg_type},
+            {"field", field.name()},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {
+                "getter_body",
+                [&] {
+                  if (ctx.is_upb()) {
+                    ctx.Emit({}, R"rs(
               let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
               //~ For upb, getters return null if the field is unset, so we need
               //~ to check for null and return the default instance manually.
@@ -46,45 +45,64 @@ void SingularMessage::InMsgImpl(Context& ctx,
                 Some(field) => $msg_type$View::new($pbi$::Private, field),
               }
         )rs");
-                } else {
-                  ctx.Emit({}, R"rs(
+                  } else {
+                    ctx.Emit({}, R"rs(
               //~ For C++ kernel, getters automatically return the
               //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
               $msg_type$View::new($pbi$::Private, submsg)
         )rs");
-                }
-              },
-          },
-          {"submessage_mut",
-           [&] {
-             if (ctx.is_upb()) {
+                  }
+                },
+            },
+            {"getter",
+             [&] {
                ctx.Emit({}, R"rs(
+                pub fn r#$field$(&self) -> $msg_type$View {
+                  $getter_body$
+                }
+              )rs");
+             }},
+            {"getter_mut_body",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
                  let submsg = unsafe {
                    $getter_mut_thunk$(self.raw_msg(), self.arena().raw())
                  };
-                 $msg_type$Mut::from_parent($pbi$::Private, &mut self.inner, submsg)
+                 $msg_type$Mut::from_parent($pbi$::Private, self.as_mutator_message_ref(), submsg)
                  )rs");
-             } else {
-               ctx.Emit({}, R"rs(
+               } else {
+                 ctx.Emit({}, R"rs(
                     let submsg = unsafe { $getter_mut_thunk$(self.raw_msg()) };
-                    $msg_type$Mut::from_parent($pbi$::Private, &mut self.inner, submsg)
+                    $msg_type$Mut::from_parent($pbi$::Private, self.as_mutator_message_ref(), submsg)
                   )rs");
-             }
-           }},
-      },
-      R"rs(
-            pub fn r#$field$(&self) -> $msg_type$View {
-              $view_body$
-            }
-
-            pub fn $field$_mut(&mut self) -> $msg_type$Mut {
-              $submessage_mut$
-            }
-
-            pub fn $field$_clear(&mut self) {
-              unsafe { $clearer_thunk$(self.raw_msg()) }
-            }
+               }
+             }},
+            {"getter_mut",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) {
+                 return;
+               }
+               ctx.Emit({}, R"rs(
+                pub fn $field$_mut(&mut self) -> $msg_type$Mut {
+                  $getter_mut_body$
+                })rs");
+             }},
+            {"clearer",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) {
+                 return;
+               }
+               ctx.Emit({}, R"rs(
+                  pub fn $field$_clear(&mut self) {
+                    unsafe { $clearer_thunk$(self.raw_msg()) }
+                  })rs");
+             }}},
+           R"rs(
+            $getter$
+            $getter_mut$
+            $clearer$
         )rs");
 }
 

@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
@@ -17,7 +18,8 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
+void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                    AccessorCase accessor_case) const {
   auto& key_type = *field.message_type()->map_key();
   auto& value_type = *field.message_type()->map_value();
 
@@ -53,6 +55,9 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field) const {
              }},
             {"getter_mut",
              [&] {
+               if (accessor_case == AccessorCase::VIEW) {
+                 return;
+               }
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
                     pub fn r#$field$_mut(&mut self)

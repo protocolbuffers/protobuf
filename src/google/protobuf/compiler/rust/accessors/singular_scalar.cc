@@ -9,6 +9,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/accessors/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -20,8 +21,8 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void SingularScalar::InMsgImpl(Context& ctx,
-                               const FieldDescriptor& field) const {
+void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                               AccessorCase accessor_case) const {
   ctx.Emit(
       {
           {"field", field.name()},
@@ -53,8 +54,11 @@ void SingularScalar::InMsgImpl(Context& ctx,
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
           {"clearer_thunk", ThunkName(ctx, field, "clear")},
-          {"field_mutator_getter",
+          {"getter_mut",
            [&] {
+             if (accessor_case == AccessorCase::VIEW) {
+               return;
+             }
              if (field.has_presence()) {
                ctx.Emit({}, R"rs(
                   pub fn r#$field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
@@ -71,7 +75,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
                         let has = $hazzer_thunk$(self.raw_msg());
                         $pbi$::new_vtable_field_entry::<$Scalar$>(
                           $pbi$::Private,
-                          $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner),
+                          self.as_mutator_message_ref(),
                           &VTABLE,
                           has,
                         )
@@ -98,9 +102,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
                           $pbi$::Private,
                           $pbi$::RawVTableMutator::new(
                             $pbi$::Private,
-                            $pbr$::MutatorMessageRef::new(
-                              $pbi$::Private, &mut self.inner
-                            ),
+                            self.as_mutator_message_ref(),
                             &VTABLE,
                           ),
                         )
@@ -113,7 +115,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
       R"rs(
           $getter$
           $getter_opt$
-          $field_mutator_getter$
+          $getter_mut$
         )rs");
 }
 

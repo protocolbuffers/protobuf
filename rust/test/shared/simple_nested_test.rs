@@ -123,10 +123,26 @@ fn test_msg_from_outside() {
 }
 
 #[test]
-fn test_recursive_msg() {
+fn test_recursive_view() {
     let rec = nested_proto::nest::Recursive::new();
     assert_that!(rec.num(), eq(0));
     assert_that!(rec.rec().num(), eq(0));
     assert_that!(rec.rec().rec().num(), eq(0)); // turtles all the way down...
     assert_that!(rec.rec().rec().rec().num(), eq(0)); // ... ad infinitum
+}
+
+#[test]
+fn test_recursive_mut() {
+    let mut rec = nested_proto::nest::Recursive::new();
+    let mut one = rec.rec_mut();
+    let mut two = one.rec_mut();
+    let mut three = two.rec_mut();
+    let mut four = three.rec_mut();
+
+    four.num_mut().set(1);
+    assert_that!(four.num(), eq(1));
+
+    assert_that!(rec.num(), eq(0));
+    assert_that!(rec.rec().rec().num(), eq(0));
+    assert_that!(rec.rec().rec().rec().rec().num(), eq(1));
 }

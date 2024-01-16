@@ -110,6 +110,7 @@ cc_library(
         "accessors/unsupported_field.cc",
     ],
     hdrs = [
+        "accessors/accessor_case.h",
         "accessors/accessor_generator.h",
         "accessors/accessors.h",
     ],
