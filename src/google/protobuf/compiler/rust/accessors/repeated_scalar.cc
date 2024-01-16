@@ -30,7 +30,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
                     pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
                       unsafe {
                         $getter_thunk$(
-                          self.inner.msg,
+                          self.raw_msg(),
                           /* optional size pointer */ std::ptr::null(),
                         ) }
                         .map_or_else(
@@ -47,7 +47,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
                       unsafe {
                         $pb$::RepeatedView::from_raw(
                           $pbi$::Private,
-                          unsafe { $getter_thunk$(self.inner.msg) },
+                          unsafe { $getter_thunk$(self.raw_msg()) },
                         )
                       }
                     }
@@ -66,9 +66,9 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
                           $pbr$::InnerRepeatedMut::new(
                             $pbi$::Private,
                             $getter_mut_thunk$(
-                              self.inner.msg,
+                              self.raw_msg(),
                               /* optional size pointer */ std::ptr::null(),
-                              self.inner.arena.raw(),
+                              self.arena().raw(),
                             ),
                             &self.inner.arena,
                           ),
@@ -84,7 +84,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx,
                             $pbi$::Private,
                             $pbr$::InnerRepeatedMut::new(
                               $pbi$::Private,
-                              $getter_mut_thunk$(self.inner.msg),
+                              $getter_mut_thunk$(self.raw_msg()),
                             ),
                           )
                         }

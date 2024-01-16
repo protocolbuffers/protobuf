@@ -322,14 +322,14 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
        {"case_thunk", ThunkName(ctx, oneof, "case")}},
       R"rs(
         pub fn r#$oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
-          match unsafe { $case_thunk$(self.inner.msg) } {
+          match unsafe { $case_thunk$(self.raw_msg()) } {
             $view_cases$
             _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
           }
         }
 
         pub fn r#$oneof_name$_mut(&mut self) -> $Msg$_::$mut_enum_name$ {
-          match unsafe { $case_thunk$(self.inner.msg) } {
+          match unsafe { $case_thunk$(self.raw_msg()) } {
             $mut_cases$
             _ => $Msg$_::$mut_enum_name$::not_set(std::marker::PhantomData)
           }

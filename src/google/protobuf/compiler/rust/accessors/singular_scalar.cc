@@ -32,7 +32,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
            [&] {
              ctx.Emit({}, R"rs(
                   pub fn r#$field$(&self) -> $Scalar$ {
-                    unsafe { $getter_thunk$(self.inner.msg) }
+                    unsafe { $getter_thunk$(self.raw_msg()) }
                   }
                 )rs");
            }},
@@ -42,10 +42,10 @@ void SingularScalar::InMsgImpl(Context& ctx,
              if (!field.has_presence()) return;
              ctx.Emit({}, R"rs(
                   pub fn r#$field$_opt(&self) -> $pb$::Optional<$Scalar$> {
-                    if !unsafe { $hazzer_thunk$(self.inner.msg) } {
+                    if !unsafe { $hazzer_thunk$(self.raw_msg()) } {
                       return $pb$::Optional::Unset($default_value$);
                     }
-                    let value = unsafe { $getter_thunk$(self.inner.msg) };
+                    let value = unsafe { $getter_thunk$(self.raw_msg()) };
                     $pb$::Optional::Set(value)
                   }
                   )rs");
@@ -68,7 +68,7 @@ void SingularScalar::InMsgImpl(Context& ctx,
                       );
 
                       unsafe {
-                        let has = $hazzer_thunk$(self.inner.msg);
+                        let has = $hazzer_thunk$(self.raw_msg());
                         $pbi$::new_vtable_field_entry::<$Scalar$>(
                           $pbi$::Private,
                           $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner),

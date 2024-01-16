@@ -53,10 +53,10 @@ void SingularString::InMsgImpl(Context& ctx,
                        {"transform_view", transform_view}},
                       R"rs(
             pub fn $field$_opt(&self) -> $pb$::Optional<&$proxied_type$> {
-                let view = unsafe { $getter_thunk$(self.inner.msg).as_ref() };
+                let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
                   $transform_view$ ,
-                  unsafe { $hazzer_thunk$(self.inner.msg) }
+                  unsafe { $hazzer_thunk$(self.raw_msg()) }
                 )
               }
           )rs");
@@ -99,7 +99,7 @@ void SingularString::InMsgImpl(Context& ctx,
                 )
               };
               let out = unsafe {
-                let has = $hazzer_thunk$(self.inner.msg);
+                let has = $hazzer_thunk$(self.raw_msg());
                 $pbi$::new_vtable_field_entry(
                   $pbi$::Private,
                   $pbr$::MutatorMessageRef::new(
@@ -142,7 +142,7 @@ void SingularString::InMsgImpl(Context& ctx,
       },
       R"rs(
         pub fn r#$field$(&self) -> &$proxied_type$ {
-          let view = unsafe { $getter_thunk$(self.inner.msg).as_ref() };
+          let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
           $transform_view$
         }
 

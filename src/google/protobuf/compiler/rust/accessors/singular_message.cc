@@ -35,7 +35,7 @@ void SingularMessage::InMsgImpl(Context& ctx,
               [&] {
                 if (ctx.is_upb()) {
                   ctx.Emit({}, R"rs(
-              let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+              let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
               //~ For upb, getters return null if the field is unset, so we need
               //~ to check for null and return the default instance manually.
               //~ Note that a nullptr received from upb manifests as Option::None
@@ -50,7 +50,7 @@ void SingularMessage::InMsgImpl(Context& ctx,
                   ctx.Emit({}, R"rs(
               //~ For C++ kernel, getters automatically return the
               //~ default_instance if the field is unset.
-              let submsg = unsafe { $getter_thunk$(self.inner.msg) };
+              let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
               $msg_type$View::new($pbi$::Private, submsg)
         )rs");
                 }
@@ -61,13 +61,13 @@ void SingularMessage::InMsgImpl(Context& ctx,
              if (ctx.is_upb()) {
                ctx.Emit({}, R"rs(
                  let submsg = unsafe {
-                   $getter_mut_thunk$(self.inner.msg, self.inner.arena.raw())
+                   $getter_mut_thunk$(self.raw_msg(), self.arena().raw())
                  };
                  $msg_type$Mut::from_parent($pbi$::Private, &mut self.inner, submsg)
                  )rs");
              } else {
                ctx.Emit({}, R"rs(
-                    let submsg = unsafe { $getter_mut_thunk$(self.inner.msg) };
+                    let submsg = unsafe { $getter_mut_thunk$(self.raw_msg()) };
                     $msg_type$Mut::from_parent($pbi$::Private, &mut self.inner, submsg)
                   )rs");
              }
@@ -83,7 +83,7 @@ void SingularMessage::InMsgImpl(Context& ctx,
             }
 
             pub fn $field$_clear(&mut self) {
-              unsafe { $clearer_thunk$(self.inner.msg) }
+              unsafe { $clearer_thunk$(self.raw_msg()) }
             }
         )rs");
 }

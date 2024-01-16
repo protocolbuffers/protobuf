@@ -289,8 +289,8 @@ impl<'msg> MutatorMessageRef<'msg> {
         self.msg
     }
 
-    pub fn raw_arena(&self, _private: Private) -> RawArena {
-        self.arena.raw()
+    pub fn arena(&self, _private: Private) -> &Arena {
+        self.arena
     }
 }
 

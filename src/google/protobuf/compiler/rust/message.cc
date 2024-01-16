@@ -61,7 +61,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
-        unsafe { $serialize_thunk$(self.inner.msg) }
+        unsafe { $serialize_thunk$(self.raw_msg()) }
       )rs");
       return;
 
@@ -70,7 +70,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
         let arena = $pbr$::Arena::new();
         let mut len = 0;
         unsafe {
-          let data = $serialize_thunk$(self.inner.msg, arena.raw(), &mut len);
+          let data = $serialize_thunk$(self.raw_msg(), arena.raw(), &mut len);
           $pbr$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -94,7 +94,7 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
               data.len(),
             );
 
-            $deserialize_thunk$(self.inner.msg, data)
+            $deserialize_thunk$(self.raw_msg(), data)
           };
           success.then_some(()).ok_or($pb$::ParseError)
         )rs");
@@ -174,7 +174,7 @@ void MessageDrop(Context& ctx, const Descriptor& msg) {
   }
 
   ctx.Emit({{"delete_thunk", ThunkName(ctx, msg, "delete")}}, R"rs(
-    unsafe { $delete_thunk$(self.inner.msg); }
+    unsafe { $delete_thunk$(self.raw_msg()); }
   )rs");
 }
 
@@ -206,7 +206,7 @@ void MessageSettableValue(Context& ctx, const Descriptor& msg) {
               mutator.inner.msg(),
               self.msg,
               $std$::ptr::addr_of!($minitable$),
-              mutator.inner.raw_arena($pbi$::Private),
+              mutator.inner.arena($pbi$::Private).raw(),
             ) };
           }
         }
@@ -223,9 +223,6 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
   auto fieldType = field.type();
   auto getter_thunk = ThunkName(ctx, field, "get");
   auto setter_thunk = ThunkName(ctx, field, "set");
-  // If we're dealing with a Mut, the getter must be supplied
-  // self.inner.msg() whereas a View has to be supplied self.msg
-  auto self = is_mut ? "self.inner.msg()" : "self.msg";
 
   if (fieldType == FieldDescriptor::TYPE_MESSAGE) {
     const Descriptor& msg = *field.message_type();
@@ -238,7 +235,6 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
         {
             {"prefix", prefix},
             {"field", fieldName},
-            {"self", self},
             {"getter_thunk", getter_thunk},
             // TODO: dedupe with singular_message.cc
             {
@@ -246,7 +242,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
                 [&] {
                   if (ctx.is_upb()) {
                     ctx.Emit({}, R"rs(
-                      let submsg = unsafe { $getter_thunk$($self$) };
+                      let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
                       match submsg {
                         None => $prefix$View::new($pbi$::Private,
                           $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
@@ -255,7 +251,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
                 )rs");
                   } else {
                     ctx.Emit({}, R"rs(
-                      let submsg = unsafe { $getter_thunk$($self$) };
+                      let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
                       $prefix$View::new($pbi$::Private, submsg)
                 )rs");
                   }
@@ -293,7 +289,6 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
   ctx.Emit({{"field", fieldName},
             {"getter_thunk", getter_thunk},
             {"setter_thunk", setter_thunk},
-            {"self", self},
             {"RsType", rsType},
             {"as_ref", asRef},
             {"vtable", vtable},
@@ -326,7 +321,7 @@ void GetterForViewOrMut(Context& ctx, const FieldDescriptor& field,
              }}},
            R"rs(
           pub fn r#$field$(&self) -> $pb$::View<'_, $RsType$> {
-            let res = unsafe { $getter_thunk$($self$)$as_ref$ };
+            let res = unsafe { $getter_thunk$(self.raw_msg())$as_ref$ };
             $string_transform$
           }
 
@@ -426,6 +421,26 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                  }  // mod $Msg$_
                 )rs");
              }},
+            {"raw_arena_getter_for_message",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
+                  fn arena(&self) -> &$pbr$::Arena {
+                    &self.inner.arena
+                  }
+                  )rs");
+               }
+             }},
+            {"raw_arena_getter_for_msgmut",
+             [&] {
+               if (ctx.is_upb()) {
+                 ctx.Emit({}, R"rs(
+                  fn arena(&self) -> &$pbr$::Arena {
+                    self.inner.arena($pbi$::Private)
+                  }
+                  )rs");
+               }
+             }},
             {"accessor_fns_for_views",
              [&] { AccessorsForViewOrMut(ctx, msg, false); }},
             {"accessor_fns_for_muts",
@@ -458,11 +473,17 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           _phantom: $Phantom$<&'a ()>,
         }
 
+        #[allow(dead_code)]
         impl<'a> $Msg$View<'a> {
           #[doc(hidden)]
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
             Self { msg, _phantom: std::marker::PhantomData }
           }
+
+          fn raw_msg(&self) -> $pbi$::RawMessage {
+            self.msg
+          }
+
           $accessor_fns_for_views$
         }
 
@@ -495,6 +516,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           inner: $pbr$::MutatorMessageRef<'a>,
         }
 
+        #[allow(dead_code)]
         impl<'a> $Msg$Mut<'a> {
           #[doc(hidden)]
           pub fn from_parent(_private: $pbi$::Private,
@@ -510,6 +532,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn new(_private: $pbi$::Private, msg: &'a mut $pbr$::MessageInner) -> Self {
             Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
+
+          fn raw_msg(&self) -> $pbi$::RawMessage {
+            self.inner.msg()
+          }
+
+          $raw_arena_getter_for_msgmut$
+
           $accessor_fns_for_muts$
         }
 
@@ -529,17 +558,24 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View { msg: self.inner.msg(), _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.raw_msg(), _phantom: std::marker::PhantomData }
           }
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
-            $Msg$View { msg: self.inner.msg(), _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.raw_msg(), _phantom: std::marker::PhantomData }
           }
         }
 
+        #[allow(dead_code)]
         impl $Msg$ {
           pub fn new() -> Self {
             $Msg::new$
           }
+
+          fn raw_msg(&self) -> $pbi$::RawMessage {
+            self.inner.msg
+          }
+
+          $raw_arena_getter_for_message$
 
           pub fn serialize(&self) -> $pbr$::SerializedData {
             $Msg::serialize$
@@ -588,7 +624,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           Self { inner: $pbr$::MessageInner { msg } }
         }
         pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
-          self.inner.msg
+          self.raw_msg()
         }
       }
     )rs");
