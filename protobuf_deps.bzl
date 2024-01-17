@@ -43,7 +43,7 @@ def protobuf_deps():
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "fb3621f4f897824c0dbe0615fa94543df6192f30",  # Abseil LTS 20230802.1
+            commit = "ad73c6dc1a253203c1c8b529cda18f2138d49df0",  # Abseil LTS 20240116.rc1
             sha256 = "aa768256d0567f626334fcbe722f564c40b281518fc8423e2708a308e5f983ea",
         )
 
