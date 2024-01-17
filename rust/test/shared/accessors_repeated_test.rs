@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
+use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_, TestAllTypes_::NestedMessage};
 
 macro_rules! generate_repeated_numeric_test {
   ($(($t: ty, $field: ident)),*) => {
@@ -160,4 +160,31 @@ fn test_repeated_bool_set() {
     protobuf::MutProxy::set(&mut mutator, *mutator2);
 
     assert_that!(mutator.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
+}
+
+#[test]
+fn test_repeated_message() {
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.repeated_nested_message().len(), eq(0));
+    let mut nested = NestedMessage::new();
+    nested.bb_mut().set(1);
+    msg.repeated_nested_message_mut().push(nested.as_view());
+    assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+
+    let mut msg2 = TestAllTypes::new();
+    msg2.repeated_nested_message_mut().copy_from(msg.repeated_nested_message());
+    assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+
+    msg2.repeated_nested_message_mut().clear();
+    assert_that!(msg2.repeated_nested_message().len(), eq(0));
+
+    let mut nested2 = NestedMessage::new();
+    nested2.bb_mut().set(2);
+    msg.repeated_nested_message_mut().set(0, nested2.as_view());
+    assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(2));
+
+    assert_that!(
+        msg.repeated_nested_message().iter().map(|m| m.bb()).collect::<Vec<_>>(),
+        eq(vec![2]),
+    );
 }

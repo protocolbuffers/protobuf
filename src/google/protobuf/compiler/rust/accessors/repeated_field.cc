@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
@@ -18,24 +20,24 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
-                               AccessorCase accessor_case) const {
+void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                              AccessorCase accessor_case) const {
   ctx.Emit({{"field", RsSafeName(field.name())},
-            {"Scalar", RsTypePath(ctx, field)},
+            {"RsType", RsTypePath(ctx, field)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
+                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $RsType$> {
                       unsafe {
                         $getter_thunk$(
                           self.raw_msg(),
                           /* optional size pointer */ std::ptr::null(),
                         ) }
                         .map_or_else(
-                          $pbr$::empty_array::<$Scalar$>,
+                          $pbr$::empty_array::<$RsType$>,
                           |raw| unsafe {
                             $pb$::RepeatedView::from_raw($pbi$::Private, raw)
                           }
@@ -44,7 +46,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
                } else {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
+                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $RsType$> {
                       unsafe {
                         $pb$::RepeatedView::from_raw(
                           $pbi$::Private,
@@ -63,7 +65,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                }
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                    pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                       unsafe {
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
@@ -82,7 +84,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
                } else {
                  ctx.Emit({}, R"rs(
-                      pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                      pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                         unsafe {
                           $pb$::RepeatedMut::from_inner(
                             $pbi$::Private,
@@ -102,10 +104,9 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
         )rs");
 }
 
-void RepeatedScalar::InExternC(Context& ctx,
-                               const FieldDescriptor& field) const {
-  ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
-            {"getter_thunk", ThunkName(ctx, field, "get")},
+void RepeatedField::InExternC(Context& ctx,
+                              const FieldDescriptor& field) const {
+  ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
@@ -136,10 +137,38 @@ void RepeatedScalar::InExternC(Context& ctx,
         )rs");
 }
 
-void RepeatedScalar::InThunkCc(Context& ctx,
-                               const FieldDescriptor& field) const {
+bool IsRepeatedPrimitive(const FieldDescriptor& field) {
+  return field.cpp_type() == FieldDescriptor::CPPTYPE_ENUM ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_BOOL ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_FLOAT ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_INT32 ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_INT64 ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_UINT32 ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_UINT64;
+}
+
+std::string CppElementType(const FieldDescriptor& field) {
+  if (IsRepeatedPrimitive(field)) {
+    return cpp::PrimitiveTypeName(field.cpp_type());
+  } else {
+    return cpp::QualifiedClassName(field.message_type());
+  }
+}
+
+const char* CppRepeatedContainerType(const FieldDescriptor& field) {
+  if (IsRepeatedPrimitive(field)) {
+    return "google::protobuf::RepeatedField";
+  } else {
+    return "google::protobuf::RepeatedPtrField";
+  }
+}
+
+void RepeatedField::InThunkCc(Context& ctx,
+                              const FieldDescriptor& field) const {
   ctx.Emit({{"field", cpp::FieldName(&field)},
-            {"Scalar", cpp::PrimitiveTypeName(field.cpp_type())},
+            {"ElementType", CppElementType(field)},
+            {"ContainerType", CppRepeatedContainerType(field)},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
             {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
@@ -151,10 +180,10 @@ void RepeatedScalar::InThunkCc(Context& ctx,
                      void $clearer_thunk$($QualifiedMsg$* msg) {
                        msg->clear_$field$();
                      }
-                     google::protobuf::RepeatedField<$Scalar$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
+                     $ContainerType$<$ElementType$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
                        return msg->mutable_$field$();
                      }
-                     const google::protobuf::RepeatedField<$Scalar$>* $getter_thunk$(
+                     const $ContainerType$<$ElementType$>* $getter_thunk$(
                          const $QualifiedMsg$* msg) {
                        return &msg->$field$();
                      }

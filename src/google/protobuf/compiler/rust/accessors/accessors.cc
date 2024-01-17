@@ -59,7 +59,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
       if (field.is_repeated()) {
-        return std::make_unique<RepeatedScalar>();
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_ENUM:
@@ -70,7 +70,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
             " (defined in a separate Rust crate) are not supported");
       }
       if (field.is_repeated()) {
-        return std::make_unique<RepeatedScalar>();
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_BYTES:
@@ -80,14 +80,14 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
-      if (field.is_repeated()) {
-        return std::make_unique<UnsupportedField>("repeated msg not supported");
-      }
       // TODO: support messages which are defined in other crates.
       if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
         return std::make_unique<UnsupportedField>(
             "message fields that are imported from another proto_library"
             " (defined in a separate Rust crate) are not supported");
+      }
+      if (field.is_repeated()) {
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularMessage>();
 
