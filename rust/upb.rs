@@ -13,7 +13,6 @@ use crate::{
     RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
 };
 use core::fmt::Debug;
-use paste::paste;
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
@@ -70,6 +69,13 @@ impl Arena {
             let Some(raw) = upb_Arena_New() else { arena_new_failed() };
             Self { raw, _not_sync: PhantomData }
         }
+    }
+
+    /// # Safety
+    /// - The `raw_arena` must point to a valid arena.
+    /// - The caller must ensure that the Arena's destructor does not run.
+    unsafe fn from_raw(raw_arena: RawArena) -> Self {
+        Arena { raw: raw_arena, _not_sync: PhantomData }
     }
 
     /// Returns the raw, UPB-managed pointer to the arena.
@@ -298,8 +304,12 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
     msg_ref: MutatorMessageRef<'msg>,
     val: &'msg [u8],
 ) -> &'msg [u8] {
+    copy_bytes_in_arena(msg_ref.arena, val)
+}
+
+fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] {
     // SAFETY: the alignment of `[u8]` is less than `UPB_MALLOC_ALIGN`.
-    let new_alloc = unsafe { msg_ref.arena.alloc(Layout::for_value(val)) };
+    let new_alloc = unsafe { arena.alloc(Layout::for_value(val)) };
     debug_assert_eq!(new_alloc.len(), val.len());
 
     let start: *mut u8 = new_alloc.as_mut_ptr().cast();
@@ -574,8 +584,132 @@ impl<'msg> InnerMapMut<'msg> {
     }
 }
 
+trait UpbTypeConversions: Proxied {
+    fn upb_type() -> UpbCType;
+    fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
+    fn empty_message_value() -> upb_MessageValue;
+
+    /// # Safety
+    /// - `raw_arena` must point to a valid upb arena.
+    unsafe fn to_message_value_copy_if_required(
+        raw_arena: RawArena,
+        val: View<'_, Self>,
+    ) -> upb_MessageValue;
+
+    /// # Safety
+    /// - `msg` must be the correct variant for `Self`.
+    /// - `msg` pointers must point to memory valid for `'msg` lifetime.
+    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Self>;
+}
+
+macro_rules! impl_upb_type_conversions_for_scalars {
+    ($($t:ty, $ufield:ident, $upb_tag:expr, $zero_val:literal;)*) => {
+        $(
+            impl UpbTypeConversions for $t {
+                fn upb_type() -> UpbCType {
+                    $upb_tag
+                }
+
+                fn to_message_value(val: View<'_, $t>) -> upb_MessageValue {
+                    upb_MessageValue { $ufield: val }
+                }
+
+                fn empty_message_value() -> upb_MessageValue {
+                    Self::to_message_value($zero_val)
+                }
+
+                unsafe fn to_message_value_copy_if_required(_ : RawArena, val: View<'_, $t>) -> upb_MessageValue {
+                    Self::to_message_value(val)
+                }
+
+                unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, $t> {
+                    unsafe { msg.$ufield }
+                }
+            }
+        )*
+    };
+}
+
+impl_upb_type_conversions_for_scalars!(
+    f32, float_val, UpbCType::Float, 0f32;
+    f64, double_val, UpbCType::Double, 0f64;
+    i32, int32_val, UpbCType::Int32, 0i32;
+    u32, uint32_val, UpbCType::UInt32, 0u32;
+    i64, int64_val, UpbCType::Int64, 0i64;
+    u64, uint64_val, UpbCType::UInt64, 0u64;
+    bool, bool_val, UpbCType::Bool, false;
+);
+
+impl UpbTypeConversions for [u8] {
+    fn upb_type() -> UpbCType {
+        UpbCType::Bytes
+    }
+
+    fn to_message_value(val: View<'_, [u8]>) -> upb_MessageValue {
+        upb_MessageValue { str_val: val.into() }
+    }
+
+    fn empty_message_value() -> upb_MessageValue {
+        Self::to_message_value(b"")
+    }
+
+    unsafe fn to_message_value_copy_if_required(
+        raw_arena: RawArena,
+        val: View<'_, [u8]>,
+    ) -> upb_MessageValue {
+        // SAFETY:
+        // The arena memory is not freed because we prevent its destructor from
+        // executing with the call to `std::mem::forget(arena)`.
+        let arena = unsafe { Arena::from_raw(raw_arena) };
+        let copied = copy_bytes_in_arena(&arena, val);
+        let msg_val = Self::to_message_value(copied);
+        std::mem::forget(arena);
+        msg_val
+    }
+
+    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, [u8]> {
+        unsafe { msg.str_val.as_ref() }
+    }
+}
+
+impl UpbTypeConversions for ProtoStr {
+    fn upb_type() -> UpbCType {
+        UpbCType::String
+    }
+
+    fn to_message_value(val: View<'_, ProtoStr>) -> upb_MessageValue {
+        upb_MessageValue { str_val: val.as_bytes().into() }
+    }
+
+    fn empty_message_value() -> upb_MessageValue {
+        Self::to_message_value("".into())
+    }
+
+    unsafe fn to_message_value_copy_if_required(
+        raw_arena: RawArena,
+        val: View<'_, ProtoStr>,
+    ) -> upb_MessageValue {
+        // SAFETY:
+        // The arena memory is not freed because we prevent its destructor from
+        // executing with the call to `std::mem::forget(arena)`.
+        let arena = unsafe { Arena::from_raw(raw_arena) };
+        let copied = copy_bytes_in_arena(&arena, val.into());
+
+        // SAFETY:
+        // `val` is a valid `ProtoStr` and `copied` is an exact copy of `val`.
+        let proto_str = unsafe { ProtoStr::from_utf8_unchecked(copied) };
+        let msg_val = Self::to_message_value(proto_str);
+        std::mem::forget(arena);
+        msg_val
+    }
+
+    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoStr> {
+        unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
+    }
+}
+
 macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
-    ($key_t:ty, $key_msg_val:expr, $key_upb_tag:expr, for $($t:ty, $msg_val:expr, $from_msg_val:expr, $upb_tag:expr, $zero_val:literal;)*) => {
+    ($key_t:ty ; $($t:ty),*) => {
          $(
             impl ProxiedInMapValue<$key_t> for $t {
                 fn map_new(_private: Private) -> Map<$key_t, Self> {
@@ -587,7 +721,9 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                         Map::from_inner(
                             Private,
                             InnerMapMut {
-                                raw: upb_Map_New(raw_arena, $key_upb_tag, $upb_tag),
+                                raw: upb_Map_New(raw_arena,
+                                    <$key_t as UpbTypeConversions>::upb_type(),
+                                    <$t as UpbTypeConversions>::upb_type()),
                                 raw_arena,
                                 _phantom: PhantomData
                             }
@@ -620,28 +756,31 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     unsafe {
                         upb_Map_Set(
                             map.inner.raw,
-                            $key_msg_val(key),
-                            $msg_val(value),
+                            <$key_t as UpbTypeConversions>::to_message_value(key),
+                            <$t as UpbTypeConversions>::to_message_value_copy_if_required(map.inner.raw_arena, value),
                             map.inner.raw_arena
                         )
                     }
                 }
 
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
-                    let mut val = $msg_val($zero_val);
+                    let mut val = <$t as UpbTypeConversions>::empty_message_value();
                     let found = unsafe {
-                        upb_Map_Get(map.raw, ($key_msg_val)(key), &mut val)
+                        upb_Map_Get(map.raw, <$key_t as UpbTypeConversions>::to_message_value(key),
+                            &mut val)
                     };
                     if !found {
                         return None;
                     }
-                    Some($from_msg_val(val))
+                    Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val) })
                 }
 
                 fn map_remove(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
-                    let mut val = $msg_val($zero_val);
+                    let mut val = <$t as UpbTypeConversions>::empty_message_value();
                     unsafe {
-                        upb_Map_Delete(map.inner.raw, $key_msg_val(key), &mut val)
+                        upb_Map_Delete(map.inner.raw,
+                            <$key_t as UpbTypeConversions>::to_message_value(key),
+                            &mut val)
                     }
                 }
             }
@@ -649,53 +788,17 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
     }
 }
 
-macro_rules! scalar_to_msg {
-    ($ufield:ident) => {
-        |val| upb_MessageValue { $ufield: val }
-    };
-}
-
-macro_rules! scalar_from_msg {
-    ($ufield:ident) => {
-        |msg: upb_MessageValue| unsafe { msg.$ufield }
-    };
-}
-
-fn str_to_msg<'msg>(val: impl Into<&'msg ProtoStr>) -> upb_MessageValue {
-    upb_MessageValue { str_val: val.into().as_bytes().into() }
-}
-
-fn msg_to_str<'msg>(msg: upb_MessageValue) -> &'msg ProtoStr {
-    unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
-}
-
 macro_rules! impl_ProxiedInMapValue_for_key_types {
-    ($($t:ty, $t_sized:ty, $key_msg_val:expr, $upb_tag:expr;)*) => {
-        paste! {
-            $(
-                impl_ProxiedInMapValue_for_non_generated_value_types!($t, $key_msg_val, $upb_tag, for
-                    f32, scalar_to_msg!(float_val), scalar_from_msg!(float_val),  UpbCType::Float, 0f32;
-                    f64, scalar_to_msg!(double_val), scalar_from_msg!(double_val),  UpbCType::Double, 0f64;
-                    i32, scalar_to_msg!(int32_val), scalar_from_msg!(int32_val),  UpbCType::Int32, 0i32;
-                    u32, scalar_to_msg!(uint32_val), scalar_from_msg!(uint32_val), UpbCType::UInt32, 0u32;
-                    i64, scalar_to_msg!(int64_val), scalar_from_msg!(int64_val), UpbCType::Int64, 0i64;
-                    u64, scalar_to_msg!(uint64_val), scalar_from_msg!(uint64_val), UpbCType::UInt64, 0u64;
-                    bool, scalar_to_msg!(bool_val), scalar_from_msg!(bool_val), UpbCType::Bool, false;
-                    ProtoStr, str_to_msg, msg_to_str, UpbCType::String, "";
-                );
-            )*
-        }
+    ($($t:ty),*) => {
+        $(
+            impl_ProxiedInMapValue_for_non_generated_value_types!(
+                $t ; f32, f64, i32, u32, i64, u64, bool, ProtoStr, [u8]
+            );
+        )*
     }
 }
 
-impl_ProxiedInMapValue_for_key_types!(
-    i32, i32, scalar_to_msg!(int32_val), UpbCType::Int32;
-    u32, u32, scalar_to_msg!(uint32_val), UpbCType::UInt32;
-    i64, i64, scalar_to_msg!(int64_val), UpbCType::Int64;
-    u64, u64, scalar_to_msg!(uint64_val), UpbCType::UInt64;
-    bool, bool, scalar_to_msg!(bool_val), UpbCType::Bool;
-    ProtoStr, &ProtoStr, |val: &ProtoStr| upb_MessageValue { str_val: val.as_bytes().into() }, UpbCType::String;
-);
+impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoStr);
 
 extern "C" {
     fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;

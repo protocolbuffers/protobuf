@@ -113,6 +113,10 @@ expose_repeated_field_methods(int64_t, i64);
   expose_scalar_map_methods(key_ty, rust_key_ty, ffi_key_ty, to_cpp_key,       \
                             int64_t, i64, int64_t, value, cpp_value);          \
   expose_scalar_map_methods(                                                   \
+      key_ty, rust_key_ty, ffi_key_ty, to_cpp_key, std::string, Bytes,         \
+      google::protobuf::rust_internal::PtrAndLen, std::string(value.ptr, value.len),     \
+      google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));   \
+  expose_scalar_map_methods(                                                   \
       key_ty, rust_key_ty, ffi_key_ty, to_cpp_key, std::string, ProtoStr,      \
       google::protobuf::rust_internal::PtrAndLen, std::string(value.ptr, value.len),     \
       google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));

@@ -339,7 +339,7 @@ mod tests {
         macro_rules! gen_proto_keys {
             ($($key_t:ty),*) => {
                 $(
-                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr);
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr, [u8]);
                 )*
             }
         }

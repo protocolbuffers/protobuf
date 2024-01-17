@@ -413,9 +413,26 @@ fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
     val.into().as_bytes().into()
 }
 
+// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
+// call.
 fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
     unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
 }
+
+fn bytes_to_ptrlen(val: &[u8]) -> PtrAndLen {
+    val.into()
+}
+
+// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
+// call.
+fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
+    unsafe { val.as_ref() }
+}
+
+// This type alias is used so the macro
+// `impl_ProxiedInMapValue_for_non_generated_value_types` can generate
+// valid extern "C" symbol names for functions working with [u8] types.
+type Bytes = [u8];
 
 macro_rules! impl_ProxiedInMapValue_for_key_types {
     ($($t:ty, $ffi_t:ty, $to_ffi_key:expr;)*) => {
@@ -430,6 +447,7 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
                     u64, u64, identity, identity, 0u64;
                     bool, bool, identity, identity, false;
                     ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str, "";
+                    Bytes, PtrAndLen, bytes_to_ptrlen, ptrlen_to_bytes, b"";
                 );
             )*
         }
