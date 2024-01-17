@@ -159,6 +159,14 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ASSERT(expr) assert(expr)
 #endif
 
+/* UPB_STATIC_ASSERT(expr, msg): Asserts `expr` is true at compile time,
+ * otherwise errors with `msg`. */
+#if defined(_MSC_VER)
+#define UPB_STATIC_ASSERT(expr, msg) static_assert(expr, msg)
+#else
+#define UPB_STATIC_ASSERT(expr, msg) _Static_assert(expr, msg)
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
 #elif defined(_MSC_VER)

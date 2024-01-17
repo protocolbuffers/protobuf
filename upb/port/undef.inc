@@ -31,6 +31,7 @@
 #undef UPB_UNUSED
 #undef UPB_ASSUME
 #undef UPB_ASSERT
+#undef UPB_STATIC_ASSERT
 #undef UPB_UNREACHABLE
 #undef UPB_SETJMP
 #undef UPB_LONGJMP
