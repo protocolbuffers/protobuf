@@ -20,7 +20,7 @@ namespace rust {
 
 void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                AccessorCase accessor_case) const {
-  ctx.Emit({{"field", field.name()},
+  ctx.Emit({{"field", RsSafeName(field.name())},
             {"Scalar", RsTypePath(ctx, field)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
@@ -28,7 +28,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              [&] {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
+                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
                       unsafe {
                         $getter_thunk$(
                           self.raw_msg(),
@@ -44,7 +44,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
                } else {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
+                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $Scalar$> {
                       unsafe {
                         $pb$::RepeatedView::from_raw(
                           $pbi$::Private,
@@ -63,7 +63,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                }
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                    pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
                       unsafe {
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
@@ -82,7 +82,7 @@ void RepeatedScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
                } else {
                  ctx.Emit({}, R"rs(
-                      pub fn r#$field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
+                      pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $Scalar$> {
                         unsafe {
                           $pb$::RepeatedMut::from_inner(
                             $pbi$::Private,

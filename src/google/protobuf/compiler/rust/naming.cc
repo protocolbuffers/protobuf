@@ -24,6 +24,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -130,8 +131,10 @@ std::string RustModule(Context& ctx, const FileDescriptor& file,
   std::vector<std::string> package_modules =
       absl::StrSplit(file.package(), '.', absl::SkipEmpty());
 
-  modules.insert(modules.begin(), package_modules.begin(),
-                 package_modules.end());
+  modules.reserve(package_modules.size());
+  for (const auto& module : package_modules) {
+    modules.push_back(RsSafeName(module));
+  }
 
   // Innermost to outermost order.
   std::vector<std::string> modules_from_containing_types;
@@ -227,12 +230,12 @@ std::string RustModule(Context& ctx, const EnumDescriptor& enum_) {
 }
 
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
-  return absl::StrReplaceAll(StripProto(file.name()),
-                             {{"_", "__"}, {"/", "_s"}});
+  return RsSafeName(
+      absl::StrReplaceAll(StripProto(file.name()), {{"_", "__"}, {"/", "_s"}}));
 }
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg) {
-  return absl::StrCat(RustModule(ctx, msg), msg.name());
+  return absl::StrCat(RustModule(ctx, msg), RsSafeName(msg.name()));
 }
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx,
@@ -255,8 +258,19 @@ std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
   return comment;
 }
 
+std::string RsSafeName(absl::string_view name) {
+  if (IsNotLegalEvenWithRPoundPrefix(name)) {
+    return absl::StrCat(name,
+                        "__mangled_because_symbol_is_a_rust_raw_identifier");
+  }
+  if (IsRustKeyword(name)) {
+    return absl::StrCat("r#", name);
+  }
+  return std::string(name);
+}
+
 std::string EnumRsName(const EnumDescriptor& desc) {
-  return SnakeToUpperCamelCase(desc.name());
+  return RsSafeName(SnakeToUpperCamelCase(desc.name()));
 }
 
 std::string EnumValueRsName(const EnumValueDescriptor& value) {
@@ -279,11 +293,11 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
   if (absl::ascii_isdigit(name[0])) {
     name = absl::StrCat("_", name);
   }
-  return name;
+  return RsSafeName(name);
 }
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
-  return SnakeToUpperCamelCase(oneof.name());
+  return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
 }
 
 std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
@@ -297,7 +311,7 @@ std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
 }
 
 std::string OneofCaseRsName(const FieldDescriptor& oneof_field) {
-  return SnakeToUpperCamelCase(oneof_field.name());
+  return RsSafeName(SnakeToUpperCamelCase(oneof_field.name()));
 }
 
 std::string CamelToSnakeCase(absl::string_view input) {

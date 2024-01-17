@@ -182,8 +182,14 @@ cc_test(
 
 cc_library(
     name = "naming",
-    srcs = ["naming.cc"],
-    hdrs = ["naming.h"],
+    srcs = [
+        "naming.cc",
+        "rust_keywords.cc",
+    ],
+    hdrs = [
+        "naming.h",
+        "rust_keywords.h",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
@@ -191,6 +197,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/cpp:names_internal",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",

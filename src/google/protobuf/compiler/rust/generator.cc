@@ -52,10 +52,10 @@ namespace {
 void EmitOpeningOfPackageModules(Context& ctx, absl::string_view pkg) {
   if (pkg.empty()) return;
   for (absl::string_view segment : absl::StrSplit(pkg, '.')) {
-    ctx.Emit({{"segment", segment}},
+    ctx.Emit({{"segment", RsSafeName(segment)}},
              R"rs(
            #[allow(non_snake_case)]
-           pub mod r#$segment$ {
+           pub mod $segment$ {
            )rs");
   }
 }
@@ -77,8 +77,8 @@ void EmitClosingOfPackageModules(Context& ctx, absl::string_view pkg) {
   absl::c_reverse(segments);
 
   for (absl::string_view segment : segments) {
-    ctx.Emit({{"segment", segment}}, R"rs(
-      } // mod r#$segment$
+    ctx.Emit({{"segment", RsSafeName(segment)}}, R"rs(
+      } // mod $segment$
     )rs");
   }
 }
@@ -92,19 +92,19 @@ void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
   auto mod = RustInternalModuleName(ctx, non_primary_src);
   for (int i = 0; i < non_primary_src.message_type_count(); ++i) {
     auto& msg = *non_primary_src.message_type(i);
-    ctx.Emit({{"mod", mod}, {"Msg", msg.name()}},
+    ctx.Emit({{"mod", mod}, {"Msg", RsSafeName(msg.name())}},
              R"rs(
-                        pub use crate::r#$mod$::$Msg$;
+                        pub use crate::$mod$::$Msg$;
                         // TODO Address use for imported crates
-                        pub use crate::r#$mod$::$Msg$View;
-                        pub use crate::r#$mod$::$Msg$Mut;
+                        pub use crate::$mod$::$Msg$View;
+                        pub use crate::$mod$::$Msg$Mut;
                       )rs");
   }
   for (int i = 0; i < non_primary_src.enum_type_count(); ++i) {
     auto& enum_ = *non_primary_src.enum_type(i);
     ctx.Emit({{"mod", mod}, {"Enum", EnumRsName(enum_)}},
              R"rs(
-                        pub use crate::r#$mod$::$Enum$;
+                        pub use crate::$mod$::$Enum$;
                       )rs");
   }
 }

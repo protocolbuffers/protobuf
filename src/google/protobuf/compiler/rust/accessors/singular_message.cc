@@ -25,7 +25,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   // fully qualified message name with modules prefixed
   std::string msg_type = RsTypePath(ctx, field);
   ctx.Emit({{"msg_type", msg_type},
-            {"field", field.name()},
+            {"field", RsSafeName(field.name())},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"clearer_thunk", ThunkName(ctx, field, "clear")},
@@ -58,7 +58,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             {"getter",
              [&] {
                ctx.Emit({}, R"rs(
-                pub fn r#$field$(&self) -> $msg_type$View {
+                pub fn $field$(&self) -> $msg_type$View {
                   $getter_body$
                 }
               )rs");

@@ -49,6 +49,10 @@ std::string OneofCaseRsName(const FieldDescriptor& oneof_field);
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);
 
+// Returns how to 'spell' the provided name in Rust, which is the provided name
+// verbatim unless it is a Rust keyword that isn't a legal symbol name.
+std::string RsSafeName(absl::string_view name);
+
 // Constructs a string of the Rust modules which will contain the message.
 //
 // Example: Given a message 'NestedMessage' which is defined in package 'x.y'

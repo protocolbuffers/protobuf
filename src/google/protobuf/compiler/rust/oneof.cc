@@ -257,7 +257,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
 
 void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
-      {{"oneof_name", oneof.name()},
+      {{"oneof_name", RsSafeName(oneof.name())},
        {"view_enum_name", OneofViewEnumRsName(oneof)},
        {"mut_enum_name", OneofMutEnumRsName(oneof)},
        {"case_enum_name", OneofCaseEnumRsName(oneof)},
@@ -272,7 +272,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
             ctx.Emit(
                 {
                     {"case", OneofCaseRsName(field)},
-                    {"rs_getter", field.name()},
+                    {"rs_getter", RsSafeName(field.name())},
                     {"type", rs_type},
                 },
                 R"rs(
@@ -321,14 +321,14 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
         }},
        {"case_thunk", ThunkName(ctx, oneof, "case")}},
       R"rs(
-        pub fn r#$oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
+        pub fn $oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
           match unsafe { $case_thunk$(self.raw_msg()) } {
             $view_cases$
             _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
           }
         }
 
-        pub fn r#$oneof_name$_mut(&mut self) -> $Msg$_::$mut_enum_name$ {
+        pub fn $oneof_name$_mut(&mut self) -> $Msg$_::$mut_enum_name$ {
           match unsafe { $case_thunk$(self.raw_msg()) } {
             $mut_cases$
             _ => $Msg$_::$mut_enum_name$::not_set(std::marker::PhantomData)

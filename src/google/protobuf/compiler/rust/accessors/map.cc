@@ -23,7 +23,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   auto& key_type = *field.message_type()->map_key();
   auto& value_type = *field.message_type()->map_value();
 
-  ctx.Emit({{"field", field.name()},
+  ctx.Emit({{"field", RsSafeName(field.name())},
             {"Key", RsTypePath(ctx, key_type)},
             {"Value", RsTypePath(ctx, value_type)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
@@ -32,7 +32,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              [&] {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$(&self)
+                    pub fn $field$(&self)
                       -> $pb$::MapView<'_, $Key$, $Value$> {
                       unsafe {
                         $getter_thunk$(self.raw_msg())
@@ -44,7 +44,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     })rs");
                } else {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$(&self)
+                    pub fn $field$(&self)
                       -> $pb$::MapView<'_, $Key$, $Value$> {
                       unsafe {
                         $pb$::MapView::from_raw($pbi$::Private,
@@ -60,7 +60,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                }
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self)
+                    pub fn $field$_mut(&mut self)
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
                       let raw = unsafe {
                         $getter_mut_thunk$(self.raw_msg(),
@@ -72,7 +72,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     })rs");
                } else {
                  ctx.Emit({}, R"rs(
-                    pub fn r#$field$_mut(&mut self)
+                    pub fn $field$_mut(&mut self)
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
                       let inner = $pbr$::InnerMapMut::new($pbi$::Private,
                         unsafe { $getter_mut_thunk$(self.raw_msg()) });

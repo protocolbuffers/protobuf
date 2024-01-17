@@ -220,7 +220,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
     ABSL_LOG(WARNING) << "unsupported map field: " << msg.full_name();
     return;
   }
-  ctx.Emit({{"Msg", msg.name()},
+  ctx.Emit({{"Msg", RsSafeName(msg.name())},
             {"Msg::new", [&] { MessageNew(ctx, msg); }},
             {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
             {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
@@ -260,7 +260,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                  return;
                }
                ctx.Emit(
-                   {{"Msg", msg.name()},
+                   {{"Msg", RsSafeName(msg.name())},
                     {"nested_msgs",
                      [&] {
                        for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -505,7 +505,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
   if (ctx.is_cpp()) {
     ctx.printer().PrintRaw("\n");
-    ctx.Emit({{"Msg", msg.name()}}, R"rs(
+    ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
       impl $Msg$ {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
           Self { inner: $pbr$::MessageInner { msg } }

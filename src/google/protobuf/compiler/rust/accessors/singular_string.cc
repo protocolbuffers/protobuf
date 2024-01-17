@@ -39,7 +39,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   };
   ctx.Emit(
       {
-          {"field", field.name()},
+          {"field", RsSafeName(field.name())},
           {"hazzer_thunk", hazzer_thunk},
           {"getter_thunk", getter_thunk},
           {"setter_thunk", setter_thunk},
@@ -70,7 +70,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (field.has_presence()) {
                ctx.Emit(
                    {
-                       {"field", field.name()},
+                       {"field", RsSafeName(field.name())},
                        {"proxied_type", proxied_type},
                        {"default_val", DefaultValue(ctx, field)},
                        {"view_type", proxied_type},
@@ -115,7 +115,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             }
           )rs");
              } else {
-               ctx.Emit({{"field", field.name()},
+               ctx.Emit({{"field", RsSafeName(field.name())},
                          {"proxied_type", proxied_type},
                          {"getter_thunk", getter_thunk},
                          {"setter_thunk", setter_thunk}},
@@ -143,7 +143,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            }},
       },
       R"rs(
-        pub fn r#$field$(&self) -> &$proxied_type$ {
+        pub fn $field$(&self) -> &$proxied_type$ {
           let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
           $transform_view$
         }
