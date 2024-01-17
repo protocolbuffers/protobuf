@@ -64,13 +64,13 @@ fn test_nested_muts() {
     // new:
     //   set_and_test_mut!(inner_msg => double_mut, 543.21);
     macro_rules! set_and_test_mut {
-    ( $a:expr => $($target_mut:ident, $val:expr;)* ) => {
-        $(
-          $a.$target_mut().set($val);
-          assert_that!($a.$target_mut().get(), eq($val));
-        )*
-    };
-}
+        ( $a:expr => $($target_mut:ident, $val:expr;)* ) => {
+            $(
+            $a.$target_mut().set($val);
+            assert_that!($a.$target_mut().get(), eq($val));
+            )*
+        };
+    }
 
     let mut outer_msg = Outer::new();
     let mut inner_msg: InnerMut<'_> = outer_msg.inner_mut();
