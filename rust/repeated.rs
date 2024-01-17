@@ -418,6 +418,30 @@ where
     }
 }
 
+impl<'msg, T> iter::IntoIterator for &'_ RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    type Item = View<'msg, T>;
+    type IntoIter = RepeatedIter<'msg, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RepeatedIter { view: *self, current_index: 0 }
+    }
+}
+
+impl<'borrow, T> iter::IntoIterator for &'borrow RepeatedMut<'_, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'borrow,
+{
+    type Item = View<'borrow, T>;
+    type IntoIter = RepeatedIter<'borrow, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RepeatedIter { view: self.as_view(), current_index: 0 }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

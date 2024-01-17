@@ -15,6 +15,7 @@ macro_rules! generate_repeated_numeric_test {
           #[test]
           fn [< test_repeated_ $field _accessors >]() {
               let mut msg = TestAllTypes::new();
+              assert_that!(msg.[< repeated_ $field >](), empty());
               assert_that!(msg.[< repeated_ $field >]().len(), eq(0));
               assert_that!(msg.[<repeated_ $field >]().get(0), none());
 
@@ -82,6 +83,7 @@ generate_repeated_numeric_test!(
 #[test]
 fn test_repeated_bool_accessors() {
     let mut msg = TestAllTypes::new();
+    assert_that!(msg.repeated_bool(), empty());
     assert_that!(msg.repeated_bool().len(), eq(0));
     assert_that!(msg.repeated_bool().get(0), none());
 
@@ -116,6 +118,7 @@ fn test_repeated_enum_accessors() {
     use TestAllTypes_::NestedEnum;
 
     let mut msg = TestAllTypes::new();
+    assert_that!(msg.repeated_nested_enum(), empty());
     assert_that!(msg.repeated_nested_enum().len(), eq(0));
     assert_that!(msg.repeated_nested_enum().get(0), none());
 
