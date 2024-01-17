@@ -373,17 +373,28 @@ impl<'msg> InnerRepeatedMut<'msg> {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub union upb_MessageValue {
-    bool_val: bool,
-    float_val: std::ffi::c_float,
-    double_val: std::ffi::c_double,
-    uint32_val: u32,
-    int32_val: i32,
-    uint64_val: u64,
-    int64_val: i64,
-    array_val: *const std::ffi::c_void,
-    map_val: *const std::ffi::c_void,
-    msg_val: *const std::ffi::c_void,
-    str_val: PtrAndLen,
+    pub bool_val: bool,
+    pub float_val: std::ffi::c_float,
+    pub double_val: std::ffi::c_double,
+    pub uint32_val: u32,
+    pub int32_val: i32,
+    pub uint64_val: u64,
+    pub int64_val: i64,
+    pub array_val: Option<RawRepeatedField>,
+    pub map_val: Option<RawMap>,
+    // TODO: Replace this `RawMessage` with the const type.
+    pub msg_val: Option<RawMessage>,
+    pub str_val: PtrAndLen,
+
+    tagged_msg_val: *const std::ffi::c_void,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub union upb_MutableMessageValue {
+    pub array: Option<RawRepeatedField>,
+    pub map: Option<RawMap>,
+    pub msg: Option<RawMessage>,
 }
 
 // Transcribed from google3/third_party/upb/upb/base/descriptor_constants.h
@@ -412,6 +423,7 @@ extern "C" {
     fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
     fn upb_Array_MutableDataPtr(arr: RawRepeatedField) -> *mut std::ffi::c_void;
     fn upb_Array_DataPtr(arr: RawRepeatedField) -> *const std::ffi::c_void;
+    pub fn upb_Array_GetMutable(arr: RawRepeatedField, i: usize) -> upb_MutableMessageValue;
 }
 
 macro_rules! impl_repeated_primitives {
@@ -843,5 +855,20 @@ mod tests {
             )
         };
         assert_that!(&*serialized_data, eq(b"Hello world"));
+    }
+
+    #[test]
+    fn assert_c_type_sizes() {
+        // TODO: add these same asserts in C++.
+        use std::ffi::c_void;
+        use std::mem::{align_of, size_of};
+        assert_that!(
+            size_of::<upb_MessageValue>(),
+            eq(size_of::<*const c_void>() + size_of::<usize>())
+        );
+        assert_that!(align_of::<upb_MessageValue>(), eq(align_of::<*const c_void>()));
+
+        assert_that!(size_of::<upb_MutableMessageValue>(), eq(size_of::<*const c_void>()));
+        assert_that!(align_of::<upb_MutableMessageValue>(), eq(align_of::<*const c_void>()));
     }
 }
