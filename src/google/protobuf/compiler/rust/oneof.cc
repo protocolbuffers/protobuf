@@ -13,6 +13,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
@@ -58,9 +59,15 @@ namespace rust {
 //   }
 // }
 // impl SomeMsg {
-//   pub fn some_oneof() -> SomeOneof {...}
-//   pub fn some_oneof_mut() -> SomeOneofMut {...}
-
+//   pub fn some_oneof(&self) -> SomeOneof {...}
+//   pub fn some_oneof_mut(&mut self) -> SomeOneofMut {...}
+// }
+// impl SomeMsgMut {
+//   pub fn some_oneof(&self) -> SomeOneof {...}
+//   pub fn some_oneof_mut(&mut self) -> SomeOneofMut {...}
+// }
+// impl SomeMsgView {
+//   pub fn some_oneof(&self) -> SomeOneof {...}
 // }
 //
 // An additional "Case" enum which just reflects the corresponding slot numbers
@@ -255,7 +262,8 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
       )rs");
 }
 
-void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
+void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
+                            AccessorCase accessor_case) {
   ctx.Emit(
       {{"oneof_name", RsSafeName(oneof.name())},
        {"view_enum_name", OneofViewEnumRsName(oneof)},
@@ -319,22 +327,35 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof) {
                )rs");
           }
         }},
-       {"case_thunk", ThunkName(ctx, oneof, "case")}},
-      R"rs(
-        pub fn $oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
-          match unsafe { $case_thunk$(self.raw_msg()) } {
-            $view_cases$
-            _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
+       {"case_thunk", ThunkName(ctx, oneof, "case")},
+       {"getter",
+        [&] {
+          ctx.Emit({}, R"rs(
+          pub fn $oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
+            match unsafe { $case_thunk$(self.raw_msg()) } {
+              $view_cases$
+              _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
+            }
           }
-        }
-
-        pub fn $oneof_name$_mut(&mut self) -> $Msg$_::$mut_enum_name$ {
+          )rs");
+        }},
+       {"getter_mut",
+        [&] {
+          if (accessor_case == AccessorCase::VIEW) {
+            return;
+          }
+          ctx.Emit({}, R"rs(
+          pub fn $oneof_name$_mut(&mut self) -> $Msg$_::$mut_enum_name$ {
           match unsafe { $case_thunk$(self.raw_msg()) } {
             $mut_cases$
             _ => $Msg$_::$mut_enum_name$::not_set(std::marker::PhantomData)
           }
         }
-
+        )rs");
+        }}},
+      R"rs(
+        $getter$
+        $getter_mut$
       )rs");
 }
 

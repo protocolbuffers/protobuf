@@ -211,6 +211,7 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
+        ":accessors",
         ":context",
         ":naming",
         "//src/google/protobuf",

@@ -220,47 +220,44 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
     ABSL_LOG(WARNING) << "unsupported map field: " << msg.full_name();
     return;
   }
-  ctx.Emit({{"Msg", RsSafeName(msg.name())},
-            {"Msg::new", [&] { MessageNew(ctx, msg); }},
-            {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
-            {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
-            {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
-            {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
-            {"accessor_fns",
-             [&] {
-               for (int i = 0; i < msg.field_count(); ++i) {
-                 GenerateAccessorMsgImpl(ctx, *msg.field(i),
-                                         AccessorCase::OWNED);
-               }
-             }},
-            {"oneof_accessor_fns",
-             [&] {
-               for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-                 GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i));
-               }
-             }},
-            {"accessor_externs",
-             [&] {
-               for (int i = 0; i < msg.field_count(); ++i) {
-                 GenerateAccessorExternC(ctx, *msg.field(i));
-               }
-             }},
-            {"oneof_externs",
-             [&] {
-               for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-                 GenerateOneofExternC(ctx, *msg.real_oneof_decl(i));
-               }
-             }},
-            {"nested_in_msg",
-             [&] {
-               // If we have no nested types, enums, or oneofs, bail out without
-               // emitting an empty mod SomeMsg_.
-               if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
-                   msg.real_oneof_decl_count() == 0) {
-                 return;
-               }
-               ctx.Emit(
-                   {{"Msg", RsSafeName(msg.name())},
+  ctx.Emit(
+      {{"Msg", RsSafeName(msg.name())},
+       {"Msg::new", [&] { MessageNew(ctx, msg); }},
+       {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
+       {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
+       {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
+       {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
+       {"accessor_fns",
+        [&] {
+          for (int i = 0; i < msg.field_count(); ++i) {
+            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::OWNED);
+          }
+          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                   AccessorCase::OWNED);
+          }
+        }},
+       {"accessor_externs",
+        [&] {
+          for (int i = 0; i < msg.field_count(); ++i) {
+            GenerateAccessorExternC(ctx, *msg.field(i));
+          }
+        }},
+       {"oneof_externs",
+        [&] {
+          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+            GenerateOneofExternC(ctx, *msg.real_oneof_decl(i));
+          }
+        }},
+       {"nested_in_msg",
+        [&] {
+          // If we have no nested types, enums, or oneofs, bail out without
+          // emitting an empty mod SomeMsg_.
+          if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
+              msg.real_oneof_decl_count() == 0) {
+            return;
+          }
+          ctx.Emit({{"Msg", RsSafeName(msg.name())},
                     {"nested_msgs",
                      [&] {
                        for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -288,42 +285,49 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                    $oneofs$
                  }  // mod $Msg$_
                 )rs");
-             }},
-            {"raw_arena_getter_for_message",
-             [&] {
-               if (ctx.is_upb()) {
-                 ctx.Emit({}, R"rs(
+        }},
+       {"raw_arena_getter_for_message",
+        [&] {
+          if (ctx.is_upb()) {
+            ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
                     &self.inner.arena
                   }
                   )rs");
-               }
-             }},
-            {"raw_arena_getter_for_msgmut",
-             [&] {
-               if (ctx.is_upb()) {
-                 ctx.Emit({}, R"rs(
+          }
+        }},
+       {"raw_arena_getter_for_msgmut",
+        [&] {
+          if (ctx.is_upb()) {
+            ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
                     self.inner.arena($pbi$::Private)
                   }
                   )rs");
-               }
-             }},
-            {"accessor_fns_for_views",
-             [&] {
-               for (int i = 0; i < msg.field_count(); ++i) {
-                 GenerateAccessorMsgImpl(ctx, *msg.field(i),
-                                         AccessorCase::VIEW);
-               }
-             }},
-            {"accessor_fns_for_muts",
-             [&] {
-               for (int i = 0; i < msg.field_count(); ++i) {
-                 GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::MUT);
-               }
-             }},
-            {"settable_impl", [&] { MessageSettableValue(ctx, msg); }}},
-           R"rs(
+          }
+        }},
+       {"accessor_fns_for_views",
+        [&] {
+          for (int i = 0; i < msg.field_count(); ++i) {
+            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::VIEW);
+          }
+          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                   AccessorCase::VIEW);
+          }
+        }},
+       {"accessor_fns_for_muts",
+        [&] {
+          for (int i = 0; i < msg.field_count(); ++i) {
+            GenerateAccessorMsgImpl(ctx, *msg.field(i), AccessorCase::MUT);
+          }
+          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+            GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
+                                   AccessorCase::MUT);
+          }
+        }},
+       {"settable_impl", [&] { MessageSettableValue(ctx, msg); }}},
+      R"rs(
         #[allow(non_camel_case_types)]
         //~ TODO: Implement support for debug redaction
         #[derive(Debug)]
@@ -480,8 +484,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
 
           $accessor_fns$
-
-          $oneof_accessor_fns$
         }  // impl $Msg$
 
         //~ We implement drop unconditionally, so that `$Msg$: Drop` regardless
