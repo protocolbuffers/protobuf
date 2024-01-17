@@ -287,9 +287,10 @@ proto_lang_toolchain(
     visibility = ["//visibility:public"],
 )
 
-bootstrap_cc_binary(
-    name = "protoc-gen-upb_minitable",
+bootstrap_cc_library(
+    name = "protoc-gen-upb_minitable_lib",
     srcs = ["protoc-gen-upb_minitable.cc"],
+    hdrs = ["protoc-gen-upb_minitable.h"],
     bootstrap_deps = [
         ":common",
         ":file_layout",
@@ -300,7 +301,7 @@ bootstrap_cc_binary(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//upb:friends"],
     deps = [
         "//upb:base",
         "//upb:mem",
@@ -312,6 +313,25 @@ bootstrap_cc_binary(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+    ],
+)
+
+bootstrap_cc_binary(
+    name = "protoc-gen-upb_minitable",
+    srcs = ["protoc-gen-upb_minitable-main.cc"],
+    bootstrap_deps = [
+        ":file_layout",
+        ":common",
+        ":plugin",
+        ":protoc-gen-upb_minitable_lib",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb:base",
+        "//upb:port",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
