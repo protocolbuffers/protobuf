@@ -134,6 +134,14 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
               {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+              {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
+              {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
+              {"repeated_get_mut_thunk",
+               ThunkName(ctx, msg, "repeated_get_mut")},
+              {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+              {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
+              {"repeated_copy_from_thunk",
+               ThunkName(ctx, msg, "repeated_copy_from")},
           },
           R"rs(
           fn $new_thunk$() -> $pbi$::RawMessage;
@@ -141,6 +149,12 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
           fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbi$::RawMessage, src: $pbi$::RawMessage);
+          fn $repeated_len_thunk$(raw: $pbi$::RawRepeatedField) -> usize;
+          fn $repeated_add_thunk$(raw: $pbi$::RawRepeatedField) -> $pbi$::RawMessage;
+          fn $repeated_get_thunk$(raw: $pbi$::RawRepeatedField, index: usize) -> $pbi$::RawMessage;
+          fn $repeated_get_mut_thunk$(raw: $pbi$::RawRepeatedField, index: usize) -> $pbi$::RawMessage;
+          fn $repeated_clear_thunk$(raw: $pbi$::RawRepeatedField);
+          fn $repeated_copy_from_thunk$(dst: $pbi$::RawRepeatedField, src: $pbi$::RawRepeatedField);
         )rs");
       return;
 
@@ -193,6 +207,7 @@ void MessageSettableValue(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
+      // TODO: Add owned SettableValue impl for upb messages.
       ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
         impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
           fn set_on<'dst>(
@@ -210,6 +225,184 @@ void MessageSettableValue(Context& ctx, const Descriptor& msg) {
       return;
   }
 
+  ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit(
+          {
+              {"Msg", RsSafeName(msg.name())},
+              {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+              {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
+              {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
+              {"repeated_get_mut_thunk",
+               ThunkName(ctx, msg, "repeated_get_mut")},
+              {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+              {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
+              {"repeated_copy_from_thunk",
+               ThunkName(ctx, msg, "repeated_copy_from")},
+          },
+          R"rs(
+        unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
+          fn repeated_len(f: $pb$::View<$pb$::Repeated<Self>>) -> usize {
+            // SAFETY: `f.as_raw()` is a valid `RepeatedPtrField*`.
+            unsafe { $repeated_len_thunk$(f.as_raw($pbi$::Private)) }
+          }
+
+          unsafe fn repeated_set_unchecked(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            i: usize,
+            v: $pb$::View<Self>,
+          ) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+            // - `i < len(f)` is promised by caller.
+            // - `v.raw_msg()` is a valid `const Message&`.
+            unsafe {
+              $copy_from_thunk$(
+                $repeated_get_mut_thunk$(f.as_raw($pbi$::Private), i),
+                v.raw_msg(),
+              );
+            }
+          }
+
+          unsafe fn repeated_get_unchecked(
+            f: $pb$::View<$pb$::Repeated<Self>>,
+            i: usize,
+          ) -> $pb$::View<Self> {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `const RepeatedPtrField&`.
+            // - `i < len(f)` is promised by caller.
+            let msg = unsafe { $repeated_get_thunk$(f.as_raw($pbi$::Private), i) };
+            $pb$::View::<Self>::new($pbi$::Private, msg)
+          }
+          fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+            unsafe { $repeated_clear_thunk$(f.as_raw($pbi$::Private)) };
+          }
+
+          fn repeated_push(mut f: $pb$::Mut<$pb$::Repeated<Self>>, v: $pb$::View<Self>) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+            // - `v.raw_msg()` is a valid `const Message&`.
+            unsafe {
+              let new_elem = $repeated_add_thunk$(f.as_raw($pbi$::Private));
+              $copy_from_thunk$(new_elem, v.raw_msg());
+            }
+          }
+
+          fn repeated_copy_from(
+            src: $pb$::View<$pb$::Repeated<Self>>,
+            mut dest: $pb$::Mut<$pb$::Repeated<Self>>,
+          ) {
+            // SAFETY:
+            // - `dest.as_raw()` is a valid `RepeatedPtrField*`.
+            // - `src.as_raw()` is a valid `const RepeatedPtrField&`.
+            unsafe {
+              $repeated_copy_from_thunk$(dest.as_raw($pbi$::Private), src.as_raw($pbi$::Private));
+            }
+          }
+        }
+
+      )rs");
+      return;
+    case Kernel::kUpb:
+      ctx.Emit(
+          {
+              {"minitable", UpbMinitableName(msg)},
+              {"new_thunk", ThunkName(ctx, msg, "new")},
+          },
+          R"rs(
+        unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
+          fn repeated_len(f: $pb$::View<$pb$::Repeated<Self>>) -> usize {
+            // SAFETY: `f.as_raw()` is a valid `upb_Array*`.
+            unsafe { $pbr$::upb_Array_Size(f.as_raw($pbi$::Private)) }
+          }
+          unsafe fn repeated_set_unchecked(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            i: usize,
+            v: $pb$::View<Self>,
+          ) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `upb_Array*`.
+            // - `i < len(f)` is promised by the caller.
+            let mut dest_msg = unsafe {
+              $pbr$::upb_Array_GetMutable(f.as_raw($pbi$::Private), i).msg
+            }.expect("upb_Array* element should not be NULL");
+
+            // SAFETY:
+            // - `dest_msg` is a valid `upb_Message*`.
+            // - `v.raw_msg()` and `dest_msg` both have message minitable `$minitable$`.
+            unsafe {
+              $pbr$::upb_Message_DeepCopy(
+                dest_msg,
+                v.raw_msg(),
+                $std$::ptr::addr_of!($minitable$),
+                f.raw_arena($pbi$::Private),
+              )
+            };
+          }
+
+          unsafe fn repeated_get_unchecked(
+            f: $pb$::View<$pb$::Repeated<Self>>,
+            i: usize,
+          ) -> $pb$::View<Self> {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `const upb_Array*`.
+            // - `i < len(f)` is promised by the caller.
+            let msg_ptr = unsafe { $pbr$::upb_Array_Get(f.as_raw($pbi$::Private), i).msg_val }
+              .expect("upb_Array* element should not be NULL.");
+            $pb$::View::<Self>::new($pbi$::Private, msg_ptr)
+          }
+
+          fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `upb_Array*`.
+            unsafe {
+              $pbr$::upb_Array_Resize(f.as_raw($pbi$::Private), 0, f.raw_arena($pbi$::Private))
+            };
+          }
+          fn repeated_push(mut f: $pb$::Mut<$pb$::Repeated<Self>>, v: $pb$::View<Self>) {
+            // SAFETY:
+            // - `v.raw_msg()` is a valid `const upb_Message*` with minitable `$minitable$`.
+            let msg_ptr = unsafe {
+              $pbr$::upb_Message_DeepClone(
+                v.raw_msg(),
+                std::ptr::addr_of!($minitable$),
+                f.raw_arena($pbi$::Private),
+              )
+            }.expect("upb_Message_DeepClone failed.");
+
+            // Append new default message to array.
+            // SAFETY:
+            // - `f.as_raw()` is a valid `upb_Array*`.
+            // - `msg_ptr` is a valid `upb_Message*`.
+            unsafe {
+              $pbr$::upb_Array_Append(
+                f.as_raw($pbi$::Private),
+                $pbr$::upb_MessageValue{msg_val: Some(msg_ptr)},
+                f.raw_arena($pbi$::Private),
+              );
+            };
+          }
+
+          fn repeated_copy_from(
+            src: $pb$::View<$pb$::Repeated<Self>>,
+            mut dest: $pb$::Mut<$pb$::Repeated<Self>>,
+          ) {
+              // SAFETY:
+              // - Elements of `src` and `dest` have message minitable `$minitable$`.
+              unsafe {
+                $pbr$::repeated_message_copy_from(src, dest, $std$::ptr::addr_of!($minitable$));
+              }
+          }
+        }
+      )rs");
+      return;
+  }
   ABSL_LOG(FATAL) << "unreachable";
 }
 
@@ -326,7 +519,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                                    AccessorCase::MUT);
           }
         }},
-       {"settable_impl", [&] { MessageSettableValue(ctx, msg); }}},
+       {"settable_impl", [&] { MessageSettableValue(ctx, msg); }},
+       {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }}},
       R"rs(
         #[allow(non_camel_case_types)]
         //~ TODO: Implement support for debug redaction
@@ -389,6 +583,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         $settable_impl$
+        $repeated_impl$
 
         #[derive(Debug)]
         #[allow(dead_code)]
@@ -530,13 +725,19 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
   ctx.Emit(
       {{"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-       {"Msg", msg.name()},
+       {"Msg", RsSafeName(msg.name())},
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
        {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+       {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
+       {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
+       {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
+       {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+       {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
+       {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -573,6 +774,31 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
         void $copy_from_thunk$($QualifiedMsg$* dst, const $QualifiedMsg$* src) {
           dst->CopyFrom(*src);
+        }
+
+        size_t $repeated_len_thunk$(google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field) {
+          return field->size();
+        }
+        const $QualifiedMsg$& $repeated_get_thunk$(
+          google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field,
+          size_t index) {
+          return field->Get(index);
+        }
+        $QualifiedMsg$* $repeated_get_mut_thunk$(
+          google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field,
+          size_t index) {
+          return field->Mutable(index);
+        }
+        $QualifiedMsg$* $repeated_add_thunk$(google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field) {
+          return field->Add();
+        }
+        void $repeated_clear_thunk$(google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field) {
+          field->Clear();
+        }
+        void $repeated_copy_from_thunk$(
+          google::protobuf::RepeatedPtrField<$QualifiedMsg$>& dst,
+          const google::protobuf::RepeatedPtrField<$QualifiedMsg$>& src) {
+          dst = src;
         }
 
         $accessor_thunks$

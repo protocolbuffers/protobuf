@@ -342,6 +342,11 @@ extern "C" {
         mini_table: *const OpaqueMiniTable,
         arena: RawArena,
     );
+    pub fn upb_Message_DeepClone(
+        m: RawMessage,
+        mini_table: *const OpaqueMiniTable,
+        arena: RawArena,
+    ) -> Option<RawMessage>;
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.
@@ -416,11 +421,11 @@ pub enum UpbCType {
 
 extern "C" {
     fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
-    fn upb_Array_Size(arr: RawRepeatedField) -> usize;
-    fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
-    fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
-    fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
-    fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
+    pub fn upb_Array_Size(arr: RawRepeatedField) -> usize;
+    pub fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
+    pub fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
+    pub fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
+    pub fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
     fn upb_Array_MutableDataPtr(arr: RawRepeatedField) -> *mut std::ffi::c_void;
     fn upb_Array_DataPtr(arr: RawRepeatedField) -> *const std::ffi::c_void;
     pub fn upb_Array_GetMutable(arr: RawRepeatedField, i: usize) -> upb_MutableMessageValue;
@@ -510,6 +515,37 @@ impl_repeated_primitives!(
     (i64, int64_val, UpbCType::Int64),
     (u64, uint64_val, UpbCType::UInt64),
 );
+
+/// Copy the contents of `src` into `dest`.
+///
+/// # Safety
+/// - `minitable` must be a pointer to the minitable for message `T`.
+pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
+    src: View<Repeated<T>>,
+    mut dest: Mut<Repeated<T>>,
+    minitable: *const OpaqueMiniTable,
+) {
+    // SAFETY:
+    // - `src.as_raw()` is a valid `const upb_Array*`.
+    // - `dest.as_raw()` is a valid `upb_Array*`.
+    // - Elements of `src` and have message minitable `$minitable$`.
+    unsafe {
+        let size = upb_Array_Size(src.as_raw(Private));
+        if !upb_Array_Resize(dest.as_raw(Private), size, dest.raw_arena(Private)) {
+            panic!("upb_Array_Resize failed.");
+        }
+        for i in 0..size {
+            let src_msg = upb_Array_Get(src.as_raw(Private), i)
+                .msg_val
+                .expect("upb_Array* element should not be NULL");
+            // Avoid the use of `upb_Array_DeepClone` as it creates an
+            // entirely new `upb_Array*` at a new memory address.
+            let cloned_msg = upb_Message_DeepClone(src_msg, minitable, dest.raw_arena(Private))
+                .expect("upb_Message_DeepClone failed.");
+            upb_Array_Set(dest.as_raw(Private), i, upb_MessageValue { msg_val: Some(cloned_msg) });
+        }
+    }
+}
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<i32>`.
 pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
