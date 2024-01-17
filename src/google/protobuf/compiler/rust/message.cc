@@ -582,6 +582,47 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $pbi$::ProxiedWithRawVTable for $Msg$ {
+          type VTable = $pbi$::MessageVTable;
+
+          fn make_view(_private: $pbi$::Private,
+                      _mut_inner: $pbi$::RawVTableMutator<'_, Self>)
+                      -> $pb$::View<'_, Self> {
+            todo!()
+          }
+
+          fn make_mut(_private: $pbi$::Private,
+                      _inner: $pbi$::RawVTableMutator<'_, Self>)
+                      -> $pb$::Mut<'_, Self> {
+            todo!()
+          }
+        }
+
+        impl $pbi$::ProxiedWithRawOptionalVTable for $Msg$ {
+          type OptionalVTable = $pbi$::MessageOptionalVTable;
+
+          fn upcast_vtable(_private: $pbi$::Private,
+                           optional_vtable: &'static Self::OptionalVTable)
+                          -> &'static Self::VTable {
+            &optional_vtable.base
+          }
+        }
+
+        impl $pb$::ProxiedWithPresence for $Msg$ {
+          type PresentMutData<'a> = $pbr$::MessagePresentMutData<'a, $Msg$>;
+          type AbsentMutData<'a> = $pbr$::MessageAbsentMutData<'a, $Msg$>;
+
+          fn clear_present_field(_present_mutator: Self::PresentMutData<'_>)
+             -> Self::AbsentMutData<'_> {
+            todo!();
+          }
+
+          fn set_absent_to_default(_absent_mutator: Self::AbsentMutData<'_>)
+             -> Self::PresentMutData<'_> {
+           todo!();
+          }
+        }
+
         $settable_impl$
         $repeated_impl$
 

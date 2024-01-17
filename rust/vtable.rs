@@ -505,3 +505,12 @@ impl<'msg, T: PrimitiveWithRawVTable> RawVTableOptionalMutatorData<'msg, T> {
         self
     }
 }
+
+#[derive(Debug)]
+#[allow(unused)]
+pub struct MessageOptionalVTable {
+    pub base: MessageVTable,
+}
+
+#[derive(Debug)]
+pub struct MessageVTable {}

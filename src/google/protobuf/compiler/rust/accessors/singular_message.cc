@@ -87,7 +87,15 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                 pub fn $field$_mut(&mut self) -> $msg_type$Mut {
                   $getter_mut_body$
-                })rs");
+                }
+
+                //~ TODO: b/319472103 - delete $field_mut$, then rename
+                //~ this to $field$_mut and update all unit tests
+                pub fn $field$_entry(&mut self)
+                    -> $pb$::FieldEntry<'_, $msg_type$> {
+                  todo!()
+                }
+                )rs");
              }},
             {"clearer",
              [&] {
