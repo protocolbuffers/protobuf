@@ -820,7 +820,7 @@ static void upb_Decoder_AddKnownMessageSetItem(
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
   upb_Message* submsg = _upb_Decoder_NewSubMessage(
-      d, &ext->ext->UPB_PRIVATE(sub), upb_MiniTableExtension_AsField(ext->ext),
+      d, &ext->ext->UPB_PRIVATE(sub), &ext->ext->UPB_PRIVATE(field),
       (upb_TaggedMessagePtr*)&ext->data);
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
@@ -930,13 +930,13 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
 
   size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
   if (idx < t->UPB_PRIVATE(dense_below)) {
-    /* Fastest case: index into dense fields. */
+    // Fastest case: index into dense fields.
     goto found;
   }
 
   if (t->UPB_PRIVATE(dense_below) < t->UPB_PRIVATE(field_count)) {
-    /* Linear search non-dense fields. Resume scanning from last_field_index
-     * since fields are usually in order. */
+    // Linear search non-dense fields. Resume scanning from last_field_index
+    // since fields are usually in order.
     size_t last = *last_field_index;
     for (idx = last; idx < t->UPB_PRIVATE(field_count); idx++) {
       if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
@@ -956,7 +956,7 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
       case kUpb_ExtMode_Extendable: {
         const upb_MiniTableExtension* ext =
             upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-        if (ext) return upb_MiniTableExtension_AsField(ext);
+        if (ext) return &ext->UPB_PRIVATE(field);
         break;
       }
       case kUpb_ExtMode_IsMessageSet:
@@ -969,7 +969,7 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
     }
   }
 
-  return &none; /* Unknown field. */
+  return &none;  // Unknown field.
 
 found:
   UPB_ASSERT(t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number);
