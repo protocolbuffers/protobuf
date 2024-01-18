@@ -7,6 +7,10 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
+load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
@@ -81,6 +85,44 @@ cc_library(
         "//upb/port",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
+    ],
+)
+
+proto_library(
+    name = "encode_test_proto",
+    srcs = ["encode_test.proto"],
+)
+
+upb_c_proto_library(
+    name = "encode_test_upb_c_proto",
+    deps = [":encode_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "encode_test_upb_reflection_proto",
+    deps = [":encode_test_proto"],
+)
+
+cc_proto_library(
+    name = "encode_test_cc_proto",
+    deps = [":encode_test_proto"],
+)
+
+cc_test(
+    name = "encode_test",
+    srcs = ["encode_test.cc"],
+    deps = [
+        ":encode_test_cc_proto",
+        ":encode_test_upb_c_proto",
+        ":encode_test_upb_reflection_proto",
+        ":text",
+        "//src/google/protobuf",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/reflection",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
