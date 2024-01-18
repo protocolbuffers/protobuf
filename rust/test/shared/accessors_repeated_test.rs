@@ -7,6 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
+use protobuf::ViewProxy;
 use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_, TestAllTypes_::NestedMessage};
 
 macro_rules! generate_repeated_numeric_test {
@@ -38,7 +39,7 @@ macro_rules! generate_repeated_numeric_test {
                   elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
               );
               assert_that!(
-                  (*mutator).into_iter().collect::<Vec<_>>(),
+                  mutator.as_view().into_iter().collect::<Vec<_>>(),
                   elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
               );
 
@@ -60,7 +61,7 @@ macro_rules! generate_repeated_numeric_test {
               for i in 0..5 {
                   mutator2.push(i as $t);
               }
-              protobuf::MutProxy::set(&mut mutator, *mutator2);
+              protobuf::MutProxy::set(&mut mutator, mutator2.as_view());
 
               assert_that!(
                   mutator.iter().collect::<Vec<_>>(),
@@ -103,7 +104,7 @@ fn test_repeated_bool_accessors() {
 
     assert_that!(mutator.iter().collect::<Vec<_>>(), elements_are![eq(false), eq(true), eq(false)]);
     assert_that!(
-        (*mutator).into_iter().collect::<Vec<_>>(),
+        mutator.as_view().into_iter().collect::<Vec<_>>(),
         elements_are![eq(false), eq(true), eq(false)]
     );
 
@@ -141,7 +142,7 @@ fn test_repeated_enum_accessors() {
         elements_are![eq(NestedEnum::Bar), eq(NestedEnum::Baz), eq(NestedEnum::Foo)]
     );
     assert_that!(
-        (*mutator).into_iter().collect::<Vec<_>>(),
+        mutator.as_view().into_iter().collect::<Vec<_>>(),
         elements_are![eq(NestedEnum::Bar), eq(NestedEnum::Baz), eq(NestedEnum::Foo)]
     );
 
@@ -160,7 +161,7 @@ fn test_repeated_bool_set() {
     for _ in 0..5 {
         mutator2.push(true);
     }
-    protobuf::MutProxy::set(&mut mutator, *mutator2);
+    protobuf::MutProxy::set(&mut mutator, mutator2.as_view());
 
     assert_that!(mutator.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
 }

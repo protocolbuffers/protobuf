@@ -53,19 +53,9 @@ pub struct RepeatedMut<'msg, T: ?Sized> {
 
 unsafe impl<'msg, T: ?Sized> Sync for RepeatedMut<'msg, T> {}
 
-impl<'msg, T: ?Sized> Deref for RepeatedMut<'msg, T> {
-    type Target = RepeatedView<'msg, T>;
-    fn deref(&self) -> &Self::Target {
-        // SAFETY:
-        //   - `RepeatedView<'msg, T>` is `#[repr(transparent)]` over
-        //     `RawRepeatedField`.
-        unsafe { &*(&self.inner.raw as *const RawRepeatedField as *const RepeatedView<'msg, T>) }
-    }
-}
-
 impl<'msg, T: ?Sized> Debug for RepeatedMut<'msg, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RepeatedMut").field("raw", &self.raw).finish()
+        f.debug_struct("RepeatedMut").field("raw", &self.inner.raw).finish()
     }
 }
 
@@ -146,6 +136,32 @@ where
         self.inner.raw
     }
 
+    /// Gets the length of the repeated field.
+    pub fn len(&self) -> usize {
+        self.as_view().len()
+    }
+
+    /// Returns true if the repeated field has no values.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Gets the value at `index`.
+    ///
+    /// Returns `None` if `index > len`.
+    pub fn get(&self, index: usize) -> Option<View<T>> {
+        self.as_view().get(index)
+    }
+
+    /// Gets the value at `index` without bounds-checking.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    pub unsafe fn get_unchecked(&self, index: usize) -> View<T> {
+        // SAFETY: in-bounds as promised
+        unsafe { self.as_view().get_unchecked(index) }
+    }
+
     /// Appends `val` to the end of the repeated field.
     pub fn push(&mut self, val: View<T>) {
         T::repeated_push(self.as_mut(), val);
@@ -173,12 +189,9 @@ where
         unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
     }
 
-    /// Returns the value at `index`.
-    // This is defined as an inherent function to prevent `MutProxy::get` from being
-    // preferred over `RepeatedView::get`. The former gets priority as it does
-    // not require a deref.
-    pub fn get(&self, index: usize) -> Option<View<T>> {
-        self.as_view().get(index)
+    /// Iterates over the values in the repeated field.
+    pub fn iter(&self) -> RepeatedIter<T> {
+        self.as_view().into_iter()
     }
 
     /// Copies from the `src` repeated field into this one.
@@ -343,14 +356,14 @@ where
     type Proxied = Repeated<T>;
 
     fn as_view(&self) -> View<'_, Self::Proxied> {
-        **self
+        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
     }
 
     fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
         'msg: 'shorter,
     {
-        *self.into_mut::<'shorter>()
+        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
     }
 }
 
