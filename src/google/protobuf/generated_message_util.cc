@@ -12,8 +12,8 @@
 #include "google/protobuf/generated_message_util.h"
 
 #include <atomic>
+#include <cstdint>
 #include <limits>
-#include <vector>
 
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
@@ -51,19 +51,25 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
 extern "C" {
-// We add a single dummy writer to guarantee the section is never empty.
-WeakDefaultWriter dummy_writer
-    __attribute__((section("pb_defaults"))) = {&dummy_writer.source, nullptr};
-// When using --descriptor_implicit_weak_messages we expect the writer objects
-// to live in the `pb_defaults` section. We load them all using the
+// When using --descriptor_implicit_weak_messages we expect the default instance
+// objects to live in the `pb_defaults` section. We load them all using the
 // __start/__end symbols provided by the linker.
-extern const WeakDefaultWriter __start_pb_defaults;
-extern const WeakDefaultWriter __stop_pb_defaults;
+// Each object is its own type and size, so we use a `char` to load them
+// appropriately. These are weak because the section might not exist at all.
+__attribute__((weak)) extern const char __start_pb_defaults;
+__attribute__((weak)) extern const char __stop_pb_defaults;
 }
 static void InitWeakDefaults() {
-  StrongPointer(&dummy_writer);  // force link the dummy writer.
-  for (auto it = &__start_pb_defaults; it != &__stop_pb_defaults; ++it) {
-    *it->destination = it->source;
+  // We don't know the size of each object, but we know the layout of the tail.
+  // It contains a WeakDescriptorDefaultTail object.
+  // As such, we iterate the section backwards.
+  const char* start = &__start_pb_defaults;
+  const char* end = &__stop_pb_defaults;
+  while (start != end) {
+    auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(end) - 1;
+    end -= tail->size;
+    const Message* instance = reinterpret_cast<const Message*>(end);
+    *tail->target = instance;
   }
 }
 #else

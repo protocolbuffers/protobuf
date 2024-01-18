@@ -213,7 +213,6 @@ static const ::_pbi::MigrationSchema
         {34, 46, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
         {50, 63, -1, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::compiler::_Version_default_instance_._instance,
     &::google::protobuf::compiler::_CodeGeneratorRequest_default_instance_._instance,

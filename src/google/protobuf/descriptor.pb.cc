@@ -1622,7 +1622,6 @@ static const ::_pbi::MigrationSchema
         {552, 565, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
         {570, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_FileDescriptorSet_default_instance_._instance,
     &::google::protobuf::_FileDescriptorProto_default_instance_._instance,

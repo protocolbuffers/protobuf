@@ -741,10 +741,16 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // decoupling the messages from the TU-wide `file_default_instances` array.
 // This way there are no static initializers in the TU pointing to any part of
 // the generated classes and they can be GC'd by the linker.
-// Instead, we inject the surviving messages by having `WeakDefaultWriter`
-// objects in a special `pb_defaults` section. The runtime will iterate this
-// section to see the list of all live objects and put them back into the
-// `file_default_instances` array.
+// Instead of direct use, we have two ways to weakly refer to the default
+// instances:
+//  - Each default instance is located on its own section, and we use a
+//    `&__start_section_name` pointer to access it. This is a reference that
+//    allows GC to happen. This step is used with dynamic linking.
+//  - We also allow merging all these sections at link time into the
+//    `pb_defaults` section. All surviving messages will be injected back into
+//    the `file_default_instances` when the runtime is initialized. This is
+//    useful when doing static linking and you want to avoid having an unbounded
+//    number of sections.
 //
 // Any object that gets GC'd will have a `nullptr` in the respective slot in the
 // `file_default_instances` array. The runtime will recognize this and will
@@ -758,12 +764,10 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // friends.
 //
 // A "pin" is adding dependency edge in the graph for the GC.
-// The `WeakDefaultWriter`, the default instance, and vtable of a message all
-// pin each other. If anyone lives, they all do. This is important.
-// The `WeakDefaultWriter` pins the default instance of the message by using it.
-// The default instance of the message pins the vtable trivially by using it.
-// The vtable pins the `WeakDefaultWriter` by having a StrongPointer into it
-// from any of the virtual functions.
+// The default instance and vtable of a message pin each other. If any one
+// lives, they both do. This is important. The default instance of the message
+// pins the vtable trivially by using it. The vtable pins the default instance
+// by having a StrongPointer into it from any of the virtual functions.
 //
 // All parent messages pin their children.
 // SPEED messages do this implicitly via the TcParseTable, which contain
@@ -786,11 +790,11 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);
 
-// Section name to be used for the DefaultWriter object for implicit weak
-// descriptor objects.
-// See `UsingImplicitWeakDescriptor` above.
-std::string WeakDefaultWriterSection(const Descriptor* descriptor,
-                                     const Options& options);
+// Section name to be used for the default instance for implicit weak descriptor
+// objects. See `UsingImplicitWeakDescriptor` above.
+std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                       int index_in_file_messages,
+                                       const Options& options);
 
 // Indicates whether we should use implicit weak fields for this file.
 bool UsingImplicitWeakFields(const FileDescriptor* file,

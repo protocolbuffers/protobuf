@@ -1488,22 +1488,18 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
          !options.opensource_runtime;
 }
 
-std::string WeakDefaultWriterSection(const Descriptor* descriptor,
-                                     const Options& options) {
+std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                       int index_in_file_messages,
+                                       const Options& options) {
   const auto* file = descriptor->file();
 
-  // To make a compact name we use the index of the object in its parent instead
-  // of its name, recursively until we reach the root.
-  // So the name could be `pb_def_1_2_1_0_HASH` instead of
+  // To make a compact name we use the index of the object in its file
+  // of its name.
+  // So the name could be `pb_def_3_HASH` instead of
   // `pd_def_VeryLongClassName_WithNesting_AndMoreNames_HASH`
   // We need a know common prefix to merge the sections later on.
-  std::string prefix = "pb_def";
-  do {
-    absl::StrAppend(&prefix, "_", descriptor->index());
-    descriptor = descriptor->containing_type();
-  } while (descriptor != nullptr);
-
-  return UniqueName(prefix, file, options);
+  return UniqueName(absl::StrCat("pb_def_", index_in_file_messages), file,
+                    options);
 }
 
 bool UsingImplicitWeakFields(const FileDescriptor* file,

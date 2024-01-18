@@ -2162,12 +2162,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
-  const auto pin_weak_writer = [&] {
+  const auto pin_weak_descriptor = [&] {
     if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
-    p->Emit({{"index", index_in_file_messages_}},
-            R"cc(
-              ::_pbi::StrongPointer(&pb_$index$_weak_);
-            )cc");
+    p->Emit(
+        R"cc(
+          ::_pbi::StrongPointer(&_$classname$_default_instance_);
+        )cc");
 
     // For CODE_SIZE types, we need to pin the submessages too.
     // SPEED types will pin them via the TcParse table automatically.
@@ -2194,12 +2194,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       p->Emit(
           {
-              {"pin_weak_writer", pin_weak_writer},
+              {"pin_weak_descriptor", pin_weak_descriptor},
               {"index", index_in_file_messages_},
           },
           R"cc(
             ::$proto_ns$::Metadata $classname$::GetMetadata() const {
-              $pin_weak_writer$;
+              $pin_weak_descriptor$;
               return ::_pbi::AssignDescriptors(&$desc_table$_getter,
                                                &$desc_table$_once,
                                                $file_level_metadata$[$index$]);
@@ -2329,13 +2329,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     p->Emit(
         {
-            {"pin_weak_writer", pin_weak_writer},
+            {"pin_weak_descriptor", pin_weak_descriptor},
             {"index", index_in_file_messages_},
         },
         R"cc(
           ::$proto_ns$::Metadata $classname$::GetMetadata() const {
             $annotate_reflection$;
-            $pin_weak_writer$;
+            $pin_weak_descriptor$;
             return ::_pbi::AssignDescriptors(&$desc_table$_getter,
                                              &$desc_table$_once,
                                              $file_level_metadata$[$index$]);

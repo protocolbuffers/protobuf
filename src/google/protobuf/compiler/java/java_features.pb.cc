@@ -68,7 +68,6 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, 10, -1, sizeof(::pb::JavaFeatures)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::pb::_JavaFeatures_default_instance_._instance,
 };

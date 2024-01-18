@@ -617,6 +617,33 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
         )cc");
+  } else if (UsingImplicitWeakDescriptor(file_, options_)) {
+    p->Emit(
+        {
+            {"index", generator->index_in_file_messages()},
+            {"type", DefaultInstanceType(generator->descriptor(), options_)},
+            {"name", DefaultInstanceName(generator->descriptor(), options_)},
+            {"class", ClassName(generator->descriptor())},
+            {"section", WeakDefaultInstanceSection(
+                            generator->descriptor(),
+                            generator->index_in_file_messages(), options_)},
+        },
+        R"cc(
+          struct $type$ {
+            PROTOBUF_CONSTEXPR $type$() : _instance(::_pbi::ConstantInitialized{}) {}
+            ~$type$() {}
+            //~ _instance must be the first member.
+            union {
+              $class$ _instance;
+            };
+            ::_pbi::WeakDescriptorDefaultTail tail = {
+                file_default_instances + $index$, sizeof($type$)};
+          };
+
+          PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$
+              __attribute__((section("$section$")));
+        )cc");
   } else {
     p->Emit(
         {
@@ -735,6 +762,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     const CrossFileReferences& refs, io::Printer* p) {
   {
     NamespaceOpener ns(p);
+
     for (auto instance : refs.weak_default_instances) {
       ns.ChangeTo(Namespace(instance, options_));
 
@@ -866,6 +894,50 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, p);
+
+  // When in weak descriptor mode, we generate the file_default_instances before
+  // the default instances.
+  if (UsingImplicitWeakDescriptor(file_, options_) &&
+      !message_generators_.empty()) {
+    p->Emit(
+        {
+            {"weak_defaults",
+             [&] {
+               for (auto& gen : message_generators_) {
+                 p->Emit(
+                     {
+                         {"class", QualifiedClassName(gen->descriptor())},
+                         {"section",
+                          WeakDefaultInstanceSection(
+                              gen->descriptor(), gen->index_in_file_messages(),
+                              options_)},
+                     },
+                     R"cc(
+                       extern const $class$ __start_$section$
+                           __attribute__((weak));
+                     )cc");
+               }
+             }},
+            {"defaults",
+             [&] {
+               for (auto& gen : message_generators_) {
+                 p->Emit({{"section",
+                           WeakDefaultInstanceSection(
+                               gen->descriptor(), gen->index_in_file_messages(),
+                               options_)}},
+                         R"cc(
+                           &__start_$section$,
+                         )cc");
+               }
+             }},
+        },
+        R"cc(
+          $weak_defaults$;
+          static const ::_pb::Message* file_default_instances[] = {
+              $defaults$,
+          };
+        )cc");
+  }
 
   if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
@@ -1004,8 +1076,6 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
     std::vector<std::pair<size_t, size_t>> offsets;
     offsets.reserve(message_generators_.size());
-    bool has_implicit_weak_descriptors =
-        UsingImplicitWeakDescriptor(file_, options_);
 
     p->Emit(
         {
@@ -1024,50 +1094,6 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                  offset += offsets[i].first;
                }
              }},
-            {"weak_defaults",
-             [&] {
-               if (!has_implicit_weak_descriptors) return;
-               int index = 0;
-               for (auto& gen : message_generators_) {
-                 p->Emit(
-                     {
-                         {"index", index++},
-                         {"ns", Namespace(gen->descriptor(), options_)},
-                         {"class", ClassName(gen->descriptor())},
-                         {"section", WeakDefaultWriterSection(gen->descriptor(),
-                                                              options_)},
-                     },
-                     R"cc(
-                       constexpr ::_pbi::WeakDefaultWriter pb_$index$_weak_
-                           __attribute__((__nodebug__))
-                           __attribute__((section("$section$"))) = {
-                               file_default_instances + $index$,
-                               &$ns$::_$class$_default_instance_._instance};
-                     )cc");
-               }
-             }},
-            {"defaults",
-             [&] {
-               for (auto& gen : message_generators_) {
-                 if (has_implicit_weak_descriptors) {
-                   p->Emit(R"cc(
-                     nullptr,
-                   )cc");
-                 } else {
-                   p->Emit(
-                       {
-                           {"ns", Namespace(gen->descriptor(), options_)},
-                           {"class", ClassName(gen->descriptor())},
-                       },
-                       R"cc(
-                         &$ns$::_$class$_default_instance_._instance,
-                       )cc");
-                 }
-               }
-             }},
-            // When we have implicit weak descriptors we make the array mutable
-            // for dynamic initialization.
-            {"const", has_implicit_weak_descriptors ? "" : "const"},
         },
         R"cc(
           const ::uint32_t
@@ -1080,12 +1106,27 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
               schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
                   $schemas$,
           };
-
-          static const ::_pb::Message* $const $file_default_instances[] = {
-              $defaults$,
-          };
-          $weak_defaults$;
         )cc");
+    if (!UsingImplicitWeakDescriptor(file_, options_)) {
+      p->Emit({{"defaults",
+                [&] {
+                  for (auto& gen : message_generators_) {
+                    p->Emit(
+                        {
+                            {"ns", Namespace(gen->descriptor(), options_)},
+                            {"class", ClassName(gen->descriptor())},
+                        },
+                        R"cc(
+                          &$ns$::_$class$_default_instance_._instance,
+                        )cc");
+                  }
+                }}},
+              R"cc(
+                static const ::_pb::Message* const file_default_instances[] = {
+                    $defaults$,
+                };
+              )cc");
+    }
   } else {
     // Ee still need these symbols to exist.
     //
