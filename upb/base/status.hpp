@@ -8,6 +8,8 @@
 #ifndef UPB_BASE_STATUS_HPP_
 #define UPB_BASE_STATUS_HPP_
 
+#ifdef __cplusplus
+
 #include "upb/base/status.h"
 
 namespace upb {
@@ -46,5 +48,7 @@ class Status final {
 };
 
 }  // namespace upb
+
+#endif  // __cplusplus
 
 #endif  // UPB_BASE_STATUS_HPP_

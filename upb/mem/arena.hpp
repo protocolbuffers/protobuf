@@ -8,6 +8,8 @@
 #ifndef UPB_MEM_ARENA_HPP_
 #define UPB_MEM_ARENA_HPP_
 
+#ifdef __cplusplus
+
 #include <memory>
 
 #include "upb/mem/arena.h"
@@ -50,5 +52,7 @@ class InlinedArena : public Arena {
 };
 
 }  // namespace upb
+
+#endif  // __cplusplus
 
 #endif  // UPB_MEM_ARENA_HPP_
