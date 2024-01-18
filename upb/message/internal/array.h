@@ -120,6 +120,12 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_Array_Size)(const struct upb_Array* arr) {
   return arr->UPB_ONLYBITS(size);
 }
 
+UPB_INLINE size_t
+UPB_PRIVATE(_upb_Array_ElementSize)(const struct upb_Array* arr) {
+  const size_t lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
+  return 1 << lg2;
+}
+
 // LINT.ThenChange(
 //  GoogleInternalName1,
 //)

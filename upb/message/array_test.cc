@@ -17,6 +17,7 @@ TEST(ArrayTest, Resize) {
 
   upb_Array* array = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
   EXPECT_TRUE(array);
+  EXPECT_EQ(upb_Array_ElementSize(array), 4);
 
   for (int i = 0; i < 10; i++) {
     upb_MessageValue mv;

@@ -32,6 +32,11 @@ UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr) {
   return UPB_PRIVATE(_upb_Array_Size)(arr);
 }
 
+// Returns the size of each element in the array, in bytes.
+UPB_API_INLINE size_t upb_Array_ElementSize(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_ElementSize)(arr);
+}
+
 // Returns the given element, which must be within the array's current size.
 UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
 
