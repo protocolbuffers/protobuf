@@ -85,26 +85,27 @@ void PrintEnumVerifierLogic(
                  absl::StrCat(enum_verifier_string, terminating_string));
 }
 
-void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime) {
-  if (oss_runtime) {
-    const auto& version = GetProtobufJavaVersion();
-    printer->Print(
-        "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
-        "  com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,\n"
-        "  $major$,\n"
-        "  $minor$,\n"
-        "  $patch$,\n"
-        "  $suffix$);\n",
-        "major", absl::StrCat("/* major= */ ", version.major()), "minor",
-        absl::StrCat("/* minor= */ ", version.minor()), "patch",
-        absl::StrCat("/* patch= */ ", version.patch()), "suffix",
-        absl::StrCat("/* suffix= */ \"", version.suffix(), "\""));
-  } else {
-    printer->Print(
-        "com.google.protobuf.RuntimeVersion.validateProtobufGencodeDomain(\n"
-        "  "
-        "com.google.protobuf.RuntimeVersion.RuntimeDomain.GOOGLE_INTERNAL);\n");
-  }
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  bool enforce_lite,
+                                  absl::string_view location) {
+  const auto& version = GetProtobufJavaVersion(oss_runtime);
+  printer->Print(
+      "com.google.protobuf.RuntimeVersion$lite$.validateProtobuf$lite$"
+      "GencodeVersion("
+      "\n"
+      "  com.google.protobuf.RuntimeVersionLite.RuntimeDomain.$domain$,\n"
+      "  $major$,\n"
+      "  $minor$,\n"
+      "  $patch$,\n"
+      "  $suffix$,\n"
+      "  $location$);\n",
+      "domain", oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "lite",
+      enforce_lite ? "Lite" : "", "major",
+      absl::StrCat("/* major= */ ", version.major()), "minor",
+      absl::StrCat("/* minor= */ ", version.minor()), "patch",
+      absl::StrCat("/* patch= */ ", version.patch()), "suffix",
+      absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+      absl::StrCat("/* location= */ \"", location, "\""));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,

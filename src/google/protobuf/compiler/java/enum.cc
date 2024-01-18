@@ -113,7 +113,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
   printer->Print("static {\n");
   printer->Indent();
-  PrintGencodeVersionValidator(printer, context_->options().opensource_runtime);
+  PrintGencodeVersionValidator(printer, context_->options().opensource_runtime,
+                               context_->EnforceLite(),
+                               descriptor_->full_name());
   printer->Outdent();
   printer->Print("}\n");
 
