@@ -11,7 +11,6 @@ use crate::{
     __runtime::InnerMapMut,
 };
 use std::marker::PhantomData;
-use std::ops::Deref;
 
 #[repr(transparent)]
 pub struct MapView<'msg, K: ?Sized, V: ?Sized> {
@@ -24,15 +23,6 @@ impl<'msg, K: ?Sized, V: ?Sized> Copy for MapView<'msg, K, V> {}
 impl<'msg, K: ?Sized, V: ?Sized> Clone for MapView<'msg, K, V> {
     fn clone(&self) -> Self {
         *self
-    }
-}
-
-impl<'msg, K: ?Sized, V: ?Sized> Deref for MapMut<'msg, K, V> {
-    type Target = MapView<'msg, K, V>;
-    fn deref(&self) -> &Self::Target {
-        // SAFETY:
-        //   - `MapView<'msg, K, V>` is `#[repr(transparent)]` over `RawMap`.
-        unsafe { &*(&self.inner.raw as *const RawMap as *const MapView<'msg, K, V>) }
     }
 }
 
@@ -231,6 +221,14 @@ where
     /// - `inner` must be valid to read and write from for `'msg`.
     pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'msg>) -> Self {
         Self { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+    }
+
+    pub fn len(self) -> usize {
+        self.as_view().len()
+    }
+
+    pub fn is_empty(self) -> bool {
+        self.len() == 0
     }
 
     pub fn insert<'a, 'b>(
