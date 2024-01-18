@@ -50,16 +50,26 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+
+// We add a single dummy entry to guarantee the section is never empty.
+struct DummyWeakDefault {
+  const Message* m;
+  WeakDescriptorDefaultTail tail;
+};
+DummyWeakDefault dummy_weak_default __attribute__((section("pb_defaults"))) = {
+    nullptr, {&dummy_weak_default.m, sizeof(dummy_weak_default)}};
+
 extern "C" {
 // When using --descriptor_implicit_weak_messages we expect the default instance
 // objects to live in the `pb_defaults` section. We load them all using the
 // __start/__end symbols provided by the linker.
 // Each object is its own type and size, so we use a `char` to load them
-// appropriately. These are weak because the section might not exist at all.
-__attribute__((weak)) extern const char __start_pb_defaults;
-__attribute__((weak)) extern const char __stop_pb_defaults;
+// appropriately.
+extern const char __start_pb_defaults;
+extern const char __stop_pb_defaults;
 }
 static void InitWeakDefaults() {
+  StrongPointer(&dummy_weak_default);  // force link the dummy entry.
   // We don't know the size of each object, but we know the layout of the tail.
   // It contains a WeakDescriptorDefaultTail object.
   // As such, we iterate the section backwards.
