@@ -537,15 +537,15 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         unsafe impl Sync for $Msg$ {}
 
         impl $pb$::Proxied for $Msg$ {
-          type View<'a> = $Msg$View<'a>;
-          type Mut<'a> = $Msg$Mut<'a>;
+          type View<'msg> = $Msg$View<'msg>;
+          type Mut<'msg> = $Msg$Mut<'msg>;
         }
 
         #[derive(Debug, Copy, Clone)]
         #[allow(dead_code)]
-        pub struct $Msg$View<'a> {
+        pub struct $Msg$View<'msg> {
           msg: $pbi$::RawMessage,
-          _phantom: $Phantom$<&'a ()>,
+          _phantom: $Phantom$<&'msg ()>,
         }
 
         #[allow(dead_code)]
@@ -571,13 +571,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         unsafe impl Sync for $Msg$View<'_> {}
         unsafe impl Send for $Msg$View<'_> {}
 
-        impl<'a> $pb$::ViewProxy<'a> for $Msg$View<'a> {
+        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$View<'msg> {
           type Proxied = $Msg$;
 
-          fn as_view(&self) -> $pb$::View<'a, $Msg$> {
+          fn as_view(&self) -> $pb$::View<'msg, $Msg$> {
             *self
           }
-          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'msg: 'shorter {
             self
           }
         }
@@ -629,8 +629,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         #[derive(Debug)]
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
-        pub struct $Msg$Mut<'a> {
-          inner: $pbr$::MutatorMessageRef<'a>,
+        pub struct $Msg$Mut<'msg> {
+          inner: $pbr$::MutatorMessageRef<'msg>,
         }
 
         #[allow(dead_code)]
@@ -671,19 +671,19 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         //   splitting, synchronous access of an arena is impossible.
         unsafe impl Sync for $Msg$Mut<'_> {}
 
-        impl<'a> $pb$::MutProxy<'a> for $Msg$Mut<'a> {
+        impl<'msg> $pb$::MutProxy<'msg> for $Msg$Mut<'msg> {
           fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
             $Msg$Mut { inner: self.inner }
           }
-          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'a : 'shorter { self }
+          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'msg : 'shorter { self }
         }
 
-        impl<'a> $pb$::ViewProxy<'a> for $Msg$Mut<'a> {
+        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
             $Msg$View { msg: self.raw_msg(), _phantom: std::marker::PhantomData }
           }
-          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'a: 'shorter {
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'msg: 'shorter {
             $Msg$View { msg: self.raw_msg(), _phantom: std::marker::PhantomData }
           }
         }
