@@ -23,39 +23,32 @@ namespace rust {
 
 void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                AccessorCase accessor_case) const {
-  std::string hazzer_thunk = ThunkName(ctx, field, "has");
-  std::string getter_thunk = ThunkName(ctx, field, "get");
-  std::string setter_thunk = ThunkName(ctx, field, "set");
-  std::string proxied_type = RsTypePath(ctx, field);
-
-  auto transform_view = [&] {
-    if (field.type() == FieldDescriptor::TYPE_STRING) {
-      ctx.Emit(R"rs(
-        // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
-        unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
-      )rs");
-    } else {
-      ctx.Emit("view");
-    }
-  };
   ctx.Emit(
       {
           {"field", RsSafeName(field.name())},
-          {"hazzer_thunk", hazzer_thunk},
-          {"getter_thunk", getter_thunk},
-          {"setter_thunk", setter_thunk},
-          {"proxied_type", proxied_type},
-          {"transform_view", transform_view},
+          {"hazzer_thunk", ThunkName(ctx, field, "has")},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"setter_thunk", ThunkName(ctx, field, "set")},
+          {"clearer_thunk", ThunkName(ctx, field, "clear")},
+          {"proxied_type", RsTypePath(ctx, field)},
+          {"transform_view",
+           [&] {
+             if (field.type() == FieldDescriptor::TYPE_STRING) {
+               ctx.Emit(R"rs(
+                // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
+                unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
+              )rs");
+             } else {
+               ctx.Emit("view");
+             }
+           }},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"view_self", ViewReceiver(accessor_case)},
           {"field_optional_getter",
            [&] {
              if (!field.is_optional()) return;
              if (!field.has_presence()) return;
-             ctx.Emit({{"hazzer_thunk", hazzer_thunk},
-                       {"getter_thunk", getter_thunk},
-                       {"transform_view", transform_view}},
-                      R"rs(
+             ctx.Emit(R"rs(
             pub fn $field$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
                 let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
@@ -73,10 +66,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (field.has_presence()) {
                ctx.Emit(
                    {
-                       {"field", RsSafeName(field.name())},
-                       {"proxied_type", proxied_type},
                        {"default_val", DefaultValue(ctx, field)},
-                       {"view_type", proxied_type},
                        {"transform_field_entry",
                         [&] {
                           if (field.type() == FieldDescriptor::TYPE_STRING) {
@@ -89,10 +79,6 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                             ctx.Emit("out");
                           }
                         }},
-                       {"hazzer_thunk", hazzer_thunk},
-                       {"getter_thunk", getter_thunk},
-                       {"setter_thunk", setter_thunk},
-                       {"clearer_thunk", ThunkName(ctx, field, "clear")},
                    },
                    R"rs(
             pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
@@ -118,11 +104,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             }
           )rs");
              } else {
-               ctx.Emit({{"field", RsSafeName(field.name())},
-                         {"proxied_type", proxied_type},
-                         {"getter_thunk", getter_thunk},
-                         {"setter_thunk", setter_thunk}},
-                        R"rs(
+               ctx.Emit(R"rs(
               pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
                 static VTABLE: $pbi$::BytesMutVTable =
                   $pbi$::BytesMutVTable::new(
