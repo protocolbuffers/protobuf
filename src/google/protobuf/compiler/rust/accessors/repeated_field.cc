@@ -24,13 +24,15 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                               AccessorCase accessor_case) const {
   ctx.Emit({{"field", RsSafeName(field.name())},
             {"RsType", RsTypePath(ctx, field)},
+            {"view_lifetime", ViewLifetime(accessor_case)},
+            {"view_self", ViewReceiver(accessor_case)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $RsType$> {
+                    pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
                         $getter_thunk$(
                           self.raw_msg(),
@@ -46,7 +48,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
                } else {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$(&self) -> $pb$::RepeatedView<'_, $RsType$> {
+                    pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
                         $pb$::RepeatedView::from_raw(
                           $pbi$::Private,

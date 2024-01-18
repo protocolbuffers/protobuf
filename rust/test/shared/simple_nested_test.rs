@@ -50,8 +50,31 @@ fn test_nested_views() {
     assert_that!(inner_msg.bool(), eq(false));
     assert_that!(*inner_msg.string().as_bytes(), empty());
     assert_that!(*inner_msg.bytes(), empty());
-    assert_that!(inner_msg.innersubmsg().flag(), eq(false));
+    assert_that!(inner_msg.inner_submsg().flag(), eq(false));
     assert_that!(inner_msg.inner_enum(), eq(InnerEnum::Unspecified));
+}
+
+#[test]
+fn test_nested_view_lifetimes() {
+    // Ensure that views have the lifetime of the first layer of borrow, and don't
+    // create intermediate borrows through nested accessors.
+
+    let outer_msg = Outer::new();
+
+    let string = outer_msg.inner().string();
+    assert_that!(string, eq(""));
+
+    let bytes = outer_msg.inner().bytes();
+    assert_that!(bytes, eq(b""));
+
+    let inner_submsg = outer_msg.inner().inner_submsg();
+    assert_that!(inner_submsg.flag(), eq(false));
+
+    let repeated_int32 = outer_msg.inner().repeated_int32();
+    assert_that!(repeated_int32, empty());
+
+    let repeated_inner_submsg = outer_msg.inner().repeated_inner_submsg();
+    assert_that!(repeated_inner_submsg, empty());
 }
 
 #[test]
@@ -129,6 +152,10 @@ fn test_recursive_view() {
     assert_that!(rec.rec().num(), eq(0));
     assert_that!(rec.rec().rec().num(), eq(0)); // turtles all the way down...
     assert_that!(rec.rec().rec().rec().num(), eq(0)); // ... ad infinitum
+
+    // Test that intermediate borrows are not created.
+    let nested = rec.rec().rec().rec();
+    assert_that!(nested.num(), eq(0));
 }
 
 #[test]
@@ -145,4 +172,9 @@ fn test_recursive_mut() {
     assert_that!(rec.num(), eq(0));
     assert_that!(rec.rec().rec().num(), eq(0));
     assert_that!(rec.rec().rec().rec().rec().num(), eq(1));
+
+    // This fails since `RecursiveMut` has `&mut self` methods.
+    // See b/314989133.
+    // let nested = rec.rec_mut().rec_mut().rec_mut();
+    // assert_that!(nested.num(), eq(0));
 }

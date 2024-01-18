@@ -101,6 +101,7 @@ cc_library(
 cc_library(
     name = "accessors",
     srcs = [
+        "accessors/accessor_case.cc",
         "accessors/accessors.cc",
         "accessors/map.cc",
         "accessors/repeated_field.cc",

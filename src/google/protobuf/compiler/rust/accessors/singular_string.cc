@@ -27,6 +27,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   std::string getter_thunk = ThunkName(ctx, field, "get");
   std::string setter_thunk = ThunkName(ctx, field, "set");
   std::string proxied_type = RsTypePath(ctx, field);
+
   auto transform_view = [&] {
     if (field.type() == FieldDescriptor::TYPE_STRING) {
       ctx.Emit(R"rs(
@@ -45,6 +46,8 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"setter_thunk", setter_thunk},
           {"proxied_type", proxied_type},
           {"transform_view", transform_view},
+          {"view_lifetime", ViewLifetime(accessor_case)},
+          {"view_self", ViewReceiver(accessor_case)},
           {"field_optional_getter",
            [&] {
              if (!field.is_optional()) return;
@@ -53,7 +56,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                        {"getter_thunk", getter_thunk},
                        {"transform_view", transform_view}},
                       R"rs(
-            pub fn $field$_opt(&self) -> $pb$::Optional<&$proxied_type$> {
+            pub fn $field$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
                 let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
                   $transform_view$ ,
@@ -143,7 +146,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            }},
       },
       R"rs(
-        pub fn $field$(&self) -> &$proxied_type$ {
+        pub fn $field$($view_self$) -> &$view_lifetime$ $proxied_type$ {
           let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
           $transform_view$
         }

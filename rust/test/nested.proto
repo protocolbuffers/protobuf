@@ -35,8 +35,10 @@ message Outer {
     optional bool bool = 13;
     optional string string = 14;
     optional bytes bytes = 15;
-    optional InnerSubMsg innersubmsg = 16;
+    optional InnerSubMsg inner_submsg = 16;
     optional InnerEnum inner_enum = 17;
+    repeated int32 repeated_int32 = 18 [packed = true];
+    repeated InnerSubMsg repeated_inner_submsg = 19;
 
     message SuperInner {
       message DuperInner {

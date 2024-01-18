@@ -549,7 +549,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         #[allow(dead_code)]
-        impl<'a> $Msg$View<'a> {
+        impl<'msg> $Msg$View<'msg> {
           #[doc(hidden)]
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
             Self { msg, _phantom: std::marker::PhantomData }
@@ -634,11 +634,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         #[allow(dead_code)]
-        impl<'a> $Msg$Mut<'a> {
+        impl<'msg> $Msg$Mut<'msg> {
           #[doc(hidden)]
           pub fn from_parent(
                      _private: $pbi$::Private,
-                     parent: $pbr$::MutatorMessageRef<'a>,
+                     parent: $pbr$::MutatorMessageRef<'msg>,
                      msg: $pbi$::RawMessage)
             -> Self {
             Self {
@@ -648,7 +648,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
 
           #[doc(hidden)]
-          pub fn new(_private: $pbi$::Private, msg: &'a mut $pbr$::MessageInner) -> Self {
+          pub fn new(_private: $pbi$::Private, msg: &'msg mut $pbr$::MessageInner) -> Self {
             Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
 
@@ -656,7 +656,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner.msg()
           }
 
-          fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef<'a> {
+          fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef<'msg> {
             self.inner
           }
 

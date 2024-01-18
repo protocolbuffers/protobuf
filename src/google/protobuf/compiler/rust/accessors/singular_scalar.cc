@@ -26,13 +26,14 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   ctx.Emit(
       {
           {"field", RsSafeName(field.name())},
+          {"view_self", ViewReceiver(accessor_case)},
           {"Scalar", RsTypePath(ctx, field)},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},
           {"default_value", DefaultValue(ctx, field)},
           {"getter",
            [&] {
              ctx.Emit({}, R"rs(
-                  pub fn $field$(&self) -> $Scalar$ {
+                  pub fn $field$($view_self$) -> $Scalar$ {
                     unsafe { $getter_thunk$(self.raw_msg()) }
                   }
                 )rs");
@@ -42,7 +43,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (!field.is_optional()) return;
              if (!field.has_presence()) return;
              ctx.Emit({}, R"rs(
-                  pub fn $field$_opt(&self) -> $pb$::Optional<$Scalar$> {
+                  pub fn $field$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.raw_msg()) } {
                       return $pb$::Optional::Unset($default_value$);
                     }

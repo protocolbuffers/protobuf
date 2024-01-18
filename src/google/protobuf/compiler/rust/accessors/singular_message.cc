@@ -26,6 +26,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   std::string msg_type = RsTypePath(ctx, field);
   ctx.Emit({{"msg_type", msg_type},
             {"field", RsSafeName(field.name())},
+            {"view_lifetime", ViewLifetime(accessor_case)},
+            {"view_self", ViewReceiver(accessor_case)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"clearer_thunk", ThunkName(ctx, field, "clear")},
@@ -58,7 +60,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             {"getter",
              [&] {
                ctx.Emit({}, R"rs(
-                pub fn $field$(&self) -> $msg_type$View {
+                pub fn $field$($view_self$) -> $msg_type$View<$view_lifetime$> {
                   $getter_body$
                 }
               )rs");
