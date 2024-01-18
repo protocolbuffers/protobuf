@@ -172,7 +172,6 @@ static const ::_pbi::MigrationSchema
         {22, -1, -1, sizeof(::google::protobuf::Method)},
         {37, -1, -1, sizeof(::google::protobuf::Mixin)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Api_default_instance_._instance,
     &::google::protobuf::_Method_default_instance_._instance,

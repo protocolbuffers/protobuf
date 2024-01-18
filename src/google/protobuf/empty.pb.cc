@@ -59,7 +59,6 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, -1, -1, sizeof(::google::protobuf::Empty)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Empty_default_instance_._instance,
 };

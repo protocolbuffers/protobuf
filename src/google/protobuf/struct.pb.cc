@@ -156,7 +156,6 @@ static const ::_pbi::MigrationSchema
         {21, -1, -1, sizeof(::google::protobuf::Value)},
         {36, -1, -1, sizeof(::google::protobuf::ListValue)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Struct_FieldsEntry_DoNotUse_default_instance_._instance,
     &::google::protobuf::_Struct_default_instance_._instance,

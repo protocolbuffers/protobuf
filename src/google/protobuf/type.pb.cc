@@ -263,7 +263,6 @@ static const ::_pbi::MigrationSchema
         {60, -1, -1, sizeof(::google::protobuf::EnumValue)},
         {71, 81, -1, sizeof(::google::protobuf::Option)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_Type_default_instance_._instance,
     &::google::protobuf::_Field_default_instance_._instance,

@@ -303,7 +303,6 @@ static const ::_pbi::MigrationSchema
         {63, -1, -1, sizeof(::google::protobuf::StringValue)},
         {72, -1, -1, sizeof(::google::protobuf::BytesValue)},
 };
-
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_DoubleValue_default_instance_._instance,
     &::google::protobuf::_FloatValue_default_instance_._instance,
