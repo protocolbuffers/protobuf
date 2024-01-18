@@ -381,6 +381,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_case.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/map.cc
