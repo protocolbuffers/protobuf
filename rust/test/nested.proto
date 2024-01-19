@@ -39,6 +39,7 @@ message Outer {
     optional InnerEnum inner_enum = 17;
     repeated int32 repeated_int32 = 18 [packed = true];
     repeated InnerSubMsg repeated_inner_submsg = 19;
+    map<string, string> string_map = 20;
 
     message SuperInner {
       message DuperInner {

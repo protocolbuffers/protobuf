@@ -75,6 +75,9 @@ fn test_nested_view_lifetimes() {
 
     let repeated_inner_submsg = outer_msg.inner().repeated_inner_submsg();
     assert_that!(repeated_inner_submsg, empty());
+
+    let string_map = outer_msg.inner().string_map();
+    assert_that!(string_map.len(), eq(0));
 }
 
 #[test]

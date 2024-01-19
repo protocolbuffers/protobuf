@@ -26,14 +26,16 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   ctx.Emit({{"field", RsSafeName(field.name())},
             {"Key", RsTypePath(ctx, key_type)},
             {"Value", RsTypePath(ctx, value_type)},
+            {"view_lifetime", ViewLifetime(accessor_case)},
+            {"view_self", ViewReceiver(accessor_case)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"getter",
              [&] {
                if (ctx.is_upb()) {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$(&self)
-                      -> $pb$::MapView<'_, $Key$, $Value$> {
+                    pub fn $field$($view_self$)
+                      -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
                       unsafe {
                         $getter_thunk$(self.raw_msg())
                           .map_or_else(
@@ -44,8 +46,8 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     })rs");
                } else {
                  ctx.Emit({}, R"rs(
-                    pub fn $field$(&self)
-                      -> $pb$::MapView<'_, $Key$, $Value$> {
+                    pub fn $field$($view_self$)
+                      -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
                       unsafe {
                         $pb$::MapView::from_raw($pbi$::Private,
                           $getter_thunk$(self.raw_msg()))
