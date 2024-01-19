@@ -149,8 +149,8 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
           }
           break;
         }  // switch(field.mapKeyDataType)
-      }    // switch(field.fieldType)
-    }      // for(fields)
+      }  // switch(field.fieldType)
+    }  // for(fields)
 
     // Handle any extensions holding messages.
     for (GPBExtensionDescriptor *extension in [msg extensionsCurrentlySet]) {
