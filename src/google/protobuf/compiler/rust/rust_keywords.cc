@@ -17,12 +17,12 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-bool IsNotLegalEvenWithRPoundPrefix(absl::string_view str) {
+bool IsLegalRawIdentifierName(absl::string_view str_without_r_prefix) {
   // These keywords cannot be used even with an r# prefix.
   // https://doc.rust-lang.org/reference/identifiers.html
-  static const auto* rust_raw_identifiers =
+  static const auto* illegal_raw_identifiers =
       new absl::flat_hash_set<std::string>{"crate", "self", "super", "Self"};
-  return rust_raw_identifiers->contains(str);
+  return !illegal_raw_identifiers->contains(str_without_r_prefix);
 }
 
 bool IsRustKeyword(absl::string_view str) {

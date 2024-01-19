@@ -15,13 +15,14 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-// Returns true if the provided str is a 'Raw Identifier', which is a symbol
-// which cannot be used even with r# prefix.
-bool IsNotLegalEvenWithRPoundPrefix(absl::string_view str);
+// Returns true if the provided name is legal to use as a raw identifier name
+// by prefixing with r#
+// https://doc.rust-lang.org/reference/identifiers.html#raw-identifiers
+bool IsLegalRawIdentifierName(absl::string_view str_without_r_prefix);
 
 // Returns true if the provided str is a Rust 2021 Edition keyword and cannot be
-// used as a symbol. These symbols can can be used with an r# prefix unless
-// IsNotLegalEvenWithRPoundPrefix is true. This function should always match the
+// used as an identifier. These symbols can be used with an r# prefix unless
+// IsLegalRawIdentifierName returns false. This function should always match the
 // behavior for the corresponding Edition that our emitted crates use.
 bool IsRustKeyword(absl::string_view str);
 

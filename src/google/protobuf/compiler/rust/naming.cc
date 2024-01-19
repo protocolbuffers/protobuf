@@ -246,9 +246,9 @@ std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
 }
 
 std::string RsSafeName(absl::string_view name) {
-  if (IsNotLegalEvenWithRPoundPrefix(name)) {
+  if (!IsLegalRawIdentifierName(name)) {
     return absl::StrCat(name,
-                        "__mangled_because_symbol_is_a_rust_raw_identifier");
+                        "__mangled_because_ident_isnt_a_legal_raw_identifier");
   }
   if (IsRustKeyword(name)) {
     return absl::StrCat("r#", name);
