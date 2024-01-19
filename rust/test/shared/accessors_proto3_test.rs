@@ -10,8 +10,8 @@
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
 use protobuf::Optional;
-use unittest_proto3::proto3_unittest::{TestAllTypes, TestAllTypes_};
-use unittest_proto3_optional::proto2_unittest::{TestProto3Optional, TestProto3Optional_};
+use unittest_proto3::{TestAllTypes, TestAllTypes_};
+use unittest_proto3_optional::{TestProto3Optional, TestProto3Optional_};
 
 #[test]
 fn test_fixed32_accessors() {
@@ -235,7 +235,7 @@ fn test_optional_nested_enum_accessors() {
 
 #[test]
 fn test_foreign_enum_accessors() {
-    use unittest_proto3::proto3_unittest::ForeignEnum;
+    use unittest_proto3::ForeignEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
@@ -286,7 +286,7 @@ fn test_oneof_accessors() {
 
 #[test]
 fn test_oneof_enum_accessors() {
-    use unittest_proto3::proto3_unittest::{
+    use unittest_proto3::{
         TestOneof2,
         TestOneof2_::{Foo, NestedEnum},
     };
@@ -336,7 +336,7 @@ fn test_oneof_mut_accessors() {
 
 #[test]
 fn test_oneof_mut_enum_accessors() {
-    use unittest_proto3::proto3_unittest::{
+    use unittest_proto3::{
         TestOneof2,
         TestOneof2_::{FooMut, NestedEnum},
     };

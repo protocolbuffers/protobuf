@@ -8,7 +8,7 @@
 use googletest::prelude::*;
 use paste::paste;
 use protobuf::ViewProxy;
-use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_, TestAllTypes_::NestedMessage};
+use unittest_proto::{TestAllTypes, TestAllTypes_, TestAllTypes_::NestedMessage};
 
 macro_rules! generate_repeated_numeric_test {
   ($(($t: ty, $field: ident)),*) => {

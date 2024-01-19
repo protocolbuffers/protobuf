@@ -20,7 +20,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-std::string GetCrateName(Context& ctx, const FileDescriptor& dep);
+absl::string_view GetCrateName(Context& ctx, const FileDescriptor& dep);
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file);
 std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);

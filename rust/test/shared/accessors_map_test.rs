@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use map_unittest_proto::proto2_unittest::TestMap;
+use map_unittest_proto::TestMap;
 use paste::paste;
 
 macro_rules! generate_map_primitives_tests {

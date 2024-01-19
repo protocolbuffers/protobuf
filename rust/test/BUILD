@@ -233,6 +233,66 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "import_public_grandparent_proto",
+    testonly = True,
+    srcs = [":import_public_grandparent.proto"],
+)
+
+proto_library(
+    name = "import_public_primary_src_proto",
+    testonly = True,
+    srcs = ["import_public_primary_src.proto"],
+    exports = [":import_public_grandparent_proto"],
+    deps = [":import_public_grandparent_proto"],
+)
+
+proto_library(
+    name = "import_public_non_primary_src_proto",
+    testonly = True,
+    srcs = [
+        "import_public_non_primary_src1.proto",
+        "import_public_non_primary_src2.proto",
+    ],
+)
+
+proto_library(
+    name = "import_public_proto",
+    testonly = True,
+    srcs = [
+        "import_public.proto",
+        "import_public2.proto",
+    ],
+    exports = [
+        ":import_public_non_primary_src_proto",
+        ":import_public_primary_src_proto",
+    ],
+    deps = [
+        ":import_public_non_primary_src_proto",
+        ":import_public_primary_src_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "import_public_cc_proto",
+    testonly = True,
+    deps = [":import_public_proto"],
+)
+
+rust_cc_proto_library(
+    name = "import_public_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":import_public_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "import_public_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":import_public_proto"],
+)
+
+proto_library(
     name = "no_package_import_proto",
     testonly = True,
     srcs = ["no_package_import.proto"],
@@ -309,6 +369,36 @@ rust_upb_proto_library(
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
     deps = [":package_proto"],
+)
+
+proto_library(
+    name = "package_disabiguation_proto",
+    testonly = True,
+    srcs = [
+        "package_disabiguation1.proto",
+        # TODO: b/321220129 - Uncomment once we support ambiguous messages.
+        # "package_disabiguation2.proto",
+    ],
+)
+
+rust_upb_proto_library(
+    name = "package_disabiguation_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":package_disabiguation_proto"],
+)
+
+cc_proto_library(
+    name = "package_disabiguation_cc_proto",
+    testonly = True,
+    deps = [":package_disabiguation_proto"],
+)
+
+rust_cc_proto_library(
+    name = "package_disabiguation_cc_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":package_disabiguation_cc_proto"],
 )
 
 proto_library(

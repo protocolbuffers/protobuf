@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/rust/naming.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
@@ -40,9 +40,8 @@ std::string GetUnderscoreDelimitedFullName(Context& ctx,
 }
 }  // namespace
 
-std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  absl::string_view path = dep.name();
-  return std::string(ctx.generator_context().ImportPathToCrateName(path));
+absl::string_view GetCrateName(Context& ctx, const FileDescriptor& dep) {
+  return ctx.generator_context().ImportPathToCrateName(dep.name());
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
@@ -124,32 +123,20 @@ std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
   return thunkName;
 }
 
-std::string RustModule(Context& ctx, const FileDescriptor& file,
-                       const Descriptor* containing_type) {
+std::string RustModule(Context& ctx, const Descriptor* containing_type) {
   std::vector<std::string> modules;
 
-  std::vector<std::string> package_modules =
-      absl::StrSplit(file.package(), '.', absl::SkipEmpty());
-
-  modules.reserve(package_modules.size());
-  for (const auto& module : package_modules) {
-    modules.push_back(RsSafeName(module));
-  }
-
   // Innermost to outermost order.
-  std::vector<std::string> modules_from_containing_types;
   const Descriptor* parent = containing_type;
   while (parent != nullptr) {
-    modules_from_containing_types.push_back(absl::StrCat(parent->name(), "_"));
+    modules.push_back(absl::StrCat(parent->name(), "_"));
     parent = parent->containing_type();
   }
 
-  // Add the modules from containing messages (rbegin/rend to get them in outer
-  // to inner order).
-  modules.insert(modules.end(), modules_from_containing_types.rbegin(),
-                 modules_from_containing_types.rend());
+  // Reverse the vector to get submodules in outer-to-inner order).
+  std::reverse(modules.begin(), modules.end());
 
-  // If there is any modules at all, push an empty string on the end so that
+  // If there are any modules at all, push an empty string on the end so that
   // we get the trailing ::
   if (!modules.empty()) {
     modules.push_back("");
@@ -222,11 +209,11 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
 }
 
 std::string RustModule(Context& ctx, const Descriptor& msg) {
-  return RustModule(ctx, *msg.file(), msg.containing_type());
+  return RustModule(ctx, msg.containing_type());
 }
 
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_) {
-  return RustModule(ctx, *enum_.file(), enum_.containing_type());
+  return RustModule(ctx, enum_.containing_type());
 }
 
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {

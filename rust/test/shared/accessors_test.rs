@@ -10,7 +10,7 @@
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
 use protobuf::Optional;
-use unittest_proto::proto2_unittest::{TestAllTypes, TestAllTypes_};
+use unittest_proto::{TestAllTypes, TestAllTypes_};
 
 #[test]
 fn test_default_accessors() {
@@ -728,7 +728,7 @@ fn test_default_nested_enum_accessors() {
 
 #[test]
 fn test_optional_foreign_enum_accessors() {
-    use unittest_proto::proto2_unittest::ForeignEnum;
+    use unittest_proto::ForeignEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_foreign_enum_opt(), eq(Optional::Unset(ForeignEnum::ForeignFoo)));
@@ -745,7 +745,7 @@ fn test_optional_foreign_enum_accessors() {
 
 #[test]
 fn test_default_foreign_enum_accessors() {
-    use unittest_proto::proto2_unittest::ForeignEnum;
+    use unittest_proto::ForeignEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_foreign_enum(), eq(ForeignEnum::ForeignBar));
@@ -774,7 +774,7 @@ fn test_default_foreign_enum_accessors() {
 
 #[test]
 fn test_optional_import_enum_accessors() {
-    use unittest_proto::proto2_unittest_import::ImportEnum;
+    use unittest_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportFoo)));
@@ -791,7 +791,7 @@ fn test_optional_import_enum_accessors() {
 
 #[test]
 fn test_default_import_enum_accessors() {
-    use unittest_proto::proto2_unittest_import::ImportEnum;
+    use unittest_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));
@@ -820,8 +820,8 @@ fn test_default_import_enum_accessors() {
 
 #[test]
 fn test_oneof_accessors() {
-    use unittest_proto::proto2_unittest::TestOneof2;
-    use unittest_proto::proto2_unittest::TestOneof2_::{Foo::*, NestedEnum};
+    use unittest_proto::TestOneof2;
+    use unittest_proto::TestOneof2_::{Foo::*, NestedEnum};
 
     let mut msg = TestOneof2::new();
     assert_that!(msg.foo(), matches_pattern!(not_set(_)));
@@ -861,9 +861,10 @@ fn test_oneof_accessors() {
 
 #[test]
 fn test_oneof_mut_accessors() {
-    use unittest_proto::proto2_unittest::TestOneof2_::{Foo, FooMut::*, NestedEnum};
+    use unittest_proto::TestOneof2;
+    use unittest_proto::TestOneof2_::{Foo, FooMut::*, NestedEnum};
 
-    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    let mut msg = TestOneof2::new();
     assert_that!(msg.foo_mut(), matches_pattern!(not_set(_)));
 
     msg.foo_int_mut().set(7);
@@ -909,9 +910,9 @@ fn test_oneof_mut_accessors() {
 
 #[test]
 fn test_msg_oneof_default_accessors() {
-    use unittest_proto::proto2_unittest::TestOneof2_::{Bar::*, NestedEnum};
+    use unittest_proto::TestOneof2_::{Bar::*, NestedEnum};
 
-    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    let mut msg = unittest_proto::TestOneof2::new();
     assert_that!(msg.bar(), matches_pattern!(not_set(_)));
 
     msg.bar_int_mut().set(7);
@@ -937,9 +938,9 @@ fn test_msg_oneof_default_accessors() {
 
 #[test]
 fn test_oneof_default_mut_accessors() {
-    use unittest_proto::proto2_unittest::TestOneof2_::{Bar, BarMut, BarMut::*, NestedEnum};
+    use unittest_proto::TestOneof2_::{Bar, BarMut, BarMut::*, NestedEnum};
 
-    let mut msg = unittest_proto::proto2_unittest::TestOneof2::new();
+    let mut msg = unittest_proto::TestOneof2::new();
     assert_that!(msg.bar_mut(), matches_pattern!(not_set(_)));
 
     msg.bar_int_mut().set(7);

@@ -7,8 +7,8 @@
 
 /// Test covering proto compilation with reserved words.
 use googletest::prelude::*;
-use reserved_proto::r#type::r#type::r#enum;
-use reserved_proto::r#type::r#type::Self__mangled_because_symbol_is_a_rust_raw_identifier;
+use reserved_proto::r#enum;
+use reserved_proto::Self__mangled_because_symbol_is_a_rust_raw_identifier;
 
 #[test]
 fn test_reserved_keyword_in_accessors() {

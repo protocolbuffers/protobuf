@@ -6,15 +6,15 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use nested_proto::nest::Outer;
-use nested_proto::nest::Outer_::InnerMut;
-use nested_proto::nest::Outer_::InnerView;
-use nested_proto::nest::Outer_::Inner_::InnerEnum;
+use nested_proto::Outer_::InnerMut;
+use nested_proto::Outer_::InnerView;
+use nested_proto::Outer_::Inner_::InnerEnum;
+use nested_proto::*;
 
 #[test]
 fn test_deeply_nested_message() {
-    let deep = nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_
-            ::CantBelieveItsSoInner::new();
+    let deep =
+        Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_::CantBelieveItsSoInner::new();
     assert_that!(deep.num(), eq(0));
 
     let outer_msg = Outer::new();
@@ -23,7 +23,7 @@ fn test_deeply_nested_message() {
 
 #[test]
 fn test_deeply_nested_enum() {
-    use nested_proto::nest::Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_::JustWayTooInner;
+    use Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_::JustWayTooInner;
     let deep = JustWayTooInner::default();
     assert_that!(i32::from(deep), eq(0));
 
@@ -144,13 +144,13 @@ fn test_nested_muts() {
 fn test_msg_from_outside() {
     // let's make sure that we're not just working for messages nested inside
     // messages, messages from without and within should work
-    let outer = nested_proto::nest::Outer::new();
+    let outer = Outer::new();
     assert_that!(outer.notinside().num(), eq(0));
 }
 
 #[test]
 fn test_recursive_view() {
-    let rec = nested_proto::nest::Recursive::new();
+    let rec = nested_proto::Recursive::new();
     assert_that!(rec.num(), eq(0));
     assert_that!(rec.rec().num(), eq(0));
     assert_that!(rec.rec().rec().num(), eq(0)); // turtles all the way down...
@@ -163,7 +163,7 @@ fn test_recursive_view() {
 
 #[test]
 fn test_recursive_mut() {
-    let mut rec = nested_proto::nest::Recursive::new();
+    let mut rec = nested_proto::Recursive::new();
     let mut one = rec.rec_mut();
     let mut two = one.rec_mut();
     let mut three = two.rec_mut();

@@ -17,13 +17,13 @@ fn test_message_packages() {
     let _: no_package_proto::ImportedMsgWithoutPackage;
 
     // package, message declared in the first .proto source
-    let _: package_proto::testing_packages::MsgWithPackage;
+    let _: package_proto::MsgWithPackage;
     // package, message declared in the other .proto source with the same package
-    let _: package_proto::testing_packages::OtherMsgWithPackage;
+    let _: package_proto::OtherMsgWithPackage;
     // package, message declared in the other .proto source with a different package
-    let _: package_proto::testing_other_packages::OtherMsgInDifferentPackage;
+    let _: package_proto::OtherMsgInDifferentPackage;
     // package, import public of a message
-    let _: package_proto::testing_packages::ImportedMsgWithPackage;
+    let _: package_proto::ImportedMsgWithPackage;
 }
 
 #[test]
@@ -36,11 +36,11 @@ fn test_enum_packages() {
     let _: no_package_proto::ImportedEnumWithoutPackage;
 
     // package, enum declared in the first .proto source
-    let _: package_proto::testing_packages::EnumWithPackage;
+    let _: package_proto::EnumWithPackage;
     // package, enum declared in the other .proto source with the same package
-    let _: package_proto::testing_packages::OtherEnumWithPackage;
+    let _: package_proto::OtherEnumWithPackage;
     // package, enum declared in the other .proto source with a different package
-    let _: package_proto::testing_other_packages::OtherEnumInDifferentPackage;
+    let _: package_proto::OtherEnumInDifferentPackage;
     // package, import public of a enum
-    let _: package_proto::testing_packages::ImportedEnumWithPackage;
+    let _: package_proto::ImportedEnumWithPackage;
 }

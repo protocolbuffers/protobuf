@@ -131,6 +131,30 @@ rust_test(
 )
 
 rust_test(
+    name = "import_public_cpp_test",
+    srcs = ["import_public_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust/test:import_public_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "import_public_upb_test",
+    srcs = ["import_public_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust/test:import_public_upb_rust_proto",
+    ],
+)
+
+rust_test(
     name = "package_cpp_test",
     srcs = ["package_test.rs"],
     tags = [
@@ -156,6 +180,26 @@ rust_test(
         "//rust/test:no_package_upb_rust_proto",
         "//rust/test:package_upb_rust_proto",
     ],
+)
+
+rust_test(
+    name = "package_disambiguation_cpp_test",
+    srcs = ["package_disambiguation_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:package_disabiguation_cc_rust_proto"],
+)
+
+rust_test(
+    name = "package_disambiguation_upb_test",
+    srcs = ["package_disambiguation_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = ["//rust/test:package_disabiguation_upb_rust_proto"],
 )
 
 rust_test(

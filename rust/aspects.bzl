@@ -250,6 +250,8 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
             compile_data_targets = depset([]),
             owner = ctx.label,
         ),
+        # Needed to make transitive public imports not violate layering.
+        force_all_deps_direct = True,
         output_hash = output_hash,
     )
 
