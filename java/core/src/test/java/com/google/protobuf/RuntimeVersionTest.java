@@ -14,125 +14,37 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/** Most version validations are being tested under RuntimeVersionLiteTest. */
 @RunWith(JUnit4.class)
 public final class RuntimeVersionTest {
 
   @Test
-  public void versionValidation_invalidVersionNumbers() {
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
+  public void versionValidation_sameVersion_success() {
+    RuntimeVersion.validateProtobufLiteGencodeVersion(
+        RuntimeVersionLite.DOMAIN,
+        RuntimeVersionLite.MAJOR,
+        RuntimeVersionLite.MINOR,
+        RuntimeVersionLite.PATCH,
+        RuntimeVersionLite.SUFFIX,
+        "dummy");
+  }
+
+  @Test
+  public void versionValidation_differentVersion_failure() {
+    RuntimeVersionLite.ProtobufRuntimeVersionException thrown =
         assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
+            RuntimeVersionLite.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN, 1, -2, -3, ""));
-    assertThat(thrown).hasMessageThat().contains("Invalid gencode version: 1.-2.-3");
-  }
-
-  @Test
-  public void versionValidation_crossDomainDisallowed() {
-
-    RuntimeVersion.RuntimeDomain gencodeDomain = RuntimeVersion.RuntimeDomain.GOOGLE_INTERNAL;
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () -> RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain));
-    assertThat(thrown).hasMessageThat().contains("Mismatched Protobuf Gencode/Runtime domains");
-  }
-
-  @Test
-  public void versionValidation_sameDomainAllowed() {
-
-    RuntimeVersion.RuntimeDomain gencodeDomain = RuntimeVersion.RuntimeDomain.PUBLIC;
-    RuntimeVersion.validateProtobufGencodeDomain(gencodeDomain);
-  }
-
-  @Test
-  public void versionValidation_mismatchingMajorDisallowed() {
-    int gencodeMajor = 1;
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () ->
-                RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    gencodeMajor,
-                    RuntimeVersion.MINOR,
-                    RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX));
+                RuntimeVersionLite.validateProtobufLiteGencodeVersion(
+                    RuntimeVersionLite.DOMAIN,
+                    RuntimeVersionLite.MAJOR + 1,
+                    RuntimeVersionLite.MINOR,
+                    RuntimeVersionLite.PATCH,
+                    RuntimeVersionLite.SUFFIX,
+                    "testing.Foo"));
     assertThat(thrown)
         .hasMessageThat()
-        .contains("Mismatched Protobuf Gencode/Runtime major versions");
-  }
-
-  @Test
-  public void versionValidation_versionNumbersAllTheSameAllowed() {
-    RuntimeVersion.validateProtobufGencodeVersion(
-        RuntimeVersion.DOMAIN,
-        RuntimeVersion.MAJOR,
-        RuntimeVersion.MINOR,
-        RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX);
-  }
-
-  @Test
-  public void versionValidation_newerRuntimeVersionAllowed() {
-    int gencodeMinor = RuntimeVersion.MINOR - 1;
-    RuntimeVersion.validateProtobufGencodeVersion(
-        RuntimeVersion.DOMAIN,
-        RuntimeVersion.MAJOR,
-        gencodeMinor,
-        RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX);
-  }
-
-  @Test
-  public void versionValidation_olderRuntimeVersionDisallowed() {
-    int gencodeMinor = RuntimeVersion.MINOR + 1;
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () ->
-                RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    RuntimeVersion.MAJOR,
-                    gencodeMinor,
-                    RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX));
-    assertThat(thrown)
-        .hasMessageThat()
-        .contains("Protobuf Java runtime version cannot be older than the gencode version");
-
-    int gencodePatch = RuntimeVersion.PATCH + 1;
-    thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () ->
-                RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    RuntimeVersion.MAJOR,
-                    RuntimeVersion.MINOR,
-                    gencodePatch,
-                    RuntimeVersion.SUFFIX));
-    assertThat(thrown)
-        .hasMessageThat()
-        .contains("Protobuf Java runtime version cannot be older than the gencode version");
-  }
-
-  @Test
-  public void versionValidation_differentVesionSuffixDisallowed() {
-    String gencodeSuffix = "-test";
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () ->
-                RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    RuntimeVersion.MAJOR,
-                    RuntimeVersion.MINOR,
-                    RuntimeVersion.PATCH,
-                    gencodeSuffix));
-    assertThat(thrown)
-        .hasMessageThat()
-        .contains("Mismatched Protobuf Gencode/Runtime version suffixes");
+        .contains(
+            "Detected mismatched Protobuf Gencode/Runtime major versions when loading testing.Foo");
   }
 }

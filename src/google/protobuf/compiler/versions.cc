@@ -16,6 +16,9 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -37,22 +40,29 @@ Version ParseProtobufVersion(absl::string_view version) {
 }
 }  // namespace internal
 
-const Version& GetProtobufCPPVersion() {
+const Version& GetProtobufCPPVersion(bool oss_runtime) {
+  absl::string_view version = PROTOBUF_CPP_VERSION_STRING;
   // Heap-allocated versions to avoid re-parsing version strings
   static const Version* cpp_version =
-      new Version(internal::ParseProtobufVersion(PROTOBUF_CPP_VERSION_STRING));
+      new Version(internal::ParseProtobufVersion(version));
   return *cpp_version;
 }
-const Version& GetProtobufJavaVersion() {
+
+const Version& GetProtobufJavaVersion(bool oss_runtime) {
+  absl::string_view version = PROTOBUF_JAVA_VERSION_STRING;
   static const Version* java_version =
-      new Version(internal::ParseProtobufVersion(PROTOBUF_JAVA_VERSION_STRING));
+      new Version(internal::ParseProtobufVersion(version));
   return *java_version;
 }
-const Version& GetProtobufPythonVersion() {
-  static const Version* python_version = new Version(
-      internal::ParseProtobufVersion(PROTOBUF_PYTHON_VERSION_STRING));
+
+const Version& GetProtobufPythonVersion(bool oss_runtime) {
+  absl::string_view version = PROTOBUF_PYTHON_VERSION_STRING;
+  static const Version* python_version =
+      new Version(internal::ParseProtobufVersion(version));
   return *python_version;
 }
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
