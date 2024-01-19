@@ -16,6 +16,7 @@ pub use crate::vtable::{
     ProxiedWithRawOptionalVTable, ProxiedWithRawVTable, RawVTableMutator,
     RawVTableOptionalMutatorData,
 };
+pub use crate::ProtoStr;
 use std::ptr::NonNull;
 use std::slice;
 
@@ -132,5 +133,12 @@ impl PtrAndLen {
 impl From<&[u8]> for PtrAndLen {
     fn from(slice: &[u8]) -> Self {
         Self { ptr: slice.as_ptr(), len: slice.len() }
+    }
+}
+
+impl From<&ProtoStr> for PtrAndLen {
+    fn from(s: &ProtoStr) -> Self {
+        let bytes = s.as_bytes();
+        Self { ptr: bytes.as_ptr(), len: bytes.len() }
     }
 }

@@ -13,7 +13,6 @@ use std::iter::FusedIterator;
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
 /// and `RepeatedField<T>*` on cpp).
 use std::marker::PhantomData;
-use std::ops::Deref;
 
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
@@ -164,6 +163,7 @@ where
 
     /// Appends `val` to the end of the repeated field.
     pub fn push(&mut self, val: View<T>) {
+        // TODO: b/320936046 - Use SettableValue instead of View for added ergonomics.
         T::repeated_push(self.as_mut(), val);
     }
 
@@ -176,6 +176,7 @@ where
         if index >= len {
             panic!("index {index} >= repeated len {len}");
         }
+        // TODO: b/320936046 - Use SettableValue instead of View for added ergonomics.
         // SAFETY: `index` has been checked to be in-bounds.
         unsafe { self.set_unchecked(index, val) }
     }
@@ -185,6 +186,7 @@ where
     /// # Safety
     /// Undefined behavior if `index >= len`
     pub unsafe fn set_unchecked(&mut self, index: usize, val: View<T>) {
+        // TODO: b/320936046 - Use SettableValue instead of View for added ergonomics.
         // SAFETY: `index` is in-bounds as promised by the caller.
         unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
     }

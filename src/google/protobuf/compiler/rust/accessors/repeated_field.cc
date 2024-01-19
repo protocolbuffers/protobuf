@@ -150,8 +150,12 @@ bool IsRepeatedPrimitive(const FieldDescriptor& field) {
          field.cpp_type() == FieldDescriptor::CPPTYPE_UINT64;
 }
 
+bool IsRepeatedPtrPrimitive(const FieldDescriptor& field) {
+  return field.cpp_type() == FieldDescriptor::CPPTYPE_STRING;
+}
+
 std::string CppElementType(const FieldDescriptor& field) {
-  if (IsRepeatedPrimitive(field)) {
+  if (IsRepeatedPrimitive(field) || IsRepeatedPtrPrimitive(field)) {
     return cpp::PrimitiveTypeName(field.cpp_type());
   } else {
     return cpp::QualifiedClassName(field.message_type());

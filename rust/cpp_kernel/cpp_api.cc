@@ -6,6 +6,7 @@
 
 #include "google/protobuf/map.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 extern "C" {
 
@@ -49,8 +50,51 @@ expose_repeated_field_methods(double, f64);
 expose_repeated_field_methods(bool, bool);
 expose_repeated_field_methods(uint64_t, u64);
 expose_repeated_field_methods(int64_t, i64);
-
 #undef expose_repeated_field_methods
+
+#define expose_repeated_ptr_field_methods(ty)                          \
+  google::protobuf::RepeatedPtrField<std::string>*                               \
+      __pb_rust_RepeatedField_##ty##_new() {                           \
+    return new google::protobuf::RepeatedPtrField<std::string>();                \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_free(                            \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                      \
+    delete r;                                                          \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_add(                             \
+      google::protobuf::RepeatedPtrField<std::string>* r,                        \
+      google::protobuf::rust_internal::PtrAndLen val) {                          \
+    r->Add(std::string(val.ptr, val.len));                             \
+  }                                                                    \
+  size_t __pb_rust_RepeatedField_##ty##_size(                          \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                      \
+    return r->size();                                                  \
+  }                                                                    \
+  google::protobuf::rust_internal::PtrAndLen __pb_rust_RepeatedField_##ty##_get( \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t index) {        \
+    const std::string& s = r->Get(index);                              \
+    return google::protobuf::rust_internal::PtrAndLen(s.data(), s.size());       \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_set(                             \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t index,          \
+      google::protobuf::rust_internal::PtrAndLen val) {                          \
+    *r->Mutable(index) = std::string(val.ptr, val.len);                \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_copy_from(                       \
+      const google::protobuf::RepeatedPtrField<std::string>* src,                \
+      google::protobuf::RepeatedPtrField<std::string>* dst) {                    \
+    dst->CopyFrom(*src);                                               \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_clear(                           \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                      \
+    r->Clear();                                                        \
+  }
+
+expose_repeated_ptr_field_methods(ProtoStr);
+expose_repeated_ptr_field_methods(Bytes);
+#undef expose_repeated_field_methods
+
+#undef expose_repeated_ptr_field_methods
 
 #define expose_scalar_map_methods(key_ty, rust_key_ty, ffi_key_ty, to_cpp_key, \
                                   value_ty, rust_value_ty, ffi_value_ty,       \

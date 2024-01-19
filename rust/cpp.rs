@@ -7,11 +7,10 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::ProtoStr;
 use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
-    Map, Mut, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView,
-    SettableValue, View,
+    Map, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut,
+    RepeatedView, SettableValue, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -227,6 +226,48 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
+trait CppTypeConversions: Proxied {
+    type ElemType;
+
+    fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self>;
+}
+
+macro_rules! impl_cpp_type_conversions_for_scalars {
+    ($($t:ty),* $(,)?) => {
+        $(
+            impl CppTypeConversions for $t {
+                type ElemType = Self;
+
+                fn elem_to_view<'msg>(v: Self) -> View<'msg, Self> {
+                    v
+                }
+            }
+        )*
+    }
+}
+
+impl_cpp_type_conversions_for_scalars!(i32, u32, i64, u64, f32, f64, bool);
+
+impl CppTypeConversions for ProtoStr {
+    type ElemType = PtrAndLen;
+
+    fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoStr> {
+        ptrlen_to_str(v)
+    }
+}
+
+impl CppTypeConversions for [u8] {
+    type ElemType = PtrAndLen;
+
+    fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self> {
+        ptrlen_to_bytes(v)
+    }
+}
+
+// This type alias is used so macros can generate valid extern "C" symbol names
+// for functions working with [u8] types.
+type Bytes = [u8];
+
 macro_rules! impl_repeated_primitives {
     (@impl $($t:ty => [
         $new_thunk:ident,
@@ -242,10 +283,15 @@ macro_rules! impl_repeated_primitives {
             extern "C" {
                 fn $new_thunk() -> RawRepeatedField;
                 fn $free_thunk(f: RawRepeatedField);
-                fn $add_thunk(f: RawRepeatedField, v: $t);
+                fn $add_thunk(f: RawRepeatedField, v: <$t as CppTypeConversions>::ElemType);
                 fn $size_thunk(f: RawRepeatedField) -> usize;
-                fn $get_thunk(f: RawRepeatedField, i: usize) -> $t;
-                fn $set_thunk(f: RawRepeatedField, i: usize, v: $t);
+                fn $get_thunk(
+                    f: RawRepeatedField,
+                    i: usize) -> <$t as CppTypeConversions>::ElemType;
+                fn $set_thunk(
+                    f: RawRepeatedField,
+                    i: usize,
+                    v: <$t as CppTypeConversions>::ElemType);
                 fn $clear_thunk(f: RawRepeatedField);
                 fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
             }
@@ -265,16 +311,17 @@ macro_rules! impl_repeated_primitives {
                     unsafe { $size_thunk(f.as_raw(Private)) }
                 }
                 fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
-                    unsafe { $add_thunk(f.as_raw(Private), v) }
+                    unsafe { $add_thunk(f.as_raw(Private), v.into()) }
                 }
                 fn repeated_clear(mut f: Mut<Repeated<$t>>) {
                     unsafe { $clear_thunk(f.as_raw(Private)) }
                 }
                 unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
-                    unsafe { $get_thunk(f.as_raw(Private), i) }
+                    <$t as CppTypeConversions>::elem_to_view(
+                        unsafe { $get_thunk(f.as_raw(Private), i) })
                 }
                 unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
-                    unsafe { $set_thunk(f.as_raw(Private), i, v) }
+                    unsafe { $set_thunk(f.as_raw(Private), i, v.into()) }
                 }
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     unsafe { $copy_from_thunk(src.as_raw(Private), dest.as_raw(Private)) }
@@ -300,7 +347,7 @@ macro_rules! impl_repeated_primitives {
     };
 }
 
-impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool);
+impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoStr, Bytes);
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
 pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
@@ -430,11 +477,6 @@ fn bytes_to_ptrlen(val: &[u8]) -> PtrAndLen {
 fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
     unsafe { val.as_ref() }
 }
-
-// This type alias is used so the macro
-// `impl_ProxiedInMapValue_for_non_generated_value_types` can generate
-// valid extern "C" symbol names for functions working with [u8] types.
-type Bytes = [u8];
 
 macro_rules! impl_ProxiedInMapValue_for_key_types {
     ($($t:ty, $ffi_t:ty, $to_ffi_key:expr;)*) => {

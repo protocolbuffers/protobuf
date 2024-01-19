@@ -434,7 +434,7 @@ extern "C" {
 }
 
 macro_rules! impl_repeated_primitives {
-    ($(($t:ty, $ufield:ident, $upb_tag:expr)),* $(,)?) => {
+    ($(($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr)),* $(,)?) => {
         $(
             unsafe impl ProxiedInRepeated for $t {
                 #[allow(dead_code)]
@@ -467,7 +467,7 @@ macro_rules! impl_repeated_primitives {
                     unsafe {
                         upb_Array_Append(
                             f.as_raw(Private),
-                             upb_MessageValue { $ufield: v },
+                            <$t as UpbTypeConversions>::to_message_value(v),
                             f.raw_arena(Private))
                     }
                 }
@@ -475,10 +475,17 @@ macro_rules! impl_repeated_primitives {
                     unsafe { upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private)); }
                 }
                 unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
-                    unsafe { upb_Array_Get(f.as_raw(Private), i).$ufield }
+                    unsafe {
+                        <$t as UpbTypeConversions>::from_message_value(
+                            upb_Array_Get(f.as_raw(Private), i)) }
                 }
                 unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
-                    unsafe { upb_Array_Set(f.as_raw(Private), i, upb_MessageValue { $ufield: v.into() }) }
+                    unsafe {
+                        upb_Array_Set(
+                            f.as_raw(Private),
+                            i,
+                            <$t as UpbTypeConversions>::to_message_value(v.into()))
+                    }
                 }
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     // SAFETY:
@@ -492,7 +499,7 @@ macro_rules! impl_repeated_primitives {
                         ptr::copy_nonoverlapping(
                           upb_Array_DataPtr(src.as_raw(Private)).cast::<u8>(),
                           upb_Array_MutableDataPtr(dest.as_raw(Private)).cast::<u8>(),
-                          size_of::<$t>() * src.len());
+                          size_of::<$elem_t>() * src.len());
                     }
                 }
             }
@@ -509,13 +516,16 @@ impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
 }
 
 impl_repeated_primitives!(
-    (bool, bool_val, UpbCType::Bool),
-    (f32, float_val, UpbCType::Float),
-    (f64, double_val, UpbCType::Double),
-    (i32, int32_val, UpbCType::Int32),
-    (u32, uint32_val, UpbCType::UInt32),
-    (i64, int64_val, UpbCType::Int64),
-    (u64, uint64_val, UpbCType::UInt64),
+    // proxied type, element type, upb_MessageValue field name, UpbCType variant
+    (bool, bool, bool_val, UpbCType::Bool),
+    (f32, f32, float_val, UpbCType::Float),
+    (f64, f64, double_val, UpbCType::Double),
+    (i32, i32, int32_val, UpbCType::Int32),
+    (u32, u32, uint32_val, UpbCType::UInt32),
+    (i64, i64, int64_val, UpbCType::Int64),
+    (u64, u64, uint64_val, UpbCType::UInt64),
+    (ProtoStr, PtrAndLen, str_val, UpbCType::String),
+    ([u8], PtrAndLen, str_val, UpbCType::Bytes),
 );
 
 /// Copy the contents of `src` into `dest`.

@@ -77,7 +77,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_STRING:
       if (field.is_repeated()) {
-        return std::make_unique<UnsupportedField>("repeated str not supported");
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
