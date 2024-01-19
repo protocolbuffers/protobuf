@@ -383,7 +383,7 @@ jobs:
             vsversion: '2019'
             cache-prefix: windows-2019-cmake
             # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
-            python-version: '3.8'
+            python-version: '3.9'
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-
