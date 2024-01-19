@@ -15,7 +15,7 @@ brew uninstall protobuf
 
 ##
 # Select Xcode version
-export DEVELOPER_DIR=/Applications/Xcode_14.app/Contents/Developer
+export DEVELOPER_DIR=/Applications/Xcode_14.1.app/Contents/Developer
 sudo xcode-select -s "${DEVELOPER_DIR}"
 
 ##
@@ -23,11 +23,6 @@ sudo xcode-select -s "${DEVELOPER_DIR}"
 
 export CC=gcc
 export CXX=g++
-
-##
-# Install Python 2 by default
-eval "$(pyenv init -)"
-pyenv install -v -s 2.7.18 && pyenv global 2.7.18
 
 ##
 # Install Tox
