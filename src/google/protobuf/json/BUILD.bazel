@@ -137,6 +137,7 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "//third_party/utf8_range:utf8_validity",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/numeric:bits",
