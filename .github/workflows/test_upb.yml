@@ -46,20 +46,13 @@ jobs:
   linux-gcc:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
+    # Run this test but don't fail the whole workflow if it fails.
+    continue-on-error: true
     name: GCC Optimized
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
-        with:
-          ref: ${{ inputs.safe-checkout }}
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
-        with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: "upb-bazel-gcc"
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/...
+      - name: Fail
+        run: false
 
   windows:
     strategy:

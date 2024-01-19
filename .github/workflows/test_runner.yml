@@ -192,3 +192,16 @@ jobs:
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
+
+  # This test depends on all presubmit blocking tests and indicates whether
+  # they all succeeded.
+  all_blocking_tests:
+    name: All Blocking Tests
+    needs: [cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, staleness]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') && !contains(join(needs.*.result, ' '), 'skipped') }}"
+    # This workflow must run even if one or more of the dependent workflows
+    # failed.
+    if: always()
