@@ -10,7 +10,6 @@ package com.google.protobuf;
 final class NewInstanceSchemaFull implements NewInstanceSchema {
   @Override
   public Object newInstance(Object defaultInstance) {
-    return ((GeneratedMessage) defaultInstance)
-        .newInstance(GeneratedMessage.UnusedPrivateParameter.INSTANCE);
+    return ((Message) defaultInstance).toBuilder().buildPartial();
   }
 }

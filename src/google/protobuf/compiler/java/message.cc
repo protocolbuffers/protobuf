@@ -357,15 +357,6 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n");
 
-  printer->Print(variables,
-                 "@java.lang.Override\n"
-                 "@SuppressWarnings({\"unused\"})\n"
-                 "protected java.lang.Object newInstance(\n"
-                 "    UnusedPrivateParameter unused) {\n"
-                 "  return new $classname$();\n"
-                 "}\n"
-                 "\n");
-
   GenerateDescriptorMethods(printer);
 
   // Nested types
