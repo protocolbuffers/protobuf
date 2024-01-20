@@ -1766,10 +1766,23 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
 
 
 bool CommandLineInterface::ExpandArgumentFile(
-    const std::string& file, std::vector<std::string>* arguments) {
+    const char* file, std::vector<std::string>* arguments) {
+// On windows to force ifstream to handle proper utr-8, we need to convert to
+// proper supported utf8 wstring. If we dont then the file can't be opened.
+#ifdef _MSC_VER
+  // Convert the file name to wide chars.
+  int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), NULL, 0);
+  std::wstring file_str;
+  file_str.resize(size);
+  MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), &file_str[0],
+                      file_str.size());
+#else
+  std::string file_str(file);
+#endif
+
   // The argument file is searched in the working directory only. We don't
   // use the proto import path here.
-  std::ifstream file_stream(file.c_str());
+  std::ifstream file_stream(file_str.c_str());
   if (!file_stream.is_open()) {
     return false;
   }

@@ -36,6 +36,7 @@ LINK_OPTS = select({
     "//build_defs:config_msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
+        "Shell32.lib",
     ],
     "@platforms//os:macos": [
         "-lpthread",
