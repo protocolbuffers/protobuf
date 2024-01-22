@@ -12,7 +12,8 @@ import static com.google.protobuf.Internal.checkNotNull;
 import com.google.protobuf.Internal.EnumLite;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+// import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ import java.util.Set;
  *
  * <p>This class is a protobuf implementation detail. Users shouldn't use this class directly.
  */
-public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
+public final class MapFieldLite<K, V> extends HashMap<K, V> {
 
   private boolean isMutable;
 
@@ -177,7 +178,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
    */
   @SuppressWarnings("unchecked")
   static <K, V> Map<K, V> copy(Map<K, V> map) {
-    Map<K, V> result = new LinkedHashMap<K, V>(map.size() * 4 / 3 + 1);
+    Map<K, V> result = new HashMap<K, V>(map.size() * 4 / 3 + 1);
     for (Map.Entry<K, V> entry : map.entrySet()) {
       result.put(entry.getKey(), (V) copy(entry.getValue()));
     }
