@@ -11,8 +11,8 @@
 
 pub use crate::r#enum::Enum;
 pub use crate::vtable::{
-    new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, MessageOptionalVTable,
-    MessageVTable, PrimitiveOptionalMutVTable, PrimitiveVTable, PrimitiveWithRawVTable,
+    new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, MessageVTable,
+    PrimitiveOptionalMutVTable, PrimitiveVTable, PrimitiveWithRawVTable,
     ProxiedWithRawOptionalVTable, ProxiedWithRawVTable, RawVTableMutator,
     RawVTableOptionalMutatorData,
 };
