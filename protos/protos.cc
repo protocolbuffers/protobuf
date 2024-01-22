@@ -163,22 +163,15 @@ upb_Message* DeepClone(const upb_Message* source,
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
                            upb_Message* extension, upb_Arena* extension_arena) {
-  upb_Extension* msg_ext =
-      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
+  if (message_arena != extension_arena &&
+      // Try fuse, if fusing is not allowed or fails, create copy of extension.
+      !upb_Arena_Fuse(message_arena, extension_arena)) {
+    extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
+                          message_arena);
   }
-  if (message_arena != extension_arena) {
-    // Try fuse, if fusing is not allowed or fails, create copy of extension.
-    if (!upb_Arena_Fuse(message_arena, extension_arena)) {
-      msg_ext->data.ptr = DeepClone(
-          extension, upb_MiniTableExtension_GetSubMessage(msg_ext->ext),
-          message_arena);
-      return absl::OkStatus();
-    }
-  }
-  msg_ext->data.ptr = extension;
-  return absl::OkStatus();
+  return _upb_Message_SetExtensionField(message, ext, &extension, message_arena)
+             ? absl::OkStatus()
+             : MessageAllocationError();
 }
 
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
@@ -190,10 +183,11 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
     return MessageAllocationError();
   }
   // Clone extension into target message arena.
-  msg_ext->data.ptr =
-      DeepClone(extension, upb_MiniTableExtension_GetSubMessage(msg_ext->ext),
-                message_arena);
-  return absl::OkStatus();
+  extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
+                        message_arena);
+  return _upb_Message_SetExtensionField(message, ext, &extension, message_arena)
+             ? absl::OkStatus()
+             : MessageAllocationError();
 }
 
 }  // namespace internal
