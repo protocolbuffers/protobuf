@@ -252,11 +252,14 @@ void ConvertFieldDescriptor(absl::string_view url_prefix,
 }
 
 Syntax ConvertSyntax(Edition edition) {
-  if (edition >= Edition::EDITION_2023) {
-    return Syntax::SYNTAX_EDITIONS;
+  switch (edition) {
+    case Edition::EDITION_PROTO2:
+      return Syntax::SYNTAX_PROTO2;
+    case Edition::EDITION_PROTO3:
+      return Syntax::SYNTAX_PROTO3;
+    default:
+      return Syntax::SYNTAX_EDITIONS;
   }
-  // TODO This should propagate proto3 as expected.
-  return Syntax::SYNTAX_PROTO2;
 }
 
 void ConvertEnumDescriptor(const EnumDescriptor& descriptor, Enum* enum_type) {
