@@ -385,70 +385,20 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     return IntArrayList.emptyList();
   }
 
-  // TODO: Unused. Remove.
-  protected static IntList newIntList() {
-    return new IntArrayList();
-  }
-
-  // TODO: Redundant with makeMutableCopy(). Remove.
-  protected static IntList mutableCopy(IntList list) {
-    return makeMutableCopy(list);
-  }
-
-  // TODO: Redundant with makeMutableCopy(). Remove.
-  protected static LongList mutableCopy(LongList list) {
-    return makeMutableCopy(list);
-  }
-
-  // TODO: Redundant with makeMutableCopy(). Remove.
-  protected static FloatList mutableCopy(FloatList list) {
-    return makeMutableCopy(list);
-  }
-
-  // TODO: Redundant with makeMutableCopy(). Remove.
-  protected static DoubleList mutableCopy(DoubleList list) {
-    return makeMutableCopy(list);
-  }
-
-  // TODO: Redundant with makeMutableCopy(). Remove.
-  protected static BooleanList mutableCopy(BooleanList list) {
-    return makeMutableCopy(list);
-  }
-
   protected static LongList emptyLongList() {
     return LongArrayList.emptyList();
-  }
-
-  // TODO: Unused. Remove.
-  protected static LongList newLongList() {
-    return new LongArrayList();
   }
 
   protected static FloatList emptyFloatList() {
     return FloatArrayList.emptyList();
   }
 
-  // TODO: Unused. Remove.
-  protected static FloatList newFloatList() {
-    return new FloatArrayList();
-  }
-
   protected static DoubleList emptyDoubleList() {
     return DoubleArrayList.emptyList();
   }
 
-  // TODO: Unused. Remove.
-  protected static DoubleList newDoubleList() {
-    return new DoubleArrayList();
-  }
-
   protected static BooleanList emptyBooleanList() {
     return BooleanArrayList.emptyList();
-  }
-
-  // TODO: Unused. Remove.
-  protected static BooleanList newBooleanList() {
-    return new BooleanArrayList();
   }
 
   protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
@@ -508,39 +458,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   @SuppressWarnings({"unused"})
   protected Object newInstance(UnusedPrivateParameter unused) {
     throw new UnsupportedOperationException("This method must be overridden by the subclass.");
-  }
-
-  /**
-   * Used by parsing constructors in generated classes.
-   *
-   * <p>TODO: remove unused method (extensions should be immutable after build)
-   */
-  protected void makeExtensionsImmutable() {
-    // Noop for messages without extensions.
-  }
-
-  /**
-   * TODO: remove this after b/29368482 is fixed. We need to move this interface to
-   * AbstractMessage in order to versioning GeneratedMessage but this move breaks binary
-   * compatibility for AppEngine. After AppEngine is fixed we can exclude this from google3.
-   *
-   * <p>TODO: Remove at breaking change since b/29368482 was fixed in 2020
-   */
-  protected interface BuilderParent extends AbstractMessage.BuilderParent {}
-
-  /** TODO: remove this together with GeneratedMessage.BuilderParent. */
-  protected abstract Message.Builder newBuilderForType(BuilderParent parent);
-
-  /** TODO: generated class should implement this directly */
-  @Override
-  protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
-    return newBuilderForType(
-        new BuilderParent() {
-          @Override
-          public void markDirty() {
-            parent.markDirty();
-          }
-        });
   }
 
   /** Builder class for {@link GeneratedMessage}. */
@@ -1100,49 +1017,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     public boolean isInitialized() {
       return super.isInitialized() && extensionsAreInitialized();
-    }
-
-    // TODO: remove mutating method from immutable type
-    @Override
-    protected boolean parseUnknownField(
-        CodedInputStream input,
-        UnknownFieldSet.Builder unknownFields,
-        ExtensionRegistryLite extensionRegistry,
-        int tag)
-        throws IOException {
-      return MessageReflection.mergeFieldFrom(
-          input,
-          input.shouldDiscardUnknownFields() ? null : unknownFields,
-          extensionRegistry,
-          getDescriptorForType(),
-          new MessageReflection.ExtensionAdapter(extensions),
-          tag);
-    }
-
-    /**
-     * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
-     * compatibility with older generated code.
-     *
-     * <p>TODO: remove mutating method from immutable type
-     */
-    @Override
-    protected boolean parseUnknownFieldProto3(
-        CodedInputStream input,
-        UnknownFieldSet.Builder unknownFields,
-        ExtensionRegistryLite extensionRegistry,
-        int tag)
-        throws IOException {
-      return parseUnknownField(input, unknownFields, extensionRegistry, tag);
-    }
-
-    /**
-     * Used by parsing constructors in generated classes.
-     *
-     * <p>TODO: remove unused method (extensions should be immutable after build)
-     */
-    @Override
-    protected void makeExtensionsImmutable() {
-      extensions.makeImmutable();
     }
 
     /**
