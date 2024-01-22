@@ -7,7 +7,7 @@ cc_library(
     srcs = ["test_utils.cc"],
     deps = [
         "//rust/cpp_kernel:cpp_api",
-        "//rust/test:unittest_cc_proto",
+        "//src/google/protobuf:unittest_cc_proto",
         "@com_google_absl//absl/strings",
     ],
 )

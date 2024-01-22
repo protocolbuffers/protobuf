@@ -4,25 +4,12 @@ load(
     "rust_proto_library",
     "rust_upb_proto_library",
 )
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
 
-UNITTEST_CC_PROTO_TARGET = "//src/google/protobuf:cc_test_protos"
-
 UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
 
-UNITTEST_PROTO3_CC_TARGET = "//src/google/protobuf:cc_test_protos"
-
 UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
-
-UNITTEST_PROTO3_OPTIONAL_CC_TARGET = "//src/google/protobuf:cc_test_protos"
-
-alias(
-    name = "unittest_cc_proto",
-    actual = UNITTEST_CC_PROTO_TARGET,
-    visibility = ["//rust/test:__subpackages__"],
-)
 
 rust_proto_library(
     name = "unittest_rust_proto",
@@ -47,7 +34,7 @@ rust_cc_proto_library(
         "//rust/test/cpp:__subpackages__",
         "//rust/test/shared:__subpackages__",
     ],
-    deps = [UNITTEST_CC_PROTO_TARGET],
+    deps = [UNITTEST_PROTO_TARGET],
 )
 
 rust_proto_library(
@@ -65,7 +52,7 @@ rust_cc_proto_library(
     name = "unittest_proto3_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [UNITTEST_PROTO3_CC_TARGET],
+    deps = [UNITTEST_PROTO3_TARGET],
 )
 
 rust_upb_proto_library(
@@ -90,7 +77,7 @@ rust_cc_proto_library(
     name = "unittest_proto3_optional_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [UNITTEST_PROTO3_OPTIONAL_CC_TARGET],
+    deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
 )
 
 rust_upb_proto_library(
@@ -127,30 +114,18 @@ rust_upb_proto_library(
     deps = [":child_proto"],
 )
 
-cc_proto_library(
-    name = "parent_cc_proto",
-    testonly = True,
-    deps = [":parent_proto"],
-)
-
-cc_proto_library(
-    name = "child_cc_proto",
-    testonly = True,
-    deps = [":child_proto"],
-)
-
 rust_cc_proto_library(
     name = "parent_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":parent_cc_proto"],
+    deps = [":parent_proto"],
 )
 
 rust_cc_proto_library(
     name = "child_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":child_cc_proto"],
+    deps = [":child_proto"],
 )
 
 proto_library(
@@ -159,17 +134,11 @@ proto_library(
     srcs = ["dots_in_package.proto"],
 )
 
-cc_proto_library(
-    name = "dots_in_package_cc_proto",
-    testonly = True,
-    deps = [":dots_in_package_proto"],
-)
-
 rust_cc_proto_library(
     name = "dots_in_package_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":dots_in_package_cc_proto"],
+    deps = [":dots_in_package_proto"],
 )
 
 rust_upb_proto_library(
@@ -185,17 +154,11 @@ proto_library(
     srcs = ["edition2023.proto"],
 )
 
-cc_proto_library(
-    name = "edition2023_cc_proto",
-    testonly = True,
-    deps = [":edition2023_proto"],
-)
-
 rust_cc_proto_library(
     name = "edition2023_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":edition2023_cc_proto"],
+    deps = [":edition2023_proto"],
 )
 
 rust_upb_proto_library(
@@ -212,17 +175,11 @@ proto_library(
     deps = ["//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto"],
 )
 
-cc_proto_library(
-    name = "enums_cc_proto",
-    testonly = True,
-    deps = [":enums_proto"],
-)
-
 rust_cc_proto_library(
     name = "enums_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":enums_cc_proto"],
+    deps = [":enums_proto"],
 )
 
 rust_upb_proto_library(
@@ -313,17 +270,11 @@ proto_library(
     ],
 )
 
-cc_proto_library(
-    name = "no_package_cc_proto",
-    testonly = True,
-    deps = [":no_package_proto"],
-)
-
 rust_cc_proto_library(
     name = "no_package_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":no_package_cc_proto"],
+    deps = [":no_package_proto"],
 )
 
 rust_upb_proto_library(
@@ -351,17 +302,11 @@ proto_library(
     deps = [":package_import_proto"],
 )
 
-cc_proto_library(
-    name = "package_cc_proto",
-    testonly = True,
-    deps = [":package_proto"],
-)
-
 rust_cc_proto_library(
     name = "package_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":package_cc_proto"],
+    deps = [":package_proto"],
 )
 
 rust_upb_proto_library(
@@ -407,17 +352,11 @@ proto_library(
     srcs = ["reserved.proto"],
 )
 
-cc_proto_library(
-    name = "reserved_cc_proto",
-    testonly = True,
-    deps = [":reserved_proto"],
-)
-
 rust_cc_proto_library(
     name = "reserved_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":reserved_cc_proto"],
+    deps = [":reserved_proto"],
 )
 
 rust_upb_proto_library(
@@ -433,12 +372,6 @@ proto_library(
     srcs = ["nested.proto"],
 )
 
-cc_proto_library(
-    name = "nested_cc_proto",
-    testonly = True,
-    deps = [":nested_proto"],
-)
-
 rust_cc_proto_library(
     name = "nested_cc_rust_proto",
     testonly = True,
@@ -446,7 +379,7 @@ rust_cc_proto_library(
         "//rust/test/cpp:__subpackages__",
         "//rust/test/shared:__subpackages__",
     ],
-    deps = [":nested_cc_proto"],
+    deps = [":nested_proto"],
 )
 
 rust_upb_proto_library(
@@ -459,19 +392,13 @@ rust_upb_proto_library(
     deps = [":nested_proto"],
 )
 
-cc_proto_library(
-    name = "map_unittest_cc_proto",
-    testonly = True,
-    deps = ["//src/google/protobuf:map_unittest_proto"],
-)
-
 rust_cc_proto_library(
     name = "map_unittest_cc_rust_proto",
     testonly = True,
     visibility = [
         "//rust/test/shared:__subpackages__",
     ],
-    deps = [":map_unittest_cc_proto"],
+    deps = ["//src/google/protobuf:map_unittest_proto"],
 )
 
 rust_upb_proto_library(

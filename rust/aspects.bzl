@@ -367,9 +367,7 @@ def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
-        # Since we can reference upb_proto_library_aspect by name, we can just ask Bazel to attach
-        # it here.
-        requires = ([upb_proto_library_aspect] if is_upb else []),
+        requires = ([upb_proto_library_aspect] if is_upb else [cc_proto_aspect]),
         required_aspect_providers = ([] if is_upb else [CcInfo]),
         attrs = {
             "_cc_toolchain": attr.label(
