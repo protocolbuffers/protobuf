@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions" # Necessary to update action hashs
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Allow up to 3 opened pull requests for github-actions versions
+    open-pull-requests-limit: 3

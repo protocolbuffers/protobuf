@@ -177,6 +177,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Tests maps.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMap : pb::IMessage<TestMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -771,6 +772,7 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -969,6 +971,7 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1150,6 +1153,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Two map fields share the same entry default instance.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1354,6 +1358,7 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestArenaMap : pb::IMessage<TestArenaMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1900,6 +1905,7 @@ namespace Google.Protobuf.TestProtos {
   /// Previously, message containing enum called Type cannot be used as value of
   /// map field.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2093,6 +2099,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Previously, message cannot contain map field called "entry".
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

@@ -462,11 +462,6 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/cybozu/protobuf
     *   Extension: 1179
 
-1.  Wire use_array
-
-    *   Website: https://square.github.io/wire/
-    *   Extensions: 1180
-
 1.  EngFlow
 
     *   Website: https://github.com/EngFlow/engflowapis
@@ -476,3 +471,23 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/clly/proto-telemetry
     *   Extensions: 1182
+
+1.  Digital Twins Definition Language (DTDL)
+
+    *   Website: https://github.com/Azure/opendigitaltwins-dtdl
+    *   Extensions: 1183
+
+1.  RabbitMQ
+
+    *   Website: https://github.com/guihouchang/protoc-gen-go-event
+    *   Extensions: 1184
+
+1.  Wire use_array
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1185
+
+1.  Protons
+
+    *   Website: https://github.com/ipfs/protons
+    *   Extensions: 1186

@@ -27,27 +27,31 @@ namespace Google.Protobuf.Compiler {
             "CiVnb29nbGUvcHJvdG9idWYvY29tcGlsZXIvcGx1Z2luLnByb3RvEhhnb29n",
             "bGUucHJvdG9idWYuY29tcGlsZXIaIGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlw",
             "dG9yLnByb3RvIkYKB1ZlcnNpb24SDQoFbWFqb3IYASABKAUSDQoFbWlub3IY",
-            "AiABKAUSDQoFcGF0Y2gYAyABKAUSDgoGc3VmZml4GAQgASgJIroBChRDb2Rl",
+            "AiABKAUSDQoFcGF0Y2gYAyABKAUSDgoGc3VmZml4GAQgASgJIoECChRDb2Rl",
             "R2VuZXJhdG9yUmVxdWVzdBIYChBmaWxlX3RvX2dlbmVyYXRlGAEgAygJEhEK",
             "CXBhcmFtZXRlchgCIAEoCRI4Cgpwcm90b19maWxlGA8gAygLMiQuZ29vZ2xl",
-            "LnByb3RvYnVmLkZpbGVEZXNjcmlwdG9yUHJvdG8SOwoQY29tcGlsZXJfdmVy",
-            "c2lvbhgDIAEoCzIhLmdvb2dsZS5wcm90b2J1Zi5jb21waWxlci5WZXJzaW9u",
-            "IsECChVDb2RlR2VuZXJhdG9yUmVzcG9uc2USDQoFZXJyb3IYASABKAkSGgoS",
-            "c3VwcG9ydGVkX2ZlYXR1cmVzGAIgASgEEkIKBGZpbGUYDyADKAsyNC5nb29n",
-            "bGUucHJvdG9idWYuY29tcGlsZXIuQ29kZUdlbmVyYXRvclJlc3BvbnNlLkZp",
-            "bGUafwoERmlsZRIMCgRuYW1lGAEgASgJEhcKD2luc2VydGlvbl9wb2ludBgC",
-            "IAEoCRIPCgdjb250ZW50GA8gASgJEj8KE2dlbmVyYXRlZF9jb2RlX2luZm8Y",
-            "ECABKAsyIi5nb29nbGUucHJvdG9idWYuR2VuZXJhdGVkQ29kZUluZm8iOAoH",
-            "RmVhdHVyZRIQCgxGRUFUVVJFX05PTkUQABIbChdGRUFUVVJFX1BST1RPM19P",
-            "UFRJT05BTBABQnIKHGNvbS5nb29nbGUucHJvdG9idWYuY29tcGlsZXJCDFBs",
-            "dWdpblByb3Rvc1opZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMv",
-            "cGx1Z2lucGKqAhhHb29nbGUuUHJvdG9idWYuQ29tcGlsZXI="));
+            "LnByb3RvYnVmLkZpbGVEZXNjcmlwdG9yUHJvdG8SRQoXc291cmNlX2ZpbGVf",
+            "ZGVzY3JpcHRvcnMYESADKAsyJC5nb29nbGUucHJvdG9idWYuRmlsZURlc2Ny",
+            "aXB0b3JQcm90bxI7ChBjb21waWxlcl92ZXJzaW9uGAMgASgLMiEuZ29vZ2xl",
+            "LnByb3RvYnVmLmNvbXBpbGVyLlZlcnNpb24ikgMKFUNvZGVHZW5lcmF0b3JS",
+            "ZXNwb25zZRINCgVlcnJvchgBIAEoCRIaChJzdXBwb3J0ZWRfZmVhdHVyZXMY",
+            "AiABKAQSFwoPbWluaW11bV9lZGl0aW9uGAMgASgFEhcKD21heGltdW1fZWRp",
+            "dGlvbhgEIAEoBRJCCgRmaWxlGA8gAygLMjQuZ29vZ2xlLnByb3RvYnVmLmNv",
+            "bXBpbGVyLkNvZGVHZW5lcmF0b3JSZXNwb25zZS5GaWxlGn8KBEZpbGUSDAoE",
+            "bmFtZRgBIAEoCRIXCg9pbnNlcnRpb25fcG9pbnQYAiABKAkSDwoHY29udGVu",
+            "dBgPIAEoCRI/ChNnZW5lcmF0ZWRfY29kZV9pbmZvGBAgASgLMiIuZ29vZ2xl",
+            "LnByb3RvYnVmLkdlbmVyYXRlZENvZGVJbmZvIlcKB0ZlYXR1cmUSEAoMRkVB",
+            "VFVSRV9OT05FEAASGwoXRkVBVFVSRV9QUk9UTzNfT1BUSU9OQUwQARIdChlG",
+            "RUFUVVJFX1NVUFBPUlRTX0VESVRJT05TEAJCcgocY29tLmdvb2dsZS5wcm90",
+            "b2J1Zi5jb21waWxlckIMUGx1Z2luUHJvdG9zWilnb29nbGUuZ29sYW5nLm9y",
+            "Zy9wcm90b2J1Zi90eXBlcy9wbHVnaW5wYqoCGEdvb2dsZS5Qcm90b2J1Zi5D",
+            "b21waWxlcg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.Version), global::Google.Protobuf.Compiler.Version.Parser, new[]{ "Major", "Minor", "Patch", "Suffix" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.CodeGeneratorRequest), global::Google.Protobuf.Compiler.CodeGeneratorRequest.Parser, new[]{ "FileToGenerate", "Parameter", "ProtoFile", "CompilerVersion" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.CodeGeneratorResponse), global::Google.Protobuf.Compiler.CodeGeneratorResponse.Parser, new[]{ "Error", "SupportedFeatures", "File" }, null, new[]{ typeof(global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.Feature) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File), global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File.Parser, new[]{ "Name", "InsertionPoint", "Content", "GeneratedCodeInfo" }, null, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.CodeGeneratorRequest), global::Google.Protobuf.Compiler.CodeGeneratorRequest.Parser, new[]{ "FileToGenerate", "Parameter", "ProtoFile", "SourceFileDescriptors", "CompilerVersion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.CodeGeneratorResponse), global::Google.Protobuf.Compiler.CodeGeneratorResponse.Parser, new[]{ "Error", "SupportedFeatures", "MinimumEdition", "MaximumEdition", "File" }, null, new[]{ typeof(global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.Feature) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File), global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File.Parser, new[]{ "Name", "InsertionPoint", "Content", "GeneratedCodeInfo" }, null, null, null, null)})
           }));
     }
     #endregion
@@ -57,6 +61,7 @@ namespace Google.Protobuf.Compiler {
   /// <summary>
   /// The version number of protocol compiler.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Version : pb::IMessage<Version>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -425,6 +430,7 @@ namespace Google.Protobuf.Compiler {
   /// <summary>
   /// An encoded CodeGeneratorRequest is written to the plugin's stdin.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CodeGeneratorRequest : pb::IMessage<CodeGeneratorRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -462,6 +468,7 @@ namespace Google.Protobuf.Compiler {
       fileToGenerate_ = other.fileToGenerate_.Clone();
       parameter_ = other.parameter_;
       protoFile_ = other.protoFile_.Clone();
+      sourceFileDescriptors_ = other.sourceFileDescriptors_.Clone();
       compilerVersion_ = other.compilerVersion_ != null ? other.compilerVersion_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -527,6 +534,11 @@ namespace Google.Protobuf.Compiler {
     /// they import.  The files will appear in topological order, so each file
     /// appears before any file that imports it.
     ///
+    /// Note: the files listed in files_to_generate will include runtime-retention
+    /// options only, but all other files will include source-retention options.
+    /// The source_file_descriptors field below is available in case you need
+    /// source-retention options for files_to_generate.
+    ///
     /// protoc guarantees that all proto_files will be written after
     /// the fields above, even though this is not technically guaranteed by the
     /// protobuf wire format.  This theoretically could allow a plugin to stream
@@ -542,6 +554,22 @@ namespace Google.Protobuf.Compiler {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> ProtoFile {
       get { return protoFile_; }
+    }
+
+    /// <summary>Field number for the "source_file_descriptors" field.</summary>
+    public const int SourceFileDescriptorsFieldNumber = 17;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_sourceFileDescriptors_codec
+        = pb::FieldCodec.ForMessage(138, global::Google.Protobuf.Reflection.FileDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> sourceFileDescriptors_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto>();
+    /// <summary>
+    /// File descriptors with all options, including source-retention options.
+    /// These descriptors are only provided for the files listed in
+    /// files_to_generate.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> SourceFileDescriptors {
+      get { return sourceFileDescriptors_; }
     }
 
     /// <summary>Field number for the "compiler_version" field.</summary>
@@ -577,6 +605,7 @@ namespace Google.Protobuf.Compiler {
       if(!fileToGenerate_.Equals(other.fileToGenerate_)) return false;
       if (Parameter != other.Parameter) return false;
       if(!protoFile_.Equals(other.protoFile_)) return false;
+      if(!sourceFileDescriptors_.Equals(other.sourceFileDescriptors_)) return false;
       if (!object.Equals(CompilerVersion, other.CompilerVersion)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -588,6 +617,7 @@ namespace Google.Protobuf.Compiler {
       hash ^= fileToGenerate_.GetHashCode();
       if (HasParameter) hash ^= Parameter.GetHashCode();
       hash ^= protoFile_.GetHashCode();
+      hash ^= sourceFileDescriptors_.GetHashCode();
       if (compilerVersion_ != null) hash ^= CompilerVersion.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -617,6 +647,7 @@ namespace Google.Protobuf.Compiler {
         output.WriteMessage(CompilerVersion);
       }
       protoFile_.WriteTo(output, _repeated_protoFile_codec);
+      sourceFileDescriptors_.WriteTo(output, _repeated_sourceFileDescriptors_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -637,6 +668,7 @@ namespace Google.Protobuf.Compiler {
         output.WriteMessage(CompilerVersion);
       }
       protoFile_.WriteTo(ref output, _repeated_protoFile_codec);
+      sourceFileDescriptors_.WriteTo(ref output, _repeated_sourceFileDescriptors_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -652,6 +684,7 @@ namespace Google.Protobuf.Compiler {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Parameter);
       }
       size += protoFile_.CalculateSize(_repeated_protoFile_codec);
+      size += sourceFileDescriptors_.CalculateSize(_repeated_sourceFileDescriptors_codec);
       if (compilerVersion_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(CompilerVersion);
       }
@@ -672,6 +705,7 @@ namespace Google.Protobuf.Compiler {
         Parameter = other.Parameter;
       }
       protoFile_.Add(other.protoFile_);
+      sourceFileDescriptors_.Add(other.sourceFileDescriptors_);
       if (other.compilerVersion_ != null) {
         if (compilerVersion_ == null) {
           CompilerVersion = new global::Google.Protobuf.Compiler.Version();
@@ -712,6 +746,10 @@ namespace Google.Protobuf.Compiler {
             protoFile_.AddEntriesFrom(input, _repeated_protoFile_codec);
             break;
           }
+          case 138: {
+            sourceFileDescriptors_.AddEntriesFrom(input, _repeated_sourceFileDescriptors_codec);
+            break;
+          }
         }
       }
     #endif
@@ -746,6 +784,10 @@ namespace Google.Protobuf.Compiler {
             protoFile_.AddEntriesFrom(ref input, _repeated_protoFile_codec);
             break;
           }
+          case 138: {
+            sourceFileDescriptors_.AddEntriesFrom(ref input, _repeated_sourceFileDescriptors_codec);
+            break;
+          }
         }
       }
     }
@@ -756,6 +798,7 @@ namespace Google.Protobuf.Compiler {
   /// <summary>
   /// The plugin writes an encoded CodeGeneratorResponse to stdout.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CodeGeneratorResponse : pb::IMessage<CodeGeneratorResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -794,6 +837,8 @@ namespace Google.Protobuf.Compiler {
       _hasBits0 = other._hasBits0;
       error_ = other.error_;
       supportedFeatures_ = other.supportedFeatures_;
+      minimumEdition_ = other.minimumEdition_;
+      maximumEdition_ = other.maximumEdition_;
       file_ = other.file_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -871,6 +916,72 @@ namespace Google.Protobuf.Compiler {
       _hasBits0 &= ~1;
     }
 
+    /// <summary>Field number for the "minimum_edition" field.</summary>
+    public const int MinimumEditionFieldNumber = 3;
+    private readonly static int MinimumEditionDefaultValue = 0;
+
+    private int minimumEdition_;
+    /// <summary>
+    /// The minimum edition this plugin supports.  This will be treated as an
+    /// Edition enum, but we want to allow unknown values.  It should be specified
+    /// according the edition enum value, *not* the edition number.  Only takes
+    /// effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int MinimumEdition {
+      get { if ((_hasBits0 & 2) != 0) { return minimumEdition_; } else { return MinimumEditionDefaultValue; } }
+      set {
+        _hasBits0 |= 2;
+        minimumEdition_ = value;
+      }
+    }
+    /// <summary>Gets whether the "minimum_edition" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasMinimumEdition {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "minimum_edition" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearMinimumEdition() {
+      _hasBits0 &= ~2;
+    }
+
+    /// <summary>Field number for the "maximum_edition" field.</summary>
+    public const int MaximumEditionFieldNumber = 4;
+    private readonly static int MaximumEditionDefaultValue = 0;
+
+    private int maximumEdition_;
+    /// <summary>
+    /// The maximum edition this plugin supports.  This will be treated as an
+    /// Edition enum, but we want to allow unknown values.  It should be specified
+    /// according the edition enum value, *not* the edition number.  Only takes
+    /// effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int MaximumEdition {
+      get { if ((_hasBits0 & 4) != 0) { return maximumEdition_; } else { return MaximumEditionDefaultValue; } }
+      set {
+        _hasBits0 |= 4;
+        maximumEdition_ = value;
+      }
+    }
+    /// <summary>Gets whether the "maximum_edition" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasMaximumEdition {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "maximum_edition" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearMaximumEdition() {
+      _hasBits0 &= ~4;
+    }
+
     /// <summary>Field number for the "file" field.</summary>
     public const int FileFieldNumber = 15;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File> _repeated_file_codec
@@ -899,6 +1010,8 @@ namespace Google.Protobuf.Compiler {
       }
       if (Error != other.Error) return false;
       if (SupportedFeatures != other.SupportedFeatures) return false;
+      if (MinimumEdition != other.MinimumEdition) return false;
+      if (MaximumEdition != other.MaximumEdition) return false;
       if(!file_.Equals(other.file_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -909,6 +1022,8 @@ namespace Google.Protobuf.Compiler {
       int hash = 1;
       if (HasError) hash ^= Error.GetHashCode();
       if (HasSupportedFeatures) hash ^= SupportedFeatures.GetHashCode();
+      if (HasMinimumEdition) hash ^= MinimumEdition.GetHashCode();
+      if (HasMaximumEdition) hash ^= MaximumEdition.GetHashCode();
       hash ^= file_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -936,6 +1051,14 @@ namespace Google.Protobuf.Compiler {
         output.WriteRawTag(16);
         output.WriteUInt64(SupportedFeatures);
       }
+      if (HasMinimumEdition) {
+        output.WriteRawTag(24);
+        output.WriteInt32(MinimumEdition);
+      }
+      if (HasMaximumEdition) {
+        output.WriteRawTag(32);
+        output.WriteInt32(MaximumEdition);
+      }
       file_.WriteTo(output, _repeated_file_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -955,6 +1078,14 @@ namespace Google.Protobuf.Compiler {
         output.WriteRawTag(16);
         output.WriteUInt64(SupportedFeatures);
       }
+      if (HasMinimumEdition) {
+        output.WriteRawTag(24);
+        output.WriteInt32(MinimumEdition);
+      }
+      if (HasMaximumEdition) {
+        output.WriteRawTag(32);
+        output.WriteInt32(MaximumEdition);
+      }
       file_.WriteTo(ref output, _repeated_file_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -971,6 +1102,12 @@ namespace Google.Protobuf.Compiler {
       }
       if (HasSupportedFeatures) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(SupportedFeatures);
+      }
+      if (HasMinimumEdition) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MinimumEdition);
+      }
+      if (HasMaximumEdition) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MaximumEdition);
       }
       size += file_.CalculateSize(_repeated_file_codec);
       if (_unknownFields != null) {
@@ -990,6 +1127,12 @@ namespace Google.Protobuf.Compiler {
       }
       if (other.HasSupportedFeatures) {
         SupportedFeatures = other.SupportedFeatures;
+      }
+      if (other.HasMinimumEdition) {
+        MinimumEdition = other.MinimumEdition;
+      }
+      if (other.HasMaximumEdition) {
+        MaximumEdition = other.MaximumEdition;
       }
       file_.Add(other.file_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1013,6 +1156,14 @@ namespace Google.Protobuf.Compiler {
           }
           case 16: {
             SupportedFeatures = input.ReadUInt64();
+            break;
+          }
+          case 24: {
+            MinimumEdition = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            MaximumEdition = input.ReadInt32();
             break;
           }
           case 122: {
@@ -1042,6 +1193,14 @@ namespace Google.Protobuf.Compiler {
             SupportedFeatures = input.ReadUInt64();
             break;
           }
+          case 24: {
+            MinimumEdition = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            MaximumEdition = input.ReadInt32();
+            break;
+          }
           case 122: {
             file_.AddEntriesFrom(ref input, _repeated_file_codec);
             break;
@@ -1062,11 +1221,13 @@ namespace Google.Protobuf.Compiler {
       public enum Feature {
         [pbr::OriginalName("FEATURE_NONE")] None = 0,
         [pbr::OriginalName("FEATURE_PROTO3_OPTIONAL")] Proto3Optional = 1,
+        [pbr::OriginalName("FEATURE_SUPPORTS_EDITIONS")] SupportsEditions = 2,
       }
 
       /// <summary>
       /// Represents a single generated file.
       /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class File : pb::IMessage<File>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage

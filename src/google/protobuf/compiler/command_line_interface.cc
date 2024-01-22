@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,13 +11,20 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include <cstdint>
+#include <cstdlib>
+
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/allowlists/allowlists.h"
-#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/feature_resolver.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
 
@@ -94,6 +78,7 @@
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/zip_writer.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
@@ -133,7 +118,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
 
 // Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
+// with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in importer.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -255,7 +240,7 @@ bool IsInstalledProtoPath(absl::string_view path) {
 // type protos are installed.
 void AddDefaultProtoPaths(
     std::vector<std::pair<std::string, std::string>>* paths) {
-  // TODO(xiaofeng): The code currently only checks relative paths of where
+  // TODO: The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
   std::string path_str;
@@ -301,28 +286,24 @@ std::string PluginName(absl::string_view plugin_prefix,
                       directive.substr(2, directive.size() - 6));
 }
 
+bool GetBootstrapParam(const std::string& parameter) {
+  std::vector<std::string> parts = absl::StrSplit(parameter, ',');
+  for (const auto& part : parts) {
+    if (part == "bootstrap") {
+      return true;
+    }
+  }
+  return false;
+}
 
-// Get all transitive dependencies of the given file (including the file
-// itself), adding them to the given list of FileDescriptorProtos.  The
-// protos will be ordered such that every file is listed before any file that
-// depends on it, so that you can call DescriptorPool::BuildFile() on them
-// in order.  Any files in *already_seen will not be added, and each file
-// added will be inserted into *already_seen.  If include_source_code_info is
-// true then include the source code information in the FileDescriptorProtos.
-// If include_json_name is true, populate the json_name field of
-// FieldDescriptorProto for all fields.
-struct TransitiveDependencyOptions {
-  bool include_json_name = false;
-  bool include_source_code_info = false;
-  bool retain_options = false;
-};
 
-void GetTransitiveDependencies(
+}  // namespace
+
+void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file,
     absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output,
-    const TransitiveDependencyOptions& options =
-        TransitiveDependencyOptions()) {
+    const TransitiveDependencyOptions& options) {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
     return;
@@ -336,21 +317,17 @@ void GetTransitiveDependencies(
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
-  if (options.retain_options) {
-    file->CopyTo(new_descriptor);
-    if (options.include_source_code_info) {
-      file->CopySourceCodeInfoTo(new_descriptor);
-    }
-  } else {
-    *new_descriptor =
-        StripSourceRetentionOptions(*file, options.include_source_code_info);
+  file->CopyTo(new_descriptor);
+  if (options.include_source_code_info) {
+    file->CopySourceCodeInfoTo(new_descriptor);
+  }
+  if (!options.retain_options) {
+    StripSourceRetentionOptions(*file->pool(), *new_descriptor);
   }
   if (options.include_json_name) {
     file->CopyJsonNameTo(new_descriptor);
   }
 }
-
-}  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
 class CommandLineInterface::ErrorPrinter
@@ -1002,7 +979,8 @@ namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (FieldDescriptorLegacy(desc->field(i)).has_optional_keyword()) {
+    if (desc->field(i)->real_containing_oneof() == nullptr &&
+        desc->field(i)->containing_oneof() != nullptr) {
       return true;
     }
   }
@@ -1014,9 +992,8 @@ bool ContainsProto3Optional(const Descriptor* desc) {
   return false;
 }
 
-bool ContainsProto3Optional(const FileDescriptor* file) {
-  if (FileDescriptorLegacy(file).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO3) {
+bool ContainsProto3Optional(Edition edition, const FileDescriptor* file) {
+  if (edition == Edition::EDITION_PROTO3) {
     for (int i = 0; i < file->message_type_count(); i++) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;
@@ -1265,6 +1242,17 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
+
+  if (!SetupFeatureResolution(*descriptor_pool)) {
+    return EXIT_FAILURE;
+  }
+
+  // Enforce extension declarations only when compiling. We want to skip
+  // this enforcement when protoc is just being invoked to encode or decode
+  // protos.
+  if (mode_ == MODE_COMPILE) {
+    descriptor_pool->EnforceExtensionDeclarations(true);
+  }
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
                        &parsed_files)) {
     return 1;
@@ -1306,13 +1294,16 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // something like descriptor->file()->name(), but ExtensionRange does not
   // support this.
   for (const google::protobuf::FileDescriptor* file : parsed_files) {
-    google::protobuf::internal::VisitDescriptors(*file, [&](const auto& descriptor) {
-      if (!ValidateTargetConstraints(descriptor.options(), *descriptor_pool,
-                                     *error_collector, file->name(),
-                                     GetTargetType(&descriptor))) {
-        validation_error = true;
-      }
-    });
+    FileDescriptorProto proto;
+    file->CopyTo(&proto);
+    google::protobuf::internal::VisitDescriptors(
+        *file, proto, [&](const auto& descriptor, const auto& proto) {
+          if (!ValidateTargetConstraints(proto.options(), *descriptor_pool,
+                                         *error_collector, file->name(),
+                                         GetTargetType(&descriptor))) {
+            validation_error = true;
+          }
+        });
   }
 
 
@@ -1377,6 +1368,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   if (!descriptor_set_out_name_.empty()) {
     if (!WriteDescriptorSet(parsed_files)) {
+      return 1;
+    }
+  }
+
+  if (!experimental_edition_defaults_out_name_.empty()) {
+    if (!WriteExperimentalEditionDefaults(*descriptor_pool)) {
       return 1;
     }
   }
@@ -1512,6 +1509,59 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
   return true;
 }
 
+bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
+  // Calculate the feature defaults for each built-in generator.  All generators
+  // that support editions must agree on the supported edition range.
+  std::vector<const FieldDescriptor*> feature_extensions;
+  Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
+  Edition maximum_edition = PROTOBUF_MAXIMUM_EDITION;
+  for (const auto& output : output_directives_) {
+    if (output.generator == nullptr) continue;
+    if ((output.generator->GetSupportedFeatures() &
+         CodeGenerator::FEATURE_SUPPORTS_EDITIONS) != 0) {
+      // Only validate min/max edition on generators that advertise editions
+      // support.  Generators still under development will always use the
+      // correct values.
+      if (output.generator->GetMinimumEdition() != minimum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a minimum edition "
+                        << output.generator->GetMinimumEdition()
+                        << " which is not the protoc minimum "
+                        << minimum_edition << ".";
+        return false;
+      }
+      if (output.generator->GetMaximumEdition() != maximum_edition) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies a maximum edition "
+                        << output.generator->GetMaximumEdition()
+                        << " which is not the protoc maximum "
+                        << maximum_edition << ".";
+        return false;
+      }
+    }
+    for (const FieldDescriptor* ext :
+         output.generator->GetFeatureExtensions()) {
+      if (ext == nullptr) {
+        ABSL_LOG(ERROR) << "Built-in generator " << output.name
+                        << " specifies an unknown feature extension.";
+        return false;
+      }
+      feature_extensions.push_back(ext);
+    }
+  }
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       feature_extensions, minimum_edition,
+                                       maximum_edition);
+  if (!defaults.ok()) {
+    ABSL_LOG(ERROR) << defaults.status();
+    return false;
+  }
+  absl::Status status = pool.SetFeatureSetDefaults(std::move(defaults).value());
+  ABSL_CHECK(status.ok()) << status.message();
+  return true;
+}
+
 bool CommandLineInterface::ParseInputFiles(
     DescriptorPool* descriptor_pool, DiskSourceTree* source_tree,
     std::vector<const FileDescriptor*>* parsed_files) {
@@ -1548,6 +1598,21 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
+    if (!experimental_editions_ &&
+        !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
+        !absl::StartsWith(parsed_file->name(), "upb/")) {
+      if (::google::protobuf::internal::InternalFeatureHelper::GetEdition(*parsed_file) >=
+          Edition::EDITION_2023) {
+        std::cerr
+            << parsed_file->name()
+            << ": This file uses editions, but --experimental_editions has not "
+               "been enabled. This syntax is experimental and should be "
+               "avoided."
+            << std::endl;
+        result = false;
+        break;
+      }
+    }
 
     // Enforce --disallow_services.
     if (disallow_services_ && parsed_file->service_count() > 0) {
@@ -1598,6 +1663,10 @@ void CommandLineInterface::Clear() {
   descriptor_set_out_name_.clear();
   dependency_out_name_.clear();
 
+  experimental_editions_ = false;
+  experimental_edition_defaults_out_name_.clear();
+  experimental_edition_defaults_minimum_ = EDITION_UNKNOWN;
+  experimental_edition_defaults_maximum_ = EDITION_UNKNOWN;
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -1697,10 +1766,23 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
 
 
 bool CommandLineInterface::ExpandArgumentFile(
-    const std::string& file, std::vector<std::string>* arguments) {
+    const char* file, std::vector<std::string>* arguments) {
+// On windows to force ifstream to handle proper utr-8, we need to convert to
+// proper supported utf8 wstring. If we dont then the file can't be opened.
+#ifdef _MSC_VER
+  // Convert the file name to wide chars.
+  int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), NULL, 0);
+  std::wstring file_str;
+  file_str.resize(size);
+  MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), &file_str[0],
+                      file_str.size());
+#else
+  std::string file_str(file);
+#endif
+
   // The argument file is searched in the working directory only. We don't
   // use the proto import path here.
-  std::ifstream file_stream(file.c_str());
+  std::ifstream file_stream(file_str.c_str());
   if (!file_stream.is_open()) {
     return false;
   }
@@ -1815,7 +1897,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
         break;  // only for --decode_raw
       }
       // --decode (not raw) is handled the same way as the rest of the modes.
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case MODE_ENCODE:
     case MODE_PRINT:
       missing_proto_definitions =
@@ -1829,7 +1911,8 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     return PARSE_ARGUMENT_FAIL;
   }
   if (mode_ == MODE_COMPILE && output_directives_.empty() &&
-      descriptor_set_out_name_.empty()) {
+      descriptor_set_out_name_.empty() &&
+      experimental_edition_defaults_out_name_.empty()) {
     std::cerr << "Missing output directives." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1916,6 +1999,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--retain_options" || *name == "--version" ||
       *name == "--decode_raw" ||
+      *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
       *name == "--deterministic_output" || *name == "--fatal_warnings") {
@@ -2125,7 +2209,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     if (!version_info_.empty()) {
       std::cout << version_info_ << std::endl;
     }
-    std::cout << "libprotoc " << internal::ProtocVersionString(PROTOBUF_VERSION)
+    std::cout << "libprotoc "
+              << ::google::protobuf::internal::ProtocVersionString(
+                     PROTOBUF_VERSION)
               << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
@@ -2242,6 +2328,49 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #else
     ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
 #endif
+  } else if (name == "--experimental_editions") {
+    // If you're reading this, you're probably wondering what
+    // --experimental_editions is for and thinking of turning it on. This is an
+    // experimental, undocumented, unsupported flag. Enable it at your own risk
+    // (or, just don't!).
+    experimental_editions_ = true;
+  } else if (name == "--experimental_edition_defaults_out") {
+    if (!experimental_edition_defaults_out_name_.empty()) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (mode_ != MODE_COMPILE) {
+      std::cerr
+          << "Cannot use --encode or --decode and generate defaults at the "
+             "same time."
+          << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    experimental_edition_defaults_out_name_ = value;
+  } else if (name == "--experimental_edition_defaults_minimum") {
+    if (experimental_edition_defaults_minimum_ != EDITION_UNKNOWN) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (!Edition_Parse(absl::StrCat("EDITION_", value),
+                       &experimental_edition_defaults_minimum_)) {
+      std::cerr << name << " unknown edition \"" << value << "\"." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+  } else if (name == "--experimental_edition_defaults_maximum") {
+    if (experimental_edition_defaults_maximum_ != EDITION_UNKNOWN) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (!Edition_Parse(absl::StrCat("EDITION_", value),
+                       &experimental_edition_defaults_maximum_)) {
+      std::cerr << name << " unknown edition \"" << value << "\"." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
   } else {
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
@@ -2419,7 +2548,8 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
   if (!supports_proto3_optional) {
     for (const auto fd : parsed_files) {
-      if (ContainsProto3Optional(fd)) {
+      if (ContainsProto3Optional(
+              ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd), fd)) {
         std::cerr << fd->name()
                   << ": is a proto3 file that contains optional fields, but "
                      "code generator "
@@ -2430,6 +2560,54 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
                   << std::endl;
         return false;
       }
+    }
+  }
+  return true;
+}
+
+bool CommandLineInterface::EnforceEditionsSupport(
+    const std::string& codegen_name, uint64_t supported_features,
+    Edition minimum_edition, Edition maximum_edition,
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    Edition edition =
+        ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
+    if (edition < Edition::EDITION_2023) {
+      // Legacy proto2/proto3 files don't need any checks.
+      continue;
+    }
+
+    if (absl::StartsWith(fd->name(), "google/protobuf/") ||
+        absl::StartsWith(fd->name(), "upb/")) {
+      continue;
+    }
+    if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
+      std::cerr << absl::Substitute(
+          "$0: is an editions file, but code generator $1 hasn't been "
+          "updated to support editions yet.  Please ask the owner of this code "
+          "generator to add support or switch back to proto2/proto3.\n\nSee "
+          "https://protobuf.dev/editions/overview/ for more information.",
+          fd->name(), codegen_name);
+      return false;
+    }
+    if (edition < minimum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please upgrade your file to at least edition $3.",
+          fd->name(), codegen_name, edition, minimum_edition);
+      return false;
+    }
+    if (edition > maximum_edition) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $2, which isn't supported by code "
+          "generator $1.  Please ask the owner of this code generator to add "
+          "support or switch back to a maximum of edition $3.",
+          fd->name(), codegen_name, edition, maximum_edition);
+      return false;
     }
   }
   return true;
@@ -2475,6 +2653,22 @@ bool CommandLineInterface::GenerateOutput(
       return false;
     }
 
+    if (!EnforceEditionsSupport(
+            output_directive.name,
+            output_directive.generator->GetSupportedFeatures(),
+            output_directive.generator->GetMinimumEdition(),
+            output_directive.generator->GetMaximumEdition(), parsed_files)) {
+      return false;
+    }
+
+    // TODO: Remove once Java lite supports editions.
+    if (output_directive.name == "--java_out" && experimental_editions_) {
+      if (!parameters.empty()) {
+        parameters.append(",");
+      }
+      parameters.append("experimental_editions");
+    }
+
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
@@ -2517,6 +2711,11 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     output_filenames.push_back(descriptor_set_out_name_);
   }
 
+  if (!experimental_edition_defaults_out_name_.empty()) {
+    output_filenames.push_back(experimental_edition_defaults_out_name_);
+  }
+
+  // Create the depfile, even if it will be empty.
   int fd;
   do {
     fd = open(dependency_out_name_.c_str(),
@@ -2528,30 +2727,34 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     return false;
   }
 
-  io::FileOutputStream out(fd);
-  io::Printer printer(&out, '$');
+  // Only write to the depfile if there is at least one output_filename.
+  // Otherwise, the depfile will be malformed.
+  if (!output_filenames.empty()) {
+    io::FileOutputStream out(fd);
+    io::Printer printer(&out, '$');
 
-  for (int i = 0; i < output_filenames.size(); i++) {
-    printer.Print(output_filenames[i]);
-    if (i == output_filenames.size() - 1) {
-      printer.Print(":");
-    } else {
-      printer.Print(" \\\n");
+    for (size_t i = 0; i < output_filenames.size(); i++) {
+      printer.Print(output_filenames[i]);
+      if (i == output_filenames.size() - 1) {
+        printer.Print(":");
+      } else {
+        printer.Print(" \\\n");
+      }
     }
-  }
 
-  for (int i = 0; i < file_set.file_size(); i++) {
-    const FileDescriptorProto& file = file_set.file(i);
-    const std::string& virtual_file = file.name();
-    std::string disk_file;
-    if (source_tree &&
-        source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
-      printer.Print(" $disk_file$", "disk_file", disk_file);
-      if (i < file_set.file_size() - 1) printer.Print("\\\n");
-    } else {
-      std::cerr << "Unable to identify path for file " << virtual_file
-                << std::endl;
-      return false;
+    for (int i = 0; i < file_set.file_size(); i++) {
+      const FileDescriptorProto& file = file_set.file(i);
+      const std::string& virtual_file = file.name();
+      std::string disk_file;
+      if (source_tree &&
+          source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
+        printer.Print(" $disk_file$", "disk_file", disk_file);
+        if (i < file_set.file_size() - 1) printer.Print("\\\n");
+      } else {
+        std::cerr << "Unable to identify path for file " << virtual_file
+                  << std::endl;
+        return false;
+      }
     }
   }
 
@@ -2566,6 +2769,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   CodeGeneratorResponse response;
   std::string processed_parameter = parameter;
 
+  bool bootstrap = GetBootstrapParam(processed_parameter);
 
   // Build the request.
   if (!processed_parameter.empty()) {
@@ -2574,13 +2778,32 @@ bool CommandLineInterface::GeneratePluginOutput(
 
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
-  for (int i = 0; i < parsed_files.size(); i++) {
-    request.add_file_to_generate(parsed_files[i]->name());
-    GetTransitiveDependencies(parsed_files[i], &already_seen,
-                              request.mutable_proto_file(),
+  for (const FileDescriptor* file : parsed_files) {
+    request.add_file_to_generate(file->name());
+    GetTransitiveDependencies(file, &already_seen, request.mutable_proto_file(),
                               {/*.include_json_name =*/true,
                                /*.include_source_code_info =*/true,
                                /*.retain_options =*/true});
+  }
+
+  // Populate source_file_descriptors and remove source-retention options from
+  // proto_file.
+  ABSL_CHECK(!parsed_files.empty());
+  const DescriptorPool* pool = parsed_files[0]->pool();
+  absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
+                                                     input_files_.end());
+  for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
+    if (files_to_generate.contains(file_proto.name())) {
+      const FileDescriptor* file = pool->FindFileByName(file_proto.name());
+      *request.add_source_file_descriptors() = std::move(file_proto);
+      file->CopyTo(&file_proto);
+      // Don't populate source code info or json_name for bootstrap protos.
+      if (!bootstrap) {
+        file->CopySourceCodeInfoTo(&file_proto);
+        file->CopyJsonNameTo(&file_proto);
+      }
+      StripSourceRetentionOptions(*file->pool(), file_proto);
+    }
   }
 
   google::protobuf::compiler::Version* version =
@@ -2646,8 +2869,15 @@ bool CommandLineInterface::GeneratePluginOutput(
     // Generator returned an error.
     *error = response.error();
     return false;
-  } else if (!EnforceProto3OptionalSupport(
-                 plugin_name, response.supported_features(), parsed_files)) {
+  }
+  if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
+                                    parsed_files)) {
+    return false;
+  }
+  if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
+                              static_cast<Edition>(response.minimum_edition()),
+                              static_cast<Edition>(response.maximum_edition()),
+                              parsed_files)) {
     return false;
   }
 
@@ -2780,6 +3010,73 @@ bool CommandLineInterface::WriteDescriptorSet(
   if (!out.Close()) {
     std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
               << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::WriteExperimentalEditionDefaults(
+    const DescriptorPool& pool) {
+  const Descriptor* feature_set =
+      pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  if (feature_set == nullptr) {
+    std::cerr << experimental_edition_defaults_out_name_
+              << ": Could not find FeatureSet in descriptor pool.  Please make "
+                 "sure descriptor.proto is in your import path"
+              << std::endl;
+    return false;
+  }
+  std::vector<const FieldDescriptor*> extensions;
+  pool.FindAllExtensions(feature_set, &extensions);
+
+  Edition minimum = PROTOBUF_MINIMUM_EDITION;
+  if (experimental_edition_defaults_minimum_ != EDITION_UNKNOWN) {
+    minimum = experimental_edition_defaults_minimum_;
+  }
+  Edition maximum = PROTOBUF_MAXIMUM_EDITION;
+  if (experimental_edition_defaults_maximum_ != EDITION_UNKNOWN) {
+    maximum = experimental_edition_defaults_maximum_;
+  }
+
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(feature_set, extensions, minimum,
+                                       maximum);
+  if (!defaults.ok()) {
+    std::cerr << experimental_edition_defaults_out_name_ << ": "
+              << defaults.status().message() << std::endl;
+    return false;
+  }
+
+  int fd;
+  do {
+    fd = open(experimental_edition_defaults_out_name_.c_str(),
+              O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (fd < 0 && errno == EINTR);
+
+  if (fd < 0) {
+    perror(experimental_edition_defaults_out_name_.c_str());
+    return false;
+  }
+
+  io::FileOutputStream out(fd);
+
+  {
+    io::CodedOutputStream coded_out(&out);
+    // Determinism is useful here because build outputs are sometimes checked
+    // into version control.
+    coded_out.SetSerializationDeterministic(true);
+    if (!defaults->SerializeToCodedStream(&coded_out)) {
+      std::cerr << experimental_edition_defaults_out_name_ << ": "
+                << strerror(out.GetErrno()) << std::endl;
+      out.Close();
+      return false;
+    }
+  }
+
+  if (!out.Close()) {
+    std::cerr << experimental_edition_defaults_out_name_ << ": "
+              << strerror(out.GetErrno()) << std::endl;
     return false;
   }
 

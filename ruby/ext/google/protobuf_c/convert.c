@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // -----------------------------------------------------------------------------
 // Ruby <-> upb data conversion functions.
@@ -41,6 +18,7 @@
 
 #include "message.h"
 #include "protobuf.h"
+#include "shared_convert.h"
 
 static upb_StringView Convert_StringData(VALUE str, upb_Arena* arena) {
   upb_StringView ret;
@@ -111,8 +89,7 @@ static int32_t Convert_ToEnum(VALUE value, const char* name,
     case T_SYMBOL: {
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByName(e, rb_id2name(SYM2ID(value)));
-      if (!ev)
-        goto unknownval;
+      if (!ev) goto unknownval;
       val = upb_EnumValueDef_Number(ev);
       break;
     }
@@ -164,7 +141,7 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       VALUE utf8 = rb_enc_from_encoding(rb_utf8_encoding());
       if (rb_obj_class(value) == rb_cSymbol) {
         value = rb_funcall(value, rb_intern("to_s"), 0);
-      } else if (rb_obj_class(value) != rb_cString) {
+      } else if (!rb_obj_is_kind_of(value, rb_cString)) {
         rb_raise(cTypeError,
                  "Invalid argument for string field '%s' (given %s).", name,
                  rb_class2name(CLASS_OF(value)));
@@ -194,7 +171,7 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       if (rb_obj_encoding(value) != bytes) {
         // Note: this will not duplicate underlying string data unless
         // necessary.
-        // TODO(haberman): is this really necessary to get raw bytes?
+        // TODO: is this really necessary to get raw bytes?
         value = rb_str_encode(value, bytes, 0, Qnil);
       }
 
@@ -231,7 +208,8 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       }
       break;
     default:
-      break;
+      rb_raise(cTypeError,
+                "Convert_RubyToUpb(): Unexpected type %d", (int)type_info.type);
   }
 
   return ret;
@@ -255,7 +233,7 @@ VALUE Convert_UpbToRuby(upb_MessageValue upb_val, TypeInfo type_info,
     case kUpb_CType_UInt64:
       return ULL2NUM(upb_val.int64_val);
     case kUpb_CType_Enum: {
-      const upb_EnumValueDef *ev = upb_EnumDef_FindValueByNumber(
+      const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(
           type_info.def.enumdef, upb_val.int32_val);
       if (ev) {
         return ID2SYM(rb_intern(upb_EnumValueDef_Name(ev)));
@@ -312,50 +290,28 @@ upb_MessageValue Msgval_DeepCopy(upb_MessageValue msgval, TypeInfo type_info,
 
 bool Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
                     TypeInfo type_info) {
-  switch (type_info.type) {
-    case kUpb_CType_Bool:
-      return memcmp(&val1, &val2, 1) == 0;
-    case kUpb_CType_Float:
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return memcmp(&val1, &val2, 4) == 0;
-    case kUpb_CType_Double:
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return memcmp(&val1, &val2, 8) == 0;
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return val1.str_val.size == val2.str_val.size &&
-             memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
-                 0;
-    case kUpb_CType_Message:
-      return Message_Equal(val1.msg_val, val2.msg_val, type_info.def.msgdef);
-    default:
-      rb_raise(rb_eRuntimeError, "Internal error, unexpected type");
+  upb_Status status;
+  upb_Status_Clear(&status);
+  bool return_value = shared_Msgval_IsEqual(val1, val2, type_info.type,
+                                            type_info.def.msgdef, &status);
+  if (upb_Status_IsOk(&status)) {
+    return return_value;
+  } else {
+    rb_raise(rb_eRuntimeError, "Msgval_IsEqual(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }
 
 uint64_t Msgval_GetHash(upb_MessageValue val, TypeInfo type_info,
                         uint64_t seed) {
-  switch (type_info.type) {
-    case kUpb_CType_Bool:
-      return _upb_Hash(&val, 1, seed);
-    case kUpb_CType_Float:
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return _upb_Hash(&val, 4, seed);
-    case kUpb_CType_Double:
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return _upb_Hash(&val, 8, seed);
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return _upb_Hash(val.str_val.data, val.str_val.size, seed);
-    case kUpb_CType_Message:
-      return Message_Hash(val.msg_val, type_info.def.msgdef, seed);
-    default:
-      rb_raise(rb_eRuntimeError, "Internal error, unexpected type");
+  upb_Status status;
+  upb_Status_Clear(&status);
+  uint64_t return_value = shared_Msgval_GetHash(
+      val, type_info.type, type_info.def.msgdef, seed, &status);
+  if (upb_Status_IsOk(&status)) {
+    return return_value;
+  } else {
+    rb_raise(rb_eRuntimeError, "Msgval_GetHash(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }

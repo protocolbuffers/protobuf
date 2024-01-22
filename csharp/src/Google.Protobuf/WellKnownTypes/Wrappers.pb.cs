@@ -58,6 +58,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `DoubleValue` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DoubleValue : pb::IMessage<DoubleValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -255,6 +256,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `FloatValue` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FloatValue : pb::IMessage<FloatValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -452,6 +454,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Int64Value` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int64Value : pb::IMessage<Int64Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -649,6 +652,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `UInt64Value` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UInt64Value : pb::IMessage<UInt64Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -846,6 +850,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Int32Value` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int32Value : pb::IMessage<Int32Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1043,6 +1048,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `UInt32Value` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UInt32Value : pb::IMessage<UInt32Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1240,6 +1246,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `BoolValue` is JSON `true` and `false`.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BoolValue : pb::IMessage<BoolValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1437,6 +1444,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `StringValue` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class StringValue : pb::IMessage<StringValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1634,6 +1642,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `BytesValue` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BytesValue : pb::IMessage<BytesValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2024 Google LLC.  All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -39,7 +16,6 @@
 #include <cstddef>
 #include <functional>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -277,6 +253,8 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
 
 constexpr absl::string_view Printer::kProtocCodegenTrace;
 
+Printer::Printer(ZeroCopyOutputStream* output) : Printer(output, Options{}) {}
+
 Printer::Printer(ZeroCopyOutputStream* output, Options options)
     : sink_(output), options_(options) {
   if (!options_.enable_codegen_trace.has_value()) {
@@ -288,6 +266,10 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
     options_.enable_codegen_trace = kEnableCodegenTrace;
   }
 }
+
+Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
+                 AnnotationCollector* annotation_collector)
+    : Printer(output, Options{variable_delimiter, annotation_collector}) {}
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
   auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
@@ -411,7 +393,38 @@ void Printer::WriteRaw(const char* data, size_t size) {
   // the current line.
   line_start_variables_.clear();
 
-  sink_.Append(data, size);
+  if (paren_depth_to_omit_.empty()) {
+    sink_.Append(data, size);
+  } else {
+    for (size_t i = 0; i < size; ++i) {
+      char c = data[i];
+      switch (c) {
+        case '(':
+          paren_depth_++;
+          if (!paren_depth_to_omit_.empty() &&
+              paren_depth_to_omit_.back() == paren_depth_) {
+            break;
+          }
+
+          sink_.Append(&c, 1);
+          break;
+        case ')':
+          if (!paren_depth_to_omit_.empty() &&
+              paren_depth_to_omit_.back() == paren_depth_) {
+            paren_depth_to_omit_.pop_back();
+            paren_depth_--;
+            break;
+          }
+
+          paren_depth_--;
+          sink_.Append(&c, 1);
+          break;
+        default:
+          sink_.Append(&c, 1);
+          break;
+      }
+    }
+  }
   failed_ |= sink_.failed();
 }
 
@@ -534,6 +547,9 @@ void Printer::PrintImpl(absl::string_view format,
       // If we get this far, we can conclude the chunk is a substitution
       // variable; we rename the `chunk` variable to make this clear below.
       absl::string_view var = chunk.text;
+      if (substitution_listener_ != nullptr) {
+        substitution_listener_(var, opts.loc.value_or(SourceLocation()));
+      }
       if (opts.use_curly_brace_substitutions &&
           absl::ConsumePrefix(&var, "{")) {
         if (!Validate(var.size() == 1u, opts,
@@ -707,6 +723,10 @@ void Printer::PrintImpl(absl::string_view format,
         ABSL_CHECK((*fnc)())
             << "recursive call encountered while evaluating \"" << var << "\"";
         range_end = sink_.bytes_written();
+      }
+
+      if (range_start == range_end && sub->consume_parens_if_empty) {
+        paren_depth_to_omit_.push_back(paren_depth_ + 1);
       }
 
       // If we just evaluated a value which specifies end-of-line consume-after

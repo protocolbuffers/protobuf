@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/map_field.h"
 
@@ -34,10 +11,14 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "absl/log/absl_log.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -48,49 +29,15 @@ namespace objectivec {
 // provides a bunch of things (no has* methods, comments for contained type,
 // etc.).
 
-namespace {
-
-const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
-  ObjectiveCType type = GetObjectiveCType(descriptor);
-  switch (type) {
-    case OBJECTIVECTYPE_INT32:
-      return "Int32";
-    case OBJECTIVECTYPE_UINT32:
-      return "UInt32";
-    case OBJECTIVECTYPE_INT64:
-      return "Int64";
-    case OBJECTIVECTYPE_UINT64:
-      return "UInt64";
-    case OBJECTIVECTYPE_FLOAT:
-      return "Float";
-    case OBJECTIVECTYPE_DOUBLE:
-      return "Double";
-    case OBJECTIVECTYPE_BOOLEAN:
-      return "Bool";
-    case OBJECTIVECTYPE_STRING:
-      return (isKey ? "String" : "Object");
-    case OBJECTIVECTYPE_DATA:
-      return "Object";
-    case OBJECTIVECTYPE_ENUM:
-      return "Enum";
-    case OBJECTIVECTYPE_MESSAGE:
-      return "Object";
-  }
-
-  // Some compilers report reaching end of function even though all cases of
-  // the enum are handed in the switch.
-  ABSL_LOG(FATAL) << "Can't get here.";
-  return nullptr;
-}
-
-}  // namespace
-
-MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+MapFieldGenerator::MapFieldGenerator(
+    const FieldDescriptor* descriptor,
+    const GenerationOptions& generation_options)
+    : RepeatedFieldGenerator(descriptor, generation_options) {
   const FieldDescriptor* key_descriptor = descriptor->message_type()->map_key();
   const FieldDescriptor* value_descriptor =
       descriptor->message_type()->map_value();
-  value_field_generator_.reset(FieldGenerator::Make(value_descriptor));
+  value_field_generator_.reset(
+      FieldGenerator::Make(value_descriptor, generation_options));
 
   // Pull over some variables_ from the value.
   variables_["field_type"] = value_field_generator_->variable("field_type");
@@ -121,46 +68,24 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
 
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
-  ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
-  const bool value_is_object_type =
-      ((value_objc_type == OBJECTIVECTYPE_STRING) ||
-       (value_objc_type == OBJECTIVECTYPE_DATA) ||
-       (value_objc_type == OBJECTIVECTYPE_MESSAGE));
-  if ((GetObjectiveCType(key_descriptor) == OBJECTIVECTYPE_STRING) &&
-      value_is_object_type) {
-    variables_["array_storage_type"] = "NSMutableDictionary";
-    variables_["array_property_type"] =
-        absl::StrCat("NSMutableDictionary<NSString*, ",
-                     value_field_generator_->variable("storage_type"), "*>");
-  } else {
-    std::string class_name =
-        absl::StrCat("GPB", MapEntryTypeName(key_descriptor, true),
-                     MapEntryTypeName(value_descriptor, false), "Dictionary");
-    variables_["array_storage_type"] = class_name;
-    if (value_is_object_type) {
-      variables_["array_property_type"] =
-          absl::StrCat(class_name, "<",
-                       value_field_generator_->variable("storage_type"), "*>");
-    }
-  }
-
   variables_["dataTypeSpecific_name"] =
       value_field_generator_->variable("dataTypeSpecific_name");
   variables_["dataTypeSpecific_value"] =
       value_field_generator_->variable("dataTypeSpecific_value");
 }
 
-void MapFieldGenerator::FinishInitialization() {
-  RepeatedFieldGenerator::FinishInitialization();
+void MapFieldGenerator::EmitArrayComment(io::Printer* printer) const {
   // Use the array_comment support in RepeatedFieldGenerator to output what the
   // values in the map are.
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
-    std::string name = variables_["name"];
-    variables_["array_comment"] =
-        absl::StrCat("// |", name, "| values are |",
-                     value_field_generator_->variable("storage_type"), "|\n");
+    printer->Emit(
+        {{"name", variable("name")},
+         {"enum_name", value_field_generator_->variable("enum_name")}},
+        R"objc(
+          // |$name$| values are |$enum_name$|
+        )objc");
   }
 }
 
@@ -187,20 +112,38 @@ void MapFieldGenerator::DetermineForwardDeclarations(
   if ((include_external_types &&
        !IsProtobufLibraryBundledProtoFile(value_msg_descriptor->file())) ||
       descriptor_->file() == value_msg_descriptor->file()) {
-    const std::string& value_storage_type =
-        value_field_generator_->variable("storage_type");
-    fwd_decls->insert(absl::StrCat("@class ", value_storage_type, ";"));
+    const std::string& value_type =
+        value_field_generator_->variable("msg_type");
+    fwd_decls->insert(absl::StrCat("@class ", value_type, ";"));
   }
 }
 
 void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
     absl::btree_set<std::string>* fwd_decls) const {
-  // Class name is already in "storage_type".
+  // Class name is already in value's "msg_type".
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
     fwd_decls->insert(
-        ObjCClassDeclaration(value_field_generator_->variable("storage_type")));
+        ObjCClassDeclaration(value_field_generator_->variable("msg_type")));
+  }
+}
+
+void MapFieldGenerator::DetermineNeededFiles(
+    absl::flat_hash_set<const FileDescriptor*>* deps) const {
+  const FieldDescriptor* value_descriptor =
+      descriptor_->message_type()->map_value();
+  const ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
+  if (value_objc_type == OBJECTIVECTYPE_MESSAGE) {
+    const Descriptor* value_msg_descriptor = value_descriptor->message_type();
+    if (descriptor_->file() != value_msg_descriptor->file()) {
+      deps->insert(value_msg_descriptor->file());
+    }
+  } else if (value_objc_type == OBJECTIVECTYPE_ENUM) {
+    const EnumDescriptor* value_enum_descriptor = value_descriptor->enum_type();
+    if (descriptor_->file() != value_enum_descriptor->file()) {
+      deps->insert(value_enum_descriptor->file());
+    }
   }
 }
 

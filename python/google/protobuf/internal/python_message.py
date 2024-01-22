@@ -1,36 +1,13 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 # This code is meant to work on Python 2.4 and above only.
 #
-# TODO(robinson): Helpers for verbose, common checks like seeing if a
+# TODO: Helpers for verbose, common checks like seeing if a
 # descriptor's cpp_type is CPPTYPE_MESSAGE.
 
 """Contains a metaclass and helper functions used to create
@@ -53,8 +30,12 @@ __author__ = 'robinson@google.com (Will Robinson)'
 from io import BytesIO
 import struct
 import sys
+import warnings
 import weakref
 
+from google.protobuf import descriptor as descriptor_mod
+from google.protobuf import message as message_mod
+from google.protobuf import text_format
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import containers
@@ -66,9 +47,6 @@ from google.protobuf.internal import message_listener as message_listener_mod
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import well_known_types
 from google.protobuf.internal import wire_format
-from google.protobuf import descriptor as descriptor_mod
-from google.protobuf import message as message_mod
-from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 _AnyFullTypeName = 'google.protobuf.Any'
@@ -182,15 +160,23 @@ class GeneratedProtocolMessageType(type):
           % (descriptor.full_name))
       return
 
-    cls._decoders_by_tag = {}
+    cls._message_set_decoders_by_tag = {}
+    cls._fields_by_tag = {}
     if (descriptor.has_options and
         descriptor.GetOptions().message_set_wire_format):
-      cls._decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
-          decoder.MessageSetItemDecoder(descriptor), None)
+      cls._message_set_decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
+          decoder.MessageSetItemDecoder(descriptor),
+          None,
+      )
 
     # Attach stuff to each FieldDescriptor for quick lookup later on.
     for field in descriptor.fields:
       _AttachFieldHelpers(cls, field)
+
+    if descriptor.is_extendable and hasattr(descriptor.file, 'pool'):
+      extensions = descriptor.file.pool.FindAllExtensions(descriptor)
+      for ext in extensions:
+        _AttachFieldHelpers(cls, ext)
 
     descriptor._concrete_class = cls  # pylint: disable=protected-access
     _AddEnumValues(descriptor, cls)
@@ -222,7 +208,7 @@ def _PropertyName(proto_field_name):
     proto_field_name: The protocol message field name, exactly
       as it appears (or would appear) in a .proto file.
   """
-  # TODO(robinson): Escape Python keywords (e.g., yield), and test this support.
+  # TODO: Escape Python keywords (e.g., yield), and test this support.
   # nnorwitz makes my day by writing:
   # """
   # FYI.  See the keyword module in the stdlib. This could be as simple as:
@@ -237,7 +223,7 @@ def _PropertyName(proto_field_name):
   #   the same transformation.  Note that currently if you name a field "yield",
   #   you can still access it just fine using getattr/setattr -- it's not even
   #   that cumbersome to do so.
-  # TODO(kenton):  Remove this method entirely if/when everyone agrees with my
+  # TODO:  Remove this method entirely if/when everyone agrees with my
   #   position.
   return proto_field_name
 
@@ -272,16 +258,36 @@ def _IsMessageSetExtension(field):
 
 def _IsMapField(field):
   return (field.type == _FieldDescriptor.TYPE_MESSAGE and
-          field.message_type.has_options and
-          field.message_type.GetOptions().map_entry)
+          field.message_type._is_map_entry)
 
 
 def _IsMessageMapField(field):
   value_type = field.message_type.fields_by_name['value']
   return value_type.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE
 
-
 def _AttachFieldHelpers(cls, field_descriptor):
+  is_repeated = field_descriptor.label == _FieldDescriptor.LABEL_REPEATED
+  field_descriptor._default_constructor = _DefaultValueConstructorForField(
+      field_descriptor
+  )
+
+  def AddFieldByTag(wiretype, is_packed):
+    tag_bytes = encoder.TagBytes(field_descriptor.number, wiretype)
+    cls._fields_by_tag[tag_bytes] = (field_descriptor, is_packed)
+
+  AddFieldByTag(
+      type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type], False
+  )
+
+  if is_repeated and wire_format.IsTypePackable(field_descriptor.type):
+    # To support wire compatibility of adding packed = true, add a decoder for
+    # packed values regardless of the field's options.
+    AddFieldByTag(wire_format.WIRETYPE_LENGTH_DELIMITED, True)
+
+
+def _MaybeAddEncoder(cls, field_descriptor):
+  if hasattr(field_descriptor, '_encoder'):
+    return
   is_repeated = (field_descriptor.label == _FieldDescriptor.LABEL_REPEATED)
   is_map_entry = _IsMapField(field_descriptor)
   is_packed = field_descriptor.is_packed
@@ -299,13 +305,19 @@ def _AttachFieldHelpers(cls, field_descriptor):
     sizer = type_checkers.TYPE_TO_SIZER[field_descriptor.type](
         field_descriptor.number, is_repeated, is_packed)
 
-  field_descriptor._encoder = field_encoder
   field_descriptor._sizer = sizer
-  field_descriptor._default_constructor = _DefaultValueConstructorForField(
-      field_descriptor)
+  field_descriptor._encoder = field_encoder
 
-  def AddDecoder(wiretype, is_packed):
-    tag_bytes = encoder.TagBytes(field_descriptor.number, wiretype)
+
+def _MaybeAddDecoder(cls, field_descriptor):
+  if hasattr(field_descriptor, '_decoders'):
+    return
+
+  is_repeated = field_descriptor.label == _FieldDescriptor.LABEL_REPEATED
+  is_map_entry = _IsMapField(field_descriptor)
+  helper_decoders = {}
+
+  def AddDecoder(is_packed):
     decode_type = field_descriptor.type
     if (decode_type == _FieldDescriptor.TYPE_ENUM and
         not field_descriptor.enum_type.is_closed):
@@ -337,15 +349,16 @@ def _AttachFieldHelpers(cls, field_descriptor):
           field_descriptor, field_descriptor._default_constructor,
           not field_descriptor.has_presence)
 
-    cls._decoders_by_tag[tag_bytes] = (field_decoder, oneof_descriptor)
+    helper_decoders[is_packed] = field_decoder
 
-  AddDecoder(type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type],
-             False)
+  AddDecoder(False)
 
   if is_repeated and wire_format.IsTypePackable(field_descriptor.type):
     # To support wire compatibility of adding packed = true, add a decoder for
     # packed values regardless of the field's options.
-    AddDecoder(wire_format.WIRETYPE_LENGTH_DELIMITED, True)
+    AddDecoder(True)
+
+  field_descriptor._decoders = helper_decoders
 
 
 def _AddClassAttributesForNestedExtensions(descriptor, dictionary):
@@ -429,12 +442,12 @@ def _DefaultValueConstructorForField(field):
       return MakeRepeatedScalarDefault
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-    # _concrete_class may not yet be initialized.
     message_type = field.message_type
     def MakeSubMessageDefault(message):
-      assert getattr(message_type, '_concrete_class', None), (
-          'Uninitialized concrete class found for field %r (message type %r)'
-          % (field.full_name, message_type.full_name))
+      # _concrete_class may not yet be initialized.
+      if not hasattr(message_type, '_concrete_class'):
+        from google.protobuf import message_factory
+        message_factory.GetMessageClass(message_type)
       result = message_type._concrete_class()
       result._SetListener(
           _OneofListener(message, field)
@@ -444,7 +457,7 @@ def _DefaultValueConstructorForField(field):
     return MakeSubMessageDefault
 
   def MakeScalarDefault(message):
-    # TODO(protobuf-team): This may be broken since there may not be
+    # TODO: This may be broken since there may not be
     # default_value.  Combine with has_default_value somehow.
     return field.default_value
   return MakeScalarDefault
@@ -669,7 +682,7 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
   default_value = field.default_value
 
   def getter(self):
-    # TODO(protobuf-team): This may be broken since there may not be
+    # TODO: This may be broken since there may not be
     # default_value.  Combine with has_default_value somehow.
     return self._fields.get(field, default_value)
   getter.__module__ = None
@@ -719,7 +732,7 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
     field: A FieldDescriptor for this field.
     cls: The class we're constructing.
   """
-  # TODO(robinson): Remove duplication with similar method
+  # TODO: Remove duplication with similar method
   # for non-repeated scalars.
   proto_field_name = field.name
   property_name = _PropertyName(proto_field_name)
@@ -759,24 +772,13 @@ def _AddPropertiesForExtensions(descriptor, cls):
     constant_name = extension_name.upper() + '_FIELD_NUMBER'
     setattr(cls, constant_name, extension_field.number)
 
-  # TODO(amauryfa): Migrate all users of these attributes to functions like
+  # TODO: Migrate all users of these attributes to functions like
   #   pool.FindExtensionByNumber(descriptor).
   if descriptor.file is not None:
-    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    # TODO: Use cls.MESSAGE_FACTORY.pool when available.
     pool = descriptor.file.pool
-    cls._extensions_by_number = pool._extensions_by_number[descriptor]
-    cls._extensions_by_name = pool._extensions_by_name[descriptor]
 
 def _AddStaticMethods(cls):
-  # TODO(robinson): This probably needs to be thread-safe(?)
-  def RegisterExtension(field_descriptor):
-    field_descriptor.containing_type = cls.DESCRIPTOR
-    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
-    # pylint: disable=protected-access
-    cls.DESCRIPTOR.file.pool._AddExtensionDescriptor(field_descriptor)
-    _AttachFieldHelpers(cls, field_descriptor)
-  cls.RegisterExtension = staticmethod(RegisterExtension)
-
   def FromString(s):
     message = cls()
     message.MergeFromString(s)
@@ -923,7 +925,7 @@ def _InternalUnpackAny(msg):
   Returns:
     The unpacked message.
   """
-  # TODO(amauryfa): Don't use the factory of generated messages.
+  # TODO: Don't use the factory of generated messages.
   # To make Any work with custom factories, use the message factory of the
   # parent message.
   # pylint: disable=g-import-not-at-top
@@ -935,7 +937,7 @@ def _InternalUnpackAny(msg):
   if not type_url:
     return None
 
-  # TODO(haberman): For now we just strip the hostname.  Better logic will be
+  # TODO: For now we just strip the hostname.  Better logic will be
   # required.
   type_name = type_url.split('/')[-1]
   descriptor = factory.pool.FindMessageTypeByName(type_name)
@@ -955,7 +957,7 @@ def _AddEqualsMethod(message_descriptor, cls):
   def __eq__(self, other):
     if (not isinstance(other, message_mod.Message) or
         other.DESCRIPTOR != self.DESCRIPTOR):
-      return False
+      return NotImplemented
 
     if self is other:
       return True
@@ -969,7 +971,7 @@ def _AddEqualsMethod(message_descriptor, cls):
     if not self.ListFields() == other.ListFields():
       return False
 
-    # TODO(jieluo): Fix UnknownFieldSet to consider MessageSet extensions,
+    # TODO: Fix UnknownFieldSet to consider MessageSet extensions,
     # then use it for the comparison.
     unknown_fields = list(self._unknown_fields)
     unknown_fields.sort()
@@ -1031,12 +1033,17 @@ def _AddByteSizeMethod(message_descriptor, cls):
 
     size = 0
     descriptor = self.DESCRIPTOR
-    if descriptor.GetOptions().map_entry:
+    if descriptor._is_map_entry:
       # Fields of map entry should always be serialized.
-      size = descriptor.fields_by_name['key']._sizer(self.key)
-      size += descriptor.fields_by_name['value']._sizer(self.value)
+      key_field = descriptor.fields_by_name['key']
+      _MaybeAddEncoder(cls, key_field)
+      size = key_field._sizer(self.key)
+      value_field = descriptor.fields_by_name['value']
+      _MaybeAddEncoder(cls, value_field)
+      size += value_field._sizer(self.value)
     else:
       for field_descriptor, field_value in self.ListFields():
+        _MaybeAddEncoder(cls, field_descriptor)
         size += field_descriptor._sizer(field_value)
       for tag_bytes, value_bytes in self._unknown_fields:
         size += len(tag_bytes) + len(value_bytes)
@@ -1079,14 +1086,17 @@ def _AddSerializePartialToStringMethod(message_descriptor, cls):
       deterministic = bool(deterministic)
 
     descriptor = self.DESCRIPTOR
-    if descriptor.GetOptions().map_entry:
+    if descriptor._is_map_entry:
       # Fields of map entry should always be serialized.
-      descriptor.fields_by_name['key']._encoder(
-          write_bytes, self.key, deterministic)
-      descriptor.fields_by_name['value']._encoder(
-          write_bytes, self.value, deterministic)
+      key_field = descriptor.fields_by_name['key']
+      _MaybeAddEncoder(cls, key_field)
+      key_field._encoder(write_bytes, self.key, deterministic)
+      value_field = descriptor.fields_by_name['value']
+      _MaybeAddEncoder(cls, value_field)
+      value_field._encoder(write_bytes, self.value, deterministic)
     else:
       for field_descriptor, field_value in self.ListFields():
+        _MaybeAddEncoder(cls, field_descriptor)
         field_descriptor._encoder(write_bytes, field_value, deterministic)
       for tag_bytes, value_bytes in self._unknown_fields:
         write_bytes(tag_bytes)
@@ -1114,7 +1124,8 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
 
   local_ReadTag = decoder.ReadTag
   local_SkipField = decoder.SkipField
-  decoders_by_tag = cls._decoders_by_tag
+  fields_by_tag = cls._fields_by_tag
+  message_set_decoders_by_tag = cls._message_set_decoders_by_tag
 
   def InternalParse(self, buffer, pos, end):
     """Create a message from serialized bytes.
@@ -1137,8 +1148,14 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     unknown_field_set = self._unknown_field_set
     while pos != end:
       (tag_bytes, new_pos) = local_ReadTag(buffer, pos)
-      field_decoder, field_desc = decoders_by_tag.get(tag_bytes, (None, None))
-      if field_decoder is None:
+      field_decoder, field_des = message_set_decoders_by_tag.get(
+          tag_bytes, (None, None)
+      )
+      if field_decoder:
+        pos = field_decoder(buffer, new_pos, end, self, field_dict)
+        continue
+      field_des, is_packed = fields_by_tag.get(tag_bytes, (None, None))
+      if field_des is None:
         if not self._unknown_fields:   # pylint: disable=protected-access
           self._unknown_fields = []    # pylint: disable=protected-access
         if unknown_field_set is None:
@@ -1151,7 +1168,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
         field_number, wire_type = wire_format.UnpackTag(tag)
         if field_number == 0:
           raise message_mod.DecodeError('Field number 0 is illegal.')
-        # TODO(jieluo): remove old_pos.
+        # TODO: remove old_pos.
         old_pos = new_pos
         (data, new_pos) = decoder._DecodeUnknownField(
             buffer, new_pos, wire_type)  # pylint: disable=protected-access
@@ -1159,7 +1176,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
           return pos
         # pylint: disable=protected-access
         unknown_field_set._add(field_number, wire_type, data)
-        # TODO(jieluo): remove _unknown_fields.
+        # TODO: remove _unknown_fields.
         new_pos = local_SkipField(buffer, old_pos, end, tag_bytes)
         if new_pos == -1:
           return pos
@@ -1167,9 +1184,11 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
             (tag_bytes, buffer[old_pos:new_pos].tobytes()))
         pos = new_pos
       else:
+        _MaybeAddDecoder(cls, field_des)
+        field_decoder = field_des._decoders[is_packed]
         pos = field_decoder(buffer, new_pos, end, self, field_dict)
-        if field_desc:
-          self._UpdateOneofState(field_desc)
+        if field_des.containing_oneof:
+          self._UpdateOneofState(field_des)
     return pos
   cls._InternalParse = InternalParse
 
@@ -1205,8 +1224,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
     for field, value in list(self._fields.items()):  # dict can change size!
       if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
         if field.label == _FieldDescriptor.LABEL_REPEATED:
-          if (field.message_type.has_options and
-              field.message_type.GetOptions().map_entry):
+          if (field.message_type._is_map_entry):
             continue
           for element in value:
             if not element.IsInitialized():
@@ -1358,10 +1376,9 @@ def _Clear(self):
 
 
 def _UnknownFields(self):
-  if self._unknown_field_set is None:  # pylint: disable=protected-access
-    # pylint: disable=protected-access
-    self._unknown_field_set = containers.UnknownFieldSet()
-  return self._unknown_field_set    # pylint: disable=protected-access
+  raise NotImplementedError('Please use the add-on feaure '
+                            'unknown_fields.UnknownFieldSet(message) in '
+                            'unknown_fields.py instead.')
 
 
 def _DiscardUnknownFields(self):

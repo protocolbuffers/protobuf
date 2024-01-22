@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import <Foundation/Foundation.h>
 #import "GPBMessage_PackagePrivate.h"
@@ -992,8 +969,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   static GPBDescriptor *descriptor = NULL;
   static GPBFileDescriptor *fileDescriptor = NULL;
   if (!descriptor) {
-    // Use a dummy file that marks it as proto2 syntax so when used generically
-    // it supports unknowns/etc.
     fileDescriptor = [[GPBFileDescriptor alloc] initWithPackage:@"internal"
                                                          syntax:GPBFileSyntaxProto2];
 
@@ -1368,6 +1343,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
   @try {
     [self writeToCodedOutputStream:stream];
+    [stream flush];
   } @catch (NSException *exception) {
     // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
     // failed to match between computing the size and writing out the bytes. However, the more
@@ -1394,6 +1370,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
   @try {
     [self writeDelimitedToCodedOutputStream:stream];
+    [stream flush];
   } @catch (NSException *exception) {
     // This really shouldn't happen. Normally, this could mean there was a bug in the library and it
     // failed to match between computing the size and writing out the bytes. However, the more
@@ -1405,8 +1382,9 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     NSLog(@"%@: Internal exception while building message delimitedData: %@", [self class],
           exception);
 #endif
-    // If it happens, truncate.
-    data.length = 0;
+    // If it happens, return an empty data.
+    [stream release];
+    return [NSData data];
   }
   [stream release];
   return data;
@@ -1416,6 +1394,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithOutputStream:output];
   @try {
     [self writeToCodedOutputStream:stream];
+    [stream flush];
     size_t bytesWritten = [stream bytesWritten];
     if (bytesWritten > kMaximumMessageSize) {
       [NSException raise:GPBMessageExceptionMessageTooLarge
@@ -1459,6 +1438,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   GPBCodedOutputStream *codedOutput = [[GPBCodedOutputStream alloc] initWithOutputStream:output];
   @try {
     [self writeDelimitedToCodedOutputStream:codedOutput];
+    [codedOutput flush];
   } @finally {
     [codedOutput release];
   }
@@ -2398,7 +2378,7 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(GPBMessage *self,
         break;
       }
     }  // switch
-  }    // while(BytesUntilLimit() > 0)
+  }  // while(BytesUntilLimit() > 0)
   GPBCodedInputStreamPopLimit(state, limit);
 }
 
@@ -2677,7 +2657,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         }
       }
     }  // if (fieldType)..else if...else
-  }    // for(fields)
+  }  // for(fields)
 
   // Unknown fields.
   if (!unknownFields_) {
@@ -2845,8 +2825,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
           break;
         }
       }  // switch()
-    }    // if(mapOrArray)...else
-  }      // for(fields)
+    }  // if(mapOrArray)...else
+  }  // for(fields)
 
   // nil and empty are equal
   if (extensionMap_.count != 0 || otherMsg->extensionMap_.count != 0) {

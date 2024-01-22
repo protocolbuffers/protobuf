@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2014 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "repeated_field.h"
 
@@ -87,7 +64,6 @@ VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
   if (val == Qnil) {
     val = RepeatedField_alloc(cRepeatedField);
     RepeatedField* self;
-    ObjectCache_Add(array, val);
     TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
     self->array = array;
     self->arena = arena;
@@ -95,11 +71,14 @@ VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
     if (self->type_info.type == kUpb_CType_Message) {
       self->type_class = Descriptor_DefToClass(type_info.def.msgdef);
     }
+    val = ObjectCache_TryAdd(array, val);
   }
 
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.type == type_info.type);
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.def.msgdef ==
                 type_info.def.msgdef);
+  PBRUBY_ASSERT(ruby_to_RepeatedField(val)->array == array);
+
   return val;
 }
 
@@ -284,7 +263,7 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
     memset(&fill, 0, sizeof(fill));
     for (int i = size; i < index; i++) {
       // Fill default values.
-      // TODO(haberman): should this happen at the upb level?
+      // TODO: should this happen at the upb level?
       upb_Array_Set(array, i, fill);
     }
   }
@@ -499,11 +478,21 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
  * Freezes the repeated field. We have to intercept this so we can pin the Ruby
  * object into memory so we don't forget it's frozen.
  */
-static VALUE RepeatedField_freeze(VALUE _self) {
+VALUE RepeatedField_freeze(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  if (!RB_OBJ_FROZEN(_self)) {
-    Arena_Pin(self->arena, _self);
-    RB_OBJ_FREEZE(_self);
+
+  if (RB_OBJ_FROZEN(_self)) return _self;
+  Arena_Pin(self->arena, _self);
+  RB_OBJ_FREEZE(_self);
+
+  if (self->type_info.type == kUpb_CType_Message) {
+    int size = upb_Array_Size(self->array);
+    int i;
+    for (i = 0; i < size; i++) {
+      upb_MessageValue msgval = upb_Array_Get(self->array, i);
+      VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
+      Message_freeze(val);
+    }
   }
   return _self;
 }
@@ -613,7 +602,8 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
 
   self->type_info = TypeInfo_FromClass(argc, argv, 0, &self->type_class, &ary);
   self->array = upb_Array_New(arena, self->type_info.type);
-  ObjectCache_Add(self->array, _self);
+  VALUE stored_val = ObjectCache_TryAdd(self->array, _self);
+  PBRUBY_ASSERT(stored_val == _self);
 
   if (ary != Qnil) {
     if (!RB_TYPE_P(ary, T_ARRAY)) {

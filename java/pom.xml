@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.23.0</version>
+  <version>3.25.0</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -33,6 +33,7 @@
     <!-- These are relative to the submodules -->
     <protobuf.basedir>${project.basedir}/../..</protobuf.basedir>
     <protobuf.source.dir>${protobuf.basedir}/src</protobuf.source.dir>
+    <protobuf.java_source.dir>${protobuf.basedir}/java/core/src</protobuf.java_source.dir>
     <protoc>${protobuf.basedir}/protoc</protoc>
     <test.proto.dir>src/test/proto</test.proto.dir>
     <generated.sources.dir>${project.build.directory}/generated-sources</generated.sources.dir>
@@ -87,12 +88,12 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>31.1-android</version>
+        <version>32.0.1-android</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>31.1-android</version>
+        <version>32.0.1-android</version>
         <scope>test</scope>
       </dependency>
       <dependency>

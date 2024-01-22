@@ -8,26 +8,74 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
-load("@rules_rust//rust:defs.bzl", "rust_common")
-load("@upb//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 proto_common = proto_common_do_not_use
 
 visibility(["//rust/..."])
 
+CrateMappingInfo = provider(
+    doc = "Struct mapping crate name to the .proto import paths",
+    fields = {
+        "crate_name": "Crate name of the proto_library target",
+        "import_paths": "Import path used in .proto files of dependants to import the .proto " +
+                        "file of the current proto_library.",
+    },
+)
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
     fields = {
         "dep_variant_info": "DepVariantInfo for the compiled Rust gencode (also covers its " +
                             "transitive dependencies)",
+        "crate_mapping": "depset(CrateMappingInfo) containing mappings of all transitive " +
+                         "dependencies of the current proto_library.",
     },
 )
+
+def _register_crate_mapping_write_action(name, actions, crate_mappings):
+    """Registers an action that generates a crate mapping for a proto_library.
+
+    Args:
+        name: The name of the target being analyzed.
+        actions: The context's actions object.
+        crate_mappings: depset(CrateMappingInfo) to be rendered.
+            This sequence should already have duplicates removed.
+
+    Returns:
+        The generated `File` with the crate mapping.
+    """
+    mapping_file = actions.declare_file(
+        "{}.rust_crate_mapping".format(name),
+    )
+    content = actions.args()
+    content.set_param_file_format("multiline")
+    content.add_all(crate_mappings, map_each = _render_text_crate_mapping)
+    actions.write(content = content, output = mapping_file)
+
+    return mapping_file
+
+def _render_text_crate_mapping(mapping):
+    """Renders the mapping to an easily parseable file for a crate mapping.
+
+    Args:
+        mapping (CrateMappingInfo): A single crate mapping.
+
+    Returns:
+        A string containing the crate mapping for the target in simple format:
+            <crate_name>\n
+            <number of lines to follow>\n
+            <one import path per line>\n
+    """
+    crate_name = mapping.crate_name
+    import_paths = mapping.import_paths
+    return "\n".join(([crate_name, str(len(import_paths))] + list(import_paths)))
 
 def _generate_rust_gencode(
         ctx,
         proto_info,
         proto_lang_toolchain,
+        crate_mapping,
         is_upb):
     """Generates Rust gencode
 
@@ -38,6 +86,8 @@ def _generate_rust_gencode(
         proto_info (ProtoInfo): ProtoInfo of the proto_library target for which we are generating
                     gencode
         proto_lang_toolchain (ProtoLangToolchainInfo): proto lang toolchain for Rust
+        crate_mapping (File): File containing the mapping from .proto file import path to its
+                      corresponding containing Rust crate name.
         is_upb (Bool): True when generating gencode for UPB, False otherwise.
     Returns:
         rs_outputs (([File], [File]): tuple(generated Rust files, generated C++ thunks).
@@ -56,10 +106,20 @@ def _generate_rust_gencode(
             proto_info = proto_info,
             extension = ".pb.thunks.cc",
         )
+    additional_args = ctx.actions.args()
+
+    additional_args.add(
+        "--rust_opt=experimental-codegen=enabled,kernel={},bazel_crate_mapping={}".format(
+            "upb" if is_upb else "cpp",
+            crate_mapping.path,
+        ),
+    )
 
     proto_common.compile(
         actions = ctx.actions,
         proto_info = proto_info,
+        additional_inputs = depset(direct = [crate_mapping]),
+        additional_args = additional_args,
         generated_files = rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
         plugin_output = ctx.bin_dir.path,
@@ -112,7 +172,6 @@ def _compile_cc(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
         srcs = [src],
-        grep_includes = ctx.file._grep_includes,
         user_compile_flags = attr.copts if hasattr(attr, "copts") else [],
         compilation_contexts = [cc_info.compilation_context],
     )
@@ -146,10 +205,10 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     Returns:
       A DepVariantInfo provider.
     """
-    toolchain = ctx.toolchains["@rules_rust//rust:toolchain"]
+    toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
-    # TODO(b/270124215): Use the import! macro once available
+    # TODO: Use the import! macro once available
     crate_name = ctx.label.name.replace("-", "_")
 
     lib_name = "{prefix}{name}-{lib_hash}{extension}".format(
@@ -169,12 +228,12 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     lib = ctx.actions.declare_file(lib_name)
     rmeta = ctx.actions.declare_file(rmeta_name)
 
-    # TODO(b/270125787): Use higher level rules_rust API once available.
+    # TODO: Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
         toolchain = toolchain,
-        crate_info = rust_common.create_crate_info(
+        crate_info_dict = dict(
             name = crate_name,
             type = "rlib",
             root = src,
@@ -191,6 +250,8 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
             compile_data_targets = depset([]),
             owner = ctx.label,
         ),
+        # Needed to make transitive public imports not violate layering.
+        force_all_deps_direct = True,
         output_hash = output_hash,
     )
 
@@ -213,6 +274,12 @@ def _rust_cc_proto_aspect_impl(target, ctx):
     """Implements the Rust protobuf aspect logic for C++ kernel."""
     return _rust_proto_aspect_common(target, ctx, is_upb = False)
 
+def get_import_path(f):
+    if hasattr(proto_common, "get_import_path"):
+        return proto_common.get_import_path(f)
+    else:
+        return f.path
+
 def _rust_proto_aspect_common(target, ctx, is_upb):
     if RustProtoInfo in target:
         return []
@@ -233,10 +300,25 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         unsupported_features = ctx.disabled_features,
     )
 
+    proto_srcs = getattr(ctx.rule.files, "srcs", [])
+    proto_deps = getattr(ctx.rule.attr, "deps", [])
+    transitive_crate_mappings = []
+    for dep in proto_deps:
+        rust_proto_info = dep[RustProtoInfo]
+        transitive_crate_mappings.append(rust_proto_info.crate_mapping)
+
+    mapping_for_current_target = depset(transitive = transitive_crate_mappings)
+    crate_mapping_file = _register_crate_mapping_write_action(
+        target.label.name,
+        ctx.actions,
+        mapping_for_current_target,
+    )
+
     (gencode, thunks) = _generate_rust_gencode(
         ctx,
         target[ProtoInfo],
         proto_lang_toolchain,
+        crate_mapping_file,
         is_upb,
     )
 
@@ -261,25 +343,31 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     )
     dep_variant_info_for_native_gencode = DepVariantInfo(cc_info = thunks_cc_info)
 
-    proto_dep = getattr(ctx.rule.attr, "deps", [])
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = gencode[0],
         extra_srcs = gencode[1:],
         deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + (
-            [proto_dep[0][RustProtoInfo].dep_variant_info] if proto_dep else []
+            [d[RustProtoInfo].dep_variant_info for d in proto_deps]
         ),
     )
-    return [RustProtoInfo(dep_variant_info = dep_variant_info)]
+    return [RustProtoInfo(
+        dep_variant_info = dep_variant_info,
+        crate_mapping = depset(
+            direct = [CrateMappingInfo(
+                crate_name = target.label.name,
+                import_paths = tuple([get_import_path(f) for f in proto_srcs]),
+            )],
+            transitive = transitive_crate_mappings,
+        ),
+    )]
 
 def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
-        # Since we can reference upb_proto_library_aspect by name, we can just ask Bazel to attach
-        # it here.
-        requires = ([upb_proto_library_aspect] if is_upb else []),
+        requires = ([upb_proto_library_aspect] if is_upb else [cc_proto_aspect]),
         required_aspect_providers = ([] if is_upb else [CcInfo]),
         attrs = {
             "_cc_toolchain": attr.label(
@@ -297,11 +385,6 @@ def _make_proto_library_aspect(is_upb):
             ),
             "_cpp_thunks_deps": attr.label(
                 default = Label("//rust/cpp_kernel:cpp_api"),
-            ),
-            "_grep_includes": attr.label(
-                allow_single_file = True,
-                default = Label("@bazel_tools//tools/cpp:grep-includes"),
-                cfg = "exec",
             ),
             "_error_format": attr.label(
                 default = Label("@rules_rust//:error_format"),
@@ -326,16 +409,16 @@ def _make_proto_library_aspect(is_upb):
                 cfg = "exec",
             ),
             "_proto_lang_toolchain": attr.label(
-                default = Label(("//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain")),
+                default = Label(
+                    "//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain",
+                ),
             ),
         },
         fragments = ["cpp"],
-        host_fragments = ["cpp"],
         toolchains = [
-            str(Label("@rules_rust//rust:toolchain")),
+            "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",
         ],
-        incompatible_use_toolchain_transition = True,
     )
 
 rust_upb_proto_library_aspect = _make_proto_library_aspect(is_upb = True)

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/util/type_resolver_util.h"
 
@@ -274,17 +251,21 @@ void ConvertFieldDescriptor(absl::string_view url_prefix,
   ConvertFieldOptions(descriptor.options(), *field->mutable_options());
 }
 
-Syntax ConvertSyntax(FileDescriptorLegacy::Syntax syntax) {
-  switch (syntax) {
-    default:
+Syntax ConvertSyntax(Edition edition) {
+  switch (edition) {
+    case Edition::EDITION_PROTO2:
       return Syntax::SYNTAX_PROTO2;
+    case Edition::EDITION_PROTO3:
+      return Syntax::SYNTAX_PROTO3;
+    default:
+      return Syntax::SYNTAX_EDITIONS;
   }
 }
 
 void ConvertEnumDescriptor(const EnumDescriptor& descriptor, Enum* enum_type) {
   enum_type->Clear();
   enum_type->set_syntax(
-      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).syntax()));
+      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).edition()));
 
   enum_type->set_name(descriptor.full_name());
   enum_type->mutable_source_context()->set_file_name(descriptor.file()->name());
@@ -306,7 +287,7 @@ void ConvertDescriptor(absl::string_view url_prefix,
   type->Clear();
   type->set_name(descriptor.full_name());
   type->set_syntax(
-      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).syntax()));
+      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).edition()));
   for (int i = 0; i < descriptor.field_count(); ++i) {
     ConvertFieldDescriptor(url_prefix, *descriptor.field(i),
                            type->add_fields());

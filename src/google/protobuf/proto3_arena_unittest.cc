@@ -1,43 +1,19 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/text_format.h"
 #include <gtest/gtest.h>
 #include "absl/strings/match.h"
-#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 #include "google/protobuf/unittest_proto3_optional.pb.h"
@@ -50,19 +26,6 @@ using proto3_arena_unittest::TestAllTypes;
 
 namespace google {
 namespace protobuf {
-
-namespace internal {
-
-class Proto3ArenaTestHelper {
- public:
-  template <typename T>
-  static Arena* GetOwningArena(const T& msg) {
-    return msg.GetOwningArena();
-  }
-};
-
-}  // namespace internal
-
 namespace {
 // We selectively set/check a few representative fields rather than all fields
 // as this test is only expected to cover the basics of arena support.
@@ -188,7 +151,7 @@ TEST(Proto3ArenaTest, GetArena) {
 
   // Tests message created by Arena::Create.
   auto* arena_message3 = Arena::Create<TestAllTypes>(&arena);
-  EXPECT_EQ(nullptr, arena_message3->GetArena());
+  EXPECT_EQ(&arena, arena_message3->GetArena());
 }
 
 TEST(Proto3ArenaTest, GetArenaWithUnknown) {
@@ -298,15 +261,13 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (absl::StartsWith(f->name(), "singular")) {
-      EXPECT_FALSE(FieldDescriptorLegacy(f).has_optional_keyword())
-          << f->full_name();
       EXPECT_FALSE(f->has_presence()) << f->full_name();
       EXPECT_FALSE(f->containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
     } else {
-      EXPECT_TRUE(FieldDescriptorLegacy(f).has_optional_keyword())
-          << f->full_name();
       EXPECT_TRUE(f->has_presence()) << f->full_name();
       EXPECT_TRUE(f->containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
     }
   }
 }
@@ -319,8 +280,6 @@ TEST(Proto3OptionalTest, Extensions) {
       "protobuf_unittest.Proto3OptionalExtensions.ext_with_optional");
   ABSL_CHECK(no_optional);
   ABSL_CHECK(with_optional);
-  EXPECT_FALSE(FieldDescriptorLegacy(no_optional).has_optional_keyword());
-  EXPECT_TRUE(FieldDescriptorLegacy(with_optional).has_optional_keyword());
 
   const Descriptor* d = protobuf_unittest::Proto3OptionalExtensions::descriptor();
   EXPECT_TRUE(d->options().HasExtension(
@@ -368,7 +327,8 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
   const google::protobuf::OneofDescriptor* o = d->FindOneofByName("_optional_int32");
   ABSL_CHECK(f);
   ABSL_CHECK(o);
-  EXPECT_TRUE(OneofDescriptorLegacy(o).is_synthetic());
+  EXPECT_EQ(f->containing_oneof(), o);
+  EXPECT_EQ(f->real_containing_oneof(), nullptr);
 
   EXPECT_FALSE(r->HasField(msg, f));
   EXPECT_FALSE(r->HasOneof(msg, o));

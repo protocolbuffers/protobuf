@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2014 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <ctype.h>
 #include <errno.h>
@@ -67,12 +44,14 @@ static VALUE rb_str_maybe_null(const char* s) {
   }
   return rb_str_new2(s);
 }
-
+static ID options_instancevar_interned;
 // -----------------------------------------------------------------------------
 // DescriptorPool.
 // -----------------------------------------------------------------------------
 
 typedef struct {
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
   VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_DefPool* symtab;
 } DescriptorPool;
@@ -97,7 +76,7 @@ static void DescriptorPool_free(void* _self) {
 static const rb_data_type_t DescriptorPool_type = {
     "Google::Protobuf::DescriptorPool",
     {DescriptorPool_mark, DescriptorPool_free, NULL},
-    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
 static DescriptorPool* ruby_to_DescriptorPool(VALUE val) {
@@ -125,11 +104,9 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
   self->def_to_descriptor = Qnil;
   ret = TypedData_Wrap_Struct(klass, &DescriptorPool_type, self);
 
-  self->def_to_descriptor = rb_hash_new();
+  RB_OBJ_WRITE(ret, &self->def_to_descriptor, rb_hash_new());
   self->symtab = upb_DefPool_New();
-  ObjectCache_Add(self->symtab, ret);
-
-  return ret;
+  return ObjectCache_TryAdd(self->symtab, ret);
 }
 
 /*
@@ -167,18 +144,24 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
  * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
- * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
- * exists with the given name.
+ * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+ * or nil if none exists with the given name.
  */
 static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const char* name_str = get_str(name);
   const upb_MessageDef* msgdef;
   const upb_EnumDef* enumdef;
+  const upb_FieldDef* fielddef;
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
     return get_msgdef_obj(_self, msgdef);
+  }
+
+  fielddef = upb_DefPool_FindExtensionByName(self->symtab, name_str);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
   }
 
   enumdef = upb_DefPool_FindEnumByName(self->symtab, name_str);
@@ -215,6 +198,7 @@ static void DescriptorPool_register(VALUE module) {
 
   rb_gc_register_address(&generated_pool);
   generated_pool = rb_class_new_instance(0, NULL, klass);
+  options_instancevar_interned = rb_intern("options");
 }
 
 // -----------------------------------------------------------------------------
@@ -247,6 +231,35 @@ static Descriptor* ruby_to_Descriptor(VALUE val) {
   Descriptor* ret;
   TypedData_Get_Struct(val, Descriptor, &Descriptor_type, ret);
   return ret;
+}
+
+// Decode and return a frozen instance of a Descriptor Option for the given pool
+static VALUE decode_options(VALUE self, const char* option_type, int size,
+                            const char* bytes, VALUE descriptor_pool) {
+  VALUE options_rb = rb_ivar_get(self, options_instancevar_interned);
+  if (options_rb != Qnil) {
+    return options_rb;
+  }
+
+  static const char* prefix = "google.protobuf.";
+  char fullname
+      [/*strlen(prefix)*/ 16 +
+       /*strln(longest option type supported e.g. "MessageOptions")*/ 14 +
+       /*null terminator*/ 1];
+
+  snprintf(fullname, sizeof(fullname), "%s%s", prefix, option_type);
+  const upb_MessageDef* msgdef = upb_DefPool_FindMessageByName(
+      ruby_to_DescriptorPool(descriptor_pool)->symtab, fullname);
+  if (!msgdef) {
+    rb_raise(rb_eRuntimeError, "Cannot find %s in DescriptorPool", option_type);
+  }
+
+  VALUE desc_rb = get_msgdef_obj(descriptor_pool, msgdef);
+  const Descriptor* desc = ruby_to_Descriptor(desc_rb);
+
+  options_rb = Message_decode_bytes(size, bytes, 0, desc->klass, true);
+  rb_ivar_set(self, options_instancevar_interned, options_rb);
+  return options_rb;
 }
 
 /*
@@ -397,6 +410,26 @@ static VALUE Descriptor_msgclass(VALUE _self) {
   return self->klass;
 }
 
+/*
+ * call-seq:
+ *     Descriptor.options => options
+ *
+ * Returns the `MessageOptions` for this `Descriptor`.
+ */
+static VALUE Descriptor_options(VALUE _self) {
+  Descriptor* self = ruby_to_Descriptor(_self);
+  const google_protobuf_MessageOptions* opts =
+      upb_MessageDef_Options(self->msgdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized =
+      google_protobuf_MessageOptions_serialize(opts, arena, &size);
+  VALUE message_options = decode_options(_self, "MessageOptions", size,
+                                         serialized, self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return message_options;
+}
+
 static void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
@@ -408,6 +441,7 @@ static void Descriptor_register(VALUE module) {
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
+  rb_define_method(klass, "options", Descriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
@@ -455,7 +489,7 @@ static VALUE FileDescriptor_alloc(VALUE klass) {
  * call-seq:
  *     FileDescriptor.new => file
  *
- * Returns a new file descriptor. The syntax must be set before it's passed
+ * Returns a new file descriptor. May
  * to a builder.
  */
 static VALUE FileDescriptor_initialize(VALUE _self, VALUE cookie,
@@ -487,24 +521,20 @@ static VALUE FileDescriptor_name(VALUE _self) {
 
 /*
  * call-seq:
- *     FileDescriptor.syntax => syntax
+ *     FileDescriptor.options => options
  *
- * Returns this file descriptors syntax.
- *
- * Valid syntax versions are:
- *     :proto2 or :proto3.
+ * Returns the `FileOptions` for this `FileDescriptor`.
  */
-static VALUE FileDescriptor_syntax(VALUE _self) {
+static VALUE FileDescriptor_options(VALUE _self) {
   FileDescriptor* self = ruby_to_FileDescriptor(_self);
-
-  switch (upb_FileDef_Syntax(self->filedef)) {
-    case kUpb_Syntax_Proto3:
-      return ID2SYM(rb_intern("proto3"));
-    case kUpb_Syntax_Proto2:
-      return ID2SYM(rb_intern("proto2"));
-    default:
-      return Qnil;
-  }
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(self->filedef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_FileOptions_serialize(opts, arena, &size);
+  VALUE file_options = decode_options(_self, "FileOptions", size, serialized,
+                                      self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return file_options;
 }
 
 static void FileDescriptor_register(VALUE module) {
@@ -512,7 +542,7 @@ static void FileDescriptor_register(VALUE module) {
   rb_define_alloc_func(klass, FileDescriptor_alloc);
   rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
-  rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
+  rb_define_method(klass, "options", FileDescriptor_options, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }
@@ -563,7 +593,7 @@ static VALUE FieldDescriptor_alloc(VALUE klass) {
 
 /*
  * call-seq:
- *    EnumDescriptor.new(c_only_cookie, pool, ptr) => EnumDescriptor
+ *    FieldDescriptor.new(c_only_cookie, pool, ptr) => FieldDescriptor
  *
  * Creates a descriptor wrapper object.  May only be called from C.
  */
@@ -601,7 +631,7 @@ upb_CType ruby_to_fieldtype(VALUE type) {
 
 #define CONVERT(upb, ruby)                \
   if (SYM2ID(type) == rb_intern(#ruby)) { \
-    return kUpb_CType_##upb;                \
+    return kUpb_CType_##upb;              \
   }
 
   CONVERT(Float, float);
@@ -624,7 +654,7 @@ upb_CType ruby_to_fieldtype(VALUE type) {
 
 static VALUE descriptortype_to_ruby(upb_FieldType type) {
   switch (type) {
-#define CONVERT(upb, ruby)        \
+#define CONVERT(upb, ruby)   \
   case kUpb_FieldType_##upb: \
     return ID2SYM(rb_intern(#ruby));
     CONVERT(Float, float);
@@ -685,6 +715,28 @@ static VALUE FieldDescriptor_default(VALUE _self) {
 
 /*
  * call-seq:
+ *     FieldDescriptor.has_presence? => bool
+ *
+ * Returns whether this field tracks presence.
+ */
+static VALUE FieldDescriptor_has_presence(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  return upb_FieldDef_HasPresence(self->fielddef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
+ *     FieldDescriptor.is_packed? => bool
+ *
+ * Returns whether this is a repeated field that uses packed encoding.
+ */
+static VALUE FieldDescriptor_is_packed(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  return upb_FieldDef_IsPacked(self->fielddef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
  *     FieldDescriptor.json_name => json_name
  *
  * Returns this field's json_name, as a Ruby string, or nil if not yet set.
@@ -709,7 +761,7 @@ static VALUE FieldDescriptor_label(VALUE _self) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   switch (upb_FieldDef_Label(self->fielddef)) {
 #define CONVERT(upb, ruby) \
-  case kUpb_Label_##upb:    \
+  case kUpb_Label_##upb:   \
     return ID2SYM(rb_intern(#ruby));
 
     CONVERT(Optional, optional);
@@ -809,7 +861,7 @@ static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  const upb_MessageDef* msg = Message_Get(msg_rb, &m);
+  const upb_Message* msg = Message_Get(msg_rb, &m);
 
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
@@ -829,7 +881,7 @@ static VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  upb_MessageDef* msg = Message_GetMutable(msg_rb, &m);
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
 
   if (m != upb_FieldDef_ContainingType(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
@@ -850,7 +902,7 @@ static VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
 static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_MessageDef* m;
-  upb_MessageDef* msg = Message_GetMutable(msg_rb, &m);
+  upb_Message* msg = Message_GetMutable(msg_rb, &m);
   upb_Arena* arena = Arena_get(Message_GetArena(msg_rb));
   upb_MessageValue msgval;
 
@@ -864,6 +916,25 @@ static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     FieldDescriptor.options => options
+ *
+ * Returns the `FieldOptions` for this `FieldDescriptor`.
+ */
+static VALUE FieldDescriptor_options(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  const google_protobuf_FieldOptions* opts =
+      upb_FieldDef_Options(self->fielddef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, &size);
+  VALUE field_options = decode_options(_self, "FieldOptions", size, serialized,
+                                       self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return field_options;
+}
+
 static void FieldDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
@@ -871,6 +942,8 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "name", FieldDescriptor_name, 0);
   rb_define_method(klass, "type", FieldDescriptor__type, 0);
   rb_define_method(klass, "default", FieldDescriptor_default, 0);
+  rb_define_method(klass, "has_presence?", FieldDescriptor_has_presence, 0);
+  rb_define_method(klass, "is_packed?", FieldDescriptor_is_packed, 0);
   rb_define_method(klass, "json_name", FieldDescriptor_json_name, 0);
   rb_define_method(klass, "label", FieldDescriptor_label, 0);
   rb_define_method(klass, "number", FieldDescriptor_number, 0);
@@ -880,6 +953,7 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
+  rb_define_method(klass, "options", FieldDescriptor_options, 0);
   rb_gc_register_address(&cFieldDescriptor);
   cFieldDescriptor = klass;
 }
@@ -979,12 +1053,32 @@ static VALUE OneofDescriptor_each(VALUE _self) {
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     OneofDescriptor.options => options
+ *
+ * Returns the `OneofOptions` for this `OneofDescriptor`.
+ */
+static VALUE OneOfDescriptor_options(VALUE _self) {
+  OneofDescriptor* self = ruby_to_OneofDescriptor(_self);
+  const google_protobuf_OneofOptions* opts =
+      upb_OneofDef_Options(self->oneofdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_OneofOptions_serialize(opts, arena, &size);
+  VALUE oneof_options = decode_options(_self, "OneofOptions", size, serialized,
+                                       self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return oneof_options;
+}
+
 static void OneofDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
   rb_define_method(klass, "initialize", OneofDescriptor_initialize, 3);
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
+  rb_define_method(klass, "options", OneOfDescriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
   cOneofDescriptor = klass;
@@ -1072,6 +1166,17 @@ static VALUE EnumDescriptor_file_descriptor(VALUE _self) {
 
 /*
  * call-seq:
+ *     EnumDescriptor.is_closed? => bool
+ *
+ * Returns whether this enum is open or closed.
+ */
+static VALUE EnumDescriptor_is_closed(VALUE _self) {
+  EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
+  return upb_EnumDef_IsClosed(self->enumdef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
  *     EnumDescriptor.name => name
  *
  * Returns the name of this enum type.
@@ -1091,7 +1196,7 @@ static VALUE EnumDescriptor_name(VALUE _self) {
 static VALUE EnumDescriptor_lookup_name(VALUE _self, VALUE name) {
   EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
   const char* name_str = rb_id2name(SYM2ID(name));
-  const upb_EnumValueDef *ev =
+  const upb_EnumValueDef* ev =
       upb_EnumDef_FindValueByName(self->enumdef, name_str);
   if (ev) {
     return INT2NUM(upb_EnumValueDef_Number(ev));
@@ -1110,7 +1215,8 @@ static VALUE EnumDescriptor_lookup_name(VALUE _self, VALUE name) {
 static VALUE EnumDescriptor_lookup_value(VALUE _self, VALUE number) {
   EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
   int32_t val = NUM2INT(number);
-  const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(self->enumdef, val);
+  const upb_EnumValueDef* ev =
+      upb_EnumDef_FindValueByNumber(self->enumdef, val);
   if (ev) {
     return ID2SYM(rb_intern(upb_EnumValueDef_Name(ev)));
   } else {
@@ -1153,6 +1259,24 @@ static VALUE EnumDescriptor_enummodule(VALUE _self) {
   return self->module;
 }
 
+/*
+ * call-seq:
+ *     EnumDescriptor.options => options
+ *
+ * Returns the `EnumOptions` for this `EnumDescriptor`.
+ */
+static VALUE EnumDescriptor_options(VALUE _self) {
+  EnumDescriptor* self = ruby_to_EnumDescriptor(_self);
+  const google_protobuf_EnumOptions* opts = upb_EnumDef_Options(self->enumdef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized = google_protobuf_EnumOptions_serialize(opts, arena, &size);
+  VALUE enum_options = decode_options(_self, "EnumOptions", size, serialized,
+                                      self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return enum_options;
+}
+
 static void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
@@ -1163,6 +1287,8 @@ static void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_define_method(klass, "file_descriptor", EnumDescriptor_file_descriptor, 0);
+  rb_define_method(klass, "is_closed?", EnumDescriptor_is_closed, 0);
+  rb_define_method(klass, "options", EnumDescriptor_options, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;

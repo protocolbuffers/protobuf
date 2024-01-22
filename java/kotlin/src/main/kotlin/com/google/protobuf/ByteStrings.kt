@@ -34,14 +34,17 @@ import com.google.protobuf.ByteString
 import java.nio.ByteBuffer
 
 /** Encodes this String into a sequence of UTF-8 bytes and returns the result as a [ByteString]. */
-fun String.toByteStringUtf8(): ByteString = ByteString.copyFromUtf8(this)
-// symmetric from ByteString.toStringUtf8()
+fun String.toByteStringUtf8(): ByteString =
+  ByteString.copyFromUtf8(this) // symmetric from ByteString.toStringUtf8()
 
 /** Concatenates the given [ByteString] to this one. */
 operator fun ByteString.plus(other: ByteString): ByteString = concat(other)
 
 /** Gets the byte at [index]. */
 operator fun ByteString.get(index: Int): Byte = byteAt(index)
+
+/** Checks if this is not empty. */
+fun ByteString.isNotEmpty(): Boolean = !isEmpty()
 
 /** Returns a copy of this [ByteArray] as an immutable [ByteString]. */
 fun ByteArray.toByteString(): ByteString = ByteString.copyFrom(this)

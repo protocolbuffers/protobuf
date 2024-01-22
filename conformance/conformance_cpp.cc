@@ -1,54 +1,36 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <errno.h>
 #include <stdarg.h>
 #include <unistd.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 
-#include "google/protobuf/message.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
+#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
+#include "google/protobuf/endian.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -67,6 +49,10 @@ using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
+using TestAllTypesProto2Editions =
+    ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
+using TestAllTypesProto3Editions =
+    ::protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 
 absl::Status ReadFd(int fd, char* buf, size_t len) {
   while (len > 0) {
@@ -98,11 +84,11 @@ class Harness {
   Harness() {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
+    google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
+    google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();
 
     resolver_.reset(NewTypeResolverForDescriptorPool(
         "type.googleapis.com", DescriptorPool::generated_pool()));
-    type_url_ = absl::StrCat("type.googleapis.com/",
-                             TestAllTypesProto3::GetDescriptor()->full_name());
   }
 
   absl::StatusOr<ConformanceResponse> RunTest(
@@ -114,7 +100,6 @@ class Harness {
  private:
   bool verbose_ = false;
   std::unique_ptr<TypeResolver> resolver_;
-  std::string type_url_;
 };
 
 absl::StatusOr<ConformanceResponse> Harness::RunTest(
@@ -126,6 +111,8 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
     return absl::NotFoundError(
         absl::StrCat("No such message type: ", request.message_type()));
   }
+  std::string type_url =
+      absl::StrCat("type.googleapis.com/", request.message_type());
 
   std::unique_ptr<Message> test_message(
       MessageFactory::generated_factory()->GetPrototype(descriptor)->New());
@@ -148,7 +135,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
 
       std::string proto_binary;
       absl::Status status =
-          JsonToBinaryString(resolver_.get(), type_url_, request.json_payload(),
+          JsonToBinaryString(resolver_.get(), type_url, request.json_payload(),
                              &proto_binary, options);
       if (!status.ok()) {
         response.set_parse_error(
@@ -196,7 +183,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       std::string proto_binary;
       ABSL_CHECK(test_message->SerializeToString(&proto_binary));
       absl::Status status =
-          BinaryToJsonString(resolver_.get(), type_url_, proto_binary,
+          BinaryToJsonString(resolver_.get(), type_url, proto_binary,
                              response.mutable_json_payload());
       if (!status.ok()) {
         response.set_serialize_error(absl::StrCat(
@@ -228,6 +215,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
     // EOF means we're done.
     return true;
   }
+  in_len = internal::little_endian::ToHost(in_len);
 
   std::string serialized_input;
   serialized_input.resize(in_len);
@@ -242,9 +230,12 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   std::string serialized_output;
   response->SerializeToString(&serialized_output);
 
-  uint32_t out_len = static_cast<uint32_t>(serialized_output.size());
+  uint32_t out_len = internal::little_endian::FromHost(
+      static_cast<uint32_t>(serialized_output.size()));
+
   RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, &out_len, sizeof(out_len)));
-  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(), out_len));
+  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(),
+                          serialized_output.size()));
 
   if (verbose_) {
     ABSL_LOG(INFO) << "conformance-cpp: request=" << request.ShortDebugString()

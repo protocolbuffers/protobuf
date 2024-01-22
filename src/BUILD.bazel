@@ -4,8 +4,8 @@
 
 # Most rules are under google/protobuf. This package exists for convenience.
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//conformance:defs.bzl", "conformance_test")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 pkg_files(
     name = "dist_files",
@@ -38,6 +38,7 @@ pkg_filegroup(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_cpp.txt",
+    maximum_edition = "2023",
     testee = "//conformance:conformance_cpp",
     text_format_failure_list = "//conformance:text_format_failure_list_cpp.txt",
 )
@@ -49,8 +50,8 @@ genrule(
     srcs = ["//pkg:gen_src_file_lists"],
     outs = ["cmake_copy/file_lists.cmake"],
     cmd = "cp $< $@",
-    visibility = ["//visibility:private"],
     tags = ["manual"],
+    visibility = ["//visibility:private"],
 )
 
 staleness_test(

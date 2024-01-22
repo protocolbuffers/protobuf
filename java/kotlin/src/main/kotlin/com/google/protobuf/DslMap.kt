@@ -47,8 +47,10 @@ constructor(private val delegate: Map<K, V>) : Map<K, V> by delegate {
 
   override val entries: Set<Map.Entry<K, V>>
     get() = UnmodifiableMapEntries(delegate.entries)
+
   override val keys: Set<K>
     get() = UnmodifiableSet(delegate.keys)
+
   override val values: Collection<V>
     get() = UnmodifiableCollection(delegate.values)
 
@@ -59,4 +61,4 @@ constructor(private val delegate: Map<K, V>) : Map<K, V> by delegate {
   override fun toString(): String = delegate.toString()
 }
 
-// TODO(lowasser): investigate making this an inline class
+// TODO: investigate making this an inline class

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -34,6 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_INITIALIZED;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
+import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -56,6 +34,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestOneof2;
+import protobuf_unittest.UnittestProto.TestRecursiveMessage;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
@@ -641,6 +620,83 @@ public class TextFormatTest {
     String expected =
         "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
             + "  optional_int32: 12345\n"
+            + "}\n";
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testPrintAny_anyWithDynamicMessageContainingExtensionTreatedAsUnknown()
+      throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build(),
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_BYTES)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllExtensions.getDescriptor().getFullName())
+            .setField(
+                descriptor.findFieldByNumber(2),
+                TestAllExtensions.newBuilder()
+                    .setExtension(optionalInt32Extension, 12345)
+                    .build()
+                    .toByteString())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .printToString(testAny);
+    String expected = "[type.googleapis.com/protobuf_unittest.TestAllExtensions] {\n  1: 12345\n}\n";
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testPrintAny_anyWithDynamicMessageContainingExtensionWithRegistry() throws Exception {
+    Descriptor descriptor =
+        createDescriptorForAny(
+            FieldDescriptorProto.newBuilder()
+                .setName("type_url")
+                .setNumber(1)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_STRING)
+                .build(),
+            FieldDescriptorProto.newBuilder()
+                .setName("value")
+                .setNumber(2)
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setType(FieldDescriptorProto.Type.TYPE_BYTES)
+                .build());
+    DynamicMessage testAny =
+        DynamicMessage.newBuilder(descriptor)
+            .setField(
+                descriptor.findFieldByNumber(1),
+                "type.googleapis.com/" + TestAllExtensions.getDescriptor().getFullName())
+            .setField(
+                descriptor.findFieldByNumber(2),
+                TestAllExtensions.newBuilder()
+                    .setExtension(optionalInt32Extension, 12345)
+                    .build()
+                    .toByteString())
+            .build();
+    String actual =
+        TextFormat.printer()
+            .usingTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .usingExtensionRegistry(TestUtil.getFullExtensionRegistry())
+            .printToString(testAny);
+    String expected =
+        "[type.googleapis.com/protobuf_unittest.TestAllExtensions] {\n"
+            + "  [protobuf_unittest.optional_int32_extension]: 12345\n"
             + "}\n";
     assertThat(actual).isEqualTo(expected);
   }
@@ -1676,7 +1732,7 @@ public class TextFormatTest {
 
     {
       // With overwrite forbidden, same behavior.
-      // TODO(b/29122459): Expect parse exception here.
+      // TODO: Expect parse exception here.
       TestMap.Builder builder = TestMap.newBuilder();
       PARSER_WITH_OVERWRITE_FORBIDDEN.merge(text, builder);
       TestMap map = builder.build();
@@ -1686,7 +1742,7 @@ public class TextFormatTest {
 
     {
       // With overwrite forbidden and a dynamic message, same behavior.
-      // TODO(b/29122459): Expect parse exception here.
+      // TODO: Expect parse exception here.
       Message.Builder builder = DynamicMessage.newBuilder(TestMap.getDescriptor());
       PARSER_WITH_OVERWRITE_FORBIDDEN.merge(text, builder);
       TestMap map =
@@ -1841,5 +1897,101 @@ public class TextFormatTest {
             .build();
     assertThat(TextFormat.printer().printToString(message))
         .isEqualTo("optional_float: -0.0\noptional_double: -0.0\n");
+  }
+
+  private TestRecursiveMessage makeRecursiveMessage(int depth) {
+    if (depth == 0) {
+      return TestRecursiveMessage.newBuilder().setI(5).build();
+    } else {
+      return TestRecursiveMessage.newBuilder().setA(makeRecursiveMessage(depth - 1)).build();
+    }
+  }
+
+  @Test
+  public void testDefaultRecursionLimit() throws Exception {
+    String depth100 = TextFormat.printer().printToString(makeRecursiveMessage(100));
+    String depth101 = TextFormat.printer().printToString(makeRecursiveMessage(101));
+    TextFormat.parse(depth100, TestRecursiveMessage.class);
+    try {
+      TextFormat.parse(depth101, TestRecursiveMessage.class);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithUnknownFields() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder().setAllowUnknownFields(true).setRecursionLimit(2).build();
+    TestRecursiveMessage.Builder depth2 = TestRecursiveMessage.newBuilder();
+    parser.merge("u { u { i: 0 } }", depth2);
+    try {
+      TestRecursiveMessage.Builder depth3 = TestRecursiveMessage.newBuilder();
+      parser.merge("u { u { u { } } }", depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithKnownAndUnknownFields() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder().setAllowUnknownFields(true).setRecursionLimit(2).build();
+    TestRecursiveMessage.Builder depth2 = TestRecursiveMessage.newBuilder();
+    parser.merge("a { u { i: 0 } }", depth2);
+    try {
+      TestRecursiveMessage.Builder depth3 = TestRecursiveMessage.newBuilder();
+      parser.merge("a { u { u { } } }", depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithAny() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder()
+            .setRecursionLimit(2)
+            .setTypeRegistry(TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build())
+            .build();
+    TestAny.Builder depth2 = TestAny.newBuilder();
+    parser.merge(
+        "value { [type.googleapis.com/protobuf_unittest.TestAllTypes] { optional_int32: 1 } }",
+        depth2);
+    try {
+      TestAny.Builder depth3 = TestAny.newBuilder();
+      parser.merge(
+          "value { [type.googleapis.com/protobuf_unittest.TestAllTypes] { optional_nested_message {"
+              + "} } }",
+          depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitWithTopLevelAny() throws Exception {
+    TextFormat.Parser parser =
+        TextFormat.Parser.newBuilder()
+            .setRecursionLimit(2)
+            .setTypeRegistry(
+                TypeRegistry.newBuilder().add(TestRecursiveMessage.getDescriptor()).build())
+            .build();
+    Any.Builder depth2 = Any.newBuilder();
+    parser.merge(
+        "[type.googleapis.com/protobuf_unittest.TestRecursiveMessage] { a { i: 0 } }", depth2);
+    try {
+      Any.Builder depth3 = Any.newBuilder();
+      parser.merge(
+          "[type.googleapis.com/protobuf_unittest.TestRecursiveMessage] { a { a { i: 0 } } }",
+          depth3);
+      assertWithMessage("Parsing deep message should have failed").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e).hasMessageThat().contains("too deep");
+    }
   }
 }

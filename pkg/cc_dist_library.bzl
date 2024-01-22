@@ -137,9 +137,11 @@ def _flatten_target_files(targets):
     return depset(transitive = [
         target.files
         for target in targets
-        # Filter out targets from external workspaces
-        if target.label.workspace_name == "" or
-           target.label.workspace_name == "com_google_protobuf"
+        # Filter out targets from external workspaces. We also filter out
+        # utf8_range since that has a separate CMake build for now.
+        if (target.label.workspace_name == "" or
+            target.label.workspace_name == "com_google_protobuf") and
+           not target.label.package.startswith("third_party/utf8_range")
     ])
 
 def _get_transitive_sources(targets, attr, deps):
@@ -170,12 +172,12 @@ def _cc_file_list_aspect_impl(target, ctx):
 
     return [CcFileList(
         hdrs = _get_transitive_sources(
-            _flatten_target_files(rule_attr.hdrs).to_list(),
+            _flatten_target_files(getattr(rule_attr, "hdrs", [])).to_list(),
             "hdrs",
             rule_attr.deps,
         ),
         textual_hdrs = _get_transitive_sources(
-            _flatten_target_files(rule_attr.textual_hdrs).to_list(),
+            _flatten_target_files(getattr(rule_attr, "textual_hdrs", [])).to_list(),
             "textual_hdrs",
             rule_attr.deps,
         ),
@@ -291,7 +293,9 @@ def _subtract_files(a, b):
     cc_file_list_args = {}
     file_list_fields = ["srcs", "hdrs", "internal_hdrs", "textual_hdrs"]
     for field in file_list_fields:
-        to_remove = {e: None for e in getattr(b.cc_file_list, field).to_list()}
+        # only a subset of file.cc is used from protoc, to get all its symbols for tests we need to
+        # also build & link it to tests.
+        to_remove = {e: None for e in getattr(b.cc_file_list, field).to_list() if "src/google/protobuf/testing/file.cc" not in e.path}
         cc_file_list_args[field] = depset(
             [e for e in getattr(a.cc_file_list, field).to_list() if not e in to_remove],
         )

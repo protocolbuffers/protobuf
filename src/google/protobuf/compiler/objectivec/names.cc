@@ -1,53 +1,33 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/names.h"
 
 #include <algorithm>
-#include <climits>
-#include <fstream>
+#include <cctype>
+#include <cstdlib>
 #include <iostream>
 #include <ostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/nsobject_methods.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -323,7 +303,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   bool first_segment_forces_upper = false;
   for (auto& value : values) {
     bool all_upper = UpperSegments().contains(value);
-    if (all_upper && (result.length() == 0)) {
+    if (all_upper && (result.empty())) {
       first_segment_forces_upper = true;
     }
     if (all_upper) {
@@ -333,8 +313,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
     }
     result += value;
   }
-  if ((result.length() != 0) && !first_capitalized &&
-      !first_segment_forces_upper) {
+  if ((!result.empty()) && !first_capitalized && !first_segment_forces_upper) {
     result[0] = absl::ascii_tolower(result[0]);
   }
   return result;
@@ -752,7 +731,7 @@ std::string FilePath(const FileDescriptor* file) {
   std::string basename;
   std::string directory;
   PathSplit(file->name(), &directory, &basename);
-  if (directory.length() > 0) {
+  if (!directory.empty()) {
     output = absl::StrCat(directory, "/");
   }
   basename = StripProto(basename);
@@ -902,10 +881,226 @@ std::string FieldNameCapitalized(const FieldDescriptor* field) {
   // Want the same suffix handling, so upcase the first letter of the other
   // name.
   std::string result = FieldName(field);
-  if (result.length() > 0) {
+  if (!result.empty()) {
     result[0] = absl::ascii_toupper(result[0]);
   }
   return result;
+}
+
+namespace {
+
+enum class FragmentNameMode : int { kCommon, kMapKey, kObjCGenerics };
+std::string FragmentName(const FieldDescriptor* field,
+                         FragmentNameMode mode = FragmentNameMode::kCommon) {
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SFIXED32:
+      return "Int32";
+
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+      return "UInt32";
+
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      return "Int64";
+
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+      return "UInt64";
+
+    case FieldDescriptor::TYPE_FLOAT:
+      return "Float";
+
+    case FieldDescriptor::TYPE_DOUBLE:
+      return "Double";
+
+    case FieldDescriptor::TYPE_BOOL:
+      return "Bool";
+
+    case FieldDescriptor::TYPE_STRING: {
+      switch (mode) {
+        case FragmentNameMode::kCommon:
+          return "Object";
+        case FragmentNameMode::kMapKey:
+          return "String";
+        case FragmentNameMode::kObjCGenerics:
+          return "NSString*";
+      }
+    }
+
+    case FieldDescriptor::TYPE_BYTES:
+      return (mode == FragmentNameMode::kObjCGenerics ? "NSData*" : "Object");
+
+    case FieldDescriptor::TYPE_ENUM:
+      return "Enum";
+
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_MESSAGE:
+      return (mode == FragmentNameMode::kObjCGenerics
+                  ? absl::StrCat(ClassName(field->message_type()), "*")
+                  : "Object");
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  ABSL_LOG(FATAL) << "Can't get here.";
+}
+
+std::string FieldObjCTypeInternal(const FieldDescriptor* field,
+                                  bool* out_is_ptr, std::string* out_generics) {
+  if (field->is_map()) {
+    *out_is_ptr = true;
+    const FieldDescriptor* key_field = field->message_type()->map_key();
+    const FieldDescriptor* value_field = field->message_type()->map_value();
+
+    bool value_is_object;
+    switch (value_field->type()) {
+      case FieldDescriptor::TYPE_STRING:
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_GROUP:
+      case FieldDescriptor::TYPE_MESSAGE: {
+        value_is_object = true;
+        break;
+      }
+      default:
+        value_is_object = false;
+        break;
+    }
+
+    if (value_is_object && key_field->type() == FieldDescriptor::TYPE_STRING) {
+      if (out_generics) {
+        *out_generics = absl::StrCat(
+            "<NSString*, ",
+            FragmentName(value_field, FragmentNameMode::kObjCGenerics), ">");
+      }
+      return "NSMutableDictionary";
+    }
+
+    if (value_is_object && out_generics) {
+      *out_generics = absl::StrCat(
+          "<", FragmentName(value_field, FragmentNameMode::kObjCGenerics), ">");
+    }
+    return absl::StrCat("GPB",
+                        FragmentName(key_field, FragmentNameMode::kMapKey),
+                        FragmentName(value_field), "Dictionary");
+  }
+
+  if (field->is_repeated()) {
+    *out_is_ptr = true;
+
+    switch (field->type()) {
+      case FieldDescriptor::TYPE_STRING:
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_GROUP:
+      case FieldDescriptor::TYPE_MESSAGE: {
+        if (out_generics) {
+          *out_generics = absl::StrCat(
+              "<", FragmentName(field, FragmentNameMode::kObjCGenerics), ">");
+        }
+        return "NSMutableArray";
+      }
+      default:
+        return absl::StrCat("GPB", FragmentName(field), "Array");
+    }
+  }
+
+  // Single field
+
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SFIXED32: {
+      *out_is_ptr = false;
+      return "int32_t";
+    }
+
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_FIXED32: {
+      *out_is_ptr = false;
+      return "uint32_t";
+    }
+
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED64: {
+      *out_is_ptr = false;
+      return "int64_t";
+    }
+
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED64: {
+      *out_is_ptr = false;
+      return "uint64_t";
+    }
+
+    case FieldDescriptor::TYPE_FLOAT: {
+      *out_is_ptr = false;
+      return "float";
+    }
+
+    case FieldDescriptor::TYPE_DOUBLE: {
+      *out_is_ptr = false;
+      return "double";
+    }
+
+    case FieldDescriptor::TYPE_BOOL: {
+      *out_is_ptr = false;
+      return "BOOL";
+    }
+
+    case FieldDescriptor::TYPE_STRING: {
+      *out_is_ptr = true;
+      return "NSString";
+    }
+
+    case FieldDescriptor::TYPE_BYTES: {
+      *out_is_ptr = true;
+      return "NSData";
+    }
+
+    case FieldDescriptor::TYPE_ENUM: {
+      *out_is_ptr = false;
+      return EnumName(field->enum_type());
+    }
+
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_MESSAGE: {
+      *out_is_ptr = true;
+      return ClassName(field->message_type());
+    }
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  ABSL_LOG(FATAL) << "Can't get here.";
+}
+
+}  // namespace
+
+std::string FieldObjCType(const FieldDescriptor* field,
+                          FieldObjCTypeOptions options) {
+  std::string generics;
+  bool is_ptr;
+  std::string base_type = FieldObjCTypeInternal(
+      field, &is_ptr,
+      ((options & kFieldObjCTypeOptions_OmitLightweightGenerics) != 0)
+          ? nullptr
+          : &generics);
+
+  if (!is_ptr) {
+    if ((options & kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes) != 0) {
+      return absl::StrCat(base_type, " ");
+    }
+    return base_type;
+  }
+
+  if ((options & kFieldObjCTypeOptions_IncludeSpaceBeforeStar) != 0) {
+    return absl::StrCat(base_type, generics, " *");
+  }
+  return absl::StrCat(base_type, generics, "*");
 }
 
 std::string OneofEnumName(const OneofDescriptor* descriptor) {
@@ -927,7 +1122,7 @@ std::string OneofName(const OneofDescriptor* descriptor) {
 std::string OneofNameCapitalized(const OneofDescriptor* descriptor) {
   // Use the common handling and then up-case the first letter.
   std::string result = OneofName(descriptor);
-  if (result.length() > 0) {
+  if (!result.empty()) {
     result[0] = absl::ascii_toupper(result[0]);
   }
   return result;
@@ -943,7 +1138,7 @@ std::string UnCamelCaseFieldName(absl::string_view name,
     worker = absl::StripSuffix(worker, "Array");
   }
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
-    if (worker.length() > 0) {
+    if (!worker.empty()) {
       if (absl::ascii_islower(worker[0])) {
         std::string copy(worker);
         copy[0] = absl::ascii_toupper(worker[0]);

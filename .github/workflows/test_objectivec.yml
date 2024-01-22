@@ -8,6 +8,9 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   xcode:
     strategy:
@@ -31,18 +34,18 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+        uses: protocolbuffers/protobuf-ci/ccache@v2
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -74,11 +77,11 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Pod lib lint
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -115,11 +118,11 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}

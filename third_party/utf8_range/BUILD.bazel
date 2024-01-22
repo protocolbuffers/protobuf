@@ -4,52 +4,62 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+DEFAULT_VISIBILITY = [
+    "//src/google/protobuf:__subpackages__",
+    "//third_party/utf8_range:__subpackages__",
+    "//util/utf8/internal:__subpackages__",
+]
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "rules_fuzzing.patch",
+])
 
-# TODO(b/252876197) Remove this once callers have been Bazelified.
+# TODO Remove this once callers have been Bazelified.
 filegroup(
     name = "utf8_range_srcs",
     srcs = [
-        "naive.c",
-        "range2-neon.c",
-        "range2-sse.c",
+        "utf8_range.c",
         "utf8_range.h",
     ],
-    visibility = [
-        "@com_google_protobuf//:__subpackages__",
-        "@upb//:__subpackages__",
-    ],
+    visibility = ["//:__subpackages__"],
 )
 
 cc_library(
     name = "utf8_range",
     srcs = [
-        "naive.c",
-        "range2-neon.c",
-        "range2-sse.c",
+        "utf8_range.c",
     ],
     hdrs = ["utf8_range.h"],
+    strip_include_prefix = "/third_party/utf8_range",
 )
 
 cc_library(
     name = "utf8_validity",
     srcs = ["utf8_validity.cc"],
     hdrs = ["utf8_validity.h"],
+    strip_include_prefix = "/third_party/utf8_range",
     deps = [
+        ":utf8_range",
         "@com_google_absl//absl/strings",
     ],
 )
 
 cc_test(
     name = "utf8_validity_test",
-    srcs = ["utf8_validity_test.cc"],
+    srcs = [
+        "utf8_range.c",
+        "utf8_validity_test.cc",
+    ],
     deps = [
+        ":utf8_range",
         ":utf8_validity",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )

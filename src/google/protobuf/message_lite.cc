@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Authors: wink@google.com (Wink Saville),
 //          kenton@google.com (Kenton Varda)
@@ -43,7 +20,6 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/arena.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -54,6 +30,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -67,12 +44,53 @@
 namespace google {
 namespace protobuf {
 
+std::string MessageLite::GetTypeName() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (!data->is_lite) {
+    // For !LITE messages, we use the descriptor method function.
+    return data->full().descriptor_methods->get_type_name(*this);
+  }
+
+  // For LITE messages, the type name is a char[] just beyond ClassData.
+  return reinterpret_cast<const char*>(data) + sizeof(ClassData);
+}
+
+void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
+  if (arena == nullptr) return;
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (data->on_demand_register_arena_dtor != nullptr) {
+    data->on_demand_register_arena_dtor(*this, *arena);
+  }
+}
+
 std::string MessageLite::InitializationErrorString() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (!data->is_lite) {
+    // For !LITE messages, we use the descriptor method function.
+    return data->full().descriptor_methods->initialization_error_string(*this);
+  }
+
   return "(cannot determine missing fields for lite message)";
 }
 
 std::string MessageLite::DebugString() const {
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
+}
+
+int MessageLite::GetCachedSize() const { return AccessCachedSize().Get(); }
+
+internal::CachedSize& MessageLite::AccessCachedSize() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+  ABSL_DCHECK(data->cached_size_offset != 0);
+  return *reinterpret_cast<internal::CachedSize*>(const_cast<char*>(
+      reinterpret_cast<const char*>(this) + data->cached_size_offset));
 }
 
 namespace {
@@ -233,7 +251,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
-    ABSL_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
+    ABSL_DCHECK_NE(ctx.LastTag(), 1u);  // We can't end on a pushed limit.
     if (ctx.IsExceedingLimit(ptr)) return false;
     input->SetLastTag(ctx.LastTag());
   } else {
@@ -576,7 +594,8 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
         target, static_cast<int>(available.size()),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
     auto res = _InternalSerialize(target, &out);
-    ABSL_DCHECK_EQ(res, target + size);
+    ABSL_DCHECK_EQ(static_cast<const void*>(res),
+                   static_cast<const void*>(target + size));
     buffer.IncreaseLengthBy(size);
     output->Append(std::move(buffer));
     ABSL_DCHECK_EQ(output->size(), total_size);
@@ -632,11 +651,6 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to) {
   to->CheckTypeAndMergeFrom(from);
 }
-template <>
-void GenericTypeHandler<std::string>::Merge(const std::string& from,
-                                            std::string* to) {
-  *to = from;
-}
 
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.
@@ -656,6 +670,14 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
 }
 
 }  // namespace internal
+
+std::string ShortFormat(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
+
+std::string Utf8Format(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
 
 
 // ===================================================================

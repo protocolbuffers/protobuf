@@ -450,6 +450,19 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test invalid UTF-8
+    #########################################################
+
+    public function testInvalidUtf8StringFails()
+    {
+        $m = new TestMessage();
+
+        // Invalid UTF-8 is rejected.
+        $this->expectException(Exception::class);
+        $m->setOptionalString("\xff");
+    }
+
+    #########################################################
     # Test bytes field.
     #########################################################
 
@@ -474,13 +487,12 @@ class GeneratedClassTest extends TestBase
         $this->assertSame('1', $m->getOptionalBytes());
     }
 
-      public function testBytesFieldInvalidUTF8Success()
-      {
-          $m = new TestMessage();
-          $hex = hex2bin("ff");
-          $m->setOptionalBytes($hex);
-          $this->assertTrue(true);
-      }
+    public function testBytesFieldInvalidUTF8Success()
+    {
+        $m = new TestMessage();
+        $m->setOptionalBytes("\xff");
+        $this->assertSame("\xff", $m->getOptionalBytes());
+    }
 
     #########################################################
     # Test message field.

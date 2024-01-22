@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Test for google.protobuf.internal.well_known_types."""
 
@@ -37,10 +14,10 @@ import datetime
 import unittest
 
 from google.protobuf import any_pb2
+from google.protobuf.internal import any_test_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
-from google.protobuf.internal import any_test_pb2
 from google.protobuf.internal import well_known_types
 from google.protobuf import text_format
 from google.protobuf.internal import _parameterized
@@ -51,9 +28,11 @@ try:
   import zoneinfo  # pylint:disable=g-import-not-at-top
   _TZ_JAPAN = zoneinfo.ZoneInfo('Japan')
   _TZ_PACIFIC = zoneinfo.ZoneInfo('US/Pacific')
+  has_zoneinfo = True
 except ImportError:
   _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Japan')
   _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'US/Pacific')
+  has_zoneinfo = False
 
 
 class TimeUtilTestBase(_parameterized.TestCase):
@@ -239,20 +218,18 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromNanoseconds(-1999)
     self.assertEqual(-1, message.ToMicroseconds())
 
-  def testTimezoneNaiveDatetimeConversion(self):
+  def testTimezoneNaiveDatetimeConversionNearEpoch(self):
     message = timestamp_pb2.Timestamp()
     naive_utc_epoch = datetime.datetime(1970, 1, 1)
     message.FromDatetime(naive_utc_epoch)
     self.assertEqual(0, message.seconds)
     self.assertEqual(0, message.nanos)
-
     self.assertEqual(naive_utc_epoch, message.ToDatetime())
 
     naive_epoch_morning = datetime.datetime(1970, 1, 1, 8, 0, 0, 1)
     message.FromDatetime(naive_epoch_morning)
     self.assertEqual(8 * 3600, message.seconds)
     self.assertEqual(1000, message.nanos)
-
     self.assertEqual(naive_epoch_morning, message.ToDatetime())
 
     message.FromMilliseconds(1999)
@@ -262,13 +239,32 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(datetime.datetime(1970, 1, 1, 0, 0, 1, 999000),
                      message.ToDatetime())
 
+  def testTimezoneNaiveDatetimeConversionWhereTimestampLosesPrecision(self):
+    ts = timestamp_pb2.Timestamp()
     naive_future = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789)
-    message.FromDatetime(naive_future)
-    self.assertEqual(naive_future, message.ToDatetime())
+    # The float timestamp for this datetime does not represent the integer
+    # millisecond value with full precision.
+    self.assertNotEqual(
+        naive_future.astimezone(datetime.timezone.utc),
+        datetime.datetime.fromtimestamp(
+            naive_future.timestamp(), datetime.timezone.utc
+        ),
+    )
+    # It still round-trips correctly.
+    ts.FromDatetime(naive_future)
+    self.assertEqual(naive_future, ts.ToDatetime())
 
-    naive_end_of_time = datetime.datetime.max
-    message.FromDatetime(naive_end_of_time)
-    self.assertEqual(naive_end_of_time, message.ToDatetime())
+  def testTimezoneNaiveMaxDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    naive_max_datetime = datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
+    ts.FromDatetime(naive_max_datetime)
+    self.assertEqual(naive_max_datetime, ts.ToDatetime())
+
+  def testTimezoneNaiveMinDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    naive_min_datetime = datetime.datetime(1, 1, 1)
+    ts.FromDatetime(naive_min_datetime)
+    self.assertEqual(naive_min_datetime, ts.ToDatetime())
 
   # Two hours after the Unix Epoch, around the world.
   @_parameterized.named_parameters(
@@ -301,6 +297,70 @@ class TimeUtilTest(TimeUtilTestBase):
         datetime.datetime(1970, 1, 1, 2, tzinfo=datetime.timezone.utc),
         aware_datetime)
     self.assertEqual(tzinfo, aware_datetime.tzinfo)
+
+  @unittest.skipIf(
+      not has_zoneinfo,
+      'Versions without zoneinfo use a fixed-offset timezone that does not'
+      ' demonstrate this problem.',
+  )
+  def testDatetimeConversionWithDifferentUtcOffsetThanEpoch(self):
+    # This timezone has a different UTC offset at this date than at the epoch.
+    # The datetime returned by FromDatetime needs to have the correct offset
+    # for the moment represented.
+    tz = _TZ_PACIFIC
+    dt = datetime.datetime(2016, 6, 26, tzinfo=tz)
+    epoch_dt = datetime.datetime.fromtimestamp(
+        0, tz=datetime.timezone.utc
+    ).astimezone(tz)
+    self.assertNotEqual(dt.utcoffset(), epoch_dt.utcoffset())
+    ts = timestamp_pb2.Timestamp()
+    ts.FromDatetime(dt)
+    self.assertEqual(dt, ts.ToDatetime(tzinfo=dt.tzinfo))
+
+  def testTimezoneAwareDatetimeConversionWhereTimestampLosesPrecision(self):
+    tz = _TZ_PACIFIC
+    ts = timestamp_pb2.Timestamp()
+    tz_aware_future = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789, tzinfo=tz)
+    # The float timestamp for this datetime does not represent the integer
+    # millisecond value with full precision.
+    self.assertNotEqual(
+        tz_aware_future,
+        datetime.datetime.fromtimestamp(tz_aware_future.timestamp(), tz),
+    )
+    # It still round-trips correctly.
+    ts.FromDatetime(tz_aware_future)
+    self.assertEqual(tz_aware_future, ts.ToDatetime(tz))
+
+  def testTimezoneAwareMaxDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    tz_aware_max_datetime = datetime.datetime(
+        9999, 12, 31, 23, 59, 59, 999999, tzinfo=datetime.timezone.utc
+    )
+    ts.FromDatetime(tz_aware_max_datetime)
+    self.assertEqual(
+        tz_aware_max_datetime, ts.ToDatetime(datetime.timezone.utc)
+    )
+
+  def testTimezoneAwareMinDatetimeConversion(self):
+    ts = timestamp_pb2.Timestamp()
+    tz_aware_min_datetime = datetime.datetime(
+        1, 1, 1, tzinfo=datetime.timezone.utc
+    )
+    ts.FromDatetime(tz_aware_min_datetime)
+    self.assertEqual(
+        tz_aware_min_datetime, ts.ToDatetime(datetime.timezone.utc)
+    )
+
+  def testNanosOneSecond(self):
+    tz = _TZ_PACIFIC
+    ts = timestamp_pb2.Timestamp(nanos=1_000_000_000)
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
+                           ts.ToDatetime)
+
+  def testNanosNegativeOneSecond(self):
+    ts = timestamp_pb2.Timestamp(nanos=-1_000_000_000)
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
+                           ts.ToDatetime)
 
   def testTimedeltaConversion(self):
     message = duration_pb2.Duration()
@@ -349,8 +409,10 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertRaisesRegex(ValueError, 'year (0 )?is out of range',
                            message.FromJsonString, '0000-01-01T00:00:00Z')
     message.seconds = 253402300800
-    self.assertRaisesRegex(OverflowError, 'date value out of range',
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
                            message.ToJsonString)
+    self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
+                           message.FromSeconds, -62135596801)
 
   def testInvalidDuration(self):
     message = duration_pb2.Duration()
@@ -528,7 +590,8 @@ class StructTest(unittest.TestCase):
         'key5': [6, 'seven', True, False, None, {'subkey2': 9}],
         'key6': [['nested_list', True]],
         'empty_struct': {},
-        'empty_list': []
+        'empty_list': [],
+        'tuple': ((3,2), ())
     }
     struct.update(dictionary)
     self.assertEqual(5, struct['key1'])

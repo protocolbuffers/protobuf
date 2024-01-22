@@ -8,6 +8,9 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   linux:
     strategy:
@@ -16,77 +19,70 @@ jobs:
         include:
           - name: OpenJDK 8
             version: '8'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-03a376b5d6ef66f827fc307716e3b841cc26b709
-            targets: //java/... //java/internal:java_version
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            # TODO: b/318555165 - enable the layering check. Currently it does
+            # not work correctly with the toolchain in this Docker image.
+            targets: //java/... //java/internal:java_version --features=-layering_check
           - name: OpenJDK 11
             version: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-03a376b5d6ef66f827fc307716e3b841cc26b709
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version
           - name: OpenJDK 17
             version: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-03a376b5d6ef66f827fc307716e3b841cc26b709
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version
           - name: aarch64
             version: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: java_linux/${{ matrix.version }}
           bazel: test ${{ matrix.targets }} --test_env=KOKORO_JAVA_VERSION
 
-  linkage-monitor:
-    name: Linux Linkage Monitor
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          ref: ${{ inputs.safe-checkout }}
-      - name: Build protoc
-        id: build-protoc
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          architecture: linux-x86_64
-      - name: Move protoc into place and clean up
-        run: |
-          mv ${{ steps.build-protoc.outputs.protoc }} protoc
-          sudo rm -rf _build
-      - name: Install snapshot version locally
-        run: |
-          cd java
-          mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
-      - name: Download Linkage Monitor
-        run: curl -v -O "https://storage.googleapis.com/cloud-opensource-java-linkage-monitor/linkage-monitor-latest-all-deps.jar"
-      - name: Fails if there's new linkage errors compared with baseline
-        run: java -Xmx2048m -jar linkage-monitor-latest-all-deps.jar com.google.cloud:libraries-bom
-
+# TODO restore this test (or a better one) when gRPC has rebuilt with 26.x
+  # linkage-monitor:
+  #   name: Linux Linkage Monitor
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout pending changes
+  #       uses: protocolbuffers/protobuf-ci/checkout@v2
+  #       with:
+  #         ref: ${{ inputs.safe-checkout }}
+  #     - name: Run Linkage Monitor test
+  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+  #       with:
+  #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+  #         bazel-cache: java_linux/8
+  #         # TODO: b/318555165 - enable the layering check. Currently it does
+  #         # not work correctly with the toolchain in this Docker image.
+  #         bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
+  
   protobuf-bom:
     name: Protobuf Maven BOM
     runs-on: ubuntu-latest
     steps:
     - name: Checkout pending changes
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      uses: protocolbuffers/protobuf-ci/checkout@v2
       with:
         ref: ${{ inputs.safe-checkout }}
     - name: Build protoc
       id: build-protoc
-      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
       with:
-        image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+        image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         architecture: linux-x86_64
     - name: Move protoc into place and clean up
@@ -98,9 +94,9 @@ jobs:
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
       working-directory: java
     - name: Generate pom.xml files from the template
-      uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v2
       with:
-        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-03a376b5d6ef66f827fc307716e3b841cc26b709
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         # protobuf-java and protobuf-java-util are the member of the BOM
@@ -119,6 +115,6 @@ jobs:
       run: |
         sudo rm -rf _build
     - name: Validate Protobuf BOM
-      uses: googleapis/java-cloud-bom/tests/validate-bom@v26.13.0
+      uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
       with:
         bom-path: java/bom/pom.xml
