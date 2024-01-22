@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
@@ -100,7 +101,8 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
-    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime);
+    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime,
+                                 options_.enforce_lite, classname);
     printer->Outdent();
     printer->Outdent();
     printer->Print(
