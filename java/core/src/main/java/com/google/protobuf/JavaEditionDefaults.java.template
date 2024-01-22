@@ -5,5 +5,7 @@ package com.google.protobuf;
 
 public final class JavaEditionDefaults {
   public static final String PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS = "DEFAULTS_VALUE";
+
+  private JavaEditionDefaults() {}
 }
 
