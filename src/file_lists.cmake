@@ -748,6 +748,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_enum.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_legacy_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite_imports_nonlite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset_wire_format.proto
