@@ -180,8 +180,8 @@
         <configuration>
           <signature>
             <groupId>net.sf.androidscents.signature</groupId>
-            <artifactId>android-api-level-14</artifactId>
-            <version>4.0_r4</version>
+            <artifactId>android-api-level-21</artifactId>
+            <version>5.0.1_r2</version>
           </signature>
           <ignores>
             <ignore>sun.misc.Unsafe</ignore>
