@@ -421,6 +421,12 @@ alias(
 )
 
 alias(
+    name = "test_proto_editions_srcs",
+    actual = "//src/google/protobuf:test_proto_editions_srcs",  # filegroup
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
     name = "test_protos",
     actual = "//src/google/protobuf:test_protos",  # proto_library
     visibility = ["//:__subpackages__"],

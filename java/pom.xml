@@ -33,6 +33,7 @@
     <!-- These are relative to the submodules -->
     <protobuf.basedir>${project.basedir}/../..</protobuf.basedir>
     <protobuf.source.dir>${protobuf.basedir}/src</protobuf.source.dir>
+    <protobuf.java_source.dir>${protobuf.basedir}/java/core/src</protobuf.java_source.dir>
     <protoc>${protobuf.basedir}/protoc</protoc>
     <test.proto.dir>src/test/proto</test.proto.dir>
     <generated.sources.dir>${project.build.directory}/generated-sources</generated.sources.dir>

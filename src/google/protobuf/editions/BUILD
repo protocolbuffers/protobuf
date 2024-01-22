@@ -113,6 +113,13 @@ internal_objc_proto_library(
     visibility = ["//conformance:__pkg__"],
 )
 
+java_proto_library(
+    name = "test_messages_proto2_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
 py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
@@ -180,6 +187,13 @@ internal_objc_proto_library(
     ],
     proto_deps = ["//:well_known_type_protos"],
     visibility = ["//conformance:__pkg__"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
 )
 
 py_proto_library(

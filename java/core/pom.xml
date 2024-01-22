@@ -59,6 +59,12 @@
           <include>google/protobuf/compiler/plugin.proto</include>
         </includes>
       </resource>
+      <resource>
+        <directory>${protobuf.java_source.dir}</directory>
+        <includes>
+          <include>main/java/com/google/protobuf/java_features.proto</include>
+        </includes>
+      </resource>
     </resources>
     <testResources>
       <testResource>

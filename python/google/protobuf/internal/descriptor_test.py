@@ -18,11 +18,11 @@ from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
-from google.protobuf.internal import legacy_features_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
 from google.protobuf.internal import _parameterized
+from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
@@ -1268,20 +1268,20 @@ class FeaturesTest(_parameterized.TestCase):
     )
 
   def testFeaturesStripped(self):
-    desc = legacy_features_pb2.TestEditionsMessage.DESCRIPTOR.fields_by_name[
+    desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR.fields_by_name[
         'required_field'
     ]
     self.assertFalse(desc.GetOptions().HasField('features'))
 
   def testLegacyRequiredTransform(self):
-    desc = legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
+    desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
     self.assertEqual(
         desc.fields_by_name['required_field'].label,
         descriptor.FieldDescriptor.LABEL_REQUIRED,
     )
 
   def testLegacyGroupTransform(self):
-    desc = legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
+    desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
     self.assertEqual(
         desc.fields_by_name['delimited_field'].type,
         descriptor.FieldDescriptor.TYPE_GROUP,

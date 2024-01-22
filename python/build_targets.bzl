@@ -221,6 +221,7 @@ def build_targets(name):
         testonly = 1,
         srcs = [
             "//:test_proto_srcs",
+            "//:test_proto_editions_srcs",
             "//src/google/protobuf/util:test_proto_srcs",
         ],
         strip_prefix = "src",
