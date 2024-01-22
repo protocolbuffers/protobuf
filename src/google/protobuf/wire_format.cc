@@ -1505,11 +1505,12 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
                                  const Message& message) {
   const Reflection* message_reflection = message.GetReflection();
 
-  if (field->is_extension() &&
-      field->containing_type()->options().message_set_wire_format() &&
-      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-      !field->is_repeated()) {
-    return MessageSetItemByteSize(field, message);
+  if (PROTOBUF_PREDICT_TRUE(field->is_extension())) {
+    if (field->containing_type()->options().message_set_wire_format() &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !field->is_repeated()) {
+      return MessageSetItemByteSize(field, message);
+    }
   }
 
   size_t count = 0;
