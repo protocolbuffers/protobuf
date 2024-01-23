@@ -734,7 +734,11 @@ static PyObject* PyUpb_Message_ToString(PyUpb_Message* self) {
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
   char buf[1024];
+
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   int options = UPB_TXTENC_SKIPUNKNOWN;
+  if (!state->use_utf8) options |= UPB_TXTENC_ASCII;
+
   size_t size = upb_TextEncode(msg, msgdef, symtab, options, buf, sizeof(buf));
   if (size < sizeof(buf)) {
     return PyUnicode_FromStringAndSize(buf, size);
@@ -1972,6 +1976,27 @@ static PyObject* PyUpb_MessageMeta_CreateType(void) {
   return type;
 }
 
+static bool PyUpb_UseUtf8() {
+  // return locale.getpreferredencoding() == 'utf-8'
+  PyObject* locale = NULL;
+  PyObject* getpreferred = NULL;
+  PyObject* val = NULL;
+  bool ret = false;
+
+  locale = PyImport_ImportModule("locale");
+  if (!locale) goto err;
+  getpreferred = PyObject_GetAttrString(locale, "getpreferredencoding");
+  if (!getpreferred) goto err;
+  val = PyObject_CallNoArgs(getpreferred);
+  ret = strcmp(PyUpb_GetStrData(val), "utf-8") == 0;
+
+err:
+  Py_XDECREF(locale);
+  Py_XDECREF(getpreferred);
+  Py_XDECREF(val);
+  return ret;
+}
+
 bool PyUpb_InitMessage(PyObject* m) {
   if (!PyUpb_CPythonBits_Init(&cpython_bits)) return false;
   PyObject* message_meta_type = PyUpb_MessageMeta_CreateType();
@@ -2001,6 +2026,8 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->enum_type_wrapper_class =
       PyObject_GetAttrString(enum_type_wrapper, "EnumTypeWrapper");
   Py_DECREF(enum_type_wrapper);
+
+  state->use_utf8 = PyUpb_UseUtf8();
 
   if (!state->encode_error_class || !state->decode_error_class ||
       !state->message_class || !state->listfields_item_key ||

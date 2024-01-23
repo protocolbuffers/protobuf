@@ -23,6 +23,7 @@ import pickle
 import pydoc
 import sys
 import unittest
+import locale
 from unittest import mock
 import warnings
 
@@ -2625,9 +2626,14 @@ class InvalidUtf8Test(unittest.TestCase):
     self.assertIn('data: "ABC\\377123"', str(one_string))
 
   def testValidUtf8Printing(self):
-    self.assertIn('data: "€"', str(unittest_pb2.OneString(data='€')))  # 2 byte
-    self.assertIn('data: "￡"', str(unittest_pb2.OneString(data='￡')))  # 3 byte
-    self.assertIn('data: "🙂"', str(unittest_pb2.OneString(data='🙂')))  # 4 byte
+    if locale.getpreferredencoding() == 'utf-8':
+      self.assertIn('data: "£"', str(unittest_pb2.OneString(data='£')))  # 2 byte
+      self.assertIn('data: "€"', str(unittest_pb2.OneString(data='€')))  # 3 byte
+      self.assertIn('data: "🙂"', str(unittest_pb2.OneString(data='🙂')))  # 4 byte
+    else:
+      self.assertIn(r'data: "\302\243"', str(unittest_pb2.OneString(data='£')))  # 2 byte
+      self.assertIn(r'data: "\342\202\254"', str(unittest_pb2.OneString(data='€'))) # 3 byte
+      self.assertIn(r'data: "\360\237\231\202', str(unittest_pb2.OneString(data='🙂')))  # 4 byte
 
 
 @testing_refleaks.TestCase

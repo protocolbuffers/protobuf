@@ -93,6 +93,7 @@ PyObject* EnumTypeWrapper_class;
 static PyObject* PythonMessage_class;
 static PyObject* kEmptyWeakref;
 static PyObject* WKT_classes = nullptr;
+static bool use_utf8;
 
 namespace message_meta {
 
@@ -1686,7 +1687,11 @@ class PythonFieldValuePrinter : public TextFormat::FastFieldValuePrinter {
   }
   void PrintString(const std::string& val,
                    TextFormat::BaseTextGenerator* generator) const override {
-    TextFormat::Printer::HardenedPrintString(val, generator);
+    if (use_utf8) {
+      TextFormat::Printer::HardenedPrintString(val, generator);
+    } else {
+      PrintBytes(val, generator);
+    }
   }
   void PrintBytes(const std::string& val,
                   TextFormat::BaseTextGenerator* generator) const override {
@@ -2764,6 +2769,17 @@ PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
   return self->AsPyObject();
 }
 
+static bool UseUtf8() {
+  // return locale.getpreferredencoding() == 'utf-8'
+  ScopedPyObjectPtr locale(PyImport_ImportModule("locale"));
+  if (!locale.get()) return false;
+  ScopedPyObjectPtr getpreferred(
+      PyObject_GetAttrString(locale.get(), "getpreferredencoding"));
+  if (!getpreferred.get()) return false;
+  ScopedPyObjectPtr val(PyObject_CallNoArgs(getpreferred.get()));
+  return strcmp(PyString_AsString(val.get()), "utf-8") == 0;
+}
+
 void InitGlobals() {
   // TODO: Check all return values in this function for NULL and propagate
   // the error (MemoryError) on up to result in an import failure.  These should
@@ -2773,6 +2789,8 @@ void InitGlobals() {
   PyObject* dummy_obj = PySet_New(nullptr);
   kEmptyWeakref = PyWeakref_NewRef(dummy_obj, nullptr);
   Py_DECREF(dummy_obj);
+
+  use_utf8 = UseUtf8();
 }
 
 bool InitProto2MessageModule(PyObject *m) {

@@ -27,8 +27,8 @@ def pyproto_test_wrapper(name, deps = []):
 #
 # load("@rules_python//python:py_test.bzl", "py_test")
 #
-# def pyproto_test_wrapper(name):
-#     src = name + "_wrapper.py"
+# def pyproto_test_wrapper(name, src = None, **kwargs):
+#     src = src or name + "_wrapper.py"
 #     py_test(
 #         name = name,
 #         srcs = [src],
@@ -41,6 +41,7 @@ def pyproto_test_wrapper(name, deps = []):
 #             "@platforms//os:windows": ["@platforms//:incompatible"],
 #             "//conditions:default": [],
 #         }),
+#         **kwargs
 #     )
 #
 # end:google_only

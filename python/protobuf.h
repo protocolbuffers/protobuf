@@ -77,6 +77,7 @@ typedef struct {
   PyTypeObject* cmessage_type;
   PyTypeObject* message_meta_type;
   PyObject* listfields_item_key;
+  bool use_utf8;  // locale.getpreferredencoding() == 'utf-8'
 
   // From protobuf.c
   bool allow_oversize_protos;

@@ -286,7 +286,11 @@ static void txtenc_field(txtenc* e, upb_MessageValue val,
       txtenc_printf(e, "%" PRIu64, val.uint64_val);
       break;
     case kUpb_CType_String:
-      upb_HardenedPrintString(e, val.str_val.data, val.str_val.size);
+      if (e->options & UPB_TXTENC_ASCII) {
+        txtenc_bytes(e, val.str_val);
+      } else {
+        upb_HardenedPrintString(e, val.str_val.data, val.str_val.size);
+      }
       break;
     case kUpb_CType_Bytes:
       txtenc_bytes(e, val.str_val);

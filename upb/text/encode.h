@@ -25,7 +25,11 @@ enum {
   UPB_TXTENC_SKIPUNKNOWN = 2,
 
   // When set, maps are *not* sorted (this avoids allocating tmp mem).
-  UPB_TXTENC_NOSORT = 4
+  UPB_TXTENC_NOSORT = 4,
+
+  // When set, the output will be plain ASCII.  Any UTF-8 code points will be
+  // escaped.  When omitted, the output will be UTF-8.
+  UPB_TXTENC_ASCII = 8
 };
 
 /* Encodes the given |msg| to text format.  The message's reflection is given in

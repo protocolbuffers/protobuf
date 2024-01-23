@@ -64,7 +64,21 @@ pyproto_test_wrapper(name = "symbol_database_test")
 
 pyproto_test_wrapper(name = "text_encoding_test")
 
-pyproto_test_wrapper(name = "message_test")
+pyproto_test_wrapper(
+    name = "message_test_utf8",
+    src = "message_test_wrapper.py",
+    env = {
+        "PYTHONUTF8": "1",
+    },
+)
+
+pyproto_test_wrapper(
+    name = "message_test_noutf8",
+    src = "message_test_wrapper.py",
+    env = {
+        "PYTHONUTF8": "0",
+    },
+)
 
 pyproto_test_wrapper(name = "reflection_test")
 
