@@ -64,12 +64,14 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   return ret;
 }
 
-upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
+upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena, const upb_Extension** extension) {
+    int decode_options, upb_Arena* arena, upb_MessageValue* value) {
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
-  *extension = _upb_Message_Getext(msg, ext_table);
-  if (*extension) {
+  const upb_Extension* extension =
+      UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
+  if (extension) {
+    memcpy(value, &extension->data, sizeof(upb_MessageValue));
     return kUpb_GetExtension_Ok;
   }
 
@@ -99,12 +101,13 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
-  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
-  memcpy(&ext->data, &extension_msg, sizeof(extension_msg));
-  *extension = ext;
+  ext->data.ptr = extension_msg;
+  value->msg_val = extension_msg;
   const char* delete_ptr = upb_Message_GetUnknown(msg, &len) + ofs;
   upb_Message_DeleteUnknown(msg, delete_ptr, result.len);
   return kUpb_GetExtension_Ok;

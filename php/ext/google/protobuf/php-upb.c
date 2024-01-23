@@ -5663,8 +5663,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   for (size_t i = 0; i < ext_count; ++i) {
     const upb_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-    upb_Extension* dst_ext =
-        _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
+    upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+        dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
     if (upb_MiniTableField_IsScalar(field)) {
       if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
@@ -7851,7 +7851,7 @@ static void upb_Decoder_AddKnownMessageSetItem(
     upb_Decoder* d, upb_Message* msg, const upb_MiniTableExtension* item_mt,
     const char* data, uint32_t size) {
   upb_Extension* ext =
-      _upb_Message_GetOrCreateExtension(msg, item_mt, &d->arena);
+      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, item_mt, &d->arena);
   if (UPB_UNLIKELY(!ext)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
@@ -8205,8 +8205,8 @@ static const char* _upb_Decoder_DecodeKnownField(
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
         (const upb_MiniTableExtension*)field;
-    upb_Extension* ext =
-        _upb_Message_GetOrCreateExtension(msg, ext_layout, &d->arena);
+    upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+        msg, ext_layout, &d->arena);
     if (UPB_UNLIKELY(!ext)) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
@@ -11091,7 +11091,7 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
 
 // Must be last.
 
-const struct upb_Extension* _upb_Message_Getext(
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
   const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
@@ -11120,10 +11120,10 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
   }
 }
 
-struct upb_Extension* _upb_Message_GetOrCreateExtension(
+struct upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   struct upb_Extension* ext =
-      (struct upb_Extension*)_upb_Message_Getext(msg, e);
+      (struct upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension), a))
     return NULL;

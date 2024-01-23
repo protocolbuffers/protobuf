@@ -2751,7 +2751,7 @@ public final class Descriptors {
     }
 
     GenericDescriptor parent;
-    FeatureSet features;
+    volatile FeatureSet features;
   }
 
   /** Thrown when building descriptors fails because the source DescriptorProtos are not valid. */

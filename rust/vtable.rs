@@ -134,9 +134,13 @@ impl<'msg, T: ProxiedWithRawVTable + ?Sized> RawVTableMutator<'msg, T> {
         RawVTableMutator { msg_ref, vtable: NonNull::from(vtable).cast(), _phantom: PhantomData }
     }
 
-    fn vtable(self) -> &'static T::VTable {
+    pub fn vtable(self) -> &'static T::VTable {
         // SAFETY: This was cast from `&'static T::VTable`.
         unsafe { self.vtable.cast().as_ref() }
+    }
+
+    pub fn msg_ref(self) -> MutatorMessageRef<'msg> {
+        self.msg_ref
     }
 }
 
@@ -197,7 +201,11 @@ impl<'msg, T: ProxiedWithRawOptionalVTable + ?Sized> RawVTableOptionalMutatorDat
         Self { msg_ref, optional_vtable: NonNull::from(vtable).cast(), _phantom: PhantomData }
     }
 
-    fn optional_vtable(self) -> &'static T::OptionalVTable {
+    pub fn msg_ref(self) -> MutatorMessageRef<'msg> {
+        self.msg_ref
+    }
+
+    pub fn optional_vtable(self) -> &'static T::OptionalVTable {
         // SAFETY: This was cast from `&'static T::OptionalVTable` in `new`.
         unsafe { self.optional_vtable.cast().as_ref() }
     }
@@ -507,10 +515,8 @@ impl<'msg, T: PrimitiveWithRawVTable> RawVTableOptionalMutatorData<'msg, T> {
 }
 
 #[derive(Debug)]
-#[allow(unused)]
-pub struct MessageOptionalVTable {
-    pub base: MessageVTable,
+pub struct MessageVTable {
+    pub getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
+    pub mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
+    pub clearer: unsafe extern "C" fn(msg: RawMessage),
 }
-
-#[derive(Debug)]
-pub struct MessageVTable {}

@@ -123,9 +123,14 @@
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <configuration>
           <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java18</artifactId>
+            <version>1.0</version>
+          </signature>
+          <signature>
             <groupId>net.sf.androidscents.signature</groupId>
-            <artifactId>android-api-level-19</artifactId>
-            <version>4.4.2_r4</version>
+            <artifactId>android-api-level-21</artifactId>
+            <version>5.0.1_r2</version>
           </signature>
         </configuration>
         <executions>

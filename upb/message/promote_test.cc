@@ -123,57 +123,57 @@ TEST(GeneratedCode, Extensions) {
   char* serialized =
       upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
 
-  const upb_Extension* upb_ext2;
   upb_test_ModelExtension1* ext1;
   upb_test_ModelExtension2* ext2;
   upb_GetExtension_Status promote_status;
+  upb_MessageValue value;
 
   // Test known GetExtension 1
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(msg), &upb_test_ModelExtension1_model_ext_ext, 0, arena,
-      &upb_ext2);
-  ext1 = (upb_test_ModelExtension1*)upb_ext2->data.ptr;
+      &value);
+  ext1 = (upb_test_ModelExtension1*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
                                      upb_test_ModelExtension1_str(ext1)));
 
   // Test known GetExtension 2
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 3
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 4
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 5
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
 
   // Test known GetExtension 6
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
 
@@ -188,51 +188,51 @@ TEST(GeneratedCode, Extensions) {
   EXPECT_EQ(0, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(base_msg), &upb_test_ModelExtension1_model_ext_ext, 0, arena,
-      &upb_ext2);
-  ext1 = (upb_test_ModelExtension1*)upb_ext2->data.ptr;
+      &value);
+  ext1 = (upb_test_ModelExtension1*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
                                      upb_test_ModelExtension1_str(ext1)));
 
   // Test unknown GetExtension.
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
 
   // Test unknown GetExtension.
-  promote_status = upb_MiniTable_GetOrPromoteExtension(
+  promote_status = upb_Message_GetOrPromoteExtension(
       UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
-      &upb_ext2);
-  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+      &value);
+  ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
 

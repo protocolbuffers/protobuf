@@ -223,9 +223,8 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid);
 
-const upb_Extension* GetOrPromoteExtension(upb_Message* msg,
-                                           const upb_MiniTableExtension* eid,
-                                           upb_Arena* arena);
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value);
 
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena);
@@ -410,15 +409,16 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   // TODO: Fix const correctness issues.
-  const upb_Extension* ext = ::protos::internal::GetOrPromoteExtension(
+  upb_MessageValue value;
+  const bool ok = ::protos::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
-      id.mini_table_ext(), ::protos::internal::GetArena(message));
-  if (!ext) {
+      id.mini_table_ext(), ::protos::internal::GetArena(message), &value);
+  if (!ok) {
     return ExtensionNotFoundError(
         upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
   return Ptr<const Extension>(::protos::internal::CreateMessage<Extension>(
-      (upb_Message*)ext->data.ptr, ::protos::internal::GetArena(message)));
+      (upb_Message*)value.msg_val, ::protos::internal::GetArena(message)));
 }
 
 template <typename T, typename Extendee, typename Extension,

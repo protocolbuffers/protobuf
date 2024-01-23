@@ -40,7 +40,7 @@ extern "C" {
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
-struct upb_Extension* _upb_Message_GetOrCreateExtension(
+struct upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
 
@@ -51,7 +51,7 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
 
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.
-const struct upb_Extension* _upb_Message_Getext(
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* ext);
 
 #ifdef __cplusplus

@@ -85,20 +85,27 @@ void PrintEnumVerifierLogic(
                  absl::StrCat(enum_verifier_string, terminating_string));
 }
 
-void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime) {
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  bool enforce_lite,
+                                  absl::string_view java_class_name) {
   if (oss_runtime) {
     const auto& version = GetProtobufJavaVersion();
     printer->Print(
-        "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+        "com.google.protobuf.RuntimeVersion.validateProtobuf$lite$"
+        "GencodeVersion("
+        "\n"
         "  com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,\n"
         "  $major$,\n"
         "  $minor$,\n"
         "  $patch$,\n"
-        "  $suffix$);\n",
-        "major", absl::StrCat("/* major= */ ", version.major()), "minor",
+        "  $suffix$,\n"
+        "  $location$);\n",
+        "lite", enforce_lite ? "Lite" : "", "major",
+        absl::StrCat("/* major= */ ", version.major()), "minor",
         absl::StrCat("/* minor= */ ", version.minor()), "patch",
         absl::StrCat("/* patch= */ ", version.patch()), "suffix",
-        absl::StrCat("/* suffix= */ \"", version.suffix(), "\""));
+        absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+        absl::StrCat(java_class_name, ".class.getName()"));
   } else {
     printer->Print(
         "com.google.protobuf.RuntimeVersion.validateProtobufGencodeDomain(\n"

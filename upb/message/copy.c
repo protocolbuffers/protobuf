@@ -259,8 +259,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   for (size_t i = 0; i < ext_count; ++i) {
     const upb_Extension* msg_ext = &ext[i];
     const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-    upb_Extension* dst_ext =
-        _upb_Message_GetOrCreateExtension(dst, msg_ext->ext, arena);
+    upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+        dst, msg_ext->ext, arena);
     if (!dst_ext) return NULL;
     if (upb_MiniTableField_IsScalar(field)) {
       if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {

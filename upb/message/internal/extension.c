@@ -18,7 +18,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const struct upb_Extension* _upb_Message_Getext(
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* e) {
   size_t n;
   const struct upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &n);
@@ -47,10 +47,10 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
   }
 }
 
-struct upb_Extension* _upb_Message_GetOrCreateExtension(
+struct upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   struct upb_Extension* ext =
-      (struct upb_Extension*)_upb_Message_Getext(msg, e);
+      (struct upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(struct upb_Extension), a))
     return NULL;
