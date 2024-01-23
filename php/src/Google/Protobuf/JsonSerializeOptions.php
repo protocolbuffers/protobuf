@@ -34,7 +34,7 @@ namespace Google\Protobuf;
 
 class JsonSerializeOptions
 {
-    //this must match as JSONENC_* in message.c
+    //this must match as JSON_SERIALIZE_KEY_* in json_options.h
     const EMIT_DEFAULTS = "emit_defaults";
     const PRESERVE_PROTO_FIELD_NAMES = "preserve_proto_field_names";
 }

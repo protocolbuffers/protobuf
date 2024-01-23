@@ -10,9 +10,10 @@
 
 // Define constants
 #define JSON_SERIALIZE_OPTIONS_EMIT_DEFAULTS "EMIT_DEFAULTS"
-#define JSON_SERIALIZE_KEY_EMIT_DEFAULTS "emit_defaults"
-
 #define JSON_SERIALIZE_OPTIONS_PRESERVE_PROTO_FIELD_NAMES "PRESERVE_PROTO_FIELD_NAMES"
+
+//this must match JsonSerializeOptions class const
+#define JSON_SERIALIZE_KEY_EMIT_DEFAULTS "emit_defaults"
 #define JSON_SERIALIZE_KEY_PRESERVE_PROTO_FIELD_NAMES "preserve_proto_field_names"
 #include <php.h>
 
