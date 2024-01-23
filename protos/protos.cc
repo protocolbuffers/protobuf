@@ -20,6 +20,7 @@
 #include "upb/message/internal/extension.h"
 #include "upb/message/message.h"
 #include "upb/message/promote.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
@@ -122,19 +123,12 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
                  .status == kUpb_FindUnknown_Ok;
 }
 
-const upb_Extension* GetOrPromoteExtension(upb_Message* msg,
-                                           const upb_MiniTableExtension* eid,
-                                           upb_Arena* arena) {
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value) {
   MessageLock msg_lock(msg);
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getext)(msg, eid);
-  if (ext == nullptr) {
-    upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
-        (upb_Message*)msg, eid, 0, arena, &ext);
-    if (ext_status != kUpb_GetExtension_Ok) {
-      ext = nullptr;
-    }
-  }
-  return ext;
+  upb_GetExtension_Status ext_status = upb_Message_GetOrPromoteExtension(
+      (upb_Message*)msg, eid, 0, arena, value);
+  return ext_status == kUpb_GetExtension_Ok;
 }
 
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,

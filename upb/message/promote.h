@@ -33,14 +33,13 @@ typedef enum {
   kUpb_GetExtensionAsBytes_EncodeError,
 } upb_GetExtensionAsBytes_Status;
 
-// Returns a message extension or promotes an unknown field to
-// an extension.
+// Returns a message value or promotes an unknown field to an extension.
 //
 // TODO: Only supports extension fields that are messages,
 // expand support to include non-message types.
-upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
+upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena, const upb_Extension** extension);
+    int decode_options, upb_Arena* arena, upb_MessageValue* value);
 
 typedef enum {
   kUpb_FindUnknown_Ok,
