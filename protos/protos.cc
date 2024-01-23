@@ -180,11 +180,6 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension) {
-  upb_Extension* msg_ext =
-      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
-  }
   // Clone extension into target message arena.
   extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
                         message_arena);

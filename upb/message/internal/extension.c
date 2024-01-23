@@ -47,7 +47,7 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
   }
 }
 
-struct upb_Extension* _upb_Message_GetOrCreateExtension(
+struct upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   struct upb_Extension* ext =
       (struct upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);

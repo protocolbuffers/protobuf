@@ -99,7 +99,8 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
-  upb_Extension* ext = _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_table, arena);
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
