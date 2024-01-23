@@ -5057,13 +5057,13 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
 
 // Must be last.
 
-const upb_Extension* upb_Message_ExtensionByIndex(const upb_Message* msg,
-                                                  size_t index) {
+const upb_MiniTableExtension* upb_Message_ExtensionByIndex(
+    const upb_Message* msg, size_t index) {
   size_t count;
   const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
 
   UPB_ASSERT(index < count);
-  return &ext[index];
+  return ext[index].ext;
 }
 
 const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
