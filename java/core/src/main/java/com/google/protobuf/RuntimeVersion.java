@@ -36,6 +36,8 @@ public final class RuntimeVersion {
   @SuppressWarnings("NonFinalStaticField")
   private static String prevCheckedLocation = "";
 
+  // dummy changes
+
   // The version of this runtime.
   // Automatically updated by Protobuf release process. Do not edit manually.
 
