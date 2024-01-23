@@ -51,7 +51,7 @@ const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
 
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.
-const struct upb_Extension* _upb_Message_Getext(
+const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* ext);
 
 #ifdef __cplusplus

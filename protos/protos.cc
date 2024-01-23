@@ -26,6 +26,9 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
+// Must be last.
+#include "upb/port/def.inc"
+
 namespace protos {
 
 // begin:google_only
@@ -114,7 +117,7 @@ class MessageLock {
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
-  return _upb_Message_Getext(msg, eid) != nullptr ||
+  return UPB_PRIVATE(_upb_Message_Getext)(msg, eid) != nullptr ||
          upb_Message_FindUnknown(msg, upb_MiniTableExtension_Number(eid), 0)
                  .status == kUpb_FindUnknown_Ok;
 }
@@ -123,7 +126,7 @@ const upb_Extension* GetOrPromoteExtension(upb_Message* msg,
                                            const upb_MiniTableExtension* eid,
                                            upb_Arena* arena) {
   MessageLock msg_lock(msg);
-  const upb_Extension* ext = _upb_Message_Getext(msg, eid);
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getext)(msg, eid);
   if (ext == nullptr) {
     upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
         (upb_Message*)msg, eid, 0, arena, &ext);

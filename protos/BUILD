@@ -58,6 +58,7 @@ cc_library(
         "//upb:message_copy",
         "//upb:message_promote",
         "//upb:mini_table",
+        "//upb:port",
         "//upb:wire",
         "//upb:wire_reader",
         "//upb/message:internal",

@@ -68,7 +68,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, const upb_Extension** extension) {
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
-  *extension = _upb_Message_Getext(msg, ext_table);
+  *extension = UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
   if (*extension) {
     return kUpb_GetExtension_Ok;
   }
