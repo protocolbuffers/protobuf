@@ -10,5 +10,5 @@ if (PHP_PROTOBUF != "no") {
   }
   ADD_SOURCES(configure_module_dirname + "/third_party/utf8_range", PHP_PROTOBUF_SOURCES, "PROTOBUF");
   ADD_FLAG("CFLAGS_PROTOBUF", "/I" + configure_module_dirname + "/third_party/utf8_range");
-  EXTENSION("protobuf", "arena.c array.c convert.c def.c map.c message.c names.c php-upb.c protobuf.c");
+  EXTENSION("protobuf", "arena.c array.c convert.c def.c map.c message.c names.c php-upb.c protobuf.c json_options.c");
 }

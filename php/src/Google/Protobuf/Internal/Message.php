@@ -1562,6 +1562,16 @@ class Message
      */
     public function serializeToJsonString($options = [])
     {
+        if (is_bool($options)) {
+            trigger_error(
+                'Deprecated usage of $preserve_proto_fieldnames. '.
+                'Use serializeToJsonString(["serializeToJsonString" => true])',
+                E_USER_WARNING
+            );
+
+            $options = array(JsonSerializeOptions::PRESERVE_PROTO_FIELD_NAMES => boolval($options));
+        }
+
         $output = new CodedOutputStream($this->jsonByteSize($options));
         $this->serializeToJsonStream($output, $options);
         return $output->getData();

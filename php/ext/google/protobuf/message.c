@@ -22,6 +22,7 @@
 #include "map.h"
 #include "php-upb.h"
 #include "protobuf.h"
+#include "json_options.h"
 
 // -----------------------------------------------------------------------------
 // Message
@@ -759,10 +760,6 @@ PHP_METHOD(Message, mergeFromJsonString) {
   }
 }
 
-// JSON options - this must match as JSONENC_* in message.c
-static const char JSONENC_EMIT_DEFAULTS[] = "emit_defaults";
-static const char JSONENC_PRESERVE_PROTO_FIELD_NAMES[] = "preserve_proto_field_names";
-
 /**
  * Message::serializeToJsonString()
  *
@@ -777,16 +774,17 @@ PHP_METHOD(Message, serializeToJsonString) {
   upb_Status status;
   zval *options_arr = NULL;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &options_arr) == FAILURE) {
-    return;
-  }
+  ZEND_PARSE_PARAMETERS_START(0, 1)
+    Z_PARAM_OPTIONAL
+    Z_PARAM_ZVAL_EX(options_arr, 1, 0)
+  ZEND_PARSE_PARAMETERS_END();
 
-  if (options_arr && Z_TYPE_P(options_arr) == IS_ARRAY) {
+  if (options_arr != NULL && Z_TYPE_P(options_arr) == IS_ARRAY) {
     HashTable* table = HASH_OF(options_arr);
     zval *opt_defaults;
     zval *opt_names;
 
-    zend_string *emit_defaults_str = zend_string_init(JSONENC_EMIT_DEFAULTS, strlen(JSONENC_EMIT_DEFAULTS), 0);
+    zend_string *emit_defaults_str = zend_string_init(JSON_SERIALIZE_KEY_EMIT_DEFAULTS, strlen(JSON_SERIALIZE_KEY_EMIT_DEFAULTS), 0);
     if ((opt_defaults = zend_hash_find(table, emit_defaults_str))) {
       if (Z_ISREF_P(opt_defaults)) {
         ZVAL_DEREF(opt_defaults);
@@ -797,7 +795,7 @@ PHP_METHOD(Message, serializeToJsonString) {
     }
     zend_string_release(emit_defaults_str);
 
-    zend_string *preserve_names_str = zend_string_init(JSONENC_PRESERVE_PROTO_FIELD_NAMES, strlen(JSONENC_PRESERVE_PROTO_FIELD_NAMES), 0);
+    zend_string *preserve_names_str = zend_string_init(JSON_SERIALIZE_KEY_PRESERVE_PROTO_FIELD_NAMES, strlen(JSON_SERIALIZE_KEY_PRESERVE_PROTO_FIELD_NAMES), 0);
     if ((opt_names = zend_hash_find(table, preserve_names_str))) {
       if (Z_ISREF_P(opt_names)) {
         ZVAL_DEREF(opt_names);
@@ -807,6 +805,12 @@ PHP_METHOD(Message, serializeToJsonString) {
       }
     }
     zend_string_release(preserve_names_str);
+  } else if (options_arr != NULL && (Z_TYPE_P(options_arr) == IS_TRUE || Z_TYPE_P(options_arr) == IS_FALSE)) {
+    php_error(E_WARNING, "Deprecated usage of $preserve_proto_fieldnames. Use serializeToJsonString([\"serializeToJsonString\" => true])");
+
+    if (Z_TYPE_P(options_arr) == IS_TRUE ) {
+      options |= upb_JsonEncode_UseProtoNames;
+    }
   }
 
   upb_Status_Clear(&status);
