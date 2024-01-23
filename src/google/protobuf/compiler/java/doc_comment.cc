@@ -234,7 +234,8 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
 }
 
 void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
-                            const FieldAccessorType type) {
+                            const FieldAccessorType type,
+                            const Options options) {
   if (!field->options().deprecated()) {
     return;
   }
@@ -253,8 +254,10 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
 
   printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
                  field->full_name());
-  printer->Print(" *     See $file$;l=$line$\n", "file", field->file()->name(),
-                 "line", startLine);
+  if (!options.strip_nonfunctional_codegen) {
+    printer->Print(" *     See $file$;l=$line$\n", "file",
+                   field->file()->name(), "line", startLine);
+  }
 }
 
 void WriteFieldAccessorDocComment(io::Printer* printer,
@@ -265,7 +268,7 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
   WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
+  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
   switch (type) {
     case HAZZER:
       printer->Print(" * @return Whether the $name$ field is set.\n", "name",
@@ -325,7 +328,7 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
   WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
+  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
   switch (type) {
     case HAZZER:
       // Should never happen
@@ -396,7 +399,7 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, kdoc);
   WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
+  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
   switch (type) {
     case HAZZER:
       // Should never happen
