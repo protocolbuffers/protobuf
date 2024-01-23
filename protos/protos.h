@@ -16,8 +16,6 @@
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
-#include "upb/message/internal/accessors.h"
-#include "upb/message/internal/extension.h"
 #include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
