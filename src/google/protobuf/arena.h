@@ -684,15 +684,23 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 // keyword to make sure the `extern template` suppresses instantiations.
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : ::operator new(sizeof(T));
+  void* mem = nullptr;
+  if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    mem = ::operator new(sizeof(T));
+  } else {
+    mem = arena->AllocateAligned(sizeof(T));
+  }
   return new (mem) T(arena);
 }
 
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : ::operator new(sizeof(T));
+  void* mem = nullptr;
+  if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
+    mem = ::operator new(sizeof(T));
+  } else {
+    mem = arena->AllocateAligned(sizeof(T));
+  }
   return new (mem) T(arena, *static_cast<const T*>(from));
 }
 
