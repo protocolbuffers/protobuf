@@ -16,8 +16,6 @@ import java.util.logging.Logger;
  */
 public final class RuntimeVersion {
 
-  private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
-
   /** Indicates the domain of the Protobuf artifact. */
   public enum RuntimeDomain {
     GOOGLE_INTERNAL,
@@ -40,6 +38,7 @@ public final class RuntimeVersion {
 
   // The version of this runtime.
   // Automatically updated by Protobuf release process. Do not edit manually.
+
   public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
   public static final int MAJOR = 3;
   public static final int MINOR = 26;
@@ -47,6 +46,7 @@ public final class RuntimeVersion {
   public static final String SUFFIX = "-dev";
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
+  private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
 
   /**
    * Validates that the gencode version is compatible with this runtime version according to
