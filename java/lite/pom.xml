@@ -225,7 +225,6 @@
                     <exclude>Proto2SchemaTest.java</exclude>
                     <exclude>Proto2UnknownEnumValueTest.java</exclude>
                     <exclude>RepeatedFieldBuilderTest.java</exclude>
-                    <exclude>RuntimeVersionTest.java</exclude>
                     <exclude>ServiceTest.java</exclude>
                     <exclude>SingleFieldBuilderTest.java</exclude>
                     <exclude>TestBadIdentifiers.java</exclude>

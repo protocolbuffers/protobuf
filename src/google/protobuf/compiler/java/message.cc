@@ -336,7 +336,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   printer->Print("static {\n");
   printer->Indent();
   PrintGencodeVersionValidator(printer, context_->options().opensource_runtime,
-                               context_->EnforceLite(), descriptor_->name());
+                               descriptor_->name());
   printer->Outdent();
   printer->Print("}\n");
 

@@ -22,20 +22,6 @@ public final class RuntimeVersion {
     PUBLIC,
   }
 
-  /** Indicates whether last checked runtime is the full or lite version. */
-  protected enum Fullness {
-    UNSPECIFIED,
-    FULL,
-    LITE
-  }
-
-  // Fields to the altered when initializing generated classes.
-  @SuppressWarnings({"ProtectedMembersInFinalClass", "NonFinalStaticField"})
-  protected static Fullness prevFullness = Fullness.UNSPECIFIED;
-
-  @SuppressWarnings("NonFinalStaticField")
-  private static String prevCheckedLocation = "";
-
   // The version of this runtime.
   // Automatically updated by Protobuf release process. Do not edit manually.
 
@@ -47,32 +33,6 @@ public final class RuntimeVersion {
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
-
-  /**
-   * Validates that the gencode version is compatible with this runtime version according to
-   * https://protobuf.dev/support/cross-version-runtime-guarantee/.
-   *
-   * <p>This method is currently only used by Protobuf Java **lite version** gencode. Do not call it
-   * elsewhere.
-   *
-   * @param domain the domain where Protobuf Java code was generated.
-   * @param major the major version of Protobuf Java gencode.
-   * @param minor the minor version of Protobuf Java gencode.
-   * @param patch the micro/patch version of Protobuf Java gencode.
-   * @param suffix the version suffix e.g. "-rc2", "-dev", etc.
-   * @param location the debugging location e.g. generated Java class to put in the error messages.
-   * @throws ProtobufRuntimeVersionException if versions are incompatible.
-   */
-  public static void validateProtobufLiteGencodeVersion(
-      RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
-    if (checkDisabled()) {
-      return;
-    }
-    synchronized (RuntimeVersion.class) {
-      preventFullAndLite(Fullness.LITE, location);
-    }
-    validateProtobufGencodeVersionImpl(domain, major, minor, patch, suffix, location);
-  }
 
   /**
    * Validates that the gencode version is compatible with this runtime version according to
@@ -93,9 +53,6 @@ public final class RuntimeVersion {
       RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
     if (checkDisabled()) {
       return;
-    }
-    synchronized (RuntimeVersion.class) {
-      preventFullAndLite(Fullness.FULL, location);
     }
     validateProtobufGencodeVersionImpl(domain, major, minor, patch, suffix, location);
   }
@@ -172,23 +129,6 @@ public final class RuntimeVersion {
     }
 
     return false;
-  }
-
-  /** Verifies that only full or lite linkage exists. */
-  private static void preventFullAndLite(Fullness fullness, String location) {
-    if (fullness != prevFullness && prevFullness != Fullness.UNSPECIFIED) {
-      String message =
-          "Protobuf Java version checker saw both Lite and Full linkages during runtime, which is"
-              + " disallowed. Full gencode @%s; Lite gencode @%s";
-      if (prevFullness == Fullness.FULL) {
-        message = String.format(message, prevCheckedLocation, location);
-      } else {
-        message = String.format(message, location, prevCheckedLocation);
-      }
-      throw new ProtobufRuntimeVersionException(message);
-    }
-    prevFullness = fullness;
-    prevCheckedLocation = location;
   }
 
   private RuntimeVersion() {}

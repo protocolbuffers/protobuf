@@ -86,22 +86,18 @@ void PrintEnumVerifierLogic(
 }
 
 void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
-                                  bool enforce_lite,
                                   absl::string_view java_class_name) {
   if (oss_runtime) {
     const auto& version = GetProtobufJavaVersion();
     printer->Print(
-        "com.google.protobuf.RuntimeVersion.validateProtobuf$lite$"
-        "GencodeVersion("
-        "\n"
+        "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
         "  com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,\n"
         "  $major$,\n"
         "  $minor$,\n"
         "  $patch$,\n"
         "  $suffix$,\n"
         "  $location$);\n",
-        "lite", enforce_lite ? "Lite" : "", "major",
-        absl::StrCat("/* major= */ ", version.major()), "minor",
+        "major", absl::StrCat("/* major= */ ", version.major()), "minor",
         absl::StrCat("/* minor= */ ", version.minor()), "patch",
         absl::StrCat("/* patch= */ ", version.patch()), "suffix",
         absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
