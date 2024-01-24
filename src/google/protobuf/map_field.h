@@ -9,12 +9,19 @@
 #define GOOGLE_PROTOBUF_MAP_FIELD_H__
 
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <functional>
+#include <string>
 #include <type_traits>
+#include <utility>
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_visibility.h"
@@ -23,6 +30,7 @@
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -71,7 +79,7 @@ class PROTOBUF_EXPORT MapKey {
 
   ~MapKey() {
     if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_.Destruct();
+      val_.string_value.Destruct();
     }
   }
 
@@ -86,52 +94,52 @@ class PROTOBUF_EXPORT MapKey {
 
   void SetInt64Value(int64_t value) {
     SetType(FieldDescriptor::CPPTYPE_INT64);
-    val_.int64_value_ = value;
+    val_.int64_value = value;
   }
   void SetUInt64Value(uint64_t value) {
     SetType(FieldDescriptor::CPPTYPE_UINT64);
-    val_.uint64_value_ = value;
+    val_.uint64_value = value;
   }
   void SetInt32Value(int32_t value) {
     SetType(FieldDescriptor::CPPTYPE_INT32);
-    val_.int32_value_ = value;
+    val_.int32_value = value;
   }
   void SetUInt32Value(uint32_t value) {
     SetType(FieldDescriptor::CPPTYPE_UINT32);
-    val_.uint32_value_ = value;
+    val_.uint32_value = value;
   }
   void SetBoolValue(bool value) {
     SetType(FieldDescriptor::CPPTYPE_BOOL);
-    val_.bool_value_ = value;
+    val_.bool_value = value;
   }
   void SetStringValue(std::string val) {
     SetType(FieldDescriptor::CPPTYPE_STRING);
-    *val_.string_value_.get_mutable() = std::move(val);
+    *val_.string_value.get_mutable() = std::move(val);
   }
 
   int64_t GetInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64, "MapKey::GetInt64Value");
-    return val_.int64_value_;
+    return val_.int64_value;
   }
   uint64_t GetUInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64, "MapKey::GetUInt64Value");
-    return val_.uint64_value_;
+    return val_.uint64_value;
   }
   int32_t GetInt32Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32, "MapKey::GetInt32Value");
-    return val_.int32_value_;
+    return val_.int32_value;
   }
   uint32_t GetUInt32Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32, "MapKey::GetUInt32Value");
-    return val_.uint32_value_;
+    return val_.uint32_value;
   }
   bool GetBoolValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL, "MapKey::GetBoolValue");
-    return val_.bool_value_;
+    return val_.bool_value;
   }
   const std::string& GetStringValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING, "MapKey::GetStringValue");
-    return val_.string_value_.get();
+    return val_.string_value.get();
   }
 
   bool operator<(const MapKey& other) const {
@@ -148,17 +156,17 @@ class PROTOBUF_EXPORT MapKey {
         ABSL_LOG(FATAL) << "Unsupported";
         return false;
       case FieldDescriptor::CPPTYPE_STRING:
-        return val_.string_value_.get() < other.val_.string_value_.get();
+        return val_.string_value.get() < other.val_.string_value.get();
       case FieldDescriptor::CPPTYPE_INT64:
-        return val_.int64_value_ < other.val_.int64_value_;
+        return val_.int64_value < other.val_.int64_value;
       case FieldDescriptor::CPPTYPE_INT32:
-        return val_.int32_value_ < other.val_.int32_value_;
+        return val_.int32_value < other.val_.int32_value;
       case FieldDescriptor::CPPTYPE_UINT64:
-        return val_.uint64_value_ < other.val_.uint64_value_;
+        return val_.uint64_value < other.val_.uint64_value;
       case FieldDescriptor::CPPTYPE_UINT32:
-        return val_.uint32_value_ < other.val_.uint32_value_;
+        return val_.uint32_value < other.val_.uint32_value;
       case FieldDescriptor::CPPTYPE_BOOL:
-        return val_.bool_value_ < other.val_.bool_value_;
+        return val_.bool_value < other.val_.bool_value;
     }
     return false;
   }
@@ -176,17 +184,17 @@ class PROTOBUF_EXPORT MapKey {
         ABSL_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
-        return val_.string_value_.get() == other.val_.string_value_.get();
+        return val_.string_value.get() == other.val_.string_value.get();
       case FieldDescriptor::CPPTYPE_INT64:
-        return val_.int64_value_ == other.val_.int64_value_;
+        return val_.int64_value == other.val_.int64_value;
       case FieldDescriptor::CPPTYPE_INT32:
-        return val_.int32_value_ == other.val_.int32_value_;
+        return val_.int32_value == other.val_.int32_value;
       case FieldDescriptor::CPPTYPE_UINT64:
-        return val_.uint64_value_ == other.val_.uint64_value_;
+        return val_.uint64_value == other.val_.uint64_value;
       case FieldDescriptor::CPPTYPE_UINT32:
-        return val_.uint32_value_ == other.val_.uint32_value_;
+        return val_.uint32_value == other.val_.uint32_value;
       case FieldDescriptor::CPPTYPE_BOOL:
-        return val_.bool_value_ == other.val_.bool_value_;
+        return val_.bool_value == other.val_.bool_value;
     }
     ABSL_LOG(FATAL) << "Can't get here.";
     return false;
@@ -202,22 +210,22 @@ class PROTOBUF_EXPORT MapKey {
         ABSL_LOG(FATAL) << "Unsupported";
         break;
       case FieldDescriptor::CPPTYPE_STRING:
-        *val_.string_value_.get_mutable() = other.val_.string_value_.get();
+        *val_.string_value.get_mutable() = other.val_.string_value.get();
         break;
       case FieldDescriptor::CPPTYPE_INT64:
-        val_.int64_value_ = other.val_.int64_value_;
+        val_.int64_value = other.val_.int64_value;
         break;
       case FieldDescriptor::CPPTYPE_INT32:
-        val_.int32_value_ = other.val_.int32_value_;
+        val_.int32_value = other.val_.int32_value;
         break;
       case FieldDescriptor::CPPTYPE_UINT64:
-        val_.uint64_value_ = other.val_.uint64_value_;
+        val_.uint64_value = other.val_.uint64_value;
         break;
       case FieldDescriptor::CPPTYPE_UINT32:
-        val_.uint32_value_ = other.val_.uint32_value_;
+        val_.uint32_value = other.val_.uint32_value;
         break;
       case FieldDescriptor::CPPTYPE_BOOL:
-        val_.bool_value_ = other.val_.bool_value_;
+        val_.bool_value = other.val_.bool_value;
         break;
     }
   }
@@ -231,22 +239,22 @@ class PROTOBUF_EXPORT MapKey {
 
   union KeyValue {
     KeyValue() {}
-    internal::ExplicitlyConstructed<std::string> string_value_;
-    int64_t int64_value_;
-    int32_t int32_value_;
-    uint64_t uint64_value_;
-    uint32_t uint32_value_;
-    bool bool_value_;
+    internal::ExplicitlyConstructed<std::string> string_value;
+    int64_t int64_value;
+    int32_t int32_value;
+    uint64_t uint64_value;
+    uint32_t uint32_value;
+    bool bool_value;
   } val_;
 
   void SetType(FieldDescriptor::CppType type) {
     if (type_ == type) return;
     if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_.Destruct();
+      val_.string_value.Destruct();
     }
     type_ = type;
     if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_.DefaultConstruct();
+      val_.string_value.DefaultConstruct();
     }
   }
 
@@ -290,6 +298,8 @@ namespace internal {
 class ContendedMapCleanTest;
 class GeneratedMessageReflection;
 class MapFieldAccessor;
+
+struct MapFieldTestPeer;
 
 // This class provides access to map field using reflection, which is the same
 // as those provided for RepeatedPtrField<Message>. It is used for internal
@@ -645,7 +655,7 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   constexpr MapField() : MapField::TypeDefinedMapFieldBase(&kVTable) {}
   MapField(const MapField&) = delete;
   MapField& operator=(const MapField&) = delete;
-  ~MapField() {}
+  ~MapField() = default;
 
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(&kVTable, arena) {}
@@ -834,7 +844,7 @@ class PROTOBUF_EXPORT MapValueConstRef {
 // the map value.
 class PROTOBUF_EXPORT MapValueRef final : public MapValueConstRef {
  public:
-  MapValueRef() {}
+  MapValueRef() = default;
 
   void SetInt64Value(int64_t value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64, "MapValueRef::SetInt64Value");
