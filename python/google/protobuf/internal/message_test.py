@@ -1406,6 +1406,12 @@ class Proto2Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       m.unknown_map_field[1] = 123
 
+  def testDeepCopyClosedEnum(self):
+    m = map_proto2_unittest_pb2.TestEnumMap()
+    m.known_map_field[123] = 0
+    m2 = copy.deepcopy(m)
+    self.assertEqual(m, m2)
+
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()
     self.assertRaises(AttributeError, getattr, msg, 'Extensions')
