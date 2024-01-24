@@ -231,7 +231,7 @@ def PrintMessage(message,
       the field is a proto message.
   """
   printer = _Printer(
-      out=out, indent=indent, as_utf8=_as_utf8_default,
+      out=out, indent=indent, as_utf8=as_utf8,
       as_one_line=as_one_line,
       use_short_repeated_primitives=use_short_repeated_primitives,
       pointy_brackets=pointy_brackets,
