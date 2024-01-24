@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
@@ -408,4 +409,34 @@ rust_upb_proto_library(
         "//rust/test/shared:__subpackages__",
     ],
     deps = ["//src/google/protobuf:map_unittest_proto"],
+)
+
+proto_library(
+    name = "struct",
+    testonly = True,
+    srcs = ["struct.proto"],
+)
+
+cc_proto_library(
+    name = "struct_cc_proto",
+    testonly = True,
+    deps = [":struct"],
+)
+
+rust_cc_proto_library(
+    name = "struct_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":struct_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "struct_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":struct"],
 )

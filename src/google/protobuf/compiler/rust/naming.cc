@@ -40,8 +40,8 @@ std::string GetUnderscoreDelimitedFullName(Context& ctx,
 }
 }  // namespace
 
-absl::string_view GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  return ctx.generator_context().ImportPathToCrateName(dep.name());
+std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
+  return RsSafeName(ctx.generator_context().ImportPathToCrateName(dep.name()));
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {

@@ -457,3 +457,27 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "reserved_crate_name_cc_test",
+    srcs = ["reserved_crate_name_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust/test:struct_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "reserved_crate_name_upb_test",
+    srcs = ["reserved_crate_name_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust/test:struct_upb_rust_proto",
+    ],
+)
