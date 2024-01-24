@@ -26,8 +26,8 @@ public final class RuntimeVersion {
   // Automatically updated by Protobuf release process. Do not edit manually.
 
   public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
-  public static final int MAJOR = 3;
-  public static final int MINOR = 26;
+  public static final int MAJOR = 4;
+  public static final int MINOR = 27;
   public static final int PATCH = 0;
   public static final String SUFFIX = "-dev";
 
