@@ -3811,7 +3811,7 @@ bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
 }
 
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index) {
+                                             int index, bool force_build) {
   // First, make sure we inject the surviving default instances.
   InitProtobufDefaults();
 
@@ -3819,6 +3819,8 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
   if (const auto* msg = table->default_instances[index]) {
     return msg;
   }
+
+  if (!force_build) return nullptr;
 
   // Fallback to dynamic messages.
   // Register the dep and generate the prototype via the generated pool.

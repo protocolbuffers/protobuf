@@ -345,9 +345,11 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
 };
 
 // Retrieves the existing prototype out of a descriptor table.
-// If it doesn't exist, asks the generated message factory for one.
+// If it doesn't exist and `force_build` is true, it asks the generated message
+// factory for one.
+// Otherwise, it returns null.
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index);
+                                             int index, bool force_build);
 
 struct DenseEnumCacheInfo {
   std::atomic<const std::string**> cache;

@@ -557,14 +557,19 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 #error PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 was previously defined
 #endif
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY3
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY3 was previously defined
+#endif
 #if defined(__GNUC__) && (!defined(__APPLE__) || defined(__clang__)) && \
     !((defined(sun) || defined(__sun)) &&                                     \
       (defined(__SVR4) || defined(__svr4__)))
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 __attribute__((init_priority((101))))
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 __attribute__((init_priority((102))))
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY3 __attribute__((init_priority((103))))
 #else
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY3
 #endif
 
 #ifdef PROTOBUF_PRAGMA_INIT_SEG

@@ -41,6 +41,7 @@
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -1023,9 +1024,66 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
+static void GatherAllCustomOptionTypes(
+    const FileDescriptor* file,
+    absl::btree_map<absl::string_view, const Descriptor*>& out) {
+  const DescriptorPool* pool = file->pool();
+  const Descriptor* fd_proto_descriptor = pool->FindMessageTypeByName(
+      FileDescriptorProto::descriptor()->full_name());
+  // Not all pools have descriptor.proto in them. In these cases there for sure
+  // are no custom options.
+  if (fd_proto_descriptor == nullptr) {
+    return;
+  }
+
+  // It's easier to inspect file as a proto, because we can use reflection on
+  // the proto to iterate over all content.
+  // However, we can't use the generated proto linked into the proto compiler
+  // for this, since it doesn't know the extensions that are potentially present
+  // the protos that are being compiled.
+  // Use a dynamic one from the correct pool to parse them.
+  DynamicMessageFactory factory(pool);
+  std::unique_ptr<Message> fd_proto(
+      factory.GetPrototype(fd_proto_descriptor)->New());
+
+  {
+    FileDescriptorProto linkedin_fd_proto;
+    file->CopyTo(&linkedin_fd_proto);
+    ABSL_CHECK(
+        fd_proto->ParseFromString(linkedin_fd_proto.SerializeAsString()));
+  }
+
+  // Now find all the extensions used, recursively.
+  std::vector<const Message*> to_process = {fd_proto.get()};
+  while (!to_process.empty()) {
+    const Message& msg = *to_process.back();
+    to_process.pop_back();
+
+    std::vector<const FieldDescriptor*> fields;
+    const Reflection& reflection = *msg.GetReflection();
+    reflection.ListFields(msg, &fields);
+
+    for (auto field : fields) {
+      const auto* field_msg = field->message_type();
+      if (field_msg == nullptr) continue;
+      if (field->is_extension()) {
+        out[field_msg->full_name()] = field_msg;
+      }
+      if (field->is_repeated()) {
+        for (int i = 0; i < reflection.FieldSize(msg, field); i++) {
+          to_process.push_back(&reflection.GetRepeatedMessage(msg, field, i));
+        }
+      } else {
+        to_process.push_back(&reflection.GetMessage(msg, field));
+      }
+    }
+  }
+}
+
 static std::vector<const Descriptor*>
 GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
-  std::vector<const Descriptor*> out;
+  // Sorted map to dedup and to make deterministic.
+  absl::btree_map<absl::string_view, const Descriptor*> res;
 
   // For simplicity we force pin request/response messages for all
   // services. The current implementation of services might not do
@@ -1035,11 +1093,20 @@ GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
     auto* service = file->service(i);
     for (int j = 0; j < service->method_count(); ++j) {
       auto* method = service->method(j);
-      out.push_back(method->input_type());
-      out.push_back(method->output_type());
+      res[method->input_type()->full_name()] = method->input_type();
+      res[method->output_type()->full_name()] = method->output_type();
     }
   }
 
+  // For correctness, we must ensure that all messages used as custom options in
+  // the descriptor are pinned. Otherwise, we can't properly parse the
+  // descriptor.
+  GatherAllCustomOptionTypes(file, res);
+
+  std::vector<const Descriptor*> out;
+  for (auto& p : res) {
+    out.push_back(p.second);
+  }
   return out;
 }
 

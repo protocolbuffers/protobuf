@@ -205,10 +205,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
            {"lazy", descriptor_->options().has_lazy()
                         ? descriptor_->options().lazy() ? "kLazy" : "kEager"
                         : "kUndefined"}});
-      // Temporarily disable weak descriptor message for extensions.
-      // It is currently incorrect for custom descriptor options. We end up
-      // parsing the descriptors before the custom options are registered.
-      if (false && UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+      if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
         const auto find_index = [](auto* desc) {
           const std::vector<const Descriptor*> msgs =
               FlattenMessagesInFile(desc->file());
@@ -226,13 +223,15 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
                 {"extension_index", find_index(descriptor_->message_type())},
             },
             R"cc(
-              ::_pbi::ExtensionSet::RegisterMessageExtension(
-                  ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
-                                                        $extendee_index$),
-                  $number$, $field_type$, $repeated$, $packed$,
-                  ::_pbi::GetPrototypeForWeakDescriptor(&$extension_table$,
-                                                        $extension_index$),
-                  $verify$, ::_pbi::LazyAnnotation::$lazy$),
+              ::_pbi::ExtensionSet::RegisterWeakMessageExtension(
+                  {{&$extendee_table$, $extendee_index$},
+                   $number$,
+                   $field_type$,
+                   $repeated$,
+                   $packed$,
+                   {&$extension_table$, $extension_index$},
+                   $verify$,
+                   ::_pbi::LazyAnnotation::$lazy$}),
             )cc");
       } else {
         p->Emit(R"cc(

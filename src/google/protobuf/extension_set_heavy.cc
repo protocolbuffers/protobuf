@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -22,6 +23,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -419,6 +421,59 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
 }
+
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+using DelayedExtensions = std::vector<DelayedExtensionInfo>;
+// `volatile` is needed to stop the compiler from being too eager with
+// optimizations.
+// In standard C++ code, the order of static initializers betweens TUs is not
+// specified, so the compiler can just assume this one goes first and optimize
+// away the `if (g_delayed_extensions == nullptr)` check in
+// RegisterDelayedExtensions().
+// However, we use init_priority to guarantee other initializers run first,
+// which break the assumptions made by the compiler.
+// `volatile` forces it to read the variable.
+static DelayedExtensions* volatile g_delayed_extensions = nullptr;
+
+void ExtensionSet::RegisterWeakMessageExtension(
+    DelayedExtensionInfo extension) {
+  auto* real_extendee = GetPrototypeForWeakDescriptor(
+      extension.extendee.table, extension.extendee.index, false);
+  auto* real_prototype = GetPrototypeForWeakDescriptor(
+      extension.prototype.table, extension.prototype.index, false);
+  // Eagerly register already resolved extensions. This allows registering
+  // extensions used in descriptor definitions on the first pass.
+  if (real_extendee != nullptr && real_prototype != nullptr) {
+    RegisterMessageExtension(real_extendee, extension.number, extension.type,
+                             extension.is_repeated, extension.is_packed,
+                             real_prototype, extension.verify_func,
+                             extension.is_lazy);
+  } else {
+    if (g_delayed_extensions == nullptr) {
+      g_delayed_extensions = OnShutdownDelete(new DelayedExtensions);
+    }
+    g_delayed_extensions->push_back(extension);
+  }
+}
+
+static void RegisterDelayedExtensions() {
+  if (g_delayed_extensions == nullptr) return;
+  for (auto& extension : *g_delayed_extensions) {
+    auto* real_extendee = GetPrototypeForWeakDescriptor(
+        extension.extendee.table, extension.extendee.index, true);
+    auto* real_prototype = GetPrototypeForWeakDescriptor(
+        extension.prototype.table, extension.prototype.index, true);
+    ExtensionSet::RegisterMessageExtension(
+        real_extendee, extension.number, extension.type, extension.is_repeated,
+        extension.is_packed, real_prototype, extension.verify_func,
+        extension.is_lazy);
+  }
+}
+
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY3
+static std::true_type init_delayed_extensions =
+    (RegisterDelayedExtensions(), std::true_type{});
+#endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
 }  // namespace internal
 }  // namespace protobuf
