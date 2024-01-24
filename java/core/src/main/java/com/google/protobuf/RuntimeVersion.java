@@ -26,10 +26,10 @@ public final class RuntimeVersion {
   // Automatically updated by Protobuf release process. Do not edit manually.
 
   public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
-  public static final int MAJOR = 3;
+  public static final int MAJOR = 4;
   public static final int MINOR = 26;
   public static final int PATCH = 0;
-  public static final String SUFFIX = "-dev";
+  public static final String SUFFIX = "-rc1";
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
