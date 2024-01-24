@@ -87,7 +87,7 @@ public final class Descriptors {
         if (javaEditionDefaults == null) {
           try {
             ExtensionRegistry registry = ExtensionRegistry.newInstance();
-            JavaFeaturesProto.registerAllExtensions(registry);
+            registry.add(JavaFeaturesProto.java);
             javaEditionDefaults =
                 FeatureSetDefaults.parseFrom(
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
