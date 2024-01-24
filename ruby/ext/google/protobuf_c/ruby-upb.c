@@ -4803,6 +4803,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
   int map_size = _upb_Map_Size(map);
+  UPB_ASSERT(map_size);
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 
@@ -8355,7 +8356,7 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
       upb_MiniTableSub_Message(subs[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSERT(layout->UPB_PRIVATE(field_count) == 2);
 
-  if (map == NULL) return;
+  if (!map || !upb_Map_Size(map)) return;
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
