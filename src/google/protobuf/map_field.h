@@ -299,6 +299,8 @@ class ContendedMapCleanTest;
 class GeneratedMessageReflection;
 class MapFieldAccessor;
 
+template <typename MessageT>
+struct MapDynamicFieldInfo;
 struct MapFieldTestPeer;
 
 // This class provides access to map field using reflection, which is the same
@@ -800,14 +802,6 @@ class PROTOBUF_EXPORT MapValueConstRef {
     return *reinterpret_cast<Message*>(data_);
   }
 
- protected:
-  // data_ point to a map value. MapValueConstRef does not
-  // own this value.
-  void* data_;
-  // type_ is 0 or a valid FieldDescriptor::CppType.
-  // Use "CppType()" to indicate zero.
-  FieldDescriptor::CppType type_;
-
   FieldDescriptor::CppType type() const {
     if (type_ == FieldDescriptor::CppType() || data_ == nullptr) {
       ABSL_LOG(FATAL)
@@ -816,6 +810,14 @@ class PROTOBUF_EXPORT MapValueConstRef {
     }
     return type_;
   }
+
+ protected:
+  // data_ point to a map value. MapValueConstRef does not
+  // own this value.
+  void* data_;
+  // type_ is 0 or a valid FieldDescriptor::CppType.
+  // Use "CppType()" to indicate zero.
+  FieldDescriptor::CppType type_;
 
  private:
   template <typename Derived, typename K, typename V,
@@ -965,6 +967,8 @@ class PROTOBUF_EXPORT MapIterator {
             internal::WireFormatLite::FieldType kValueFieldType>
   friend class internal::MapField;
   friend class internal::MapFieldBase;
+  template <typename MessageT>
+  friend struct internal::MapDynamicFieldInfo;
 
   MapIterator(internal::MapFieldBase* map, const Descriptor* descriptor) {
     map_ = map;
