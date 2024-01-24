@@ -31,6 +31,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {
                 "getter_body",
                 [&] {
@@ -95,7 +96,18 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 //~ this to $field$_mut and update all unit tests
                 pub fn $field$_entry(&mut self)
                     -> $pb$::FieldEntry<'_, $msg_type$> {
-                  todo!()
+                  static VTABLE: $pbr$::MessageVTable =
+                    $pbr$::MessageVTable::new($pbi$::Private,
+                                              $getter_thunk$,
+                                              $getter_mut_thunk$,
+                                              $clearer_thunk$);
+                  unsafe {
+                    let has = $hazzer_thunk$(self.raw_msg());
+                    $pbi$::new_vtable_field_entry($pbi$::Private,
+                      self.as_mutator_message_ref(),
+                      &VTABLE,
+                      has)
+                  }
                 }
                 )rs");
              }},
@@ -123,6 +135,7 @@ void SingularMessage::InExternC(Context& ctx,
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
           {"clearer_thunk", ThunkName(ctx, field, "clear")},
+          {"hazzer_thunk", ThunkName(ctx, field, "has")},
           {"getter_mut",
            [&] {
              if (ctx.is_cpp()) {
@@ -153,6 +166,7 @@ void SingularMessage::InExternC(Context& ctx,
                   fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
                   $getter_mut$
                   fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
                )rs");
 }
 
@@ -162,6 +176,7 @@ void SingularMessage::InThunkCc(Context& ctx,
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"field", cpp::FieldName(&field)}},
            R"cc(
              const void* $getter_thunk$($QualifiedMsg$* msg) {
@@ -171,6 +186,7 @@ void SingularMessage::InThunkCc(Context& ctx,
                return static_cast<void*>(msg->mutable_$field$());
              }
              void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+             bool $hazzer_thunk$($QualifiedMsg$* msg) { return msg->has_$field$(); }
            )cc");
 }
 

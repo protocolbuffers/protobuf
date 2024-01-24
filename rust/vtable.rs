@@ -513,10 +513,3 @@ impl<'msg, T: PrimitiveWithRawVTable> RawVTableOptionalMutatorData<'msg, T> {
         self
     }
 }
-
-#[derive(Debug)]
-pub struct MessageVTable {
-    pub getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-    pub mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-    pub clearer: unsafe extern "C" fn(msg: RawMessage),
-}

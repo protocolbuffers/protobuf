@@ -520,7 +520,21 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }},
        {"settable_impl", [&] { MessageSettableValue(ctx, msg); }},
-       {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }}},
+       {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
+       {"unwrap_upb",
+        [&] {
+          if (ctx.is_upb()) {
+            ctx.Emit(
+                ".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block($pbi$::"
+                "Private))");
+          }
+        }},
+       {"upb_arena",
+        [&] {
+          if (ctx.is_upb()) {
+            ctx.Emit(", inner.msg_ref().arena($pbi$::Private).raw()");
+          }
+        }}},
       R"rs(
         #[allow(non_camel_case_types)]
         //~ TODO: Implement support for debug redaction
@@ -583,7 +597,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         impl $pbi$::ProxiedWithRawVTable for $Msg$ {
-          type VTable = $pbi$::MessageVTable;
+          type VTable = $pbr$::MessageVTable;
 
           fn make_view(_private: $pbi$::Private,
                       mut_inner: $pbi$::RawVTableMutator<'_, Self>)
@@ -591,21 +605,21 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             let msg = unsafe {
               (mut_inner.vtable().getter)(mut_inner.msg_ref().msg())
             };
-            $Msg$View::new($pbi$::Private, msg)
+            $Msg$View::new($pbi$::Private, msg$unwrap_upb$)
           }
 
           fn make_mut(_private: $pbi$::Private,
                       inner: $pbi$::RawVTableMutator<'_, Self>)
                       -> $pb$::Mut<'_, Self> {
             let raw_submsg = unsafe {
-              (inner.vtable().mut_getter)(inner.msg_ref().msg())
+              (inner.vtable().mut_getter)(inner.msg_ref().msg()$upb_arena$)
             };
             $Msg$Mut::from_parent($pbi$::Private, inner.msg_ref(), raw_submsg)
           }
         }
 
         impl $pbi$::ProxiedWithRawOptionalVTable for $Msg$ {
-          type OptionalVTable = $pbi$::MessageVTable;
+          type OptionalVTable = $pbr$::MessageVTable;
 
           fn upcast_vtable(_private: $pbi$::Private,
                            optional_vtable: &'static Self::OptionalVTable)
