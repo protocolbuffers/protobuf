@@ -13,7 +13,11 @@
 
 #include <stdint.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 typedef union {
   bool bool_val;
@@ -40,5 +44,47 @@ typedef union {
   struct upb_Map* map;
   struct upb_Message* msg;
 } upb_MutableMessageValue;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
+                                             upb_MessageValue val2,
+                                             upb_CType ctype) {
+  switch (ctype) {
+    case kUpb_CType_Bool:
+      return val1.bool_val == val2.bool_val;
+
+    case kUpb_CType_Int32:
+    case kUpb_CType_UInt32:
+    case kUpb_CType_Enum:
+      return val1.int32_val == val2.int32_val;
+
+    case kUpb_CType_Float:
+      return val1.float_val == val2.float_val;
+
+    case kUpb_CType_Double:
+      return val1.double_val == val2.double_val;
+
+    case kUpb_CType_Int64:
+    case kUpb_CType_UInt64:
+      return val1.int64_val == val2.int64_val;
+
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes:
+      return upb_StringView_IsEqual(val1.str_val, val2.str_val);
+
+    default:  // Note: This includes kUpb_CType_Message
+      UPB_ASSERT(0);
+      return false;
+  }
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_VALUE_H_ */
