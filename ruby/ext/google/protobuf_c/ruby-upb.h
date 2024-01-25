@@ -114,17 +114,17 @@ Error, UINTPTR_MAX is undefined
 
 // Macros for function attributes on compilers that support them.
 #ifdef __GNUC__
-#define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
+#define UPB_FORCEINLINE __inline__ __attribute__((always_inline)) static
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
 #define UPB_PRINTF(str, first_vararg) __attribute__((format (printf, str, first_vararg)))
 #elif defined(_MSC_VER)
 #define UPB_NOINLINE
-#define UPB_FORCEINLINE
+#define UPB_FORCEINLINE static
 #define UPB_NORETURN __declspec(noreturn)
 #define UPB_PRINTF(str, first_vararg)
 #else  /* !defined(__GNUC__) */
-#define UPB_FORCEINLINE
+#define UPB_FORCEINLINE static
 #define UPB_NOINLINE
 #define UPB_NORETURN
 #define UPB_PRINTF(str, first_vararg)
@@ -2744,7 +2744,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_HasExtension)(
   return UPB_PRIVATE(_upb_Message_Getext)(msg, ext) != NULL;
 }
 
-static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
+UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
     const struct upb_Message* msg, const upb_MiniTableField* field,
     const void* default_val, void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
@@ -4400,8 +4400,8 @@ typedef struct {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t aliasing;
-  int limit;              // Submessage limit relative to end
-  bool error;             // To distinguish between EOF and error.
+  int limit;   // Submessage limit relative to end
+  bool error;  // To distinguish between EOF and error.
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
 
@@ -4738,7 +4738,7 @@ typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
 // fits within this buffer, calls `func` with `ctx` as a parameter, where the
 // pushing and popping of limits is handled automatically and with lower cost
 // than the normal PushLimit()/PopLimit() sequence.
-static UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
+UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
     upb_EpsCopyInputStream* e, const char** ptr, int len,
     upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
   if (!upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(e, *ptr, len)) {
@@ -12986,7 +12986,7 @@ extern "C" {
 UPB_PRIVATE(_upb_WireReader_LongVarint)
 UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val);
 
-static UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
+UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
     const char* ptr, uint64_t* val, int maxlen, uint64_t maxval) {
   uint64_t byte = (uint8_t)*ptr;
   if (UPB_LIKELY((byte & 0x80) == 0)) {
@@ -13052,8 +13052,8 @@ extern "C" {
 // REQUIRES: there must be at least 10 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-static UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
-                                                          uint32_t* tag) {
+UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
+                                                   uint32_t* tag) {
   uint64_t val;
   ptr = UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, &val, 5, UINT32_MAX);
   if (!ptr) return NULL;
