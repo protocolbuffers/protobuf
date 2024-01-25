@@ -167,6 +167,22 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
                       op);
 }
 
+std::string GetFullyQualifiedPath(Context& ctx, const Descriptor& msg) {
+  auto rel_path = GetCrateRelativeQualifiedPath(ctx, msg);
+  if (IsInCurrentlyGeneratingCrate(ctx, msg)) {
+    return absl::StrCat("crate::", rel_path);
+  }
+  return absl::StrCat(GetCrateName(ctx, *msg.file()), "::", rel_path);
+}
+
+std::string GetFullyQualifiedPath(Context& ctx, const EnumDescriptor& enum_) {
+  auto rel_path = GetCrateRelativeQualifiedPath(ctx, enum_);
+  if (IsInCurrentlyGeneratingCrate(ctx, enum_)) {
+    return absl::StrCat("crate::", rel_path);
+  }
+  return absl::StrCat(GetCrateName(ctx, *enum_.file()), "::", rel_path);
+}
+
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
   switch (field.type()) {
     case FieldDescriptor::TYPE_BOOL:
@@ -194,13 +210,9 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case FieldDescriptor::TYPE_STRING:
       return "::__pb::ProtoStr";
     case FieldDescriptor::TYPE_MESSAGE:
-      // TODO: Fix depending on types from other proto_libraries.
-      return absl::StrCat(
-          "crate::", GetCrateRelativeQualifiedPath(ctx, *field.message_type()));
+      return GetFullyQualifiedPath(ctx, *field.message_type());
     case FieldDescriptor::TYPE_ENUM:
-      // TODO: Fix depending on types from other proto_libraries.
-      return absl::StrCat(
-          "crate::", GetCrateRelativeQualifiedPath(ctx, *field.enum_type()));
+      return GetFullyQualifiedPath(ctx, *field.enum_type());
     default:
       break;
   }
