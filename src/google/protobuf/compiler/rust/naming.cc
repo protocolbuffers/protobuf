@@ -167,6 +167,10 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
                       op);
 }
 
+std::string VTableName(const FieldDescriptor& field) {
+  return absl::StrCat("__", absl::AsciiStrToUpper(field.name()), "_VTABLE");
+}
+
 std::string GetFullyQualifiedPath(Context& ctx, const Descriptor& msg) {
   auto rel_path = GetCrateRelativeQualifiedPath(ctx, msg);
   if (IsInCurrentlyGeneratingCrate(ctx, msg)) {

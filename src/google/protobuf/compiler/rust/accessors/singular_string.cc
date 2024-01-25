@@ -5,8 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <string>
-
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
@@ -42,6 +40,18 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit("view");
              }
            }},
+          {"transform_field_entry",
+           [&] {
+             if (field.type() == FieldDescriptor::TYPE_STRING) {
+               ctx.Emit(R"rs(
+                $pb$::ProtoStrMut::field_entry_from_bytes(
+                  $pbi$::Private, out
+                )
+              )rs");
+             } else {
+               ctx.Emit("out");
+             }
+           }},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"view_self", ViewReceiver(accessor_case)},
           {"field_optional_getter",
@@ -58,45 +68,51 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               }
           )rs");
            }},
+          {"vtable_name", VTableName(field)},
+          {"vtable",
+           [&] {
+             if (accessor_case != AccessorCase::OWNED) {
+               return;
+             }
+             if (field.has_presence()) {
+               ctx.Emit({{"default_value", DefaultValue(ctx, field)}},
+                        R"rs(
+                // SAFETY: for `string` fields, the default value is verified as valid UTF-8
+                const $vtable_name$: &'static $pbi$::BytesOptionalMutVTable = &unsafe {
+                    $pbi$::BytesOptionalMutVTable::new(
+                      $pbi$::Private,
+                      $getter_thunk$,
+                      $setter_thunk$,
+                      $clearer_thunk$,
+                      $default_value$,
+                    )
+                  };
+              )rs");
+             } else {
+               ctx.Emit(R"rs(
+                const $vtable_name$: &'static $pbi$::BytesMutVTable =
+                  &$pbi$::BytesMutVTable::new(
+                    $pbi$::Private,
+                    $getter_thunk$,
+                    $setter_thunk$,
+                  );
+              )rs");
+             }
+           }},
           {"field_mutator_getter",
            [&] {
              if (accessor_case == AccessorCase::VIEW) {
                return;
              }
              if (field.has_presence()) {
-               ctx.Emit(
-                   {
-                       {"default_val", DefaultValue(ctx, field)},
-                       {"transform_field_entry",
-                        [&] {
-                          if (field.type() == FieldDescriptor::TYPE_STRING) {
-                            ctx.Emit(R"rs(
-                              $pb$::ProtoStrMut::field_entry_from_bytes(
-                                $pbi$::Private, out
-                              )
-                            )rs");
-                          } else {
-                            ctx.Emit("out");
-                          }
-                        }},
-                   },
-                   R"rs(
+               ctx.Emit(R"rs(
             pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
-              static VTABLE: $pbi$::BytesOptionalMutVTable = unsafe {
-                $pbi$::BytesOptionalMutVTable::new(
-                  $pbi$::Private,
-                  $getter_thunk$,
-                  $setter_thunk$,
-                  $clearer_thunk$,
-                  $default_val$,
-                )
-              };
               let out = unsafe {
                 let has = $hazzer_thunk$(self.raw_msg());
                 $pbi$::new_vtable_field_entry(
                   $pbi$::Private,
                   self.as_mutator_message_ref(),
-                  &VTABLE,
+                  $Msg$::$vtable_name$,
                   has,
                 )
               };
@@ -106,19 +122,13 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              } else {
                ctx.Emit(R"rs(
               pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
-                static VTABLE: $pbi$::BytesMutVTable =
-                  $pbi$::BytesMutVTable::new(
-                    $pbi$::Private,
-                    $getter_thunk$,
-                    $setter_thunk$,
-                  );
                 unsafe {
                   <$pb$::Mut<$proxied_type$>>::from_inner(
                     $pbi$::Private,
                     $pbi$::RawVTableMutator::new(
                       $pbi$::Private,
                       self.as_mutator_message_ref(),
-                      &VTABLE,
+                      $Msg$::$vtable_name$,
                     )
                   )
                 }
@@ -134,6 +144,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
         }
 
         $field_optional_getter$
+        $vtable$
         $field_mutator_getter$
       )rs");
 }
