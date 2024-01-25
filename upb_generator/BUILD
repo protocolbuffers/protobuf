@@ -239,12 +239,12 @@ cc_library(
         "//upb:descriptor_upb_proto",
         "//upb:json",
         "//upb:mem",
+        "//upb:message",
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",
-        "//upb/reflection:internal",
     ],
 )
 
