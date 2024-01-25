@@ -28,9 +28,9 @@ extern "C" {
 const upb_MiniTableExtension* upb_Message_ExtensionByIndex(
     const upb_Message* msg, size_t index);
 
-// Returns the extension with the given field number, or NULL on failure.
-const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
-                                                       uint32_t field_number);
+// Returns the minitable with the given field number, or NULL on failure.
+const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
+    const upb_Message* msg, uint32_t field_number);
 
 #ifdef __cplusplus
 } /* extern "C" */

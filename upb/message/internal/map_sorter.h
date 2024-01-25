@@ -66,9 +66,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
 
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const struct upb_Extension** ext) {
+                                       const upb_Extension** ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const struct upb_Extension*)s->entries[sorted->pos++];
+  *ext = (const upb_Extension*)s->entries[sorted->pos++];
   return true;
 }
 
@@ -80,9 +80,8 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const struct upb_Map* map, _upb_sortedmap* sorted);
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const struct upb_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted);
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */

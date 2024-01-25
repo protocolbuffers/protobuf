@@ -260,8 +260,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 UPB_INLINE void _upb_Message_GetExtensionField(
     const struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  const struct upb_Extension* ext =
-      UPB_PRIVATE(_upb_Message_Getext)(msg, mt_ext);
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getext)(msg, mt_ext);
   const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
@@ -284,7 +283,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
     struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* val, upb_Arena* a) {
   UPB_ASSERT(a);
-  struct upb_Extension* ext =
+  upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, mt_ext, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
@@ -315,13 +314,11 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e) {
   upb_Message_Internal* in = msg->internal;
   if (!in) return;
-  const struct upb_Extension* base =
-      UPB_PTR_AT(in, in->ext_begin, struct upb_Extension);
-  struct upb_Extension* ext =
-      (struct upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
+  const upb_Extension* base = UPB_PTR_AT(in, in->ext_begin, upb_Extension);
+  upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) {
     *ext = *base;
-    in->ext_begin += sizeof(struct upb_Extension);
+    in->ext_begin += sizeof(upb_Extension);
   }
 }
 

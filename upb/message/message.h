@@ -20,7 +20,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-typedef struct upb_Extension upb_Extension;
 typedef struct upb_Message upb_Message;
 
 #ifdef __cplusplus

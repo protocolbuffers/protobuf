@@ -26,14 +26,14 @@ const upb_MiniTableExtension* upb_Message_ExtensionByIndex(
   return ext[index].ext;
 }
 
-const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
-                                                       uint32_t field_number) {
+const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
+    const upb_Message* msg, uint32_t field_number) {
   size_t count;
   const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
 
-  while (count--) {
-    if (upb_MiniTableExtension_Number(ext->ext) == field_number) return ext;
-    ext++;
+  for (; count--; ext++) {
+    const upb_MiniTableExtension* e = ext->ext;
+    if (upb_MiniTableExtension_Number(e) == field_number) return e;
   }
   return NULL;
 }
