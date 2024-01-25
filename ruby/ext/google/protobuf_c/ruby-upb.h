@@ -1986,14 +1986,14 @@ UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-struct upb_Extension {
+typedef struct {
   const upb_MiniTableExtension* ext;
   union {
     upb_StringView str;
     void* ptr;
     char scalar_data[8];
   } data;
-};
+} upb_Extension;
 
 #ifdef __cplusplus
 extern "C" {
@@ -2002,18 +2002,18 @@ extern "C" {
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
-struct upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
 
 // Returns an array of extensions for this message.
 // Note: the array is ordered in reverse relative to the order of creation.
-const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
     const struct upb_Message* msg, size_t* count);
 
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.
-const struct upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* ext);
 
 #ifdef __cplusplus
@@ -2761,8 +2761,7 @@ static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
 UPB_INLINE void _upb_Message_GetExtensionField(
     const struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
-  const struct upb_Extension* ext =
-      UPB_PRIVATE(_upb_Message_Getext)(msg, mt_ext);
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getext)(msg, mt_ext);
   const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
@@ -2785,7 +2784,7 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
     struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* val, upb_Arena* a) {
   UPB_ASSERT(a);
-  struct upb_Extension* ext =
+  upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, mt_ext, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
@@ -2816,13 +2815,11 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e) {
   upb_Message_Internal* in = msg->internal;
   if (!in) return;
-  const struct upb_Extension* base =
-      UPB_PTR_AT(in, in->ext_begin, struct upb_Extension);
-  struct upb_Extension* ext =
-      (struct upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
+  const upb_Extension* base = UPB_PTR_AT(in, in->ext_begin, upb_Extension);
+  upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) {
     *ext = *base;
-    in->ext_begin += sizeof(struct upb_Extension);
+    in->ext_begin += sizeof(upb_Extension);
   }
 }
 
@@ -2991,7 +2988,6 @@ UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 
 // Must be last.
 
-typedef struct upb_Extension upb_Extension;
 typedef struct upb_Message upb_Message;
 
 #ifdef __cplusplus
@@ -12293,9 +12289,9 @@ extern "C" {
 const upb_MiniTableExtension* upb_Message_ExtensionByIndex(
     const upb_Message* msg, size_t index);
 
-// Returns the extension with the given field number, or NULL on failure.
-const upb_Extension* upb_Message_FindExtensionByNumber(const upb_Message* msg,
-                                                       uint32_t field_number);
+// Returns the minitable with the given field number, or NULL on failure.
+const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
+    const upb_Message* msg, uint32_t field_number);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -12390,9 +12386,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
 
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const struct upb_Extension** ext) {
+                                       const upb_Extension** ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const struct upb_Extension*)s->entries[sorted->pos++];
+  *ext = (const upb_Extension*)s->entries[sorted->pos++];
   return true;
 }
 
@@ -12404,9 +12400,8 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const struct upb_Map* map, _upb_sortedmap* sorted);
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const struct upb_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted);
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -12458,6 +12453,35 @@ extern "C" {
 UPB_API bool upb_Message_IsExactlyEqual(const upb_Message* msg1,
                                         const upb_Message* msg2,
                                         const upb_MiniTable* m);
+
+// Performs a shallow field comparison. Do not use on message types.
+UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
+                                             upb_MessageValue val2,
+                                             upb_CType ctype) {
+  switch (ctype) {
+    case kUpb_CType_Bool:
+      return val1.bool_val == val2.bool_val;
+
+    case kUpb_CType_Float:
+    case kUpb_CType_Int32:
+    case kUpb_CType_UInt32:
+    case kUpb_CType_Enum:
+      return val1.int32_val == val2.int32_val;
+
+    case kUpb_CType_Double:
+    case kUpb_CType_Int64:
+    case kUpb_CType_UInt64:
+      return val1.int64_val == val2.int64_val;
+
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes:
+      return upb_StringView_IsEqual(val1.str_val, val2.str_val);
+
+    default:  // Note: This includes kUpb_CType_Message
+      UPB_ASSERT(0);
+      return false;
+  }
+}
 
 #ifdef __cplusplus
 } /* extern "C" */
