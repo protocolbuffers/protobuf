@@ -149,7 +149,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   variables["deprecation"] =
       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "";
 
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
 
@@ -807,7 +807,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
-  WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteMessageDocComment(printer, descriptor_, context_->options(),
+                         /* kdoc */ true);
   printer->Print("public object $name$Kt {\n", "name", descriptor_->name());
   printer->Indent();
   GenerateKotlinDsl(printer);

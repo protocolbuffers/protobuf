@@ -88,7 +88,7 @@ MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
 MessageBuilderGenerator::~MessageBuilderGenerator() {}
 
 void MessageBuilderGenerator::Generate(io::Printer* printer) {
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, descriptor_, context_->options());
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
         "public static final class Builder extends\n"

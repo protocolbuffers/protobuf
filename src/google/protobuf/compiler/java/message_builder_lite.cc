@@ -59,7 +59,7 @@ MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
 MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
 
 void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, descriptor_, context_->options());
   absl::flat_hash_map<absl::string_view, std::string> vars = {
       {"{", ""},
       {"}", ""},
