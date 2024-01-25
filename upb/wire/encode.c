@@ -113,7 +113,7 @@ static void encode_growbuffer(upb_encstate* e, size_t bytes) {
 /* Call to ensure that at least "bytes" bytes are available for writing at
  * e->ptr.  Returns false if the bytes could not be allocated. */
 UPB_FORCEINLINE
-static void encode_reserve(upb_encstate* e, size_t bytes) {
+void encode_reserve(upb_encstate* e, size_t bytes) {
   if ((size_t)(e->ptr - e->buf) < bytes) {
     encode_growbuffer(e, bytes);
     return;
@@ -152,7 +152,7 @@ static void encode_longvarint(upb_encstate* e, uint64_t val) {
 }
 
 UPB_FORCEINLINE
-static void encode_varint(upb_encstate* e, uint64_t val) {
+void encode_varint(upb_encstate* e, uint64_t val) {
   if (val < 128 && e->ptr != e->buf) {
     --e->ptr;
     *e->ptr = val;

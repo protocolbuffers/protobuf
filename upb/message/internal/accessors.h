@@ -243,7 +243,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_HasExtension)(
   return UPB_PRIVATE(_upb_Message_Getext)(msg, ext) != NULL;
 }
 
-static UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
+UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
     const struct upb_Message* msg, const upb_MiniTableField* field,
     const void* default_val, void* val) {
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
