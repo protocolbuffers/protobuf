@@ -29,17 +29,18 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"setter_thunk", ThunkName(ctx, field, "set")},
           {"clearer_thunk", ThunkName(ctx, field, "clear")},
           {"proxied_type", RsTypePath(ctx, field)},
-          {"transform_view",
-           [&] {
-             if (field.type() == FieldDescriptor::TYPE_STRING) {
-               ctx.Emit(R"rs(
-                // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
-                unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
-              )rs");
-             } else {
-               ctx.Emit("view");
-             }
-           }},
+          io::Printer::Sub("transform_view",
+                           [&] {
+                             if (field.type() == FieldDescriptor::TYPE_STRING) {
+                               ctx.Emit(R"rs(
+              // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
+              unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
+            )rs");
+                             } else {
+                               ctx.Emit("view");
+                             }
+                           })
+              .WithSuffix(""),  // This lets `$transform_view$,` work.
           {"transform_field_entry",
            [&] {
              if (field.type() == FieldDescriptor::TYPE_STRING) {
@@ -62,7 +63,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             pub fn $field$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
                 let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
-                  $transform_view$ ,
+                  $transform_view$,
                   unsafe { $hazzer_thunk$(self.raw_msg()) }
                 )
               }
