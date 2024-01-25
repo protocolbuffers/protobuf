@@ -491,6 +491,7 @@ public final class Descriptors {
       try {
         FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
         descriptor.setProto(proto);
+        descriptor.resolveAllFeatures();
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
@@ -705,9 +706,10 @@ public final class Descriptors {
      */
     private void setProto(final FileDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
 
       for (int i = 0; i < messageTypes.length; i++) {
         messageTypes[i].setProto(proto.getMessageType(i));
@@ -1159,9 +1161,10 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final DescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
 
       for (int i = 0; i < nestedTypes.length; i++) {
         nestedTypes[i].setProto(proto.getNestedType(i));
@@ -1976,9 +1979,10 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final FieldDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
     }
 
     /** For internal use only. This is to satisfy the FieldDescriptorLite interface. */
@@ -2257,9 +2261,10 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
 
       for (int i = 0; i < values.length; i++) {
         values[i].setProto(proto.getValue(i));
@@ -2407,9 +2412,10 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumValueDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
     }
   }
 
@@ -2533,9 +2539,10 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final ServiceDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
 
       for (int i = 0; i < methods.length; i++) {
         methods[i].setProto(proto.getMethod(i));
@@ -2684,9 +2691,10 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final MethodDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
     }
   }
 
@@ -3221,9 +3229,10 @@ public final class Descriptors {
 
     private void setProto(final OneofDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
-      this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
+      synchronized (this) {
+        this.features = null;
+        this.options = null;
+      }
     }
 
     private OneofDescriptor(
