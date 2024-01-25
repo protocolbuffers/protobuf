@@ -11,7 +11,7 @@
 #include <limits>
 #include <string>
 
-#include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -40,7 +40,7 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
                  -std::numeric_limits<double>::infinity()) {
         return std::string("f64::NEG_INFINITY");
       } else {
-        ABSL_LOG(FATAL) << "unreachable";
+        LOG(FATAL) << "unreachable";
       }
     case FieldDescriptor::TYPE_FLOAT:
       if (std::isfinite(field.default_value_float())) {
@@ -54,7 +54,7 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
                  -std::numeric_limits<float>::infinity()) {
         return std::string("f32::NEG_INFINITY");
       } else {
-        ABSL_LOG(FATAL) << "unreachable";
+        LOG(FATAL) << "unreachable";
       }
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_SFIXED32:
@@ -90,9 +90,9 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
                           "::", EnumValueRsName(*field.default_value_enum()));
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
-      ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
+      LOG(FATAL) << "Unsupported field type: " << field.type_name();
   }
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 }  // namespace rust

@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -64,12 +64,6 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       }
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_ENUM:
-      // TODO: support enums which are defined in other crates.
-      if (!IsInCurrentlyGeneratingCrate(ctx, *field.enum_type())) {
-        return std::make_unique<UnsupportedField>(
-            "enum fields that are imported from another proto_library"
-            " (defined in a separate Rust crate) are not supported");
-      }
       if (field.is_repeated()) {
         return std::make_unique<RepeatedField>();
       }
@@ -81,12 +75,6 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
-      // TODO: support messages which are defined in other crates.
-      if (!IsInCurrentlyGeneratingCrate(ctx, *field.message_type())) {
-        return std::make_unique<UnsupportedField>(
-            "message fields that are imported from another proto_library"
-            " (defined in a separate Rust crate) are not supported");
-      }
       if (field.is_repeated()) {
         return std::make_unique<RepeatedField>();
       }
@@ -96,7 +84,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       return std::make_unique<UnsupportedField>("group not supported");
   }
 
-  ABSL_LOG(FATAL) << "Unexpected field type: " << field.type();
+  LOG(FATAL) << "Unexpected field type: " << field.type();
 }
 
 }  // namespace

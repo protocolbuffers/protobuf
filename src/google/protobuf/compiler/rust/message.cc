@@ -10,7 +10,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -54,7 +54,7 @@ void MessageNew(Context& ctx, const Descriptor& msg) {
       return;
   }
 
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 void MessageSerialize(Context& ctx, const Descriptor& msg) {
@@ -77,7 +77,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
       return;
   }
 
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 void MessageDeserialize(Context& ctx, const Descriptor& msg) {
@@ -121,7 +121,7 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
       return;
   }
 
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 void MessageExterns(Context& ctx, const Descriptor& msg) {
@@ -177,7 +177,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
       return;
   }
 
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 void MessageDrop(Context& ctx, const Descriptor& msg) {
@@ -225,7 +225,7 @@ void MessageSettableValue(Context& ctx, const Descriptor& msg) {
       return;
   }
 
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
@@ -403,14 +403,14 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
       )rs");
       return;
   }
-  ABSL_LOG(FATAL) << "unreachable";
+  LOG(FATAL) << "unreachable";
 }
 
 }  // namespace
 
 void GenerateRs(Context& ctx, const Descriptor& msg) {
   if (msg.map_key() != nullptr) {
-    ABSL_LOG(WARNING) << "unsupported map field: " << msg.full_name();
+    LOG(WARNING) << "unsupported map field: " << msg.full_name();
     return;
   }
   ctx.Emit(
@@ -792,7 +792,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
   if (msg.map_key() != nullptr) {
-    ABSL_LOG(WARNING) << "unsupported map field: " << msg.full_name();
+    LOG(WARNING) << "unsupported map field: " << msg.full_name();
     return;
   }
 

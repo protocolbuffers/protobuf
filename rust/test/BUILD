@@ -1,10 +1,10 @@
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
     "rust_proto_library",
     "rust_upb_proto_library",
 )
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
 
@@ -439,4 +439,65 @@ rust_upb_proto_library(
         "//rust/test/shared:__subpackages__",
     ],
     deps = [":struct"],
+)
+
+proto_library(
+    name = "imported_types_proto",
+    testonly = True,
+    srcs = ["imported_types.proto"],
+)
+
+cc_proto_library(
+    name = "imported_types_cc_proto",
+    testonly = True,
+    deps = [":imported_types_proto"],
+)
+
+rust_cc_proto_library(
+    name = "imported_types_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":imported_types_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "imported_types_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":imported_types_proto"],
+)
+
+proto_library(
+    name = "fields_with_imported_types_proto",
+    testonly = True,
+    srcs = ["fields_with_imported_types.proto"],
+    deps = [":imported_types_proto"],
+)
+
+cc_proto_library(
+    name = "fields_with_imported_types_cc_proto",
+    testonly = True,
+    deps = [":fields_with_imported_types_proto"],
+)
+
+rust_cc_proto_library(
+    name = "fields_with_imported_types_cc_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":fields_with_imported_types_cc_proto"],
+)
+
+rust_upb_proto_library(
+    name = "fields_with_imported_types_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":fields_with_imported_types_proto"],
 )
