@@ -593,7 +593,7 @@ class PROTOBUF_EXPORT MessageLite {
   };
 
   template <ParseFlags flags, typename T>
-  bool ParseFrom(const T& input);
+  bool ParseFrom(T input);
 
   // Fast path when conditions match (ie. non-deterministic)
   //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
@@ -676,7 +676,9 @@ bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
 }  // namespace internal
 
 template <MessageLite::ParseFlags flags, typename T>
-bool MessageLite::ParseFrom(const T& input) {
+bool MessageLite::ParseFrom(T input) {
+  static_assert(std::is_trivially_copy_constructible<T>::value, "");
+  static_assert(std::is_trivially_destructible<T>::value, "");
   if (flags & kParse) Clear();
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
   return internal::MergeFromImpl<alias>(input, this, flags);
