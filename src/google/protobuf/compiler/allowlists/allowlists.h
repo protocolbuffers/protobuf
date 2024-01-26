@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLISTS_H__
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/allowlists/allowlist.h"
 
 namespace google {
 namespace protobuf {
@@ -34,6 +35,9 @@ bool IsEarlyEditionsFile(absl::string_view file);
 
 // Returns whether a file allows required fields.
 bool IsRequiredFieldFile(absl::string_view file);
+
+// Returns whether a required field is allowed.
+bool IsRequiredField(absl::string_view field);
 
 
 }  // namespace compiler

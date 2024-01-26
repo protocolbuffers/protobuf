@@ -12,10 +12,10 @@
 #include <cstring>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "absl/algorithm/container.h"
 #include "google/protobuf/stubs/common.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
