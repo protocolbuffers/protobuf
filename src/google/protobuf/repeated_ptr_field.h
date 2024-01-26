@@ -34,6 +34,7 @@
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
+#include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
@@ -82,9 +83,8 @@ inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
 }
 
 template <typename T>
-struct IsMovable
-    : std::integral_constant<bool, std::is_move_constructible<T>::value &&
-                                       std::is_move_assignable<T>::value> {};
+using IsMovable = absl::conjunction<std::is_move_constructible<T>,
+                                    std::is_move_assignable<T>>;
 
 // A trait that tells offset of `T::arena_`.
 //
@@ -266,13 +266,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename T>
   void MergeFrom(const RepeatedPtrFieldBase& from) {
     static_assert(std::is_base_of<MessageLite, T>::value, "");
-#ifdef __cpp_if_constexpr
-    if constexpr (!std::is_base_of<Message, T>::value) {
-      // For LITE objects we use the generic MergeFrom to save on binary size.
-      return MergeFrom<MessageLite>(from);
-    }
-#endif
-    MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
+    absl::utility_internal::IfConstexprElse<
+        !std::is_base_of<Message, T>::value>(
+        // For LITE objects we use the generic MergeFrom to save on binary size.
+        [&]() { MergeFrom<MessageLite>(from); },
+        [&]() { MergeFromConcreteMessage(from, Arena::CopyConstruct<T>); });
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -792,17 +790,11 @@ class GenericTypeHandler {
   }
   static inline void Delete(GenericType* value, Arena* arena) {
     if (arena != nullptr) return;
-#ifdef __cpp_if_constexpr
-    if constexpr (std::is_base_of<MessageLite, GenericType>::value) {
-      // Using virtual destructor to reduce generated code size that would have
-      // happened otherwise due to inlined `~GenericType`.
-      InternalOutOfLineDeleteMessageLite(value);
-    } else {
-      delete value;
-    }
-#else
-    delete value;
-#endif
+    using IsMessageLite = std::is_base_of<MessageLite, GenericType>;
+    absl::utility_internal::IfConstexprElse<IsMessageLite::value>(
+        InternalOutOfLineDeleteMessageLite,  //  for messages
+        [](auto* x) { delete x; },           //  for everything else
+        value);
   }
   static inline Arena* GetArena(GenericType* value) {
     return Arena::InternalGetArena(value);
@@ -1241,15 +1233,10 @@ template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
   if (!NeedsDestroy()) return;
-#ifdef __cpp_if_constexpr
-  if constexpr (std::is_base_of<MessageLite, Element>::value) {
-#else
-  if (std::is_base_of<MessageLite, Element>::value) {
-#endif
-    DestroyProtos();
-  } else {
-    Destroy<TypeHandler>();
-  }
+  absl::utility_internal::IfConstexprElse<
+      std::is_base_of<MessageLite, Element>::value>(
+      [&] { DestroyProtos(); },  //
+      [&] { Destroy<TypeHandler>(); });
 }
 
 template <typename Element>
@@ -1343,12 +1330,11 @@ inline void RepeatedPtrField<Element>::Add(Element&& value) {
 template <typename Element>
 template <typename Iter>
 inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
-  if (std::is_base_of<
-          std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
-    int reserve = static_cast<int>(std::distance(begin, end));
-    Reserve(size() + reserve);
-  }
+  using Category = typename std::iterator_traits<Iter>::iterator_category;
+  absl::utility_internal::IfConstexpr<
+      std::is_base_of<std::forward_iterator_tag, Category>::value>(
+      [&]() { Reserve(size() + static_cast<int>(std::distance(begin, end))); });
+
   for (; begin != end; ++begin) {
     *Add() = *begin;
   }
