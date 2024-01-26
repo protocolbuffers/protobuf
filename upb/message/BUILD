@@ -46,6 +46,7 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb/base:internal",
+        "//upb/hash",
         "//upb/mini_table:internal",
     ],
 )
@@ -168,6 +169,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
+        "//upb:port",
         "//upb/hash",
     ],
 )

@@ -1370,6 +1370,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                             const upb_MiniTable* m,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Decoder decoder;
   unsigned depth = (unsigned)options >> 16;
 
