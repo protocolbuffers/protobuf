@@ -22,13 +22,16 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
@@ -142,8 +145,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "lite_implicit_weak_fields") {
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
-      if (!value.empty()) {
-        file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
+      int num_cc_files;
+      if (!value.empty() && absl::SimpleAtoi(value, &num_cc_files)) {
+        file_options.num_cc_files = num_cc_files;
       }
     } else if (key == "descriptor_implicit_weak_messages") {
       file_options.descriptor_implicit_weak_messages = true;

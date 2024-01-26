@@ -11,23 +11,32 @@
 
 #include "google/protobuf/descriptor.h"
 
+#include <limits.h>
+
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <cstdint>
 #include <cstdlib>
-#include <functional>
+#include <cstring>
+#include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <new>  // IWYU pragma: keep
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
+#include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -50,17 +59,20 @@
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/cpp_edition_defaults.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -251,7 +263,7 @@ class FlatAllocation {
  public:
   static constexpr size_t kMaxAlign = Max(alignof(T)...);
 
-  FlatAllocation(const TypeMap<IntT, T...>& ends) : ends_(ends) {
+  explicit FlatAllocation(const TypeMap<IntT, T...>& ends) : ends_(ends) {
     // The arrays start just after FlatAllocation, so adjust the ends.
     Fold({(ends_.template Get<T>() +=
            RoundUpTo<kMaxAlign>(sizeof(FlatAllocation)))...});
@@ -844,7 +856,7 @@ std::string EnumValueToPascalCase(const std::string& input) {
 // Class to remove an enum prefix from enum values.
 class PrefixRemover {
  public:
-  PrefixRemover(absl::string_view prefix) {
+  explicit PrefixRemover(absl::string_view prefix) {
     // Strip underscores and lower-case the prefix.
     for (char character : prefix) {
       if (character != '_') {
@@ -1497,7 +1509,7 @@ DescriptorPool::Tables::Tables() {
 
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoints_.empty()); }
 
-FileDescriptorTables::FileDescriptorTables() {}
+FileDescriptorTables::FileDescriptorTables() = default;
 
 FileDescriptorTables::~FileDescriptorTables() {
   delete fields_by_lowercase_name_.load(std::memory_order_acquire);
@@ -1922,7 +1934,7 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 // DescriptorPool
 
 
-DescriptorPool::ErrorCollector::~ErrorCollector() {}
+DescriptorPool::ErrorCollector::~ErrorCollector() = default;
 
 absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
     ErrorLocation location) {
@@ -2322,8 +2334,9 @@ void DescriptorPool::FindAllExtensions(
 
 // -------------------------------------------------------------------
 
-const FieldDescriptor* Descriptor::FindFieldByNumber(int key) const {
-  const FieldDescriptor* result = file()->tables_->FindFieldByNumber(this, key);
+const FieldDescriptor* Descriptor::FindFieldByNumber(int number) const {
+  const FieldDescriptor* result =
+      file()->tables_->FindFieldByNumber(this, number);
   if (result == nullptr || result->is_extension()) {
     return nullptr;
   } else {
@@ -2332,9 +2345,9 @@ const FieldDescriptor* Descriptor::FindFieldByNumber(int key) const {
 }
 
 const FieldDescriptor* Descriptor::FindFieldByLowercaseName(
-    absl::string_view key) const {
+    absl::string_view lowercase_name) const {
   const FieldDescriptor* result =
-      file()->tables_->FindFieldByLowercaseName(this, key);
+      file()->tables_->FindFieldByLowercaseName(this, lowercase_name);
   if (result == nullptr || result->is_extension()) {
     return nullptr;
   } else {
@@ -2343,9 +2356,9 @@ const FieldDescriptor* Descriptor::FindFieldByLowercaseName(
 }
 
 const FieldDescriptor* Descriptor::FindFieldByCamelcaseName(
-    absl::string_view key) const {
+    absl::string_view camelcase_name) const {
   const FieldDescriptor* result =
-      file()->tables_->FindFieldByCamelcaseName(this, key);
+      file()->tables_->FindFieldByCamelcaseName(this, camelcase_name);
   if (result == nullptr || result->is_extension()) {
     return nullptr;
   } else {
@@ -2354,28 +2367,28 @@ const FieldDescriptor* Descriptor::FindFieldByCamelcaseName(
 }
 
 const FieldDescriptor* Descriptor::FindFieldByName(
-    absl::string_view key) const {
+    absl::string_view name) const {
   const FieldDescriptor* field =
-      file()->tables_->FindNestedSymbol(this, key).field_descriptor();
+      file()->tables_->FindNestedSymbol(this, name).field_descriptor();
   return field != nullptr && !field->is_extension() ? field : nullptr;
 }
 
 const OneofDescriptor* Descriptor::FindOneofByName(
-    absl::string_view key) const {
-  return file()->tables_->FindNestedSymbol(this, key).oneof_descriptor();
+    absl::string_view name) const {
+  return file()->tables_->FindNestedSymbol(this, name).oneof_descriptor();
 }
 
 const FieldDescriptor* Descriptor::FindExtensionByName(
-    absl::string_view key) const {
+    absl::string_view name) const {
   const FieldDescriptor* field =
-      file()->tables_->FindNestedSymbol(this, key).field_descriptor();
+      file()->tables_->FindNestedSymbol(this, name).field_descriptor();
   return field != nullptr && field->is_extension() ? field : nullptr;
 }
 
 const FieldDescriptor* Descriptor::FindExtensionByLowercaseName(
-    absl::string_view key) const {
+    absl::string_view name) const {
   const FieldDescriptor* result =
-      file()->tables_->FindFieldByLowercaseName(this, key);
+      file()->tables_->FindFieldByLowercaseName(this, name);
   if (result == nullptr || !result->is_extension()) {
     return nullptr;
   } else {
@@ -2384,9 +2397,9 @@ const FieldDescriptor* Descriptor::FindExtensionByLowercaseName(
 }
 
 const FieldDescriptor* Descriptor::FindExtensionByCamelcaseName(
-    absl::string_view key) const {
+    absl::string_view name) const {
   const FieldDescriptor* result =
-      file()->tables_->FindFieldByCamelcaseName(this, key);
+      file()->tables_->FindFieldByCamelcaseName(this, name);
   if (result == nullptr || !result->is_extension()) {
     return nullptr;
   } else {
@@ -2395,18 +2408,18 @@ const FieldDescriptor* Descriptor::FindExtensionByCamelcaseName(
 }
 
 const Descriptor* Descriptor::FindNestedTypeByName(
-    absl::string_view key) const {
-  return file()->tables_->FindNestedSymbol(this, key).descriptor();
+    absl::string_view name) const {
+  return file()->tables_->FindNestedSymbol(this, name).descriptor();
 }
 
 const EnumDescriptor* Descriptor::FindEnumTypeByName(
-    absl::string_view key) const {
-  return file()->tables_->FindNestedSymbol(this, key).enum_descriptor();
+    absl::string_view name) const {
+  return file()->tables_->FindNestedSymbol(this, name).enum_descriptor();
 }
 
 const EnumValueDescriptor* Descriptor::FindEnumValueByName(
-    absl::string_view key) const {
-  return file()->tables_->FindNestedSymbol(this, key).enum_value_descriptor();
+    absl::string_view name) const {
+  return file()->tables_->FindNestedSymbol(this, name).enum_value_descriptor();
 }
 
 const FieldDescriptor* Descriptor::map_key() const {
@@ -2422,54 +2435,54 @@ const FieldDescriptor* Descriptor::map_value() const {
 }
 
 const EnumValueDescriptor* EnumDescriptor::FindValueByName(
-    absl::string_view key) const {
-  return file()->tables_->FindNestedSymbol(this, key).enum_value_descriptor();
+    absl::string_view name) const {
+  return file()->tables_->FindNestedSymbol(this, name).enum_value_descriptor();
 }
 
-const EnumValueDescriptor* EnumDescriptor::FindValueByNumber(int key) const {
-  return file()->tables_->FindEnumValueByNumber(this, key);
+const EnumValueDescriptor* EnumDescriptor::FindValueByNumber(int number) const {
+  return file()->tables_->FindEnumValueByNumber(this, number);
 }
 
 const EnumValueDescriptor* EnumDescriptor::FindValueByNumberCreatingIfUnknown(
-    int key) const {
-  return file()->tables_->FindEnumValueByNumberCreatingIfUnknown(this, key);
+    int number) const {
+  return file()->tables_->FindEnumValueByNumberCreatingIfUnknown(this, number);
 }
 
 const MethodDescriptor* ServiceDescriptor::FindMethodByName(
-    absl::string_view key) const {
-  return file()->tables_->FindNestedSymbol(this, key).method_descriptor();
+    absl::string_view name) const {
+  return file()->tables_->FindNestedSymbol(this, name).method_descriptor();
 }
 
 const Descriptor* FileDescriptor::FindMessageTypeByName(
-    absl::string_view key) const {
-  return tables_->FindNestedSymbol(this, key).descriptor();
+    absl::string_view name) const {
+  return tables_->FindNestedSymbol(this, name).descriptor();
 }
 
 const EnumDescriptor* FileDescriptor::FindEnumTypeByName(
-    absl::string_view key) const {
-  return tables_->FindNestedSymbol(this, key).enum_descriptor();
+    absl::string_view name) const {
+  return tables_->FindNestedSymbol(this, name).enum_descriptor();
 }
 
 const EnumValueDescriptor* FileDescriptor::FindEnumValueByName(
-    absl::string_view key) const {
-  return tables_->FindNestedSymbol(this, key).enum_value_descriptor();
+    absl::string_view name) const {
+  return tables_->FindNestedSymbol(this, name).enum_value_descriptor();
 }
 
 const ServiceDescriptor* FileDescriptor::FindServiceByName(
-    absl::string_view key) const {
-  return tables_->FindNestedSymbol(this, key).service_descriptor();
+    absl::string_view name) const {
+  return tables_->FindNestedSymbol(this, name).service_descriptor();
 }
 
 const FieldDescriptor* FileDescriptor::FindExtensionByName(
-    absl::string_view key) const {
+    absl::string_view name) const {
   const FieldDescriptor* field =
-      tables_->FindNestedSymbol(this, key).field_descriptor();
+      tables_->FindNestedSymbol(this, name).field_descriptor();
   return field != nullptr && field->is_extension() ? field : nullptr;
 }
 
 const FieldDescriptor* FileDescriptor::FindExtensionByLowercaseName(
-    absl::string_view key) const {
-  const FieldDescriptor* result = tables_->FindFieldByLowercaseName(this, key);
+    absl::string_view name) const {
+  const FieldDescriptor* result = tables_->FindFieldByLowercaseName(this, name);
   if (result == nullptr || !result->is_extension()) {
     return nullptr;
   } else {
@@ -2478,8 +2491,8 @@ const FieldDescriptor* FileDescriptor::FindExtensionByLowercaseName(
 }
 
 const FieldDescriptor* FileDescriptor::FindExtensionByCamelcaseName(
-    absl::string_view key) const {
-  const FieldDescriptor* result = tables_->FindFieldByCamelcaseName(this, key);
+    absl::string_view name) const {
+  const FieldDescriptor* result = tables_->FindFieldByCamelcaseName(this, name);
   if (result == nullptr || !result->is_extension()) {
     return nullptr;
   } else {
@@ -2696,14 +2709,14 @@ std::string FieldDescriptor::DefaultValueAsString(
 // optimization. These constructors are never called, so we define them
 // out of line to make sure the debug info is emitted somewhere.
 
-Descriptor::Descriptor() {}
+Descriptor::Descriptor() = default;
 FieldDescriptor::FieldDescriptor() {}
-OneofDescriptor::OneofDescriptor() {}
-EnumDescriptor::EnumDescriptor() {}
-EnumValueDescriptor::EnumValueDescriptor() {}
-ServiceDescriptor::ServiceDescriptor() {}
-MethodDescriptor::MethodDescriptor() {}
-FileDescriptor::FileDescriptor() {}
+OneofDescriptor::OneofDescriptor() = default;
+EnumDescriptor::EnumDescriptor() = default;
+EnumValueDescriptor::EnumValueDescriptor() = default;
+ServiceDescriptor::ServiceDescriptor() = default;
+MethodDescriptor::MethodDescriptor() = default;
+FileDescriptor::FileDescriptor() = default;
 
 // CopyTo methods ====================================================
 
@@ -2773,7 +2786,7 @@ void FileDescriptor::CopyJsonNameTo(FileDescriptorProto* proto) const {
 void FileDescriptor::CopySourceCodeInfoTo(FileDescriptorProto* proto) const {
   if (source_code_info_ &&
       source_code_info_ != &SourceCodeInfo::default_instance()) {
-    proto->mutable_source_code_info()->CopyFrom(*source_code_info_);
+    *proto->mutable_source_code_info() = *source_code_info_;
   }
 }
 
@@ -2808,7 +2821,7 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
   }
 
   if (&options() != &MessageOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -2896,7 +2909,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   }
 
   if (&options() != &FieldOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -2909,7 +2922,7 @@ void FieldDescriptor::CopyJsonNameTo(FieldDescriptorProto* proto) const {
 void OneofDescriptor::CopyTo(OneofDescriptorProto* proto) const {
   proto->set_name(name());
   if (&options() != &OneofOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
   RestoreFeaturesToOptions(proto_features_, proto);
 }
@@ -2930,7 +2943,7 @@ void EnumDescriptor::CopyTo(EnumDescriptorProto* proto) const {
   }
 
   if (&options() != &EnumOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
   RestoreFeaturesToOptions(proto_features_, proto);
 }
@@ -2940,7 +2953,7 @@ void EnumValueDescriptor::CopyTo(EnumValueDescriptorProto* proto) const {
   proto->set_number(number());
 
   if (&options() != &EnumValueOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
   RestoreFeaturesToOptions(proto_features_, proto);
 }
@@ -2953,7 +2966,7 @@ void ServiceDescriptor::CopyTo(ServiceDescriptorProto* proto) const {
   }
 
   if (&options() != &ServiceOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
   RestoreFeaturesToOptions(proto_features_, proto);
 }
@@ -2972,7 +2985,7 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   proto->mutable_output_type()->append(output_type()->full_name());
 
   if (&options() != &MethodOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    *proto->mutable_options() = options();
   }
 
   if (client_streaming_) {
@@ -4608,7 +4621,7 @@ DescriptorBuilder::DescriptorBuilder(
        std::true_type{});
 }
 
-DescriptorBuilder::~DescriptorBuilder() {}
+DescriptorBuilder::~DescriptorBuilder() = default;
 
 PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     const std::string& element_name, const Message& descriptor,
@@ -5109,7 +5122,7 @@ bool DescriptorBuilder::AddSymbol(const std::string& full_name,
 
 void DescriptorBuilder::AddPackage(const std::string& name,
                                    const Message& proto, FileDescriptor* file) {
-  if (name.find('\0') != std::string::npos) {
+  if (absl::StrContains(name, '\0')) {
     AddError(name, proto, DescriptorPool::ErrorCollector::NAME, [&] {
       return absl::StrCat("\"", name, "\" contains null character.");
     });
@@ -5691,7 +5704,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   SourceCodeInfo* info = nullptr;
   if (proto.has_source_code_info()) {
     info = alloc.AllocateArray<SourceCodeInfo>(1);
-    info->CopyFrom(proto.source_code_info());
+    *info = proto.source_code_info();
     result->source_code_info_ = info;
   } else {
     result->source_code_info_ = &SourceCodeInfo::default_instance();
@@ -5717,7 +5730,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   }
   result->pool_ = pool_;
 
-  if (result->name().find('\0') != std::string::npos) {
+  if (absl::StrContains(result->name(), '\0')) {
     AddError(result->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
       return absl::StrCat("\"", result->name(), "\" contains null character.");
     });
@@ -6362,7 +6375,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
               std::strtol(proto.default_value().c_str(), &end_pos, 0);
           break;
         case FieldDescriptor::CPPTYPE_INT64:
-          static_assert(sizeof(int64_t) == sizeof(long long),
+          static_assert(sizeof(int64_t) == sizeof(long long),  // NOLINT
                         "sizeof int64_t is not sizeof long long");
           result->default_value_int64_t_ =
               std::strtoll(proto.default_value().c_str(), &end_pos, 0);
@@ -6372,8 +6385,9 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
               std::strtoul(proto.default_value().c_str(), &end_pos, 0);
           break;
         case FieldDescriptor::CPPTYPE_UINT64:
-          static_assert(sizeof(uint64_t) == sizeof(unsigned long long),
-                        "sizeof uint64_t is not sizeof unsigned long long");
+          static_assert(
+              sizeof(uint64_t) == sizeof(unsigned long long),  // NOLINT
+              "sizeof uint64_t is not sizeof unsigned long long");
           result->default_value_uint64_t_ =
               std::strtoull(proto.default_value().c_str(), &end_pos, 0);
           break;
@@ -8378,7 +8392,7 @@ DescriptorBuilder::OptionInterpreter::OptionInterpreter(
   ABSL_CHECK(builder_);
 }
 
-DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {}
+DescriptorBuilder::OptionInterpreter::~OptionInterpreter() = default;
 
 bool DescriptorBuilder::OptionInterpreter::InterpretOptionExtensions(
     OptionsToInterpret* options_to_interpret) {
@@ -8688,7 +8702,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
                         << (*iter)->type();
         return false;
     }
-    unknown_fields.reset(parent_unknown_fields.release());
+    unknown_fields = std::move(parent_unknown_fields);
   }
 
   // Now merge the UnknownFieldSet corresponding to the top-level message into
