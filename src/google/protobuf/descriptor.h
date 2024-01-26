@@ -1924,12 +1924,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   bool GetSourceLocation(const std::vector<int>& path,
                          SourceLocation* out_location) const;
 
-
- private:
-  // Returns edition of this file.  For legacy proto2/proto3 files, special
-  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
-  Edition edition() const;
-
  private:
   friend class Symbol;
   friend class FileDescriptorLegacy;
@@ -1947,6 +1941,10 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   const std::string* package_;
   const DescriptorPool* pool_;
   Edition edition_;
+
+  // Returns edition of this file.  For legacy proto2/proto3 files, special
+  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
+  Edition edition() const;
 
   // Get the merged features that apply to this file.  These are specified in
   // the .proto file through the feature options in the message definition.
