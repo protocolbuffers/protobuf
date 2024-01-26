@@ -3617,6 +3617,7 @@ static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
 bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
                     const upb_MessageDef* m, const upb_DefPool* symtab,
                     int options, upb_Arena* arena, upb_Status* status) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   jsondec d;
 
   if (size == 0) return true;
@@ -4916,6 +4917,8 @@ void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
 bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
                              const upb_MiniTableField* f,
                              upb_Message* map_entry_message, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(map_entry_message));
+
   // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
   const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
       mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
@@ -4967,6 +4970,7 @@ upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i) {
 }
 
 void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
   char* data = upb_Array_MutableDataPtr(arr);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
   UPB_ASSERT(i < arr->UPB_PRIVATE(size));
@@ -4974,6 +4978,7 @@ void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
 }
 
 bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
           arr, arr->UPB_PRIVATE(size) + 1, arena)) {
@@ -4985,6 +4990,7 @@ bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
 
 void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
                     size_t count) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
   char* data = upb_Array_MutableDataPtr(arr);
   memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
@@ -4992,6 +4998,7 @@ void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
 
 bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
                       upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
   UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
   UPB_ASSERT(count + arr->UPB_PRIVATE(size) >= count);
@@ -5009,6 +5016,7 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
  * |------------|XXXXXXXX|--------|
  */
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
   const size_t end = i + count;
   UPB_ASSERT(i <= end);
   UPB_ASSERT(end <= arr->UPB_PRIVATE(size));
@@ -5017,6 +5025,7 @@ void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
 }
 
 bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Array_IsFrozen(arr));
   const size_t oldsize = arr->UPB_PRIVATE(size);
   if (UPB_UNLIKELY(
           !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, size, arena))) {
@@ -5050,6 +5059,20 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
   return true;
 }
 
+void upb_Array_Freeze(upb_Array* arr, const upb_MiniTable* m) {
+  if (upb_Array_IsFrozen(arr)) return;
+  UPB_PRIVATE(_upb_Array_ShallowFreeze)(arr);
+
+  if (m) {
+    const size_t size = upb_Array_Size(arr);
+
+    for (size_t i = 0; i < size; i++) {
+      upb_MessageValue val = upb_Array_Get(arr, i);
+      upb_Message_Freeze((upb_Message*)val.msg_val, m);
+    }
+  }
+}
+
 
 #include <stddef.h>
 #include <stdint.h>
@@ -5079,6 +5102,7 @@ const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
 }
 
 
+#include <stdint.h>
 #include <string.h>
 
 
@@ -5177,6 +5201,20 @@ upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter) {
   return ret;
 }
 
+void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m) {
+  if (upb_Map_IsFrozen(map)) return;
+  UPB_PRIVATE(_upb_Map_ShallowFreeze)(map);
+
+  if (m) {
+    size_t iter = kUpb_Map_Begin;
+    upb_MessageValue key, val;
+
+    while (upb_Map_Next(map, &key, &val, &iter)) {
+      upb_Message_Freeze((upb_Message*)val.msg_val, m);
+    }
+  }
+}
+
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
@@ -5186,6 +5224,7 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_strtable_init(&map->table, 4, a);
   map->key_size = key_size;
   map->val_size = value_size;
+  map->UPB_PRIVATE(is_frozen) = false;
 
   return map;
 }
@@ -5349,22 +5388,24 @@ upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* a) {
 
 bool UPB_PRIVATE(_upb_Message_AddUnknown)(upb_Message* msg, const char* data,
                                           size_t len, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, len, arena)) return false;
-  upb_Message_Internal* in = msg->internal;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   memcpy(UPB_PTR_AT(in, in->unknown_end, char), data, len);
   in->unknown_end += len;
   return true;
 }
 
 void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
-  upb_Message_Internal* in = msg->internal;
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
     in->unknown_end = message_overhead;
   }
 }
 
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
-  upb_Message_Internal* in = msg->internal;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
     *len = in->unknown_end - message_overhead;
     return (char*)(in + 1);
@@ -5375,7 +5416,8 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
 }
 
 void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
-  upb_Message_Internal* in = msg->internal;
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   const char* internal_unknown_end = UPB_PTR_AT(in, in->unknown_end, char);
 
 #ifndef NDEBUG
@@ -5397,6 +5439,73 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   size_t count;
   UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
   return count;
+}
+
+void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
+  if (upb_Message_IsFrozen(msg)) return;
+  UPB_PRIVATE(_upb_Message_ShallowFreeze)(msg);
+
+  // Base Fields.
+  const size_t field_count = upb_MiniTable_FieldCount(m);
+
+  for (size_t i = 0; i < field_count; i++) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
+    const upb_MiniTable* m2 = upb_MiniTable_SubMessage(m, f);
+
+    switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
+      case kUpb_FieldMode_Array: {
+        upb_Array* arr = upb_Message_GetMutableArray(msg, f);
+        if (arr) upb_Array_Freeze(arr, m2);
+        break;
+      }
+      case kUpb_FieldMode_Map: {
+        upb_Map* map = upb_Message_GetMutableMap(msg, f);
+        if (map) {
+          const upb_MiniTableField* f2 = upb_MiniTable_MapValue(m2);
+          const upb_MiniTable* m3 = upb_MiniTable_SubMessage(m2, f2);
+          upb_Map_Freeze(map, m3);
+        }
+        break;
+      }
+      case kUpb_FieldMode_Scalar: {
+        if (m2) {
+          upb_Message* msg2 = upb_Message_GetMutableMessage(msg, f);
+          if (msg2) upb_Message_Freeze(msg2, m2);
+        }
+        break;
+      }
+    }
+  }
+
+  // Extensions.
+  size_t ext_count;
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getexts)(msg, &ext_count);
+
+  for (size_t i = 0; i < ext_count; i++) {
+    const upb_MiniTableExtension* e = ext[i].ext;
+    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
+    const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
+
+    upb_MessageValue val;
+    memcpy(&val, &ext[i].data, sizeof(upb_MessageValue));
+
+    switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
+      case kUpb_FieldMode_Array: {
+        upb_Array* arr = (upb_Array*)val.array_val;
+        if (arr) upb_Array_Freeze(arr, m2);
+        break;
+      }
+      case kUpb_FieldMode_Map:
+        UPB_UNREACHABLE();  // Maps cannot be extensions.
+        break;
+      case kUpb_FieldMode_Scalar:
+        if (upb_MiniTableField_IsSubMessage(f)) {
+          upb_Message* msg2 = (upb_Message*)val.msg_val;
+          if (msg2) upb_Message_Freeze(msg2, m2);
+        }
+        break;
+    }
+  }
 }
 
 
@@ -8406,6 +8515,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                             const upb_MiniTable* m,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Decoder decoder;
   unsigned depth = (unsigned)options >> 16;
 
@@ -11105,7 +11215,7 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
 
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
     const struct upb_Message* msg, size_t* count) {
-  upb_Message_Internal* in = msg->internal;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in) {
     *count = (in->size - in->ext_begin) / sizeof(upb_Extension);
     return UPB_PTR_AT(in, in->ext_begin, void);
@@ -11121,7 +11231,7 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   if (ext) return ext;
   if (!UPB_PRIVATE(_upb_Message_Realloc)(msg, sizeof(upb_Extension), a))
     return NULL;
-  upb_Message_Internal* in = msg->internal;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   in->ext_begin -= sizeof(upb_Extension);
   ext = UPB_PTR_AT(in, in->ext_begin, void);
   memset(ext, 0, sizeof(upb_Extension));
@@ -11144,7 +11254,7 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* a) {
   const size_t overhead = sizeof(upb_Message_Internal);
 
-  upb_Message_Internal* in = msg->internal;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) {
     // No internal data, allocate from scratch.
     size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + overhead));
@@ -11154,7 +11264,7 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
     in->size = size;
     in->unknown_end = overhead;
     in->ext_begin = size;
-    msg->internal = in;
+    UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->ext_begin - in->unknown_end < need) {
     // Internal data is too small, reallocate.
     size_t new_size = upb_Log2CeilingSize(in->size + need);
@@ -11170,7 +11280,7 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
     }
     in->ext_begin = new_ext_begin;
     in->size = new_size;
-    msg->internal = in;
+    UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   }
 
   UPB_ASSERT(in->ext_begin - in->unknown_end >= need);

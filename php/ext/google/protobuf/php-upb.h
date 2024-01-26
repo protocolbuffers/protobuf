@@ -842,12 +842,20 @@ struct upb_Array {
   //   2 maps to elem size 8
   //   3 maps to elem size 16
   //
-  // Bit #2 contains the frozen/immutable flag (currently unimplemented).
+  // Bit #2 contains the frozen/immutable flag.
   uintptr_t UPB_ONLYBITS(data);
 
   size_t UPB_ONLYBITS(size);     // The number of elements in the array.
   size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
 };
+
+UPB_INLINE void UPB_PRIVATE(_upb_Array_ShallowFreeze)(struct upb_Array* arr) {
+  arr->UPB_ONLYBITS(data) |= _UPB_ARRAY_MASK_IMM;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Array_IsFrozen)(const struct upb_Array* arr) {
+  return (arr->UPB_ONLYBITS(data) & _UPB_ARRAY_MASK_IMM) != 0;
+}
 
 UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(struct upb_Array* array,
                                                      void* data, size_t lg2) {
@@ -898,6 +906,7 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array, size_t min_size,
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
                                                 size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Array_IsFrozen)(array));
   if (array->UPB_PRIVATE(capacity) < size)
     return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
   return true;
@@ -906,6 +915,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
 // Resize without initializing new elements.
 UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
     struct upb_Array* array, size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Array_IsFrozen)(array));
   UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
              arena);  // Allow NULL arena when shrinking.
   if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
@@ -919,6 +929,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
 UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
                                             const void* data,
                                             size_t elem_size) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Array_IsFrozen)(array));
   UPB_ASSERT(i < array->UPB_ONLYBITS(size));
   UPB_ASSERT(elem_size == 1U << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array));
   char* arr_data = (char*)UPB_PRIVATE(_upb_Array_MutableDataPtr)(array);
@@ -980,218 +991,6 @@ typedef union {
 } upb_MutableMessageValue;
 
 #endif /* UPB_MESSAGE_VALUE_H_ */
-
-// Must be last.
-
-typedef struct upb_Array upb_Array;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Creates a new array on the given arena that holds elements of this type.
-UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
-
-// Returns the number of elements in the array.
-UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_Size)(arr);
-}
-
-// Returns the given element, which must be within the array's current size.
-UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
-
-// Returns a mutating pointer to the given element, which must be within the
-// array's current size.
-UPB_API upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i);
-
-// Sets the given element, which must be within the array's current size.
-UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
-
-// Appends an element to the array. Returns false on allocation failure.
-UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
-                              upb_Arena* arena);
-
-// Moves elements within the array using memmove().
-// Like memmove(), the source and destination elements may be overlapping.
-UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
-                            size_t count);
-
-// Inserts one or more empty elements into the array.
-// Existing elements are shifted right.
-// The new elements have undefined state and must be set with `upb_Array_Set()`.
-// REQUIRES: `i <= upb_Array_Size(arr)`
-UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
-                              upb_Arena* arena);
-
-// Deletes one or more elements from the array.
-// Existing elements are shifted left.
-// REQUIRES: `i + count <= upb_Array_Size(arr)`
-UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
-
-// Changes the size of a vector. New elements are initialized to NULL/0.
-// Returns false on allocation failure.
-UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
-
-// Returns pointer to array data.
-UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_DataPtr)(arr);
-}
-
-// Returns mutable pointer to array data.
-UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_MutableDataPtr)(arr);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_ARRAY_H_ */
-
-#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-
-
-#ifndef UPB_BASE_INTERNAL_ENDIAN_H_
-#define UPB_BASE_INTERNAL_ENDIAN_H_
-
-#include <stdint.h>
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE bool upb_IsLittleEndian(void) {
-  const int x = 1;
-  return *(char*)&x == 1;
-}
-
-UPB_INLINE uint32_t upb_BigEndian32(uint32_t val) {
-  if (upb_IsLittleEndian()) return val;
-
-  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
-         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
-}
-
-UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
-  if (upb_IsLittleEndian()) return val;
-
-  const uint64_t hi = ((uint64_t)upb_BigEndian32((uint32_t)val)) << 32;
-  const uint64_t lo = upb_BigEndian32((uint32_t)(val >> 32));
-  return hi | lo;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_BASE_INTERNAL_ENDIAN_H_ */
-
-#ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
-#define UPB_MESSAGE_INTERNAL_EXTENSION_H_
-
-
-/*
-** Our memory representation for parsing tables and messages themselves.
-** Functions in this file are used by generated code and possibly reflection.
-**
-** The definitions in this file are internal to upb.
-**/
-
-#ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
-#define UPB_MESSAGE_INTERNAL_MESSAGE_H_
-
-#include <stdlib.h>
-#include <string.h>
-
-
-#ifndef UPB_MINI_TABLE_MESSAGE_H_
-#define UPB_MINI_TABLE_MESSAGE_H_
-
-
-#ifndef UPB_MINI_TABLE_ENUM_H_
-#define UPB_MINI_TABLE_ENUM_H_
-
-#include <stdint.h>
-
-
-#ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
-#define UPB_MINI_TABLE_INTERNAL_ENUM_H_
-
-#include <stdint.h>
-
-// Must be last.
-
-struct upb_MiniTableEnum {
-  uint32_t UPB_PRIVATE(mask_limit);   // Highest that can be tested with mask.
-  uint32_t UPB_PRIVATE(value_count);  // Number of values after the bitfield.
-  uint32_t UPB_PRIVATE(data)[];       // Bitmask + enumerated values follow.
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
-    const struct upb_MiniTableEnum* e, uint32_t val) {
-  if (UPB_LIKELY(val < 64)) {
-    const uint64_t mask =
-        e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);
-    const uint64_t bit = 1ULL << val;
-    return (mask & bit) != 0;
-  }
-  if (UPB_LIKELY(val < e->UPB_PRIVATE(mask_limit))) {
-    const uint32_t mask = e->UPB_PRIVATE(data)[val / 32];
-    const uint32_t bit = 1ULL << (val % 32);
-    return (mask & bit) != 0;
-  }
-
-  // OPT: binary search long lists?
-  const uint32_t* start =
-      &e->UPB_PRIVATE(data)[e->UPB_PRIVATE(mask_limit) / 32];
-  const uint32_t* limit = &e->UPB_PRIVATE(
-      data)[e->UPB_PRIVATE(mask_limit) / 32 + e->UPB_PRIVATE(value_count)];
-  for (const uint32_t* p = start; p < limit; p++) {
-    if (*p == val) return true;
-  }
-  return false;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_INTERNAL_ENUM_H_ */
-
-// Must be last
-
-typedef struct upb_MiniTableEnum upb_MiniTableEnum;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
-                                             uint32_t val) {
-  return UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(e, val);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_ENUM_H_ */
 
 #ifndef UPB_MINI_TABLE_FIELD_H_
 #define UPB_MINI_TABLE_FIELD_H_
@@ -1547,6 +1346,86 @@ upb_MiniTableField_Type(const upb_MiniTableField* f) {
 
 #endif /* UPB_MINI_TABLE_FIELD_H_ */
 
+#ifndef UPB_MINI_TABLE_MESSAGE_H_
+#define UPB_MINI_TABLE_MESSAGE_H_
+
+
+#ifndef UPB_MINI_TABLE_ENUM_H_
+#define UPB_MINI_TABLE_ENUM_H_
+
+#include <stdint.h>
+
+
+#ifndef UPB_MINI_TABLE_INTERNAL_ENUM_H_
+#define UPB_MINI_TABLE_INTERNAL_ENUM_H_
+
+#include <stdint.h>
+
+// Must be last.
+
+struct upb_MiniTableEnum {
+  uint32_t UPB_PRIVATE(mask_limit);   // Highest that can be tested with mask.
+  uint32_t UPB_PRIVATE(value_count);  // Number of values after the bitfield.
+  uint32_t UPB_PRIVATE(data)[];       // Bitmask + enumerated values follow.
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
+    const struct upb_MiniTableEnum* e, uint32_t val) {
+  if (UPB_LIKELY(val < 64)) {
+    const uint64_t mask =
+        e->UPB_PRIVATE(data)[0] | ((uint64_t)e->UPB_PRIVATE(data)[1] << 32);
+    const uint64_t bit = 1ULL << val;
+    return (mask & bit) != 0;
+  }
+  if (UPB_LIKELY(val < e->UPB_PRIVATE(mask_limit))) {
+    const uint32_t mask = e->UPB_PRIVATE(data)[val / 32];
+    const uint32_t bit = 1ULL << (val % 32);
+    return (mask & bit) != 0;
+  }
+
+  // OPT: binary search long lists?
+  const uint32_t* start =
+      &e->UPB_PRIVATE(data)[e->UPB_PRIVATE(mask_limit) / 32];
+  const uint32_t* limit = &e->UPB_PRIVATE(
+      data)[e->UPB_PRIVATE(mask_limit) / 32 + e->UPB_PRIVATE(value_count)];
+  for (const uint32_t* p = start; p < limit; p++) {
+    if (*p == val) return true;
+  }
+  return false;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_INTERNAL_ENUM_H_ */
+
+// Must be last
+
+typedef struct upb_MiniTableEnum upb_MiniTableEnum;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Validates enum value against range defined by enum mini table.
+UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
+                                             uint32_t val) {
+  return UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(e, val);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_ENUM_H_ */
+
 #ifndef UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 #define UPB_MINI_TABLE_INTERNAL_MESSAGE_H_
 
@@ -1691,6 +1570,15 @@ UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
   return UPB_PRIVATE(_upb_MiniTable_IsEmpty)(ret) ? NULL : ret;
 }
 
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_SubMessage)(
+    const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
+  if (UPB_PRIVATE(_upb_MiniTableField_CType)(f) != kUpb_CType_Message) {
+    return NULL;
+  }
+  return UPB_PRIVATE(_upb_MiniTableSub_Message)(
+      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+}
+
 UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
     _upb_MiniTable_GetSubEnumTable)(const struct upb_MiniTable* m,
                                     const struct upb_MiniTableField* f) {
@@ -1761,10 +1649,17 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m) {
   return UPB_PRIVATE(_upb_MiniTable_FieldCount)(m);
 }
 
+// DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* m, const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f);
+}
+
+// Returns the MiniTable for a message field if it is a submessage.
+UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTable_SubMessage)(m, f);
 }
 
 // Returns the MiniTableEnum for a message field, NULL if the field is unlinked.
@@ -1819,6 +1714,148 @@ bool upb_MiniTable_NextOneofField(const upb_MiniTable* m,
 
 
 #endif /* UPB_MINI_TABLE_MESSAGE_H_ */
+
+// Must be last.
+
+typedef struct upb_Array upb_Array;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Creates a new array on the given arena that holds elements of this type.
+UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
+
+// Returns the number of elements in the array.
+UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_Size)(arr);
+}
+
+// Returns the given element, which must be within the array's current size.
+UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
+
+// Returns a mutating pointer to the given element, which must be within the
+// array's current size.
+UPB_API upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i);
+
+// Sets the given element, which must be within the array's current size.
+UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
+
+// Appends an element to the array. Returns false on allocation failure.
+UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
+                              upb_Arena* arena);
+
+// Moves elements within the array using memmove().
+// Like memmove(), the source and destination elements may be overlapping.
+UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
+                            size_t count);
+
+// Inserts one or more empty elements into the array.
+// Existing elements are shifted right.
+// The new elements have undefined state and must be set with `upb_Array_Set()`.
+// REQUIRES: `i <= upb_Array_Size(arr)`
+UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
+                              upb_Arena* arena);
+
+// Deletes one or more elements from the array.
+// Existing elements are shifted left.
+// REQUIRES: `i + count <= upb_Array_Size(arr)`
+UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
+
+// Changes the size of a vector. New elements are initialized to NULL/0.
+// Returns false on allocation failure.
+UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
+
+// Returns pointer to array data.
+UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_DataPtr)(arr);
+}
+
+// Returns mutable pointer to array data.
+UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_MutableDataPtr)(arr);
+}
+
+// Mark an array and all of its descendents as frozen/immutable.
+// If the array elements are messages then |m| must point to the minitable for
+// those messages. Otherwise |m| must be NULL.
+UPB_API void upb_Array_Freeze(upb_Array* arr, const upb_MiniTable* m);
+
+// Returns whether an array has been frozen.
+UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_IsFrozen)(arr);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_ARRAY_H_ */
+
+#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+#ifndef UPB_BASE_INTERNAL_ENDIAN_H_
+#define UPB_BASE_INTERNAL_ENDIAN_H_
+
+#include <stdint.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool upb_IsLittleEndian(void) {
+  const int x = 1;
+  return *(char*)&x == 1;
+}
+
+UPB_INLINE uint32_t upb_BigEndian32(uint32_t val) {
+  if (upb_IsLittleEndian()) return val;
+
+  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
+         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
+}
+
+UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
+  if (upb_IsLittleEndian()) return val;
+
+  const uint64_t hi = ((uint64_t)upb_BigEndian32((uint32_t)val)) << 32;
+  const uint64_t lo = upb_BigEndian32((uint32_t)(val >> 32));
+  return hi | lo;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_INTERNAL_ENDIAN_H_ */
+
+#ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
+#define UPB_MESSAGE_INTERNAL_EXTENSION_H_
+
+
+/*
+** Our memory representation for parsing tables and messages themselves.
+** Functions in this file are used by generated code and possibly reflection.
+**
+** The definitions in this file are internal to upb.
+**/
+
+#ifndef UPB_MESSAGE_INTERNAL_MESSAGE_H_
+#define UPB_MESSAGE_INTERNAL_MESSAGE_H_
+
+#include <stdlib.h>
+#include <string.h>
+
 
 // Must be last.
 
@@ -2340,6 +2377,7 @@ struct upb_Map {
   // Strings are represented as '0' because they must be handled specially.
   char key_size;
   char val_size;
+  bool UPB_PRIVATE(is_frozen);
 
   upb_strtable table;
 };
@@ -2347,6 +2385,14 @@ struct upb_Map {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_INLINE void UPB_PRIVATE(_upb_Map_ShallowFreeze)(struct upb_Map* map) {
+  map->UPB_PRIVATE(is_frozen) = true;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Map_IsFrozen)(const struct upb_Map* map) {
+  return map->UPB_PRIVATE(is_frozen);
+}
 
 // Converting between internal table representation and user values.
 //
@@ -2405,11 +2451,15 @@ UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+
   upb_strtable_clear(&map->table);
 }
 
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
                                 size_t key_size, upb_value* val) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+
   upb_StringView k = _upb_map_tokey(key, key_size);
   return upb_strtable_remove2(&map->table, k.data, k.size, val);
 }
@@ -2429,6 +2479,8 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                const void* key, size_t key_size,
                                                void* val, size_t val_size,
                                                upb_Arena* a) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+
   upb_StringView strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
@@ -2516,12 +2568,43 @@ UPB_INLINE struct upb_Message* UPB_PRIVATE(
 #ifndef UPB_MESSAGE_INTERNAL_TYPES_H_
 #define UPB_MESSAGE_INTERNAL_TYPES_H_
 
+#include <stdint.h>
+
+// Must be last.
+
+#define UPB_OPAQUE(x) x##_opaque
+
 struct upb_Message {
   union {
-    struct upb_Message_Internal* internal;
+    uintptr_t UPB_OPAQUE(internal);  // tagged pointer, low bit == frozen
     double d;  // Forces same size for 32-bit/64-bit builds
   };
 };
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_ShallowFreeze)(
+    struct upb_Message* msg) {
+  msg->UPB_OPAQUE(internal) |= 1ULL;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsFrozen)(
+    const struct upb_Message* msg) {
+  return (msg->UPB_OPAQUE(internal) & 1ULL) != 0;
+}
+
+UPB_INLINE struct upb_Message_Internal* UPB_PRIVATE(_upb_Message_GetInternal)(
+    const struct upb_Message* msg) {
+  const uintptr_t tmp = msg->UPB_OPAQUE(internal) & ~1ULL;
+  return (struct upb_Message_Internal*)tmp;
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetInternal)(
+    struct upb_Message* msg, struct upb_Message_Internal* internal) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  msg->UPB_OPAQUE(internal) = (uintptr_t)internal;
+}
+
+#undef UPB_OPAQUE
+
 
 #endif /* UPB_MESSAGE_INTERNAL_TYPES_H_ */
 
@@ -2772,6 +2855,7 @@ UPB_INLINE void _upb_Message_GetExtensionField(
 
 UPB_INLINE void _upb_Message_SetNonExtensionField(
     struct upb_Message* msg, const upb_MiniTableField* field, const void* val) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
@@ -2781,6 +2865,7 @@ UPB_INLINE void _upb_Message_SetNonExtensionField(
 UPB_INLINE bool _upb_Message_SetExtensionField(
     struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* val, upb_Arena* a) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, mt_ext, a);
@@ -2792,11 +2877,13 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_Clear)(struct upb_Message* msg,
                                                 const upb_MiniTable* m) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
   memset(msg, 0, m->UPB_PRIVATE(size));
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearBaseField)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
   if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
     UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, f);
   } else if (upb_MiniTableField_IsInOneof(f)) {
@@ -2811,7 +2898,8 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearBaseField)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e) {
-  upb_Message_Internal* in = msg->internal;
+  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return;
   const upb_Extension* base = UPB_PTR_AT(in, in->ext_begin, upb_Extension);
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
@@ -2961,6 +3049,16 @@ UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
 UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
 UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 
+// Mark a map and all of its descendents as frozen/immutable.
+// If the map values are messages then |m| must point to the minitable for
+// those messages. Otherwise |m| must be NULL.
+UPB_API void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m);
+
+// Returns whether a map has been frozen.
+UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map) {
+  return UPB_PRIVATE(_upb_Map_IsFrozen)(map);
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -3003,6 +3101,14 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+// Mark a message and all of its descendents as frozen/immutable.
+UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
+
+// Returns whether a message has been frozen.
+UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg) {
+  return UPB_PRIVATE(_upb_Message_IsFrozen)(msg);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3396,6 +3502,11 @@ UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
   upb_TaggedMessagePtr tagged =
       upb_Message_GetTaggedMessagePtr(msg, field, default_val);
   return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+}
+
+UPB_API_INLINE upb_Message* upb_Message_GetMutableMessage(
+    upb_Message* msg, const upb_MiniTableField* field) {
+  return (upb_Message*)upb_Message_GetMessage(msg, field, NULL);
 }
 
 // For internal use only; users cannot set tagged messages because only the
