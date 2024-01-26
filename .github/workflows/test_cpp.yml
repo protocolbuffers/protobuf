@@ -326,12 +326,10 @@ jobs:
           #  cache_key: macos-12-bazel7
           #  bazel: test //src/... //third_party/utf8_range/...
           #  bazel_version: '7.0.0'
-          - name: MacOS Apple Silicon (build only) Bazel
-            os: macos-12
+          - name: MacOS (Apple Silicon) Bazel
+            os: macos-12-xlarge
             cache_key: macos-12-arm
-            # Current github runners are all Intel based, so just build/compile
-            # for Apple Silicon to detect issues there.
-            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
+            bazel: test --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022
@@ -468,7 +466,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v2
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON 
+          command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
 
       - name: Build
         shell: bash
