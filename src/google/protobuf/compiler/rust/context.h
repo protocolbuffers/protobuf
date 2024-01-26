@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -69,7 +70,13 @@ class RustGeneratorContext {
   }
 
   absl::string_view ImportPathToCrateName(absl::string_view import_path) const {
-    return import_path_to_crate_name_.at(import_path);
+    auto it = import_path_to_crate_name_.find(import_path);
+    if (it == import_path_to_crate_name_.end()) {
+      ABSL_LOG(FATAL) << "Path " << import_path
+                      << " not found in crate mapping. Crate mapping has "
+                      << import_path_to_crate_name_.size() << " entries";
+    }
+    return it->second;
   }
 
  private:
