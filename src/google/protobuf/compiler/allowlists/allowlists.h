@@ -35,6 +35,9 @@ bool IsEarlyEditionsFile(absl::string_view file);
 // Returns whether a file allows required fields.
 bool IsRequiredFieldFile(absl::string_view file);
 
+// Returns whether a required field is allowed.
+bool IsRequiredFieldAllowed(absl::string_view field);
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
