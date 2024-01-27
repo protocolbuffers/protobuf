@@ -612,7 +612,8 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
     printer->Print(
         variables_,
         "@java.lang.Override\n"
-        "$deprecation$public $value_enum_type$ get$capitalized_name$OrThrow(\n"
+        "$deprecation$public $value_enum_type$ "
+        "${$get$capitalized_name$OrThrow$}$(\n"
         "    $key_type$ key) {\n"
         "  $key_null_check$\n"
         "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
@@ -866,7 +867,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public $value_builder_type$ "
-      "put$capitalized_name$BuilderIfAbsent(\n"
+      "${$put$capitalized_name$BuilderIfAbsent$}$(\n"
       "    $key_type$ key) {\n"
       "  java.util.Map<$boxed_key_type$, $value_interface_type$> builderMap = "
       "internalGetMutable$capitalized_name$().ensureBuilderMap();\n"
