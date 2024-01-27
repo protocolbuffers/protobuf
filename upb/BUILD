@@ -440,6 +440,7 @@ filegroup(
 #     no_string_conversion = [
 #         "_upb_MiniTable_Build",
 #         "upb_Decode",
+#         "upb_StringView_FromDataAndSize",
 #     ],
 #     strict_enums = [
 #         "upb_CType",
