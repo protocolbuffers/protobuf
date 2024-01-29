@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/python/generator.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
+#include "google/protobuf/compiler/ruby/rbs_generator.h"
 #include "google/protobuf/compiler/rust/generator.h"
 #ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
 #include "google/protobuf/compiler/code_generator_lite.h"
@@ -94,6 +95,11 @@ int ProtobufMain(int argc, char* argv[]) {
   ruby::Generator rb_generator;
   cli.RegisterGenerator("--ruby_out", "--ruby_opt", &rb_generator,
                         "Generate Ruby source file.");
+
+  // Ruby
+  ruby::RbsGenerator rbs_generator;
+  cli.RegisterGenerator("--rbs_out", &rb_generator,
+                        "Generate Ruby rbs stub.");
 
   // CSharp
   csharp::Generator csharp_generator;
