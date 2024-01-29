@@ -2957,6 +2957,9 @@ TEST_F(MiscTest, InvalidFieldOptions) {
   FileDescriptorProto file_proto;
   file_proto.set_name("foo.proto");
 
+  file_proto.set_syntax("editions");
+  file_proto.set_edition(Edition::EDITION_2023);
+
   DescriptorProto* message_proto = AddMessage(&file_proto, "TestMessage");
   AddField(message_proto, "foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
            FieldDescriptorProto::TYPE_INT32);
