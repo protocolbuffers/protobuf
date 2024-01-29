@@ -5,7 +5,10 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = 'BSD-3-Clause'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
-  s.cocoapods_version = '>= 1.0'
+
+  # Ensure developers won't hit CocoaPods/CocoaPods#11402 with the resource
+  # bundle for the privacy manifest.
+  s.cocoapods_version = '>= 1.12.0'
 
   s.source = { :git => 'https://github.com/google/protobuf.git',
                :tag => "v#{s.version}" }
@@ -22,6 +25,10 @@ Pod::Spec.new do |s|
                     'src/google/protobuf/map_lite_test_util.{h,cc}',
                     'src/google/protobuf/map_test_util*.{h,cc,inc}',
                     'src/google/protobuf/reflection_tester.{h,cc}'
+
+  s.resource_bundle = {
+    "Protobuf-C++_Privacy" => "PrivacyInfo.xcprivacy"
+  }
 
   s.header_mappings_dir = 'src'
 
