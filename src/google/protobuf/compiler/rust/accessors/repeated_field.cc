@@ -52,7 +52,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe {
                         $pb$::RepeatedView::from_raw(
                           $pbi$::Private,
-                          unsafe { $getter_thunk$(self.raw_msg()) },
+                          $getter_thunk$(self.raw_msg()),
                         )
                       }
                     }
