@@ -1914,7 +1914,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -1930,7 +1931,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -3705,7 +3707,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -3721,7 +3724,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4076,7 +4080,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4092,7 +4097,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4490,7 +4496,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4506,7 +4513,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4922,7 +4930,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -4938,7 +4947,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -5605,7 +5615,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -5621,7 +5632,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6228,7 +6240,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6244,7 +6257,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6861,7 +6875,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -6877,7 +6892,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7257,7 +7273,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7273,7 +7290,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7665,7 +7683,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
   inline bool HasExtension(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
@@ -7681,7 +7700,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
-            bool _is_packed>
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
   inline int ExtensionSize(
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) const {
