@@ -10,7 +10,10 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/protocolbuffers/protobuf'
   s.license  = 'BSD-3-Clause'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
-  s.cocoapods_version = '>= 1.0'
+
+  # Ensure developers won't hit CocoaPods/CocoaPods#11402 with the resource
+  # bundle for the privacy manifest.
+  s.cocoapods_version = '>= 1.12.0'
 
   s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
                :tag => "v#{s.version}" }
@@ -29,6 +32,10 @@ Pod::Spec.new do |s|
   # The following would cause duplicate symbol definitions. GPBProtocolBuffers is expected to be
   # left out, as it's an umbrella implementation file.
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
+
+  s.resource_bundle = {
+    "Protobuf_Privacy" => "PrivacyInfo.xcprivacy"
+  }
 
   # Set a CPP symbol so the code knows to use framework imports.
   s.user_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1' }
