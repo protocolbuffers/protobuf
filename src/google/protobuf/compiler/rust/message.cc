@@ -329,7 +329,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             // SAFETY:
             // - `f.as_raw()` is a valid `upb_Array*`.
             // - `i < len(f)` is promised by the caller.
-            let mut dest_msg = unsafe {
+            let dest_msg = unsafe {
               $pbr$::upb_Array_GetMutable(f.as_raw($pbi$::Private), i).msg
             }.expect("upb_Array* element should not be NULL");
 
@@ -391,7 +391,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
 
           fn repeated_copy_from(
             src: $pb$::View<$pb$::Repeated<Self>>,
-            mut dest: $pb$::Mut<$pb$::Repeated<Self>>,
+            dest: $pb$::Mut<$pb$::Repeated<Self>>,
           ) {
               // SAFETY:
               // - Elements of `src` and `dest` have message minitable `$minitable$`.
