@@ -1044,12 +1044,6 @@ GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
-  if (!message_generators_.empty()) {
-    p->Emit({{"len", message_generators_.size()}}, R"cc(
-      static ::_pb::Metadata $file_level_metadata$[$len$];
-    )cc");
-  }
-
   if (!enum_generators_.empty()) {
     p->Emit({{"len", enum_generators_.size()}}, R"cc(
       static const ::_pb::EnumDescriptor* $file_level_enum_descriptors$[$len$];
@@ -1248,13 +1242,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                            : absl::StrCat(p->LookupVar("desc_table"), "_deps")},
           {"num_deps", num_deps},
           {"num_msgs", message_generators_.size()},
-          {"msgs_ptr", message_generators_.empty()
-                           ? "nullptr"
-                           : std::string(p->LookupVar("file_level_metadata"))},
       },
       R"cc(
         static ::absl::once_flag $desc_table$_once;
-        const ::_pbi::DescriptorTable $desc_table$ = {
+        PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable $desc_table$ = {
             false,
             $eager$,
             $file_proto_len$,
@@ -1267,25 +1258,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             schemas,
             file_default_instances,
             $tablename$::offsets,
-            $msgs_ptr$,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,
         };
-
-        // This function exists to be marked as weak.
-        // It can significantly speed up compilation by breaking up LLVM's SCC
-        // in the .pb.cc translation units. Large translation units see a
-        // reduction of more than 35% of walltime for optimized builds. Without
-        // the weak attribute all the messages in the file, including all the
-        // vtables and everything they use become part of the same SCC through
-        // a cycle like:
-        // GetMetadata -> descriptor table -> default instances ->
-        //   vtables -> GetMetadata
-        // By adding a weak function here we break the connection from the
-        // individual vtables back into the descriptor table.
-        PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* $desc_table$_getter() {
-          return &$desc_table$;
-        }
       )cc");
 
   // For descriptor.proto and cpp_features.proto we want to avoid doing any

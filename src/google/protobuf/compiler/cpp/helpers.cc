@@ -17,6 +17,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -1311,11 +1312,11 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
 
 void FlattenMessagesInFile(const FileDescriptor* file,
                            std::vector<const Descriptor*>* result) {
-  for (int i = 0; i < file->message_type_count(); i++) {
-    ForEachMessage(file->message_type(i), [&](const Descriptor* descriptor) {
-      result->push_back(descriptor);
-    });
-  }
+  internal::cpp::VisitDescriptorsInFileOrder(file,
+                                             [&](const Descriptor* descriptor) {
+                                               result->push_back(descriptor);
+                                               return std::false_type{};
+                                             });
 }
 
 // TopologicalSortMessagesInFile topologically sorts and returns a vector of

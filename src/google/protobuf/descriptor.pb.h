@@ -813,11 +813,10 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
       : UninterpretedOption_NamePart(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1001,11 +1000,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
       : SourceCodeInfo_Location(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1267,11 +1265,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
       : GeneratedCodeInfo_Annotation(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Semantic = GeneratedCodeInfo_Annotation_Semantic;
   static constexpr Semantic NONE = GeneratedCodeInfo_Annotation_Semantic_NONE;
@@ -1522,11 +1519,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
       : FieldOptions_EditionDefault(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1710,11 +1706,10 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       : FeatureSet(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using FieldPresence = FeatureSet_FieldPresence;
   static constexpr FieldPresence FIELD_PRESENCE_UNKNOWN = FeatureSet_FieldPresence_FIELD_PRESENCE_UNKNOWN;
@@ -2245,11 +2240,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
       : ExtensionRangeOptions_Declaration(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -2478,11 +2472,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
       : EnumDescriptorProto_EnumReservedRange(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -2660,11 +2653,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
       : DescriptorProto_ReservedRange(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -2842,11 +2834,10 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
       : UninterpretedOption(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using NamePart = UninterpretedOption_NamePart;
 
@@ -3114,11 +3105,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
       : SourceCodeInfo(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Location = SourceCodeInfo_Location;
 
@@ -3289,11 +3279,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
       : GeneratedCodeInfo(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Annotation = GeneratedCodeInfo_Annotation;
 
@@ -3464,11 +3453,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
       : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -3650,11 +3638,10 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       : ServiceOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -4035,11 +4022,10 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       : OneofOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -4407,11 +4393,10 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       : MethodOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using IdempotencyLevel = MethodOptions_IdempotencyLevel;
   static constexpr IdempotencyLevel IDEMPOTENCY_UNKNOWN = MethodOptions_IdempotencyLevel_IDEMPOTENCY_UNKNOWN;
@@ -4825,11 +4810,10 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       : MessageOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -5262,11 +5246,10 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       : FileOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using OptimizeMode = FileOptions_OptimizeMode;
   static constexpr OptimizeMode SPEED = FileOptions_OptimizeMode_SPEED;
@@ -5961,11 +5944,10 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       : FieldOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using EditionDefault = FieldOptions_EditionDefault;
   using CType = FieldOptions_CType;
@@ -6578,11 +6560,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
       : FeatureSetDefaults(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using FeatureSetEditionDefault = FeatureSetDefaults_FeatureSetEditionDefault;
 
@@ -6780,11 +6761,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       : ExtensionRangeOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Declaration = ExtensionRangeOptions_Declaration;
   using VerificationState = ExtensionRangeOptions_VerificationState;
@@ -7204,11 +7184,10 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       : EnumValueOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -7602,11 +7581,10 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       : EnumOptions(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -8013,11 +7991,10 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
       : OneofDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -8205,11 +8182,10 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
       : MethodDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -8461,11 +8437,10 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
       : FieldDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Type = FieldDescriptorProto_Type;
   static constexpr Type TYPE_DOUBLE = FieldDescriptorProto_Type_TYPE_DOUBLE;
@@ -8849,11 +8824,10 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
       : EnumValueDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -9054,11 +9028,10 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
       : DescriptorProto_ExtensionRange(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -9253,11 +9226,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
       : ServiceDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -9464,11 +9436,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
       : EnumDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using EnumReservedRange = EnumDescriptorProto_EnumReservedRange;
 
@@ -9725,11 +9696,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
       : DescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using ExtensionRange = DescriptorProto_ExtensionRange;
   using ReservedRange = DescriptorProto_ReservedRange;
@@ -10082,11 +10052,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
       : FileDescriptorProto(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -10488,11 +10457,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
       : FileDescriptorSet(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

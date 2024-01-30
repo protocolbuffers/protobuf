@@ -44,28 +44,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Base class to keep common fields and virtual function overrides.
-class MapEntryBase : public Message {
- protected:
-  using Message::Message;
-
-  const ClassData* GetClassData() const final {
-    ABSL_CONST_INIT static const ClassDataFull data = {
-        {
-            nullptr,  // on_demand_register_arena_dtor
-            PROTOBUF_FIELD_OFFSET(MapEntryBase, _cached_size_),
-            false,
-        },
-        &MergeImpl,
-        &kDescriptorMethods,
-    };
-    return &data;
-  }
-
-  HasBits<1> _has_bits_{};
-  mutable CachedSize _cached_size_{};
-};
-
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
 // google::protobuf::Reflection. In order to let it work with generated message
 // reflection, its in-memory type is the same as generated message with the same
@@ -95,7 +73,7 @@ class MapEntryBase : public Message {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public MapEntryBase {
+class MapEntry : public Message {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
@@ -123,7 +101,7 @@ class MapEntry : public MapEntryBase {
         value_(ValueTypeHandler::Constinit()) {}
 
   explicit MapEntry(Arena* arena)
-      : MapEntryBase(arena),
+      : Message(arena),
         key_(KeyTypeHandler::Constinit()),
         value_(ValueTypeHandler::Constinit()) {}
 
@@ -190,6 +168,9 @@ class MapEntry : public MapEntryBase {
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
             WireFormatLite::FieldType>
   friend class MapField;
+
+  HasBits<1> _has_bits_{};
+  mutable CachedSize _cached_size_{};
 
   KeyOnMemory key_;
   ValueOnMemory value_;

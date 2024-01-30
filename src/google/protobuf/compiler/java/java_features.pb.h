@@ -214,11 +214,10 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
       : JavaFeatures(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Utf8Validation = JavaFeatures_Utf8Validation;
   static constexpr Utf8Validation UTF8_VALIDATION_UNKNOWN = JavaFeatures_Utf8Validation_UTF8_VALIDATION_UNKNOWN;

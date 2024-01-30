@@ -27,6 +27,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
@@ -632,19 +633,6 @@ inline std::vector<const Descriptor*> FlattenMessagesInFile(
 std::vector<const Descriptor*> TopologicalSortMessagesInFile(
     const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer);
 
-template <typename F>
-void ForEachMessage(const Descriptor* descriptor, F&& func) {
-  for (int i = 0; i < descriptor->nested_type_count(); i++)
-    ForEachMessage(descriptor->nested_type(i), std::forward<F&&>(func));
-  func(descriptor);
-}
-
-template <typename F>
-void ForEachMessage(const FileDescriptor* descriptor, F&& func) {
-  for (int i = 0; i < descriptor->message_type_count(); i++)
-    ForEachMessage(descriptor->message_type(i), std::forward<F&&>(func));
-}
-
 bool HasWeakFields(const Descriptor* desc, const Options& options);
 bool HasWeakFields(const FileDescriptor* desc, const Options& options);
 
@@ -828,18 +816,18 @@ inline bool HasSimpleBaseClass(const Descriptor* desc, const Options& options) {
 
 inline bool HasSimpleBaseClasses(const FileDescriptor* file,
                                  const Options& options) {
-  bool v = false;
-  ForEachMessage(file, [&v, &options](const Descriptor* desc) {
-    v |= HasSimpleBaseClass(desc, options);
-  });
-  return v;
+  return internal::cpp::VisitDescriptorsInFileOrder(
+      file, [&](const Descriptor* desc) {
+        return HasSimpleBaseClass(desc, options);
+      });
 }
 
 // Returns true if this message has a _tracker_ field.
 inline bool HasTracker(const Descriptor* desc, const Options& options) {
   return options.field_listener_options.inject_field_listener_events &&
          desc->file()->options().optimize_for() !=
-             google::protobuf::FileOptions::LITE_RUNTIME;
+             google::protobuf::FileOptions::LITE_RUNTIME &&
+         !IsMapEntryMessage(desc);
 }
 
 // Returns true if this message needs an Impl_ struct for it's data.

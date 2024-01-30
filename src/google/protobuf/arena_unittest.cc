@@ -426,7 +426,6 @@ class DispatcherTestProto : public Message {
   explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
   DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
   DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
-  Metadata GetMetadata() const final { ABSL_LOG(FATAL); }
   const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
 };
 // We use a specialization to inject behavior for the test.

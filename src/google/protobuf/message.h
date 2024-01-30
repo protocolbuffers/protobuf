@@ -363,7 +363,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
  protected:
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
-  virtual Metadata GetMetadata() const = 0;
+  Metadata GetMetadata() const;
+  static Metadata GetMetadataImpl(const ClassDataFull& data);
 
   inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
@@ -1251,9 +1252,6 @@ class PROTOBUF_EXPORT Reflection final {
   void AddEnumValueInternal(Message* message, const FieldDescriptor* field,
                             int value) const;
 
-  friend inline  // inline so nobody can call this function.
-      void
-      RegisterAllTypesInternal(const Metadata* file_level_metadata, int size);
   friend inline const char* ParseLenDelim(int field_number,
                                           const FieldDescriptor* field,
                                           Message* msg,
