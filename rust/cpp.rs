@@ -411,13 +411,13 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
     ($key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, for $($t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr, $zero_val:literal;)*) => {
         paste! { $(
             extern "C" {
-                fn [< __pb_rust_Map_ $key_t _ $t _new >]() -> RawMap;
-                fn [< __pb_rust_Map_ $key_t _ $t _free >](m: RawMap);
-                fn [< __pb_rust_Map_ $key_t _ $t _clear >](m: RawMap);
-                fn [< __pb_rust_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
-                fn [< __pb_rust_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t);
-                fn [< __pb_rust_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
-                fn [< __pb_rust_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _new >]() -> RawMap;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _free >](m: RawMap);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _clear >](m: RawMap);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _size >](m: RawMap) -> usize;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
 
             impl ProxiedInMapValue<$key_t> for $t {
@@ -426,7 +426,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                         Map::from_inner(
                             Private,
                             InnerMapMut {
-                                raw: [< __pb_rust_Map_ $key_t _ $t _new >](),
+                                raw: [< __rust_proto_thunk__Map_ $key_t _ $t _new >](),
                                 _phantom: PhantomData
                             }
                         )
@@ -437,29 +437,29 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     // SAFETY:
                     // - `map.inner.raw` is a live `RawMap`
                     // - This function is only called once for `map` in `Drop`.
-                    unsafe { [< __pb_rust_Map_ $key_t _ $t _free >](map.inner.raw); }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _free >](map.inner.raw); }
                 }
 
 
                 fn map_clear(map: Mut<'_, Map<$key_t, Self>>) {
-                    unsafe { [< __pb_rust_Map_ $key_t _ $t _clear >](map.inner.raw); }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _clear >](map.inner.raw); }
                 }
 
                 fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
-                    unsafe { [< __pb_rust_Map_ $key_t _ $t _size >](map.raw) }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _size >](map.raw) }
                 }
 
                 fn map_insert(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let ffi_value = $to_ffi_value(value);
-                    unsafe { [< __pb_rust_Map_ $key_t _ $t _insert >](map.inner.raw, ffi_key, ffi_value) }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](map.inner.raw, ffi_key, ffi_value) }
                     true
                 }
 
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
-                    let found = unsafe { [< __pb_rust_Map_ $key_t _ $t _get >](map.raw, ffi_key, &mut ffi_value) };
+                    let found = unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _get >](map.raw, ffi_key, &mut ffi_value) };
                     if !found {
                         return None;
                     }
@@ -469,7 +469,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn map_remove(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
-                    unsafe { [< __pb_rust_Map_ $key_t _ $t _remove >](map.inner.raw, ffi_key, &mut ffi_value) }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](map.inner.raw, ffi_key, &mut ffi_value) }
                 }
             }
          )* }
