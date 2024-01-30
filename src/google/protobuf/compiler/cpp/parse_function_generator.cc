@@ -51,9 +51,7 @@ bool UseDirectTcParserTable(const FieldDescriptor* field,
                             const Options& options) {
   if (field->cpp_type() != field->CPPTYPE_MESSAGE) return false;
   auto* m = field->message_type();
-  return !m->options().message_set_wire_format() &&
-         m->file()->options().optimize_for() != FileOptions::CODE_SIZE &&
-         !HasSimpleBaseClass(m, options) && !HasTracker(m, options) &&
+  return !m->options().message_set_wire_format() && !HasTracker(m, options) &&
          !HasWeakFields(m)
       ;  // NOLINT(whitespace/semicolon)
 }
@@ -167,7 +165,7 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
 }
 
 bool ParseFunctionGenerator::should_generate_tctable() const {
-  if (HasSimpleBaseClass(descriptor_, options_) || HasWeakFields(descriptor_)) {
+  if (HasWeakFields(descriptor_)) {
     return false;
   }
   return true;

@@ -1941,12 +1941,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           }
         }},
-       {"decl_data",
-        [&] {
-          if (HasGeneratedMethods(descriptor_->file(), options_)) {
-            parse_function_generator_->GenerateDataDecls(p);
-          }
-        }},
+       {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"split_friend",
         [&] {
@@ -2233,6 +2228,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   }
 
   GenerateClassData(p);
+  parse_function_generator_->GenerateDataDefinitions(p);
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     GenerateClear(p);
@@ -2241,8 +2237,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     if (!HasSimpleBaseClass(descriptor_, options_)) {
       parse_function_generator_->GenerateMethodImpls(p);
       format("\n");
-
-      parse_function_generator_->GenerateDataDefinitions(p);
     }
 
     GenerateSerializeWithCachedSizesToArray(p);

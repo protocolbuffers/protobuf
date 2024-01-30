@@ -479,9 +479,11 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
       )");
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
+  IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
+
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
@@ -496,10 +498,6 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/generated_message_reflection.h", p);
     IncludeFile("third_party/protobuf/reflection_ops.h", p);
     IncludeFile("third_party/protobuf/wire_format.h", p);
-  }
-
-  if (HasGeneratedMethods(file_, options_)) {
-    IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
   if (options_.proto_h) {
@@ -542,13 +540,8 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     PROTOBUF_PRAGMA_INIT_SEG
     namespace _pb = ::$proto_ns$;
     namespace _pbi = ::$proto_ns$::internal;
+    namespace _fl = ::$proto_ns$::internal::field_layout;
   )cc");
-
-  if (HasGeneratedMethods(file_, options_)) {
-    p->Emit(R"cc(
-      namespace _fl = ::$proto_ns$::internal::field_layout;
-    )cc");
-  }
 }
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {

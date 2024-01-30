@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/generated_message_tctable_impl.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -2393,24 +2393,6 @@ FileDescriptorSet::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorSet)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.file_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FileDescriptorSet::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
   {
     0,  // no _has_bits_
@@ -2442,6 +2424,24 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorSet)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.file_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FileDescriptorSet::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FileDescriptorSet::_InternalSerialize(
     ::uint8_t* target,
@@ -2626,52 +2626,6 @@ FileDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.dependency_.Clear();
-  _impl_.message_type_.Clear();
-  _impl_.enum_type_.Clear();
-  _impl_.service_.Clear();
-  _impl_.extension_.Clear();
-  _impl_.public_dependency_.Clear();
-  _impl_.weak_dependency_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.package_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _impl_.syntax_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000008u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-    if (cached_has_bits & 0x00000010u) {
-      ABSL_DCHECK(_impl_.source_code_info_ != nullptr);
-      _impl_.source_code_info_->Clear();
-    }
-  }
-  _impl_.edition_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FileDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_),
@@ -2790,6 +2744,52 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
     "syntax"
   }},
 };
+
+PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.dependency_.Clear();
+  _impl_.message_type_.Clear();
+  _impl_.enum_type_.Clear();
+  _impl_.service_.Clear();
+  _impl_.extension_.Clear();
+  _impl_.public_dependency_.Clear();
+  _impl_.weak_dependency_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.package_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.syntax_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      ABSL_DCHECK(_impl_.source_code_info_ != nullptr);
+      _impl_.source_code_info_->Clear();
+    }
+  }
+  _impl_.edition_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FileDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FileDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -3200,34 +3200,6 @@ DescriptorProto_ExtensionRange::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ExtensionRange)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.options_ != nullptr);
-    _impl_.options_->Clear();
-  }
-  if (cached_has_bits & 0x00000006u) {
-    ::memset(&_impl_.start_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.end_) -
-        reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* DescriptorProto_ExtensionRange::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_),
@@ -3272,6 +3244,34 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ExtensionRange)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.options_ != nullptr);
+    _impl_.options_->Clear();
+  }
+  if (cached_has_bits & 0x00000006u) {
+    ::memset(&_impl_.start_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.end_) -
+        reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* DescriptorProto_ExtensionRange::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* DescriptorProto_ExtensionRange::_InternalSerialize(
     ::uint8_t* target,
@@ -3462,30 +3462,6 @@ DescriptorProto_ReservedRange::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ReservedRange)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    ::memset(&_impl_.start_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.end_) -
-        reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* DescriptorProto_ReservedRange::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_),
@@ -3523,6 +3499,30 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
   {{
   }},
 };
+
+PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ReservedRange)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    ::memset(&_impl_.start_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.end_) -
+        reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* DescriptorProto_ReservedRange::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* DescriptorProto_ReservedRange::_InternalSerialize(
     ::uint8_t* target,
@@ -3720,42 +3720,6 @@ DescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void DescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.field_.Clear();
-  _impl_.nested_type_.Clear();
-  _impl_.enum_type_.Clear();
-  _impl_.extension_range_.Clear();
-  _impl_.extension_.Clear();
-  _impl_.oneof_decl_.Clear();
-  _impl_.reserved_range_.Clear();
-  _impl_.reserved_name_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* DescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_),
@@ -3858,6 +3822,42 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
     "reserved_name"
   }},
 };
+
+PROTOBUF_NOINLINE void DescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.field_.Clear();
+  _impl_.nested_type_.Clear();
+  _impl_.enum_type_.Clear();
+  _impl_.extension_range_.Clear();
+  _impl_.extension_.Clear();
+  _impl_.oneof_decl_.Clear();
+  _impl_.reserved_range_.Clear();
+  _impl_.reserved_name_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* DescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* DescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -4212,38 +4212,6 @@ ExtensionRangeOptions_Declaration::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions.Declaration)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.full_name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.type_.ClearNonDefaultToEmpty();
-    }
-  }
-  if (cached_has_bits & 0x0000001cu) {
-    ::memset(&_impl_.number_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.repeated_) -
-        reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.repeated_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* ExtensionRangeOptions_Declaration::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_),
@@ -4306,6 +4274,38 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
     "type"
   }},
 };
+
+PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions.Declaration)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.full_name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.type_.ClearNonDefaultToEmpty();
+    }
+  }
+  if (cached_has_bits & 0x0000001cu) {
+    ::memset(&_impl_.number_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.repeated_) -
+        reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.repeated_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* ExtensionRangeOptions_Declaration::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* ExtensionRangeOptions_Declaration::_InternalSerialize(
     ::uint8_t* target,
@@ -4545,35 +4545,6 @@ ExtensionRangeOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.declaration_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      ABSL_DCHECK(_impl_.features_ != nullptr);
-      _impl_.features_->Clear();
-    }
-    _impl_.verification_ = 1;
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* ExtensionRangeOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_),
@@ -4631,6 +4602,35 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.declaration_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      ABSL_DCHECK(_impl_.features_ != nullptr);
+      _impl_.features_->Clear();
+    }
+    _impl_.verification_ = 1;
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* ExtensionRangeOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* ExtensionRangeOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -4896,56 +4896,6 @@ FieldDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.extendee_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _impl_.type_name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000008u) {
-      _impl_.default_value_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000010u) {
-      _impl_.json_name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000020u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  if (cached_has_bits & 0x000000c0u) {
-    ::memset(&_impl_.number_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.oneof_index_) -
-        reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.oneof_index_));
-  }
-  if (cached_has_bits & 0x00000700u) {
-    _impl_.proto3_optional_ = false;
-    _impl_.label_ = 1;
-    _impl_.type_ = 1;
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FieldDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_),
@@ -5049,6 +4999,56 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     "json_name"
   }},
 };
+
+PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000003fu) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.extendee_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.type_name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _impl_.default_value_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      _impl_.json_name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000020u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  if (cached_has_bits & 0x000000c0u) {
+    ::memset(&_impl_.number_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.oneof_index_) -
+        reinterpret_cast<char*>(&_impl_.number_)) + sizeof(_impl_.oneof_index_));
+  }
+  if (cached_has_bits & 0x00000700u) {
+    _impl_.proto3_optional_ = false;
+    _impl_.label_ = 1;
+    _impl_.type_ = 1;
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FieldDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FieldDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -5398,34 +5398,6 @@ OneofDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.OneofDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* OneofDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_),
@@ -5466,6 +5438,34 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
     "name"
   }},
 };
+
+PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.OneofDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* OneofDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* OneofDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -5639,30 +5639,6 @@ EnumDescriptorProto_EnumReservedRange::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    ::memset(&_impl_.start_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.end_) -
-        reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRange::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_),
@@ -5700,6 +5676,30 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
   {{
   }},
 };
+
+PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    ::memset(&_impl_.start_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.end_) -
+        reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* EnumDescriptorProto_EnumReservedRange::_InternalSerialize(
     ::uint8_t* target,
@@ -5887,37 +5887,6 @@ EnumDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.value_.Clear();
-  _impl_.reserved_range_.Clear();
-  _impl_.reserved_name_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_),
@@ -5982,6 +5951,37 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
     "reserved_name"
   }},
 };
+
+PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.value_.Clear();
+  _impl_.reserved_range_.Clear();
+  _impl_.reserved_name_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* EnumDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* EnumDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -6232,35 +6232,6 @@ EnumValueDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  _impl_.number_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumValueDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_),
@@ -6308,6 +6279,35 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
     "name"
   }},
 };
+
+PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  _impl_.number_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* EnumValueDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* EnumValueDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -6520,35 +6520,6 @@ ServiceDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.method_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* ServiceDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_),
@@ -6597,6 +6568,35 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
     "name"
   }},
 };
+
+PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.method_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* ServiceDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* ServiceDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -6824,43 +6824,6 @@ MethodDescriptorProto::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.MethodDescriptorProto)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.input_type_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _impl_.output_type_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000008u) {
-      ABSL_DCHECK(_impl_.options_ != nullptr);
-      _impl_.options_->Clear();
-    }
-  }
-  ::memset(&_impl_.client_streaming_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.server_streaming_) -
-      reinterpret_cast<char*>(&_impl_.client_streaming_)) + sizeof(_impl_.server_streaming_));
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* MethodDescriptorProto::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_),
@@ -6929,6 +6892,43 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
     "output_type"
   }},
 };
+
+PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.MethodDescriptorProto)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000000fu) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.input_type_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.output_type_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      ABSL_DCHECK(_impl_.options_ != nullptr);
+      _impl_.options_->Clear();
+    }
+  }
+  ::memset(&_impl_.client_streaming_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.server_streaming_) -
+      reinterpret_cast<char*>(&_impl_.client_streaming_)) + sizeof(_impl_.server_streaming_));
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* MethodDescriptorProto::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* MethodDescriptorProto::_InternalSerialize(
     ::uint8_t* target,
@@ -7235,77 +7235,6 @@ FileOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FileOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FileOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.java_package_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.java_outer_classname_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _impl_.go_package_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000008u) {
-      _impl_.objc_class_prefix_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000010u) {
-      _impl_.csharp_namespace_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000020u) {
-      _impl_.swift_prefix_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000040u) {
-      _impl_.php_class_prefix_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000080u) {
-      _impl_.php_namespace_.ClearNonDefaultToEmpty();
-    }
-  }
-  if (cached_has_bits & 0x00000700u) {
-    if (cached_has_bits & 0x00000100u) {
-      _impl_.php_metadata_namespace_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000200u) {
-      _impl_.ruby_package_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000400u) {
-      ABSL_DCHECK(_impl_.features_ != nullptr);
-      _impl_.features_->Clear();
-    }
-  }
-  if (cached_has_bits & 0x0000f800u) {
-    ::memset(&_impl_.java_multiple_files_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.java_generic_services_) -
-        reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.java_generic_services_));
-  }
-  if (cached_has_bits & 0x000f0000u) {
-    ::memset(&_impl_.py_generic_services_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.deprecated_) -
-        reinterpret_cast<char*>(&_impl_.py_generic_services_)) + sizeof(_impl_.deprecated_));
-    _impl_.optimize_for_ = 1;
-    _impl_.cc_enable_arenas_ = true;
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FileOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_),
@@ -7477,6 +7406,77 @@ constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
     "ruby_package"
   }},
 };
+
+PROTOBUF_NOINLINE void FileOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FileOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x000000ffu) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.java_package_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.java_outer_classname_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.go_package_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _impl_.objc_class_prefix_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000010u) {
+      _impl_.csharp_namespace_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000020u) {
+      _impl_.swift_prefix_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000040u) {
+      _impl_.php_class_prefix_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000080u) {
+      _impl_.php_namespace_.ClearNonDefaultToEmpty();
+    }
+  }
+  if (cached_has_bits & 0x00000700u) {
+    if (cached_has_bits & 0x00000100u) {
+      _impl_.php_metadata_namespace_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000200u) {
+      _impl_.ruby_package_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000400u) {
+      ABSL_DCHECK(_impl_.features_ != nullptr);
+      _impl_.features_->Clear();
+    }
+  }
+  if (cached_has_bits & 0x0000f800u) {
+    ::memset(&_impl_.java_multiple_files_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.java_generic_services_) -
+        reinterpret_cast<char*>(&_impl_.java_multiple_files_)) + sizeof(_impl_.java_generic_services_));
+  }
+  if (cached_has_bits & 0x000f0000u) {
+    ::memset(&_impl_.py_generic_services_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.deprecated_) -
+        reinterpret_cast<char*>(&_impl_.py_generic_services_)) + sizeof(_impl_.deprecated_));
+    _impl_.optimize_for_ = 1;
+    _impl_.cc_enable_arenas_ = true;
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FileOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FileOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -8021,36 +8021,6 @@ MessageOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void MessageOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.MessageOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  if (cached_has_bits & 0x0000003eu) {
-    ::memset(&_impl_.message_set_wire_format_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
-        reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* MessageOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_),
@@ -8118,6 +8088,36 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void MessageOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.MessageOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  if (cached_has_bits & 0x0000003eu) {
+    ::memset(&_impl_.message_set_wire_format_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+        reinterpret_cast<char*>(&_impl_.message_set_wire_format_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* MessageOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* MessageOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -8393,29 +8393,6 @@ FieldOptions_EditionDefault::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.EditionDefault)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    _impl_.value_.ClearNonDefaultToEmpty();
-  }
-  _impl_.edition_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FieldOptions_EditionDefault::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_),
@@ -8456,6 +8433,29 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_tab
     "value"
   }},
 };
+
+PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.EditionDefault)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.value_.ClearNonDefaultToEmpty();
+  }
+  _impl_.edition_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FieldOptions_EditionDefault::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FieldOptions_EditionDefault::_InternalSerialize(
     ::uint8_t* target,
@@ -8654,43 +8654,6 @@ FieldOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FieldOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.targets_.Clear();
-  _impl_.edition_defaults_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  if (cached_has_bits & 0x000000feu) {
-    ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.weak_) -
-        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.weak_));
-  }
-  if (cached_has_bits & 0x00000300u) {
-    ::memset(&_impl_.debug_redact_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.retention_) -
-        reinterpret_cast<char*>(&_impl_.debug_redact_)) + sizeof(_impl_.retention_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FieldOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_),
@@ -8799,6 +8762,43 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void FieldOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.targets_.Clear();
+  _impl_.edition_defaults_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  if (cached_has_bits & 0x000000feu) {
+    ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.weak_) -
+        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.weak_));
+  }
+  if (cached_has_bits & 0x00000300u) {
+    ::memset(&_impl_.debug_redact_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.retention_) -
+        reinterpret_cast<char*>(&_impl_.debug_redact_)) + sizeof(_impl_.retention_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FieldOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FieldOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -9188,31 +9188,6 @@ OneofOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void OneofOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.OneofOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* OneofOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_),
@@ -9255,6 +9230,31 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void OneofOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.OneofOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* OneofOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* OneofOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -9464,34 +9464,6 @@ EnumOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void EnumOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  ::memset(&_impl_.allow_alias_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
-      reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_),
@@ -9551,6 +9523,34 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void EnumOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  ::memset(&_impl_.allow_alias_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.deprecated_legacy_json_field_conflicts_) -
+      reinterpret_cast<char*>(&_impl_.allow_alias_)) + sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* EnumOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* EnumOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -9814,34 +9814,6 @@ EnumValueOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.debug_redact_) -
-      reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.debug_redact_));
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumValueOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_),
@@ -9898,6 +9870,34 @@ constexpr ::_pbi::TcParseTable<3, 4, 2, 0, 7> EnumValueOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.debug_redact_) -
+      reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.debug_redact_));
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* EnumValueOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* EnumValueOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -10140,32 +10140,6 @@ ServiceOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void ServiceOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  _impl_.deprecated_ = false;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* ServiceOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_),
@@ -10214,6 +10188,32 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void ServiceOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  _impl_.deprecated_ = false;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* ServiceOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* ServiceOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -10447,36 +10447,6 @@ MethodOptions::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void MethodOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.MethodOptions)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  _impl_.uninterpreted_option_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  if (cached_has_bits & 0x00000006u) {
-    ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.idempotency_level_) -
-        reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.idempotency_level_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* MethodOptions::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_),
@@ -10535,6 +10505,36 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void MethodOptions::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.MethodOptions)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  _impl_.uninterpreted_option_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  if (cached_has_bits & 0x00000006u) {
+    ::memset(&_impl_.deprecated_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.idempotency_level_) -
+        reinterpret_cast<char*>(&_impl_.deprecated_)) + sizeof(_impl_.idempotency_level_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* MethodOptions::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* MethodOptions::_InternalSerialize(
     ::uint8_t* target,
@@ -10769,29 +10769,6 @@ UninterpretedOption_NamePart::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption.NamePart)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    _impl_.name_part_.ClearNonDefaultToEmpty();
-  }
-  _impl_.is_extension_ = false;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* UninterpretedOption_NamePart::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_),
@@ -10832,6 +10809,29 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
     "name_part"
   }},
 };
+
+PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption.NamePart)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.name_part_.ClearNonDefaultToEmpty();
+  }
+  _impl_.is_extension_ = false;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* UninterpretedOption_NamePart::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* UninterpretedOption_NamePart::_InternalSerialize(
     ::uint8_t* target,
@@ -11029,42 +11029,6 @@ UninterpretedOption::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.name_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.identifier_value_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.string_value_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _impl_.aggregate_value_.ClearNonDefaultToEmpty();
-    }
-  }
-  if (cached_has_bits & 0x00000038u) {
-    ::memset(&_impl_.positive_int_value_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.double_value_) -
-        reinterpret_cast<char*>(&_impl_.positive_int_value_)) + sizeof(_impl_.double_value_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* UninterpretedOption::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_),
@@ -11137,6 +11101,42 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
     "aggregate_value"
   }},
 };
+
+PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.name_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000007u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.identifier_value_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.string_value_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.aggregate_value_.ClearNonDefaultToEmpty();
+    }
+  }
+  if (cached_has_bits & 0x00000038u) {
+    ::memset(&_impl_.positive_int_value_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.double_value_) -
+        reinterpret_cast<char*>(&_impl_.positive_int_value_)) + sizeof(_impl_.double_value_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* UninterpretedOption::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* UninterpretedOption::_InternalSerialize(
     ::uint8_t* target,
@@ -11414,31 +11414,6 @@ FeatureSet::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FeatureSet::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSet)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_._extensions_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000003fu) {
-    ::memset(&_impl_.field_presence_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.json_format_) -
-        reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FeatureSet::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_),
@@ -11507,6 +11482,31 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void FeatureSet::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSet)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_._extensions_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000003fu) {
+    ::memset(&_impl_.field_presence_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.json_format_) -
+        reinterpret_cast<char*>(&_impl_.field_presence_)) + sizeof(_impl_.json_format_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FeatureSet::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FeatureSet::_InternalSerialize(
     ::uint8_t* target,
@@ -11765,30 +11765,6 @@ FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.features_ != nullptr);
-    _impl_.features_->Clear();
-  }
-  _impl_.edition_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FeatureSetDefaults_FeatureSetEditionDefault::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditionDefault::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_),
@@ -11827,6 +11803,30 @@ constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditi
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
+  }
+  _impl_.edition_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FeatureSetDefaults_FeatureSetEditionDefault::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize(
     ::uint8_t* target,
@@ -12023,31 +12023,6 @@ FeatureSetDefaults::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.defaults_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    ::memset(&_impl_.minimum_edition_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.maximum_edition_) -
-        reinterpret_cast<char*>(&_impl_.minimum_edition_)) + sizeof(_impl_.maximum_edition_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FeatureSetDefaults::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_),
@@ -12090,6 +12065,31 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.defaults_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    ::memset(&_impl_.minimum_edition_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.maximum_edition_) -
+        reinterpret_cast<char*>(&_impl_.minimum_edition_)) + sizeof(_impl_.maximum_edition_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* FeatureSetDefaults::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* FeatureSetDefaults::_InternalSerialize(
     ::uint8_t* target,
@@ -12298,36 +12298,6 @@ SourceCodeInfo_Location::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo.Location)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.path_.Clear();
-  _impl_.span_.Clear();
-  _impl_.leading_detached_comments_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.leading_comments_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.trailing_comments_.ClearNonDefaultToEmpty();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* SourceCodeInfo_Location::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_),
@@ -12391,6 +12361,36 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
     "leading_detached_comments"
   }},
 };
+
+PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo.Location)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.path_.Clear();
+  _impl_.span_.Clear();
+  _impl_.leading_detached_comments_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.leading_comments_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.trailing_comments_.ClearNonDefaultToEmpty();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* SourceCodeInfo_Location::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* SourceCodeInfo_Location::_InternalSerialize(
     ::uint8_t* target,
@@ -12625,24 +12625,6 @@ SourceCodeInfo::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.location_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* SourceCodeInfo::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
   {
     0,  // no _has_bits_
@@ -12674,6 +12656,24 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.location_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* SourceCodeInfo::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* SourceCodeInfo::_InternalSerialize(
     ::uint8_t* target,
@@ -12838,34 +12838,6 @@ GeneratedCodeInfo_Annotation::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.path_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    _impl_.source_file_.ClearNonDefaultToEmpty();
-  }
-  if (cached_has_bits & 0x0000000eu) {
-    ::memset(&_impl_.begin_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.semantic_) -
-        reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* GeneratedCodeInfo_Annotation::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_),
@@ -12927,6 +12899,34 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
     "source_file"
   }},
 };
+
+PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo.Annotation)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.path_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.source_file_.ClearNonDefaultToEmpty();
+  }
+  if (cached_has_bits & 0x0000000eu) {
+    ::memset(&_impl_.begin_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.semantic_) -
+        reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* GeneratedCodeInfo_Annotation::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
     ::uint8_t* target,
@@ -13157,24 +13157,6 @@ GeneratedCodeInfo::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.annotation_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* GeneratedCodeInfo::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
   {
     0,  // no _has_bits_
@@ -13206,6 +13188,24 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
   }}, {{
   }},
 };
+
+PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.annotation_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* GeneratedCodeInfo::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* GeneratedCodeInfo::_InternalSerialize(
     ::uint8_t* target,

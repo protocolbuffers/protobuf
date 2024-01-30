@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/generated_message_tctable_impl.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -372,33 +372,6 @@ Version::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Version::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    _impl_.suffix_.ClearNonDefaultToEmpty();
-  }
-  if (cached_has_bits & 0x0000000eu) {
-    ::memset(&_impl_.major_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.patch_) -
-        reinterpret_cast<char*>(&_impl_.major_)) + sizeof(_impl_.patch_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Version::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
   {
@@ -452,6 +425,33 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
     "suffix"
   }},
 };
+
+PROTOBUF_NOINLINE void Version::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.suffix_.ClearNonDefaultToEmpty();
+  }
+  if (cached_has_bits & 0x0000000eu) {
+    ::memset(&_impl_.major_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.patch_) -
+        reinterpret_cast<char*>(&_impl_.major_)) + sizeof(_impl_.patch_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Version::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Version::_InternalSerialize(
     ::uint8_t* target,
@@ -683,37 +683,6 @@ CodeGeneratorRequest::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.file_to_generate_.Clear();
-  _impl_.proto_file_.Clear();
-  _impl_.source_file_descriptors_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.parameter_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
-      _impl_.compiler_version_->Clear();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* CodeGeneratorRequest::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   {
@@ -777,6 +746,37 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
     "parameter"
   }},
 };
+
+PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.file_to_generate_.Clear();
+  _impl_.proto_file_.Clear();
+  _impl_.source_file_descriptors_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.parameter_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
+      _impl_.compiler_version_->Clear();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* CodeGeneratorRequest::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* CodeGeneratorRequest::_InternalSerialize(
     ::uint8_t* target,
@@ -1030,40 +1030,6 @@ CodeGeneratorResponse_File::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _impl_.insertion_point_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _impl_.content_.ClearNonDefaultToEmpty();
-    }
-    if (cached_has_bits & 0x00000008u) {
-      ABSL_DCHECK(_impl_.generated_code_info_ != nullptr);
-      _impl_.generated_code_info_->Clear();
-    }
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* CodeGeneratorResponse_File::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ = {
   {
@@ -1119,6 +1085,40 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
     "content"
   }},
 };
+
+PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000000fu) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.name_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.insertion_point_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _impl_.content_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      ABSL_DCHECK(_impl_.generated_code_info_ != nullptr);
+      _impl_.generated_code_info_->Clear();
+    }
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* CodeGeneratorResponse_File::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* CodeGeneratorResponse_File::_InternalSerialize(
     ::uint8_t* target,
@@ -1350,34 +1350,6 @@ CodeGeneratorResponse::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.file_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    _impl_.error_.ClearNonDefaultToEmpty();
-  }
-  if (cached_has_bits & 0x0000000eu) {
-    ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.maximum_edition_) -
-        reinterpret_cast<char*>(&_impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* CodeGeneratorResponse::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   {
@@ -1440,6 +1412,34 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
     "error"
   }},
 };
+
+PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.file_.Clear();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.error_.ClearNonDefaultToEmpty();
+  }
+  if (cached_has_bits & 0x0000000eu) {
+    ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.maximum_edition_) -
+        reinterpret_cast<char*>(&_impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* CodeGeneratorResponse::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* CodeGeneratorResponse::_InternalSerialize(
     ::uint8_t* target,
