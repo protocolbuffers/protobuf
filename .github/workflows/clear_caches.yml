@@ -23,7 +23,7 @@ jobs:
       actions: write # permission is required to delete caches
       contents: read
     steps:
-      - uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      - uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
           key: repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
