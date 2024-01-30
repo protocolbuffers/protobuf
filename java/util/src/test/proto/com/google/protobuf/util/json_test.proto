@@ -58,6 +58,9 @@ message TestAllTypes {
   NestedMessage optional_nested_message = 18;
   NestedEnum optional_nested_enum = 21;
   AliasedEnum optional_aliased_enum = 52;
+  TestRecursive optional_recursive = 53;
+
+  optional int32 explicit_presence_int32 = 54;
 
   // Repeated
   repeated int32 repeated_int32 = 31;
@@ -77,6 +80,7 @@ message TestAllTypes {
   repeated bytes repeated_bytes = 45;
   repeated NestedMessage repeated_nested_message = 48;
   repeated NestedEnum repeated_nested_enum = 51;
+  repeated TestRecursive repeated_recursive = 55;
 }
 
 message TestOneof {
