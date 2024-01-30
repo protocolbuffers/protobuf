@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/generated_message_tctable_impl.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -321,35 +321,6 @@ Api::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Api::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.methods_.Clear();
-  _impl_.options_.Clear();
-  _impl_.mixins_.Clear();
-  _impl_.name_.ClearToEmpty();
-  _impl_.version_.ClearToEmpty();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.source_context_ != nullptr);
-    _impl_.source_context_->Clear();
-  }
-  _impl_.syntax_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Api::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   {
@@ -426,6 +397,35 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
     "version"
   }},
 };
+
+PROTOBUF_NOINLINE void Api::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.methods_.Clear();
+  _impl_.options_.Clear();
+  _impl_.mixins_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.version_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.source_context_ != nullptr);
+    _impl_.source_context_->Clear();
+  }
+  _impl_.syntax_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Api::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Api::_InternalSerialize(
     ::uint8_t* target,
@@ -719,30 +719,6 @@ Method::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Method::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.options_.Clear();
-  _impl_.name_.ClearToEmpty();
-  _impl_.request_type_url_.ClearToEmpty();
-  _impl_.response_type_url_.ClearToEmpty();
-  ::memset(&_impl_.request_streaming_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.syntax_) -
-      reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Method::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
   {
@@ -817,6 +793,30 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     "response_type_url"
   }},
 };
+
+PROTOBUF_NOINLINE void Method::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.options_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.request_type_url_.ClearToEmpty();
+  _impl_.response_type_url_.ClearToEmpty();
+  ::memset(&_impl_.request_streaming_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.syntax_) -
+      reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Method::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Method::_InternalSerialize(
     ::uint8_t* target,
@@ -1071,25 +1071,6 @@ Mixin::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Mixin::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.name_.ClearToEmpty();
-  _impl_.root_.ClearToEmpty();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Mixin::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
   {
@@ -1132,6 +1113,25 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
     "root"
   }},
 };
+
+PROTOBUF_NOINLINE void Mixin::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.name_.ClearToEmpty();
+  _impl_.root_.ClearToEmpty();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Mixin::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Mixin::_InternalSerialize(
     ::uint8_t* target,

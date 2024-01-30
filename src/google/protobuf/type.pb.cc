@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/generated_message_tctable_impl.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -501,35 +501,6 @@ Type::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Type::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.fields_.Clear();
-  _impl_.oneofs_.Clear();
-  _impl_.options_.Clear();
-  _impl_.name_.ClearToEmpty();
-  _impl_.edition_.ClearToEmpty();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.source_context_ != nullptr);
-    _impl_.source_context_->Clear();
-  }
-  _impl_.syntax_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Type::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
   {
@@ -606,6 +577,35 @@ const ::_pbi::TcParseTable<3, 7, 3, 46, 2> Type::_table_ = {
     "edition"
   }},
 };
+
+PROTOBUF_NOINLINE void Type::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.fields_.Clear();
+  _impl_.oneofs_.Clear();
+  _impl_.options_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.edition_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.source_context_ != nullptr);
+    _impl_.source_context_->Clear();
+  }
+  _impl_.syntax_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Type::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Type::_InternalSerialize(
     ::uint8_t* target,
@@ -895,31 +895,6 @@ Field::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Field::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.options_.Clear();
-  _impl_.name_.ClearToEmpty();
-  _impl_.type_url_.ClearToEmpty();
-  _impl_.json_name_.ClearToEmpty();
-  _impl_.default_value_.ClearToEmpty();
-  ::memset(&_impl_.kind_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&_impl_.packed_) -
-      reinterpret_cast<char*>(&_impl_.kind_)) + sizeof(_impl_.packed_));
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Field::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
   {
@@ -1018,6 +993,31 @@ const ::_pbi::TcParseTable<4, 10, 1, 72, 2> Field::_table_ = {
     "default_value"
   }},
 };
+
+PROTOBUF_NOINLINE void Field::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.options_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.type_url_.ClearToEmpty();
+  _impl_.json_name_.ClearToEmpty();
+  _impl_.default_value_.ClearToEmpty();
+  ::memset(&_impl_.kind_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.packed_) -
+      reinterpret_cast<char*>(&_impl_.kind_)) + sizeof(_impl_.packed_));
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Field::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Field::_InternalSerialize(
     ::uint8_t* target,
@@ -1348,34 +1348,6 @@ Enum::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Enum::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.enumvalue_.Clear();
-  _impl_.options_.Clear();
-  _impl_.name_.ClearToEmpty();
-  _impl_.edition_.ClearToEmpty();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.source_context_ != nullptr);
-    _impl_.source_context_->Clear();
-  }
-  _impl_.syntax_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Enum::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
   {
@@ -1446,6 +1418,34 @@ const ::_pbi::TcParseTable<3, 6, 3, 40, 2> Enum::_table_ = {
     "edition"
   }},
 };
+
+PROTOBUF_NOINLINE void Enum::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.enumvalue_.Clear();
+  _impl_.options_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.edition_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.source_context_ != nullptr);
+    _impl_.source_context_->Clear();
+  }
+  _impl_.syntax_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Enum::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Enum::_InternalSerialize(
     ::uint8_t* target,
@@ -1699,26 +1699,6 @@ EnumValue::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void EnumValue::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.options_.Clear();
-  _impl_.name_.ClearToEmpty();
-  _impl_.number_ = 0;
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumValue::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
   {
@@ -1767,6 +1747,26 @@ const ::_pbi::TcParseTable<2, 3, 1, 38, 2> EnumValue::_table_ = {
     "name"
   }},
 };
+
+PROTOBUF_NOINLINE void EnumValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.options_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.number_ = 0;
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* EnumValue::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* EnumValue::_InternalSerialize(
     ::uint8_t* target,
@@ -1962,30 +1962,6 @@ Option::GetClassData() const {
       };
   return _data_.base();
 }
-PROTOBUF_NOINLINE void Option::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.name_.ClearToEmpty();
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.value_ != nullptr);
-    _impl_.value_->Clear();
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Option::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
-}
-
-
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
   {
@@ -2027,6 +2003,30 @@ const ::_pbi::TcParseTable<1, 2, 1, 35, 2> Option::_table_ = {
     "name"
   }},
 };
+
+PROTOBUF_NOINLINE void Option::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.name_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.value_ != nullptr);
+    _impl_.value_->Clear();
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+const char* Option::_InternalParse(
+    const char* ptr, ::_pbi::ParseContext* ctx) {
+  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
+  return ptr;
+}
+
 
 ::uint8_t* Option::_InternalSerialize(
     ::uint8_t* target,

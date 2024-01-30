@@ -176,6 +176,11 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   // @@protoc_insertion_point(class_scope:google.protobuf.Empty)
  private:
   class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 0, 0,
+      0, 2>
+      _table_;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
