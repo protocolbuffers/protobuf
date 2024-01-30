@@ -4180,7 +4180,7 @@ class DescriptorBuilder {
 
   // Implementation for AllocateOptions(). Don't call this directly.
   template <class DescriptorT>
-  typename DescriptorT::OptionsType* AllocateOptionsImpl(
+  const typename DescriptorT::OptionsType* AllocateOptionsImpl(
       absl::string_view name_scope, absl::string_view element_name,
       const typename DescriptorT::Proto& proto,
       absl::Span<const int> options_path, absl::string_view option_name,
@@ -4278,12 +4278,6 @@ class DescriptorBuilder {
   void CrossLinkMessage(Descriptor* message, const DescriptorProto& proto);
   void CrossLinkField(FieldDescriptor* field,
                       const FieldDescriptorProto& proto);
-  void CrossLinkExtensionRange(Descriptor::ExtensionRange* range,
-                               const DescriptorProto::ExtensionRange& proto);
-  void CrossLinkEnum(EnumDescriptor* enum_type,
-                     const EnumDescriptorProto& proto);
-  void CrossLinkEnumValue(EnumValueDescriptor* enum_value,
-                          const EnumValueDescriptorProto& proto);
   void CrossLinkService(ServiceDescriptor* service,
                         const ServiceDescriptorProto& proto);
   void CrossLinkMethod(MethodDescriptor* method,
@@ -5223,14 +5217,13 @@ void DescriptorBuilder::AllocateOptions(const FileDescriptorProto& proto,
 }
 
 template <class DescriptorT>
-typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
+const typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     absl::string_view name_scope, absl::string_view element_name,
     const typename DescriptorT::Proto& proto,
     absl::Span<const int> options_path, absl::string_view option_name,
     internal::FlatAllocator& alloc) {
   if (!proto.has_options()) {
-    // Set to default_instance later if necessary.
-    return nullptr;
+    return &DescriptorT::OptionsType::default_instance();
   }
   const typename DescriptorT::OptionsType& orig_options = proto.options();
 
@@ -5240,7 +5233,7 @@ typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
     AddError(absl::StrCat(name_scope, ".", element_name), orig_options,
              DescriptorPool::ErrorCollector::OPTION_NAME,
              "Uninterpreted option is missing name or value.");
-    return nullptr;
+    return &DescriptorT::OptionsType::default_instance();
   }
 
   const bool parse_success =
@@ -5317,7 +5310,7 @@ void DescriptorBuilder::ResolveFeaturesImpl(
 
   ABSL_CHECK(feature_resolver_.has_value());
 
-  if (options != nullptr && options->has_features()) {
+  if (options->has_features()) {
     // Remove the features from the child's options proto to avoid leaking
     // internal details.
     descriptor->proto_features_ =
@@ -6957,20 +6950,12 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
 
 void DescriptorBuilder::CrossLinkFile(FileDescriptor* file,
                                       const FileDescriptorProto& proto) {
-  if (file->options_ == nullptr) {
-    file->options_ = &FileOptions::default_instance();
-  }
-
   for (int i = 0; i < file->message_type_count(); i++) {
     CrossLinkMessage(&file->message_types_[i], proto.message_type(i));
   }
 
   for (int i = 0; i < file->extension_count(); i++) {
     CrossLinkField(&file->extensions_[i], proto.extension(i));
-  }
-
-  for (int i = 0; i < file->enum_type_count(); i++) {
-    CrossLinkEnum(&file->enum_types_[i], proto.enum_type(i));
   }
 
   for (int i = 0; i < file->service_count(); i++) {
@@ -6980,16 +6965,8 @@ void DescriptorBuilder::CrossLinkFile(FileDescriptor* file,
 
 void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
                                          const DescriptorProto& proto) {
-  if (message->options_ == nullptr) {
-    message->options_ = &MessageOptions::default_instance();
-  }
-
   for (int i = 0; i < message->nested_type_count(); i++) {
     CrossLinkMessage(&message->nested_types_[i], proto.nested_type(i));
-  }
-
-  for (int i = 0; i < message->enum_type_count(); i++) {
-    CrossLinkEnum(&message->enum_types_[i], proto.enum_type(i));
   }
 
   for (int i = 0; i < message->field_count(); i++) {
@@ -6998,11 +6975,6 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
 
   for (int i = 0; i < message->extension_count(); i++) {
     CrossLinkField(&message->extensions_[i], proto.extension(i));
-  }
-
-  for (int i = 0; i < message->extension_range_count(); i++) {
-    CrossLinkExtensionRange(&message->extension_ranges_[i],
-                            proto.extension_range(i));
   }
 
   // Set up field array for each oneof.
@@ -7057,10 +7029,6 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
                proto.oneof_decl(i), DescriptorPool::ErrorCollector::NAME,
                "Oneof must have at least one field.");
     }
-
-    if (oneof_decl->options_ == nullptr) {
-      oneof_decl->options_ = &OneofOptions::default_instance();
-    }
   }
 
   for (int i = 0; i < message->field_count(); i++) {
@@ -7096,14 +7064,6 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
     message->real_oneof_decl_count_ = message->oneof_decl_count_;
   } else {
     message->real_oneof_decl_count_ = first_synthetic;
-  }
-}
-
-void DescriptorBuilder::CrossLinkExtensionRange(
-    Descriptor::ExtensionRange* range,
-    const DescriptorProto::ExtensionRange& /*proto*/) {
-  if (range->options_ == nullptr) {
-    range->options_ = &ExtensionRangeOptions::default_instance();
   }
 }
 
@@ -7172,10 +7132,6 @@ void DescriptorBuilder::CheckExtensionDeclaration(
 
 void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                        const FieldDescriptorProto& proto) {
-  if (field->options_ == nullptr) {
-    field->options_ = &FieldOptions::default_instance();
-  }
-
   if (proto.has_extendee()) {
     Symbol extendee =
         LookupSymbol(proto.extendee(), field->full_name(),
@@ -7453,31 +7409,8 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
   }
 }
 
-void DescriptorBuilder::CrossLinkEnum(EnumDescriptor* enum_type,
-                                      const EnumDescriptorProto& proto) {
-  if (enum_type->options_ == nullptr) {
-    enum_type->options_ = &EnumOptions::default_instance();
-  }
-
-  for (int i = 0; i < enum_type->value_count(); i++) {
-    CrossLinkEnumValue(&enum_type->values_[i], proto.value(i));
-  }
-}
-
-void DescriptorBuilder::CrossLinkEnumValue(
-    EnumValueDescriptor* enum_value,
-    const EnumValueDescriptorProto& /* proto */) {
-  if (enum_value->options_ == nullptr) {
-    enum_value->options_ = &EnumValueOptions::default_instance();
-  }
-}
-
 void DescriptorBuilder::CrossLinkService(ServiceDescriptor* service,
                                          const ServiceDescriptorProto& proto) {
-  if (service->options_ == nullptr) {
-    service->options_ = &ServiceOptions::default_instance();
-  }
-
   for (int i = 0; i < service->method_count(); i++) {
     CrossLinkMethod(&service->methods_[i], proto.method(i));
   }
@@ -7485,10 +7418,6 @@ void DescriptorBuilder::CrossLinkService(ServiceDescriptor* service,
 
 void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
                                         const MethodDescriptorProto& proto) {
-  if (method->options_ == nullptr) {
-    method->options_ = &MethodOptions::default_instance();
-  }
-
   Symbol input_type =
       LookupSymbol(proto.input_type(), method->full_name(),
                    DescriptorPool::PLACEHOLDER_MESSAGE, LOOKUP_ALL,
