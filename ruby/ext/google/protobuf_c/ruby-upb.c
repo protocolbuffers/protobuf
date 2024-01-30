@@ -5292,7 +5292,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         return NULL;
       }
     } else {
-      upb_Array* msg_array = (upb_Array*)msg_ext->data.ptr;
+      upb_Array* msg_array = (upb_Array*)msg_ext->data.array_val;
       UPB_ASSERT(msg_array);
       upb_Array* cloned_array = upb_Array_DeepClone(
           msg_array, upb_MiniTableField_CType(field),
@@ -5300,7 +5300,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       if (!cloned_array) {
         return NULL;
       }
-      dst_ext->data.ptr = (void*)cloned_array;
+      dst_ext->data.array_val = cloned_array;
     }
   }
 
@@ -8550,7 +8550,7 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
 static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
   size_t size;
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
-  encode_message(e, ext->data.ptr,
+  encode_message(e, ext->data.msg_val,
                  upb_MiniTableExtension_GetSubMessage(ext->ext), &size);
   encode_varint(e, size);
   encode_tag(e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
