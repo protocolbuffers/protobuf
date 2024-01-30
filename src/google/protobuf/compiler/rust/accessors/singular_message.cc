@@ -89,6 +89,18 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 }
                 )rs");
              }},
+            {"getter_opt",
+             [&] {
+               ctx.Emit({}, R"rs(
+                pub fn $field$_opt($view_self$) ->
+                $pb$::Optional<$msg_type$View<$view_lifetime$>> {
+                  let view = self.$field$();
+                  $pb$::Optional::new(view, unsafe {
+                    $hazzer_thunk$(self.raw_msg())
+                  })
+            }
+            )rs");
+             }},
             {"clearer",
              [&] {
                if (accessor_case == AccessorCase::VIEW) {
@@ -102,6 +114,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            R"rs(
             $getter$
             $getter_mut$
+            $getter_opt$
             $clearer$
         )rs");
 }

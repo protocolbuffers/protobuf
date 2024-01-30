@@ -363,11 +363,15 @@ rust_test(
 rust_test(
     name = "simple_nested_cpp_test",
     srcs = ["simple_nested_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
+        "//rust:protobuf_cpp",
         "//rust/test:nested_cc_rust_proto",
         "@crate_index//:googletest",
     ],
@@ -376,11 +380,15 @@ rust_test(
 rust_test(
     name = "simple_nested_upb_test",
     srcs = ["simple_nested_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
+        "//rust:protobuf_upb",
         "//rust/test:nested_upb_rust_proto",
         "@crate_index//:googletest",
     ],

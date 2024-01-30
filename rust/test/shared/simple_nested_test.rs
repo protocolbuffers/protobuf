@@ -10,6 +10,7 @@ use nested_proto::Outer_::InnerMut;
 use nested_proto::Outer_::InnerView;
 use nested_proto::Outer_::Inner_::InnerEnum;
 use nested_proto::*;
+use protobuf::Optional;
 
 #[test]
 fn test_deeply_nested_message() {
