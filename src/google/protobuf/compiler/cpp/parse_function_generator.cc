@@ -103,14 +103,16 @@ ParseFunctionGenerator::ParseFunctionGenerator(
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices, const Options& options,
     MessageSCCAnalyzer* scc_analyzer,
-    const absl::flat_hash_map<absl::string_view, std::string>& vars)
+    const absl::flat_hash_map<absl::string_view, std::string>& vars,
+    int index_in_file_messages)
     : descriptor_(descriptor),
       scc_analyzer_(scc_analyzer),
       options_(options),
       variables_(vars),
       inlined_string_indices_(inlined_string_indices),
       ordered_fields_(GetOrderedFields(descriptor_, options_)),
-      num_hasbits_(max_has_bit_index) {
+      num_hasbits_(max_has_bit_index),
+      index_in_file_messages_(index_in_file_messages) {
   if (should_generate_tctable()) {
     tc_table_info_.reset(new TailCallTableInfo(
         descriptor_, ordered_fields_,
@@ -228,16 +230,23 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
           {"SECTION",
            [&] {
              if (!IsProfileDriven(options_)) return;
+             std::string section_name;
              // Since most (>80%) messages are never present, messages that are
              // present are considered hot enough to be clustered together.
-             if (IsPresentMessage(descriptor_, options_)) {
-               p->Emit(
-                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_hot)");
+             // When using weak descriptors we use unique sections for each
+             // table to allow for GC to work. pth/ptl names must be in sync
+             // with the linker script.
+             if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+               section_name = WeakDescriptorDataSection(
+                   IsPresentMessage(descriptor_, options_) ? "pth" : "ptl",
+                   descriptor_, index_in_file_messages_, options_);
+             } else if (IsPresentMessage(descriptor_, options_)) {
+               section_name = "proto_parse_table_hot";
              } else {
-               p->Emit(
-                   "ABSL_ATTRIBUTE_SECTION_VARIABLE(proto_parse_table_"
-                   "lukewarm)");
+               section_name = "proto_parse_table_lukewarm";
              }
+             p->Emit({{"section_name", section_name}},
+                     "ABSL_ATTRIBUTE_SECTION_VARIABLE($section_name$)");
            }},
           {"table_size_log2", tc_table_info_->table_size_log2},
           {"num_field_entries", ordered_fields_.size()},

@@ -778,11 +778,23 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);
 
+// Generate the section name to be used for a data object when using implicit
+// weak descriptors. The prefix determines the kind of object and the section it
+// will be merged into afterwards.
+// See `UsingImplicitWeakDescriptor` above.
+std::string WeakDescriptorDataSection(absl::string_view prefix,
+                                      const Descriptor* descriptor,
+                                      int index_in_file_messages,
+                                      const Options& options);
+
 // Section name to be used for the default instance for implicit weak descriptor
 // objects. See `UsingImplicitWeakDescriptor` above.
-std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
-                                       int index_in_file_messages,
-                                       const Options& options);
+inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                              int index_in_file_messages,
+                                              const Options& options) {
+  return WeakDescriptorDataSection("def", descriptor, index_in_file_messages,
+                                   options);
+}
 
 // Indicates whether we should use implicit weak fields for this file.
 bool UsingImplicitWeakFields(const FileDescriptor* file,

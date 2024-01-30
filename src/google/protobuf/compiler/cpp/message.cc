@@ -573,7 +573,8 @@ MessageGenerator::MessageGenerator(
 
   parse_function_generator_ = std::make_unique<ParseFunctionGenerator>(
       descriptor_, max_has_bit_index_, has_bit_indices_,
-      inlined_string_indices_, options_, scc_analyzer_, variables_);
+      inlined_string_indices_, options_, scc_analyzer_, variables_,
+      index_in_file_messages_);
 }
 
 size_t MessageGenerator::HasBitsSize() const {
