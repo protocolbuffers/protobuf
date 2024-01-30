@@ -9,7 +9,7 @@
 
 use googletest::prelude::*;
 use matchers::{is_set, is_unset};
-use protobuf::Optional;
+use protobuf::{MutProxy, Optional};
 use unittest_proto::{TestAllTypes, TestAllTypes_};
 
 #[test]
@@ -668,16 +668,22 @@ fn test_nonempty_default_string_accessors() {
 
 #[test]
 fn test_singular_msg_field() {
-    use TestAllTypes_::{NestedMessageMut, NestedMessageView};
+    use TestAllTypes_::*;
 
     let mut msg = TestAllTypes::new();
     let msg_view: NestedMessageView = msg.optional_nested_message();
     // testing reading an int inside a view
     assert_that!(msg_view.bb(), eq(0));
 
-    let msg_mut: NestedMessageMut = msg.optional_nested_message_mut().or_default();
+    let mut nested_msg_mut: NestedMessageMut = msg.optional_nested_message_mut().or_default();
     // test reading an int inside a mut
-    assert_that!(msg_mut.bb(), eq(0));
+    assert_that!(nested_msg_mut.bb(), eq(0));
+
+    // Test setting an owned NestedMessage onto another message.
+    let mut new_nested = NestedMessage::new();
+    new_nested.bb_mut().set(7);
+    nested_msg_mut.set(new_nested);
+    assert_that!(nested_msg_mut.bb(), eq(7));
 }
 
 #[test]
