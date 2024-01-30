@@ -99,7 +99,7 @@ fn test_nested_muts() {
     }
 
     let mut outer_msg = Outer::new();
-    let mut inner_msg: InnerMut<'_> = outer_msg.inner_mut();
+    let mut inner_msg: InnerMut<'_> = outer_msg.inner_mut().or_default();
     assert_that!(
         inner_msg,
         matches_pattern!(InnerMut{
@@ -164,10 +164,10 @@ fn test_recursive_view() {
 #[test]
 fn test_recursive_mut() {
     let mut rec = nested_proto::Recursive::new();
-    let mut one = rec.rec_mut();
-    let mut two = one.rec_mut();
-    let mut three = two.rec_mut();
-    let mut four = three.rec_mut();
+    let mut one = rec.rec_mut().or_default();
+    let mut two = one.rec_mut().or_default();
+    let mut three = two.rec_mut().or_default();
+    let mut four = three.rec_mut().or_default();
 
     four.num_mut().set(1);
     assert_that!(four.num(), eq(1));

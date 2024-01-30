@@ -66,35 +66,13 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 }
               )rs");
              }},
-            {"getter_mut_body",
-             [&] {
-               if (ctx.is_upb()) {
-                 ctx.Emit({}, R"rs(
-                 let submsg = unsafe {
-                   $getter_mut_thunk$(self.raw_msg(), self.arena().raw())
-                 };
-                 $msg_type$Mut::from_parent($pbi$::Private, self.as_mutator_message_ref(), submsg)
-                 )rs");
-               } else {
-                 ctx.Emit({}, R"rs(
-                    let submsg = unsafe { $getter_mut_thunk$(self.raw_msg()) };
-                    $msg_type$Mut::from_parent($pbi$::Private, self.as_mutator_message_ref(), submsg)
-                  )rs");
-               }
-             }},
             {"getter_mut",
              [&] {
                if (accessor_case == AccessorCase::VIEW) {
                  return;
                }
                ctx.Emit({}, R"rs(
-                pub fn $field$_mut(&mut self) -> $msg_type$Mut {
-                  $getter_mut_body$
-                }
-
-                //~ TODO: b/319472103 - delete $field_mut$, then rename
-                //~ this to $field$_mut and update all unit tests
-                pub fn $field$_entry(&mut self)
+                pub fn $field$_mut(&mut self)
                     -> $pb$::FieldEntry<'_, $msg_type$> {
                   static VTABLE: $pbr$::MessageVTable =
                     $pbr$::MessageVTable::new($pbi$::Private,

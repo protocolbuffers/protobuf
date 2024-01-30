@@ -675,7 +675,7 @@ fn test_singular_msg_field() {
     // testing reading an int inside a view
     assert_that!(msg_view.bb(), eq(0));
 
-    let msg_mut: NestedMessageMut = msg.optional_nested_message_mut();
+    let msg_mut: NestedMessageMut = msg.optional_nested_message_mut().or_default();
     // test reading an int inside a mut
     assert_that!(msg_mut.bb(), eq(0));
 }

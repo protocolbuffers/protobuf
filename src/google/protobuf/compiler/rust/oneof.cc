@@ -284,30 +284,23 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
             ctx.Emit(
                 {{"case", OneofCaseRsName(field)},
                  {"rs_mut_getter", field.name() + "_mut"},
-                 {"type", rs_type},
-
-                 // Any extra behavior needed to map the mut getter into the
-                 // unwrapped Mut<>. Right now Message's _mut already returns
-                 // the Mut directly, but for scalars the accessor will return
-                 // an Optional which we then grab the mut by doing
-                 // .try_into_mut().unwrap().
-                 //
-                 // Note that this unwrap() is safe because the flow is:
-                 // 1) Find out which oneof field is already set (if any)
-                 // 2) If a field is set, call the corresponding field's _mut()
-                 // and wrap the result in the SomeOneofMut enum.
-                 // The unwrap() will only ever panic if the which oneof enum
-                 // disagrees with the corresponding field presence which.
-                 // TODO: If the message _mut accessor returns
-                 // Optional<> then this conditional behavior should be removed.
-                 {"into_mut_transform",
-                  field.type() == FieldDescriptor::TYPE_MESSAGE
-                      ? ""
-                      : ".try_into_mut().unwrap()"}},
+                 {"type", rs_type}},
+                // Any extra behavior needed to map the mut getter into the
+                // unwrapped Mut<>. Right now Message's _mut already returns
+                // the Mut directly, but for scalars the accessor will return
+                // an Optional which we then grab the mut by doing
+                // .try_into_mut().unwrap().
+                //
+                // Note that this unwrap() is safe because the flow is:
+                // 1) Find out which oneof field is already set (if any)
+                // 2) If a field is set, call the corresponding field's _mut()
+                // and wrap the result in the SomeOneofMut enum.
+                // The unwrap() will only ever panic if the which oneof enum
+                // disagrees with the corresponding field presence which.
                 R"rs(
                 $Msg$_::$case_enum_name$::$case$ =>
                     $Msg$_::$mut_enum_name$::$case$(
-                        self.$rs_mut_getter$()$into_mut_transform$),
+                        self.$rs_mut_getter$().try_into_mut().unwrap()),
                )rs");
           }
         }},
