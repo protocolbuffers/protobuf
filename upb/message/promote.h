@@ -10,6 +10,7 @@
 
 #include "upb/message/array.h"
 #include "upb/message/map.h"
+#include "upb/message/value.h"
 #include "upb/wire/decode.h"
 
 // Must be last.

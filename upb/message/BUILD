@@ -56,6 +56,7 @@ cc_library(
     srcs = [
         "internal/extension.c",
         "internal/message.c",
+        "value.h",
     ],
     hdrs = [
         "internal/accessors.h",

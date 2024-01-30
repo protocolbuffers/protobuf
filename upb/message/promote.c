@@ -106,7 +106,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
-  ext->data.ptr = extension_msg;
+  ext->data.msg_val = extension_msg;
   value->msg_val = extension_msg;
   const char* delete_ptr = upb_Message_GetUnknown(msg, &len) + ofs;
   upb_Message_DeleteUnknown(msg, delete_ptr, result.len);
