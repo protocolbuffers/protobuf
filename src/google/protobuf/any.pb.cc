@@ -54,7 +54,6 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AnyDefaultTypeInternal _Any_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fany_2eproto[1];
 static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor**
@@ -91,7 +90,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] ABSL_ATTR
     "ypesb\006proto3"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fany_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto = {
+PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto = {
     false,
     false,
     212,
@@ -104,25 +103,9 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto =
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fany_2eproto::offsets,
-    file_level_metadata_google_2fprotobuf_2fany_2eproto,
     file_level_enum_descriptors_google_2fprotobuf_2fany_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fany_2eproto,
 };
-
-// This function exists to be marked as weak.
-// It can significantly speed up compilation by breaking up LLVM's SCC
-// in the .pb.cc translation units. Large translation units see a
-// reduction of more than 35% of walltime for optimized builds. Without
-// the weak attribute all the messages in the file, including all the
-// vtables and everything they use become part of the same SCC through
-// a cycle like:
-// GetMetadata -> descriptor table -> default instances ->
-//   vtables -> GetMetadata
-// By adding a weak function here we break the connection from the
-// individual vtables back into the descriptor table.
-PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fany_2eproto_getter() {
-  return &descriptor_table_google_2fprotobuf_2fany_2eproto;
-}
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -203,8 +186,10 @@ Any::GetClassData() const {
           },
           &Any::MergeImpl,
           &Any::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fany_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void Any::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
@@ -359,9 +344,7 @@ void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fany_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fany_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fany_2eproto[0]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

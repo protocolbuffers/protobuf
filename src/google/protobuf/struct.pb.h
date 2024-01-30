@@ -226,11 +226,10 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       : ListValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -400,11 +399,10 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       : Struct(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -482,7 +480,7 @@ class Struct_FieldsEntry_DoNotUse final
     return ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::google::protobuf::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
  }
   static bool ValidateValue(void*) { return true; }
-  ::google::protobuf::Metadata GetMetadata() const final;
+const ::google::protobuf::Message::ClassData* GetClassData() const final;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
@@ -612,11 +610,10 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       : Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

@@ -205,11 +205,10 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
       : UInt64Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -372,11 +371,10 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
       : UInt32Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -539,11 +537,10 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
       : StringValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -712,11 +709,10 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
       : Int64Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -879,11 +875,10 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
       : Int32Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1046,11 +1041,10 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
       : FloatValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1213,11 +1207,10 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
       : DoubleValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1380,11 +1373,10 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
       : BytesValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1553,11 +1545,10 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
       : BoolValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

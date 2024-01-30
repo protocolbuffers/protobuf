@@ -315,11 +315,10 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
       : Option(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -506,11 +505,10 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
       : Field(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Kind = Field_Kind;
   static constexpr Kind TYPE_UNKNOWN = Field_Kind_TYPE_UNKNOWN;
@@ -869,11 +867,10 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
       : EnumValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1073,11 +1070,10 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
       : Type(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -1362,11 +1358,10 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
       : Enum(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

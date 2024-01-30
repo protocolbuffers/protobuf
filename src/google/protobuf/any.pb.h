@@ -229,11 +229,10 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
       : Any(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

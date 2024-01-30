@@ -200,7 +200,6 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[9];
 static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor**
@@ -330,7 +329,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto[] ABSL
     "wnTypesb\006proto3"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2eproto = {
+PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2eproto = {
     false,
     false,
     455,
@@ -343,25 +342,9 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2epr
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets,
-    file_level_metadata_google_2fprotobuf_2fwrappers_2eproto,
     file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fwrappers_2eproto,
 };
-
-// This function exists to be marked as weak.
-// It can significantly speed up compilation by breaking up LLVM's SCC
-// in the .pb.cc translation units. Large translation units see a
-// reduction of more than 35% of walltime for optimized builds. Without
-// the weak attribute all the messages in the file, including all the
-// vtables and everything they use become part of the same SCC through
-// a cycle like:
-// GetMetadata -> descriptor table -> default instances ->
-//   vtables -> GetMetadata
-// By adding a weak function here we break the connection from the
-// individual vtables back into the descriptor table.
-PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter() {
-  return &descriptor_table_google_2fprotobuf_2fwrappers_2eproto;
-}
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -410,8 +393,10 @@ DoubleValue::GetClassData() const {
           },
           &DoubleValue::MergeImpl,
           &DoubleValue::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void DoubleValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
@@ -551,9 +536,7 @@ void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata DoubleValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[0]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -601,8 +584,10 @@ FloatValue::GetClassData() const {
           },
           &FloatValue::MergeImpl,
           &FloatValue::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void FloatValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FloatValue)
@@ -742,9 +727,7 @@ void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata FloatValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[1]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -792,8 +775,10 @@ Int64Value::GetClassData() const {
           },
           &Int64Value::MergeImpl,
           &Int64Value::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void Int64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int64Value)
@@ -919,9 +904,7 @@ void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Int64Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[2]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -969,8 +952,10 @@ UInt64Value::GetClassData() const {
           },
           &UInt64Value::MergeImpl,
           &UInt64Value::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void UInt64Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt64Value)
@@ -1096,9 +1081,7 @@ void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata UInt64Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[3]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1146,8 +1129,10 @@ Int32Value::GetClassData() const {
           },
           &Int32Value::MergeImpl,
           &Int32Value::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void Int32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Int32Value)
@@ -1273,9 +1258,7 @@ void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata Int32Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[4]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1323,8 +1306,10 @@ UInt32Value::GetClassData() const {
           },
           &UInt32Value::MergeImpl,
           &UInt32Value::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void UInt32Value::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UInt32Value)
@@ -1450,9 +1435,7 @@ void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata UInt32Value::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[5]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1500,8 +1483,10 @@ BoolValue::GetClassData() const {
           },
           &BoolValue::MergeImpl,
           &BoolValue::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void BoolValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BoolValue)
@@ -1626,9 +1611,7 @@ void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata BoolValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[6]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1690,8 +1673,10 @@ StringValue::GetClassData() const {
           },
           &StringValue::MergeImpl,
           &StringValue::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void StringValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.StringValue)
@@ -1823,9 +1808,7 @@ void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata StringValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[7]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1887,8 +1870,10 @@ BytesValue::GetClassData() const {
           },
           &BytesValue::MergeImpl,
           &BytesValue::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
+          nullptr,  // tracker
       };
-  return &_data_;
+  return _data_.base();
 }
 PROTOBUF_NOINLINE void BytesValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.BytesValue)
@@ -2015,9 +2000,7 @@ void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
 }
 
 ::google::protobuf::Metadata BytesValue::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[8]);
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

@@ -189,11 +189,10 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
       : Mixin(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -380,11 +379,10 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
       : Method(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
@@ -644,11 +642,10 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
       : Api(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::MessageLite::ClassData* GetClassData()
-      const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

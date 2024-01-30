@@ -37,7 +37,6 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EmptyDefaultTypeInternal _Empty_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fempty_2eproto[1];
 static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor**
@@ -71,7 +70,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] ABSL_AT
     "rotobuf.WellKnownTypesb\006proto3"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fempty_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
+PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
     false,
     false,
     190,
@@ -84,25 +83,9 @@ const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
-    file_level_metadata_google_2fprotobuf_2fempty_2eproto,
     file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto,
     file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,
 };
-
-// This function exists to be marked as weak.
-// It can significantly speed up compilation by breaking up LLVM's SCC
-// in the .pb.cc translation units. Large translation units see a
-// reduction of more than 35% of walltime for optimized builds. Without
-// the weak attribute all the messages in the file, including all the
-// vtables and everything they use become part of the same SCC through
-// a cycle like:
-// GetMetadata -> descriptor table -> default instances ->
-//   vtables -> GetMetadata
-// By adding a weak function here we break the connection from the
-// individual vtables back into the descriptor table.
-PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_google_2fprotobuf_2fempty_2eproto_getter() {
-  return &descriptor_table_google_2fprotobuf_2fempty_2eproto;
-}
 namespace google {
 namespace protobuf {
 // ===================================================================
@@ -127,6 +110,22 @@ Empty::Empty(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
 
+const ::google::protobuf::MessageLite::ClassData*
+Empty::GetClassData() const {
+  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
+      ClassDataFull _data_ = {
+          {
+              nullptr,  // OnDemandRegisterArenaDtor
+              PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
+              false,
+          },
+          &Empty::MergeImpl,
+          &Empty::kDescriptorMethods,
+          &descriptor_table_google_2fprotobuf_2fempty_2eproto,
+          nullptr,  // tracker
+      };
+  return _data_.base();
+}
 
 
 
@@ -136,9 +135,7 @@ Empty::Empty(
 
 
 ::google::protobuf::Metadata Empty::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fempty_2eproto_getter,
-                                   &descriptor_table_google_2fprotobuf_2fempty_2eproto_once,
-                                   file_level_metadata_google_2fprotobuf_2fempty_2eproto[0]);
+  return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

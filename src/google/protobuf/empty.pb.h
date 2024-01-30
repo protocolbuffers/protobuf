@@ -166,9 +166,10 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
       : Empty(arena) {
     *this = ::std::move(from);
   }
+  const ::google::protobuf::internal::ZeroFieldsBase::ClassData* GetClassData() const final;
 
  public:
-  ::google::protobuf::Metadata GetMetadata() const final;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
