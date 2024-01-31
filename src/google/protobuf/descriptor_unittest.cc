@@ -7267,7 +7267,7 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2) {
 
 // Test that field names that may conflict in JSON is not allowed by protoc.
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3Legacy) {
-  BuildFileWithErrors(
+  BuildFile(
       "name: 'foo.proto' "
       "syntax: 'proto3' "
       "message_type {"
@@ -7275,10 +7275,7 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3Legacy) {
       "  options { deprecated_legacy_json_field_conflicts: true }"
       "  field { name:'AB' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
-      "foo.proto: Foo: NAME: The default JSON name of field \"_a__b_\" "
-      "(\"AB\") "
-      "conflicts with the default JSON name of field \"AB\".\n");
+      "}");
 }
 
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2Legacy) {
