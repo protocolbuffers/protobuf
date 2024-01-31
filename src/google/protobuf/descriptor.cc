@@ -7664,8 +7664,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
-  // The following check is temporarily OSS only till we fix all affected
-  // google3 TAP tests.
   if (field->file()->edition() >= Edition::EDITION_2023 &&
       field->options().has_ctype()) {
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
