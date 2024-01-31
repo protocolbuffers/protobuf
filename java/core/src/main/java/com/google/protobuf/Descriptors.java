@@ -490,7 +490,10 @@ public final class Descriptors {
       ByteString bytes = descriptor.proto.toByteString();
       try {
         FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
-        descriptor.setProto(proto);
+        synchronized (descriptor) {
+          descriptor.setProto(proto);
+          descriptor.resolveAllFeatures();
+        }
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
@@ -707,7 +710,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < messageTypes.length; i++) {
         messageTypes[i].setProto(proto.getMessageType(i));
@@ -1161,7 +1163,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < nestedTypes.length; i++) {
         nestedTypes[i].setProto(proto.getNestedType(i));
@@ -1978,7 +1979,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
 
     /** For internal use only. This is to satisfy the FieldDescriptorLite interface. */
@@ -2259,7 +2259,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < values.length; i++) {
         values[i].setProto(proto.getValue(i));
@@ -2409,7 +2408,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
   }
 
@@ -2535,7 +2533,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < methods.length; i++) {
         methods[i].setProto(proto.getMethod(i));
@@ -2686,7 +2683,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
   }
 
@@ -3223,7 +3219,6 @@ public final class Descriptors {
       this.proto = proto;
       this.features = null;
       this.options = null;
-      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
 
     private OneofDescriptor(
