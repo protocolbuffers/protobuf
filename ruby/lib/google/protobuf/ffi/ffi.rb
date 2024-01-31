@@ -21,7 +21,7 @@ module Google
       Upb_Map_Begin = -1
 
       ## Encoding Status
-      Upb_Status_MaxMessage = 127
+      Upb_Status_MaxMessage = 511
       Upb_Encode_Deterministic = 1
       Upb_Encode_SkipUnknown = 2
 
