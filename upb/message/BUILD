@@ -46,6 +46,7 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb/base:internal",
+        "//upb/hash",
         "//upb/mini_table:internal",
     ],
 )
@@ -55,6 +56,7 @@ cc_library(
     srcs = [
         "internal/extension.c",
         "internal/message.c",
+        "value.h",
     ],
     hdrs = [
         "internal/accessors.h",
@@ -91,6 +93,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":message",
+        "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
@@ -167,6 +170,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
+        "//upb:port",
         "//upb/hash",
     ],
 )

@@ -17,6 +17,8 @@
 #include <new>
 #include <string>
 
+#include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
@@ -130,6 +132,25 @@ void Message::CheckInitialized() const {
 
 void Message::DiscardUnknownFields() {
   return ReflectionOps::DiscardUnknownFields(this);
+}
+
+Metadata Message::GetMetadata() const {
+  return GetMetadataImpl(GetClassData()->full());
+}
+
+Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
+  auto* table = data.descriptor_table;
+  // Only codegen types provide a table. DynamicMessage does not provide a table
+  // and instead eagerly initializes the descriptor/reflection members.
+  if (ABSL_PREDICT_TRUE(table != nullptr)) {
+    if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
+      data.get_metadata_tracker();
+    }
+    absl::call_once(*table->once, [table] {
+      internal::AssignDescriptorsOnceInnerCall(table);
+    });
+  }
+  return {data.descriptor, data.reflection};
 }
 
 const char* Message::_InternalParse(const char* ptr,

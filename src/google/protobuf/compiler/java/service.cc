@@ -43,7 +43,7 @@ ImmutableServiceGenerator::~ImmutableServiceGenerator() {}
 
 void ImmutableServiceGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
-  WriteServiceDocComment(printer, descriptor_);
+  WriteServiceDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
   if (!context_->options().opensource_runtime) {
@@ -162,7 +162,7 @@ void ImmutableServiceGenerator::GenerateNewReflectiveBlockingServiceMethod(
 void ImmutableServiceGenerator::GenerateAbstractMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    WriteMethodDocComment(printer, method);
+    WriteMethodDocComment(printer, method, context_->options());
     GenerateMethodSignature(printer, method, IS_ABSTRACT);
     printer->Print(";\n\n");
   }

@@ -20,7 +20,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-absl::string_view GetCrateName(Context& ctx, const FileDescriptor& dep);
+std::string GetCrateName(Context& ctx, const FileDescriptor& dep);
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file);
 std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);
@@ -33,6 +33,9 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op);
+
+// Returns the local constant that defines the vtable for mutating `field`.
+std::string VTableName(const FieldDescriptor& field);
 
 // Returns an absolute path to the Proxied Rust type of the given field.
 // The absolute path is guaranteed to work in the crate that defines the field.

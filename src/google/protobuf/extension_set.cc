@@ -787,16 +787,9 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
 
-  // RepeatedPtrField<MessageLite> does not know how to Add() since it cannot
-  // allocate an abstract object, so we have to be tricky.
-  MessageLite* result = reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                            extension->repeated_message_value)
-                            ->AddFromCleared<GenericTypeHandler<MessageLite>>();
-  if (result == nullptr) {
-    result = prototype.New(arena_);
-    extension->repeated_message_value->AddAllocated(result);
-  }
-  return result;
+  return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
+             extension->repeated_message_value)
+      ->AddMessage(&prototype);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -996,32 +989,8 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
       HANDLE_TYPE(BOOL, bool, RepeatedField<bool>);
       HANDLE_TYPE(ENUM, enum, RepeatedField<int>);
       HANDLE_TYPE(STRING, string, RepeatedPtrField<std::string>);
+      HANDLE_TYPE(MESSAGE, message, RepeatedPtrField<MessageLite>);
 #undef HANDLE_TYPE
-
-      case WireFormatLite::CPPTYPE_MESSAGE: {
-        Arena* const arena = arena_;
-        if (is_new) {
-          extension->repeated_message_value =
-              Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena);
-        }
-        // We can't call RepeatedPtrField<MessageLite>::MergeFrom() because
-        // it would attempt to allocate new objects.
-        RepeatedPtrField<MessageLite>* other_repeated_message =
-            other_extension.repeated_message_value;
-        for (int i = 0; i < other_repeated_message->size(); i++) {
-          const MessageLite& other_message = other_repeated_message->Get(i);
-          MessageLite* target =
-              reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                  extension->repeated_message_value)
-                  ->AddFromCleared<GenericTypeHandler<MessageLite>>();
-          if (target == nullptr) {
-            target = other_message.New(arena);
-            extension->repeated_message_value->AddAllocated(target);
-          }
-          target->CheckTypeAndMergeFrom(other_message);
-        }
-        break;
-      }
     }
   } else {
     if (!other_extension.is_cleared) {

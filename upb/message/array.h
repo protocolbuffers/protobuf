@@ -14,6 +14,8 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/value.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -75,6 +77,16 @@ UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr) {
 // Returns mutable pointer to array data.
 UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr) {
   return UPB_PRIVATE(_upb_Array_MutableDataPtr)(arr);
+}
+
+// Mark an array and all of its descendents as frozen/immutable.
+// If the array elements are messages then |m| must point to the minitable for
+// those messages. Otherwise |m| must be NULL.
+UPB_API void upb_Array_Freeze(upb_Array* arr, const upb_MiniTable* m);
+
+// Returns whether an array has been frozen.
+UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr) {
+  return UPB_PRIVATE(_upb_Array_IsFrozen)(arr);
 }
 
 #ifdef __cplusplus

@@ -41,6 +41,7 @@
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -3528,13 +3529,11 @@ ReflectionSchema MigrationToReflectionSchema(
 class AssignDescriptorsHelper {
  public:
   AssignDescriptorsHelper(MessageFactory* factory,
-                          Metadata* file_level_metadata,
                           const EnumDescriptor** file_level_enum_descriptors,
                           const MigrationSchema* schemas,
                           const Message* const* default_instance_data,
                           const uint32_t* offsets)
       : factory_(factory),
-        file_level_metadata_(file_level_metadata),
         file_level_enum_descriptors_(file_level_enum_descriptors),
         schemas_(schemas),
         default_instance_data_(default_instance_data),
@@ -3545,19 +3544,27 @@ class AssignDescriptorsHelper {
       AssignMessageDescriptor(descriptor->nested_type(i));
     }
 
-    file_level_metadata_->descriptor = descriptor;
+    // If there is no default instance we only want to initialize the descriptor
+    // without updating the reflection.
+    if (default_instance_data_[0] != nullptr) {
+      auto& class_data = default_instance_data_[0]->GetClassData()->full();
+      // If there is no descriptor_table in the class data, then it is not
+      // interested in receiving reflection information either.
+      if (class_data.descriptor_table != nullptr) {
+        class_data.descriptor = descriptor;
 
-    file_level_metadata_->reflection =
-        new Reflection(descriptor,
-                       MigrationToReflectionSchema(default_instance_data_,
-                                                   offsets_, *schemas_),
-                       DescriptorPool::internal_generated_pool(), factory_);
+        class_data.reflection = OnShutdownDelete(new Reflection(
+            descriptor,
+            MigrationToReflectionSchema(default_instance_data_, offsets_,
+                                        *schemas_),
+            DescriptorPool::internal_generated_pool(), factory_));
+      }
+    }
     for (int i = 0; i < descriptor->enum_type_count(); i++) {
       AssignEnumDescriptor(descriptor->enum_type(i));
     }
     schemas_++;
     default_instance_data_++;
-    file_level_metadata_++;
   }
 
   void AssignEnumDescriptor(const EnumDescriptor* descriptor) {
@@ -3565,11 +3572,8 @@ class AssignDescriptorsHelper {
     file_level_enum_descriptors_++;
   }
 
-  const Metadata* GetCurrentMetadataPtr() const { return file_level_metadata_; }
-
  private:
   MessageFactory* factory_;
-  Metadata* file_level_metadata_;
   const EnumDescriptor** file_level_enum_descriptors_;
   const MigrationSchema* schemas_;
   const Message* const* default_instance_data_;
@@ -3577,36 +3581,6 @@ class AssignDescriptorsHelper {
 };
 
 namespace {
-
-// We have the routines that assign descriptors and build reflection
-// automatically delete the allocated reflection. MetadataOwner owns
-// all the allocated reflection instances.
-struct MetadataOwner {
-  ~MetadataOwner() {
-    for (auto range : metadata_arrays) {
-      for (const Metadata* m = range.first; m < range.second; m++) {
-        delete m->reflection;
-      }
-    }
-  }
-
-  void AddArray(const Metadata* begin, const Metadata* end) {
-    mu.Lock();
-    metadata_arrays.push_back(std::make_pair(begin, end));
-    mu.Unlock();
-  }
-
-  static MetadataOwner* Instance() {
-    static MetadataOwner* res = OnShutdownDelete(new MetadataOwner);
-    return res;
-  }
-
- private:
-  MetadataOwner() = default;  // private because singleton
-
-  absl::Mutex mu;
-  std::vector<std::pair<const Metadata*, const Metadata*>> metadata_arrays;
-};
 
 void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   // Ensure the file descriptor is added to the pool.
@@ -3649,9 +3623,9 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
-  AssignDescriptorsHelper helper(
-      factory, table->file_level_metadata, table->file_level_enum_descriptors,
-      table->schemas, table->default_instances, table->offsets);
+  AssignDescriptorsHelper helper(factory, table->file_level_enum_descriptors,
+                                 table->schemas, table->default_instances,
+                                 table->offsets);
 
   for (int i = 0; i < file->message_type_count(); i++) {
     helper.AssignMessageDescriptor(file->message_type(i));
@@ -3665,8 +3639,6 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
       table->file_level_service_descriptors[i] = file->service(i);
     }
   }
-  MetadataOwner::Instance()->AddArray(table->file_level_metadata,
-                                      helper.GetCurrentMetadataPtr());
 }
 
 void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
@@ -3697,17 +3669,6 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
 
 }  // namespace
 
-// Separate function because it needs to be a friend of
-// Reflection
-void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
-  for (int i = 0; i < size; i++) {
-    const Reflection* reflection = file_level_metadata[i].reflection;
-    MessageFactory::InternalRegisterGeneratedMessage(
-        file_level_metadata[i].descriptor,
-        reflection->schema_.default_instance_);
-  }
-}
-
 namespace internal {
 
 void AddDescriptors(const DescriptorTable* table) {
@@ -3720,20 +3681,13 @@ void AddDescriptors(const DescriptorTable* table) {
   AddDescriptorsImpl(table);
 }
 
-Metadata AssignDescriptors(const DescriptorTable* (*table)(),
-                           absl::once_flag* once, const Metadata& metadata) {
-  absl::call_once(*once, [=] {
-    auto* t = table();
-    MaybeInitializeLazyDescriptors(t);
-    AssignDescriptorsImpl(t, t->is_eager);
-  });
-
-  return metadata;
+void AssignDescriptorsOnceInnerCall(const DescriptorTable* table) {
+  MaybeInitializeLazyDescriptors(table);
+  AssignDescriptorsImpl(table, table->is_eager);
 }
 
 void AssignDescriptors(const DescriptorTable* table) {
-  MaybeInitializeLazyDescriptors(table);
-  absl::call_once(*table->once, AssignDescriptorsImpl, table, table->is_eager);
+  absl::call_once(*table->once, [=] { AssignDescriptorsOnceInnerCall(table); });
 }
 
 AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {
@@ -3742,7 +3696,14 @@ AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {
 
 void RegisterFileLevelMetadata(const DescriptorTable* table) {
   AssignDescriptors(table);
-  RegisterAllTypesInternal(table->file_level_metadata, table->num_messages);
+  auto* file = DescriptorPool::internal_generated_pool()->FindFileByName(
+      table->filename);
+  auto defaults = table->default_instances;
+  internal::cpp::VisitDescriptorsInFileOrder(file, [&](auto* desc) {
+    MessageFactory::InternalRegisterGeneratedMessage(desc, *defaults);
+    ++defaults;
+    return std::false_type{};
+  });
 }
 
 void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
@@ -3823,9 +3784,19 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
   // Fallback to dynamic messages.
   // Register the dep and generate the prototype via the generated pool.
   AssignDescriptors(table);
-  ABSL_CHECK(table->file_level_metadata[index].descriptor != nullptr);
-  return MessageFactory::generated_factory()->GetPrototype(
-      table->file_level_metadata[index].descriptor);
+
+  const FileDescriptor* file =
+      DescriptorPool::internal_generated_pool()->FindFileByName(
+          table->filename);
+
+  const Descriptor* descriptor = internal::cpp::VisitDescriptorsInFileOrder(
+      file, [&](auto* desc) -> const Descriptor* {
+        if (index == 0) return desc;
+        --index;
+        return nullptr;
+      });
+
+  return MessageFactory::generated_factory()->GetPrototype(descriptor);
 }
 
 }  // namespace internal

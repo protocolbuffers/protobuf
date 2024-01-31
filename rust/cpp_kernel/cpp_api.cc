@@ -100,28 +100,28 @@ expose_repeated_ptr_field_methods(Bytes);
                                   value_ty, rust_value_ty, ffi_value_ty,       \
                                   to_cpp_value, to_ffi_value)                  \
   google::protobuf::Map<key_ty, value_ty>*                                               \
-      __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_new() {                  \
+      __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_new() {        \
     return new google::protobuf::Map<key_ty, value_ty>();                                \
   }                                                                            \
-  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_free(                   \
+  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_free(         \
       google::protobuf::Map<key_ty, value_ty>* m) {                                      \
     delete m;                                                                  \
   }                                                                            \
-  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_clear(                  \
+  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_clear(        \
       google::protobuf::Map<key_ty, value_ty>* m) {                                      \
     m->clear();                                                                \
   }                                                                            \
-  size_t __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_size(                 \
+  size_t __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_size(       \
       const google::protobuf::Map<key_ty, value_ty>* m) {                                \
     return m->size();                                                          \
   }                                                                            \
-  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_insert(                 \
+  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_insert(       \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty value) {  \
     auto cpp_key = to_cpp_key;                                                 \
     auto cpp_value = to_cpp_value;                                             \
     (*m)[cpp_key] = cpp_value;                                                 \
   }                                                                            \
-  bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_get(                    \
+  bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_get(          \
       const google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key,                  \
       ffi_value_ty* value) {                                                   \
     auto cpp_key = to_cpp_key;                                                 \
@@ -133,7 +133,7 @@ expose_repeated_ptr_field_methods(Bytes);
     *value = to_ffi_value;                                                     \
     return true;                                                               \
   }                                                                            \
-  bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_remove(                 \
+  bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_remove(       \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty* value) { \
     auto cpp_key = to_cpp_key;                                                 \
     auto num_removed = m->erase(cpp_key);                                      \

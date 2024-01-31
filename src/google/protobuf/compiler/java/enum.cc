@@ -55,7 +55,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
 EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
-  WriteEnumDocComment(printer, descriptor_);
+  WriteEnumDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
 
   if (!context_->options().opensource_runtime) {
@@ -84,7 +84,8 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["name"] = canonical_values_[i]->name();
     vars["index"] = absl::StrCat(canonical_values_[i]->index());
     vars["number"] = absl::StrCat(canonical_values_[i]->number());
-    WriteEnumValueDocComment(printer, canonical_values_[i]);
+    WriteEnumValueDocComment(printer, canonical_values_[i],
+                             context_->options());
     if (canonical_values_[i]->options().deprecated()) {
       printer->Print("@java.lang.Deprecated\n");
     }
@@ -114,7 +115,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Print("static {\n");
   printer->Indent();
   PrintGencodeVersionValidator(printer, context_->options().opensource_runtime,
-                               context_->EnforceLite(), descriptor_->name());
+                               descriptor_->name());
   printer->Outdent();
   printer->Print("}\n");
 
@@ -123,7 +124,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
-    WriteEnumValueDocComment(printer, aliases_[i].value);
+    WriteEnumValueDocComment(printer, aliases_[i].value, context_->options());
     printer->Print(
         vars, "public static final $classname$ $name$ = $canonical_name$;\n");
     printer->Annotate("name", aliases_[i].value);
@@ -138,7 +139,8 @@ void EnumGenerator::Generate(io::Printer* printer) {
     vars["deprecation"] = descriptor_->value(i)->options().deprecated()
                               ? "@java.lang.Deprecated "
                               : "";
-    WriteEnumValueDocComment(printer, descriptor_->value(i));
+    WriteEnumValueDocComment(printer, descriptor_->value(i),
+                             context_->options());
     printer->Print(vars,
                    "$deprecation$public static final int ${$$name$_VALUE$}$ = "
                    "$number$;\n");

@@ -23,7 +23,7 @@ public final class RuntimeVersionTest {
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                RuntimeVersion.validateProtobufGencodeVersion(
                     RuntimeVersion.DOMAIN, 1, -2, -3, "", "dummy"));
     assertThat(thrown).hasMessageThat().contains("Invalid gencode version: 1.-2.-3");
   }
@@ -37,7 +37,7 @@ public final class RuntimeVersionTest {
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                RuntimeVersion.validateProtobufGencodeVersion(
                     gencodeDomain, 1, 2, 3, "", "testing.Foo"));
     assertThat(thrown)
         .hasMessageThat()
@@ -51,7 +51,7 @@ public final class RuntimeVersionTest {
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                RuntimeVersion.validateProtobufGencodeVersion(
                     RuntimeVersion.DOMAIN,
                     gencodeMajor,
                     RuntimeVersion.MINOR,
@@ -66,7 +66,7 @@ public final class RuntimeVersionTest {
 
   @Test
   public void versionValidation_versionNumbersAllTheSameAllowed() {
-    RuntimeVersion.validateProtobufLiteGencodeVersion(
+    RuntimeVersion.validateProtobufGencodeVersion(
         RuntimeVersion.DOMAIN,
         RuntimeVersion.MAJOR,
         RuntimeVersion.MINOR,
@@ -78,7 +78,7 @@ public final class RuntimeVersionTest {
   @Test
   public void versionValidation_newerRuntimeVersionAllowed() {
     int gencodeMinor = RuntimeVersion.MINOR - 1;
-    RuntimeVersion.validateProtobufLiteGencodeVersion(
+    RuntimeVersion.validateProtobufGencodeVersion(
         RuntimeVersion.DOMAIN,
         RuntimeVersion.MAJOR,
         gencodeMinor,
@@ -94,7 +94,7 @@ public final class RuntimeVersionTest {
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                RuntimeVersion.validateProtobufGencodeVersion(
                     RuntimeVersion.DOMAIN,
                     RuntimeVersion.MAJOR,
                     gencodeMinor,
@@ -111,7 +111,7 @@ public final class RuntimeVersionTest {
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                RuntimeVersion.validateProtobufGencodeVersion(
                     RuntimeVersion.DOMAIN,
                     RuntimeVersion.MAJOR,
                     RuntimeVersion.MINOR,
@@ -131,7 +131,7 @@ public final class RuntimeVersionTest {
         assertThrows(
             RuntimeVersion.ProtobufRuntimeVersionException.class,
             () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                RuntimeVersion.validateProtobufGencodeVersion(
                     RuntimeVersion.DOMAIN,
                     RuntimeVersion.MAJOR,
                     RuntimeVersion.MINOR,
@@ -143,63 +143,5 @@ public final class RuntimeVersionTest {
         .contains(
             "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading"
                 + " testing.Foo");
-  }
-
-  @Test
-  public void versionValidation_illegalLiteAndThenFullLinkage() {
-    RuntimeVersion.prevFullness = RuntimeVersion.Fullness.UNSPECIFIED;
-    RuntimeVersion.validateProtobufLiteGencodeVersion(
-        RuntimeVersion.DOMAIN,
-        RuntimeVersion.MAJOR,
-        RuntimeVersion.MINOR,
-        RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX,
-        "testing.Foo");
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () ->
-                RuntimeVersion.validateProtobufGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    RuntimeVersion.MAJOR,
-                    RuntimeVersion.MINOR,
-                    RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX,
-                    "testing.Bar"));
-    assertThat(thrown)
-        .hasMessageThat()
-        .contains(
-            "Protobuf Java version checker saw both Lite and Full linkages during runtime, which is"
-                + " disallowed. Full gencode @testing.Bar; Lite gencode @testing.Foo");
-    RuntimeVersion.prevFullness = RuntimeVersion.Fullness.UNSPECIFIED;
-  }
-
-  @Test
-  public void versionValidation_illegalFullAndThenLiteLinkage_warning() {
-    RuntimeVersion.prevFullness = RuntimeVersion.Fullness.UNSPECIFIED;
-    RuntimeVersion.validateProtobufGencodeVersion(
-        RuntimeVersion.DOMAIN,
-        RuntimeVersion.MAJOR,
-        RuntimeVersion.MINOR,
-        RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX,
-        "testing.Foo");
-    RuntimeVersion.ProtobufRuntimeVersionException thrown =
-        assertThrows(
-            RuntimeVersion.ProtobufRuntimeVersionException.class,
-            () ->
-                RuntimeVersion.validateProtobufLiteGencodeVersion(
-                    RuntimeVersion.DOMAIN,
-                    RuntimeVersion.MAJOR,
-                    RuntimeVersion.MINOR,
-                    RuntimeVersion.PATCH,
-                    RuntimeVersion.SUFFIX,
-                    "testing.Bar"));
-    assertThat(thrown)
-        .hasMessageThat()
-        .contains(
-            "Protobuf Java version checker saw both Lite and Full linkages during runtime, which is"
-                + " disallowed. Full gencode @testing.Foo; Lite gencode @testing.Bar");
-    RuntimeVersion.prevFullness = RuntimeVersion.Fullness.UNSPECIFIED;
   }
 }

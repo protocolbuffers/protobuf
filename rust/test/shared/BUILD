@@ -363,11 +363,15 @@ rust_test(
 rust_test(
     name = "simple_nested_cpp_test",
     srcs = ["simple_nested_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
+        "//rust:protobuf_cpp",
         "//rust/test:nested_cc_rust_proto",
         "@crate_index//:googletest",
     ],
@@ -376,11 +380,15 @@ rust_test(
 rust_test(
     name = "simple_nested_upb_test",
     srcs = ["simple_nested_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
     tags = [
         # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
         "not_build:arm",
     ],
     deps = [
+        "//rust:protobuf_upb",
         "//rust/test:nested_upb_rust_proto",
         "@crate_index//:googletest",
     ],
@@ -454,6 +462,60 @@ rust_test(
     ],
     deps = [
         "//rust/test:map_unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "reserved_crate_name_cc_test",
+    srcs = ["reserved_crate_name_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust/test:struct_cc_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "reserved_crate_name_upb_test",
+    srcs = ["reserved_crate_name_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust/test:struct_upb_rust_proto",
+    ],
+)
+
+rust_test(
+    name = "fields_with_imported_types_cpp_test",
+    srcs = ["fields_with_imported_types_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:fields_with_imported_types_cc_rust_proto",
+        "//rust/test:imported_types_cc_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "fields_with_imported_types_upb_test",
+    srcs = ["fields_with_imported_types_test.rs"],
+    tags = [
+        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
+        "not_build:arm",
+    ],
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:fields_with_imported_types_upb_rust_proto",
+        "//rust/test:imported_types_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )

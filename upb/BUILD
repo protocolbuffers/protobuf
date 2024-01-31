@@ -437,7 +437,11 @@ filegroup(
 #         "**/*.hpp",
 #     ]),
 #     kotlin_package = "upb",
-#     no_string_conversion = ["_upb_MiniTable_Build"],
+#     no_string_conversion = [
+#         "_upb_MiniTable_Build",
+#         "upb_Decode",
+#         "upb_StringView_FromDataAndSize",
+#     ],
 #     strict_enums = [
 #         "upb_CType",
 #         "upb_DecodeStatus",

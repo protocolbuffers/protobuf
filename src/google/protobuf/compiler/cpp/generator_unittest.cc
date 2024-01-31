@@ -69,7 +69,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
                  R"schema(
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
-    
+
     message Foo {
       int32 bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
     })schema");
@@ -109,7 +109,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
-    
+
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
     }
@@ -130,7 +130,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
-    
+
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
     }

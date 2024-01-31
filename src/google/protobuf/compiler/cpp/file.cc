@@ -479,9 +479,11 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
       )");
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
+  IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
+
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
@@ -496,10 +498,6 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/generated_message_reflection.h", p);
     IncludeFile("third_party/protobuf/reflection_ops.h", p);
     IncludeFile("third_party/protobuf/wire_format.h", p);
-  }
-
-  if (HasGeneratedMethods(file_, options_)) {
-    IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
   if (options_.proto_h) {
@@ -542,13 +540,8 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     PROTOBUF_PRAGMA_INIT_SEG
     namespace _pb = ::$proto_ns$;
     namespace _pbi = ::$proto_ns$::internal;
+    namespace _fl = ::$proto_ns$::internal::field_layout;
   )cc");
-
-  if (HasGeneratedMethods(file_, options_)) {
-    p->Emit(R"cc(
-      namespace _fl = ::$proto_ns$::internal::field_layout;
-    )cc");
-  }
 }
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
@@ -1044,12 +1037,6 @@ GetMessagesToPinGloballyForWeakDescriptors(const FileDescriptor* file) {
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
-  if (!message_generators_.empty()) {
-    p->Emit({{"len", message_generators_.size()}}, R"cc(
-      static ::_pb::Metadata $file_level_metadata$[$len$];
-    )cc");
-  }
-
   if (!enum_generators_.empty()) {
     p->Emit({{"len", enum_generators_.size()}}, R"cc(
       static const ::_pb::EnumDescriptor* $file_level_enum_descriptors$[$len$];
@@ -1248,13 +1235,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
                            : absl::StrCat(p->LookupVar("desc_table"), "_deps")},
           {"num_deps", num_deps},
           {"num_msgs", message_generators_.size()},
-          {"msgs_ptr", message_generators_.empty()
-                           ? "nullptr"
-                           : std::string(p->LookupVar("file_level_metadata"))},
       },
       R"cc(
         static ::absl::once_flag $desc_table$_once;
-        const ::_pbi::DescriptorTable $desc_table$ = {
+        PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable $desc_table$ = {
             false,
             $eager$,
             $file_proto_len$,
@@ -1267,25 +1251,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
             schemas,
             file_default_instances,
             $tablename$::offsets,
-            $msgs_ptr$,
             $file_level_enum_descriptors$,
             $file_level_service_descriptors$,
         };
-
-        // This function exists to be marked as weak.
-        // It can significantly speed up compilation by breaking up LLVM's SCC
-        // in the .pb.cc translation units. Large translation units see a
-        // reduction of more than 35% of walltime for optimized builds. Without
-        // the weak attribute all the messages in the file, including all the
-        // vtables and everything they use become part of the same SCC through
-        // a cycle like:
-        // GetMetadata -> descriptor table -> default instances ->
-        //   vtables -> GetMetadata
-        // By adding a weak function here we break the connection from the
-        // individual vtables back into the descriptor table.
-        PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* $desc_table$_getter() {
-          return &$desc_table$;
-        }
       )cc");
 
   // For descriptor.proto and cpp_features.proto we want to avoid doing any

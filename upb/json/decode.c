@@ -1510,6 +1510,7 @@ static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
 bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
                     const upb_MessageDef* m, const upb_DefPool* symtab,
                     int options, upb_Arena* arena, upb_Status* status) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   jsondec d;
 
   if (size == 0) return true;

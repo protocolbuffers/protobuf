@@ -573,7 +573,8 @@ MessageGenerator::MessageGenerator(
 
   parse_function_generator_ = std::make_unique<ParseFunctionGenerator>(
       descriptor_, max_has_bit_index_, has_bit_indices_,
-      inlined_string_indices_, options_, scc_analyzer_, variables_);
+      inlined_string_indices_, options_, scc_analyzer_, variables_,
+      index_in_file_messages_);
 }
 
 size_t MessageGenerator::HasBitsSize() const {
@@ -754,7 +755,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     // names.
     p->Emit(R"cc(
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
-                bool _is_packed>
+                bool _is_packed,
+                typename = typename _proto_TypeTraits::Singular>
       inline bool HasExtension(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
@@ -774,7 +776,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       }
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
-                bool _is_packed>
+                bool _is_packed,
+                typename = typename _proto_TypeTraits::Repeated>
       inline int ExtensionSize(
           const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
                                            _field_type, _is_packed>& id) const {
@@ -1351,9 +1354,9 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
   } else {
     format("  static bool ValidateValue(void*) { return true; }\n");
   }
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format("  ::$proto_ns$::Metadata GetMetadata() const final;\n");
-  }
+  p->Emit(R"cc(
+    const $superclass$::ClassData* GetClassData() const final;
+  )cc");
   format(
       "  friend struct ::$tablename$;\n"
       "};\n");
@@ -1385,6 +1388,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
 
           p->Emit(R"cc(
             static ::$proto_ns$::AccessListener<$Msg$> _tracker_;
+            static void TrackerOnGetMetadata() { $annotate_reflection$; }
           )cc");
         }},
        {"inlined_string_donated",
@@ -1850,21 +1854,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               break;
           }
         }},
-       {"get_class_data",
-        [&] {
-          if (HasSimpleBaseClass(descriptor_, options_)) return;
-
-          p->Emit(R"cc(
-            const ::$proto_ns$::MessageLite::ClassData* GetClassData()
-                const final;
-          )cc");
-        }},
        {"get_metadata",
         [&] {
           if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
 
           p->Emit(R"cc(
-            ::$proto_ns$::Metadata GetMetadata() const final;
+            ::$proto_ns$::Metadata GetMetadata() const;
           )cc");
         }},
        {"decl_split_methods",
@@ -1947,12 +1942,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           }
         }},
-       {"decl_data",
-        [&] {
-          if (HasGeneratedMethods(descriptor_->file(), options_)) {
-            parse_function_generator_->GenerateDataDecls(p);
-          }
-        }},
+       {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"split_friend",
         [&] {
@@ -2068,7 +2058,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             *this = ::std::move(from);
           }
           $arena_dtor$;
-          $get_class_data$;
+          const $superclass$::ClassData* GetClassData() const final;
 
          public:
           $get_metadata$;
@@ -2162,50 +2152,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
-  const auto pin_weak_descriptor = [&] {
-    if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
-    p->Emit(
-        R"cc(
-          ::_pbi::StrongPointer(&_$classname$_default_instance_);
-        )cc");
-
-    // For CODE_SIZE types, we need to pin the submessages too.
-    // SPEED types will pin them via the TcParse table automatically.
-    if (HasGeneratedMethods(descriptor_->file(), options_)) return;
-    for (int i = 0; i < descriptor_->field_count(); ++i) {
-      auto* field = descriptor_->field(i);
-      if (field->type() != field->TYPE_MESSAGE) continue;
-      p->Emit(
-          {
-              {"sub_default_name",
-               QualifiedDefaultInstanceName(field->message_type(), options_)},
-          },
-          R"cc(
-            ::_pbi::StrongPointer(&$sub_default_name$);
-          )cc");
-    }
-  };
-
   if (IsMapEntryMessage(descriptor_)) {
     format(
         "$classname$::$classname$() {}\n"
         "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
         "    : SuperType(arena) {}\n");
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      p->Emit(
-          {
-              {"pin_weak_descriptor", pin_weak_descriptor},
-              {"index", index_in_file_messages_},
-          },
-          R"cc(
-            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
-              $pin_weak_descriptor$;
-              return ::_pbi::AssignDescriptors(&$desc_table$_getter,
-                                               &$desc_table$_once,
-                                               $file_level_metadata$[$index$]);
-            }
-          )cc");
-    }
+    GenerateClassData(p);
     return;
   }
 
@@ -2277,6 +2229,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   }
 
   GenerateClassData(p);
+  parse_function_generator_->GenerateDataDefinitions(p);
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     GenerateClear(p);
@@ -2285,8 +2238,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     if (!HasSimpleBaseClass(descriptor_, options_)) {
       parse_function_generator_->GenerateMethodImpls(p);
       format("\n");
-
-      parse_function_generator_->GenerateDataDefinitions(p);
     }
 
     GenerateSerializeWithCachedSizesToArray(p);
@@ -2327,20 +2278,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   format("\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    p->Emit(
-        {
-            {"pin_weak_descriptor", pin_weak_descriptor},
-            {"index", index_in_file_messages_},
-        },
-        R"cc(
-          ::$proto_ns$::Metadata $classname$::GetMetadata() const {
-            $annotate_reflection$;
-            $pin_weak_descriptor$;
-            return ::_pbi::AssignDescriptors(&$desc_table$_getter,
-                                             &$desc_table$_once,
-                                             $file_level_metadata$[$index$]);
-          }
-        )cc");
+    // Same as the base class, but it avoids virtual dispatch.
+    p->Emit(R"cc(
+      ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+        return $superclass$::GetMetadataImpl(GetClassData()->full());
+      }
+    )cc");
   }
 
   if (HasTracker(descriptor_, options_)) {
@@ -3601,9 +3544,6 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateClassData(io::Printer* p) {
-  Formatter format(p);
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-
   const auto on_demand_register_arena_dtor = [&] {
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
       p->Emit(R"cc(
@@ -3617,13 +3557,47 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   };
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    const auto pin_weak_descriptor = [&] {
+      if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
+
+      p->Emit(R"cc(
+        ::_pbi::StrongPointer(&_$classname$_default_instance_);
+      )cc");
+
+      // For CODE_SIZE types, we need to pin the submessages too.
+      // SPEED types will pin them via the TcParse table automatically.
+      if (HasGeneratedMethods(descriptor_->file(), options_)) return;
+      for (int i = 0; i < descriptor_->field_count(); ++i) {
+        auto* field = descriptor_->field(i);
+        if (field->type() != field->TYPE_MESSAGE) continue;
+        p->Emit({{"sub_default_name", QualifiedDefaultInstanceName(
+                                          field->message_type(), options_)}},
+                R"cc(
+                  ::_pbi::StrongPointer(&$sub_default_name$);
+                )cc");
+      }
+    };
     p->Emit(
         {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
+            {"pin_weak_descriptor", pin_weak_descriptor},
+            {"tracker_on_get_metadata",
+             [&] {
+               if (HasTracker(descriptor_, options_)) {
+                 p->Emit(R"cc(
+                   &Impl_::TrackerOnGetMetadata,
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   nullptr,  // tracker
+                 )cc");
+               }
+             }},
         },
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
           $classname$::GetClassData() const {
+            $pin_weak_descriptor$;
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
                 ClassDataFull _data_ = {
                     {
@@ -3633,8 +3607,10 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     },
                     &$classname$::MergeImpl,
                     &$classname$::kDescriptorMethods,
+                    &$desc_table$,
+                    $tracker_on_get_metadata$,
                 };
-            return &_data_;
+            return _data_.base();
           }
         )cc");
   } else {
@@ -3646,21 +3622,17 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
           $classname$::GetClassData() const {
-            struct ClassData_ {
-              ::$proto_ns$::MessageLite::ClassData header;
-              char type_name[$type_size$];
-            };
-
-            PROTOBUF_CONSTINIT static const ClassData_ _data_ = {
+            PROTOBUF_CONSTINIT static const ClassDataLite<$type_size$> _data_ =
                 {
-                    $on_demand_register_arena_dtor$,
-                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                    true,
-                },
-                "$full_name$",
-            };
+                    {
+                        $on_demand_register_arena_dtor$,
+                        PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                        true,
+                    },
+                    "$full_name$",
+                };
 
-            return &_data_.header;
+            return _data_.base();
           }
         )cc");
   }

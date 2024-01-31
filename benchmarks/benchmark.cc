@@ -7,6 +7,7 @@
 
 #include <benchmark/benchmark.h>
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -23,7 +24,7 @@
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-#include "upb/base/internal/log2.h"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
@@ -97,7 +98,7 @@ static void BM_ArenaFuseBalanced(benchmark::State& state) {
     }
 
     // Perform a series of fuses that keeps the halves balanced.
-    size_t max = upb_Log2Ceiling(arenas.size());
+    const size_t max = ceil(log2(double(arenas.size())));
     for (size_t n = 0; n <= max; n++) {
       size_t step = 1 << n;
       for (size_t i = 0; i + step < arenas.size(); i += (step * 2)) {

@@ -83,7 +83,6 @@ cc_test(
         "//upb:mem",
         "//upb:reflection",
         "//upb:wire",
-        "//upb/base:internal",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",

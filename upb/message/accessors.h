@@ -336,6 +336,11 @@ UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
   return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
 }
 
+UPB_API_INLINE upb_Message* upb_Message_GetMutableMessage(
+    upb_Message* msg, const upb_MiniTableField* field) {
+  return (upb_Message*)upb_Message_GetMessage(msg, field, NULL);
+}
+
 // For internal use only; users cannot set tagged messages because only the
 // parser and the message copier are allowed to directly create an empty
 // message.

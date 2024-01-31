@@ -27,7 +27,7 @@ def _check_crate_mapping(actions, target_name):
             target_name,
             fw_actions,
         ))
-    expected_content = """grandparent_proto
+    expected_content = """grand_parent_proto
 2
 rust/test/rust_proto_library_unit_test/grandparent1.proto
 rust/test/rust_proto_library_unit_test/grandparent2.proto
@@ -174,14 +174,15 @@ def rust_proto_library_unit_test(name):
     Args:
       name: name of the test suite"""
     native.proto_library(
-        name = "grandparent_proto",
+        # Use a '-' in the target name to test that its replaced by a '_' in the crate name.
+        name = "grand-parent_proto",
         srcs = ["grandparent1.proto", "grandparent2.proto"],
     )
 
     native.proto_library(
         name = "parent_proto",
         srcs = ["parent.proto"],
-        deps = [":grandparent_proto"],
+        deps = [":grand-parent_proto"],
     )
 
     native.proto_library(name = "parent2_proto", srcs = ["parent2.proto"])

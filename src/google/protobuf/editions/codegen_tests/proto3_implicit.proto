@@ -10,10 +10,38 @@ syntax = "proto3";
 package protobuf_editions_test.proto3;
 
 message Proto3Implicit {
-  int32 int32_field = 1;
+  int32 int32_field = 17;
+  float float_field = 18;
+  double double_field = 19;
+  int64 int64_field = 20;
+  uint32 uint32_field = 21;
+  uint64 uint64_field = 22;
+  sint32 sint32_field = 23;
+  sint64 sint64_field = 24;
+  fixed32 fixed32_field = 25;
+  fixed64 fixed64_field = 26;
+  sfixed32 sfixed32_field = 27;
+  sfixed64 sfixed64_field = 28;
+  bool bool_field = 29;
+  string string_field = 30;
+  bytes bytes_field = 31;
 
   message SubMessage {
-    int32 int32_field = 1;
+    int32 int32_field = 17;
+    float float_field = 18;
+    double double_field = 19;
+    int64 int64_field = 20;
+    uint32 uint32_field = 21;
+    uint64 uint64_field = 22;
+    sint32 sint32_field = 23;
+    sint64 sint64_field = 24;
+    fixed32 fixed32_field = 25;
+    fixed64 fixed64_field = 26;
+    sfixed32 sfixed32_field = 27;
+    sfixed64 sfixed64_field = 28;
+    bool bool_field = 29;
+    string string_field = 30;
+    bytes bytes = 31;
   }
   SubMessage sub_message = 2;
 }

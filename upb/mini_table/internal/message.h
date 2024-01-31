@@ -107,6 +107,15 @@ UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
   return UPB_PRIVATE(_upb_MiniTable_IsEmpty)(ret) ? NULL : ret;
 }
 
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_SubMessage)(
+    const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
+  if (UPB_PRIVATE(_upb_MiniTableField_CType)(f) != kUpb_CType_Message) {
+    return NULL;
+  }
+  return UPB_PRIVATE(_upb_MiniTableSub_Message)(
+      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+}
+
 UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
     _upb_MiniTable_GetSubEnumTable)(const struct upb_MiniTable* m,
                                     const struct upb_MiniTableField* f) {

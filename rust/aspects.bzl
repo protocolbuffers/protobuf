@@ -68,6 +68,9 @@ def _render_text_crate_mapping(mapping):
             <one import path per line>\n
     """
     crate_name = mapping.crate_name
+
+    # proto_library targets may contain '-', but rust crates don't.
+    crate_name = crate_name.replace("-", "_")
     import_paths = mapping.import_paths
     return "\n".join(([crate_name, str(len(import_paths))] + list(import_paths)))
 

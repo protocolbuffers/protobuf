@@ -180,3 +180,24 @@ message TestNameConflict {
   map<string, string> map_field = 1;
   optional bool clear_map_field = 2;
 }
+
+message TestFreeze {
+  extensions 99 to max;
+
+  optional string str = 1;
+  optional TestFreeze msg = 2;
+
+  map<int32, int32> map_int = 10;
+  map<int32, TestFreeze> map_msg = 11;
+
+  repeated int32 array_int = 20;
+  repeated TestFreeze array_msg = 21;
+}
+
+extend TestFreeze {
+  optional TestFreeze nest = 100;
+}
+
+extend TestFreeze {
+  repeated Proto2EnumMessage rep_msg = 101;
+}

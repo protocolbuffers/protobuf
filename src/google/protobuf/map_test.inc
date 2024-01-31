@@ -2326,7 +2326,7 @@ class MyMapEntry
  public:
   constexpr MyMapEntry() {}
   using MyMapEntry::MapEntry::MapEntry;
-  Metadata GetMetadata() const override { ABSL_CHECK(false); }
+  const ClassData* GetClassData() const override { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };

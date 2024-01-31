@@ -295,7 +295,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   variables["deprecation"] =
       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "";
 
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
   if (!context_->options().opensource_runtime) {
@@ -336,7 +336,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   printer->Print("static {\n");
   printer->Indent();
   PrintGencodeVersionValidator(printer, context_->options().opensource_runtime,
-                               context_->EnforceLite(), descriptor_->name());
+                               descriptor_->name());
   printer->Outdent();
   printer->Print("}\n");
 
@@ -1273,7 +1273,8 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
-  WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteMessageDocComment(printer, descriptor_, context_->options(),
+                         /* kdoc */ true);
   printer->Emit(
       {
           io::Printer::Sub{"name_kt", absl::StrCat(descriptor_->name(), "Kt")}

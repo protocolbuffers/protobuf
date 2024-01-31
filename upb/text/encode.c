@@ -357,6 +357,8 @@ static void txtenc_map(txtenc* e, const upb_Map* map, const upb_FieldDef* f) {
       txtenc_mapentry(e, key, val, f);
     }
   } else {
+    if (upb_Map_Size(map) == 0) return;
+
     const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
     const upb_FieldDef* key_f = upb_MessageDef_Field(entry, 0);
     _upb_sortedmap sorted;

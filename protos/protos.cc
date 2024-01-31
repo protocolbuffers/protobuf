@@ -16,8 +16,8 @@
 #include "absl/strings/string_view.h"
 #include "protos/protos_extension_lock.h"
 #include "upb/mem/arena.h"
+#include "upb/message/accessors.h"
 #include "upb/message/copy.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/message.h"
 #include "upb/message/promote.h"
 #include "upb/message/value.h"
@@ -26,9 +26,6 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
-
-// Must be last.
-#include "upb/port/def.inc"
 
 namespace protos {
 
@@ -118,9 +115,10 @@ class MessageLock {
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
-  return UPB_PRIVATE(_upb_Message_Getext)(msg, eid) != nullptr ||
-         upb_Message_FindUnknown(msg, upb_MiniTableExtension_Number(eid), 0)
-                 .status == kUpb_FindUnknown_Ok;
+  if (upb_Message_HasExtension(msg, eid)) return true;
+
+  const int number = upb_MiniTableExtension_Number(eid);
+  return upb_Message_FindUnknown(msg, number, 0).status == kUpb_FindUnknown_Ok;
 }
 
 bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,

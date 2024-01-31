@@ -21,12 +21,15 @@
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/array.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
@@ -497,6 +500,81 @@ TEST(MessageTest, MapField) {
       upb_test_TestMapFieldExtra_parse(serialized, size, arena.ptr());
   ASSERT_TRUE(
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
+}
+
+TEST(MessageTest, Freeze) {
+  const upb_MiniTable* m = &upb_0test__TestFreeze_msg_init;
+  upb::Arena arena;
+
+  {
+    upb_test_TestFreeze* raw = upb_test_TestFreeze_new(arena.ptr());
+    upb_Message* msg = UPB_UPCAST(raw);
+    ASSERT_FALSE(upb_Message_IsFrozen(msg));
+    upb_Message_Freeze(msg, m);
+    ASSERT_TRUE(upb_Message_IsFrozen(msg));
+  }
+  {
+    upb_test_TestFreeze* raw = upb_test_TestFreeze_new(arena.ptr());
+    upb_Message* msg = UPB_UPCAST(raw);
+    size_t size;
+    upb_Array* arr = _upb_test_TestFreeze_array_int_mutable_upb_array(
+        raw, &size, arena.ptr());
+    ASSERT_NE(arr, nullptr);
+    ASSERT_EQ(size, 0);
+    ASSERT_FALSE(upb_Array_IsFrozen(arr));
+    upb_Map* map =
+        _upb_test_TestFreeze_map_int_mutable_upb_map(raw, arena.ptr());
+    ASSERT_NE(map, nullptr);
+    ASSERT_FALSE(upb_Map_IsFrozen(map));
+    upb_test_TestFreeze* nest = upb_test_TestFreeze_new(arena.ptr());
+    upb_test_set_nest(raw, nest, arena.ptr());
+    ASSERT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+
+    upb_Message_Freeze(msg, m);
+    ASSERT_TRUE(upb_Message_IsFrozen(msg));
+    ASSERT_TRUE(upb_Array_IsFrozen(arr));
+    ASSERT_TRUE(upb_Map_IsFrozen(map));
+    ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+  }
+  {
+    upb_test_TestFreeze* raw = upb_test_TestFreeze_new(arena.ptr());
+    upb_Message* msg = UPB_UPCAST(raw);
+    size_t size;
+    upb_Array* arr = _upb_test_TestFreeze_array_int_mutable_upb_array(
+        raw, &size, arena.ptr());
+    ASSERT_NE(arr, nullptr);
+    ASSERT_EQ(size, 0);
+    ASSERT_FALSE(upb_Array_IsFrozen(arr));
+    upb_Map* map =
+        _upb_test_TestFreeze_map_int_mutable_upb_map(raw, arena.ptr());
+    ASSERT_NE(map, nullptr);
+    ASSERT_FALSE(upb_Map_IsFrozen(map));
+    upb_test_TestFreeze* nest = upb_test_TestFreeze_new(arena.ptr());
+    upb_test_set_nest(raw, nest, arena.ptr());
+    ASSERT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+
+    upb_Message_Freeze(UPB_UPCAST(nest), m);
+    ASSERT_FALSE(upb_Message_IsFrozen(msg));
+    ASSERT_FALSE(upb_Array_IsFrozen(arr));
+    ASSERT_FALSE(upb_Map_IsFrozen(map));
+    ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+
+    const upb_MiniTableField* fa = upb_MiniTable_FindFieldByNumber(m, 20);
+    const upb_MiniTable* ma = upb_MiniTable_SubMessage(m, fa);
+    upb_Array_Freeze(arr, ma);
+    ASSERT_FALSE(upb_Message_IsFrozen(msg));
+    ASSERT_TRUE(upb_Array_IsFrozen(arr));
+    ASSERT_FALSE(upb_Map_IsFrozen(map));
+    ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+
+    const upb_MiniTableField* fm = upb_MiniTable_FindFieldByNumber(m, 10);
+    const upb_MiniTable* mm = upb_MiniTable_SubMessage(m, fm);
+    upb_Map_Freeze(map, mm);
+    ASSERT_FALSE(upb_Message_IsFrozen(msg));
+    ASSERT_TRUE(upb_Array_IsFrozen(arr));
+    ASSERT_TRUE(upb_Map_IsFrozen(map));
+    ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+  }
 }
 
 // begin:google_only

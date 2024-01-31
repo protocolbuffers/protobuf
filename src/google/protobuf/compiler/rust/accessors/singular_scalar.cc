@@ -32,7 +32,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"default_value", DefaultValue(ctx, field)},
           {"getter",
            [&] {
-             ctx.Emit({}, R"rs(
+             ctx.Emit(R"rs(
                   pub fn $field$($view_self$) -> $Scalar$ {
                     unsafe { $getter_thunk$(self.raw_msg()) }
                   }
@@ -42,7 +42,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (!field.is_optional()) return;
              if (!field.has_presence()) return;
-             ctx.Emit({}, R"rs(
+             ctx.Emit(R"rs(
                   pub fn $field$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.raw_msg()) } {
                       return $pb$::Optional::Unset($default_value$);
@@ -55,59 +55,71 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
           {"clearer_thunk", ThunkName(ctx, field, "clear")},
+          {"vtable_name", VTableName(field)},
+          {"vtable",
+           [&] {
+             if (accessor_case != AccessorCase::OWNED) {
+               return;
+             }
+             if (field.has_presence()) {
+               ctx.Emit(R"rs(
+                const $vtable_name$: &'static $pbi$::PrimitiveOptionalMutVTable<$Scalar$> =
+                  &$pbi$::PrimitiveOptionalMutVTable::new(
+                    $pbi$::Private,
+                    $getter_thunk$,
+                    $setter_thunk$,
+                    $clearer_thunk$,
+                    $default_value$,
+                  );
+              )rs");
+             } else {
+               ctx.Emit(R"rs(
+                const $vtable_name$: &'static $pbi$::PrimitiveVTable<$Scalar$> =
+                  &$pbi$::PrimitiveVTable::new(
+                    $pbi$::Private,
+                    $getter_thunk$,
+                    $setter_thunk$,
+                  );
+              )rs");
+             }
+           }},
           {"getter_mut",
            [&] {
              if (accessor_case == AccessorCase::VIEW) {
                return;
              }
              if (field.has_presence()) {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(R"rs(
                   pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
-                    static VTABLE: $pbi$::PrimitiveOptionalMutVTable<$Scalar$> =
-                      $pbi$::PrimitiveOptionalMutVTable::new(
+                    unsafe {
+                      let has = $hazzer_thunk$(self.raw_msg());
+                      $pbi$::new_vtable_field_entry::<$Scalar$>(
                         $pbi$::Private,
-                        $getter_thunk$,
-                        $setter_thunk$,
-                        $clearer_thunk$,
-                        $default_value$,
-                      );
-
-                      unsafe {
-                        let has = $hazzer_thunk$(self.raw_msg());
-                        $pbi$::new_vtable_field_entry::<$Scalar$>(
-                          $pbi$::Private,
-                          self.as_mutator_message_ref(),
-                          &VTABLE,
-                          has,
-                        )
-                      }
+                        self.as_mutator_message_ref(),
+                        $Msg$::$vtable_name$,
+                        has,
+                      )
+                    }
                   }
                 )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(R"rs(
                   pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
-                    static VTABLE: $pbi$::PrimitiveVTable<$Scalar$> =
-                      $pbi$::PrimitiveVTable::new(
+                    // SAFETY:
+                    // - The message is valid for the output lifetime.
+                    // - The vtable is valid for the field.
+                    // - There is no way to mutate the element for the output
+                    //   lifetime except through this mutator.
+                    unsafe {
+                      $pb$::PrimitiveMut::from_inner(
                         $pbi$::Private,
-                        $getter_thunk$,
-                        $setter_thunk$,
-                      );
-
-                      // SAFETY:
-                      // - The message is valid for the output lifetime.
-                      // - The vtable is valid for the field.
-                      // - There is no way to mutate the element for the output
-                      //   lifetime except through this mutator.
-                      unsafe {
-                        $pb$::PrimitiveMut::from_inner(
+                        $pbi$::RawVTableMutator::new(
                           $pbi$::Private,
-                          $pbi$::RawVTableMutator::new(
-                            $pbi$::Private,
-                            self.as_mutator_message_ref(),
-                            &VTABLE,
-                          ),
-                        )
-                      }
+                          self.as_mutator_message_ref(),
+                          $Msg$::$vtable_name$,
+                        ),
+                      )
+                    }
                   }
                 )rs");
              }
@@ -116,6 +128,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
       R"rs(
           $getter$
           $getter_opt$
+          $vtable$
           $getter_mut$
         )rs");
 }

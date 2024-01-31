@@ -240,6 +240,24 @@ pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
 pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 
+#[derive(Debug)]
+pub struct MessageVTable {
+    pub getter: unsafe extern "C" fn(msg: RawMessage) -> Option<RawMessage>,
+    pub mut_getter: unsafe extern "C" fn(msg: RawMessage, arena: RawArena) -> RawMessage,
+    pub clearer: unsafe extern "C" fn(msg: RawMessage),
+}
+
+impl MessageVTable {
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> Option<RawMessage>,
+        mut_getter: unsafe extern "C" fn(msg: RawMessage, arena: RawArena) -> RawMessage,
+        clearer: unsafe extern "C" fn(msg: RawMessage),
+    ) -> Self {
+        MessageVTable { getter, mut_getter, clearer }
+    }
+}
+
 /// The raw contents of every generated message.
 #[derive(Debug)]
 pub struct MessageInner {
