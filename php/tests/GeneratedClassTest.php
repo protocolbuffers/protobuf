@@ -13,6 +13,7 @@ use Foo\Test32Fields;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
+use Foo\TestSpecialCharacters;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 use Foo\TestMessage_Sub;
@@ -1905,5 +1906,26 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(8, $m->getId());
         $m->setVersion('1');
         $this->assertEquals(8, $m->getId());
+    }
+
+    public function testSpecialCharacters()
+    {
+        $reflectionMethod = new \ReflectionMethod(TestSpecialCharacters::class, 'getA');
+        $docComment = $reflectionMethod->getDocComment();
+        $commentLines = explode("\n", $docComment);
+        $this->assertEquals('/**', array_shift($commentLines));
+        $this->assertEquals('     */', array_pop($commentLines));
+        $docComment = implode("\n", $commentLines);
+        // test special characters
+        $this->assertContains(";,/?:&=+$-_.!~*'()", $docComment);
+        // test open doc comment
+        $this->assertContains('/*', $docComment);
+        // test escaped closed doc comment
+        $this->assertNotContains('*/', $docComment);
+        $this->assertContains('{@*}', $docComment);
+        // test escaped at-sign
+        $this->assertContains('\@foo', $docComment);
+        // test forwardslash on new line
+        $this->assertContains("* /\n", $docComment);
     }
 }
