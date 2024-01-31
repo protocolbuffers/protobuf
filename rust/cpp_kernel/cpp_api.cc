@@ -2,14 +2,15 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "google/protobuf/map.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 
 extern "C" {
-
 #define expose_repeated_field_methods(ty, rust_ty)                            \
   google::protobuf::RepeatedField<ty>* __pb_rust_RepeatedField_##rust_ty##_new() {      \
     return new google::protobuf::RepeatedField<ty>();                                   \
@@ -203,4 +204,30 @@ expose_scalar_map_methods_for_key_type(
 
 #undef expose_scalar_map_methods
 #undef expose_map_methods
+
+google::protobuf::rust_internal::CppString utf8_debug_string(const google::protobuf::Message* msg) {
+  std::string text = google::protobuf::Utf8Format(*msg);
+  return google::protobuf::rust_internal::CppString(text);
 }
+}
+
+namespace google {
+namespace protobuf {
+namespace rust_internal {
+
+CppString::CppString(std::string src) {
+  if (src.empty()) {
+    data = nullptr;
+    len = 0;
+  } else {
+    void* data_ =
+        google::protobuf::rust_internal::__pb_rust_alloc(src.length(), alignof(char));
+    std::memcpy(data_, src.data(), src.length());
+    data = static_cast<char*>(data_);
+    len = src.length();
+  }
+}
+
+}  // namespace rust_internal
+}  // namespace protobuf
+}  // namespace google

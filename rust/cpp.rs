@@ -151,6 +151,58 @@ impl SettableValue<[u8]> for SerializedData {
     }
 }
 
+#[repr(C)]
+pub struct CppString {
+    /// Owns the memory.
+    data: NonNull<u8>,
+    len: usize,
+}
+
+impl CppString {
+    /// Gets a raw slice pointer.
+    pub fn as_ptr(&self) -> *const [u8] {
+        ptr::slice_from_raw_parts(self.data.as_ptr(), self.len)
+    }
+
+    /// Gets a mutable raw slice pointer.
+    fn as_mut_ptr(&mut self) -> *mut [u8] {
+        ptr::slice_from_raw_parts_mut(self.data.as_ptr(), self.len)
+    }
+}
+
+impl Deref for CppString {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        // SAFETY: `data` is valid for `len` bytes until deallocated as
+        // promised by the C++ code constructing the CppString.
+        unsafe { &*self.as_ptr() }
+    }
+}
+
+impl Drop for CppString {
+    fn drop(&mut self) {
+        // SAFETY: `data` was allocated by the Rust global allocator with a
+        // size of `len` and align of 1 as promised by the C++ code
+        // constructing the CppString.
+        unsafe { drop(Box::from_raw(self.as_mut_ptr())) }
+    }
+}
+
+extern "C" {
+    fn utf8_debug_string(msg: RawMessage) -> CppString;
+}
+
+pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    // SAFETY:
+    // - `msg` is a valid protobuf message.
+    let utf8_bytes = unsafe { utf8_debug_string(msg) };
+
+    // SAFETY:
+    //  - `utf8_bytes` contains valid UTF-8 as promised by `utf8_debug_string`.
+    let text_proto = unsafe { std::str::from_utf8_unchecked(&utf8_bytes) };
+    write!(f, "{text_proto}")
+}
+
 pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
 pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;

@@ -124,6 +124,28 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
+void MessageDebug(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({},
+               R"rs(
+        $pbr$::debug_string($pbi$::Private, self.raw_msg(), f)
+      )rs");
+      return;
+
+    case Kernel::kUpb:
+      ctx.Emit({},
+               R"rs(
+        f.debug_struct(std::any::type_name::<Self>())
+          .field("raw_msg", &self.raw_msg())
+          .finish()
+      )rs");
+      return;
+  }
+
+  ABSL_LOG(FATAL) << "unreachable";
+}
+
 void MessageExterns(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -133,6 +155,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"delete_thunk", ThunkName(ctx, msg, "delete")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
               {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+              {"stringify_thunk", ThunkName(ctx, msg, "stringify")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
               {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
               {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
@@ -148,6 +171,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
           fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
           fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
+          fn $stringify_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
           fn $copy_from_thunk$(dst: $pbi$::RawMessage, src: $pbi$::RawMessage);
           fn $repeated_len_thunk$(raw: $pbi$::RawRepeatedField) -> usize;
           fn $repeated_add_thunk$(raw: $pbi$::RawRepeatedField) -> $pbi$::RawMessage;
@@ -419,6 +443,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
        {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
+       {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
        {"accessor_fns",
         [&] {
@@ -538,10 +563,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }}},
       R"rs(
         #[allow(non_camel_case_types)]
-        //~ TODO: Implement support for debug redaction
-        #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner
+        }
+        
+        impl std::fmt::Debug for $Msg$ {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         // SAFETY:
@@ -556,11 +585,17 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type Mut<'msg> = $Msg$Mut<'msg>;
         }
 
-        #[derive(Debug, Copy, Clone)]
+        #[derive(Copy, Clone)]
         #[allow(dead_code)]
         pub struct $Msg$View<'msg> {
           msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'msg ()>,
+        }
+        
+        impl std::fmt::Debug for $Msg$View<'_> {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         #[allow(dead_code)]
@@ -669,11 +704,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         $repeated_impl$
 
-        #[derive(Debug)]
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
         pub struct $Msg$Mut<'msg> {
           inner: $pbr$::MutatorMessageRef<'msg>,
+        }
+
+        impl std::fmt::Debug for $Msg$Mut<'_> {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         #[allow(dead_code)]
@@ -815,6 +855,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
        {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+       {"stringify_thunk", ThunkName(ctx, msg, "stringify")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
        {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
