@@ -349,7 +349,7 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 // Must be last.
 
-#define _kUpb_Status_MaxMessage 127
+#define _kUpb_Status_MaxMessage 511
 
 typedef struct {
   bool ok;
