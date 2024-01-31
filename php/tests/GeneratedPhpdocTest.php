@@ -108,50 +108,125 @@ class GeneratedPhpdocTest extends TestBase
             [
                 [
                     'getRepeatedInt32',
-                    'getRepeatedInt64',
                     'getRepeatedUint32',
-                    'getRepeatedUint64',
                     'getRepeatedSint32',
-                    'getRepeatedSint64',
                     'getRepeatedFixed32',
-                    'getRepeatedFixed64',
                     'getRepeatedSfixed32',
+                    'getRepeatedEnum',
+                ],
+                '@return array<int>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
+                    'getRepeatedInt64',
+                    'getRepeatedUint64',
+                    'getRepeatedSint64',
                     'getRepeatedSfixed64',
-                    'getRepeatedFloat',
-                    'getRepeatedDouble',
-                    'getRepeatedBool',
+                    'getRepeatedFixed64',
+                ],
+                '@return array<int>|array<string>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
                     'getRepeatedString',
                     'getRepeatedBytes',
-                    'getRepeatedEnum',
+                ],
+                '@return array<string>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
+                    'getRepeatedFloat',
+                    'getRepeatedDouble',
+                ],
+                '@return array<float>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
+                    'getRepeatedBool',
+                ],
+                '@return array<bool>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
                     'getRepeatedMessage',
+                ],
+                '@return array<\Foo\TestMessage\Sub>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
                     'getRepeatedRecursive',
+                ],
+                '@return array<\Foo\TestMessage>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
                     'getRepeatedNoNamespaceMessage',
+                ],
+                '@return array<\NoNamespaceMessage>|\Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
                     'getRepeatedNoNamespaceEnum',
                 ],
-                '@return \Google\Protobuf\Internal\RepeatedField'
+                '@return array<int>|\Google\Protobuf\Internal\RepeatedField'
             ],
             [
                 [
                     'getMapInt32Int32',
-                    'getMapInt64Int64',
                     'getMapUint32Uint32',
-                    'getMapUint64Uint64',
                     'getMapSint32Sint32',
-                    'getMapSint64Sint64',
                     'getMapFixed32Fixed32',
-                    'getMapFixed64Fixed64',
                     'getMapSfixed32Sfixed32',
+                    'getMapInt32Enum',
+                ],
+                '@return array<int,int>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
+                    'getMapInt64Int64',
+                    'getMapUint64Uint64',
+                    'getMapSint64Sint64',
+                    'getMapFixed64Fixed64',
                     'getMapSfixed64Sfixed64',
+                ],
+                '@return array<int|string,int|string>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'getMapInt32Float',
                     'getMapInt32Double',
+                ],
+                '@return array<int,float>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'getMapBoolBool',
+                ],
+                '@return array<bool,bool>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'getMapStringString',
+                ],
+                '@return array<string,string>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'getMapInt32Bytes',
-                    'getMapInt32Enum',
+                ],
+                '@return array<int,string>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'getMapInt32Message',
+                ],
+                '@return array<int,\Foo\TestMessage\Sub>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'getMapRecursive',
                 ],
-                '@return \Google\Protobuf\Internal\MapField'
+                '@return array<int,\Foo\TestMessage>|\Google\Protobuf\Internal\MapField'
             ],
             [
                 [
@@ -216,25 +291,60 @@ class GeneratedPhpdocTest extends TestBase
             [
                 [
                     'setMapInt32Int32',
-                    'setMapInt64Int64',
                     'setMapUint32Uint32',
-                    'setMapUint64Uint64',
                     'setMapSint32Sint32',
-                    'setMapSint64Sint64',
                     'setMapFixed32Fixed32',
-                    'setMapFixed64Fixed64',
                     'setMapSfixed32Sfixed32',
+                    'setMapInt32Enum',
+                ],
+                '@param array<int,int>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
+                    'setMapInt64Int64',
+                    'setMapUint64Uint64',
+                    'setMapSint64Sint64',
+                    'setMapFixed64Fixed64',
                     'setMapSfixed64Sfixed64',
+                ],
+                '@param array<int|string,int|string>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'setMapInt32Float',
                     'setMapInt32Double',
+                ],
+                '@param array<int,float>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'setMapBoolBool',
+                ],
+                '@param array<bool,bool>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'setMapStringString',
+                ],
+                '@param array<string,string>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'setMapInt32Bytes',
-                    'setMapInt32Enum',
+                ],
+                '@param array<int,string>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'setMapInt32Message',
+                ],
+                '@param array<int,\Foo\TestMessage\Sub>|\Google\Protobuf\Internal\MapField'
+            ],
+            [
+                [
                     'setMapRecursive',
                 ],
-                '@param array|\Google\Protobuf\Internal\MapField $var'
+                '@param array<int,\Foo\TestMessage>|\Google\Protobuf\Internal\MapField'
             ],
             [
                 [

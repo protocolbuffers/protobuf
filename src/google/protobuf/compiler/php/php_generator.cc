@@ -372,7 +372,13 @@ std::string LabelForField(const FieldDescriptor* field) {
 std::string PhpSetterTypeName(const FieldDescriptor* field,
                               const Options& options) {
   if (field->is_map()) {
-    return "array|\\Google\\Protobuf\\Internal\\MapField";
+    return absl::StrCat(
+      "array<",
+      PhpSetterTypeName(field->message_type()->field(0), options),
+      ",",
+      PhpSetterTypeName(field->message_type()->field(1), options),
+      ">|\\Google\\Protobuf\\Internal\\MapField"
+      );
   }
   std::string type;
   switch (field->type()) {
@@ -433,11 +439,15 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
 std::string PhpGetterTypeName(const FieldDescriptor* field,
                               const Options& options) {
   if (field->is_map()) {
-    return "\\Google\\Protobuf\\Internal\\MapField";
+    return absl::StrCat(
+      "array<",
+      PhpGetterTypeName(field->message_type()->field(0), options),
+      ",",
+      PhpGetterTypeName(field->message_type()->field(1), options),
+      ">|\\Google\\Protobuf\\Internal\\MapField"
+      );
   }
-  if (field->is_repeated()) {
-    return "\\Google\\Protobuf\\Internal\\RepeatedField";
-  }
+  std::string type;
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_UINT32:
@@ -445,29 +455,45 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_ENUM:
-      return "int";
+      type = "int";
+      break;
     case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      return "int|string";
+      type = "int|string";
+      break;
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
-      return "float";
+      type = "float";
+      break;
     case FieldDescriptor::TYPE_BOOL:
-      return "bool";
+      type = "bool";
+      break;
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      return "string";
+      type = "string";
+      break;
     case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat("\\", FullClassName(field->message_type(), options));
+      type =  absl::StrCat("\\", FullClassName(field->message_type(), options));
+      break;
     case FieldDescriptor::TYPE_GROUP:
       return "null";
     default:
       assert(false);
       return "";
   }
+  if (field->is_repeated()) {
+    // accommodate for edge case with multiple types.
+    size_t start_pos = type.find('|');
+    if (start_pos != std::string::npos) {
+      type.replace(start_pos, 1, ">|array<");
+    }
+    type = absl::StrCat("array<", type,
+                        ">|\\Google\\Protobuf\\Internal\\RepeatedField");
+  }
+  return type;
 }
 
 std::string PhpGetterTypeName(const FieldDescriptor* field,
