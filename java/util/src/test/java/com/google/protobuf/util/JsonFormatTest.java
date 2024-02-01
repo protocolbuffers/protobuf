@@ -46,6 +46,7 @@ import com.google.protobuf.util.proto.JsonTestProto.TestRecursive;
 import com.google.protobuf.util.proto.JsonTestProto.TestStruct;
 import com.google.protobuf.util.proto.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.proto.JsonTestProto.TestWrappers;
+import com.google.protobuf.util.proto.JsonTestProto2.TestAllTypesProto2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1483,48 +1484,60 @@ public class JsonFormatTest {
   }
 
   @Test
-  public void testIncludingDefaultValueFields() throws Exception {
+  public void testDefaultValueOptionsProto3() throws Exception {
     TestAllTypes message = TestAllTypes.getDefaultInstance();
     assertThat(JsonFormat.printer().print(message)).isEqualTo("{\n}");
-    assertThat(JsonFormat.printer().includingDefaultValueFields().print(message))
-        .isEqualTo(
-            "{\n"
-                + "  \"optionalInt32\": 0,\n"
-                + "  \"optionalInt64\": \"0\",\n"
-                + "  \"optionalUint32\": 0,\n"
-                + "  \"optionalUint64\": \"0\",\n"
-                + "  \"optionalSint32\": 0,\n"
-                + "  \"optionalSint64\": \"0\",\n"
-                + "  \"optionalFixed32\": 0,\n"
-                + "  \"optionalFixed64\": \"0\",\n"
-                + "  \"optionalSfixed32\": 0,\n"
-                + "  \"optionalSfixed64\": \"0\",\n"
-                + "  \"optionalFloat\": 0.0,\n"
-                + "  \"optionalDouble\": 0.0,\n"
-                + "  \"optionalBool\": false,\n"
-                + "  \"optionalString\": \"\",\n"
-                + "  \"optionalBytes\": \"\",\n"
-                + "  \"optionalNestedEnum\": \"FOO\",\n"
-                + "  \"repeatedInt32\": [],\n"
-                + "  \"repeatedInt64\": [],\n"
-                + "  \"repeatedUint32\": [],\n"
-                + "  \"repeatedUint64\": [],\n"
-                + "  \"repeatedSint32\": [],\n"
-                + "  \"repeatedSint64\": [],\n"
-                + "  \"repeatedFixed32\": [],\n"
-                + "  \"repeatedFixed64\": [],\n"
-                + "  \"repeatedSfixed32\": [],\n"
-                + "  \"repeatedSfixed64\": [],\n"
-                + "  \"repeatedFloat\": [],\n"
-                + "  \"repeatedDouble\": [],\n"
-                + "  \"repeatedBool\": [],\n"
-                + "  \"repeatedString\": [],\n"
-                + "  \"repeatedBytes\": [],\n"
-                + "  \"repeatedNestedMessage\": [],\n"
-                + "  \"repeatedNestedEnum\": [],\n"
-                + "  \"optionalAliasedEnum\": \"ALIAS_FOO\"\n"
-                + "}");
 
+    String expectedJsonWithDefaults =
+        "{\n"
+            + "  \"optionalInt32\": 0,\n"
+            + "  \"optionalInt64\": \"0\",\n"
+            + "  \"optionalUint32\": 0,\n"
+            + "  \"optionalUint64\": \"0\",\n"
+            + "  \"optionalSint32\": 0,\n"
+            + "  \"optionalSint64\": \"0\",\n"
+            + "  \"optionalFixed32\": 0,\n"
+            + "  \"optionalFixed64\": \"0\",\n"
+            + "  \"optionalSfixed32\": 0,\n"
+            + "  \"optionalSfixed64\": \"0\",\n"
+            + "  \"optionalFloat\": 0.0,\n"
+            + "  \"optionalDouble\": 0.0,\n"
+            + "  \"optionalBool\": false,\n"
+            + "  \"optionalString\": \"\",\n"
+            + "  \"optionalBytes\": \"\",\n"
+            + "  \"optionalNestedEnum\": \"FOO\",\n"
+            + "  \"repeatedInt32\": [],\n"
+            + "  \"repeatedInt64\": [],\n"
+            + "  \"repeatedUint32\": [],\n"
+            + "  \"repeatedUint64\": [],\n"
+            + "  \"repeatedSint32\": [],\n"
+            + "  \"repeatedSint64\": [],\n"
+            + "  \"repeatedFixed32\": [],\n"
+            + "  \"repeatedFixed64\": [],\n"
+            + "  \"repeatedSfixed32\": [],\n"
+            + "  \"repeatedSfixed64\": [],\n"
+            + "  \"repeatedFloat\": [],\n"
+            + "  \"repeatedDouble\": [],\n"
+            + "  \"repeatedBool\": [],\n"
+            + "  \"repeatedString\": [],\n"
+            + "  \"repeatedBytes\": [],\n"
+            + "  \"repeatedNestedMessage\": [],\n"
+            + "  \"repeatedNestedEnum\": [],\n"
+            + "  \"optionalAliasedEnum\": \"ALIAS_FOO\",\n"
+            + "  \"repeatedRecursive\": []\n"
+            + "}";
+
+    // includingDefaultValueFields() and includingDefaultValueWithoutPresenceFields() should
+    // behave identically on the proto3 test message:
+    assertThat(JsonFormat.printer().includingDefaultValueFields().print(message))
+        .isEqualTo(expectedJsonWithDefaults);
+    assertThat(JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(message))
+        .isEqualTo(expectedJsonWithDefaults);
+  }
+
+  @Test
+  public void testDefaultValueForSpecificFieldsOptionProto3() throws Exception {
+    TestAllTypes message = TestAllTypes.getDefaultInstance();
     Set<FieldDescriptor> fixedFields = new HashSet<>();
     for (FieldDescriptor fieldDesc : TestAllTypes.getDescriptor().getFields()) {
       if (fieldDesc.getName().contains("_fixed")) {
@@ -1553,7 +1566,28 @@ public class JsonFormatTest {
                 + "  \"repeatedFixed32\": [],\n"
                 + "  \"repeatedFixed64\": []\n"
                 + "}");
+  }
 
+  @Test
+  public void testDefaultValueForSpecificFieldsProto3_doesntHonorMessageFields() throws Exception {
+    TestAllTypes message = TestAllTypes.getDefaultInstance();
+    Set<FieldDescriptor> fixedFields =
+        ImmutableSet.of(
+            TestAllTypes.getDescriptor().findFieldByName("optional_bool"),
+            TestAllTypes.getDescriptor().findFieldByName("optional_recursive"));
+
+    assertThat(JsonFormat.printer().includingDefaultValueFields(fixedFields).print(message))
+        .isEqualTo("{\n  \"optionalBool\": false\n}");
+  }
+
+  @Test
+  public void testRejectChangingDefaultFieldOptionMultipleTimes() throws Exception {
+    Set<FieldDescriptor> fixedFields = new HashSet<>();
+    for (FieldDescriptor fieldDesc : TestAllTypes.getDescriptor().getFields()) {
+      if (fieldDesc.getName().contains("_fixed")) {
+        fixedFields.add(fieldDesc);
+      }
+    }
     try {
       JsonFormat.printer().includingDefaultValueFields().includingDefaultValueFields();
       assertWithMessage("IllegalStateException is expected.").fail();
@@ -1634,7 +1668,10 @@ public class JsonFormatTest {
           .that(e.getMessage().contains("includingDefaultValueFields"))
           .isTrue();
     }
+  }
 
+  @Test
+  public void testDefaultValuesOptionProto3Maps() throws Exception {
     TestMap mapMessage = TestMap.getDefaultInstance();
     assertThat(JsonFormat.printer().print(mapMessage)).isEqualTo("{\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(mapMessage))
@@ -1697,15 +1734,24 @@ public class JsonFormatTest {
                 + "  \"int32ToEnumMap\": {\n"
                 + "  }\n"
                 + "}");
+  }
 
+  @Test
+  public void testDefaultValueOptionsProto3Oneofs() throws Exception {
     TestOneof oneofMessage = TestOneof.getDefaultInstance();
     assertThat(JsonFormat.printer().print(oneofMessage)).isEqualTo("{\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
+        .isEqualTo("{\n}");
+    assertThat(
+            JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(oneofMessage))
         .isEqualTo("{\n}");
 
     oneofMessage = TestOneof.newBuilder().setOneofInt32(42).build();
     assertThat(JsonFormat.printer().print(oneofMessage)).isEqualTo("{\n  \"oneofInt32\": 42\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
+        .isEqualTo("{\n  \"oneofInt32\": 42\n}");
+    assertThat(
+            JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(oneofMessage))
         .isEqualTo("{\n  \"oneofInt32\": 42\n}");
 
     TestOneof.Builder oneofBuilder = TestOneof.newBuilder();
@@ -1715,6 +1761,113 @@ public class JsonFormatTest {
         .isEqualTo("{\n  \"oneofNullValue\": null\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
         .isEqualTo("{\n  \"oneofNullValue\": null\n}");
+    assertThat(
+            JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(oneofMessage))
+        .isEqualTo("{\n  \"oneofNullValue\": null\n}");
+  }
+
+  @Test
+  public void testIncludingDefaultValueOptionsWithProto2Optional() throws Exception {
+    TestAllTypesProto2 message = TestAllTypesProto2.getDefaultInstance();
+    assertThat(JsonFormat.printer().print(message)).isEqualTo("{\n}");
+    // includingDefaultValueFields() and includingDefaultValueWithoutPresenceFields()
+    // behave differently on a proto2 message: the former includes the proto2 explicit presence
+    // fields and the latter does not.
+    assertThat(JsonFormat.printer().includingDefaultValueFields().print(message))
+        .isEqualTo(
+            "{\n"
+                + "  \"optionalInt32\": 0,\n"
+                + "  \"optionalInt64\": \"0\",\n"
+                + "  \"optionalUint32\": 0,\n"
+                + "  \"optionalUint64\": \"0\",\n"
+                + "  \"optionalSint32\": 0,\n"
+                + "  \"optionalSint64\": \"0\",\n"
+                + "  \"optionalFixed32\": 0,\n"
+                + "  \"optionalFixed64\": \"0\",\n"
+                + "  \"optionalSfixed32\": 0,\n"
+                + "  \"optionalSfixed64\": \"0\",\n"
+                + "  \"optionalFloat\": 0.0,\n"
+                + "  \"optionalDouble\": 0.0,\n"
+                + "  \"optionalBool\": false,\n"
+                + "  \"optionalString\": \"\",\n"
+                + "  \"optionalBytes\": \"\",\n"
+                + "  \"optionalNestedEnum\": \"FOO\",\n"
+                + "  \"repeatedInt32\": [],\n"
+                + "  \"repeatedInt64\": [],\n"
+                + "  \"repeatedUint32\": [],\n"
+                + "  \"repeatedUint64\": [],\n"
+                + "  \"repeatedSint32\": [],\n"
+                + "  \"repeatedSint64\": [],\n"
+                + "  \"repeatedFixed32\": [],\n"
+                + "  \"repeatedFixed64\": [],\n"
+                + "  \"repeatedSfixed32\": [],\n"
+                + "  \"repeatedSfixed64\": [],\n"
+                + "  \"repeatedFloat\": [],\n"
+                + "  \"repeatedDouble\": [],\n"
+                + "  \"repeatedBool\": [],\n"
+                + "  \"repeatedString\": [],\n"
+                + "  \"repeatedBytes\": [],\n"
+                + "  \"repeatedNestedMessage\": [],\n"
+                + "  \"repeatedNestedEnum\": [],\n"
+                + "  \"optionalAliasedEnum\": \"ALIAS_FOO\",\n"
+                + "  \"repeatedRecursive\": []\n"
+                + "}");
+    assertThat(JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(message))
+        .isEqualTo(
+            "{\n"
+                + "  \"repeatedInt32\": [],\n"
+                + "  \"repeatedInt64\": [],\n"
+                + "  \"repeatedUint32\": [],\n"
+                + "  \"repeatedUint64\": [],\n"
+                + "  \"repeatedSint32\": [],\n"
+                + "  \"repeatedSint64\": [],\n"
+                + "  \"repeatedFixed32\": [],\n"
+                + "  \"repeatedFixed64\": [],\n"
+                + "  \"repeatedSfixed32\": [],\n"
+                + "  \"repeatedSfixed64\": [],\n"
+                + "  \"repeatedFloat\": [],\n"
+                + "  \"repeatedDouble\": [],\n"
+                + "  \"repeatedBool\": [],\n"
+                + "  \"repeatedString\": [],\n"
+                + "  \"repeatedBytes\": [],\n"
+                + "  \"repeatedNestedMessage\": [],\n"
+                + "  \"repeatedNestedEnum\": [],\n"
+                + "  \"repeatedRecursive\": []\n"
+                + "}");
+  }
+
+  @Test
+  public void testDefaultValueForSpecificFieldsOptionProto2() throws Exception {
+    TestAllTypesProto2 message = TestAllTypesProto2.getDefaultInstance();
+
+    Set<FieldDescriptor> fixedFields = new HashSet<>();
+    for (FieldDescriptor fieldDesc : TestAllTypesProto2.getDescriptor().getFields()) {
+      if (fieldDesc.getName().contains("_fixed")) {
+        fixedFields.add(fieldDesc);
+      }
+    }
+
+    assertThat(JsonFormat.printer().includingDefaultValueFields(fixedFields).print(message))
+        .isEqualTo(
+            "{\n"
+                + "  \"optionalFixed32\": 0,\n"
+                + "  \"optionalFixed64\": \"0\",\n"
+                + "  \"repeatedFixed32\": [],\n"
+                + "  \"repeatedFixed64\": []\n"
+                + "}");
+
+    TestAllTypesProto2 messageNonDefaults =
+        message.toBuilder().setOptionalInt64(1234).setOptionalFixed32(3232).build();
+    assertThat(
+            JsonFormat.printer().includingDefaultValueFields(fixedFields).print(messageNonDefaults))
+        .isEqualTo(
+            "{\n"
+                + "  \"optionalInt64\": \"1234\",\n"
+                + "  \"optionalFixed32\": 3232,\n"
+                + "  \"optionalFixed64\": \"0\",\n"
+                + "  \"repeatedFixed32\": [],\n"
+                + "  \"repeatedFixed64\": []\n"
+                + "}");
   }
 
   @Test
