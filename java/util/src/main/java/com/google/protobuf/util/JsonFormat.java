@@ -8,6 +8,7 @@
 package com.google.protobuf.util;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
@@ -29,7 +30,6 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -86,30 +86,30 @@ public class JsonFormat {
     return new Printer(
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),
-        /* alwaysOutputDefaultValueFields */ false,
-        /* includingDefaultValueFields */ Collections.<FieldDescriptor>emptySet(),
+        ShouldPrintDefaults.ONLY_IF_PRESENT,
+        /* includingDefaultValueFields */ ImmutableSet.of(),
         /* preservingProtoFieldNames */ false,
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
         /* sortingMapKeys */ false);
   }
 
-  /**
-   * A Printer converts a protobuf message to the proto3 JSON format.
-   */
+  private enum ShouldPrintDefaults {
+    ONLY_IF_PRESENT, // The "normal" behavior; the others add more compared to this baseline.
+    ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS,
+    ALWAYS_PRINT_WITHOUT_PRESENCE_FIELDS,
+    ALWAYS_PRINT_SPECIFIED_FIELDS
+  }
+
+  /** A Printer converts a protobuf message to the proto3 JSON format. */
   public static class Printer {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
-    // NOTE: There are 3 states for these *defaultValueFields variables:
-    // 1) Default - alwaysOutput is false & including is empty set. Fields only output if they are
-    //    set to non-default values.
-    // 2) No-args includingDefaultValueFields() called - alwaysOutput is true & including is
-    //    irrelevant (but set to empty set). All fields are output regardless of their values.
-    // 3) includingDefaultValueFields(Set<FieldDescriptor>) called - alwaysOutput is false &
-    //    including is set to the specified set. Fields in that set are always output & fields not
-    //    in that set are only output if set to non-default values.
-    private boolean alwaysOutputDefaultValueFields;
-    private Set<FieldDescriptor> includingDefaultValueFields;
+    private final ShouldPrintDefaults shouldPrintDefaults;
+
+    // Empty unless shouldPrintDefaults is set to ALWAYS_PRINT_SPECIFIED_FIELDS.
+    private final Set<FieldDescriptor> includingDefaultValueFields;
+
     private final boolean preservingProtoFieldNames;
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
@@ -118,7 +118,7 @@ public class JsonFormat {
     private Printer(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
-        boolean alwaysOutputDefaultValueFields,
+        ShouldPrintDefaults shouldOutputDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
@@ -126,7 +126,7 @@ public class JsonFormat {
         boolean sortingMapKeys) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
-      this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
+      this.shouldPrintDefaults = shouldOutputDefaults;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
@@ -148,7 +148,7 @@ public class JsonFormat {
       return new Printer(
           com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
           oldRegistry,
-          alwaysOutputDefaultValueFields,
+          shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
@@ -170,7 +170,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
-          alwaysOutputDefaultValueFields,
+          shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
@@ -179,18 +179,27 @@ public class JsonFormat {
     }
 
     /**
-     * Creates a new {@link Printer} that will also print fields set to their
-     * defaults. Empty repeated fields and map fields will be printed as well.
-     * The new Printer clones all other configurations from the current
-     * {@link Printer}.
+     * Creates a new {@link Printer} that will always print fields unless they are a message type or
+     * in a oneof.
+     *
+     * <p>Note that this does print Proto2 Optional but does not print Proto3 Optional fields, as
+     * the latter is represented using a synthetic oneof.
+     *
+     * <p>The new Printer clones all other configurations from the current {@link Printer}.
+     *
+     * @deprecated Prefer {@link #includingDefaultValueWithoutPresenceFields}
      */
+    @Deprecated
     public Printer includingDefaultValueFields() {
-      checkUnsetIncludingDefaultValueFields();
+      if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
+        throw new IllegalStateException(
+            "JsonFormat includingDefaultValueFields has already been set.");
+      }
       return new Printer(
           registry,
           oldRegistry,
-          true,
-          Collections.<FieldDescriptor>emptySet(),
+          ShouldPrintDefaults.ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS,
+          ImmutableSet.of(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
@@ -198,15 +207,66 @@ public class JsonFormat {
     }
 
     /**
-     * Creates a new {@link Printer} that prints enum field values as integers instead of as
-     * string. The new Printer clones all other configurations from the current {@link Printer}.
+     * Creates a new {@link Printer} that will also print default-valued fields if their
+     * FieldDescriptors are found in the supplied set. Empty repeated fields and map fields will be
+     * printed as well, if they match. The new Printer clones all other configurations from the
+     * current {@link Printer}. Call includingDefaultValueFields() with no args to unconditionally
+     * output all fields.
+     *
+     * <p>Note that non-repeated message fields or fields in a oneof are not honored if provided
+     * here.
+     */
+    public Printer includingDefaultValueFields(Set<FieldDescriptor> fieldsToAlwaysOutput) {
+      Preconditions.checkArgument(
+          null != fieldsToAlwaysOutput && !fieldsToAlwaysOutput.isEmpty(),
+          "Non-empty Set must be supplied for includingDefaultValueFields.");
+      if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
+        throw new IllegalStateException(
+            "JsonFormat includingDefaultValueFields has already been set.");
+      }
+      return new Printer(
+          registry,
+          oldRegistry,
+          ShouldPrintDefaults.ALWAYS_PRINT_SPECIFIED_FIELDS,
+          ImmutableSet.copyOf(fieldsToAlwaysOutput),
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys);
+    }
+
+    /**
+     * Creates a new {@link Printer} that will print any field that does not support presence even
+     * if it would not otherwise be printed (empty repeated fields, empty map fields, and implicit
+     * presence scalars set to their default value). The new Printer clones all other configurations
+     * from the current {@link Printer}.
+     */
+    public Printer includingDefaultValueWithoutPresenceFields() {
+      if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
+        throw new IllegalStateException(
+            "JsonFormat includingDefaultValueFields has already been set.");
+      }
+      return new Printer(
+          registry,
+          oldRegistry,
+          ShouldPrintDefaults.ALWAYS_PRINT_WITHOUT_PRESENCE_FIELDS,
+          ImmutableSet.of(),
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys);
+    }
+
+    /**
+     * Creates a new {@link Printer} that prints enum field values as integers instead of as string.
+     * The new Printer clones all other configurations from the current {@link Printer}.
      */
     public Printer printingEnumsAsInts() {
       checkUnsetPrintingEnumsAsInts();
       return new Printer(
           registry,
           oldRegistry,
-          alwaysOutputDefaultValueFields,
+          shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
@@ -221,37 +281,6 @@ public class JsonFormat {
     }
 
     /**
-     * Creates a new {@link Printer} that will also print default-valued fields if their
-     * FieldDescriptors are found in the supplied set. Empty repeated fields and map fields will be
-     * printed as well, if they match. The new Printer clones all other configurations from the
-     * current {@link Printer}. Call includingDefaultValueFields() with no args to unconditionally
-     * output all fields.
-     */
-    public Printer includingDefaultValueFields(Set<FieldDescriptor> fieldsToAlwaysOutput) {
-      Preconditions.checkArgument(
-          null != fieldsToAlwaysOutput && !fieldsToAlwaysOutput.isEmpty(),
-          "Non-empty Set must be supplied for includingDefaultValueFields.");
-
-      checkUnsetIncludingDefaultValueFields();
-      return new Printer(
-          registry,
-          oldRegistry,
-          false,
-          Collections.unmodifiableSet(new HashSet<>(fieldsToAlwaysOutput)),
-          preservingProtoFieldNames,
-          omittingInsignificantWhitespace,
-          printingEnumsAsInts,
-          sortingMapKeys);
-    }
-
-    private void checkUnsetIncludingDefaultValueFields() {
-      if (alwaysOutputDefaultValueFields || !includingDefaultValueFields.isEmpty()) {
-        throw new IllegalStateException(
-            "JsonFormat includingDefaultValueFields has already been set.");
-      }
-    }
-
-    /**
      * Creates a new {@link Printer} that is configured to use the original proto
      * field names as defined in the .proto file rather than converting them to
      * lowerCamelCase. The new Printer clones all other configurations from the
@@ -261,7 +290,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
-          alwaysOutputDefaultValueFields,
+          shouldPrintDefaults,
           includingDefaultValueFields,
           true,
           omittingInsignificantWhitespace,
@@ -290,7 +319,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
-          alwaysOutputDefaultValueFields,
+          shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           true,
@@ -313,7 +342,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           oldRegistry,
-          alwaysOutputDefaultValueFields,
+          shouldPrintDefaults,
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
@@ -334,7 +363,7 @@ public class JsonFormat {
       new PrinterImpl(
               registry,
               oldRegistry,
-              alwaysOutputDefaultValueFields,
+              shouldPrintDefaults,
               includingDefaultValueFields,
               preservingProtoFieldNames,
               output,
@@ -685,7 +714,7 @@ public class JsonFormat {
   private static final class PrinterImpl {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
-    private final boolean alwaysOutputDefaultValueFields;
+    private final ShouldPrintDefaults shouldPrintDefaults;
     private final Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
     private final boolean printingEnumsAsInts;
@@ -703,7 +732,7 @@ public class JsonFormat {
     PrinterImpl(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
-        boolean alwaysOutputDefaultValueFields,
+        ShouldPrintDefaults shouldPrintDefaults,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         Appendable jsonOutput,
@@ -712,7 +741,7 @@ public class JsonFormat {
         boolean sortingMapKeys) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
-      this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
+      this.shouldPrintDefaults = shouldPrintDefaults;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
@@ -965,6 +994,28 @@ public class JsonFormat {
       printRepeatedFieldValue(field, message.getField(field));
     }
 
+    // Whether a set option means the corresponding field should be printed even if it normally
+    // wouldn't be.
+    private boolean shouldSpeciallyPrint(FieldDescriptor field) {
+      switch (shouldPrintDefaults) {
+        case ONLY_IF_PRESENT:
+          return false;
+        case ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS:
+          return !field.hasPresence()
+              || (field.getJavaType() != FieldDescriptor.JavaType.MESSAGE
+                  && field.getContainingOneof() == null);
+        case ALWAYS_PRINT_WITHOUT_PRESENCE_FIELDS:
+          return !field.hasPresence();
+        case ALWAYS_PRINT_SPECIFIED_FIELDS:
+          // For legacy code compatibility, we don't honor non-repeated message or oneof fields even
+          // if they're explicitly requested. :(
+          return !(field.getJavaType() == FieldDescriptor.JavaType.MESSAGE && !field.isRepeated())
+              && field.getContainingOneof() == null
+              && includingDefaultValueFields.contains(field);
+      }
+      throw new AssertionError("Unknown shouldPrintDefaults: " + shouldPrintDefaults);
+    }
+
     /** Prints a regular message with an optional type URL. */
     private void print(MessageOrBuilder message, @Nullable String typeUrl) throws IOException {
       generator.print("{" + blankOrNewLine);
@@ -975,31 +1026,23 @@ public class JsonFormat {
         generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl));
         printedField = true;
       }
-      Map<FieldDescriptor, Object> fieldsToPrint = null;
-      if (alwaysOutputDefaultValueFields || !includingDefaultValueFields.isEmpty()) {
+
+      // message.getAllFields() will already contain all of the fields that would be
+      // printed normally (non-empty repeated fields, with-presence fields that are set, implicit
+      // presence fields that have a nonzero value). Loop over all of the fields to add any more
+      // fields that should be printed based on the shouldPrintDefaults setting.
+      Map<FieldDescriptor, Object> fieldsToPrint;
+      if (shouldPrintDefaults == ShouldPrintDefaults.ONLY_IF_PRESENT) {
+        fieldsToPrint = message.getAllFields();
+      } else {
         fieldsToPrint = new TreeMap<FieldDescriptor, Object>(message.getAllFields());
         for (FieldDescriptor field : message.getDescriptorForType().getFields()) {
-          if (field.isOptional()) {
-            if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
-                && !message.hasField(field)) {
-              // Always skip empty optional message fields. If not we will recurse indefinitely if
-              // a message has itself as a sub-field.
-              continue;
-            }
-            OneofDescriptor oneof = field.getContainingOneof();
-            if (oneof != null && !message.hasField(field)) {
-              // Skip all oneof fields except the one that is actually set
-              continue;
-            }
-          }
-          if (!fieldsToPrint.containsKey(field)
-              && (alwaysOutputDefaultValueFields || includingDefaultValueFields.contains(field))) {
+          if (shouldSpeciallyPrint(field)) {
             fieldsToPrint.put(field, message.getField(field));
           }
         }
-      } else {
-        fieldsToPrint = message.getAllFields();
       }
+
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
