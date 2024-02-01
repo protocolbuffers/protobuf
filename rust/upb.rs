@@ -832,7 +832,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
 
                 fn map_insert(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     unsafe {
-                        upb_Map_Set(
+                        upb_Map_InsertAndReturnIfInserted(
                             map.inner.raw,
                             <$key_t as UpbTypeConversions>::to_message_value(key),
                             <$t as UpbTypeConversions>::to_message_value_copy_if_required(map.inner.raw_arena, value),
@@ -878,15 +878,49 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
 
 impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoStr);
 
+#[repr(C)]
+#[allow(dead_code)]
+enum upb_MapInsertStatus {
+    Inserted = 0,
+    Replaced = 1,
+    OutOfMemory = 2,
+}
+
+/// `upb_Map_Insert`, but returns a `bool` for whether insert occurred.
+///
+/// Returns `true` if the entry was newly inserted.
+///
+/// # Panics
+/// Panics if the arena is out of memory.
+///
+/// # Safety
+/// The same as `upb_Map_Insert`:
+/// - `map` must be a valid map.
+/// - The `arena` must be valid and outlive the map.
+/// - The inserted value must outlive the map.
+#[allow(non_snake_case)]
+pub unsafe fn upb_Map_InsertAndReturnIfInserted(
+    map: RawMap,
+    key: upb_MessageValue,
+    value: upb_MessageValue,
+    arena: RawArena,
+) -> bool {
+    match unsafe { upb_Map_Insert(map, key, value, arena) } {
+        upb_MapInsertStatus::Inserted => true,
+        upb_MapInsertStatus::Replaced => false,
+        upb_MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
+    }
+}
+
 extern "C" {
     fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;
     fn upb_Map_Size(map: RawMap) -> usize;
-    fn upb_Map_Set(
+    fn upb_Map_Insert(
         map: RawMap,
         key: upb_MessageValue,
         value: upb_MessageValue,
         arena: RawArena,
-    ) -> bool;
+    ) -> upb_MapInsertStatus;
     fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
     fn upb_Map_Delete(
         map: RawMap,

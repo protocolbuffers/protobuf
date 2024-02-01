@@ -20,6 +20,7 @@ macro_rules! generate_map_primitives_tests {
                 let k: $k_type = Default::default();
                 let v: $v_type = Default::default();
                 assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k, v), eq(true));
+                assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k, v), eq(false));
                 assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(1));
             }
         )* }
