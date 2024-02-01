@@ -437,6 +437,8 @@ const char* VarintParser(void* object, const char* ptr, ParseContext* ctx) {
       val = varint;
     }
     static_cast<RepeatedField<T>*>(object)->Add(val);
+  },[object](int size){
+    static_cast<RepeatedField<T>*>(object)->Reserve(size);
   });
 }
 
