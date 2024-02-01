@@ -707,8 +707,7 @@ fn test_message_opt_set() {
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(true));
 
     msg.optional_nested_message_mut().clear();
-    // TODO: b/323222163
-    // assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
+    assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
 }
 
 #[test]
@@ -724,8 +723,7 @@ fn test_setting_submsg() {
     assert_that!(msg.optional_nested_message_mut().is_set(), eq(true));
 
     msg.optional_nested_message_mut().clear();
-    // TODO: b/323222163
-    // assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
+    assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
 }
 
 #[test]
@@ -738,8 +736,7 @@ fn test_msg_or_default() {
     assert_that!(msg.optional_nested_message_mut().is_set(), eq(true));
 
     msg.optional_nested_message_mut().clear();
-    // TODO: b/323222163
-    //assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
+    assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
 }
 
 #[test]
