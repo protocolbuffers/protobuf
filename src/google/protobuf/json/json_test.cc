@@ -179,27 +179,27 @@ TEST_P(JsonTest, TestDefaultValues) {
 
   PrintOptions options;
   options.always_print_primitive_fields = true;
-  EXPECT_THAT(ToJson(m, options), IsOkAndHolds("{\"boolValue\":false,"
-                                               "\"int32Value\":0,"
-                                               "\"int64Value\":\"0\","
-                                               "\"uint32Value\":0,"
-                                               "\"uint64Value\":\"0\","
-                                               "\"floatValue\":0,"
-                                               "\"doubleValue\":0,"
-                                               "\"stringValue\":\"\","
-                                               "\"bytesValue\":\"\","
-                                               "\"enumValue\":\"FOO\","
-                                               "\"repeatedBoolValue\":[],"
-                                               "\"repeatedInt32Value\":[],"
-                                               "\"repeatedInt64Value\":[],"
-                                               "\"repeatedUint32Value\":[],"
-                                               "\"repeatedUint64Value\":[],"
-                                               "\"repeatedFloatValue\":[],"
-                                               "\"repeatedDoubleValue\":[],"
-                                               "\"repeatedStringValue\":[],"
-                                               "\"repeatedBytesValue\":[],"
-                                               "\"repeatedEnumValue\":[],"
-                                               "\"repeatedMessageValue\":[]"
+  EXPECT_THAT(ToJson(m, options), IsOkAndHolds(R"({"boolValue":false,)"
+                                               R"("int32Value":0,)"
+                                               R"("int64Value":"0",)"
+                                               R"("uint32Value":0,)"
+                                               R"("uint64Value":"0",)"
+                                               R"("floatValue":0,)"
+                                               R"("doubleValue":0,)"
+                                               R"("stringValue":"",)"
+                                               R"("bytesValue":"",)"
+                                               R"("enumValue":"FOO",)"
+                                               R"("repeatedBoolValue":[],)"
+                                               R"("repeatedInt32Value":[],)"
+                                               R"("repeatedInt64Value":[],)"
+                                               R"("repeatedUint32Value":[],)"
+                                               R"("repeatedUint64Value":[],)"
+                                               R"("repeatedFloatValue":[],)"
+                                               R"("repeatedDoubleValue":[],)"
+                                               R"("repeatedStringValue":[],)"
+                                               R"("repeatedBytesValue":[],)"
+                                               R"("repeatedEnumValue":[],)"
+                                               R"("repeatedMessageValue":[])"
                                                "}"));
 
   m.set_string_value("i am a test string value");
@@ -207,33 +207,32 @@ TEST_P(JsonTest, TestDefaultValues) {
   m.set_optional_bool_value(false);
   m.set_optional_string_value("");
   m.set_optional_bytes_value("");
-  EXPECT_THAT(
-      ToJson(m, options),
-      IsOkAndHolds("{\"boolValue\":false,"
-                   "\"int32Value\":0,"
-                   "\"int64Value\":\"0\","
-                   "\"uint32Value\":0,"
-                   "\"uint64Value\":\"0\","
-                   "\"floatValue\":0,"
-                   "\"doubleValue\":0,"
-                   "\"stringValue\":\"i am a test string value\","
-                   "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
-                   "\"enumValue\":\"FOO\","
-                   "\"repeatedBoolValue\":[],"
-                   "\"repeatedInt32Value\":[],"
-                   "\"repeatedInt64Value\":[],"
-                   "\"repeatedUint32Value\":[],"
-                   "\"repeatedUint64Value\":[],"
-                   "\"repeatedFloatValue\":[],"
-                   "\"repeatedDoubleValue\":[],"
-                   "\"repeatedStringValue\":[],"
-                   "\"repeatedBytesValue\":[],"
-                   "\"repeatedEnumValue\":[],"
-                   "\"repeatedMessageValue\":[],"
-                   "\"optionalBoolValue\":false,"
-                   "\"optionalStringValue\":\"\","
-                   "\"optionalBytesValue\":\"\""
-                   "}"));
+  EXPECT_THAT(ToJson(m, options),
+              IsOkAndHolds(R"({"boolValue":false,)"
+                           R"("int32Value":0,)"
+                           R"("int64Value":"0",)"
+                           R"("uint32Value":0,)"
+                           R"("uint64Value":"0",)"
+                           R"("floatValue":0,)"
+                           R"("doubleValue":0,)"
+                           R"("stringValue":"i am a test string value",)"
+                           R"("bytesValue":"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=",)"
+                           R"("enumValue":"FOO",)"
+                           R"("repeatedBoolValue":[],)"
+                           R"("repeatedInt32Value":[],)"
+                           R"("repeatedInt64Value":[],)"
+                           R"("repeatedUint32Value":[],)"
+                           R"("repeatedUint64Value":[],)"
+                           R"("repeatedFloatValue":[],)"
+                           R"("repeatedDoubleValue":[],)"
+                           R"("repeatedStringValue":[],)"
+                           R"("repeatedBytesValue":[],)"
+                           R"("repeatedEnumValue":[],)"
+                           R"("repeatedMessageValue":[],)"
+                           R"("optionalBoolValue":false,)"
+                           R"("optionalStringValue":"",)"
+                           R"("optionalBytesValue":"")"
+                           "}"));
 
   EXPECT_THAT(
       ToJson(protobuf_unittest::TestAllTypes(), options),
@@ -272,6 +271,79 @@ TEST_P(JsonTest, TestDefaultValues) {
           R"(,"reallySmallInt64":"-9223372036854775808","stringWithZero":"hel\u0000lo")"
           R"(,"bytesWithZero":"d29yXDAwMGxk","stringPieceWithZero":"ab\u0000c")"
           R"(,"cordWithZero":"12\u00003","replacementString":"${unknown}"})"));
+}
+
+TEST_P(JsonTest, TestAlwaysPrintWithoutPresenceFields) {
+  TestMessage m;
+  EXPECT_THAT(ToJson(m), IsOkAndHolds("{}"));
+
+  PrintOptions options;
+  options.always_print_without_presence_fields = true;
+  EXPECT_THAT(ToJson(m, options), IsOkAndHolds(R"({"boolValue":false,)"
+                                               R"("int32Value":0,)"
+                                               R"("int64Value":"0",)"
+                                               R"("uint32Value":0,)"
+                                               R"("uint64Value":"0",)"
+                                               R"("floatValue":0,)"
+                                               R"("doubleValue":0,)"
+                                               R"("stringValue":"",)"
+                                               R"("bytesValue":"",)"
+                                               R"("enumValue":"FOO",)"
+                                               R"("repeatedBoolValue":[],)"
+                                               R"("repeatedInt32Value":[],)"
+                                               R"("repeatedInt64Value":[],)"
+                                               R"("repeatedUint32Value":[],)"
+                                               R"("repeatedUint64Value":[],)"
+                                               R"("repeatedFloatValue":[],)"
+                                               R"("repeatedDoubleValue":[],)"
+                                               R"("repeatedStringValue":[],)"
+                                               R"("repeatedBytesValue":[],)"
+                                               R"("repeatedEnumValue":[],)"
+                                               R"("repeatedMessageValue":[])"
+                                               "}"));
+
+  m.set_string_value("i am a test string value");
+  m.set_bytes_value("i am a test bytes value");
+  m.set_optional_bool_value(false);
+  m.set_optional_string_value("");
+  m.set_optional_bytes_value("");
+  EXPECT_THAT(ToJson(m, options),
+              IsOkAndHolds(R"({"boolValue":false,)"
+                           R"("int32Value":0,)"
+                           R"("int64Value":"0",)"
+                           R"("uint32Value":0,)"
+                           R"("uint64Value":"0",)"
+                           R"("floatValue":0,)"
+                           R"("doubleValue":0,)"
+                           R"("stringValue":"i am a test string value",)"
+                           R"("bytesValue":"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=",)"
+                           R"("enumValue":"FOO",)"
+                           R"("repeatedBoolValue":[],)"
+                           R"("repeatedInt32Value":[],)"
+                           R"("repeatedInt64Value":[],)"
+                           R"("repeatedUint32Value":[],)"
+                           R"("repeatedUint64Value":[],)"
+                           R"("repeatedFloatValue":[],)"
+                           R"("repeatedDoubleValue":[],)"
+                           R"("repeatedStringValue":[],)"
+                           R"("repeatedBytesValue":[],)"
+                           R"("repeatedEnumValue":[],)"
+                           R"("repeatedMessageValue":[],)"
+                           R"("optionalBoolValue":false,)"
+                           R"("optionalStringValue":"",)"
+                           R"("optionalBytesValue":"")"
+                           "}"));
+
+  EXPECT_THAT(
+      ToJson(protobuf_unittest::TestAllTypes(), options),
+      IsOkAndHolds(
+          R"({"repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
+          R"("repeatedSint32":[],"repeatedSint64":[],"repeatedFixed32":[],"repeatedFixed64":[],)"
+          R"("repeatedSfixed32":[],"repeatedSfixed64":[],"repeatedFloat":[],"repeatedDouble":[],)"
+          R"("repeatedBool":[],"repeatedString":[],"repeatedBytes":[],"repeatedgroup":[],)"
+          R"("repeatedNestedMessage":[],"repeatedForeignMessage":[],"repeatedImportMessage":[],)"
+          R"("repeatedNestedEnum":[],"repeatedForeignEnum":[],"repeatedImportEnum":[],)"
+          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[]})"));
 }
 
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
