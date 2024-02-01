@@ -243,7 +243,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   bool is_oneof = upb_MiniTableField_IsInOneof(field);
   if (!is_oneof || UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, field) ==
                        upb_MiniTableField_Number(field)) {
-    UPB_ASSERT(upb_Message_GetMessage(msg, field, NULL) == NULL);
+    UPB_ASSERT(upb_Message_GetMessage(msg, field) == NULL);
   }
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;

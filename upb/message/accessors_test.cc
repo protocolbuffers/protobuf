@@ -289,7 +289,7 @@ TEST(GeneratedCode, SubMessage) {
       find_proto2_field(kFieldOptionalNestedMessage);
 
   const upb_Message* test_message =
-      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field, nullptr);
+      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(nullptr, test_message);
 
   EXPECT_EQ(false,
@@ -307,7 +307,7 @@ TEST(GeneratedCode, SubMessage) {
 
   // Read back using mini table API.
   const upb_Message* sub_message =
-      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field, nullptr);
+      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(true, sub_message != nullptr);
 
   const upb_MiniTableField* nested_message_a_field =

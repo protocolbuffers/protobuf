@@ -6186,14 +6186,8 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
   std::string message_name = result->full_name();
-  if (pool_->deprecated_legacy_json_field_conflicts_ ||
-      IsLegacyJsonFieldConflictEnabled(result->options())) {
-    if (result->file()->edition() == Edition::EDITION_PROTO3) {
-      // Only check default JSON names for conflicts in proto3.  This is legacy
-      // behavior that will be removed in a later version.
-      CheckFieldJsonNameUniqueness(message_name, proto, result, false);
-    }
-  } else {
+  if (!pool_->deprecated_legacy_json_field_conflicts_ &&
+      !IsLegacyJsonFieldConflictEnabled(result->options())) {
     // Check both with and without taking json_name into consideration.  This is
     // needed for field masks, which don't use json_name.
     CheckFieldJsonNameUniqueness(message_name, proto, result, false);
@@ -7664,8 +7658,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
-  // The following check is temporarily OSS only till we fix all affected
-  // google3 TAP tests.
   if (field->file()->edition() >= Edition::EDITION_2023 &&
       field->options().has_ctype()) {
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {

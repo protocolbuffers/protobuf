@@ -700,10 +700,46 @@ fn test_message_opt() {
 #[test]
 fn test_message_opt_set() {
     let mut msg = TestAllTypes::new();
-    //let opt = msg.optional_nested_message_mut().or_default();
-    //assert_that!(opt.is_set(), eq(false));
-    //todo: check for set after prereq cl
-    //assert_that!(opt.into_inner().bb(), eq(0));
+    let submsg = TestAllTypes_::NestedMessage::new();
+
+    assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
+    msg.optional_nested_message_mut().set(submsg);
+    assert_that!(msg.optional_nested_message_opt().is_set(), eq(true));
+
+    msg.optional_nested_message_mut().clear();
+    // TODO: b/323222163
+    // assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
+}
+
+#[test]
+fn test_setting_submsg() {
+    let mut msg = TestAllTypes::new();
+    let submsg = TestAllTypes_::NestedMessage::new();
+
+    let fieldentry = msg.optional_nested_message_mut();
+    assert_that!(fieldentry.is_set(), eq(false));
+
+    fieldentry.or_default().set(submsg);
+    // confirm that invoking .set on a submsg indeed flips the set bit
+    assert_that!(msg.optional_nested_message_mut().is_set(), eq(true));
+
+    msg.optional_nested_message_mut().clear();
+    // TODO: b/323222163
+    // assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
+}
+
+#[test]
+fn test_msg_or_default() {
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
+
+    let _ = msg.optional_nested_message_mut().or_default();
+    // confirm that that or_default makes the field Present
+    assert_that!(msg.optional_nested_message_mut().is_set(), eq(true));
+
+    msg.optional_nested_message_mut().clear();
+    // TODO: b/323222163
+    //assert_that!(msg.optional_nested_message_mut().is_set(), eq(false));
 }
 
 #[test]

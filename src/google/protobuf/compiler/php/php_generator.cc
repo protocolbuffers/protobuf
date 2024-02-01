@@ -1556,38 +1556,30 @@ static std::string EscapePhpdoc(absl::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
-  char prev = '*';
+  char prev = '\0';
 
   for (std::string::size_type i = 0; i < input.size(); i++) {
     char c = input[i];
     switch (c) {
-      case '*':
-        // Avoid "/*".
-        if (prev == '/') {
-          result.append("&#42;");
-        } else {
-          result.push_back(c);
-        }
-        break;
+      // NOTE: "/*" is allowed, do not escape it
       case '/':
-        // Avoid "*/".
+        // Escape "*/" with "{@*}".
         if (prev == '*') {
-          result.append("&#47;");
+          result.pop_back();
+          result.append("{@*}");
         } else {
           result.push_back(c);
         }
         break;
       case '@':
-        // '@' starts phpdoc tags including the @deprecated tag, which will
-        // cause a compile-time error if inserted before a declaration that
-        // does not have a corresponding @Deprecated annotation.
-        result.append("&#64;");
+        // '@' starts phpdoc tags. Play it safe and escape it.
+        result.append("\\");
+        result.push_back(c);
         break;
       default:
         result.push_back(c);
         break;
     }
-
     prev = c;
   }
 

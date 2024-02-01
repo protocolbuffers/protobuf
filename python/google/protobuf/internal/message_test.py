@@ -1777,7 +1777,8 @@ class Proto3Test(unittest.TestCase):
 
     # Test has presence:
     for field in test_proto3_optional_pb2.TestProto3Optional.DESCRIPTOR.fields:
-      self.assertTrue(field.has_presence)
+      if field.name.startswith('optional_'):
+        self.assertTrue(field.has_presence)
     for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
       if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         self.assertFalse(field.has_presence)

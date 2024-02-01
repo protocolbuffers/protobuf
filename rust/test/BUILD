@@ -472,7 +472,8 @@ rust_upb_proto_library(
 )
 
 proto_library(
-    name = "fields_with_imported_types_proto",
+    # Test '-' occurrences are replaced with '_'.
+    name = "fields-with-imported-types_proto",
     testonly = True,
     srcs = ["fields_with_imported_types.proto"],
     deps = [":imported_types_proto"],
@@ -481,7 +482,7 @@ proto_library(
 cc_proto_library(
     name = "fields_with_imported_types_cc_proto",
     testonly = True,
-    deps = [":fields_with_imported_types_proto"],
+    deps = [":fields-with-imported-types_proto"],
 )
 
 rust_cc_proto_library(
@@ -499,5 +500,5 @@ rust_upb_proto_library(
     visibility = [
         "//rust/test/shared:__subpackages__",
     ],
-    deps = [":fields_with_imported_types_proto"],
+    deps = [":fields-with-imported-types_proto"],
 )

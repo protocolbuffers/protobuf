@@ -13,7 +13,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define _kUpb_Status_MaxMessage 127
+#define _kUpb_Status_MaxMessage 511
 
 typedef struct {
   bool ok;
