@@ -3277,7 +3277,6 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    ABSL_CHECK(!field->options().weak());
     if (field->type() == field->TYPE_ENUM &&
         table_info.aux_entries[entry.aux_idx].type ==
             internal::TailCallTableInfo::kEnumValidator) {
@@ -3357,12 +3356,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   if (descriptor_->options().message_set_wire_format()) {
     return CreateTcParseTableReflectionOnly();
-  }
-
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
-    if (descriptor_->field(i)->options().weak()) {
-      return CreateTcParseTableReflectionOnly();
-    }
   }
 
   std::vector<const FieldDescriptor*> fields;

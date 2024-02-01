@@ -51,9 +51,6 @@ class ParseFunctionGenerator {
  private:
   class GeneratedOptionProvider;
 
-  // Returns true if tailcall table code should be generated.
-  bool should_generate_tctable() const;
-
   // Generates a tail-calling `_InternalParse` function.
   void GenerateTailcallParseFunction(Formatter& format);
 

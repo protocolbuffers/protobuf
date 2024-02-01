@@ -225,10 +225,10 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
   const auto options = option_provider.GetForField(field);
-  ABSL_CHECK(!field->options().weak());
   // Map, oneof, weak, and split fields are not handled on the fast path.
   if (field->is_map() || field->real_containing_oneof() ||
-      options.is_implicitly_weak || options.should_split) {
+      field->options().weak() || options.is_implicitly_weak ||
+      options.should_split) {
     return false;
   }
 
@@ -794,7 +794,7 @@ TailCallTableInfo::TailCallTableInfo(
         field->type() == FieldDescriptor::TYPE_GROUP) {
       // Message-typed fields have a FieldAux with the default instance pointer.
       if (field->is_map()) {
-        field_entries.back().aux_idx = aux_entries.size();
+        entry.aux_idx = aux_entries.size();
         aux_entries.push_back({kMapAuxInfo, {field}});
         if (message_options.uses_codegen) {
           // If we don't use codegen we can't add these.
@@ -807,9 +807,12 @@ TailCallTableInfo::TailCallTableInfo(
             aux_entries.push_back({kEnumValidator, {map_value}});
           }
         }
+      } else if (field->options().weak()) {
+        // Disable the type card for this entry to force the fallback.
+        entry.type_card = 0;
       } else if (HasLazyRep(field, options)) {
         if (message_options.uses_codegen) {
-          field_entries.back().aux_idx = aux_entries.size();
+          entry.aux_idx = aux_entries.size();
           aux_entries.push_back({kSubMessage, {field}});
           if (options.lazy_opt == field_layout::kTvEager) {
             aux_entries.push_back({kMessageVerifyFunc, {field}});
@@ -817,8 +820,7 @@ TailCallTableInfo::TailCallTableInfo(
             aux_entries.push_back({kNothing});
           }
         } else {
-          field_entries.back().aux_idx =
-              TcParseTableBase::FieldEntry::kNoAuxIdx;
+          entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
         AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
@@ -827,10 +829,10 @@ TailCallTableInfo::TailCallTableInfo(
         if (message_options.should_profile_driven_cluster_aux_subtable &&
             type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
-          field_entries.back().aux_idx = subtable_aux_idx;
+          entry.aux_idx = subtable_aux_idx;
           ++subtable_aux_idx;
         } else {
-          field_entries.back().aux_idx = aux_entries.size();
+          entry.aux_idx = aux_entries.size();
           aux_entries.push_back({type, {field}});
         }
       }
