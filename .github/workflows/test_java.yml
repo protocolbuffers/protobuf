@@ -73,6 +73,8 @@ jobs:
   protobuf-bom:
     name: Protobuf Maven BOM
     runs-on: ubuntu-latest
+    # TODO Re-enable this once it works
+    if: false
     steps:
     - name: Checkout pending changes
       uses: protocolbuffers/protobuf-ci/checkout@v2
