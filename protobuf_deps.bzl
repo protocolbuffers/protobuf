@@ -86,9 +86,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_proto"):
         http_archive(
             name = "rules_proto",
-            sha256 = "903af49528dc37ad2adbb744b317da520f133bc1cbbecbdd2a6c546c9ead080b",
-            strip_prefix = "rules_proto-6.0.0-rc0",
-            url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc0/rules_proto-6.0.0-rc0.tar.gz",
+            sha256 = "71fdbed00a0709521ad212058c60d13997b922a5d01dbfd997f0d57d689e7b67",
+            strip_prefix = "rules_proto-6.0.0-rc2",
+            url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc2/rules_proto-6.0.0-rc2.tar.gz",
         )
 
     if not native.existing_rule("rules_python"):
@@ -160,12 +160,3 @@ def protobuf_deps():
         name = "nuget_python_x86-64_3.10.0",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
-
-
-def protobuf_register_toolchains():
-    "registers source toolchain"
-    native.register_toolchains("//:protoc_toolchain")
-    native.register_toolchains("//:cc_toolchain_toolchain")
-    native.register_toolchains("//:javalite_source_toolchain")
-    native.register_toolchains("//:java_source_toolchain")
-    native.register_toolchains("//:python_toolchain_toolchain")
