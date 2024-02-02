@@ -415,7 +415,11 @@ public final class Descriptors {
       if (strings.length == 1) {
         return strings[0].getBytes(Internal.ISO_8859_1);
       }
-      return String.join("", strings).getBytes(Internal.ISO_8859_1);
+      StringBuilder descriptorData = new StringBuilder();
+      for (String part : strings) {
+        descriptorData.append(part);
+      }
+      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
     }
 
     private static FileDescriptor[] findDescriptors(
