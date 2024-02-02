@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -158,8 +159,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   void Init();
 
-  // Delete or Destruct all objects owned by the arena.
-  void CleanupList();
+  // Delete or Destruct all objects owned by the arena. Returns number of bytes
+  // deallocated in cleanup blocks.
+  size_t CleanupList();
 
   inline void CacheSerialArena(SerialArena* serial) {
     thread_cache().last_serial_arena = serial;

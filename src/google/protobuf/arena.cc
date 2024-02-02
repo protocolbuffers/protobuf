@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <string>
 #include <typeinfo>
@@ -18,12 +19,14 @@
 
 #include "absl/base/attributes.h"
 #include "absl/container/internal/layout.h"
+#include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/string_block.h"
 #include "google/protobuf/thread_safe_arena.h"
 
 
@@ -111,7 +114,6 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
       limit_{b->Limit()},
       prefetch_ptr_(
           b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)),
-      prefetch_limit_(b->Limit()),
       head_{b},
       space_allocated_{b->size},
       parent_{parent} {
@@ -133,19 +135,8 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
 
 std::vector<void*> SerialArena::PeekCleanupListForTesting() {
   std::vector<void*> res;
-
-  ArenaBlock* b = head();
-  if (b->IsSentry()) return res;
-
-  const auto peek_list = [&](char* pos, char* end) {
-    for (; pos != end; pos += cleanup::Size()) {
-      cleanup::PeekNode(pos, res);
-    }
-  };
-
-  peek_list(limit_, b->Limit());
-  for (b = b->next; b; b = b->next) {
-    peek_list(reinterpret_cast<char*>(b->cleanup_nodes), b->Limit());
+  for (cleanup::CleanupNode cleanup : cleanup_vector()) {
+    res.push_back(cleanup.elem);
   }
   return res;
 }
@@ -163,6 +154,7 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   cached_blocks_ = nullptr;
   string_block_.store(nullptr, std::memory_order_relaxed);
   string_block_unused_.store(0, std::memory_order_relaxed);
+  new (cleanup_vector_space_) CleanupVector();
 }
 
 SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
@@ -223,15 +215,20 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size();
-  AllocateNewBlock(required);
+  AllocateNewBlock(AlignUpTo(n, align));
   return AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  AllocateNewBlock(cleanup::Size());
-  AddCleanupFromExisting(elem, destructor);
+  ABSL_DCHECK_EQ(cleanup_vector().capacity(), cleanup_vector().size());
+  const size_t orig_cap = cleanup_vector().capacity();
+  cleanup_vector().push_back({elem, destructor});
+  const size_t new_cap = cleanup_vector().capacity();
+  AddSpaceAllocated((new_cap - orig_cap) * sizeof(cleanup::CleanupNode));
+  cleanup_prefetch_ptr_ =
+      reinterpret_cast<char*>((&cleanup_vector()[0] + cleanup_vector().size()));
+  MaybePrefetchCleanup();
 }
 
 void SerialArena::AllocateNewBlock(size_t n) {
@@ -239,9 +236,6 @@ void SerialArena::AllocateNewBlock(size_t n) {
   size_t wasted = 0;
   ArenaBlock* old_head = head();
   if (!old_head->IsSentry()) {
-    // Sync limit to block
-    old_head->cleanup_nodes = limit_;
-
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
     wasted = old_head->size - used - kBlockHeaderSize;
@@ -315,20 +309,17 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
   return deallocated;
 }
 
-void SerialArena::CleanupList() {
-  ArenaBlock* b = head();
-  if (b->IsSentry()) return;
-
-  b->cleanup_nodes = limit_;
-  do {
-    char* limit = b->Limit();
-    char* it = reinterpret_cast<char*>(b->cleanup_nodes);
-    ABSL_DCHECK(!b->IsSentry() || it == limit);
-    for (; it < limit; it += cleanup::Size()) {
-      cleanup::DestroyNode(it);
-    }
-    b = b->next;
-  } while (b);
+size_t SerialArena::CleanupList() {
+  CleanupVector& vec = cleanup_vector();
+  char* const cleanup_start = reinterpret_cast<char*>(vec.data());
+  char* const limit = reinterpret_cast<char*>(&vec.back() + 1);
+  char* it = cleanup_start;
+  for (; it < limit; it += cleanup::Size()) {
+    cleanup::DestroyNode(it);
+  }
+  const size_t space_allocated = vec.capacity() * sizeof(cleanup::CleanupNode);
+  vec.~CleanupVector();
+  return space_allocated;
 }
 
 // Stores arrays of void* and SerialArena* instead of linked list of
@@ -711,13 +702,12 @@ SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
 }
 
 uint64_t ThreadSafeArena::Reset() {
-  // Have to do this in a first pass, because some of the destructors might
-  // refer to memory in other blocks.
-  CleanupList();
+  // Have to do this in a first pass because the destructors refer to memory in
+  // other blocks.
+  size_t space_allocated = CleanupList();
 
   // Discard all blocks except the first one. Whether it is user-provided or
   // allocated, always reuse the first block for the first arena.
-  size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
   space_allocated += mem.n;
 
@@ -842,8 +832,9 @@ template void* ThreadSafeArena::AllocateAlignedFallback<
 template void*
     ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
-void ThreadSafeArena::CleanupList() {
-  WalkSerialArenaChunk([](SerialArenaChunk* chunk) {
+size_t ThreadSafeArena::CleanupList() {
+  size_t space_allocated = 0;
+  WalkSerialArenaChunk([&](SerialArenaChunk* chunk) {
     absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
     // Walks arenas backward to handle the first serial arena the last.
     // Destroying in reverse-order to the construction is often assumed by users
@@ -851,11 +842,12 @@ void ThreadSafeArena::CleanupList() {
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
       SerialArena* serial = it->load(std::memory_order_relaxed);
       ABSL_DCHECK_NE(serial, nullptr);
-      serial->CleanupList();
+      space_allocated += serial->CleanupList();
     }
   });
   // First arena must be cleaned up last. (b/247560530)
-  first_arena_.CleanupList();
+  space_allocated += first_arena_.CleanupList();
+  return space_allocated;
 }
 
 PROTOBUF_NOINLINE

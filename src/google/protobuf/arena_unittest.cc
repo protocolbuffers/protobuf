@@ -1324,10 +1324,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   Arena arena(arena_block.data(), arena_block.size());
 
   {
-    internal::NoHeapChecker no_heap;
-
-    // Fill some repeated fields on the arena to test for leaks. Also verify no
-    // memory allocations.
+    // Fill some repeated fields on the arena to test for leaks.
     RepeatedField<int32_t> repeated_int32(&arena);
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1350,8 +1347,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     EXPECT_EQ(5, repeated_message.size());
   }
 
-  // Now, outside the scope of the NoHeapChecker, test ExtractSubrange's copying
-  // semantics.
+  // Now test ExtractSubrange's copying semantics.
   {
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1449,9 +1445,9 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   options.initial_block_size = arena_block.size();
   Arena arena(options);
 
+  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
   {
 
-    TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
     FillArenaAwareFields(message);
   }
 
@@ -1482,15 +1478,12 @@ TEST(ArenaTest, MessageLiteOnArena) {
   std::string serialized;
   initial_message.SerializeToString(&serialized);
 
-  {
-
-    MessageLite* generic_message = prototype->New(&arena);
-    EXPECT_TRUE(generic_message != nullptr);
-    EXPECT_EQ(&arena, generic_message->GetArena());
-    EXPECT_TRUE(generic_message->ParseFromString(serialized));
-    TestAllTypes* deserialized = static_cast<TestAllTypes*>(generic_message);
-    EXPECT_EQ(42, deserialized->optional_int32());
-  }
+  MessageLite* generic_message = prototype->New(&arena);
+  EXPECT_TRUE(generic_message != nullptr);
+  EXPECT_EQ(&arena, generic_message->GetArena());
+  EXPECT_TRUE(generic_message->ParseFromString(serialized));
+  TestAllTypes* deserialized = static_cast<TestAllTypes*>(generic_message);
+  EXPECT_EQ(42, deserialized->optional_int32());
 
   arena.Reset();
 }

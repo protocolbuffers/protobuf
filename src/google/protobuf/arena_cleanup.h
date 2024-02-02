@@ -62,11 +62,6 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(void* pos) {
   cleanup->destructor(cleanup->elem);
 }
 
-// Append in `out` the pointer to the to-be-cleaned object in `pos`.
-inline void PeekNode(void* pos, std::vector<void*>& out) {
-  out.push_back(ToCleanup(pos)->elem);
-}
-
 // Returns the required size for a cleanup node.
 constexpr ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size() {
   return sizeof(CleanupNode);
