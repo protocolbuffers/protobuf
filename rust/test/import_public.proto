@@ -5,13 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Temporary hack to fix gRPC. Do not use.
+syntax = "proto2";
 
-#ifndef UPB_COLLECTIONS_ARRAY_H_
-#define UPB_COLLECTIONS_ARRAY_H_
+package import_public;
 
-// IWYU pragma: begin_exports
-#include "upb/message/array.h"
-// IWYU pragma: end_exports
-
-#endif /* UPB_COLLECTIONS_ARRAY_H_ */
+import public "google/protobuf/rust/test/import_public_primary_src.proto";

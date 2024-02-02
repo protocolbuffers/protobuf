@@ -30,10 +30,16 @@
 #endif
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/extension_dict.h"
@@ -46,11 +52,6 @@
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "google/protobuf/pyext/unknown_field_set.h"
 #include "google/protobuf/pyext/unknown_fields.h"
-#include "google/protobuf/util/message_differencer.h"
-#include "absl/strings/string_view.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/strtod.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -1682,6 +1683,18 @@ class PythonFieldValuePrinter : public TextFormat::FastFieldValuePrinter {
     }
 
     generator->PrintString(PyString_AsString(py_str.get()));
+  }
+  void PrintString(const std::string& val,
+                   TextFormat::BaseTextGenerator* generator) const override {
+    TextFormat::Printer::HardenedPrintString(val, generator);
+  }
+  void PrintBytes(const std::string& val,
+                  TextFormat::BaseTextGenerator* generator) const override {
+    generator->PrintLiteral("\"");
+    if (!val.empty()) {
+      generator->PrintString(absl::CEscape(val));
+    }
+    generator->PrintLiteral("\"");
   }
 };
 

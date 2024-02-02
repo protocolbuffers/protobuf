@@ -51,6 +51,8 @@ class RepeatedPtrField;
 class FastReflectionMessageMutator;
 class FastReflectionStringSetter;
 class Reflection;
+class Descriptor;
+class AssignDescriptorsHelper;
 
 namespace io {
 
@@ -123,6 +125,7 @@ class SwapFieldHelper;
 // See parse_context.h for explanation
 class ParseContext;
 
+struct DescriptorTable;
 class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
@@ -527,6 +530,11 @@ class PROTOBUF_EXPORT MessageLite {
   // Note: The order of arguments in the functions is chosen so that it has
   // the same ABI as the member function that calls them. Eg the `this`
   // pointer becomes the first argument in the free function.
+  //
+  // Future work:
+  // We could save more data by omitting any optional pointer that would
+  // otherwise be null. We can have some metadata in ClassData telling us if we
+  // have them and their offset.
   struct ClassData {
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
 
@@ -544,6 +552,7 @@ class PROTOBUF_EXPORT MessageLite {
           is_lite(is_lite) {}
 
     const ClassDataFull& full() const {
+      ABSL_DCHECK(!is_lite);
       return *static_cast<const ClassDataFull*>(this);
     }
   };
@@ -551,18 +560,43 @@ class PROTOBUF_EXPORT MessageLite {
   struct ClassDataLite {
     ClassData header;
     const char type_name[N];
+
+    constexpr const ClassData* base() const { return &header; }
   };
   struct ClassDataFull : ClassData {
     constexpr ClassDataFull(ClassData base,
                             void (*merge_to_from)(MessageLite& to,
                                                   const MessageLite& from_msg),
-                            const DescriptorMethods* descriptor_methods)
+                            const DescriptorMethods* descriptor_methods,
+                            const internal::DescriptorTable* descriptor_table,
+                            void (*get_metadata_tracker)())
         : ClassData(base),
           merge_to_from(merge_to_from),
-          descriptor_methods(descriptor_methods) {}
+          descriptor_methods(descriptor_methods),
+          descriptor_table(descriptor_table),
+          reflection(),
+          descriptor(),
+          get_metadata_tracker(get_metadata_tracker) {}
+
+    constexpr const ClassData* base() const { return this; }
 
     void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     const DescriptorMethods* descriptor_methods;
+
+    // Codegen types will provide a DescriptorTable to do lazy
+    // registration/initialization of the reflection objects.
+    // Other types, like DynamicMessage, keep the table as null but eagerly
+    // populate `reflection`/`descriptor` fields.
+    const internal::DescriptorTable* descriptor_table;
+    // Accesses are protected by the once_flag in `descriptor_table`. When the
+    // table is null these are populated from the beginning and need to
+    // protection.
+    mutable const Reflection* reflection;
+    mutable const Descriptor* descriptor;
+
+    // When an access tracker is installed, this function notifies the tracker
+    // that GetMetadata was called.
+    void (*get_metadata_tracker)();
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -609,6 +643,7 @@ class PROTOBUF_EXPORT MessageLite {
 
  private:
   friend class FastReflectionMessageMutator;
+  friend class AssignDescriptorsHelper;
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;

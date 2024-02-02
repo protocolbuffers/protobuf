@@ -5,14 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Temporary hack to fix gRPC. Do not use.
+syntax = "proto2";
 
-#ifndef UPB_HPP_
-#define UPB_HPP_
+package grandparent;
 
-// IWYU pragma: begin_exports
-#include "upb/base/status.hpp"
-#include "upb/mem/arena.hpp"
-// IWYU pragma: end_exports
+message GrandparentMsg {}
 
-#endif  // UPB_HPP_
+enum GrandparentEnum {
+  GRANDPARENT_ENUM_UNSPECIFIED = 0;
+}

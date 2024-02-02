@@ -78,6 +78,12 @@ namespace io {
 class ErrorCollector;  // tokenizer.h
 }
 
+namespace python {
+namespace cmessage {
+class PythonFieldValuePrinter;
+}
+}  // namespace python
+
 namespace internal {
 // Enum used to set printing options for StringifyMessage.
 PROTOBUF_EXPORT enum class Option;
@@ -525,6 +531,10 @@ class PROTOBUF_EXPORT TextFormat {
       return it == custom_printers_.end() ? default_field_value_printer_.get()
                                           : it->second.get();
     }
+
+    friend class google::protobuf::python::cmessage::PythonFieldValuePrinter;
+    static void HardenedPrintString(absl::string_view src,
+                                    TextFormat::BaseTextGenerator* generator);
 
     int initial_indent_level_;
     bool single_line_mode_;

@@ -14,6 +14,8 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/value.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -109,6 +111,16 @@ UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
 // Returns the key and value for this entry of the map.
 UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
 UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
+
+// Mark a map and all of its descendents as frozen/immutable.
+// If the map values are messages then |m| must point to the minitable for
+// those messages. Otherwise |m| must be NULL.
+UPB_API void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m);
+
+// Returns whether a map has been frozen.
+UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map) {
+  return UPB_PRIVATE(_upb_Map_IsFrozen)(map);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

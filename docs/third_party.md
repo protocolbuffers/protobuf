@@ -249,3 +249,5 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 *   [clojobuf-serdes - low level serialize/deserialize library for protobuf
     binary format](https://github.com/s-expresso/clojobuf-codec) `clojure`
     `clojurescript`
+*   [gRPC Federation - generates a gRPC server by writing a custom option in
+    Protocol Buffers](https://github.com/mercari/grpc-federation)

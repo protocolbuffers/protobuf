@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "absl/log/absl_log.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
@@ -34,11 +35,10 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
   if (field.is_map()) {
     auto value_type = field.message_type()->map_value()->type();
     switch (value_type) {
-      case FieldDescriptor::TYPE_BYTES:
       case FieldDescriptor::TYPE_ENUM:
       case FieldDescriptor::TYPE_MESSAGE:
         return std::make_unique<UnsupportedField>(
-            "Maps with values of type bytes, enum and message are not "
+            "Maps with values of type enum and message are not "
             "supported");
       default:
         return std::make_unique<Map>();
@@ -60,29 +60,25 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_BOOL:
       if (field.is_repeated()) {
-        return std::make_unique<RepeatedScalar>();
+        return std::make_unique<RepeatedField>();
+      }
+      return std::make_unique<SingularScalar>();
+    case FieldDescriptor::TYPE_ENUM:
+      if (field.is_repeated()) {
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularScalar>();
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_STRING:
       if (field.is_repeated()) {
-        return std::make_unique<UnsupportedField>("repeated str not supported");
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularString>();
     case FieldDescriptor::TYPE_MESSAGE:
       if (field.is_repeated()) {
-        return std::make_unique<UnsupportedField>("repeated msg not supported");
-      }
-      if (!ctx.generator_context().is_file_in_current_crate(
-              *field.message_type()->file())) {
-        return std::make_unique<UnsupportedField>(
-            "message fields that are imported from another proto_library"
-            " (defined in a separate Rust crate) are not supported");
+        return std::make_unique<RepeatedField>();
       }
       return std::make_unique<SingularMessage>();
-
-    case FieldDescriptor::TYPE_ENUM:
-      return std::make_unique<UnsupportedField>("enum not supported");
 
     case FieldDescriptor::TYPE_GROUP:
       return std::make_unique<UnsupportedField>("group not supported");
@@ -93,8 +89,9 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
 
 }  // namespace
 
-void GenerateAccessorMsgImpl(Context& ctx, const FieldDescriptor& field) {
-  AccessorGeneratorFor(ctx, field)->GenerateMsgImpl(ctx, field);
+void GenerateAccessorMsgImpl(Context& ctx, const FieldDescriptor& field,
+                             AccessorCase accessor_case) {
+  AccessorGeneratorFor(ctx, field)->GenerateMsgImpl(ctx, field, accessor_case);
 }
 
 void GenerateAccessorExternC(Context& ctx, const FieldDescriptor& field) {

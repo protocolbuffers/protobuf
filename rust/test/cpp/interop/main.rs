@@ -8,8 +8,8 @@
 use googletest::prelude::*;
 use protobuf_cpp::__internal::PtrAndLen;
 use protobuf_cpp::__internal::RawMessage;
-use unittest_proto::proto2_unittest::TestAllExtensions;
-use unittest_proto::proto2_unittest::TestAllTypes;
+use unittest_proto::TestAllExtensions;
+use unittest_proto::TestAllTypes;
 
 macro_rules! proto_assert_eq {
     ($lhs:expr, $rhs:expr) => {{

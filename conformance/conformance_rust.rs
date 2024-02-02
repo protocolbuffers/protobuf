@@ -4,8 +4,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use conformance_proto::conformance::{ConformanceRequest, ConformanceResponse};
-use conformance_rust_overlay_hack_proto::conformance::ConformanceRequestRustOverlayHack;
+use conformance_proto::{ConformanceRequest, ConformanceResponse};
+use conformance_rust_overlay_hack_proto::ConformanceRequestRustOverlayHack;
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;
@@ -16,10 +16,10 @@ use protobuf_upb as kernel;
 use kernel::Optional::{Set, Unset};
 
 use std::io::{self, ErrorKind, Read, Write};
-use test_messages_proto2::protobuf_test_messages::proto2::TestAllTypesProto2;
-use test_messages_proto2_editions_proto::protobuf_test_messages::editions::proto2::TestAllTypesProto2 as EditionsTestAllTypesProto2;
-use test_messages_proto3::protobuf_test_messages::proto3::TestAllTypesProto3;
-use test_messages_proto3_editions_proto::protobuf_test_messages::editions::proto3::TestAllTypesProto3 as EditionsTestAllTypesProto3;
+use test_messages_proto2::TestAllTypesProto2;
+use test_messages_proto2_editions_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
+use test_messages_proto3::TestAllTypesProto3;
+use test_messages_proto3_editions_proto::TestAllTypesProto3 as EditionsTestAllTypesProto3;
 
 /// Returns Some(i32) if a binary read can succeed from stdin.
 /// Returns None if we have reached an EOF.

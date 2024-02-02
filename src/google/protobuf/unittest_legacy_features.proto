@@ -9,7 +9,7 @@
 
 edition = "2023";
 
-package google.protobuf.internal;
+package legacy_features_unittest;
 
 message TestEditionsMessage {
   int32 required_field = 1 [features.field_presence = LEGACY_REQUIRED];

@@ -145,6 +145,7 @@ cc_library(
     deps = [
         ":conformance_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
@@ -236,6 +237,7 @@ cc_binary(
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -253,6 +255,8 @@ java_binary(
         "//:protobuf_java_util",
         "//:test_messages_proto2_java_proto",
         "//:test_messages_proto3_java_proto",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_java_proto",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_java_proto",
     ],
 )
 

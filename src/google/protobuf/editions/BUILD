@@ -79,6 +79,7 @@ cc_test(
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@bazel_tools//tools/cpp/runfiles",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
@@ -110,6 +111,13 @@ internal_objc_proto_library(
     srcs = ["golden/test_messages_proto2_editions.proto"],
     enable_editions = True,
     visibility = ["//conformance:__pkg__"],
+)
+
+java_proto_library(
+    name = "test_messages_proto2_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
 )
 
 py_proto_library(
@@ -179,6 +187,13 @@ internal_objc_proto_library(
     ],
     proto_deps = ["//:well_known_type_protos"],
     visibility = ["//conformance:__pkg__"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
 )
 
 py_proto_library(

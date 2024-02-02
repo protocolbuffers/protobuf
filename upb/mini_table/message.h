@@ -33,10 +33,17 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m) {
   return UPB_PRIVATE(_upb_MiniTable_FieldCount)(m);
 }
 
+// DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* m, const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f);
+}
+
+// Returns the MiniTable for a message field if it is a submessage.
+UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
+    const upb_MiniTable* m, const upb_MiniTableField* f) {
+  return UPB_PRIVATE(_upb_MiniTable_SubMessage)(m, f);
 }
 
 // Returns the MiniTableEnum for a message field, NULL if the field is unlinked.

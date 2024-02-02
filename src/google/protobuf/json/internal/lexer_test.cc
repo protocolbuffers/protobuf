@@ -596,6 +596,23 @@ TEST(LexerTest, RejectNonUtf8String) {
 
 TEST(LexerTest, RejectNonUtf8Prefix) { Bad("\xff{}"); }
 
+TEST(LexerTest, RejectOverlongUtf8) {
+  // This is the NUL character (U+0000) encoded in three bytes instead of one.
+  // Such "overlong" encodings are not considered valid.
+  Bad("\"\340\200\200\"");
+}
+
+TEST(LexerTest, MixtureOfEscapesAndRawMultibyteCharacters) {
+  Do(R"json("😁\t")json", [](io::ZeroCopyInputStream* stream) {
+    EXPECT_THAT(Value::Parse(stream),
+                IsOkAndHolds(ValueIs<std::string>("😁\t")));
+  });
+  Do(R"json("\t😁")json", [](io::ZeroCopyInputStream* stream) {
+    EXPECT_THAT(Value::Parse(stream),
+                IsOkAndHolds(ValueIs<std::string>("\t😁")));
+  });
+}
+
 TEST(LexerTest, SurrogateEscape) {
   absl::string_view json = R"json(
     [ "\ud83d\udc08\u200D\u2b1B\ud83d\uDdA4" ]

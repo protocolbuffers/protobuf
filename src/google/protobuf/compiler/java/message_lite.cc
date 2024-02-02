@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/enum_lite.h"
 #include "google/protobuf/compiler/java/extension_lite.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/message_builder.h"
@@ -148,7 +149,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   variables["deprecation"] =
       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "";
 
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
 
@@ -476,9 +477,11 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
     flags |= 0x2;
   }
   if (!context_->options().strip_nonfunctional_codegen) {
-    if (descriptor_->file()->edition() == Edition::EDITION_PROTO2) {
+    if (JavaGenerator::GetEdition(*descriptor_->file()) ==
+        Edition::EDITION_PROTO2) {
       flags |= 0x1;
-    } else if (descriptor_->file()->edition() >= Edition::EDITION_2023) {
+    } else if (JavaGenerator::GetEdition(*descriptor_->file()) >=
+               Edition::EDITION_2023) {
       flags |= 0x4;
     }
   }
@@ -804,7 +807,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
-  WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteMessageDocComment(printer, descriptor_, context_->options(),
+                         /* kdoc */ true);
   printer->Print("public object $name$Kt {\n", "name", descriptor_->name());
   printer->Indent();
   GenerateKotlinDsl(printer);

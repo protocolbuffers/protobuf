@@ -40,11 +40,13 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":types",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
         "//upb/base:internal",
+        "//upb/hash",
         "//upb/mini_table:internal",
     ],
 )
@@ -54,13 +56,13 @@ cc_library(
     srcs = [
         "internal/extension.c",
         "internal/message.c",
+        "value.h",
     ],
     hdrs = [
         "internal/accessors.h",
         "internal/array.h",
         "internal/extension.h",
         "internal/map.h",
-        "internal/map_entry.h",
         "internal/map_sorter.h",
         "internal/message.h",
         "internal/tagged_ptr.h",
@@ -68,6 +70,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":types",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -90,6 +93,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":message",
+        "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
@@ -153,6 +157,21 @@ cc_library(
     deps = [
         ":message",
         "//upb:port",
+    ],
+)
+
+cc_library(
+    name = "types",
+    hdrs = [
+        "internal/map_entry.h",
+        "internal/types.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb:base",
+        "//upb:port",
+        "//upb/hash",
     ],
 )
 
@@ -304,7 +323,12 @@ proto_library(
     name = "utf8_test_proto",
     testonly = 1,
     srcs = ["utf8_test.proto"],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+proto_library(
+    name = "utf8_test_proto2_proto",
+    testonly = 1,
+    srcs = ["utf8_test_proto2.proto"],
 )
 
 upb_minitable_proto_library(
@@ -313,16 +337,30 @@ upb_minitable_proto_library(
     deps = [":utf8_test_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "utf8_test_proto2_upb_minitable_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto2_proto"],
+)
+
 upb_c_proto_library(
     name = "utf8_test_upb_proto",
     testonly = 1,
     deps = [":utf8_test_proto"],
 )
 
+upb_c_proto_library(
+    name = "utf8_test_proto2_upb_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto2_proto"],
+)
+
 cc_test(
     name = "utf8_test",
     srcs = ["utf8_test.cc"],
     deps = [
+        ":utf8_test_proto2_upb_minitable_proto",
+        ":utf8_test_proto2_upb_proto",
         ":utf8_test_upb_minitable_proto",
         ":utf8_test_upb_proto",
         "//upb:base",

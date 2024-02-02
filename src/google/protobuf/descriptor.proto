@@ -73,6 +73,7 @@ enum Edition {
   // should not be depended on, but they will always be time-ordered for easy
   // comparison.
   EDITION_2023 = 1000;
+  EDITION_2024 = 1001;
 
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relyed on outside of tests.
@@ -1013,8 +1014,10 @@ message FeatureSet {
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java
+  extensions 1002;  // for Protobuf Go
 
   extensions 9995 to 9999;  // For internal testing
+  extensions 10000;         // for https://github.com/bufbuild/protobuf-es
 }
 
 // A compiled specification for the defaults of a set of features.  These

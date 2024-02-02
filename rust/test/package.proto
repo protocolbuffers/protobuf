@@ -12,3 +12,7 @@ package testing_packages;
 import public "google/protobuf/rust/test/package_import.proto";
 
 message MsgWithPackage {}
+
+enum EnumWithPackage {
+  ENUM_WITH_PACKAGE_UNSPECIFIED = 0;
+}

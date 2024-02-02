@@ -26,7 +26,7 @@ extern "C" {
 UPB_PRIVATE(_upb_WireReader_LongVarint)
 UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val);
 
-static UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
+UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
     const char* ptr, uint64_t* val, int maxlen, uint64_t maxval) {
   uint64_t byte = (uint8_t)*ptr;
   if (UPB_LIKELY((byte & 0x80) == 0)) {

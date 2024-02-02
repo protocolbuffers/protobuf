@@ -239,7 +239,6 @@ pkg_files(
         "//python:message_srcs",
         "//upb:source_files",
         "//upb/base:source_files",
-        "//upb/collections:source_files",
         "//upb/hash:source_files",
         "//upb/lex:source_files",
         "//upb/mem:source_files",

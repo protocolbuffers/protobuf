@@ -146,7 +146,7 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false }
+                [pb.cpp] { legacy_closed_enum: false string_type: STRING }
               )pb"));
 }
 

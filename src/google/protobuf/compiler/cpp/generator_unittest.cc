@@ -69,7 +69,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
                  R"schema(
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
-    
+
     message Foo {
       int32 bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
     })schema");
@@ -109,7 +109,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
-    
+
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
     }
@@ -130,7 +130,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
-    
+
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
     }
@@ -148,7 +148,6 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
-#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
 TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -181,7 +180,6 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "Extension bar specifies ctype=CORD which is "
       "not supported for extensions.");
 }
-#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler

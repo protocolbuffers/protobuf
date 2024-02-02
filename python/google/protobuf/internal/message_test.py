@@ -1406,6 +1406,12 @@ class Proto2Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       m.unknown_map_field[1] = 123
 
+  def testDeepCopyClosedEnum(self):
+    m = map_proto2_unittest_pb2.TestEnumMap()
+    m.known_map_field[123] = 0
+    m2 = copy.deepcopy(m)
+    self.assertEqual(m, m2)
+
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()
     self.assertRaises(AttributeError, getattr, msg, 'Extensions')
@@ -1771,7 +1777,8 @@ class Proto3Test(unittest.TestCase):
 
     # Test has presence:
     for field in test_proto3_optional_pb2.TestProto3Optional.DESCRIPTOR.fields:
-      self.assertTrue(field.has_presence)
+      if field.name.startswith('optional_'):
+        self.assertTrue(field.has_presence)
     for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
       if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         self.assertFalse(field.has_presence)
@@ -2604,6 +2611,30 @@ class ValidTypeNamesTest(unittest.TestCase):
     pb = unittest_pb2.TestAllTypes()
     self.assertImportFromName(pb.repeated_int32, 'Scalar')
     self.assertImportFromName(pb.repeated_nested_message, 'Composite')
+
+
+# We can only test this case under proto2, because proto3 will reject invalid
+# UTF-8 in the parser, so there should be no way of creating a string field
+# that contains invalid UTF-8.
+#
+# We also can't test it in pure-Python, which validates all string fields for
+# UTF-8 even when the spec says it shouldn't.
+@unittest.skipIf(api_implementation.Type() == 'python',
+                 'Python can\'t create invalid UTF-8 strings')
+@testing_refleaks.TestCase
+class InvalidUtf8Test(unittest.TestCase):
+
+  def testInvalidUtf8Printing(self):
+    one_bytes = unittest_pb2.OneBytes()
+    one_bytes.data = b'ABC\xff123'
+    one_string = unittest_pb2.OneString()
+    one_string.ParseFromString(one_bytes.SerializeToString())
+    self.assertIn('data: "ABC\\377123"', str(one_string))
+
+  def testValidUtf8Printing(self):
+    self.assertIn('data: "€"', str(unittest_pb2.OneString(data='€')))  # 2 byte
+    self.assertIn('data: "￡"', str(unittest_pb2.OneString(data='￡')))  # 3 byte
+    self.assertIn('data: "🙂"', str(unittest_pb2.OneString(data='🙂')))  # 4 byte
 
 
 @testing_refleaks.TestCase

@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use unittest_proto::proto2_unittest::TestAllTypes;
+use unittest_proto::TestAllTypes;
 
 #[test]
 fn serialize_deserialize_message() {

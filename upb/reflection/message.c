@@ -29,8 +29,14 @@
 #include "upb/port/def.inc"
 
 bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f) {
+  const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
   UPB_ASSERT(upb_FieldDef_HasPresence(f));
-  return upb_Message_HasField(msg, upb_FieldDef_MiniTable(f));
+
+  if (upb_MiniTableField_IsExtension(m_f)) {
+    return upb_Message_HasExtension(msg, (const upb_MiniTableExtension*)m_f);
+  } else {
+    return upb_Message_HasBaseField(msg, m_f);
+  }
 }
 
 const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,

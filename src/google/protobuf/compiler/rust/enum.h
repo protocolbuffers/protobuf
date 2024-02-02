@@ -40,14 +40,6 @@ std::vector<RustEnumValue> EnumValues(
     absl::string_view enum_name,
     absl::Span<const std::pair<absl::string_view, int32_t>> values);
 
-// TODO: Unify these with other case-conversion functions.
-
-// Converts an UpperCamel or lowerCamel string to a snake_case string.
-std::string CamelToSnakeCase(absl::string_view input);
-
-// Converts a SCREAMING_SNAKE_CASE string to an UpperCamelCase string.
-std::string ScreamingSnakeToUpperCamelCase(absl::string_view input);
-
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

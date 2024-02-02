@@ -28,9 +28,9 @@ struct upb_MiniTableExtension {
 extern "C" {
 #endif
 
-UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
-    _upb_MiniTableExtension_AsField)(const struct upb_MiniTableExtension* e) {
-  return (const struct upb_MiniTableField*)&e->UPB_PRIVATE(field);
+UPB_INLINE upb_CType UPB_PRIVATE(_upb_MiniTableExtension_CType)(
+    const struct upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableField_CType)(&e->UPB_PRIVATE(field));
 }
 
 UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
