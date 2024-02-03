@@ -430,7 +430,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // Feature resolution for Java features uses extension registry
   // which must happen after internalInit() from
   // GenerateNonNestedInitializationCode
-  printer->Print("descriptor.resolveAllFeatures();\n");
+  printer->Print("descriptor.resolveAllFeaturesImmutable();\n");
 
   // Proto compiler builds a DescriptorPool, which holds all the descriptors to
   // generate, when processing the ".proto" files. We call this DescriptorPool
@@ -460,6 +460,17 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
     });
   }
+
+  // Force descriptor initialization of all dependencies.
+  for (int i = 0; i < file_->dependency_count(); i++) {
+    if (ShouldIncludeDependency(file_->dependency(i), true)) {
+      std::string dependency =
+          name_resolver_->GetImmutableClassName(file_->dependency(i));
+      printer->Print("$dependency$.getDescriptor();\n", "dependency",
+                     dependency);
+    }
+  }
+
   if (!extensions.empty()) {
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
@@ -479,17 +490,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     }
     printer->Print(
         "com.google.protobuf.Descriptors.FileDescriptor\n"
-        "    .internalUpdateFileDescriptor(descriptor, registry);\n");
-  }
-
-  // Force descriptor initialization of all dependencies.
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    if (ShouldIncludeDependency(file_->dependency(i), true)) {
-      std::string dependency =
-          name_resolver_->GetImmutableClassName(file_->dependency(i));
-      printer->Print("$dependency$.getDescriptor();\n", "dependency",
-                     dependency);
-    }
+        "    .internalUpdateFileDescriptorImmutable(descriptor, registry);\n");
   }
 
   printer->Outdent();
