@@ -1198,10 +1198,11 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
   int size = ReadSize(&ptr);
   auto element_size = 0;
   const uint8_t* pData = (uint8_t*)ptr;
-  for (auto i = 0; i < size; i++) {
-    if (pData[i] < 0x80) {
+  while (pData && pData < (pData + size)) {
+    if (*pData < 0x80) {
       element_size++;
     }
+    pData++;
   }
   size_callback(element_size);
 
