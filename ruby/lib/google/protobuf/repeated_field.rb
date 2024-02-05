@@ -47,7 +47,7 @@ module Google
       def_delegators :to_ary,
         :&, :*, :-, :'<=>',
         :assoc, :bsearch, :bsearch_index, :combination, :compact, :count,
-        :cycle, :dig, :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
+        :cycle, :dig, :drop, :drop_while, :each, :eql?, :fetch, :find_index, :flatten,
         :include?, :index, :inspect, :join,
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,
