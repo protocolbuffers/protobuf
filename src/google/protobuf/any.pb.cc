@@ -204,6 +204,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Any_default_instance_._instance,
+    nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
     ::_pbi::TcParser::GetTable<::google::protobuf::Any>(),  // to_prefetch
