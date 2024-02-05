@@ -4321,7 +4321,7 @@ static void jsonenc_fieldval(jsonenc* e, const upb_FieldDef* f,
     // research here about what various implementations do.
     jsonenc_printf(e, "\"[%s]\":", upb_FieldDef_FullName(f));
   } else {
-    if (e->options & upb_JsonEncode_UseProtoNames && !upb_FieldDef_HasJsonName(f)) {
+    if (e->options & upb_JsonEncode_UseProtoNames) {
       name = upb_FieldDef_Name(f);
     } else {
       name = upb_FieldDef_JsonName(f);

@@ -224,8 +224,7 @@ class GPBJsonWire
 
     public static function formatFieldName($field, $preserve_proto_field_names)
     {
-        return (boolval($preserve_proto_field_names) === false || $field->hasCustomJsonName()) ?
-            $field->getJsonName() : $field->getName();
+        return boolval($preserve_proto_field_names) === true ? $field->getName() : $field->getJsonName();
     }
 
     // Used for escaping control chars in strings.

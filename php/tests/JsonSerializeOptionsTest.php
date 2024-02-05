@@ -21,7 +21,7 @@ class JsonSerializeOptionsTest extends TestBase
         self::assertArrayHasKey('short', $data);
         self::assertArrayHasKey('long_name', $data);
         self::assertArrayHasKey('Strange_case', $data);
-        self::assertArrayHasKey('json_name', $data);
+        self::assertArrayHasKey('with_json_name', $data);
 
         $data = json_decode($sut->serializeToJsonString(), true);
         self::assertArrayHasKey('short', $data);
