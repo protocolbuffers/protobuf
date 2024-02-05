@@ -72,7 +72,6 @@ class ParseError(Error):
 
 def MessageToJson(
     message,
-    including_default_value_fields=False,
     preserving_proto_field_name=False,
     indent=2,
     sort_keys=False,
@@ -86,12 +85,6 @@ def MessageToJson(
 
   Args:
     message: The protocol buffers message instance to serialize.
-    including_default_value_fields: (DEPRECATED: use
-      always_print_fields_with_no_presence which correctly treats proto2
-      and proto3 optionals the same). If True, fields without presence (implicit
-      presence scalars, repeated fields, and map fields) and Proto2 optional
-      scalars will always be serialized. Singular message fields, oneof fields
-      and Proto3 optional scalars are not affected by this option.
     always_print_fields_with_no_presence: If True, fields without
       presence (implicit presence scalars, repeated fields, and map fields) will
       always be serialized. Any field that supports presence is not affected by
@@ -114,7 +107,6 @@ def MessageToJson(
     A string containing the JSON formatted protocol buffer message.
   """
   printer = _Printer(
-      including_default_value_fields,
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
@@ -126,7 +118,6 @@ def MessageToJson(
 
 def MessageToDict(
     message,
-    including_default_value_fields=False,
     always_print_fields_with_no_presence=False,
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
@@ -139,12 +130,6 @@ def MessageToDict(
 
   Args:
     message: The protocol buffers message instance to serialize.
-    including_default_value_fields: (DEPRECATED: use
-      always_print_fields_with_no_presence to correctly treats proto2
-      and proto3 optional the same). If True, fields without presence (implicit
-      presence scalars, repeated fields, and map fields) and Proto2 optional
-      scalars will always be serialized. Singular message fields, oneof fields
-      and Proto3 optional scalars are not affected by this option.
     always_print_fields_with_no_presence: If True, fields without
       presence (implicit presence scalars, repeated fields, and map fields) will
       always be serialized. Any field that supports presence is not affected by
@@ -161,7 +146,6 @@ def MessageToDict(
     A dict representation of the protocol buffer message.
   """
   printer = _Printer(
-      including_default_value_fields,
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
@@ -185,14 +169,12 @@ class _Printer(object):
 
   def __init__(
       self,
-      including_default_value_fields=False,
       preserving_proto_field_name=False,
       use_integers_for_enums=False,
       descriptor_pool=None,
       float_precision=None,
       always_print_fields_with_no_presence=False,
   ):
-    self.including_default_value_fields = including_default_value_fields
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
     )
@@ -256,23 +238,10 @@ class _Printer(object):
 
       # Serialize default value if including_default_value_fields is True.
       if (
-          self.including_default_value_fields
-          or self.always_print_fields_with_no_presence
+          self.always_print_fields_with_no_presence
       ):
         message_descriptor = message.DESCRIPTOR
         for field in message_descriptor.fields:
-          # including_default_value doesn't apply to singular messages or any
-          # field with a containing oneof (including proto3 optionals which use
-          # a synthetic oneof).
-          if self.including_default_value_fields and (
-              (
-                  field.label != descriptor.FieldDescriptor.LABEL_REPEATED
-                  and field.cpp_type
-                  == descriptor.FieldDescriptor.CPPTYPE_MESSAGE
-              )
-              or field.containing_oneof
-          ):
-            continue
 
           # always_print_fields_with_no_presence doesn't apply to
           # any field which supports presence.
