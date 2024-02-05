@@ -1443,7 +1443,8 @@ public final class Descriptors {
       if (isRepeated()) {
         return false;
       }
-      return getType() == Type.MESSAGE
+      return isProto3Optional
+          || getType() == Type.MESSAGE
           || getType() == Type.GROUP
           || getContainingOneof() != null
           || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
