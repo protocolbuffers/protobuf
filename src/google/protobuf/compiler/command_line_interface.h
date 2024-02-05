@@ -292,7 +292,7 @@ class PROTOC_EXPORT CommandLineInterface {
       GeneratorContext* generator_context, std::string* error);
 
   // Implements --encode and --decode.
-  bool EncodeOrDecode(const DescriptorPool* pool);
+  bool EncodeOrDecode(const DescriptorPool* pool, ErrorPrinter* default_error_collector);
 
   // Implements the --descriptor_set_out option.
   bool WriteDescriptorSet(
