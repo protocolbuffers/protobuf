@@ -1514,10 +1514,13 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
   Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
-  Edition maximum_edition = PROTOBUF_MAXIMUM_EDITION;
+  // Override maximum_edition if experimental_editions is true.
+  Edition maximum_edition =
+      !experimental_editions_ ? PROTOBUF_MAXIMUM_EDITION : Edition::EDITION_MAX;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
-    if ((output.generator->GetSupportedFeatures() &
+    if (!experimental_editions_ &&
+        (output.generator->GetSupportedFeatures() &
          CodeGenerator::FEATURE_SUPPORTS_EDITIONS) != 0) {
       // Only validate min/max edition on generators that advertise editions
       // support.  Generators still under development will always use the
@@ -2576,15 +2579,11 @@ bool CommandLineInterface::EnforceEditionsSupport(
   for (const auto* fd : parsed_files) {
     Edition edition =
         ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
-    if (edition < Edition::EDITION_2023) {
-      // Legacy proto2/proto3 files don't need any checks.
+    if (edition < Edition::EDITION_2023 || CanSkipEditionCheck(fd->name())) {
+      // Legacy proto2/proto3 or exempted files don't need any checks.
       continue;
     }
 
-    if (absl::StartsWith(fd->name(), "google/protobuf/") ||
-        absl::StartsWith(fd->name(), "upb/")) {
-      continue;
-    }
     if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
       std::cerr << absl::Substitute(
           "$0: is an editions file, but code generator $1 hasn't been "

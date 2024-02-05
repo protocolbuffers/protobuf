@@ -1483,8 +1483,7 @@ TEST_F(CommandLineInterfaceTest, InvalidMinimumEditionError) {
 
   mock_generator_->set_minimum_edition(EDITION_1_TEST_ONLY);
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies a minimum edition 1_TEST_ONLY which is "
       "not the protoc minimum PROTO2");
@@ -1495,8 +1494,7 @@ TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
 
   mock_generator_->set_maximum_edition(EDITION_99999_TEST_ONLY);
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies a maximum edition 99999_TEST_ONLY which "
       "is not the protoc maximum 2023");
