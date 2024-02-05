@@ -6054,6 +6054,10 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   BUILD_ARRAY(proto, result, extension, BuildExtension, result);
   BUILD_ARRAY(proto, result, reserved_range, BuildReservedRange, result);
 
+  // Copy options.
+  AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.MessageOptions", alloc);
+
   // Before building submessages, check recursion limit.
   --recursion_depth_;
   IncrementWhenDestroyed revert{recursion_depth_};
@@ -6074,10 +6078,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   for (int i = 0; i < reserved_name_count; ++i) {
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
-
-  // Copy options.
-  AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
-                  "google.protobuf.MessageOptions", alloc);
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
