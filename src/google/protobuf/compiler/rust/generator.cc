@@ -44,23 +44,10 @@ namespace {
 void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
                           const FileDescriptor& non_primary_src) {
   auto mod = RustInternalModuleName(ctx, non_primary_src);
-  for (int i = 0; i < non_primary_src.message_type_count(); ++i) {
-    auto& msg = *non_primary_src.message_type(i);
-    ctx.Emit({{"mod", mod}, {"Msg", RsSafeName(msg.name())}},
-             R"rs(
-                        pub use crate::$mod$::$Msg$;
-                        // TODO Address use for imported crates
-                        pub use crate::$mod$::$Msg$View;
-                        pub use crate::$mod$::$Msg$Mut;
-                      )rs");
-  }
-  for (int i = 0; i < non_primary_src.enum_type_count(); ++i) {
-    auto& enum_ = *non_primary_src.enum_type(i);
-    ctx.Emit({{"mod", mod}, {"Enum", EnumRsName(enum_)}},
-             R"rs(
-                        pub use crate::$mod$::$Enum$;
-                      )rs");
-  }
+  ctx.Emit({{"mod", mod}}, R"rs(
+    #[allow(unused_imports)]
+    pub use crate::$mod$::*;
+  )rs");
 }
 
 // Emits `pub use <crate_name>::<modules for parent types>::Type` for all
