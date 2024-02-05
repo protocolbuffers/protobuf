@@ -226,6 +226,8 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   MessageSCCAnalyzer* scc) {
 
   if (field->is_map()) {
+    ABSL_CHECK(
+        !(field->options().lazy() || field->options().unverified_lazy()));
     return MakeMapGenerator(field, options, scc);
   }
   if (field->is_repeated()) {
