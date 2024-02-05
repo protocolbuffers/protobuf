@@ -39,11 +39,11 @@ struct PrintOptions {
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace = false;
-  // Whether to always print primitive fields. By default proto3 primitive
-  // fields with default values will be omitted in JSON output. For example, an
-  // int32 field set to 0 will be omitted. Set this flag to true will override
-  // the default behavior and print primitive fields regardless of their values.
-  bool always_print_primitive_fields = false;
+  // Whether to always print fields which do not support presence if they would
+  // otherwise be omitted, namely:
+  // - Implicit presence fields set to their 0 value
+  // - Empty lists and maps
+  bool always_print_fields_with_no_presence = false;
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints = false;
