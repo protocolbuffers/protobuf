@@ -196,13 +196,13 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
                      ErrorCollector* error_collector)
     : input_(input),
       error_collector_(error_collector),
-      buffer_(NULL),
+      buffer_(nullptr),
       buffer_size_(0),
       buffer_pos_(0),
       read_error_(false),
       line_(0),
       column_(0),
-      record_target_(NULL),
+      record_target_(nullptr),
       record_start_(-1),
       allow_f_after_float_(false),
       comment_style_(CPP_COMMENT_STYLE),
@@ -271,7 +271,7 @@ void Tokenizer::Refresh() {
   }
 
   // If we're in a token, append the rest of the buffer to it.
-  if (record_target_ != NULL && record_start_ < buffer_size_) {
+  if (record_target_ != nullptr && record_start_ < buffer_size_) {
     record_target_->append(buffer_ + record_start_,
                            buffer_size_ - record_start_);
     record_start_ = 0;

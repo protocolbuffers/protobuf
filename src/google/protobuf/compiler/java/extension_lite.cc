@@ -29,7 +29,7 @@ ImmutableExtensionLiteGenerator::ImmutableExtensionLiteGenerator(
     : descriptor_(descriptor),
       name_resolver_(context->GetNameResolver()),
       context_(context) {
-  if (descriptor_->extension_scope() != NULL) {
+  if (descriptor_->extension_scope() != nullptr) {
     scope_ =
         name_resolver_->GetImmutableClassName(descriptor_->extension_scope());
   } else {

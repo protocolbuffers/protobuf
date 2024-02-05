@@ -1774,7 +1774,7 @@ bool CommandLineInterface::ExpandArgumentFile(
 // proper supported utf8 wstring. If we dont then the file can't be opened.
 #ifdef _MSC_VER
   // Convert the file name to wide chars.
-  int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), NULL, 0);
+  int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), nullptr, 0);
   std::wstring file_str;
   file_str.resize(size);
   MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), &file_str[0],

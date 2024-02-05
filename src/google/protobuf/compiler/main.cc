@@ -107,12 +107,12 @@ int ProtobufMain(int argc, char* argv[]) {
 
 #ifdef _MSC_VER
 std::string ToMultiByteUtf8String(const wchar_t* input) {
-  int size =
-      WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0, NULL, NULL);
+  int size = WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0,
+                                 nullptr, nullptr);
   std::string result(size, 0);
   if (size)
     WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), &result[0], size,
-                        NULL, NULL);
+                        nullptr, nullptr);
   return result;
 }
 

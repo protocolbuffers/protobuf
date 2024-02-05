@@ -577,7 +577,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
           : "";
 
   // Emit getter.
-  if (oneof != NULL) {
+  if (oneof != nullptr) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
@@ -713,7 +713,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
                    UnderscoresToCamelCase(field->cpp_type_name(), true));
   }
 
-  if (oneof != NULL) {
+  if (oneof != nullptr) {
     printer->Print("$this->writeOneof(^number^, $var);\n", "number",
                    IntToString(field->number()));
   } else if (field->is_repeated()) {

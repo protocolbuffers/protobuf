@@ -33,17 +33,17 @@ GzipInputStream::GzipInputStream(ZeroCopyInputStream* sub_stream, Format format,
   zcontext_.zfree = Z_NULL;
   zcontext_.opaque = Z_NULL;
   zcontext_.total_out = 0;
-  zcontext_.next_in = NULL;
+  zcontext_.next_in = nullptr;
   zcontext_.avail_in = 0;
   zcontext_.total_in = 0;
-  zcontext_.msg = NULL;
+  zcontext_.msg = nullptr;
   if (buffer_size == -1) {
     output_buffer_length_ = kDefaultBufferSize;
   } else {
     output_buffer_length_ = buffer_size;
   }
   output_buffer_ = operator new(output_buffer_length_);
-  ABSL_CHECK(output_buffer_ != NULL);
+  ABSL_CHECK(output_buffer_ != nullptr);
   zcontext_.next_out = static_cast<Bytef*>(output_buffer_);
   zcontext_.avail_out = output_buffer_length_;
   output_position_ = output_buffer_;

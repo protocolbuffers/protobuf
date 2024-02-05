@@ -1738,14 +1738,14 @@ TEST_F(IoTest, LimitingInputStreamByteCount) {
 
 // Check that a zero-size array doesn't confuse the code.
 TEST(ZeroSizeArray, Input) {
-  ArrayInputStream input(NULL, 0);
+  ArrayInputStream input(nullptr, 0);
   const void* data;
   int size;
   EXPECT_FALSE(input.Next(&data, &size));
 }
 
 TEST(ZeroSizeArray, Output) {
-  ArrayOutputStream output(NULL, 0);
+  ArrayOutputStream output(nullptr, 0);
   void* data;
   int size;
   EXPECT_FALSE(output.Next(&data, &size));
