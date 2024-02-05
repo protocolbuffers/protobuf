@@ -3217,14 +3217,14 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
   // We use `operator new` here because the destruction will be done with
   // `operator delete` unconditionally.
   void* p = ::operator new(sizeof(Table));
-  auto* full_table = ::new (p)
-      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr
+  auto* full_table = ::new (p) Table{
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr, nullptr
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-             ,
-             nullptr
+       ,
+       nullptr
 #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-            },
-            {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
+      },
+      {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
   // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
   // branches. Here we don't know which field is the hottest, so set the pointer
@@ -3277,7 +3277,6 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    ABSL_CHECK(!field->options().weak());
     if (field->type() == field->TYPE_ENUM &&
         table_info.aux_entries[entry.aux_idx].type ==
             internal::TailCallTableInfo::kEnumValidator) {
@@ -3352,17 +3351,12 @@ void Reflection::PopulateTcParseFieldAux(
   }
 }
 
+
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
   if (descriptor_->options().message_set_wire_format()) {
     return CreateTcParseTableReflectionOnly();
-  }
-
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
-    if (descriptor_->field(i)->options().weak()) {
-      return CreateTcParseTableReflectionOnly();
-    }
   }
 
   std::vector<const FieldDescriptor*> fields;
@@ -3460,6 +3454,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
       schema_.default_instance_,
+      nullptr,
       &internal::TcParser::ReflectionFallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ,

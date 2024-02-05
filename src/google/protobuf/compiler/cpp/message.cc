@@ -1943,6 +1943,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
         }},
        {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
+       {"post_loop_handler",
+        [&] {
+          if (!NeedsPostLoopHandler(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            static void PostLoopHandler(MessageLite* msg,
+                                        $pbi$::ParseContext* ctx);
+          )cc");
+        }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"split_friend",
         [&] {
@@ -2080,6 +2088,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_set_has$;
           $decl_oneof_has$;
           $decl_data$;
+          $post_loop_handler$;
           friend class ::$proto_ns$::MessageLite;
           friend class ::$proto_ns$::Arena;
           template <typename T>
@@ -2284,6 +2293,20 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         return $superclass$::GetMetadataImpl(GetClassData()->full());
       }
     )cc");
+  }
+
+  if (NeedsPostLoopHandler(descriptor_, options_)) {
+    p->Emit(
+        {{"required",
+          [&] {
+          }}},
+        R"cc(
+          void $classname$::PostLoopHandler(MessageLite* msg,
+                                            ::_pbi::ParseContext* ctx) {
+            $classname$* _this = static_cast<$classname$*>(msg);
+            $required$;
+          }
+        )cc");
   }
 
   if (HasTracker(descriptor_, options_)) {

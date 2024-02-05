@@ -6186,14 +6186,8 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
   std::string message_name = result->full_name();
-  if (pool_->deprecated_legacy_json_field_conflicts_ ||
-      IsLegacyJsonFieldConflictEnabled(result->options())) {
-    if (result->file()->edition() == Edition::EDITION_PROTO3) {
-      // Only check default JSON names for conflicts in proto3.  This is legacy
-      // behavior that will be removed in a later version.
-      CheckFieldJsonNameUniqueness(message_name, proto, result, false);
-    }
-  } else {
+  if (!pool_->deprecated_legacy_json_field_conflicts_ &&
+      !IsLegacyJsonFieldConflictEnabled(result->options())) {
     // Check both with and without taking json_name into consideration.  This is
     // needed for field masks, which don't use json_name.
     CheckFieldJsonNameUniqueness(message_name, proto, result, false);
@@ -7664,24 +7658,33 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
-  if (field->file()->edition() >= Edition::EDITION_2023 &&
-      field->options().has_ctype()) {
-    if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
-      AddError(
-          field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
-          absl::StrFormat(
-              "Field %s specifies ctype, but is not a string nor bytes field.",
-              field->full_name())
-              .c_str());
-    }
-    if (field->options().ctype() == FieldOptions::CORD) {
-      if (field->is_extension()) {
+  auto edition = field->file()->edition();
+  auto& field_options = field->options();
+
+  if (field_options.has_ctype()) {
+    if (edition >= Edition::EDITION_2024) {
+      // "ctype" is no longer supported in edition 2024 and beyond.
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "ctype option is not allowed under edition 2024 and beyond. Use "
+               "the feature string_type = VIEW|CORD|STRING|... instead.");
+    } else if (edition == Edition::EDITION_2023) {
+      if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
-                 absl::StrFormat("Extension %s specifies ctype=CORD which is "
-                                 "not supported for extensions.",
+                 absl::StrFormat("Field %s specifies ctype, but is not a "
+                                 "string nor bytes field.",
                                  field->full_name())
                      .c_str());
+      }
+      if (field_options.ctype() == FieldOptions::CORD) {
+        if (field->is_extension()) {
+          AddError(field->full_name(), proto,
+                   DescriptorPool::ErrorCollector::TYPE,
+                   absl::StrFormat("Extension %s specifies ctype=CORD which is "
+                                   "not supported for extensions.",
+                                   field->full_name())
+                       .c_str());
+        }
       }
     }
   }
@@ -7872,8 +7875,9 @@ void DescriptorBuilder::ValidateFieldFeatures(
              "message_encoding = DELIMITED to control this behavior.");
   }
 
+  auto& field_options = field->options();
   // Validate legacy options that have been migrated to features.
-  if (field->options().has_packed()) {
+  if (field_options.has_packed()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Field option packed is not allowed under editions.  Use the "
              "repeated_field_encoding feature to control this behavior.");

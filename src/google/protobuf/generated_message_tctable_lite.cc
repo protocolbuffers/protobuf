@@ -95,6 +95,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
+  table -= 1;
+  if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+    table->post_loop_handler(msg, ctx);
+  }
   return ptr;
 }
 

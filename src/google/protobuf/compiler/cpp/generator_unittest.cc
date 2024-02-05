@@ -148,6 +148,102 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
+TEST_F(CppGeneratorTest, NoStringTypeTillEdition2024) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.baz specifies string_type which is not currently allowed.");
+}
+
+TEST_F(CppGeneratorTest, StringTypeForCord) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, CtypeForCord) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [ctype = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, StringTypeForStringFieldsOnly) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      int32 baz = 2 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.baz specifies string_type, but is not a string nor bytes "
+      "field.");
+}
+
+TEST_F(CppGeneratorTest, StringTypeCordNotForExtension) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      extensions 1 to max;
+    }
+    extend Foo {
+      bytes bar = 1 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Extension bar specifies string_type=CORD which is not supported for "
+      "extensions.");
+}
+
 TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
   CreateTempFile("foo.proto",
                  R"schema(

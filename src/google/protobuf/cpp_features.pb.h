@@ -27,6 +27,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
+#include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/descriptor.pb.h"
 // @@protoc_insertion_point(includes)
@@ -61,6 +62,37 @@ namespace protobuf {
 }  // namespace google
 
 namespace pb {
+enum CppFeatures_StringType : int {
+  CppFeatures_StringType_STRING_TYPE_UNKNOWN = 0,
+  CppFeatures_StringType_VIEW = 1,
+  CppFeatures_StringType_CORD = 2,
+  CppFeatures_StringType_STRING = 3,
+};
+
+PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
+constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN = static_cast<CppFeatures_StringType>(0);
+constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX = static_cast<CppFeatures_StringType>(3);
+constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
+CppFeatures_StringType_descriptor();
+template <typename T>
+const std::string& CppFeatures_StringType_Name(T value) {
+  static_assert(std::is_same<T, CppFeatures_StringType>::value ||
+                    std::is_integral<T>::value,
+                "Incorrect type passed to StringType_Name().");
+  return CppFeatures_StringType_Name(static_cast<CppFeatures_StringType>(value));
+}
+template <>
+inline const std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor,
+                                                 0, 3>(
+      static_cast<int>(value));
+}
+inline bool CppFeatures_StringType_Parse(absl::string_view name, CppFeatures_StringType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(
+      CppFeatures_StringType_descriptor(), name, value);
+}
 
 // ===================================================================
 
@@ -188,10 +220,32 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
  public:
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
+  using StringType = CppFeatures_StringType;
+  static constexpr StringType STRING_TYPE_UNKNOWN = CppFeatures_StringType_STRING_TYPE_UNKNOWN;
+  static constexpr StringType VIEW = CppFeatures_StringType_VIEW;
+  static constexpr StringType CORD = CppFeatures_StringType_CORD;
+  static constexpr StringType STRING = CppFeatures_StringType_STRING;
+  static inline bool StringType_IsValid(int value) {
+    return CppFeatures_StringType_IsValid(value);
+  }
+  static constexpr StringType StringType_MIN = CppFeatures_StringType_StringType_MIN;
+  static constexpr StringType StringType_MAX = CppFeatures_StringType_StringType_MAX;
+  static constexpr int StringType_ARRAYSIZE = CppFeatures_StringType_StringType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* StringType_descriptor() {
+    return CppFeatures_StringType_descriptor();
+  }
+  template <typename T>
+  static inline const std::string& StringType_Name(T value) {
+    return CppFeatures_StringType_Name(value);
+  }
+  static inline bool StringType_Parse(absl::string_view name, StringType* value) {
+    return CppFeatures_StringType_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
   enum : int {
     kLegacyClosedEnumFieldNumber = 1,
+    kStringTypeFieldNumber = 2,
   };
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_legacy_closed_enum() const;
@@ -204,12 +258,23 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   void _internal_set_legacy_closed_enum(bool value);
 
   public:
+  // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool has_string_type() const;
+  void clear_string_type() ;
+  ::pb::CppFeatures_StringType string_type() const;
+  void set_string_type(::pb::CppFeatures_StringType value);
+
+  private:
+  ::pb::CppFeatures_StringType _internal_string_type() const;
+  void _internal_set_string_type(::pb::CppFeatures_StringType value);
+
+  public:
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 0,
+      1, 2, 1,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -228,6 +293,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;
+    int string_type_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -283,6 +349,35 @@ inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
   _impl_.legacy_closed_enum_ = value;
 }
 
+// optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+inline bool CppFeatures::has_string_type() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline void CppFeatures::clear_string_type() {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  _impl_.string_type_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline ::pb::CppFeatures_StringType CppFeatures::string_type() const {
+  // @@protoc_insertion_point(field_get:pb.CppFeatures.string_type)
+  return _internal_string_type();
+}
+inline void CppFeatures::set_string_type(::pb::CppFeatures_StringType value) {
+  _internal_set_string_type(value);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  // @@protoc_insertion_point(field_set:pb.CppFeatures.string_type)
+}
+inline ::pb::CppFeatures_StringType CppFeatures::_internal_string_type() const {
+  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  return static_cast<::pb::CppFeatures_StringType>(_impl_.string_type_);
+}
+inline void CppFeatures::_internal_set_string_type(::pb::CppFeatures_StringType value) {
+  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  assert(::pb::CppFeatures_StringType_IsValid(value));
+  _impl_.string_type_ = value;
+}
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
@@ -290,6 +385,19 @@ inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
 
+
+namespace google {
+namespace protobuf {
+
+template <>
+struct is_proto_enum<::pb::CppFeatures_StringType> : std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor<::pb::CppFeatures_StringType>() {
+  return ::pb::CppFeatures_StringType_descriptor();
+}
+
+}  // namespace protobuf
+}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
 

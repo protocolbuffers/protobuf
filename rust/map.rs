@@ -231,6 +231,9 @@ where
         self.len() == 0
     }
 
+    /// Adds a key-value pair to the map.
+    ///
+    /// Returns `true` if the entry was newly inserted.
     pub fn insert<'a, 'b>(
         &mut self,
         key: impl Into<View<'a, K>>,

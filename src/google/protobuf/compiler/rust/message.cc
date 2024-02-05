@@ -637,8 +637,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
              -> Self::AbsentMutData<'_> {
              // SAFETY: The raw ptr msg_ref is valid
             unsafe {
-              (present_mutator.optional_vtable().clearer);
-              (present_mutator.msg_ref().msg());
+              (present_mutator.optional_vtable().clearer)(present_mutator.msg_ref().msg());
 
              $pbi$::RawVTableOptionalMutatorData::new($pbi$::Private,
                present_mutator.msg_ref(),

@@ -115,11 +115,10 @@ expose_repeated_ptr_field_methods(Bytes);
       const google::protobuf::Map<key_ty, value_ty>* m) {                                \
     return m->size();                                                          \
   }                                                                            \
-  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_insert(       \
+  bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_insert(       \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty value) {  \
-    auto cpp_key = to_cpp_key;                                                 \
-    auto cpp_value = to_cpp_value;                                             \
-    (*m)[cpp_key] = cpp_value;                                                 \
+    auto iter_and_inserted = m->try_emplace(to_cpp_key, to_cpp_value);         \
+    return iter_and_inserted.second;                                           \
   }                                                                            \
   bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_get(          \
       const google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key,                  \

@@ -250,7 +250,7 @@ class PROTOBUF_EXPORT SerialArena {
     char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.
     if (PROTOBUF_PREDICT_FALSE(reinterpret_cast<uintptr_t>(ret) + n +
-                                   cleanup::Size(destructor) >
+                                   cleanup::Size() >
                                reinterpret_cast<uintptr_t>(limit_))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
@@ -265,9 +265,8 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
-    size_t required = cleanup::Size(destructor);
     size_t has = static_cast<size_t>(limit_ - ptr());
-    if (PROTOBUF_PREDICT_FALSE(required > has)) {
+    if (PROTOBUF_PREDICT_FALSE(cleanup::Size() > has)) {
       return AddCleanupFallback(elem, destructor);
     }
     AddCleanupFromExisting(elem, destructor);
@@ -301,14 +300,13 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanupFromExisting(void* elem, void (*destructor)(void*)) {
-    cleanup::Tag tag = cleanup::Type(destructor);
-    size_t n = cleanup::Size(tag);
+    const size_t cleanup_size = cleanup::Size();
 
-    PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
-    limit_ -= n;
+    PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - cleanup_size, cleanup_size);
+    limit_ -= cleanup_size;
     MaybePrefetchBackwards(limit_);
     ABSL_DCHECK_GE(limit_, ptr());
-    cleanup::CreateNode(tag, limit_, elem, destructor);
+    cleanup::CreateNode(limit_, elem, destructor);
   }
 
   // Prefetch the next kPrefetchForwardsDegree bytes after `prefetch_ptr_` and

@@ -20,6 +20,7 @@
 #include "absl/container/internal/layout.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -136,9 +137,9 @@ std::vector<void*> SerialArena::PeekCleanupListForTesting() {
   ArenaBlock* b = head();
   if (b->IsSentry()) return res;
 
-  const auto peek_list = [&](const char* pos, const char* end) {
-    while (pos != end) {
-      pos += cleanup::PeekNode(pos, res);
+  const auto peek_list = [&](char* pos, char* end) {
+    for (; pos != end; pos += cleanup::Size()) {
+      cleanup::PeekNode(pos, res);
     }
   };
 
@@ -222,15 +223,14 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
+  size_t required = AlignUpTo(n, align) + cleanup::Size();
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  size_t required = cleanup::Size(destructor);
-  AllocateNewBlock(required);
+  AllocateNewBlock(cleanup::Size());
   AddCleanupFromExisting(elem, destructor);
 }
 
@@ -324,8 +324,8 @@ void SerialArena::CleanupList() {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
     ABSL_DCHECK(!b->IsSentry() || it == limit);
-    while (it < limit) {
-      it += cleanup::DestroyNode(it);
+    for (; it < limit; it += cleanup::Size()) {
+      cleanup::DestroyNode(it);
     }
     b = b->next;
   } while (b);

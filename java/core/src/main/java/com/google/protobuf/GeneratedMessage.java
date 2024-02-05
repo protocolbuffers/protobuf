@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -136,9 +135,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   private Map<FieldDescriptor, Object> getAllFieldsMutable(boolean getBytesForString) {
     final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
-    final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
-
-    final Descriptor descriptor = fieldAccessorTable.descriptor;
+    final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
     final List<FieldDescriptor> fields = descriptor.getFields();
 
     for (int i = 0; i < fields.size(); i++) {
@@ -564,8 +561,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Internal helper which returns a mutable map. */
     private Map<FieldDescriptor, Object> getAllFieldsMutable() {
       final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
-      final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
-      final Descriptor descriptor = fieldAccessorTable.descriptor;
+      final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
       final List<FieldDescriptor> fields = descriptor.getFields();
 
       for (int i = 0; i < fields.size(); i++) {
@@ -2061,6 +2057,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
             oneofs[i] = new SyntheticOneofAccessor(descriptor, i);
           }
         }
+
         initialized = true;
         camelCaseNames = null;
         return this;
