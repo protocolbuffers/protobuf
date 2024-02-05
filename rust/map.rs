@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 
 #[repr(transparent)]
 pub struct MapView<'msg, K: ?Sized, V: ?Sized> {
-    pub raw: RawMap,
+    raw: RawMap,
     _phantom: PhantomData<(&'msg K, &'msg V)>,
 }
 
@@ -54,7 +54,7 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
 }
 
 pub struct Map<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> {
-    pub(crate) inner: InnerMapMut<'static>,
+    inner: InnerMapMut<'static>,
     _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
 }
 
@@ -171,16 +171,14 @@ where
     /// - `inner` must be valid to read and write from for `'static`.
     /// - There must be no aliasing references or mutations on the same
     ///   underlying object.
+    #[doc(hidden)]
     pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'static>) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 }
 
-impl<'msg, K, V> MapView<'msg, K, V>
-where
-    K: Proxied + ?Sized + 'msg,
-    V: ProxiedInMapValue<K> + ?Sized + 'msg,
-{
+#[doc(hidden)]
+impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
     #[doc(hidden)]
     pub fn as_raw(&self, _private: Private) -> RawMap {
         self.raw
@@ -192,7 +190,13 @@ where
     pub unsafe fn from_raw(_private: Private, raw: RawMap) -> Self {
         Self { raw, _phantom: PhantomData }
     }
+}
 
+impl<'msg, K, V> MapView<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
     pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
     where
         K: 'a,
@@ -209,17 +213,26 @@ where
     }
 }
 
+#[doc(hidden)]
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    /// # Safety
+    /// - `inner` must be valid to read and write from for `'msg`.
+    #[doc(hidden)]
+    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'msg>) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw(&mut self, _private: Private) -> RawMap {
+        self.inner.raw
+    }
+}
+
 impl<'msg, K, V> MapMut<'msg, K, V>
 where
     K: Proxied + ?Sized + 'msg,
     V: ProxiedInMapValue<K> + ?Sized + 'msg,
 {
-    /// # Safety
-    /// - `inner` must be valid to read and write from for `'msg`.
-    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'msg>) -> Self {
-        Self { inner, _phantom: PhantomData }
-    }
-
     pub fn len(self) -> usize {
         self.as_view().len()
     }

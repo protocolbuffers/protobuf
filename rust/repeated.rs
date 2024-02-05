@@ -58,10 +58,8 @@ impl<'msg, T: ?Sized> Debug for RepeatedMut<'msg, T> {
     }
 }
 
-impl<'msg, T> RepeatedView<'msg, T>
-where
-    T: ProxiedInRepeated + ?Sized + 'msg,
-{
+#[doc(hidden)]
+impl<'msg, T: ?Sized> RepeatedView<'msg, T> {
     #[doc(hidden)]
     pub fn as_raw(&self, _private: Private) -> RawRepeatedField {
         self.raw
@@ -73,7 +71,12 @@ where
     pub unsafe fn from_raw(_private: Private, raw: RawRepeatedField) -> Self {
         Self { raw, _phantom: PhantomData }
     }
+}
 
+impl<'msg, T> RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
     /// Gets the length of the repeated field.
     pub fn len(&self) -> usize {
         T::repeated_len(*self)
@@ -110,10 +113,8 @@ where
     }
 }
 
-impl<'msg, T> RepeatedMut<'msg, T>
-where
-    T: ProxiedInRepeated + ?Sized + 'msg,
-{
+#[doc(hidden)]
+impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
     /// # Safety
     /// - `inner` must be valid to read and write from for `'msg`
     /// - There must be no aliasing references or mutations on the same
@@ -123,18 +124,16 @@ where
         Self { inner, _phantom: PhantomData }
     }
 
-    /// # Safety
-    /// - The return value must not be mutated through without synchronization.
-    #[allow(dead_code)]
-    pub(crate) unsafe fn into_inner(self) -> InnerRepeatedMut<'msg> {
-        self.inner
-    }
-
     #[doc(hidden)]
     pub fn as_raw(&mut self, _private: Private) -> RawRepeatedField {
         self.inner.raw
     }
+}
 
+impl<'msg, T> RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
     /// Gets the length of the repeated field.
     pub fn len(&self) -> usize {
         self.as_view().len()

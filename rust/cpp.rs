@@ -437,38 +437,38 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     // SAFETY:
                     // - `map.inner.raw` is a live `RawMap`
                     // - This function is only called once for `map` in `Drop`.
-                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _free >](map.inner.raw); }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _free >](map.as_mut().as_raw(Private)); }
                 }
 
 
-                fn map_clear(map: Mut<'_, Map<$key_t, Self>>) {
-                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _clear >](map.inner.raw); }
+                fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _clear >](map.as_raw(Private)); }
                 }
 
                 fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
-                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _size >](map.raw) }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _size >](map.as_raw(Private)) }
                 }
 
-                fn map_insert(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let ffi_value = $to_ffi_value(value);
-                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](map.inner.raw, ffi_key, ffi_value) }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](map.as_raw(Private), ffi_key, ffi_value) }
                 }
 
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
-                    let found = unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _get >](map.raw, ffi_key, &mut ffi_value) };
+                    let found = unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _get >](map.as_raw(Private), ffi_key, &mut ffi_value) };
                     if !found {
                         return None;
                     }
                     Some($from_ffi_value(ffi_value))
                 }
 
-                fn map_remove(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
+                fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = $to_ffi_value($zero_val);
-                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](map.inner.raw, ffi_key, &mut ffi_value) }
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](map.as_raw(Private), ffi_key, &mut ffi_value) }
                 }
             }
          )* }
