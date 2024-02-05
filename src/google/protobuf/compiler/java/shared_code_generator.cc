@@ -76,9 +76,6 @@ void SharedCodeGenerator::Generate(
                              options_.annotate_code ? info_relative_path : "",
                              options_);
 
-    if (!options_.opensource_runtime) {
-      printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
-    }
 
     printer->Print(
 
@@ -87,17 +84,12 @@ void SharedCodeGenerator::Generate(
         "returns\n"
         "  * an incomplete descriptor for internal use only. */\n"
         "  public static com.google.protobuf.Descriptors.FileDescriptor\n"
-        "      descriptor;\n"
-        "  /* This method is to be called by generated code only. It returns\n"
-        "  * an incomplete descriptor for internal use only. */\n"
-        "  public static com.google.protobuf.Descriptors.FileDescriptor "
-        "getDescriptor() {\n"
-        "    descriptor.resolveAllFeatures();\n"
-        "    return descriptor;\n"
-        "  }\n"
-        "  static {\n",
+        "      descriptor;\n",
         "classname", classname);
     printer->Annotate("classname", file_->name());
+
+
+    printer->Print("  static {\n");
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
