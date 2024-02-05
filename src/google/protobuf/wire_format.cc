@@ -633,7 +633,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(io::CodedInputStream* input,
 }
 
 struct WireFormat::MessageSetParser {
-  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx) {
+  const char* ParseElement(const char* ptr, internal::ParseContext* ctx) {
     // Parse a MessageSetItem
     auto metadata = reflection->MutableInternalMetadata(msg);
     enum class State { kNoTag, kHasType, kHasPayload, kDone };
@@ -739,7 +739,8 @@ struct WireFormat::MessageSetParser {
       }
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
         // A message set item starts
-        ptr = ctx->ParseGroup(this, ptr, tag);
+        ptr = ctx->ParseGroupInlined(
+            ptr, tag, [&](const char* ptr) { return ParseElement(ptr, ctx); });
       } else {
         // Parse other fields as normal extensions.
         int field_number = WireFormatLite::GetTagFieldNumber(tag);
