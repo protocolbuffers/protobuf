@@ -462,6 +462,10 @@ class GPBUtil
                 $nanoseconds = substr($timestamp, $periodIndex + 1, $nanosecondsLength);
                 $nanoseconds = intval($nanoseconds);
 
+                if ($nanosecondsLength < 9) {
+                    $nanoseconds = $nanoseconds * pow(10, 9 - $nanosecondsLength);
+                }
+
                 // remove the nanoseconds and preceding period from the timestamp
                 $date = substr($timestamp, 0, $periodIndex);
                 $timezone = substr($timestamp, $periodIndex + $nanosecondsLength + 1);
