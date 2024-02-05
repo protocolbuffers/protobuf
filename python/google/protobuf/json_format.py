@@ -80,19 +80,19 @@ def MessageToJson(
     descriptor_pool=None,
     float_precision=None,
     ensure_ascii=True,
-    including_default_value_without_presence_fields=False,
+    always_print_fields_with_no_presence=False,
 ):
   """Converts protobuf message to JSON format.
 
   Args:
     message: The protocol buffers message instance to serialize.
     including_default_value_fields: (DEPRECATED: use
-      including_default_value_without_presence_fields to correctly treats proto2
-      and proto3 optional the same). If True, fields without presence (implicit
+      always_print_fields_with_no_presence which correctly treats proto2
+      and proto3 optionals the same). If True, fields without presence (implicit
       presence scalars, repeated fields, and map fields) and Proto2 optional
       scalars will always be serialized. Singular message fields, oneof fields
       and Proto3 optional scalars are not affected by this option.
-    including_default_value_without_presence_fields: If True, fields without
+    always_print_fields_with_no_presence: If True, fields without
       presence (implicit presence scalars, repeated fields, and map fields) will
       always be serialized. Any field that supports presence is not affected by
       this option (including singular message fields and oneof fields).
@@ -119,7 +119,7 @@ def MessageToJson(
       use_integers_for_enums,
       descriptor_pool,
       float_precision,
-      including_default_value_without_presence_fields
+      always_print_fields_with_no_presence
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
@@ -127,7 +127,7 @@ def MessageToJson(
 def MessageToDict(
     message,
     including_default_value_fields=False,
-    including_default_value_without_presence_fields=False,
+    always_print_fields_with_no_presence=False,
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
@@ -140,12 +140,12 @@ def MessageToDict(
   Args:
     message: The protocol buffers message instance to serialize.
     including_default_value_fields: (DEPRECATED: use
-      including_default_value_without_presence_fields to correctly treats proto2
+      always_print_fields_with_no_presence to correctly treats proto2
       and proto3 optional the same). If True, fields without presence (implicit
       presence scalars, repeated fields, and map fields) and Proto2 optional
       scalars will always be serialized. Singular message fields, oneof fields
       and Proto3 optional scalars are not affected by this option.
-    including_default_value_without_presence_fields: If True, fields without
+    always_print_fields_with_no_presence: If True, fields without
       presence (implicit presence scalars, repeated fields, and map fields) will
       always be serialized. Any field that supports presence is not affected by
       this option (including singular message fields and oneof fields).
@@ -166,7 +166,7 @@ def MessageToDict(
       use_integers_for_enums,
       descriptor_pool,
       float_precision,
-      including_default_value_without_presence_fields,
+      always_print_fields_with_no_presence,
   )
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
@@ -190,11 +190,11 @@ class _Printer(object):
       use_integers_for_enums=False,
       descriptor_pool=None,
       float_precision=None,
-      including_default_value_without_presence_fields=False,
+      always_print_fields_with_no_presence=False,
   ):
     self.including_default_value_fields = including_default_value_fields
-    self.including_default_value_without_presence_fields = (
-        including_default_value_without_presence_fields
+    self.always_print_fields_with_no_presence = (
+        always_print_fields_with_no_presence
     )
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
@@ -257,7 +257,7 @@ class _Printer(object):
       # Serialize default value if including_default_value_fields is True.
       if (
           self.including_default_value_fields
-          or self.including_default_value_without_presence_fields
+          or self.always_print_fields_with_no_presence
       ):
         message_descriptor = message.DESCRIPTOR
         for field in message_descriptor.fields:
@@ -274,10 +274,10 @@ class _Printer(object):
           ):
             continue
 
-          # including_default_value_without_presence_fields doesn't apply to
+          # always_print_fields_with_no_presence doesn't apply to
           # any field which supports presence.
           if (
-              self.including_default_value_without_presence_fields
+              self.always_print_fields_with_no_presence
               and field.has_presence
           ):
             continue

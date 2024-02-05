@@ -278,7 +278,7 @@ TEST_P(JsonTest, TestAlwaysPrintWithoutPresenceFields) {
   EXPECT_THAT(ToJson(m), IsOkAndHolds("{}"));
 
   PrintOptions options;
-  options.always_print_without_presence_fields = true;
+  options.always_print_fields_with_no_presence = true;
   EXPECT_THAT(ToJson(m, options), IsOkAndHolds(R"({"boolValue":false,)"
                                                R"("int32Value":0,)"
                                                R"("int64Value":"0",)"
