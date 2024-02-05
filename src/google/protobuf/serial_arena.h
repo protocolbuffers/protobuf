@@ -15,12 +15,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <type_traits>
-#include <typeinfo>
-#include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
@@ -28,7 +24,6 @@
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
-#include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
 

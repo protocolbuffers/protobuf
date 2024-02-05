@@ -319,7 +319,7 @@ cc_library(
     ],
     deps = [
         "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/base:prefetch",
     ],
 )
 
@@ -388,6 +388,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/types:span",
         "@com_google_absl//absl/utility:if_constexpr",
     ],
 )
