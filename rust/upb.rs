@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
-    Map, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
+    Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
+    Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
 };
 use core::fmt::Debug;
 use std::alloc;
@@ -794,6 +794,34 @@ impl UpbTypeConversions for ProtoStr {
     }
 }
 
+pub struct RawMapIter {
+    // TODO: Replace this `RawMap` with the const type.
+    map: RawMap,
+    iter: usize,
+}
+
+impl RawMapIter {
+    pub fn new(_private: Private, map: RawMap) -> Self {
+        // SAFETY: __rust_proto_kUpb_Map_Begin is never modified
+        RawMapIter { map, iter: unsafe { __rust_proto_kUpb_Map_Begin } }
+    }
+
+    /// # Safety
+    /// - `self.map` must be valid, and remain valid while the return value is
+    ///   in use.
+    pub(crate) unsafe fn next_unchecked(
+        &mut self,
+        _private: Private,
+    ) -> Option<(upb_MessageValue, upb_MessageValue)> {
+        let mut key = MaybeUninit::uninit();
+        let mut value = MaybeUninit::uninit();
+        // SAFETY: the `map` is valid as promised by the caller
+        unsafe { upb_Map_Next(self.map, key.as_mut_ptr(), value.as_mut_ptr(), &mut self.iter) }
+            // SAFETY: if upb_Map_Next returns true, then key and value have been populated.
+            .then(|| unsafe { (key.assume_init(), value.assume_init()) })
+    }
+}
+
 macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
     ($key_t:ty ; $($t:ty),*) => {
          $(
@@ -870,6 +898,26 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                             &mut val)
                     }
                 }
+
+                fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
+                    // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
+                    unsafe {
+                        MapIter::from_raw(Private, RawMapIter::new(Private, map.as_raw(Private)))
+                    }
+                }
+
+                fn map_iter_next<'a>(
+                    iter: &mut MapIter<'a, $key_t, Self>
+                ) -> Option<(View<'a, $key_t>, View<'a, Self>)> {
+                    // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
+                    unsafe { iter.as_raw_mut(Private).next_unchecked(Private) }
+                        // SAFETY: MapIter<K, V> returns key and values message values
+                        //         with the variants for K and V active.
+                        .map(|(k, v)| unsafe {(
+                            <$key_t as UpbTypeConversions>::from_message_value(k),
+                            <$t as UpbTypeConversions>::from_message_value(v),
+                        )})
+                }
             }
          )*
     }
@@ -937,6 +985,15 @@ extern "C" {
         removed_value: *mut upb_MessageValue,
     ) -> bool;
     fn upb_Map_Clear(map: RawMap);
+
+    static __rust_proto_kUpb_Map_Begin: usize;
+
+    fn upb_Map_Next(
+        map: RawMap,
+        key: *mut upb_MessageValue,
+        value: *mut upb_MessageValue,
+        iter: &mut usize,
+    ) -> bool;
 }
 
 #[cfg(test)]

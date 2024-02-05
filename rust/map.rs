@@ -8,7 +8,7 @@
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::{Private, RawMap},
-    __runtime::InnerMapMut,
+    __runtime::{InnerMapMut, RawMapIter},
 };
 use std::marker::PhantomData;
 
@@ -82,6 +82,9 @@ where
     fn map_insert(map: Mut<'_, Map<K, Self>>, key: View<'_, K>, value: View<'_, Self>) -> bool;
     fn map_get<'a>(map: View<'a, Map<K, Self>>, key: View<'_, K>) -> Option<View<'a, Self>>;
     fn map_remove(map: Mut<'_, Map<K, Self>>, key: View<'_, K>) -> bool;
+
+    fn map_iter(map: View<'_, Map<K, Self>>) -> MapIter<'_, K, Self>;
+    fn map_iter_next<'a>(iter: &mut MapIter<'a, K, Self>) -> Option<(View<'a, K>, View<'a, Self>)>;
 }
 
 impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxied for Map<K, V> {
@@ -211,6 +214,11 @@ where
     pub fn is_empty(self) -> bool {
         self.len() == 0
     }
+
+    /// An alias for `<Self as IntoIterator>::into_iterator`.
+    pub fn iter(self) -> MapIter<'msg, K, V> {
+        self.into_iter()
+    }
 }
 
 #[doc(hidden)]
@@ -277,6 +285,102 @@ where
     pub fn copy_from(&mut self, _src: MapView<'_, K, V>) {
         todo!("implement b/28530933");
     }
+
+    pub fn iter(&self) -> MapIter<'_, K, V> {
+        self.into_iter()
+    }
+}
+
+/// An iterator visiting all key-value pairs in arbitrary order.
+///
+/// The iterator element type is `(View<Key>, View<Value>)`.
+pub struct MapIter<'msg, K: ?Sized, V: ?Sized> {
+    raw: RawMapIter,
+    _phantom: PhantomData<(&'msg K, &'msg V)>,
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> MapIter<'msg, K, V> {
+    /// # Safety
+    /// - `raw` must be a valid instance of the raw iterator for `'msg`.
+    /// - The untyped `raw` iterator must be for a map of `K,V`.
+    /// - The backing map must be live and unmodified for `'msg`.
+    #[doc(hidden)]
+    pub unsafe fn from_raw(_private: Private, raw: RawMapIter) -> Self {
+        Self { raw, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw_mut(&mut self, _private: Private) -> &mut RawMapIter {
+        &mut self.raw
+    }
+}
+
+impl<'msg, K, V> Iterator for MapIter<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        V::map_iter_next(self)
+    }
+}
+
+impl<'msg, K, V> IntoIterator for MapView<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'msg, K, V>;
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn into_iter(self) -> MapIter<'msg, K, V> {
+        V::map_iter(self)
+    }
+}
+
+impl<'msg, K, V> IntoIterator for &'msg Map<K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'msg, K, V>;
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn into_iter(self) -> MapIter<'msg, K, V> {
+        self.as_view().into_iter()
+    }
+}
+
+impl<'a, 'msg, K, V> IntoIterator for &'a MapView<'msg, K, V>
+where
+    'msg: 'a,
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'msg, K, V>;
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn into_iter(self) -> MapIter<'msg, K, V> {
+        (*self).into_iter()
+    }
+}
+
+impl<'a, 'msg, K, V> IntoIterator for &'a MapMut<'msg, K, V>
+where
+    'msg: 'a,
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'a, K, V>;
+    // The View's are valid for 'a instead of 'msg.
+    // This is because the mutator may mutate past 'a but before 'msg expires.
+    type Item = (View<'a, K>, View<'a, V>);
+
+    fn into_iter(self) -> MapIter<'a, K, V> {
+        self.as_view().into_iter()
+    }
 }
 
 #[cfg(test)]
@@ -334,6 +438,45 @@ mod tests {
 
         let map_view_4 = map_view_2.into_view();
         assert_that!(map_view_4.is_empty(), eq(false));
+    }
+
+    #[test]
+    fn test_proxied_iter() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        map_mut.insert(15, "fizzbuzz");
+        map_mut.insert(5, "buzz");
+        map_mut.insert(3, "fizz");
+
+        // ProtoStr::from_str is necessary below because
+        // https://doc.rust-lang.org/std/primitive.tuple.html#impl-PartialEq-for-(T,)
+        // only compares where the types are the same, even when the tuple types can
+        // compare with each other.
+        // googletest-rust matchers also do not currently implement Clone.
+        assert_that!(
+            map.as_view().iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((3, ProtoStr::from_str("fizz"))),
+                eq((5, ProtoStr::from_str("buzz"))),
+                eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((3, ProtoStr::from_str("fizz"))),
+                eq((5, ProtoStr::from_str("buzz"))),
+                eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+        assert_that!(
+            map.as_mut().iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((3, ProtoStr::from_str("fizz"))),
+                eq((5, ProtoStr::from_str("buzz"))),
+                eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
     }
 
     #[test]

@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -32,6 +33,7 @@
 #include "absl/base/attributes.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
+#include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -495,10 +497,46 @@ class UntypedMapIterator {
     }
   }
 
+  // Conversion to and from a typed iterator child class is used by FFI.
+  template <class Iter>
+  static UntypedMapIterator FromTyped(Iter it) {
+    static_assert(
+#if defined(__cpp_lib_is_layout_compatible) && \
+    __cpp_lib_is_layout_compatible >= 201907L
+        std::is_layout_compatible_v<Iter, UntypedMapIterator>,
+#else
+        sizeof(it) == sizeof(UntypedMapIterator),
+#endif
+        "Map iterator must not have extra state that the base class"
+        "does not define.");
+    return static_cast<UntypedMapIterator>(it);
+  }
+
+  template <class Iter>
+  Iter ToTyped() const {
+    return Iter(*this);
+  }
   NodeBase* node_;
   const UntypedMapBase* m_;
   map_index_t bucket_index_;
 };
+
+// These properties are depended upon by Rust FFI.
+static_assert(std::is_trivially_copyable<UntypedMapIterator>::value,
+              "UntypedMapIterator must be trivially copyable.");
+static_assert(std::is_trivially_destructible<UntypedMapIterator>::value,
+              "UntypedMapIterator must be trivially destructible.");
+static_assert(std::is_standard_layout<UntypedMapIterator>::value,
+              "UntypedMapIterator must be standard layout.");
+static_assert(offsetof(UntypedMapIterator, node_) == 0,
+              "node_ must be the first field of UntypedMapIterator.");
+static_assert(sizeof(UntypedMapIterator) ==
+                  sizeof(void*) * 2 +
+                      std::max(sizeof(uint32_t), alignof(void*)),
+              "UntypedMapIterator does not have the expected size for FFI");
+static_assert(
+    alignof(UntypedMapIterator) == std::max(alignof(void*), alignof(uint32_t)),
+    "UntypedMapIterator does not have the expected alignment for FFI");
 
 // Base class for all Map instantiations.
 // This class holds all the data and provides the basic functionality shared
@@ -1280,6 +1318,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using BaseIt::BaseIt;
     explicit const_iterator(const BaseIt& base) : BaseIt(base) {}
     friend class Map;
+    friend class internal::UntypedMapIterator;
     friend class internal::TypeDefinedMapFieldBase<Key, T>;
   };
 
