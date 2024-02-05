@@ -132,24 +132,27 @@ These are projects we know about implementing Protocol Buffers for other program
 
 GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. There are other third-party RPC implementations as well.  Some of these actually work with Protocol Buffers service definitions (defined using the `service` keyword in `.proto` files) while others just use Protocol Buffers message objects.
 
-* https://github.com/grpc/grpc (C++, Node.js, Python, Ruby, Objective-C, PHP, C#, Google-official implementation)
-* https://zeroc.com/products/ice (Multiple languages)
-* https://github.com/protobuf-net/protobuf-net (C#/.NET/WCF/VB)
-* http://www.deltavsoft.com/doc/_external_serialization.html#Protobufs (C++)
-* https://protojure.github.io (Clojure)
-* https://code.google.com/p/protobuf-rpc-pro/ (Java)
-* https://github.com/baidu/sofa-pbrpc (C++)
-* https://github.com/madhon/protobuf-csharp-rpc (C#)
-* https://github.com/madwyn/libpbrpc (C++)
-* https://github.com/SeriousMa/grpc-protobuf-validation (Java)
-* https://github.com/elixir-grpc/grpc (Elixir)
-* https://github.com/johanbrandhorst/protobuf (GopherJS)
-* https://github.com/awakesecurity/gRPC-haskell (Haskell)
-* https://github.com/Yeolar/raster (C++)
-* https://github.com/jnordberg/wsrpc (JavaScript Node.js/Browser)
-* https://github.com/pbkit/npm-packages/blob/main/frpc-test/src/index.spec.ts (TypeScript Node.js/Browser)
-* https://github.com/ppissias/xsrpcj (Java)
-* https://github.com/twitchtv/twirp (Multiple languages)
+*   https://github.com/grpc/grpc (C++, Node.js, Python, Ruby, Objective-C, PHP,
+    C#, Google-official implementation)
+*   https://zeroc.com/products/ice (Multiple languages)
+*   https://github.com/protobuf-net/protobuf-net (C#/.NET/WCF/VB)
+*   http://www.deltavsoft.com/doc/_external_serialization.html#Protobufs (C++)
+*   https://protojure.github.io (Clojure)
+*   https://code.google.com/p/protobuf-rpc-pro/ (Java)
+*   https://github.com/baidu/sofa-pbrpc (C++)
+*   https://github.com/madhon/protobuf-csharp-rpc (C#)
+*   https://github.com/madwyn/libpbrpc (C++)
+*   https://github.com/SeriousMa/grpc-protobuf-validation (Java)
+*   https://github.com/elixir-grpc/grpc (Elixir)
+*   https://github.com/johanbrandhorst/protobuf (GopherJS)
+*   https://github.com/awakesecurity/gRPC-haskell (Haskell)
+*   https://github.com/Yeolar/raster (C++)
+*   https://github.com/jnordberg/wsrpc (JavaScript Node.js/Browser)
+*   https://github.com/pbkit/npm-packages/blob/main/frpc-test/src/index.spec.ts
+    (TypeScript Node.js/Browser)
+*   https://github.com/ppissias/xsrpcj (Java)
+*   https://github.com/twitchtv/twirp (Multiple languages)
+*   https://github.com/icerpc/icerpc-csharp (C#)
 
 Inactive:
 
