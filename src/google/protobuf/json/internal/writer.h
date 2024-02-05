@@ -43,14 +43,14 @@ struct WriterOptions {
   // - Proto2 optional and required scalar fields which are not present (but not
   //   Proto3 optional scalar fields).
   // Note: This option is deprecated in favor of
-  // always_print_without_presence_fields which treats proto2 and proto3
+  // always_print_fields_with_no_presence which treats proto2 and proto3
   // optionals the same and will be removed in an upcoming release.
   bool always_print_primitive_fields = false;
   // Whether to always print fields which do not support presence if they would
   // otherwise be omitted, namely:
   // - Implicit presence fields set to their 0 value
   // - Empty lists and maps
-  bool always_print_without_presence_fields = false;
+  bool always_print_fields_with_no_presence = false;
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints = false;

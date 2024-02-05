@@ -330,7 +330,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads('{"repeatedInt32": [], "repeatedNestedMessage": []}'),
@@ -339,7 +339,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -391,7 +391,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads('{"repeatedInt32": [], "repeatedNestedMessage": []}'),
@@ -400,7 +400,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(

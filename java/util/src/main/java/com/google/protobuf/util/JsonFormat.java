@@ -187,7 +187,7 @@ public class JsonFormat {
      *
      * <p>The new Printer clones all other configurations from the current {@link Printer}.
      *
-     * @deprecated Prefer {@link #includingDefaultValueWithoutPresenceFields}
+     * @deprecated Prefer {@link #alwaysPrintFieldsWithNoPresence}
      */
     @Deprecated
     public Printer includingDefaultValueFields() {
@@ -241,10 +241,9 @@ public class JsonFormat {
      * presence scalars set to their default value). The new Printer clones all other configurations
      * from the current {@link Printer}.
      */
-    public Printer includingDefaultValueWithoutPresenceFields() {
+    public Printer alwaysPrintFieldsWithNoPresence() {
       if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
-        throw new IllegalStateException(
-            "JsonFormat includingDefaultValueFields has already been set.");
+        throw new IllegalStateException("Only one of the JsonFormat defaults options can be set.");
       }
       return new Printer(
           registry,

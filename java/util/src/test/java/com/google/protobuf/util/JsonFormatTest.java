@@ -1527,11 +1527,11 @@ public class JsonFormatTest {
             + "  \"repeatedRecursive\": []\n"
             + "}";
 
-    // includingDefaultValueFields() and includingDefaultValueWithoutPresenceFields() should
+    // includingDefaultValueFields() and alwaysPrintFieldsWithNoPresence() should
     // behave identically on the proto3 test message:
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(message))
         .isEqualTo(expectedJsonWithDefaults);
-    assertThat(JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(message))
+    assertThat(JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(message))
         .isEqualTo(expectedJsonWithDefaults);
   }
 
@@ -1742,16 +1742,14 @@ public class JsonFormatTest {
     assertThat(JsonFormat.printer().print(oneofMessage)).isEqualTo("{\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
         .isEqualTo("{\n}");
-    assertThat(
-            JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(oneofMessage))
+    assertThat(JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(oneofMessage))
         .isEqualTo("{\n}");
 
     oneofMessage = TestOneof.newBuilder().setOneofInt32(42).build();
     assertThat(JsonFormat.printer().print(oneofMessage)).isEqualTo("{\n  \"oneofInt32\": 42\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
         .isEqualTo("{\n  \"oneofInt32\": 42\n}");
-    assertThat(
-            JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(oneofMessage))
+    assertThat(JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(oneofMessage))
         .isEqualTo("{\n  \"oneofInt32\": 42\n}");
 
     TestOneof.Builder oneofBuilder = TestOneof.newBuilder();
@@ -1761,8 +1759,7 @@ public class JsonFormatTest {
         .isEqualTo("{\n  \"oneofNullValue\": null\n}");
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
         .isEqualTo("{\n  \"oneofNullValue\": null\n}");
-    assertThat(
-            JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(oneofMessage))
+    assertThat(JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(oneofMessage))
         .isEqualTo("{\n  \"oneofNullValue\": null\n}");
   }
 
@@ -1770,7 +1767,7 @@ public class JsonFormatTest {
   public void testIncludingDefaultValueOptionsWithProto2Optional() throws Exception {
     TestAllTypesProto2 message = TestAllTypesProto2.getDefaultInstance();
     assertThat(JsonFormat.printer().print(message)).isEqualTo("{\n}");
-    // includingDefaultValueFields() and includingDefaultValueWithoutPresenceFields()
+    // includingDefaultValueFields() and alwaysPrintFieldsWithNoPresence()
     // behave differently on a proto2 message: the former includes the proto2 explicit presence
     // fields and the latter does not.
     assertThat(JsonFormat.printer().includingDefaultValueFields().print(message))
@@ -1812,7 +1809,7 @@ public class JsonFormatTest {
                 + "  \"optionalAliasedEnum\": \"ALIAS_FOO\",\n"
                 + "  \"repeatedRecursive\": []\n"
                 + "}");
-    assertThat(JsonFormat.printer().includingDefaultValueWithoutPresenceFields().print(message))
+    assertThat(JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(message))
         .isEqualTo(
             "{\n"
                 + "  \"repeatedInt32\": [],\n"
