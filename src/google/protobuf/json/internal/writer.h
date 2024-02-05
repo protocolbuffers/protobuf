@@ -36,16 +36,6 @@ struct WriterOptions {
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace = false;
-  // Whether to always print the following types of fields even if they would
-  // otherwise be omitted:
-  // - Implicit presence fields set to their 0 value
-  // - Empty lists and maps
-  // - Proto2 optional and required scalar fields which are not present (but not
-  //   Proto3 optional scalar fields).
-  // Note: This option is deprecated in favor of
-  // always_print_fields_with_no_presence which treats proto2 and proto3
-  // optionals the same and will be removed in an upcoming release.
-  bool always_print_primitive_fields = false;
   // Whether to always print fields which do not support presence if they would
   // otherwise be omitted, namely:
   // - Implicit presence fields set to their 0 value
