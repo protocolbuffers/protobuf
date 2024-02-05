@@ -1150,6 +1150,14 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options);
 // class.
 bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options);
 
+
+// Determine if we need a PostLoopHandler function to inject into TcParseTable's
+// ParseLoop.
+// If this returns true, the parse table generation will use
+// `&ClassName::PostLoopHandler` which should be a static function of the right
+// signature.
+bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

@@ -51,8 +51,7 @@ bool UseDirectTcParserTable(const FieldDescriptor* field,
                             const Options& options) {
   if (field->cpp_type() != field->CPPTYPE_MESSAGE) return false;
   auto* m = field->message_type();
-  return !m->options().message_set_wire_format() && !HasTracker(m, options)
-      ;  // NOLINT(whitespace/semicolon)
+  return !m->options().message_set_wire_format() && !HasTracker(m, options);
 }
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
@@ -157,9 +156,7 @@ void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
       "const char* $classname$::_InternalParse(\n"
       "    const char* ptr, ::_pbi::ParseContext* ctx) {\n"
       "$annotate_deserialize$"
-      "  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, "
-      "&_table_.header);\n");
-  format(
+      "  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);\n"
       "  return ptr;\n"
       "}\n\n");
 }
@@ -380,10 +377,17 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       } else {
         format("offsetof(decltype(_table_), aux_entries),\n");
       }
-      format(
-          "&$1$._instance,\n"
-          "$2$,  // fallback\n",
-          DefaultInstanceName(descriptor_, options_), fallback);
+      format("&$1$._instance,\n", DefaultInstanceName(descriptor_, options_));
+      if (NeedsPostLoopHandler(descriptor_, options_)) {
+        printer->Emit(R"cc(
+          &$classname$::PostLoopHandler,
+        )cc");
+      } else {
+        printer->Emit(R"cc(
+          nullptr,  // post_loop_handler
+        )cc");
+      }
+      format("$1$,  // fallback\n", fallback);
       std::vector<const FieldDescriptor*> subtable_fields;
       for (const auto& aux : tc_table_info_->aux_entries) {
         if (aux.type == internal::TailCallTableInfo::kSubTable) {

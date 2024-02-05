@@ -1907,6 +1907,12 @@ bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
          HasDescriptorMethods(descriptor->file(), options);
 }
 
+
+bool NeedsPostLoopHandler(const Descriptor* descriptor,
+                          const Options& options) {
+  return false;
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
