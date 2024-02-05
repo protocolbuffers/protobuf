@@ -11,6 +11,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
 
@@ -109,6 +110,12 @@ class ClassNameResolver {
   // Gets the outer class and the actual class for downgraded mutable messages.
   std::string GetDowngradedFileClassName(const FileDescriptor* file);
   std::string GetDowngradedClassName(const Descriptor* descriptor);
+
+  // Converts Java-style full class name into JVM style, which replaces all the
+  // dots with slashes. e.g. foo/pkg/FooOuter$InnerFoo$InnerBuz. Useful to be
+  // embedded as string literals into the gencode to save code size.
+  std::string GetJVMImmutableClassName(const Descriptor* descriptor);
+  std::string GetJVMImmutableClassName(const EnumDescriptor* descriptor);
 
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.

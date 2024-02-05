@@ -10,12 +10,24 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class RuntimeVersionTest {
+
+  @Before
+  public void setUp() {
+    RuntimeVersion.prevFullness = RuntimeVersion.Fullness.UNSPECIFIED;
+  }
+
+  @After
+  public void tearDown() {
+    RuntimeVersion.prevFullness = RuntimeVersion.Fullness.UNSPECIFIED;
+  }
 
   @Test
   public void versionValidation_invalidVersionNumbers() {
@@ -143,5 +155,59 @@ public final class RuntimeVersionTest {
         .contains(
             "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading"
                 + " testing.Foo");
+  }
+
+  @Test
+  public void versionValidation_illegalLiteAndThenFullLinkage() {
+    RuntimeVersion.validateProtobufLiteGencodeVersion(
+        RuntimeVersion.DOMAIN,
+        RuntimeVersion.MAJOR,
+        RuntimeVersion.MINOR,
+        RuntimeVersion.PATCH,
+        RuntimeVersion.SUFFIX,
+        "testing.Foo");
+    RuntimeVersion.ProtobufRuntimeVersionException thrown =
+        assertThrows(
+            RuntimeVersion.ProtobufRuntimeVersionException.class,
+            () ->
+                RuntimeVersion.validateProtobufGencodeVersion(
+                    RuntimeVersion.DOMAIN,
+                    RuntimeVersion.MAJOR,
+                    RuntimeVersion.MINOR,
+                    RuntimeVersion.PATCH,
+                    RuntimeVersion.SUFFIX,
+                    "testing.Bar"));
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains(
+            "Protobuf Java version checker saw both Lite and Full linkages during runtime, which is"
+                + " disallowed. Full gencode @testing.Bar; Lite gencode @testing.Foo");
+  }
+
+  @Test
+  public void versionValidation_illegalFullAndThenLiteLinkage() {
+    RuntimeVersion.validateProtobufGencodeVersion(
+        RuntimeVersion.DOMAIN,
+        RuntimeVersion.MAJOR,
+        RuntimeVersion.MINOR,
+        RuntimeVersion.PATCH,
+        RuntimeVersion.SUFFIX,
+        "testing.Foo");
+    RuntimeVersion.ProtobufRuntimeVersionException thrown =
+        assertThrows(
+            RuntimeVersion.ProtobufRuntimeVersionException.class,
+            () ->
+                RuntimeVersion.validateProtobufLiteGencodeVersion(
+                    RuntimeVersion.DOMAIN,
+                    RuntimeVersion.MAJOR,
+                    RuntimeVersion.MINOR,
+                    RuntimeVersion.PATCH,
+                    RuntimeVersion.SUFFIX,
+                    "testing.Bar"));
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains(
+            "Protobuf Java version checker saw both Lite and Full linkages during runtime, which is"
+                + " disallowed. Full gencode @testing.Foo; Lite gencode @testing.Bar");
   }
 }

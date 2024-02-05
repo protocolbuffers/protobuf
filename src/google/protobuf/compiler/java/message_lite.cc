@@ -181,6 +181,14 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Annotate("{", "}", descriptor_);
   printer->Indent();
 
+  printer->Print("static {\n");
+  printer->Indent();
+  PrintGencodeVersionValidator(
+      printer, context_->options().opensource_runtime, context_->EnforceLite(),
+      name_resolver_->GetJVMImmutableClassName(descriptor_));
+  printer->Outdent();
+  printer->Print("}\n");
+
   GenerateConstructor(printer);
 
   // Nested types
