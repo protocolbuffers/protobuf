@@ -129,12 +129,19 @@ fn test_bytes_and_string_copied() {
 
     {
         // Ensure val is dropped after inserting into the map.
-        let key = String::from("hello");
-        let val = String::from("world");
+        let mut key = String::from("hello");
+        let mut val = String::from("world");
         msg.map_string_string_mut().insert(key.as_str(), val.as_str());
         msg.map_int32_bytes_mut().insert(1, val.as_bytes());
+        // Validate that map keys are copied by mutating the originals.
+        key.replace_range(.., "ayo");
+        val.replace_range(.., "wOrld");
     }
 
     assert_that!(msg.map_string_string_mut().get("hello").unwrap(), eq("world"));
+    assert_that!(
+        msg.map_string_string().iter().collect::<Vec<_>>(),
+        unordered_elements_are![eq(("hello".into(), "world".into()))]
+    );
     assert_that!(msg.map_int32_bytes_mut().get(1).unwrap(), eq(b"world"));
 }
