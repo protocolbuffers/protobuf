@@ -22,10 +22,8 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -53,7 +51,7 @@ class GeneratorContext;
 // be registered with CommandLineInterface to support various languages.
 class PROTOC_EXPORT CodeGenerator {
  public:
-  CodeGenerator() {}
+  CodeGenerator() = default;
   CodeGenerator(const CodeGenerator&) = delete;
   CodeGenerator& operator=(const CodeGenerator&) = delete;
   virtual ~CodeGenerator();

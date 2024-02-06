@@ -11,6 +11,7 @@
 
 #include "google/protobuf/compiler/cpp/field.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -21,6 +22,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -341,18 +343,18 @@ void FieldGeneratorTable::Build(
     absl::Span<const int32_t> has_bit_indices,
     absl::Span<const int32_t> inlined_string_indices) {
   // Construct all the FieldGenerators.
-  fields_.reserve(descriptor_->field_count());
+  fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
+    size_t index = static_cast<size_t>(field->index());
     absl::optional<uint32_t> has_bit_index;
-    if (!has_bit_indices.empty() && has_bit_indices[field->index()] >= 0) {
-      has_bit_index = static_cast<uint32_t>(has_bit_indices[field->index()]);
+    if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
+      has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 
     absl::optional<uint32_t> inlined_string_index;
-    if (!inlined_string_indices.empty() &&
-        inlined_string_indices[field->index()] >= 0) {
+    if (!inlined_string_indices.empty() && inlined_string_indices[index] >= 0) {
       inlined_string_index =
-          static_cast<uint32_t>(inlined_string_indices[field->index()]);
+          static_cast<uint32_t>(inlined_string_indices[index]);
     }
 
     fields_.push_back(FieldGenerator(field, options, scc, has_bit_index,

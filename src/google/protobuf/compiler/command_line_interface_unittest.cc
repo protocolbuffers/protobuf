@@ -13,12 +13,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstddef>
 #include <cstdint>
 
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_invalid_features.pb.h"
@@ -32,6 +34,7 @@
 #include <vector>
 
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
@@ -44,8 +47,6 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/plugin.pb.h"
-#include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
@@ -55,6 +56,11 @@
 // This is needed because of https://github.com/bazelbuild/bazel/issues/19124.
 #include "google/protobuf/compiler/test_plugin_paths.h"
 #endif  // GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+
+#ifdef _WIN32
+#include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/io/io_win32.h"
+#endif
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -106,7 +112,7 @@ std::string CreatePluginArg() {
       "test_plugin.exe",        // Other Win32 (MSVC)
       "test_plugin",            // Unix
   };
-  for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); i++) {
+  for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); ++i) {
     if (access(possible_paths[i], F_OK) == 0) {
       plugin_path = possible_paths[i];
       break;
@@ -215,7 +221,7 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
  public:
   NullCodeGenerator() : called_(false) {}
-  ~NullCodeGenerator() override {}
+  ~NullCodeGenerator() override = default;
 
   mutable bool called_;
   mutable std::string parameter_;
@@ -812,7 +818,7 @@ TEST_F(CommandLineInterfaceTest,
   foo_file_descriptor_proto.set_name("foo.proto");
   foo_file_descriptor_proto.add_message_type()->set_name("Foo");
 
-  file_descriptor_set.add_file()->CopyFrom(foo_file_descriptor_proto);
+  *file_descriptor_set.add_file() = foo_file_descriptor_proto;
 
   FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("bar.proto");
@@ -831,7 +837,7 @@ TEST_F(CommandLineInterfaceTest,
   WriteDescriptorSet("foo_and_bar.bin", &file_descriptor_set);
 
   file_descriptor_set.clear_file();
-  file_descriptor_set.add_file()->CopyFrom(foo_file_descriptor_proto);
+  *file_descriptor_set.add_file() = foo_file_descriptor_proto;
 
   file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("baz.proto");
@@ -3948,7 +3954,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   std::string StripCR(const std::string& text) {
     std::string result;
 
-    for (int i = 0; i < text.size(); i++) {
+    for (size_t i = 0; i < text.size(); ++i) {
       if (text[i] != '\r') {
         result.push_back(text[i]);
       }
@@ -3964,7 +3970,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     std::vector<std::string> args;
     args.push_back("protoc");
     for (absl::string_view split_piece :
-         absl::StrSplit(command, " ", absl::SkipEmpty())) {
+         absl::StrSplit(command, ' ', absl::SkipEmpty())) {
       args.push_back(std::string(split_piece));
     }
     if (specify_proto_files) {
@@ -3983,7 +3989,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     }
 
     std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
-    for (int i = 0; i < args.size(); i++) {
+    for (size_t i = 0; i < args.size(); ++i) {
       argv[i] = args[i].c_str();
     }
 
