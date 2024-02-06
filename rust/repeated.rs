@@ -270,21 +270,6 @@ impl<'msg, T: ?Sized> Debug for RepeatedIter<'msg, T> {
     }
 }
 
-/// An iterator over the mutators inside of a [`Mut<Repeated<T>>`](RepeatedMut).
-pub struct RepeatedIterMut<'msg, T: ?Sized> {
-    mutator: RepeatedMut<'msg, T>,
-    current_index: usize,
-}
-
-impl<'msg, T: ?Sized> Debug for RepeatedIterMut<'msg, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RepeatedIterMut")
-            .field("mutator", &self.mutator)
-            .field("current_index", &self.current_index)
-            .finish()
-    }
-}
-
 /// A `repeated` field of `T`, used as the owned target for `Proxied`.
 ///
 /// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
