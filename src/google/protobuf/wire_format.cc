@@ -18,6 +18,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -805,6 +806,46 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
   return ptr;
 }
 
+static absl::optional<int> GetUnknownEnumValueInUFS(const Message& msg,
+                                                    const Descriptor* desc) {
+  auto* value_field = desc->map_value();
+  auto* enum_type = value_field->enum_type();
+  if (enum_type == nullptr ||
+      internal::cpp::HasPreservingUnknownEnumSemantics(value_field)) {
+    return absl::nullopt;
+  }
+  const auto* ref = msg.GetReflection();
+  if (ref->HasField(msg, desc->map_value())) {
+    return absl::nullopt;
+  }
+  const auto& ufs = ref->GetUnknownFields(msg);
+  for (int i = 0; i < ufs.field_count(); ++i) {
+    const auto& uf = ufs.field(i);
+    if (uf.number() != 2 || uf.type() != uf.TYPE_VARINT) continue;
+    if (enum_type->FindValueByNumber(uf.varint()) == nullptr) {
+      return uf.varint();
+    }
+  }
+  return absl::nullopt;
+}
+
+// Returns false if the whole entry should be moved to unknown fields.
+static bool SanitizeMapEntry(Message& msg, const Descriptor* desc) {
+  ABSL_DCHECK(desc->options().map_entry());
+  const auto unknown_enum = GetUnknownEnumValueInUFS(msg, desc);
+
+  const auto* ref = msg.GetReflection();
+  auto* ufs = ref->MutableUnknownFields(&msg);
+  ufs->Clear();
+
+  if (unknown_enum.has_value()) {
+    ufs->AddVarint(2, *unknown_enum);
+    return false;
+  }
+
+  return true;
+}
+
 const char* WireFormat::_InternalParseAndMergeField(
     Message* msg, const char* ptr, internal::ParseContext* ctx, uint64_t tag,
     const Reflection* reflection, const FieldDescriptor* field) {
@@ -1017,16 +1058,12 @@ const char* WireFormat::_InternalParseAndMergeField(
       }
       ptr = ctx->ParseMessage(sub_message, ptr);
 
-      // For map entries, if the value is an unknown enum we have to push it
-      // into the unknown field set and remove it from the list.
+      // For map entries, we have special handling to mimic codegen:
+      //  - All unknown fields are dropped, except for unknown enum values.
+      //  - If the map_value is an unknown enum we have to push the whole entry
+      //    into the unknown field set and remove it from the list.
       if (ptr != nullptr && field->is_map()) {
-        auto* value_field = field->message_type()->map_value();
-        auto* enum_type = value_field->enum_type();
-        if (enum_type != nullptr &&
-            !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
-            enum_type->FindValueByNumber(
-                sub_message->GetReflection()->GetEnumValue(
-                    *sub_message, value_field)) == nullptr) {
+        if (!SanitizeMapEntry(*sub_message, field->message_type())) {
           reflection->MutableUnknownFields(msg)->AddLengthDelimited(
               field->number(), sub_message->SerializeAsString());
           reflection->RemoveLast(msg, field);
@@ -1053,8 +1090,9 @@ uint8_t* WireFormat::_InternalSerialize(const Message& message, uint8_t* target,
 
   // Fields of map entry should always be serialized.
   if (descriptor->options().map_entry()) {
-    for (int i = 0; i < descriptor->field_count(); i++) {
-      fields.push_back(descriptor->field(i));
+    fields.push_back(descriptor->map_key());
+    if (!GetUnknownEnumValueInUFS(message, descriptor)) {
+      fields.push_back(descriptor->map_value());
     }
   } else {
     message_reflection->ListFields(message, &fields);
@@ -1480,8 +1518,9 @@ size_t WireFormat::ByteSize(const Message& message) {
 
   // Fields of map entry should always be serialized.
   if (descriptor->options().map_entry()) {
-    for (int i = 0; i < descriptor->field_count(); i++) {
-      fields.push_back(descriptor->field(i));
+    fields.push_back(descriptor->map_key());
+    if (!GetUnknownEnumValueInUFS(message, descriptor)) {
+      fields.push_back(descriptor->map_value());
     }
   } else {
     message_reflection->ListFields(message, &fields);

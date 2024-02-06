@@ -45,14 +45,19 @@ struct MapFieldTestPeer {
   }
 };
 
+struct FakeEntry {
+  static constexpr const char* GetTypeName() {
+    return "protobuf_unittest.TestMap.MapInt32Int32Entry";
+  }
+};
 using TestMapField = ::google::protobuf::internal::MapField<
-    unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
+    FakeEntry, ::int32_t, ::int32_t,
     ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
     ::google::protobuf::internal::WireFormatLite::TYPE_INT32>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
-  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
+  using EntryType = FakeEntry;
   typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32>
       MapFieldType;
@@ -172,7 +177,7 @@ enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
 class MapFieldStateTest
     : public testing::TestWithParam<std::tuple<State, bool>> {
  protected:
-  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
+  using EntryType = FakeEntry;
   typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32>
       MapFieldType;
@@ -442,8 +447,7 @@ TEST_P(MapFieldStateTest, MutableMapField) {
 }
 
 using MyMapField =
-    MapField<unittest::TestMap_MapInt32Int32Entry_DoNotUse, int32_t, int32_t,
-             internal::WireFormatLite::TYPE_INT32,
+    MapField<FakeEntry, int32_t, int32_t, internal::WireFormatLite::TYPE_INT32,
              internal::WireFormatLite::TYPE_INT32>;
 
 TEST(MapFieldTest, ConstInit) {

@@ -7,12 +7,14 @@
 
 #include "google/protobuf/map_field.h"
 
+#include <atomic>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -22,6 +24,16 @@ namespace google {
 namespace protobuf {
 namespace internal {
 using ::google::protobuf::internal::DownCast;
+
+const Message* MapFieldBase::GetPrototypeFromFactory() const {
+  auto* res = MessageFactory::generated_factory()->GetPrototype(
+      DescriptorPool::generated_pool()->FindMessageTypeByName(
+          vtable()->prototype_name));
+#if PROTOBUF_BUILTIN_ATOMIC
+  __atomic_store_n(&vtable()->prototype_cache, res, __ATOMIC_RELEASE);
+#endif
+  return res;
+}
 
 VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
   switch (value.type()) {
@@ -405,8 +417,8 @@ DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
     : TypeDefinedMapFieldBase<MapKey, MapValueRef>(&kVTable, arena),
       default_entry_(default_entry) {}
 
-constexpr DynamicMapField::VTable DynamicMapField::kVTable =
-    MakeVTable<DynamicMapField>();
+constexpr DynamicMapField::VTable DynamicMapField::kVTable(
+    static_cast<DynamicMapField*>(nullptr));
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(arena(), nullptr);

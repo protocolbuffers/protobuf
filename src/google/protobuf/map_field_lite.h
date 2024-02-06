@@ -100,9 +100,6 @@ bool AllAreInitialized(const MapFieldLite<Key, T>& field) {
   return true;
 }
 
-template <typename MEntry>
-struct MapEntryToMapField : MapEntryToMapField<typename MEntry::SuperType> {};
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

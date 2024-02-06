@@ -664,8 +664,16 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   // Next the has_bits, which is an array of uint32s.
   type_info->has_bits_offset = -1;
   int max_hasbit = 0;
+
+  // If we have a MapEntry that used to be codegen, make sure we have hasbits
+  // for the fields. They don't follow the normal proto2-vs-proto3 distinction,
+  // but it follows the legacy behavior of MapEntry types.
+  const bool force_hasbits =
+      type->options().map_entry() &&
+      type->file()->pool() == DescriptorPool::generated_pool();
+
   for (int i = 0; i < type->field_count(); i++) {
-    if (internal::cpp::HasHasbit(type->field(i))) {
+    if (force_hasbits || internal::cpp::HasHasbit(type->field(i))) {
       if (type_info->has_bits_offset == -1) {
         // At least one field in the message requires a hasbit, so allocate
         // hasbits.

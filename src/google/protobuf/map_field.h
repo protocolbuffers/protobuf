@@ -26,7 +26,6 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
@@ -333,24 +332,30 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     void (*unsafe_shallow_swap)(MapFieldBase& lhs, MapFieldBase& rhs);
     size_t (*space_used_excluding_self_nolock)(const MapFieldBase& map);
 
-    const Message* (*get_prototype)(const MapFieldBase& map);
+    const Message* (*get_prototype)(const MapFieldBase& map) = nullptr;
+#if PROTOBUF_BUILTIN_ATOMIC
+    // We can't easily use std::atomic here because it makes the type harder to
+    // keep constexpr, so conditionally support the cache.
+    mutable const Message* prototype_cache = nullptr;
+#endif
+    const char* prototype_name = nullptr;
+
+    template <typename T>
+    explicit constexpr VTable(T*)
+        : MapFieldBaseForParse::VTable{&T::GetMapImpl},
+          lookup_map_value(&T::LookupMapValueImpl),
+          delete_map_value(&T::DeleteMapValueImpl),
+          set_map_iterator_value(&T::SetMapIteratorValueImpl),
+          insert_or_lookup_no_sync(&T::InsertOrLookupMapValueNoSyncImpl),
+          clear_map_no_sync(&T::ClearMapNoSyncImpl),
+          merge_from(&T::MergeFromImpl),
+          swap(&T::SwapImpl),
+          unsafe_shallow_swap(&T::UnsafeShallowSwapImpl),
+          space_used_excluding_self_nolock(
+              &T::SpaceUsedExcludingSelfNoLockImpl) {
+      T::PopulatePrototypeInfo(*this);
+    }
   };
-  template <typename T>
-  static constexpr VTable MakeVTable() {
-    VTable out{};
-    out.get_map = &T::GetMapImpl;
-    out.lookup_map_value = &T::LookupMapValueImpl;
-    out.delete_map_value = &T::DeleteMapValueImpl;
-    out.set_map_iterator_value = &T::SetMapIteratorValueImpl;
-    out.insert_or_lookup_no_sync = &T::InsertOrLookupMapValueNoSyncImpl;
-    out.clear_map_no_sync = &T::ClearMapNoSyncImpl;
-    out.merge_from = &T::MergeFromImpl;
-    out.swap = &T::SwapImpl;
-    out.unsafe_shallow_swap = &T::UnsafeShallowSwapImpl;
-    out.space_used_excluding_self_nolock = &T::SpaceUsedExcludingSelfNoLockImpl;
-    out.get_prototype = &T::GetPrototypeImpl;
-    return out;
-  }
 
  public:
   // Returns reference to internal repeated field. Data written using
@@ -412,7 +417,21 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     return vtable()->space_used_excluding_self_nolock(*this);
   }
 
-  const Message* GetPrototype() const { return vtable()->get_prototype(*this); }
+  const Message* GetPrototypeFromFactory() const;
+
+  const Message* GetPrototype() const {
+    if (vtable()->get_prototype != nullptr) {
+      return vtable()->get_prototype(*this);
+    } else {
+#if PROTOBUF_BUILTIN_ATOMIC
+      if (const Message* prototype =
+              __atomic_load_n(&vtable()->prototype_cache, __ATOMIC_ACQUIRE)) {
+        return prototype;
+      }
+#endif
+      return GetPrototypeFromFactory();
+    }
+  }
   void ClearMapNoSync() { return vtable()->clear_map_no_sync(*this); }
 
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
@@ -678,9 +697,11 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
-  static const Message* GetPrototypeImpl(const MapFieldBase& map);
-
   static const MapFieldBase::VTable kVTable;
+
+  static constexpr void PopulatePrototypeInfo(MapFieldBase::VTable& vtable) {
+    vtable.prototype_name = Derived::GetTypeName();
+  }
 
   friend class google::protobuf::Arena;
   friend class MapFieldBase;
@@ -691,8 +712,8 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType_,
           WireFormatLite::FieldType kValueFieldType_>
 PROTOBUF_CONSTINIT const MapFieldBase::VTable
-    MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>::kVTable =
-        MapField::template MakeVTable<MapField>();
+    MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>::kVTable(
+        static_cast<MapField*>(nullptr));
 
 template <typename Key, typename T>
 bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
@@ -701,14 +722,6 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   }
   return true;
 }
-
-template <typename T, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntryToMapField<
-    MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
-};
 
 class PROTOBUF_EXPORT DynamicMapField final
     : public TypeDefinedMapFieldBase<MapKey, MapValueRef> {
@@ -740,6 +753,10 @@ class PROTOBUF_EXPORT DynamicMapField final
   }
 
   static size_t SpaceUsedExcludingSelfNoLockImpl(const MapFieldBase& map);
+
+  static constexpr void PopulatePrototypeInfo(VTable& vtable) {
+    vtable.get_prototype = GetPrototypeImpl;
+  }
 
   static const Message* GetPrototypeImpl(const MapFieldBase& map);
 };

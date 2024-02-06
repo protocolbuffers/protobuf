@@ -123,7 +123,6 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
   void GenerateClassData(io::Printer* p);
-  void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
   void GenerateMergeFrom(io::Printer* p);

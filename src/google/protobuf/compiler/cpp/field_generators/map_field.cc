@@ -9,10 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -47,7 +49,6 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
 
   return {
       {"Map", absl::Substitute("::google::protobuf::Map<$0, $1>", key_type, val_type)},
-      {"Entry", ClassName(field->message_type(), false)},
       {"Key", PrimitiveTypeName(opts, key->cpp_type())},
       {"Val", val_type},
       {"MapField", lite ? "MapFieldLite" : "MapField"},
@@ -71,6 +72,11 @@ void EmitFuncs(const FieldDescriptor* field, io::Printer* p) {
                                _pbi::WireFormatLite::$val_wire_type$>)cc");
 }
 
+static bool NeedMapEntryVerifyFunc(const Descriptor* d, const Options& options,
+                                   MessageSCCAnalyzer* scc_analyzer) {
+  return false;
+}
+
 class Map : public FieldGeneratorBase {
  public:
   Map(const FieldDescriptor* field, const Options& opts,
@@ -81,6 +87,10 @@ class Map : public FieldGeneratorBase {
         val_(field->message_type()->map_value()),
         opts_(&opts),
         has_required_(scc->HasRequiredFields(field->message_type())),
+        verify_(
+            NeedMapEntryVerifyFunc(field->message_type(), opts, scc)
+                ? absl::make_optional(ShouldVerifySimple(field->message_type()))
+                : absl::nullopt),
         lite_(!HasDescriptorMethods(field->file(), opts)) {}
   ~Map() override = default;
 
@@ -173,6 +183,7 @@ class Map : public FieldGeneratorBase {
   const FieldDescriptor* val_;
   const Options* opts_;
   bool has_required_;
+  absl::optional<VerifySimpleType> verify_;
   bool lite_;
 };
 
@@ -183,16 +194,20 @@ void Map::GeneratePrivateMembers(io::Printer* p) const {
           $pbi$::MapFieldLite<$Key$, $Val$> $name$_;
         )cc");
   } else {
-    p->Emit({{"kKeyType",
-              absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
-             {"kValType",
-              absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
-            R"cc(
-              $pbi$::$MapField$<$Entry$, $Key$, $Val$,
-                                $pbi$::WireFormatLite::TYPE_$kKeyType$,
-                                $pbi$::WireFormatLite::TYPE_$kValType$>
-                  $name$_;
-            )cc");
+    p->Emit(
+        {
+            {"entry_name", ClassName(field_->message_type())},
+            {"kKeyType",
+             absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
+            {"kValType",
+             absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))},
+        },
+        R"cc(
+          $pbi$::MapField<struct $entry_name$, $Key$, $Val$,
+                          $pbi$::WireFormatLite::TYPE_$kKeyType$,
+                          $pbi$::WireFormatLite::TYPE_$kValType$>
+              $name$_;
+        )cc");
   }
 }
 
@@ -214,6 +229,24 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
 }
 
 void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  if (!lite_) {
+    p->Emit(
+        {
+            {"verify",
+             [&] {
+             }},
+            {"entry_name", ClassName(field_->message_type())},
+            {"entry_full_name", field_->message_type()->full_name()},
+        },
+        R"cc(
+          struct $entry_name$ {
+            static constexpr const char* GetTypeName() {  //
+              return "$entry_full_name$";
+            }
+            $verify$;
+          };
+        )cc");
+  }
   p->Emit(R"cc(
     inline const $Map$& $Msg$::_internal_$name_internal$() const {
       $TsanDetectConcurrentRead$;

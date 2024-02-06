@@ -897,6 +897,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
             {"weak_defaults",
              [&] {
                for (auto& gen : message_generators_) {
+                 if (!ShouldGenerateClass(gen->descriptor(), options_))
+                   continue;
                  p->Emit(
                      {
                          {"class", QualifiedClassName(gen->descriptor())},
@@ -914,13 +916,19 @@ void FileGenerator::GenerateSource(io::Printer* p) {
             {"defaults",
              [&] {
                for (auto& gen : message_generators_) {
-                 p->Emit({{"section",
-                           WeakDefaultInstanceSection(
-                               gen->descriptor(), gen->index_in_file_messages(),
-                               options_)}},
-                         R"cc(
-                           &__start_$section$,
-                         )cc");
+                 if (ShouldGenerateClass(gen->descriptor(), options_)) {
+                   p->Emit({{"section",
+                             WeakDefaultInstanceSection(
+                                 gen->descriptor(),
+                                 gen->index_in_file_messages(), options_)}},
+                           R"cc(
+                             &__start_$section$,
+                           )cc");
+                 } else {
+                   p->Emit(R"cc(
+                     nullptr,  // no generated type
+                   )cc");
+                 }
                }
              }},
         },
@@ -1098,14 +1106,20 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
       p->Emit({{"defaults",
                 [&] {
                   for (auto& gen : message_generators_) {
-                    p->Emit(
-                        {
-                            {"ns", Namespace(gen->descriptor(), options_)},
-                            {"class", ClassName(gen->descriptor())},
-                        },
-                        R"cc(
-                          &$ns$::_$class$_default_instance_._instance,
-                        )cc");
+                    if (ShouldGenerateClass(gen->descriptor(), options_)) {
+                      p->Emit(
+                          {
+                              {"ns", Namespace(gen->descriptor(), options_)},
+                              {"class", ClassName(gen->descriptor())},
+                          },
+                          R"cc(
+                            &$ns$::_$class$_default_instance_._instance,
+                          )cc");
+                    } else {
+                      p->Emit(R"cc(
+                        nullptr,  // no generated type
+                      )cc");
+                    }
                   }
                 }}},
               R"cc(
@@ -1327,17 +1341,21 @@ class FileGenerator::ForwardDeclarations {
 
     for (const auto& c : classes_) {
       const Descriptor* desc = c.second;
-      p->Emit(
-          {
-              Sub("class", c.first).AnnotatedAs(desc),
-              {"default_type", DefaultInstanceType(desc, options)},
-              {"default_name", DefaultInstanceName(desc, options)},
-          },
-          R"cc(
-            class $class$;
-            struct $default_type$;
-            $dllexport_decl $extern $default_type$ $default_name$;
-          )cc");
+      p->Emit({Sub("class", c.first).AnnotatedAs(desc)},
+              R"cc(
+                class $class$;
+              )cc");
+      if (ShouldGenerateClass(desc, options)) {
+        p->Emit(
+            {
+                {"default_type", DefaultInstanceType(desc, options)},
+                {"default_name", DefaultInstanceName(desc, options)},
+            },
+            R"cc(
+              struct $default_type$;
+              $dllexport_decl $extern $default_type$ $default_name$;
+            )cc");
+      }
     }
 
     for (const auto& s : splits_) {
@@ -1542,7 +1560,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasMapFields(file_)) {
     IncludeFileAndExport("third_party/protobuf/map.h", p);
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("third_party/protobuf/map_entry.h", p);
       IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
       IncludeFile("third_party/protobuf/map_field_lite.h", p);
@@ -1632,11 +1649,13 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
 
 void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
   for (int i = 0; i < message_generators_.size(); ++i) {
+    auto& gen =
+        message_generators_[message_generators_topologically_ordered_[i]];
+    if (!ShouldGenerateClass(gen->descriptor(), options_)) continue;
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
-    message_generators_[message_generators_topologically_ordered_[i]]
-        ->GenerateClassDefinition(p);
+    gen->GenerateClassDefinition(p);
   }
 }
 
