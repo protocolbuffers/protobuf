@@ -25,30 +25,57 @@ jobs:
           - { name: Ruby 2.7 Iteration 3, ruby: ruby-2.7.0, ffi: FFI }
           - { name: Ruby 2.7 Iteration 4, ruby: ruby-2.7.0, ffi: FFI }
           - { name: Ruby 2.7 Iteration 5, ruby: ruby-2.7.0, ffi: FFI }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
-          - { name: Ruby 3.0 Iteration 1, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.0 Iteration 2, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.0 Iteration 3, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.0 Iteration 4, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.0 Iteration 5, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.1, ruby: ruby-3.1.0, ffi: NATIVE }
-          - { name: Ruby 3.1 Iteration 1, ruby: ruby-3.1.0, ffi: FFI }
-          - { name: Ruby 3.1 Iteration 2, ruby: ruby-3.1.0, ffi: FFI }
-          - { name: Ruby 3.1 Iteration 3, ruby: ruby-3.1.0, ffi: FFI }
-          - { name: Ruby 3.1 Iteration 4, ruby: ruby-3.1.0, ffi: FFI }
-          - { name: Ruby 3.1 Iteration 5, ruby: ruby-3.1.0, ffi: FFI }
-          - { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: NATIVE }
-          - { name: Ruby 3.2 Iteration 1, ruby: ruby-3.2.0, ffi: FFI }
-          - { name: Ruby 3.2 Iteration 2, ruby: ruby-3.2.0, ffi: FFI }
-          - { name: Ruby 3.2 Iteration 3, ruby: ruby-3.2.0, ffi: FFI }
-          - { name: Ruby 3.2 Iteration 4, ruby: ruby-3.2.0, ffi: FFI }
-          - { name: Ruby 3.2 Iteration 5, ruby: ruby-3.2.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 6, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 7, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 8, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 9, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 10, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 11, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 12, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 13, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 14, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 15, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 16, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 17, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 18, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 19, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 20, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 21, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 22, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 23, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 24, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 25, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 26, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 27, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 28, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 29, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 30, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 31, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 32, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 33, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 34, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 35, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 36, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 37, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 38, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 39, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 40, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 41, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 42, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 43, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 44, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 45, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 46, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 47, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 48, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 49, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 50, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2 }
+          - { name: Ruby 3.1, ruby: ruby-3.1.0 }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0 }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          - { name: Ruby 3.3 Iteration 1, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: Ruby 3.3 Iteration 2, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: Ruby 3.3 Iteration 3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: Ruby 3.3 Iteration 4, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: Ruby 3.3 Iteration 5, ruby: ruby-3.3.0, ffi: FFI }
+          # Disabled, pending resolution of https://github.com/ffi/ffi/issues/1079
+          # - { name: Ruby 3.3 Iteration 1, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
 
@@ -145,30 +172,57 @@ jobs:
         - { version: "2.7", iteration: 3, ffi: FFI }
         - { version: "2.7", iteration: 4, ffi: FFI }
         - { version: "2.7", iteration: 5, ffi: FFI }
+        - { version: "2.7", iteration: 6, ffi: FFI }
+        - { version: "2.7", iteration: 7, ffi: FFI }
+        - { version: "2.7", iteration: 8, ffi: FFI }
+        - { version: "2.7", iteration: 9, ffi: FFI }
+        - { version: "2.7", iteration: 10, ffi: FFI }
+        - { version: "2.7", iteration: 11, ffi: FFI }
+        - { version: "2.7", iteration: 12, ffi: FFI }
+        - { version: "2.7", iteration: 13, ffi: FFI }
+        - { version: "2.7", iteration: 14, ffi: FFI }
+        - { version: "2.7", iteration: 15, ffi: FFI }
+        - { version: "2.7", iteration: 16, ffi: FFI }
+        - { version: "2.7", iteration: 17, ffi: FFI }
+        - { version: "2.7", iteration: 18, ffi: FFI }
+        - { version: "2.7", iteration: 19, ffi: FFI }
+        - { version: "2.7", iteration: 20, ffi: FFI }
+        - { version: "2.7", iteration: 21, ffi: FFI }
+        - { version: "2.7", iteration: 22, ffi: FFI }
+        - { version: "2.7", iteration: 23, ffi: FFI }
+        - { version: "2.7", iteration: 24, ffi: FFI }
+        - { version: "2.7", iteration: 25, ffi: FFI }
+        - { version: "2.7", iteration: 26, ffi: FFI }
+        - { version: "2.7", iteration: 27, ffi: FFI }
+        - { version: "2.7", iteration: 28, ffi: FFI }
+        - { version: "2.7", iteration: 29, ffi: FFI }
+        - { version: "2.7", iteration: 30, ffi: FFI }
+        - { version: "2.7", iteration: 31, ffi: FFI }
+        - { version: "2.7", iteration: 32, ffi: FFI }
+        - { version: "2.7", iteration: 33, ffi: FFI }
+        - { version: "2.7", iteration: 34, ffi: FFI }
+        - { version: "2.7", iteration: 35, ffi: FFI }
+        - { version: "2.7", iteration: 36, ffi: FFI }
+        - { version: "2.7", iteration: 37, ffi: FFI }
+        - { version: "2.7", iteration: 38, ffi: FFI }
+        - { version: "2.7", iteration: 39, ffi: FFI }
+        - { version: "2.7", iteration: 40, ffi: FFI }
+        - { version: "2.7", iteration: 41, ffi: FFI }
+        - { version: "2.7", iteration: 42, ffi: FFI }
+        - { version: "2.7", iteration: 43, ffi: FFI }
+        - { version: "2.7", iteration: 44, ffi: FFI }
+        - { version: "2.7", iteration: 45, ffi: FFI }
+        - { version: "2.7", iteration: 46, ffi: FFI }
+        - { version: "2.7", iteration: 47, ffi: FFI }
+        - { version: "2.7", iteration: 48, ffi: FFI }
+        - { version: "2.7", iteration: 49, ffi: FFI }
+        - { version: "2.7", iteration: 50, ffi: FFI }
         - { version: "3.0", ffi: NATIVE }
-        - { version: "3.0", iteration: 1, ffi: FFI }
-        - { version: "3.0", iteration: 2, ffi: FFI }
-        - { version: "3.0", iteration: 3, ffi: FFI }
-        - { version: "3.0", iteration: 4, ffi: FFI }
-        - { version: "3.0", iteration: 5, ffi: FFI }
         - { version: "3.1", ffi: NATIVE }
-        - { version: "3.1", iteration: 1, ffi: FFI }
-        - { version: "3.1", iteration: 2, ffi: FFI }
-        - { version: "3.1", iteration: 3, ffi: FFI }
-        - { version: "3.1", iteration: 4, ffi: FFI }
-        - { version: "3.1", iteration: 5, ffi: FFI }
         - { version: "3.2", ffi: NATIVE }
-        - { version: "3.2", iteration: 1, ffi: FFI }
-        - { version: "3.2", iteration: 2, ffi: FFI }
-        - { version: "3.2", iteration: 3, ffi: FFI }
-        - { version: "3.2", iteration: 4, ffi: FFI }
-        - { version: "3.2", iteration: 5, ffi: FFI }
         - { version: "3.3", ffi: NATIVE }
-        - { version: "3.3", iteration: 1, ffi: FFI }
-        - { version: "3.3", iteration: 2, ffi: FFI }
-        - { version: "3.3", iteration: 3, ffi: FFI }
-        - { version: "3.3", iteration: 4, ffi: FFI }
-        - { version: "3.3", iteration: 5, ffi: FFI }
+        # Disabled, pending resolution of https://github.com/ffi/ffi/issues/1079
+        #- { version: "3.3", ffi: FFI }
 
     name: MacOS Ruby ${{ matrix.version }}${{ matrix.iteration == '' && '' || ' ' }}${{ matrix.iteration || '' }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
