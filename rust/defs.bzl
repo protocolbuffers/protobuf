@@ -14,6 +14,7 @@ visibility([
     "//experimental/...",
     "//src/google/protobuf/...",
     "//rust/...",
+    "//commerce/testing/mutation/...",
 ])
 
 def rust_proto_library(name, deps, visibility = [], **args):
