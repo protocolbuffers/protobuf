@@ -51,7 +51,7 @@ bool UseDirectTcParserTable(const FieldDescriptor* field,
                             const Options& options) {
   if (field->cpp_type() != field->CPPTYPE_MESSAGE) return false;
   auto* m = field->message_type();
-  return !m->options().message_set_wire_format() && !HasTracker(m, options);
+  return !m->options().message_set_wire_format();
 }
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
@@ -135,8 +135,12 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
     // Special-case MessageSet.
     format(
         "const char* $classname$::_InternalParse(const char* ptr,\n"
-        "                  ::_pbi::ParseContext* ctx) {\n"
-        "$annotate_deserialize$");
+        "                  ::_pbi::ParseContext* ctx) {\n");
+    if (HasTracker(descriptor_, options_)) {
+      format(
+          "$classname$* _this = this;\n"
+          "$annotate_deserialize$");
+    }
     if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
       format(
           "  ctx->set_lazy_eager_verify_func(&$classname$::InternalVerify);\n");
@@ -155,7 +159,6 @@ void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
   format(
       "const char* $classname$::_InternalParse(\n"
       "    const char* ptr, ::_pbi::ParseContext* ctx) {\n"
-      "$annotate_deserialize$"
       "  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);\n"
       "  return ptr;\n"
       "}\n\n");

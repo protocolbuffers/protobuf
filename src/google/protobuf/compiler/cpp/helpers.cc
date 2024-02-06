@@ -1910,6 +1910,7 @@ bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
 
 bool NeedsPostLoopHandler(const Descriptor* descriptor,
                           const Options& options) {
+  if (HasTracker(descriptor, options)) return true;
   return false;
 }
 
