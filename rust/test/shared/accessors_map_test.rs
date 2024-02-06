@@ -25,6 +25,14 @@ macro_rules! generate_map_primitives_tests {
                     msg.[< map_ $k_field _ $v_field >]().iter().collect::<Vec<_>>(),
                     elements_are![]
                 );
+                assert_that!(
+                    msg.[< map_ $k_field _ $v_field >]().keys().collect::<Vec<_>>(),
+                    elements_are![]
+                );
+                assert_that!(
+                    msg.[< map_ $k_field _ $v_field >]().values().collect::<Vec<_>>(),
+                    elements_are![]
+                );
                 let k = <$k_type>::default();
                 let v = <$v_type>::default();
                 assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k, v), eq(true));
@@ -34,17 +42,33 @@ macro_rules! generate_map_primitives_tests {
                     msg.[< map_ $k_field _ $v_field >]().iter().collect::<Vec<_>>(),
                     elements_are![eq((k, v))]
                 );
+                assert_that!(
+                    msg.[< map_ $k_field _ $v_field >]().keys().collect::<Vec<_>>(),
+                    elements_are![eq(k)]
+                );
+                assert_that!(
+                    msg.[< map_ $k_field _ $v_field >]().values().collect::<Vec<_>>(),
+                    elements_are![eq(v)]
+                );
 
-                let k: $k_type = $k_nonzero;
-                let v: $v_type = $v_nonzero;
-                assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k, v), eq(true));
+                let k2: $k_type = $k_nonzero;
+                let v2: $v_type = $v_nonzero;
+                assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k2, v2), eq(true));
                 assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(2));
                 assert_that!(
                     msg.[< map_ $k_field _ $v_field >]().iter().collect::<Vec<_>>(),
                     unordered_elements_are![
                         eq((k, v)),
-                        eq((<$k_type>::default(), <$v_type>::default())),
+                        eq((k2, v2)),
                     ]
+                );
+                assert_that!(
+                    msg.[< map_ $k_field _ $v_field >]().keys().collect::<Vec<_>>(),
+                    unordered_elements_are![eq(k), eq(k2)]
+                );
+                assert_that!(
+                    msg.[< map_ $k_field _ $v_field >]().values().collect::<Vec<_>>(),
+                    unordered_elements_are![eq(v), eq(v2)]
                 );
             }
         )* }

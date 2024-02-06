@@ -215,9 +215,26 @@ where
         self.len() == 0
     }
 
-    /// An alias for `<Self as IntoIterator>::into_iterator`.
+    /// Returns an iterator visiting all key-value pairs in arbitrary order.
+    ///
+    /// The iterator element type is `(View<K>, View<V>)`.
+    /// This is an alias for `<Self as IntoIterator>::into_iter`.
     pub fn iter(self) -> MapIter<'msg, K, V> {
         self.into_iter()
+    }
+
+    /// Returns an iterator visiting all keys in arbitrary order.
+    ///
+    /// The iterator element type is `View<K>`.
+    pub fn keys(self) -> impl Iterator<Item = View<'msg, K>> + 'msg {
+        self.into_iter().map(|(k, _)| k)
+    }
+
+    /// Returns an iterator visiting all values in arbitrary order.
+    ///
+    /// The iterator element type is `View<V>`.
+    pub fn values(self) -> impl Iterator<Item = View<'msg, V>> + 'msg {
+        self.into_iter().map(|(_, v)| v)
     }
 }
 
@@ -286,8 +303,25 @@ where
         todo!("implement b/28530933");
     }
 
+    /// Returns an iterator visiting all key-value pairs in arbitrary order.
+    ///
+    /// The iterator element type is `(View<K>, View<V>)`.
     pub fn iter(&self) -> MapIter<'_, K, V> {
         self.into_iter()
+    }
+
+    /// Returns an iterator visiting all keys in arbitrary order.
+    ///
+    /// The iterator element type is `View<K>`.
+    pub fn keys(&self) -> impl Iterator<Item = View<'_, K>> + '_ {
+        self.as_view().keys()
+    }
+
+    /// Returns an iterator visiting all values in arbitrary order.
+    ///
+    /// The iterator element type is `View<V>`.
+    pub fn values(&self) -> impl Iterator<Item = View<'_, V>> + '_ {
+        self.as_view().values()
     }
 }
 
