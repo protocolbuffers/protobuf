@@ -18,16 +18,22 @@ jobs:
       matrix:
         include:
           # Test both FFI and Native implementations on the highest and lowest
-          # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
+          # Ruby versions for CRuby and JRuby.
           - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 1, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 2, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 3, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 4, ruby: ruby-2.7.0, ffi: FFI }
+          - { name: Ruby 2.7 Iteration 5, ruby: ruby-2.7.0, ffi: FFI }
           - { name: Ruby 3.0, ruby: ruby-3.0.2 }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
           - { name: Ruby 3.2, ruby: ruby-3.2.0 }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3 Iteration 1, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3 Iteration 2, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3 Iteration 3, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3 Iteration 4, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3 Iteration 5, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
 
@@ -116,19 +122,25 @@ jobs:
       matrix:
         include:
         # Test both FFI and Native implementations on the highest and lowest
-        # Ruby versions for CRuby, but only on Bazel 5.x.
+        # Ruby versions for CRuby.
         # Quote versions numbers otherwise 3.0 will render as 3
         - { version: "2.7", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "2.7", ffi: FFI }
+        - { version: "2.7", iteration: 1, ffi: FFI }
+        - { version: "2.7", iteration: 2, ffi: FFI }
+        - { version: "2.7", iteration: 3, ffi: FFI }
+        - { version: "2.7", iteration: 4, ffi: FFI }
+        - { version: "2.7", iteration: 5, ffi: FFI }
         - { version: "3.0" }
         - { version: "3.1" }
         - { version: "3.2" }
         - { version: "3.3", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.3", ffi: FFI }
+        - { version: "3.3", iteration: 1, ffi: FFI }
+        - { version: "3.3", iteration: 2, ffi: FFI }
+        - { version: "3.3", iteration: 3, ffi: FFI }
+        - { version: "3.3", iteration: 4, ffi: FFI }
+        - { version: "3.3", iteration: 5, ffi: FFI }
 
-    name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: MacOS Ruby ${{ matrix.version }}${{ matrix.iteration == '' && '' || ' ' }}${{ matrix.iteration || '' }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
