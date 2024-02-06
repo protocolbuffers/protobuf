@@ -68,6 +68,28 @@ macro_rules! generate_repeated_numeric_test {
                   eq(mutator2.iter().collect::<Vec<_>>())
               );
           }
+
+          #[test]
+          fn [< test_repeated_ $field _exact_size_iterator >]() {
+            let mut msg = TestAllTypes::new();
+            let mut mutator = msg.[<repeated_ $field _mut>]();
+            for i in 0..5 {
+                mutator.push(i as $t);
+            }
+            let mut iter = mutator.iter();
+            // size_hint/len must indicate the _remaining_ items in the iterator.
+            for i in 0..5 {
+                assert_that!(iter.len(), eq(5 - i));
+                assert_that!(iter.size_hint(), eq((5 - i, Some(5 - i))));
+                assert_that!(iter.next(), eq(Some(i as $t)));
+            }
+            assert_that!(iter.size_hint(), eq((0, Some(0))));
+            assert_that!(iter.len(), eq(0));
+            assert_that!(iter.next(), eq(None));
+
+            // Also check FusedIterator - calling `next` multiple times should return `None`.
+            assert_that!(iter.next(), eq(None));
+          }
       )* }
   };
 }

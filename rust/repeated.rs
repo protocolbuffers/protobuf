@@ -381,7 +381,6 @@ where
     }
 }
 
-// TODO: impl ExactSizeIterator
 impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
 where
     T: ProxiedInRepeated + ?Sized + 'msg,
@@ -395,14 +394,20 @@ where
         }
         val
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.len();
+        (len, Some(len))
+    }
 }
 
 impl<'msg, T: ?Sized + ProxiedInRepeated> ExactSizeIterator for RepeatedIter<'msg, T> {
     fn len(&self) -> usize {
-        self.view.len()
+        self.view.len() - self.current_index
     }
 }
 
+// TODO: impl DoubleEndedIterator
 impl<'msg, T: ?Sized + ProxiedInRepeated> FusedIterator for RepeatedIter<'msg, T> {}
 
 impl<'msg, T> iter::IntoIterator for RepeatedView<'msg, T>
