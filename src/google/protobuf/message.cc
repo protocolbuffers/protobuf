@@ -155,12 +155,8 @@ Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
 
 const char* Message::_InternalParse(const char* ptr,
                                     internal::ParseContext* ctx) {
-#if defined(PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION)
   return internal::TcParser::ParseLoop(this, ptr, ctx,
                                        GetReflection()->GetTcParseTable());
-#else
-  return WireFormat::_InternalParse(this, ptr, ctx);
-#endif
 }
 
 uint8_t* Message::_InternalSerialize(uint8_t* target,
