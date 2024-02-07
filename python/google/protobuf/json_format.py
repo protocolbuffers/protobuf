@@ -911,6 +911,17 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
       # Convert an enum value.
       enum_value = field.enum_type.values_by_name.get(value, None)
+      if enum_value is None and isinstance(value, str):
+        # Performing case insensitive search
+        enum_values = [
+            enum_value
+            for enum_name, enum_value in field.enum_type.values_by_name.items()
+            if enum_name.upper() == value.upper()
+        ]
+        # Note: There can be multiple items where the name only differs in case.
+        # Let's take the 1st one.
+        if enum_values:
+          enum_value = enum_values[0]
       if enum_value is None:
         try:
           number = int(value)
