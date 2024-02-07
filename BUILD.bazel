@@ -295,6 +295,42 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "delimited_message_util",
+    actual = "//src/google/protobuf/util:delimited_message_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "differencer",
+    actual = "//src/google/protobuf/util:differencer",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_util",
+    actual = "//src/google/protobuf/util:field_mask_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_util",
+    actual = "//src/google/protobuf/util:json_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "time_util",
+    actual = "//src/google/protobuf/util:time_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_resolver",
+    actual = "//src/google/protobuf/util:type_resolver",
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Java support
 ################################################################################
