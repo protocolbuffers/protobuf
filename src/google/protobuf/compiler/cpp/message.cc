@@ -4513,6 +4513,15 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       "// Prevent compiler warnings about cached_has_bits being unused\n"
       "(void) cached_has_bits;\n\n");
 
+  // See comment in third_party/protobuf/port.h for details,
+  // on how much we are prefetching. Only insert prefetch once per
+  // function, since advancing is actually slower. We sometimes
+  // prefetch more than sizeof(message), because it helps with
+  // next message on arena.
+  p->Emit(R"cc(
+    ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
+  )cc");
+
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
     bool has_haswords_check = MaybeEmitHaswordsCheck(

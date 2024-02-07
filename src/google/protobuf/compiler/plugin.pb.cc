@@ -508,6 +508,7 @@ const char* Version::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     // optional string suffix = 4;
@@ -849,6 +850,7 @@ const char* CodeGeneratorRequest::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated string file_to_generate = 1;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_file_to_generate().size());
   for (int i = 0, n = _internal_file_to_generate().size(); i < n; ++i) {
@@ -1178,6 +1180,7 @@ const char* CodeGeneratorResponse_File::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     // optional string name = 1;
@@ -1510,6 +1513,7 @@ const char* CodeGeneratorResponse::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   total_size += 1UL * this->_internal_file_size();
   for (const auto& msg : this->_internal_file()) {

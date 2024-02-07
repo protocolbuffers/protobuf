@@ -212,6 +212,23 @@ inline constexpr bool DebugHardenStringValues() {
 #endif
 }
 
+// Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
+// Constants are somewhat arbitrary and pretty aggressive, but were
+// chosen to give a better benchmark results. E.g. this is ~20%
+// faster, single cache line prefetch is ~12% faster, increasing
+// decreasing distance makes results 2-4% worse. Important note,
+// prefetch doesn't require a valid address, so it is ok to prefetch
+// past the end of message/valid memory, however we are doing this
+// inside inline asm block, since computing the invalid pointer
+// is a potential UB. Only insert prefetch once per function,
+PROTOBUF_ALWAYS_INLINE inline void Prefetch5LinesFrom7Lines(const void* ptr) {
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 640);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
+}
+
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
 Unreachable() {

@@ -2479,6 +2479,7 @@ const char* FileDescriptorSet::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.FileDescriptorProto file = 1;
   total_size += 1UL * this->_internal_file_size();
   for (const auto& msg : this->_internal_file()) {
@@ -2927,6 +2928,7 @@ const char* FileDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated string dependency = 3;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_dependency().size());
   for (int i = 0, n = _internal_dependency().size(); i < n; ++i) {
@@ -3321,6 +3323,7 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     // optional .google.protobuf.ExtensionRangeOptions options = 3;
@@ -3567,6 +3570,7 @@ const char* DescriptorProto_ReservedRange::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
@@ -3988,6 +3992,7 @@ const char* DescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   total_size += 1UL * this->_internal_field_size();
   for (const auto& msg : this->_internal_field()) {
@@ -4375,6 +4380,7 @@ const char* ExtensionRangeOptions_Declaration::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000001fu) {
     // optional string full_name = 2;
@@ -4704,6 +4710,7 @@ const char* ExtensionRangeOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
   total_size += 1UL * this->_internal_declaration_size();
   for (const auto& msg : this->_internal_declaration()) {
@@ -5164,6 +5171,7 @@ const char* FieldDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     // optional string name = 1;
@@ -5515,6 +5523,7 @@ const char* OneofDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string name = 1;
@@ -5750,6 +5759,7 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional int32 start = 1;
@@ -6063,6 +6073,7 @@ const char* EnumDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   total_size += 1UL * this->_internal_value_size();
   for (const auto& msg : this->_internal_value()) {
@@ -6367,6 +6378,7 @@ const char* EnumValueDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     // optional string name = 1;
@@ -6661,6 +6673,7 @@ const char* ServiceDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
   total_size += 1UL * this->_internal_method_size();
   for (const auto& msg : this->_internal_method()) {
@@ -7013,6 +7026,7 @@ const char* MethodDescriptorProto::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     // optional string name = 1;
@@ -7683,6 +7697,7 @@ const char* FileOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -8217,6 +8232,7 @@ const char* MessageOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -8514,6 +8530,7 @@ const char* FieldOptions_EditionDefault::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional string value = 2;
@@ -8947,6 +8964,7 @@ const char* FieldOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   {
     std::size_t data_size = 0;
@@ -9322,6 +9340,7 @@ const char* OneofOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -9640,6 +9659,7 @@ const char* EnumOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -9981,6 +10001,7 @@ const char* EnumValueOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -10291,6 +10312,7 @@ const char* ServiceOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -10620,6 +10642,7 @@ const char* MethodOptions::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   total_size += 2UL * this->_internal_uninterpreted_option_size();
   for (const auto& msg : this->_internal_uninterpreted_option()) {
@@ -10897,6 +10920,7 @@ const char* UninterpretedOption_NamePart::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // required string name_part = 1;
@@ -11242,6 +11266,7 @@ const char* UninterpretedOption::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
   total_size += 1UL * this->_internal_name_size();
   for (const auto& msg : this->_internal_name()) {
@@ -11606,6 +11631,7 @@ const char* FeatureSet::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000003fu) {
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -11893,6 +11919,7 @@ const char* FeatureSetDefaults_FeatureSetEditionDefault::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.FeatureSet features = 2;
@@ -12169,6 +12196,7 @@ const char* FeatureSetDefaults::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
   total_size += 1UL * this->_internal_defaults_size();
   for (const auto& msg : this->_internal_defaults()) {
@@ -12488,6 +12516,7 @@ const char* SourceCodeInfo_Location::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated int32 path = 1 [packed = true];
   {
     std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
@@ -12740,6 +12769,7 @@ const char* SourceCodeInfo::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
   total_size += 1UL * this->_internal_location_size();
   for (const auto& msg : this->_internal_location()) {
@@ -13022,6 +13052,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated int32 path = 1 [packed = true];
   {
     std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
@@ -13274,6 +13305,7 @@ const char* GeneratedCodeInfo::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
   total_size += 1UL * this->_internal_annotation_size();
   for (const auto& msg : this->_internal_annotation()) {

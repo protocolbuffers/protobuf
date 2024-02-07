@@ -289,6 +289,7 @@ const char* CppFeatures::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
