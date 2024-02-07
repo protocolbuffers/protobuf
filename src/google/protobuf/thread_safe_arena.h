@@ -226,6 +226,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     // lifecycle_id of the arena being used.
     uint64_t last_lifecycle_id_seen{static_cast<uint64_t>(-1)};
     SerialArena* last_serial_arena{nullptr};
+    bool reset_block_size{false};
   };
   static_assert(sizeof(ThreadCache) <= kThreadCacheAlignment,
                 "ThreadCache may span several cache lines");
@@ -265,6 +266,10 @@ class PROTOBUF_EXPORT ThreadSafeArena {
                 "kBlockHeaderSize must be a multiple of 8.");
   static_assert(kSerialArenaSize % 8 == 0,
                 "kSerialArenaSize must be a multiple of 8.");
+  static bool ResetBlockSize() { return thread_cache().reset_block_size; }
+  static void SetResetBlockSize(bool reset_block_size) {
+    thread_cache().reset_block_size = reset_block_size;
+  }
 };
 
 }  // namespace internal

@@ -67,7 +67,10 @@ static SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr,
   AllocationPolicy policy;  // default policy
   if (policy_ptr) policy = *policy_ptr;
   size_t size;
-  if (last_size != 0) {
+  if (ThreadSafeArena::ResetBlockSize()) {
+    size = policy.start_block_size;
+    ThreadSafeArena::SetResetBlockSize(false);
+  } else if (last_size != 0) {
     // Double the current block size, up to a limit.
     auto max_size = policy.max_block_size;
     size = std::min(2 * last_size, max_size);
