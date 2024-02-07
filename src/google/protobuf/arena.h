@@ -409,25 +409,22 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     using EnableIfArena =
         typename std::enable_if<std::is_same<Arena*, U>::value, Arena*>::type;
 
-    // Rather than use SFINAE that must fully cover the space of options in a
-    // mutually exclusive fashion, we use implicit conversions to base classes
-    // to force an explicit ranking for our preferences.  The lowest ranked
-    // version that compiles will be accepted.
-    struct Rank1 {};
-    struct Rank0 : Rank1 {};
+    // Use go/ranked-overloads for dispatching.
+    struct Rank0 {};
+    struct Rank1 : Rank0 {};
 
     static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
 
-    static Arena* GetArena(T* p) { return GetArena(Rank0{}, p); }
+    static Arena* GetArena(T* p) { return GetArena(Rank1{}, p); }
 
     template <typename U>
-    static auto GetArena(Rank0, U* p)
-        -> EnableIfArena<decltype(p->GetArena())> {
+    static auto GetArena(Rank1,
+                         U* p) -> EnableIfArena<decltype(p->GetArena())> {
       return p->GetArena();
     }
 
     template <typename U>
-    static Arena* GetArena(Rank1, U*) {
+    static Arena* GetArena(Rank0, U*) {
       return nullptr;
     }
 

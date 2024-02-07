@@ -228,10 +228,7 @@ struct TransparentSupport {
 // that is convertible to absl::string_view.
 template <>
 struct TransparentSupport<std::string> {
-  // If the element is not convertible to absl::string_view, try to convert to
-  // std::string first, and then fallback to support for converting from
-  // std::string_view. The ranked overload pattern is used to specify our
-  // order of preference.
+  // Use go/ranked-overloads for dispatching.
   struct Rank0 {};
   struct Rank1 : Rank0 {};
   struct Rank2 : Rank1 {};
