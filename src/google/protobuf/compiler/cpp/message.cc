@@ -2304,6 +2304,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
           void $classname$::PostLoopHandler(MessageLite* msg,
                                             ::_pbi::ParseContext* ctx) {
             $classname$* _this = static_cast<$classname$*>(msg);
+            (void)_this;
             $annotate_deserialize$;
             $required$;
           }

@@ -139,6 +139,7 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
     if (HasOnDeserializeTracker(descriptor_, options_)) {
       format(
           "$classname$* _this = this;\n"
+          "(void)_this;\n"
           "$annotate_deserialize$");
     }
     if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
