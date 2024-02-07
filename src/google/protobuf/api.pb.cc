@@ -515,6 +515,7 @@ const char* Api::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.Method methods = 2;
   total_size += 1UL * this->_internal_methods_size();
   for (const auto& msg : this->_internal_methods()) {
@@ -900,6 +901,7 @@ const char* Method::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.Option options = 6;
   total_size += 1UL * this->_internal_options_size();
   for (const auto& msg : this->_internal_options()) {
@@ -1176,6 +1178,7 @@ const char* Mixin::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // string name = 1;
   if (!this->_internal_name().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(

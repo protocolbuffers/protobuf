@@ -291,6 +291,7 @@ const char* Any::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // string type_url = 1;
   if (!this->_internal_type_url().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(

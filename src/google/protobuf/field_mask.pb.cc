@@ -248,6 +248,7 @@ const char* FieldMask::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated string paths = 1;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_paths().size());
   for (int i = 0, n = _internal_paths().size(); i < n; ++i) {

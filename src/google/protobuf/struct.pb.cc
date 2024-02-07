@@ -401,6 +401,7 @@ const char* Struct::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // map<string, .google.protobuf.Value> fields = 1;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_fields_size());
   for (const auto& entry : _internal_fields()) {
@@ -735,6 +736,7 @@ const char* Value::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   switch (kind_case()) {
     // .google.protobuf.NullValue null_value = 1;
     case kNullValue: {
@@ -1014,6 +1016,7 @@ const char* ListValue::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated .google.protobuf.Value values = 1;
   total_size += 1UL * this->_internal_values_size();
   for (const auto& msg : this->_internal_values()) {

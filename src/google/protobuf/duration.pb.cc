@@ -253,6 +253,7 @@ const char* Duration::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // int64 seconds = 1;
   if (this->_internal_seconds() != 0) {
     total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(

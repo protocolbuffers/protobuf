@@ -486,6 +486,7 @@ const char* DoubleValue::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // double value = 1;
   static_assert(sizeof(::uint64_t) == sizeof(double),
                 "Code assumes ::uint64_t and double are the same size.");
@@ -678,6 +679,7 @@ const char* FloatValue::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // float value = 1;
   static_assert(sizeof(::uint32_t) == sizeof(float),
                 "Code assumes ::uint32_t and float are the same size.");
@@ -865,6 +867,7 @@ const char* Int64Value::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // int64 value = 1;
   if (this->_internal_value() != 0) {
     total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
@@ -1043,6 +1046,7 @@ const char* UInt64Value::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // uint64 value = 1;
   if (this->_internal_value() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
@@ -1221,6 +1225,7 @@ const char* Int32Value::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // int32 value = 1;
   if (this->_internal_value() != 0) {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
@@ -1399,6 +1404,7 @@ const char* UInt32Value::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // uint32 value = 1;
   if (this->_internal_value() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
@@ -1577,6 +1583,7 @@ const char* BoolValue::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // bool value = 1;
   if (this->_internal_value() != 0) {
     total_size += 2;
@@ -1772,6 +1779,7 @@ const char* StringValue::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // string value = 1;
   if (!this->_internal_value().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1965,6 +1973,7 @@ const char* BytesValue::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // bytes value = 1;
   if (!this->_internal_value().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
