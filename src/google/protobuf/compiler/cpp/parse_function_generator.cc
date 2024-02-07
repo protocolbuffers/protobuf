@@ -136,7 +136,7 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
     format(
         "const char* $classname$::_InternalParse(const char* ptr,\n"
         "                  ::_pbi::ParseContext* ctx) {\n");
-    if (HasTracker(descriptor_, options_)) {
+    if (HasOnDeserializeTracker(descriptor_, options_)) {
       format(
           "$classname$* _this = this;\n"
           "$annotate_deserialize$");

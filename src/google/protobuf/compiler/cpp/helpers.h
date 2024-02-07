@@ -1159,6 +1159,12 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options);
 bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options);
 
 
+// Determine if we are going to generate a tracker call for OnDeserialize.
+// This one is handled specially because we generate the PostLoopHandler for it.
+// We don't want to generate a handler if it is going to end up empty.
+bool HasOnDeserializeTracker(const Descriptor* descriptor,
+                             const Options& options);
+
 // Determine if we need a PostLoopHandler function to inject into TcParseTable's
 // ParseLoop.
 // If this returns true, the parse table generation will use
