@@ -191,7 +191,7 @@ std::string GetEnumValueName(absl::string_view enum_name,
 
 uint GetGroupEndTag(const Descriptor* descriptor) {
   const Descriptor* containing_type = descriptor->containing_type();
-  if (containing_type != NULL) {
+  if (containing_type != nullptr) {
     const FieldDescriptor* field;
     for (int i = 0; i < containing_type->field_count(); i++) {
       field = containing_type->field(i);
@@ -211,7 +211,7 @@ uint GetGroupEndTag(const Descriptor* descriptor) {
     }
   } else {
     const FileDescriptor* containing_file = descriptor->file();
-    if (containing_file != NULL) {
+    if (containing_file != nullptr) {
       const FieldDescriptor* field;
       for (int i = 0; i < containing_file->extension_count(); i++) {
         field = containing_file->extension(i);

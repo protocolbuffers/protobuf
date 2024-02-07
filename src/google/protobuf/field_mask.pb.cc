@@ -174,6 +174,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_FieldMask_default_instance_._instance,
+    nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
     ::_pbi::TcParser::GetTable<::google::protobuf::FieldMask>(),  // to_prefetch
@@ -247,6 +248,7 @@ const char* FieldMask::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // repeated string paths = 1;
   total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_paths().size());
   for (int i = 0, n = _internal_paths().size(); i < n; ++i) {

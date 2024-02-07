@@ -1943,6 +1943,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
         }},
        {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
+       {"post_loop_handler",
+        [&] {
+          if (!NeedsPostLoopHandler(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            static void PostLoopHandler(MessageLite* msg,
+                                        $pbi$::ParseContext* ctx);
+          )cc");
+        }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"split_friend",
         [&] {
@@ -2080,6 +2088,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_set_has$;
           $decl_oneof_has$;
           $decl_data$;
+          $post_loop_handler$;
           friend class ::$proto_ns$::MessageLite;
           friend class ::$proto_ns$::Arena;
           template <typename T>
@@ -2284,6 +2293,21 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         return $superclass$::GetMetadataImpl(GetClassData()->full());
       }
     )cc");
+  }
+
+  if (NeedsPostLoopHandler(descriptor_, options_)) {
+    p->Emit(
+        {{"required",
+          [&] {
+          }}},
+        R"cc(
+          void $classname$::PostLoopHandler(MessageLite* msg,
+                                            ::_pbi::ParseContext* ctx) {
+            $classname$* _this = static_cast<$classname$*>(msg);
+            $annotate_deserialize$;
+            $required$;
+          }
+        )cc");
   }
 
   if (HasTracker(descriptor_, options_)) {
@@ -4488,6 +4512,15 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       "$uint32$ cached_has_bits = 0;\n"
       "// Prevent compiler warnings about cached_has_bits being unused\n"
       "(void) cached_has_bits;\n\n");
+
+  // See comment in third_party/protobuf/port.h for details,
+  // on how much we are prefetching. Only insert prefetch once per
+  // function, since advancing is actually slower. We sometimes
+  // prefetch more than sizeof(message), because it helps with
+  // next message on arena.
+  p->Emit(R"cc(
+    ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
+  )cc");
 
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);

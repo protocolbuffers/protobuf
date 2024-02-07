@@ -329,16 +329,15 @@ UPB_API_INLINE upb_TaggedMessagePtr upb_Message_GetTaggedMessagePtr(
 }
 
 UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
-    const upb_Message* msg, const upb_MiniTableField* field,
-    upb_Message* default_val) {
+    const upb_Message* msg, const upb_MiniTableField* field) {
   upb_TaggedMessagePtr tagged =
-      upb_Message_GetTaggedMessagePtr(msg, field, default_val);
+      upb_Message_GetTaggedMessagePtr(msg, field, NULL);
   return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
 }
 
 UPB_API_INLINE upb_Message* upb_Message_GetMutableMessage(
     upb_Message* msg, const upb_MiniTableField* field) {
-  return (upb_Message*)upb_Message_GetMessage(msg, field, NULL);
+  return (upb_Message*)upb_Message_GetMessage(msg, field);
 }
 
 // For internal use only; users cannot set tagged messages because only the

@@ -96,7 +96,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = absl::StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
-  if (descriptor_->containing_type() != NULL) {
+  if (descriptor_->containing_type() != nullptr) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
   if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
@@ -140,12 +140,12 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = absl::StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
-  if (descriptor_->containing_type() != NULL) {
+  if (descriptor_->containing_type() != nullptr) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
 
   // The descriptor for this type.
-  if (descriptor_->containing_type() == NULL) {
+  if (descriptor_->containing_type() == nullptr) {
     printer->Print(vars,
                    "internal_$identifier$_descriptor =\n"
                    "  getDescriptor().getMessageTypes().get($index$);\n");

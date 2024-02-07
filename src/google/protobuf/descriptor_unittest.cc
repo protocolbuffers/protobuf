@@ -7267,7 +7267,7 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2) {
 
 // Test that field names that may conflict in JSON is not allowed by protoc.
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3Legacy) {
-  BuildFileWithErrors(
+  BuildFile(
       "name: 'foo.proto' "
       "syntax: 'proto3' "
       "message_type {"
@@ -7275,10 +7275,7 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3Legacy) {
       "  options { deprecated_legacy_json_field_conflicts: true }"
       "  field { name:'AB' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
-      "foo.proto: Foo: NAME: The default JSON name of field \"_a__b_\" "
-      "(\"AB\") "
-      "conflicts with the default JSON name of field \"AB\".\n");
+      "}");
 }
 
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2Legacy) {
@@ -7418,30 +7415,33 @@ TEST_F(FeaturesTest, Proto2Features) {
   const FieldDescriptor* group = message->field(1);
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), -2);
-  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: CLOSED
-                repeated_field_encoding: EXPANDED
-                utf8_validation: NONE
-                message_encoding: LENGTH_PREFIXED
-                json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] { legacy_closed_enum: true })pb"));
-  EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: CLOSED
-                repeated_field_encoding: EXPANDED
-                utf8_validation: NONE
-                message_encoding: LENGTH_PREFIXED
-                json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] { legacy_closed_enum: true })pb"));
-  EXPECT_THAT(GetCoreFeatures(group), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: CLOSED
-                repeated_field_encoding: EXPANDED
-                utf8_validation: NONE
-                message_encoding: DELIMITED
-                json_format: LEGACY_BEST_EFFORT
-                [pb.cpp] { legacy_closed_enum: true })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(file), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        [pb.cpp] { legacy_closed_enum: true string_type: STRING })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(field), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        [pb.cpp] { legacy_closed_enum: true string_type: STRING })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(group), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: DELIMITED
+        json_format: LEGACY_BEST_EFFORT
+        [pb.cpp] { legacy_closed_enum: true string_type: STRING })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_EQ(
@@ -7495,22 +7495,24 @@ TEST_F(FeaturesTest, Proto3Features) {
   const FieldDescriptor* field = message->field(0);
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), -3);
-  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
-                field_presence: IMPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
-  EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
-                field_presence: IMPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(file), EqualsProto(R"pb(
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(field), EqualsProto(R"pb(
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_EQ(
@@ -7649,7 +7651,33 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false }
+                [pb.cpp] { legacy_closed_enum: false string_type: STRING }
+              )pb"));
+
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
+  EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 1);
+}
+
+TEST_F(FeaturesTest, Edition2024Defaults) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2024
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false string_type: VIEW }
               )pb"));
 
   // Since pb::test is registered in the pool, it should end up with defaults in
@@ -7677,7 +7705,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 utf8_validation: VERIFY
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false }
+                [pb.cpp] { legacy_closed_enum: false string_type: STRING }
               )pb"));
   EXPECT_FALSE(GetFeatures(file).HasExtension(pb::test));
 }
@@ -7694,14 +7722,15 @@ TEST_F(FeaturesTest, ClearsOptions) {
     }
   )pb");
   EXPECT_THAT(file->options(), EqualsProto("java_package: 'bar'"));
-  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
-                field_presence: IMPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(file), EqualsProto(R"pb(
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
@@ -8058,14 +8087,15 @@ TEST_F(FeaturesTest, NoOptions) {
         name: "foo.proto" syntax: "editions" edition: EDITION_2023
       )pb");
   EXPECT_EQ(&file->options(), &FileOptions::default_instance());
-  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(file), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, InvalidEdition) {
@@ -8087,14 +8117,15 @@ TEST_F(FeaturesTest, FileFeatures) {
     options { features { field_presence: IMPLICIT } }
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
-                field_presence: IMPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(file), EqualsProto(R"pb(
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, FileFeaturesExtension) {
@@ -8162,14 +8193,15 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
   )pb");
   const Descriptor* message = file->message_type(0);
   EXPECT_THAT(message->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(message), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(message), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, MessageFeaturesInherit) {
@@ -8267,14 +8299,15 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
   )pb");
   const FieldDescriptor* field = file->message_type(0)->field(0);
   EXPECT_THAT(field->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(field), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, FieldFeaturesInherit) {
@@ -8655,14 +8688,15 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
   )pb");
   const EnumDescriptor* enm = file->enum_type(0);
   EXPECT_THAT(enm->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(enm), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(enm), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, EnumFeaturesInherit) {
@@ -8762,14 +8796,15 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
   )pb");
   const EnumValueDescriptor* value = file->enum_type(0)->value(0);
   EXPECT_THAT(value->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(value), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(value), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, EnumValueFeaturesInherit) {
@@ -8854,14 +8889,15 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
   )pb");
   const OneofDescriptor* oneof = file->message_type(0)->oneof_decl(0);
   EXPECT_THAT(oneof->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(oneof), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(oneof), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, OneofFeaturesInherit) {
@@ -8953,14 +8989,15 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
   const Descriptor::ExtensionRange* range =
       file->message_type(0)->extension_range(0);
   EXPECT_THAT(range->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(range), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(range), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, ExtensionRangeFeaturesInherit) {
@@ -9037,14 +9074,15 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
   )pb");
   const ServiceDescriptor* service = file->service(0);
   EXPECT_THAT(service->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(service), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(service), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, ServiceFeaturesInherit) {
@@ -9103,14 +9141,15 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
   )pb");
   const MethodDescriptor* method = file->service(0)->method(0);
   EXPECT_THAT(method->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(method), EqualsProto(R"pb(
-                field_presence: EXPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(method), EqualsProto(R"pb(
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, MethodFeaturesInherit) {
@@ -9316,7 +9355,7 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
         type_name: "FooOpen"
         options {
           features {
-            [pb.cpp] { legacy_closed_enum: true }
+            [pb.cpp] { legacy_closed_enum: true string_type: STRING }
           }
         }
       }
@@ -9427,6 +9466,30 @@ TEST_F(FeaturesTest, InvalidFieldPacked) {
       "foo.proto: Foo.bar: NAME: Field option packed is not allowed under "
       "editions.  Use the repeated_field_encoding feature to control this "
       "behavior.\n");
+}
+
+TEST_F(FeaturesTest, NoCtypeFromEdition2024) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "bar"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            options { ctype: CORD }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: ctype option is not allowed under edition "
+      "2024 and beyond. Use the feature string_type = VIEW|CORD|STRING|... "
+      "instead.\n");
 }
 
 
@@ -9934,14 +9997,15 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
     }
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
-                field_presence: IMPLICIT
-                enum_type: OPEN
-                repeated_field_encoding: PACKED
-                utf8_validation: VERIFY
-                message_encoding: LENGTH_PREFIXED
-                json_format: ALLOW
-                [pb.cpp] { legacy_closed_enum: false })pb"));
+  EXPECT_THAT(
+      GetCoreFeatures(file), EqualsProto(R"pb(
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.cpp] { legacy_closed_enum: false string_type: STRING })pb"));
 }
 
 TEST_F(FeaturesTest, UninterpretedOptionsMerge) {

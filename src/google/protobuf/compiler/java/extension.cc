@@ -32,7 +32,7 @@ ImmutableExtensionGenerator::ImmutableExtensionGenerator(
     : descriptor_(descriptor),
       name_resolver_(context->GetNameResolver()),
       context_(context) {
-  if (descriptor_->extension_scope() != NULL) {
+  if (descriptor_->extension_scope() != nullptr) {
     scope_ =
         name_resolver_->GetImmutableClassName(descriptor_->extension_scope());
   } else {
@@ -102,7 +102,7 @@ void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
   printer->Print(vars, "public static final int $constant_name$ = $number$;\n");
 
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  if (descriptor_->extension_scope() == NULL) {
+  if (descriptor_->extension_scope() == nullptr) {
     // Non-nested
     printer->Print(
         vars,
@@ -133,7 +133,7 @@ void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
 int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(
     io::Printer* printer) {
   int bytecode_estimate = 0;
-  if (descriptor_->extension_scope() == NULL) {
+  if (descriptor_->extension_scope() == nullptr) {
     // Only applies to non-nested extensions.
     printer->Print(
         "$name$.internalInit(descriptor.getExtensions().get($index$));\n",

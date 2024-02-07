@@ -534,7 +534,9 @@ class UnknownFieldLiteParserHelper {
   }
   const char* ParseGroup(uint32_t num, const char* ptr, ParseContext* ctx) {
     if (unknown_) WriteVarint(num * 8 + 3, unknown_);
-    ptr = ctx->ParseGroup(this, ptr, num * 8 + 3);
+    ptr = ctx->ParseGroupInlined(ptr, num * 8 + 3, [&](const char* ptr) {
+      return WireFormatParser(*this, ptr, ctx);
+    });
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     if (unknown_) WriteVarint(num * 8 + 4, unknown_);
     return ptr;
@@ -546,10 +548,6 @@ class UnknownFieldLiteParserHelper {
     io::CodedOutputStream::WriteLittleEndian32ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 4);
-  }
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    return WireFormatParser(*this, ptr, ctx);
   }
 
  private:

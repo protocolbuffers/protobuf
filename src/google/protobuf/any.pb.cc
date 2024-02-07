@@ -204,6 +204,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     &_Any_default_instance_._instance,
+    nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
     ::_pbi::TcParser::GetTable<::google::protobuf::Any>(),  // to_prefetch
@@ -290,6 +291,7 @@ const char* Any::_InternalParse(
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   // string type_url = 1;
   if (!this->_internal_type_url().empty()) {
     total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(

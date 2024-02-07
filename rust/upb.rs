@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
-    Map, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
+    Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
+    Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
 };
 use core::fmt::Debug;
 use std::alloc;
@@ -19,7 +19,7 @@ use std::cell::UnsafeCell;
 use std::ffi::c_int;
 use std::fmt;
 use std::marker::PhantomData;
-use std::mem::{size_of, MaybeUninit};
+use std::mem::{size_of, ManuallyDrop, MaybeUninit};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
@@ -451,67 +451,80 @@ extern "C" {
     pub fn upb_Array_GetMutable(arr: RawRepeatedField, i: usize) -> upb_MutableMessageValue;
 }
 
+macro_rules! impl_repeated_base {
+    ($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr) => {
+        #[allow(dead_code)]
+        fn repeated_new(_: Private) -> Repeated<$t> {
+            let arena = ManuallyDrop::new(Arena::new());
+            let raw_arena = arena.raw();
+            unsafe {
+                Repeated::from_inner(InnerRepeatedMut {
+                    raw: upb_Array_New(raw_arena, $upb_tag as c_int),
+                    arena: raw_arena,
+                    _phantom: PhantomData,
+                })
+            }
+        }
+        #[allow(dead_code)]
+        unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
+            // Freeing the array itself is handled by `Arena::Drop`
+            // SAFETY:
+            // - `f.raw_arena()` is a live `upb_Arena*` as
+            // - This function is only called once for `f`
+            unsafe {
+                upb_Arena_Free(f.inner().arena);
+            }
+        }
+        fn repeated_len(f: View<Repeated<$t>>) -> usize {
+            unsafe { upb_Array_Size(f.as_raw(Private)) }
+        }
+        fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
+            let arena = f.raw_arena(Private);
+            unsafe {
+                upb_Array_Append(
+                    f.as_raw(Private),
+                    <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v),
+                    arena,
+                )
+            }
+        }
+        fn repeated_clear(mut f: Mut<Repeated<$t>>) {
+            unsafe {
+                upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private));
+            }
+        }
+        unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
+            unsafe {
+                <$t as UpbTypeConversions>::from_message_value(upb_Array_Get(f.as_raw(Private), i))
+            }
+        }
+        unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
+            let arena = f.raw_arena(Private);
+            unsafe {
+                upb_Array_Set(
+                    f.as_raw(Private),
+                    i,
+                    <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v.into()),
+                )
+            }
+        }
+    };
+}
+
 macro_rules! impl_repeated_primitives {
     ($(($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr)),* $(,)?) => {
         $(
             unsafe impl ProxiedInRepeated for $t {
-                #[allow(dead_code)]
-                fn repeated_new(_: Private) -> Repeated<$t> {
-                    let arena = Arena::new();
-                    let raw_arena = arena.raw();
-                    std::mem::forget(arena);
-                    unsafe {
-                        Repeated::from_inner(InnerRepeatedMut {
-                            raw: upb_Array_New(raw_arena, $upb_tag as c_int),
-                            arena: raw_arena,
-                            _phantom: PhantomData,
-                        })
-                    }
-                }
-                #[allow(dead_code)]
-                unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
-                    // Freeing the array itself is handled by `Arena::Drop`
-                    // SAFETY:
-                    // - `f.raw_arena()` is a live `upb_Arena*` as
-                    // - This function is only called once for `f`
-                    unsafe {
-                        upb_Arena_Free(f.inner().arena);
-                    }
-                }
-                fn repeated_len(f: View<Repeated<$t>>) -> usize {
-                    unsafe { upb_Array_Size(f.as_raw(Private)) }
-                }
-                fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
-                    unsafe {
-                        upb_Array_Append(
-                            f.as_raw(Private),
-                            <$t as UpbTypeConversions>::to_message_value(v),
-                            f.raw_arena(Private))
-                    }
-                }
-                fn repeated_clear(mut f: Mut<Repeated<$t>>) {
-                    unsafe { upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private)); }
-                }
-                unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
-                    unsafe {
-                        <$t as UpbTypeConversions>::from_message_value(
-                            upb_Array_Get(f.as_raw(Private), i)) }
-                }
-                unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
-                    unsafe {
-                        upb_Array_Set(
-                            f.as_raw(Private),
-                            i,
-                            <$t as UpbTypeConversions>::to_message_value(v.into()))
-                    }
-                }
+                impl_repeated_base!($t, $elem_t, $ufield, $upb_tag);
+
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
+                    let arena = dest.raw_arena(Private);
                     // SAFETY:
                     // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
                     // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
                     //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
                     unsafe {
-                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), dest.inner.arena)) {
+                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), arena)) {
                             panic!("upb_Array_Resize failed.");
                         }
                         ptr::copy_nonoverlapping(
@@ -525,10 +538,49 @@ macro_rules! impl_repeated_primitives {
     }
 }
 
+macro_rules! impl_repeated_bytes {
+    ($(($t:ty, $upb_tag:expr)),* $(,)?) => {
+        $(
+            unsafe impl ProxiedInRepeated for $t {
+                impl_repeated_base!($t, PtrAndLen, str_val, $upb_tag);
+
+                fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
+                    let len = src.len();
+                    // SAFETY:
+                    // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
+                    // - `upb_Array` ensures its elements are never uninitialized memory.
+                    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans
+                    //   of memory that are valid for at least `len` elements of PtrAndLen.
+                    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
+                    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+                    // - The bytes held within a valid array are valid.
+                    unsafe {
+                        let arena = ManuallyDrop::new(Arena::from_raw(dest.raw_arena(Private)));
+                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), arena.raw())) {
+                            panic!("upb_Array_Resize failed.");
+                        }
+                        let src_ptrs: &[PtrAndLen] = slice::from_raw_parts(
+                            upb_Array_DataPtr(src.as_raw(Private)).cast(),
+                            len
+                        );
+                        let dest_ptrs: &mut [PtrAndLen] = slice::from_raw_parts_mut(
+                            upb_Array_MutableDataPtr(dest.as_raw(Private)).cast(),
+                            len
+                        );
+                        for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
+                            *dest_ptr = copy_bytes_in_arena(&arena, src_ptr.as_ref()).into();
+                        }
+                    }
+                }
+            }
+        )*
+    }
+}
+
 impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
     // Returns a `RawArena` which is live for at least `'msg`
     #[doc(hidden)]
-    pub fn raw_arena(&self, _private: Private) -> RawArena {
+    pub fn raw_arena(&mut self, _private: Private) -> RawArena {
         self.inner.arena
     }
 }
@@ -542,9 +594,9 @@ impl_repeated_primitives!(
     (u32, u32, uint32_val, UpbCType::UInt32),
     (i64, i64, int64_val, UpbCType::Int64),
     (u64, u64, uint64_val, UpbCType::UInt64),
-    (ProtoStr, PtrAndLen, str_val, UpbCType::String),
-    ([u8], PtrAndLen, str_val, UpbCType::Bytes),
 );
+
+impl_repeated_bytes!((ProtoStr, UpbCType::String), ([u8], UpbCType::Bytes),);
 
 /// Copy the contents of `src` into `dest`.
 ///
@@ -598,7 +650,7 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
     // - Reading an enum array as an i32 array is sound.
     // - No shared mutation is possible through the output.
     unsafe {
-        let InnerRepeatedMut { arena, raw, .. } = repeated.into_inner();
+        let InnerRepeatedMut { arena, raw, .. } = repeated.inner;
         RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw, _phantom: PhantomData })
     }
 }
@@ -649,6 +701,14 @@ where
     }
 }
 
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    // Returns a `RawArena` which is live for at least `'msg`
+    #[doc(hidden)]
+    pub fn raw_arena(&mut self, _private: Private) -> RawArena {
+        self.inner.raw_arena
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct InnerMapMut<'msg> {
     pub(crate) raw: RawMap,
@@ -684,22 +744,27 @@ macro_rules! impl_upb_type_conversions_for_scalars {
     ($($t:ty, $ufield:ident, $upb_tag:expr, $zero_val:literal;)*) => {
         $(
             impl UpbTypeConversions for $t {
+                #[inline(always)]
                 fn upb_type() -> UpbCType {
                     $upb_tag
                 }
 
+                #[inline(always)]
                 fn to_message_value(val: View<'_, $t>) -> upb_MessageValue {
                     upb_MessageValue { $ufield: val }
                 }
 
+                #[inline(always)]
                 fn empty_message_value() -> upb_MessageValue {
                     Self::to_message_value($zero_val)
                 }
 
-                unsafe fn to_message_value_copy_if_required(_ : RawArena, val: View<'_, $t>) -> upb_MessageValue {
+                #[inline(always)]
+                unsafe fn to_message_value_copy_if_required(_: RawArena, val: View<'_, $t>) -> upb_MessageValue {
                     Self::to_message_value(val)
                 }
 
+                #[inline(always)]
                 unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, $t> {
                     unsafe { msg.$ufield }
                 }
@@ -735,13 +800,10 @@ impl UpbTypeConversions for [u8] {
         raw_arena: RawArena,
         val: View<'_, [u8]>,
     ) -> upb_MessageValue {
-        // SAFETY:
-        // The arena memory is not freed because we prevent its destructor from
-        // executing with the call to `std::mem::forget(arena)`.
-        let arena = unsafe { Arena::from_raw(raw_arena) };
+        // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
+        let arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_arena) });
         let copied = copy_bytes_in_arena(&arena, val);
         let msg_val = Self::to_message_value(copied);
-        std::mem::forget(arena);
         msg_val
     }
 
@@ -767,22 +829,45 @@ impl UpbTypeConversions for ProtoStr {
         raw_arena: RawArena,
         val: View<'_, ProtoStr>,
     ) -> upb_MessageValue {
-        // SAFETY:
-        // The arena memory is not freed because we prevent its destructor from
-        // executing with the call to `std::mem::forget(arena)`.
-        let arena = unsafe { Arena::from_raw(raw_arena) };
-        let copied = copy_bytes_in_arena(&arena, val.into());
-
-        // SAFETY:
-        // `val` is a valid `ProtoStr` and `copied` is an exact copy of `val`.
-        let proto_str = unsafe { ProtoStr::from_utf8_unchecked(copied) };
-        let msg_val = Self::to_message_value(proto_str);
-        std::mem::forget(arena);
-        msg_val
+        // SAFETY: `raw_arena` is valid as promised by the caller
+        unsafe {
+            <[u8] as UpbTypeConversions>::to_message_value_copy_if_required(
+                raw_arena,
+                val.as_bytes(),
+            )
+        }
     }
 
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoStr> {
         unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
+    }
+}
+
+pub struct RawMapIter {
+    // TODO: Replace this `RawMap` with the const type.
+    map: RawMap,
+    iter: usize,
+}
+
+impl RawMapIter {
+    pub fn new(_private: Private, map: RawMap) -> Self {
+        // SAFETY: __rust_proto_kUpb_Map_Begin is never modified
+        RawMapIter { map, iter: unsafe { __rust_proto_kUpb_Map_Begin } }
+    }
+
+    /// # Safety
+    /// - `self.map` must be valid, and remain valid while the return value is
+    ///   in use.
+    pub(crate) unsafe fn next_unchecked(
+        &mut self,
+        _private: Private,
+    ) -> Option<(upb_MessageValue, upb_MessageValue)> {
+        let mut key = MaybeUninit::uninit();
+        let mut value = MaybeUninit::uninit();
+        // SAFETY: the `map` is valid as promised by the caller
+        unsafe { upb_Map_Next(self.map, key.as_mut_ptr(), value.as_mut_ptr(), &mut self.iter) }
+            // SAFETY: if upb_Map_Next returns true, then key and value have been populated.
+            .then(|| unsafe { (key.assume_init(), value.assume_init()) })
     }
 }
 
@@ -814,29 +899,30 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     // - `map.inner.raw_arena` is a live `upb_Arena*`
                     // - This function is only called once for `map` in `Drop`.
                     unsafe {
-                        upb_Arena_Free(map.inner.raw_arena);
+                        upb_Arena_Free(map.as_mut().raw_arena(Private));
                     }
                 }
 
-                fn map_clear(map: Mut<'_, Map<$key_t, Self>>) {
+                fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {
                     unsafe {
-                        upb_Map_Clear(map.inner.raw);
+                        upb_Map_Clear(map.as_raw(Private));
                     }
                 }
 
                 fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
                     unsafe {
-                        upb_Map_Size(map.raw)
+                        upb_Map_Size(map.as_raw(Private))
                     }
                 }
 
-                fn map_insert(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                    let arena = map.raw_arena(Private);
                     unsafe {
-                        upb_Map_Set(
-                            map.inner.raw,
+                        upb_Map_InsertAndReturnIfInserted(
+                            map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
-                            <$t as UpbTypeConversions>::to_message_value_copy_if_required(map.inner.raw_arena, value),
-                            map.inner.raw_arena
+                            <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, value),
+                            arena
                         )
                     }
                 }
@@ -844,7 +930,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let mut val = <$t as UpbTypeConversions>::empty_message_value();
                     let found = unsafe {
-                        upb_Map_Get(map.raw, <$key_t as UpbTypeConversions>::to_message_value(key),
+                        upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
                             &mut val)
                     };
                     if !found {
@@ -853,13 +939,33 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val) })
                 }
 
-                fn map_remove(map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
+                fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
                     let mut val = <$t as UpbTypeConversions>::empty_message_value();
                     unsafe {
-                        upb_Map_Delete(map.inner.raw,
+                        upb_Map_Delete(map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
                             &mut val)
                     }
+                }
+
+                fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
+                    // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
+                    unsafe {
+                        MapIter::from_raw(Private, RawMapIter::new(Private, map.as_raw(Private)))
+                    }
+                }
+
+                fn map_iter_next<'a>(
+                    iter: &mut MapIter<'a, $key_t, Self>
+                ) -> Option<(View<'a, $key_t>, View<'a, Self>)> {
+                    // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
+                    unsafe { iter.as_raw_mut(Private).next_unchecked(Private) }
+                        // SAFETY: MapIter<K, V> returns key and values message values
+                        //         with the variants for K and V active.
+                        .map(|(k, v)| unsafe {(
+                            <$key_t as UpbTypeConversions>::from_message_value(k),
+                            <$t as UpbTypeConversions>::from_message_value(v),
+                        )})
                 }
             }
          )*
@@ -878,15 +984,49 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
 
 impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoStr);
 
+#[repr(C)]
+#[allow(dead_code)]
+enum upb_MapInsertStatus {
+    Inserted = 0,
+    Replaced = 1,
+    OutOfMemory = 2,
+}
+
+/// `upb_Map_Insert`, but returns a `bool` for whether insert occurred.
+///
+/// Returns `true` if the entry was newly inserted.
+///
+/// # Panics
+/// Panics if the arena is out of memory.
+///
+/// # Safety
+/// The same as `upb_Map_Insert`:
+/// - `map` must be a valid map.
+/// - The `arena` must be valid and outlive the map.
+/// - The inserted value must outlive the map.
+#[allow(non_snake_case)]
+pub unsafe fn upb_Map_InsertAndReturnIfInserted(
+    map: RawMap,
+    key: upb_MessageValue,
+    value: upb_MessageValue,
+    arena: RawArena,
+) -> bool {
+    match unsafe { upb_Map_Insert(map, key, value, arena) } {
+        upb_MapInsertStatus::Inserted => true,
+        upb_MapInsertStatus::Replaced => false,
+        upb_MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
+    }
+}
+
 extern "C" {
     fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;
     fn upb_Map_Size(map: RawMap) -> usize;
-    fn upb_Map_Set(
+    fn upb_Map_Insert(
         map: RawMap,
         key: upb_MessageValue,
         value: upb_MessageValue,
         arena: RawArena,
-    ) -> bool;
+    ) -> upb_MapInsertStatus;
     fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
     fn upb_Map_Delete(
         map: RawMap,
@@ -894,6 +1034,15 @@ extern "C" {
         removed_value: *mut upb_MessageValue,
     ) -> bool;
     fn upb_Map_Clear(map: RawMap);
+
+    static __rust_proto_kUpb_Map_Begin: usize;
+
+    fn upb_Map_Next(
+        map: RawMap,
+        key: *mut upb_MessageValue,
+        value: *mut upb_MessageValue,
+        iter: &mut usize,
+    ) -> bool;
 }
 
 #[cfg(test)]

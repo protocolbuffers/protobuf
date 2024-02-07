@@ -61,7 +61,7 @@ std::string TestSourceDir() {
 #ifndef _MSC_VER
   // automake sets the "srcdir" environment variable.
   char* result = getenv("srcdir");
-  if (result != NULL) {
+  if (result != nullptr) {
     return result;
   }
 #endif  // _MSC_VER
@@ -96,7 +96,7 @@ std::string GetTemporaryDirectoryName() {
   // Tests run under Bazel "should not" use /tmp. Bazel sets this environment
   // variable for tests to use instead.
   char* from_environment = getenv("TEST_TMPDIR");
-  if (from_environment != NULL && from_environment[0] != '\0') {
+  if (from_environment != nullptr && from_environment[0] != '\0') {
     return absl::StrCat(from_environment, "/protobuf_tmpdir");
   }
 
@@ -147,7 +147,7 @@ class TempDirDeleter {
   TempDirDeleter() {}
   ~TempDirDeleter() {
     if (!name_.empty()) {
-      File::DeleteRecursively(name_, NULL, NULL);
+      File::DeleteRecursively(name_, nullptr, nullptr);
     }
   }
 

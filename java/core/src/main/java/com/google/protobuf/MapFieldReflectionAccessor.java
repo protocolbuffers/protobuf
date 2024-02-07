@@ -14,7 +14,7 @@ import java.util.List;
  * reflection to access both.
  */
 public abstract class MapFieldReflectionAccessor {
-  /** Gets the content of this MapField as a read-only List. */
+  /** Gets the content of this MapField as a list of read-only values. */
   abstract List<Message> getList();
 
   /** Gets a mutable List view of this MapField. */

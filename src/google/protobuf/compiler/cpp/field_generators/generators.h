@@ -12,6 +12,8 @@
 
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 // The functions in this file construct FieldGeneratorBase objects for
 // generating different "codegen types" of fields. The logic for selecting the

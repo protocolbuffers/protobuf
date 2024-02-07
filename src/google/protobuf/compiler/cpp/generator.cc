@@ -353,6 +353,7 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   auto edition = GetEdition(*file);
+  absl::string_view filename = file->name();
 
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
@@ -379,6 +380,28 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
             absl::StrCat("Field ", field.full_name(),
                          " specifies the legacy_closed_enum feature but has "
                          "non-enum type."));
+      }
+    }
+
+    if (unresolved_features.has_string_type()) {
+      if (!CanSkipEditionCheck(filename) && edition < Edition::EDITION_2024) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies string_type which is not currently allowed."));
+      } else if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies string_type, but is not a string nor bytes field."));
+      } else if (unresolved_features.string_type() == pb::CppFeatures::CORD &&
+                 field.is_extension()) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Extension ", field.full_name(),
+                         " specifies string_type=CORD which is not supported "
+                         "for extensions."));
+      } else if (field.options().has_ctype()) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            field.full_name(),
+            " specifies both string_type and ctype which is not supported."));
       }
     }
 

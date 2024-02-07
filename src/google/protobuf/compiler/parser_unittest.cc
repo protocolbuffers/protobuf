@@ -2307,15 +2307,32 @@ TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
 }
 
 TEST_F(ParserValidationErrorTest, Proto3JsonConflictLegacy) {
-  ExpectHasValidationErrors(
+  ExpectParsesTo(
       "syntax = 'proto3';\n"
       "message TestMessage {\n"
       "  option deprecated_legacy_json_field_conflicts = true;\n"
       "  uint32 fooBar = 1;\n"
       "  uint32 foo_bar = 2;\n"
       "}\n",
-      "4:9: The default JSON name of field \"foo_bar\" (\"fooBar\") conflicts "
-      "with the default JSON name of field \"fooBar\".\n");
+      "syntax: 'proto3'\n"
+      "message_type {\n"
+      "  name: 'TestMessage'\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'fooBar' number: 1\n"
+      "  }\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo_bar' number: 2\n"
+      "  }\n"
+      "  options {\n"
+      "    uninterpreted_option {\n"
+      "      name {\n"
+      "        name_part: 'deprecated_legacy_json_field_conflicts'\n"
+      "        is_extension: false\n"
+      "      }\n"
+      "      identifier_value: 'true'\n"
+      "    }\n"
+      "  }\n"
+      "}\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto2JsonConflictLegacy) {

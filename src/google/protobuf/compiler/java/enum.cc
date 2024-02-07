@@ -268,7 +268,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     // TODO:  Cache statically?  Note that we can't access descriptors
     //   at module init time because it wouldn't work with descriptor.proto, but
     //   we can cache the value the first time getDescriptor() is called.
-    if (descriptor_->containing_type() == NULL) {
+    if (descriptor_->containing_type() == nullptr) {
       // The class generated for the File fully populates the descriptor with
       // extensions in both the mutable and immutable cases. (In the mutable api
       // this is accomplished by attempting to load the immutable outer class).

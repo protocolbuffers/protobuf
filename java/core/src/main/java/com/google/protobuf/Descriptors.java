@@ -348,7 +348,7 @@ public final class Descriptors {
      * Construct a {@code FileDescriptor}.
      *
      * @param proto the protocol message form of the FileDescriptort
-     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies
+     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies.
      * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
      *     for a number of reasons; for instance, because a field has an undefined type or because
      *     two messages were defined with the same name.
@@ -397,7 +397,9 @@ public final class Descriptors {
       result.crossLink();
       // Skip feature resolution until later for calls from gencode.
       if (!allowUnresolvedFeatures) {
-        result.resolveAllFeatures();
+        // We do not need to force feature resolution for proto1 dependencies
+        // since dependencies from non-gencode should already be fully feature resolved.
+        result.resolveAllFeaturesInternal();
       }
       return result;
     }
@@ -480,19 +482,19 @@ public final class Descriptors {
       return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
     }
 
-    /**
-     * This method is to be called by generated code only. It updates the FileDescriptorProto
-     * associated with the descriptor by parsing it again with the given ExtensionRegistry. This is
-     * needed to recognize custom options.
-     */
-    public static void internalUpdateFileDescriptor(
+    public static void internalUpdateFileDescriptorImmutable(
         FileDescriptor descriptor, ExtensionRegistry registry) {
+      internalUpdateFileDescriptor(descriptor, registry, false);
+    }
+
+    private static void internalUpdateFileDescriptor(
+        FileDescriptor descriptor, ExtensionRegistry registry, boolean mutable) {
       ByteString bytes = descriptor.proto.toByteString();
       try {
         FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
         synchronized (descriptor) {
           descriptor.setProto(proto);
-          descriptor.resolveAllFeatures();
+          descriptor.resolveAllFeaturesImmutable();
         }
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
@@ -618,11 +620,15 @@ public final class Descriptors {
       pool.addSymbol(message);
     }
 
+    public void resolveAllFeaturesImmutable() {
+      resolveAllFeaturesInternal();
+    }
+
     /**
      * This method is to be called by generated code only. It resolves features for the descriptor
      * and all of its children.
      */
-    public void resolveAllFeatures() {
+    private void resolveAllFeaturesInternal() {
       if (this.features != null) {
         return;
       }
@@ -1437,7 +1443,8 @@ public final class Descriptors {
       if (isRepeated()) {
         return false;
       }
-      return getType() == Type.MESSAGE
+      return isProto3Optional
+          || getType() == Type.MESSAGE
           || getType() == Type.GROUP
           || getContainingOneof() != null
           || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
