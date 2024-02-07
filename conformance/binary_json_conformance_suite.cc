@@ -2497,6 +2497,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
                    "optional_nested_enum: FOO");
+  RunValidJsonTest("EnumFieldDifferentCase", RECOMMENDED,
+                   R"({"optionalNestedEnum": "fOo"})",
+                   "optional_nested_enum: FOO");
 
   // Enum fields with alias
   if (run_proto3_tests_) {

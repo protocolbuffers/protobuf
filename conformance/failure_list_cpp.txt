@@ -35,3 +35,11 @@ Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                          
 Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
 Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
+Recommended.Editions_Proto2.JsonInput.EnumFieldDifferentCase.JsonOutput
+Recommended.Editions_Proto2.JsonInput.EnumFieldDifferentCase.ProtobufOutput
+Recommended.Editions_Proto3.JsonInput.EnumFieldDifferentCase.JsonOutput
+Recommended.Editions_Proto3.JsonInput.EnumFieldDifferentCase.ProtobufOutput
+Recommended.Proto2.JsonInput.EnumFieldDifferentCase.JsonOutput
+Recommended.Proto2.JsonInput.EnumFieldDifferentCase.ProtobufOutput
+Recommended.Proto3.JsonInput.EnumFieldDifferentCase.JsonOutput
+Recommended.Proto3.JsonInput.EnumFieldDifferentCase.ProtobufOutput
