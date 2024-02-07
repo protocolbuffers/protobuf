@@ -1623,6 +1623,31 @@ TEST(ArenaTest, AddCleanup) {
   }
 }
 
+struct DestroyOrderRecorder {
+  std::vector<int>* destroy_order;
+  int i;
+
+  DestroyOrderRecorder(std::vector<int>* destroy_order, int i)
+      : destroy_order(destroy_order), i(i) {}
+  ~DestroyOrderRecorder() { destroy_order->push_back(i); }
+};
+
+// TODO: we do not guarantee this behavior, but some users rely on
+// it. We need to decide whether we want to guarantee this. In the meantime,
+// user code should avoid adding new dependencies on this.
+// Tests that when using an Arena from a single thread, objects are destroyed in
+// reverse order from construction.
+TEST(ArenaTest, CleanupDestructionOrder) {
+  std::vector<int> destroy_order;
+  {
+    Arena arena;
+    for (int i = 0; i < 3; i++) {
+      Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i);
+    }
+  }
+  EXPECT_THAT(destroy_order, testing::ElementsAre(2, 1, 0));
+}
+
 TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
   // Limit to 1<<20 to avoid using too much memory on the test.
   for (int i = 0; i < 20; ++i) {
