@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__
 
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 
@@ -159,7 +160,8 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
                                  *extension.message_info.prototype,
                                  extension.descriptor);
         uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
-        return ctx->ParseGroup(value, ptr, tag);
+        return ctx->ParseGroup(value, extension.message_info.tc_table, ptr,
+                               tag);
       }
 
       case WireFormatLite::TYPE_MESSAGE: {
@@ -171,7 +173,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
                 : MutableMessage(number, WireFormatLite::TYPE_MESSAGE,
                                  *extension.message_info.prototype,
                                  extension.descriptor);
-        return ctx->ParseMessage(value, ptr);
+        return ctx->ParseMessage(value, extension.message_info.tc_table, ptr);
       }
     }
   }

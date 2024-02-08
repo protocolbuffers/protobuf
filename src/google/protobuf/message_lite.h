@@ -126,6 +126,7 @@ class SwapFieldHelper;
 class ParseContext;
 
 struct DescriptorTable;
+class DescriptorPoolExtensionFinder;
 class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
@@ -495,8 +496,7 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   int GetCachedSize() const;
 
-  virtual const char* _InternalParse(const char* ptr,
-                                     internal::ParseContext* ctx);
+  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
 
   void OnDemandRegisterArenaDtor(Arena* arena);
 
@@ -515,6 +515,8 @@ class PROTOBUF_EXPORT MessageLite {
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
+
+  const internal::TcParseTableBase* GetTcParseTable() const;
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
@@ -660,6 +662,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;
+  friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;

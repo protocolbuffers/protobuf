@@ -210,7 +210,6 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -427,7 +426,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -660,7 +658,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -917,7 +914,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;

@@ -43,21 +43,48 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+namespace base {
+std::string CurrentStackTrace();
+}
+
 namespace google {
 namespace protobuf {
 
-const char* MessageLite::_InternalParse(const char* ptr,
-                                        internal::ParseContext* ctx) {
+const internal::TcParseTableBase* MessageLite::GetTcParseTable() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
 
   auto* tc_table = data->tc_table;
   if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
     ABSL_DCHECK(!data->is_lite);
-    tc_table = data->full().descriptor_methods->get_tc_table(*this);
+    return data->full().descriptor_methods->get_tc_table(*this);
   }
+  return tc_table;
+}
 
-  return internal::TcParser::ParseLoop(this, ptr, ctx, tc_table);
+const char* MessageLite::_InternalParse(const char* ptr,
+                                        internal::ParseContext* ctx) {
+#if !NDEBUG && 0
+  {
+    static absl::Mutex m;
+    static std::set<std::string> s;
+    auto stack = base::CurrentStackTrace();
+    if (stack.find("ParseFull") != stack.npos) {
+      int offset = 0;
+      offset = stack.find('\n', offset + 1);
+      offset = stack.find('\n', offset + 1);
+      offset = stack.find('\n', offset + 1);
+      offset = stack.find('\n', offset + 1);
+      offset = stack.find('\n', offset + 1);
+      stack.resize(offset);
+      absl::MutexLock l(&m);
+      if (s.insert(stack).second) {
+        fprintf(stderr, "STACK<<%s>>\n", stack.c_str());
+      }
+    }
+  }
+#endif
+  return internal::TcParser::ParseLoop(this, ptr, ctx, GetTcParseTable());
 }
 
 std::string MessageLite::GetTypeName() const {

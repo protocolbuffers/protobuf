@@ -175,6 +175,7 @@ JavaFeatures::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
               false,
@@ -241,11 +242,6 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* JavaFeatures::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* JavaFeatures::_InternalSerialize(

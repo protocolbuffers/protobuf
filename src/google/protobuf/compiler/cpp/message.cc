@@ -1792,11 +1792,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               bool IsInitialized() const final;
 
               ::size_t ByteSizeLong() const final;
-            )cc");
-
-            parse_function_generator_->GenerateMethodDecls(p);
-
-            p->Emit(R"cc(
               $uint8$* _InternalSerialize(
                   $uint8$* target,
                   ::$proto_ns$::io::EpsCopyOutputStream* stream) const final;
@@ -2247,11 +2242,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     GenerateClear(p);
     format("\n");
-
-    if (!HasSimpleBaseClass(descriptor_, options_)) {
-      parse_function_generator_->GenerateMethodImpls(p);
-      format("\n");
-    }
 
     GenerateSerializeWithCachedSizesToArray(p);
     format("\n");
@@ -3612,6 +3602,19 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"pin_weak_descriptor", pin_weak_descriptor},
+            {"table",
+             [&] {
+               // Map entries use the dynamic parser.
+               if (IsMapEntryMessage(descriptor_)) {
+                 p->Emit(R"cc(
+                   nullptr,  // tc_table
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   &_table_.header,
+                 )cc");
+               }
+             }},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -3632,6 +3635,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
                 ClassDataFull _data_ = {
                     {
+                        $table$,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,
