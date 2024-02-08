@@ -299,6 +299,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/message_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/string_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_generators/string_view_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.cc
@@ -719,6 +720,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/retention_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/string_view_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.cc
@@ -764,6 +766,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_retention.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_view.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_well_known_types.proto
 )
 
