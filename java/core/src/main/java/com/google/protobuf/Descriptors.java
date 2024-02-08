@@ -491,8 +491,8 @@ public final class Descriptors {
         FileDescriptor descriptor, ExtensionRegistry registry, boolean mutable) {
       ByteString bytes = descriptor.proto.toByteString();
       try {
-        FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
         synchronized (descriptor) {
+          FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
           descriptor.setProto(proto);
           descriptor.resolveAllFeaturesImmutable();
         }
