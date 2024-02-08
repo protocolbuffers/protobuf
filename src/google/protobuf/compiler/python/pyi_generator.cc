@@ -18,6 +18,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/python/helpers.h"
 #include "google/protobuf/descriptor.h"
@@ -282,9 +283,10 @@ printer_->Print("\n");
 // Annotate wrapper for debugging purposes
 // Print a message after Annotate to see what is annotated.
 template <typename DescriptorT>
-void PyiGenerator::Annotate(const std::string& label,
-                            const DescriptorT* descriptor) const {
-printer_->Annotate(label.c_str(), descriptor);
+void PyiGenerator::Annotate(
+    const std::string& label, const DescriptorT* descriptor,
+    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
+  printer_->Annotate(label, descriptor, semantic);
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
@@ -336,7 +338,7 @@ void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
                     "constant_name", constant_name);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
                     "name", extension_field->name());
-    Annotate("name", extension_field);
+    Annotate("name", extension_field, io::AnnotationCollector::Semantic::kSet);
   }
 }
 
@@ -471,7 +473,7 @@ void PyiGenerator::PrintMessage(
     }
     printer_->Print("$name$: $type$\n",
                     "name", field_des.name(), "type", field_type);
-    Annotate("name", &field_des);
+    Annotate("name", &field_des, io::AnnotationCollector::Semantic::kSet);
   }
 
   // Prints __init__
@@ -493,7 +495,7 @@ void PyiGenerator::PrintMessage(
     }
     is_first = false;
     printer_->Print(", $field_name$: ", "field_name", field_name);
-    Annotate("field_name", field_des);
+    Annotate("field_name", field_des, io::AnnotationCollector::Semantic::kSet);
     if (field_des->is_repeated() ||
         field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
       printer_->Print("_Optional[");

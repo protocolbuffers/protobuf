@@ -26,7 +26,7 @@ UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(struct upb_Message* ptr, bool empty) {
   return (uintptr_t)ptr | (empty ? 1 : 0);
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(uintptr_t ptr) {
+UPB_API_INLINE bool upb_TaggedMessagePtr_IsEmpty(uintptr_t ptr) {
   return ptr & 1;
 }
 
@@ -35,15 +35,15 @@ UPB_INLINE struct upb_Message* UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(
   return (struct upb_Message*)(ptr & ~(uintptr_t)1);
 }
 
-UPB_INLINE struct upb_Message* UPB_PRIVATE(
-    _upb_TaggedMessagePtr_GetNonEmptyMessage)(uintptr_t ptr) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr));
+UPB_API_INLINE struct upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
+    uintptr_t ptr) {
+  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(ptr));
   return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
 }
 
 UPB_INLINE struct upb_Message* UPB_PRIVATE(
     _upb_TaggedMessagePtr_GetEmptyMessage)(uintptr_t ptr) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr));
+  UPB_ASSERT(upb_TaggedMessagePtr_IsEmpty(ptr));
   return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
 }
 

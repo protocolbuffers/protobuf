@@ -22,13 +22,16 @@ struct upb_Message {
   };
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ShallowFreeze)(
     struct upb_Message* msg) {
   msg->UPB_OPAQUE(internal) |= 1ULL;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsFrozen)(
-    const struct upb_Message* msg) {
+UPB_API_INLINE bool upb_Message_IsFrozen(const struct upb_Message* msg) {
   return (msg->UPB_OPAQUE(internal) & 1ULL) != 0;
 }
 
@@ -40,9 +43,13 @@ UPB_INLINE struct upb_Message_Internal* UPB_PRIVATE(_upb_Message_GetInternal)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetInternal)(
     struct upb_Message* msg, struct upb_Message_Internal* internal) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   msg->UPB_OPAQUE(internal) = (uintptr_t)internal;
 }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #undef UPB_OPAQUE
 

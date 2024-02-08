@@ -18,9 +18,11 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -66,7 +68,9 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
                                 absl::flat_hash_set<std::string>* seen_aliases,
                                 bool* has_importlib) const;
   template <typename DescriptorT>
-  void Annotate(const std::string& label, const DescriptorT* descriptor) const;
+  void Annotate(const std::string& label, const DescriptorT* descriptor,
+                absl::optional<io::AnnotationCollector::Semantic> semantic =
+                    absl::nullopt) const;
   void PrintImports() const;
   void PrintTopLevelEnums() const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;

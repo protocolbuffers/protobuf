@@ -22,10 +22,8 @@ extern "C" {
 #endif
 
 // Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
-                                             uint32_t val) {
-  return UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(e, val);
-}
+UPB_API_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
+                                                 uint32_t val);
 
 #ifdef __cplusplus
 } /* extern "C" */

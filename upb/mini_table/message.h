@@ -25,51 +25,35 @@ UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* m, uint32_t number);
 
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
-    const upb_MiniTable* m, uint32_t index) {
-  return UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, index);
-}
+    const upb_MiniTable* m, uint32_t index);
 
-UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTable_FieldCount)(m);
-}
+UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m);
 
 // DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTable for a message field if it is a submessage.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_SubMessage)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTableEnum for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_GetSubEnumTable)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTableField for the key of a map.
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapKey(
-    const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTable_MapKey)(m);
-}
+    const upb_MiniTable* m);
 
 // Returns the MiniTableField for the value of a map.
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapValue(
-    const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTable_MapValue)(m);
-}
+    const upb_MiniTable* m);
 
 // Returns true if this MiniTable field is linked to a MiniTable for the
 // sub-message.
 UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // If this field is in a oneof, returns the first field in the oneof.
 //

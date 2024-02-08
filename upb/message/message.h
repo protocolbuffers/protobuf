@@ -43,9 +43,7 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg);
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
 
 // Returns whether a message has been frozen.
-UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg) {
-  return UPB_PRIVATE(_upb_Message_IsFrozen)(msg);
-}
+UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
 
 #ifdef __cplusplus
 } /* extern "C" */

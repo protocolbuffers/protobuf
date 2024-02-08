@@ -44,11 +44,11 @@ UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
   return res.ptr;
 }
 
-UPB_INLINE uint32_t UPB_PRIVATE(_upb_WireReader_GetFieldNumber)(uint32_t tag) {
+UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
   return tag >> kUpb_WireReader_WireTypeBits;
 }
 
-UPB_INLINE uint8_t UPB_PRIVATE(_upb_WireReader_GetWireType)(uint32_t tag) {
+UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) {
   return tag & kUpb_WireReader_WireTypeMask;
 }
 

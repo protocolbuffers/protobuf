@@ -24,24 +24,16 @@ extern "C" {
 #endif
 
 UPB_API_INLINE upb_CType
-upb_MiniTableExtension_CType(const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_CType)(e);
-}
+upb_MiniTableExtension_CType(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t
-upb_MiniTableExtension_Number(const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_Number)(e);
-}
+upb_MiniTableExtension_Number(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
-    const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_GetSubMessage)(e);
-}
+    const upb_MiniTableExtension* e);
 
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
-    upb_MiniTableExtension* e, const upb_MiniTable* m) {
-  UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
-}
+    upb_MiniTableExtension* e, const upb_MiniTable* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

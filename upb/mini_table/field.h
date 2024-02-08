@@ -22,58 +22,32 @@ typedef struct upb_MiniTableField upb_MiniTableField;
 extern "C" {
 #endif
 
-UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_CType)(f);
-}
+UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_HasPresence(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_HasPresence)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_HasPresence(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsArray(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsArray)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsArray(const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsClosedEnum)(f);
-}
+    const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsExtension(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsExtension)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsExtension(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsInOneof(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsInOneof(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsMap(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsMap)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsMap(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsPacked(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsPacked)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsPacked(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsScalar)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(f);
-}
+    const upb_MiniTableField* f);
 
-UPB_API_INLINE uint32_t upb_MiniTableField_Number(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_Number)(f);
-}
+UPB_API_INLINE uint32_t upb_MiniTableField_Number(const upb_MiniTableField* f);
 
 UPB_API_INLINE upb_FieldType
-upb_MiniTableField_Type(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_Type)(f);
-}
+upb_MiniTableField_Type(const upb_MiniTableField* f);
 
 #ifdef __cplusplus
 } /* extern "C" */
