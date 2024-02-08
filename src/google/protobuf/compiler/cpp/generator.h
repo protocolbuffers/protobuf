@@ -19,8 +19,8 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/status/status.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 
