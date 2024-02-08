@@ -693,8 +693,7 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
-UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Malloc)(struct upb_Arena* a,
-                                                size_t size) {
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
 
   size = UPB_ALIGN_MALLOC(size);
@@ -714,8 +713,8 @@ UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Malloc)(struct upb_Arena* a,
   return ret;
 }
 
-UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
-                                                 size_t oldsize, size_t size) {
+UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
+                                       size_t oldsize, size_t size) {
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   bool is_most_recent_alloc =
@@ -731,7 +730,7 @@ UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
     return ptr;
   }
 
-  void* ret = UPB_PRIVATE(_upb_Arena_Malloc)(a, size);
+  void* ret = upb_Arena_Malloc(a, size);
 
   if (ret && oldsize > 0) {
     memcpy(ret, ptr, UPB_MIN(oldsize, size));
@@ -740,9 +739,8 @@ UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
   return ret;
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Arena_ShrinkLast)(struct upb_Arena* a,
-                                                   void* ptr, size_t oldsize,
-                                                   size_t size) {
+UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
+                                         size_t oldsize, size_t size) {
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   // Must be the last alloc.
@@ -785,23 +783,17 @@ UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
-  return UPB_PRIVATE(_upb_Arena_Malloc)(a, size);
-}
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size);
 
 UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
-                                       size_t size) {
-  return UPB_PRIVATE(_upb_Arena_Realloc)(a, ptr, oldsize, size);
-}
+                                       size_t size);
 
 // Shrinks the last alloc from arena.
 // REQUIRES: (ptr, oldsize) was the last malloc/realloc from this arena.
 // We could also add a upb_Arena_TryShrinkLast() which is simply a no-op if
 // this was not the last alloc.
 UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
-                                         size_t oldsize, size_t size) {
-  UPB_PRIVATE(_upb_Arena_ShrinkLast)(a, ptr, oldsize, size);
-}
+                                         size_t oldsize, size_t size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -854,7 +846,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_ShallowFreeze)(struct upb_Array* arr) {
   arr->UPB_ONLYBITS(data) |= _UPB_ARRAY_MASK_IMM;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Array_IsFrozen)(const struct upb_Array* arr) {
+UPB_API_INLINE bool upb_Array_IsFrozen(const struct upb_Array* arr) {
   return (arr->UPB_ONLYBITS(data) & _UPB_ARRAY_MASK_IMM) != 0;
 }
 
@@ -873,15 +865,13 @@ UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
   return lg2;
 }
 
-UPB_INLINE const void* UPB_PRIVATE(_upb_Array_DataPtr)(
-    const struct upb_Array* array) {
+UPB_API_INLINE const void* upb_Array_DataPtr(const struct upb_Array* array) {
   UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
   return (void*)(array->UPB_ONLYBITS(data) & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
 }
 
-UPB_INLINE void* UPB_PRIVATE(_upb_Array_MutableDataPtr)(
-    struct upb_Array* array) {
-  return (void*)UPB_PRIVATE(_upb_Array_DataPtr)(array);
+UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
+  return (void*)upb_Array_DataPtr(array);
 }
 
 UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
@@ -907,7 +897,7 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array, size_t min_size,
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
                                                 size_t size, upb_Arena* arena) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Array_IsFrozen)(array));
+  UPB_ASSERT(!upb_Array_IsFrozen(array));
   if (array->UPB_PRIVATE(capacity) < size)
     return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
   return true;
@@ -916,7 +906,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
 // Resize without initializing new elements.
 UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
     struct upb_Array* array, size_t size, upb_Arena* arena) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Array_IsFrozen)(array));
+  UPB_ASSERT(!upb_Array_IsFrozen(array));
   UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
              arena);  // Allow NULL arena when shrinking.
   if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
@@ -930,14 +920,14 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
 UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
                                             const void* data,
                                             size_t elem_size) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Array_IsFrozen)(array));
+  UPB_ASSERT(!upb_Array_IsFrozen(array));
   UPB_ASSERT(i < array->UPB_ONLYBITS(size));
   UPB_ASSERT(elem_size == 1U << UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array));
-  char* arr_data = (char*)UPB_PRIVATE(_upb_Array_MutableDataPtr)(array);
+  char* arr_data = (char*)upb_Array_MutableDataPtr(array);
   memcpy(arr_data + (i * elem_size), data, elem_size);
 }
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_Array_Size)(const struct upb_Array* arr) {
+UPB_API_INLINE size_t upb_Array_Size(const struct upb_Array* arr) {
   return arr->UPB_ONLYBITS(size);
 }
 
@@ -1089,7 +1079,7 @@ struct upb_MiniTableField {
   uint8_t UPB_ONLYBITS(mode);
 };
 
-#define kUpb_NoSub ((uint16_t)-1)
+#define kUpb_NoSub ((uint16_t) - 1)
 
 typedef enum {
   kUpb_FieldMode_Map = 0,
@@ -1140,17 +1130,17 @@ UPB_PRIVATE(_upb_MiniTableField_GetRep)(const struct upb_MiniTableField* f) {
   return (upb_FieldRep)(f->UPB_ONLYBITS(mode) >> kUpb_FieldRep_Shift);
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsArray)(
+UPB_API_INLINE bool upb_MiniTableField_IsArray(
     const struct upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_Mode)(f) == kUpb_FieldMode_Array;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsMap)(
+UPB_API_INLINE bool upb_MiniTableField_IsMap(
     const struct upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_Mode)(f) == kUpb_FieldMode_Map;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsScalar)(
+UPB_API_INLINE bool upb_MiniTableField_IsScalar(
     const struct upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_MiniTableField_Mode)(f) == kUpb_FieldMode_Scalar;
 }
@@ -1160,18 +1150,18 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsAlternate)(
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) != 0;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsExtension)(
+UPB_API_INLINE bool upb_MiniTableField_IsExtension(
     const struct upb_MiniTableField* f) {
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsExtension) != 0;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsPacked)(
+UPB_API_INLINE bool upb_MiniTableField_IsPacked(
     const struct upb_MiniTableField* f) {
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsPacked) != 0;
 }
 
-UPB_INLINE upb_FieldType
-UPB_PRIVATE(_upb_MiniTableField_Type)(const struct upb_MiniTableField* f) {
+UPB_API_INLINE upb_FieldType
+upb_MiniTableField_Type(const struct upb_MiniTableField* f) {
   const upb_FieldType type = (upb_FieldType)f->UPB_PRIVATE(descriptortype);
   if (UPB_PRIVATE(_upb_MiniTableField_IsAlternate)(f)) {
     if (type == kUpb_FieldType_Int32) return kUpb_FieldType_Enum;
@@ -1181,9 +1171,9 @@ UPB_PRIVATE(_upb_MiniTableField_Type)(const struct upb_MiniTableField* f) {
   return type;
 }
 
-UPB_INLINE upb_CType
-UPB_PRIVATE(_upb_MiniTableField_CType)(const struct upb_MiniTableField* f) {
-  return upb_FieldType_CType(UPB_PRIVATE(_upb_MiniTableField_Type)(f));
+UPB_API_INLINE
+upb_CType upb_MiniTableField_CType(const struct upb_MiniTableField* f) {
+  return upb_FieldType_CType(upb_MiniTableField_Type(f));
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(
@@ -1205,33 +1195,33 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
   return index / 8;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsClosedEnum)(
+UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
     const struct upb_MiniTableField* f) {
   return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(
+UPB_INLINE bool upb_MiniTableField_IsInOneof(
     const struct upb_MiniTableField* f) {
   return f->presence < 0;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(
+UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
     const struct upb_MiniTableField* f) {
   return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
          f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasPresence)(
+UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const struct upb_MiniTableField* f) {
-  if (UPB_PRIVATE(_upb_MiniTableField_IsExtension)(f)) {
-    return UPB_PRIVATE(_upb_MiniTableField_IsScalar)(f);
+  if (upb_MiniTableField_IsExtension(f)) {
+    return upb_MiniTableField_IsScalar(f);
   } else {
     return f->presence != 0;
   }
 }
 
-UPB_INLINE uint32_t
-UPB_PRIVATE(_upb_MiniTableField_Number)(const struct upb_MiniTableField* f) {
+UPB_API_INLINE uint32_t
+upb_MiniTableField_Number(const struct upb_MiniTableField* f) {
   return f->UPB_ONLYBITS(number);
 }
 
@@ -1242,7 +1232,7 @@ UPB_PRIVATE(_upb_MiniTableField_Offset)(const struct upb_MiniTableField* f) {
 
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(
     const struct upb_MiniTableField* f) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(f));
+  UPB_ASSERT(upb_MiniTableField_IsInOneof(f));
   return ~(ptrdiff_t)f->presence;
 }
 
@@ -1250,7 +1240,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(
     const struct upb_MiniTableField* f) {
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
              kUpb_FieldRep_NativePointer);
-  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsArray)(f));
+  UPB_ASSUME(upb_MiniTableField_IsArray(f));
   UPB_ASSUME(f->presence == 0);
 }
 
@@ -1258,13 +1248,13 @@ UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(
     const struct upb_MiniTableField* f) {
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
              kUpb_FieldRep_NativePointer);
-  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_IsMap)(f));
+  UPB_ASSUME(upb_MiniTableField_IsMap(f));
   UPB_ASSUME(f->presence == 0);
 }
 
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
     const struct upb_MiniTableField* f) {
-  const upb_FieldType field_type = UPB_PRIVATE(_upb_MiniTableField_Type)(f);
+  const upb_FieldType field_type = upb_MiniTableField_Type(f);
   return UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
 }
 
@@ -1285,58 +1275,32 @@ typedef struct upb_MiniTableField upb_MiniTableField;
 extern "C" {
 #endif
 
-UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_CType)(f);
-}
+UPB_API_INLINE upb_CType upb_MiniTableField_CType(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_HasPresence(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_HasPresence)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_HasPresence(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsArray(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsArray)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsArray(const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsClosedEnum)(f);
-}
+    const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsExtension(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsExtension)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsExtension(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsInOneof(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsInOneof(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsMap(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsMap)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsMap(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsPacked(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsPacked)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsPacked(const upb_MiniTableField* f);
 
-UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsScalar)(f);
-}
+UPB_API_INLINE bool upb_MiniTableField_IsScalar(const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
-    const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_IsSubMessage)(f);
-}
+    const upb_MiniTableField* f);
 
-UPB_API_INLINE uint32_t upb_MiniTableField_Number(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_Number)(f);
-}
+UPB_API_INLINE uint32_t upb_MiniTableField_Number(const upb_MiniTableField* f);
 
 UPB_API_INLINE upb_FieldType
-upb_MiniTableField_Type(const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTableField_Type)(f);
-}
+upb_MiniTableField_Type(const upb_MiniTableField* f);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1372,7 +1336,7 @@ struct upb_MiniTableEnum {
 extern "C" {
 #endif
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
+UPB_API_INLINE bool upb_MiniTableEnum_CheckValue(
     const struct upb_MiniTableEnum* e, uint32_t val) {
   if (UPB_LIKELY(val < 64)) {
     const uint64_t mask =
@@ -1413,10 +1377,8 @@ extern "C" {
 #endif
 
 // Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
-                                             uint32_t val) {
-  return UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(e, val);
-}
+UPB_API_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
+                                                 uint32_t val);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1445,26 +1407,26 @@ union upb_MiniTableSub {
 extern "C" {
 #endif
 
-UPB_INLINE union upb_MiniTableSub UPB_PRIVATE(_upb_MiniTableSub_FromEnum)(
+UPB_API_INLINE union upb_MiniTableSub upb_MiniTableSub_FromEnum(
     const struct upb_MiniTableEnum* subenum) {
   union upb_MiniTableSub out;
   out.UPB_PRIVATE(subenum) = subenum;
   return out;
 }
 
-UPB_INLINE union upb_MiniTableSub UPB_PRIVATE(_upb_MiniTableSub_FromMessage)(
+UPB_API_INLINE union upb_MiniTableSub upb_MiniTableSub_FromMessage(
     const struct upb_MiniTable* submsg) {
   union upb_MiniTableSub out;
   out.UPB_PRIVATE(submsg) = submsg;
   return out;
 }
 
-UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableSub_Enum)(
+UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTableSub_Enum(
     const union upb_MiniTableSub sub) {
   return sub.UPB_PRIVATE(subenum);
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableSub_Message(
     const union upb_MiniTableSub sub) {
   return sub.UPB_PRIVATE(submsg);
 }
@@ -1537,8 +1499,7 @@ UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_Empty)(void) {
   return &UPB_PRIVATE(_kUpb_MiniTable_Empty);
 }
 
-UPB_INLINE int UPB_PRIVATE(_upb_MiniTable_FieldCount)(
-    const struct upb_MiniTable* m) {
+UPB_API_INLINE int upb_MiniTable_FieldCount(const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
 
@@ -1549,8 +1510,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
   return m == &UPB_PRIVATE(_kUpb_MiniTable_Empty);
 }
 
-UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
-    _upb_MiniTable_GetFieldByIndex)(const struct upb_MiniTable* m, uint32_t i) {
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
+    const struct upb_MiniTable* m, uint32_t i) {
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
@@ -1559,54 +1520,50 @@ UPB_INLINE const union upb_MiniTableSub* UPB_PRIVATE(
   return &m->UPB_PRIVATE(subs)[i];
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
-    _upb_MiniTable_GetSubMessageTable)(const struct upb_MiniTable* m,
-                                       const struct upb_MiniTableField* f) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_CType)(f) == kUpb_CType_Message);
-  const struct upb_MiniTable* ret = UPB_PRIVATE(_upb_MiniTableSub_Message)(
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
+    const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  const struct upb_MiniTable* ret = upb_MiniTableSub_Message(
       m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
   UPB_ASSUME(ret);
   return UPB_PRIVATE(_upb_MiniTable_IsEmpty)(ret) ? NULL : ret;
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_SubMessage)(
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
     const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
-  if (UPB_PRIVATE(_upb_MiniTableField_CType)(f) != kUpb_CType_Message) {
+  if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
     return NULL;
   }
-  return UPB_PRIVATE(_upb_MiniTableSub_Message)(
+  return upb_MiniTableSub_Message(
       m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
 }
 
-UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(
-    _upb_MiniTable_GetSubEnumTable)(const struct upb_MiniTable* m,
-                                    const struct upb_MiniTableField* f) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_CType)(f) == kUpb_CType_Enum);
-  return UPB_PRIVATE(_upb_MiniTableSub_Enum)(
-      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
-}
-
-UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(_upb_MiniTable_MapKey)(
-    const struct upb_MiniTable* m) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_FieldCount)(m) == 2);
-  const struct upb_MiniTableField* f =
-      UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, 0);
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Number)(f) == 1);
-  return f;
-}
-
-UPB_INLINE const struct upb_MiniTableField* UPB_PRIVATE(
-    _upb_MiniTable_MapValue)(const struct upb_MiniTable* m) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_FieldCount)(m) == 2);
-  const struct upb_MiniTableField* f =
-      UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, 1);
-  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Number)(f) == 2);
-  return f;
-}
-
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(
+UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f) != NULL;
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Enum);
+  return upb_MiniTableSub_Enum(
+      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+}
+
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_MapKey(
+    const struct upb_MiniTable* m) {
+  UPB_ASSERT(upb_MiniTable_FieldCount(m) == 2);
+  const struct upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, 0);
+  UPB_ASSERT(upb_MiniTableField_Number(f) == 1);
+  return f;
+}
+
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_MapValue(
+    const struct upb_MiniTable* m) {
+  UPB_ASSERT(upb_MiniTable_FieldCount(m) == 2);
+  const struct upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, 1);
+  UPB_ASSERT(upb_MiniTableField_Number(f) == 2);
+  return f;
+}
+
+UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
+    const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
+  return upb_MiniTable_GetSubMessageTable(m, f) != NULL;
 }
 
 // Computes a bitmask in which the |m->required_count| lowest bits are set.
@@ -1640,51 +1597,35 @@ UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* m, uint32_t number);
 
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
-    const upb_MiniTable* m, uint32_t index) {
-  return UPB_PRIVATE(_upb_MiniTable_GetFieldByIndex)(m, index);
-}
+    const upb_MiniTable* m, uint32_t index);
 
-UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTable_FieldCount)(m);
-}
+UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m);
 
 // DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_GetSubMessageTable)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTable for a message field if it is a submessage.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_SubMessage)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTableEnum for a message field, NULL if the field is unlinked.
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_GetSubEnumTable)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTableField for the key of a map.
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapKey(
-    const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTable_MapKey)(m);
-}
+    const upb_MiniTable* m);
 
 // Returns the MiniTableField for the value of a map.
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_MapValue(
-    const upb_MiniTable* m) {
-  return UPB_PRIVATE(_upb_MiniTable_MapValue)(m);
-}
+    const upb_MiniTable* m);
 
 // Returns true if this MiniTable field is linked to a MiniTable for the
 // sub-message.
 UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
-    const upb_MiniTable* m, const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_MiniTable_MessageFieldIsLinked)(m, f);
-}
+    const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // If this field is in a oneof, returns the first field in the oneof.
 //
@@ -1726,9 +1667,7 @@ extern "C" {
 UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
 
 // Returns the number of elements in the array.
-UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_Size)(arr);
-}
+UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr);
 
 // Returns the given element, which must be within the array's current size.
 UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
@@ -1766,14 +1705,10 @@ UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
 // Returns pointer to array data.
-UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_DataPtr)(arr);
-}
+UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr);
 
 // Returns mutable pointer to array data.
-UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_MutableDataPtr)(arr);
-}
+UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr);
 
 // Mark an array and all of its descendents as frozen/immutable.
 // If the array elements are messages then |m| must point to the minitable for
@@ -1781,9 +1716,7 @@ UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr) {
 UPB_API void upb_Array_Freeze(upb_Array* arr, const upb_MiniTable* m);
 
 // Returns whether an array has been frozen.
-UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr) {
-  return UPB_PRIVATE(_upb_Array_IsFrozen)(arr);
-}
+UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1870,23 +1803,22 @@ struct upb_MiniTableExtension {
 extern "C" {
 #endif
 
-UPB_INLINE upb_CType UPB_PRIVATE(_upb_MiniTableExtension_CType)(
-    const struct upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableField_CType)(&e->UPB_PRIVATE(field));
+UPB_API_INLINE upb_CType
+upb_MiniTableExtension_CType(const struct upb_MiniTableExtension* e) {
+  return upb_MiniTableField_CType(&e->UPB_PRIVATE(field));
 }
 
-UPB_INLINE uint32_t UPB_PRIVATE(_upb_MiniTableExtension_Number)(
-    const struct upb_MiniTableExtension* e) {
+UPB_API_INLINE uint32_t
+upb_MiniTableExtension_Number(const struct upb_MiniTableExtension* e) {
   return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
-    _upb_MiniTableExtension_GetSubMessage)(
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const struct upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableSub_Message)(e->UPB_PRIVATE(sub));
+  return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(
+UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
     struct upb_MiniTableExtension* e, const struct upb_MiniTable* m) {
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
 }
@@ -1907,24 +1839,16 @@ extern "C" {
 #endif
 
 UPB_API_INLINE upb_CType
-upb_MiniTableExtension_CType(const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_CType)(e);
-}
+upb_MiniTableExtension_CType(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t
-upb_MiniTableExtension_Number(const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_Number)(e);
-}
+upb_MiniTableExtension_Number(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
-    const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_GetSubMessage)(e);
-}
+    const upb_MiniTableExtension* e);
 
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
-    upb_MiniTableExtension* e, const upb_MiniTable* m) {
-  UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
-}
+    upb_MiniTableExtension* e, const upb_MiniTable* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -2308,7 +2232,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Map_ShallowFreeze)(struct upb_Map* map) {
   map->UPB_PRIVATE(is_frozen) = true;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Map_IsFrozen)(const struct upb_Map* map) {
+UPB_API_INLINE bool upb_Map_IsFrozen(const struct upb_Map* map) {
   return map->UPB_PRIVATE(is_frozen);
 }
 
@@ -2369,14 +2293,14 @@ UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_strtable_clear(&map->table);
 }
 
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
                                 size_t key_size, upb_value* val) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_StringView k = _upb_map_tokey(key, key_size);
   return upb_strtable_remove2(&map->table, k.data, k.size, val);
@@ -2397,7 +2321,7 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                const void* key, size_t key_size,
                                                void* val, size_t val_size,
                                                upb_Arena* a) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_StringView strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
@@ -2534,7 +2458,7 @@ UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(struct upb_Message* ptr, bool empty) {
   return (uintptr_t)ptr | (empty ? 1 : 0);
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(uintptr_t ptr) {
+UPB_API_INLINE bool upb_TaggedMessagePtr_IsEmpty(uintptr_t ptr) {
   return ptr & 1;
 }
 
@@ -2543,15 +2467,15 @@ UPB_INLINE struct upb_Message* UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(
   return (struct upb_Message*)(ptr & ~(uintptr_t)1);
 }
 
-UPB_INLINE struct upb_Message* UPB_PRIVATE(
-    _upb_TaggedMessagePtr_GetNonEmptyMessage)(uintptr_t ptr) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr));
+UPB_API_INLINE struct upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
+    uintptr_t ptr) {
+  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(ptr));
   return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
 }
 
 UPB_INLINE struct upb_Message* UPB_PRIVATE(
     _upb_TaggedMessagePtr_GetEmptyMessage)(uintptr_t ptr) {
-  UPB_ASSERT(UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr));
+  UPB_ASSERT(upb_TaggedMessagePtr_IsEmpty(ptr));
   return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
 }
 
@@ -2578,13 +2502,16 @@ struct upb_Message {
   };
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ShallowFreeze)(
     struct upb_Message* msg) {
   msg->UPB_OPAQUE(internal) |= 1ULL;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsFrozen)(
-    const struct upb_Message* msg) {
+UPB_API_INLINE bool upb_Message_IsFrozen(const struct upb_Message* msg) {
   return (msg->UPB_OPAQUE(internal) & 1ULL) != 0;
 }
 
@@ -2596,9 +2523,13 @@ UPB_INLINE struct upb_Message_Internal* UPB_PRIVATE(_upb_Message_GetInternal)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetInternal)(
     struct upb_Message* msg, struct upb_Message_Internal* internal) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   msg->UPB_OPAQUE(internal) = (uintptr_t)internal;
 }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #undef UPB_OPAQUE
 
@@ -2804,8 +2735,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
 // of a setter is known to be a non-extension, the arena may be NULL and the
 // returned bool value may be ignored since it will always succeed.
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_HasBaseField)(
-    const struct upb_Message* msg, const upb_MiniTableField* field) {
+UPB_API_INLINE bool upb_Message_HasBaseField(const struct upb_Message* msg,
+                                             const upb_MiniTableField* field) {
   UPB_ASSERT(upb_MiniTableField_HasPresence(field));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if (upb_MiniTableField_IsInOneof(field)) {
@@ -2816,10 +2747,10 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_HasBaseField)(
   }
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_HasExtension)(
-    const struct upb_Message* msg, const upb_MiniTableExtension* ext) {
-  UPB_ASSERT(upb_MiniTableField_HasPresence(&ext->UPB_PRIVATE(field)));
-  return UPB_PRIVATE(_upb_Message_Getext)(msg, ext) != NULL;
+UPB_API_INLINE bool upb_Message_HasExtension(const struct upb_Message* msg,
+                                             const upb_MiniTableExtension* e) {
+  UPB_ASSERT(upb_MiniTableField_HasPresence(&e->UPB_PRIVATE(field)));
+  return UPB_PRIVATE(_upb_Message_Getext)(msg, e) != NULL;
 }
 
 UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
@@ -2828,7 +2759,7 @@ UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   if ((upb_MiniTableField_IsInOneof(field) ||
        !UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, default_val)) &&
-      !UPB_PRIVATE(_upb_Message_HasBaseField)(msg, field)) {
+      !upb_Message_HasBaseField(msg, field)) {
     UPB_PRIVATE(_upb_MiniTableField_DataCopy)(field, val, default_val);
     return;
   }
@@ -2852,7 +2783,7 @@ UPB_INLINE void _upb_Message_GetExtensionField(
 
 UPB_INLINE void _upb_Message_SetNonExtensionField(
     struct upb_Message* msg, const upb_MiniTableField* field, const void* val) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
@@ -2862,7 +2793,7 @@ UPB_INLINE void _upb_Message_SetNonExtensionField(
 UPB_INLINE bool _upb_Message_SetExtensionField(
     struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* val, upb_Arena* a) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, mt_ext, a);
@@ -2872,15 +2803,15 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
   return true;
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Message_Clear)(struct upb_Message* msg,
-                                                const upb_MiniTable* m) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+UPB_API_INLINE void upb_Message_Clear(struct upb_Message* msg,
+                                      const upb_MiniTable* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   memset(msg, 0, m->UPB_PRIVATE(size));
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearBaseField)(
-    struct upb_Message* msg, const upb_MiniTableField* f) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
+                                               const upb_MiniTableField* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
     UPB_PRIVATE(_upb_Message_ClearHasbit)(msg, f);
   } else if (upb_MiniTableField_IsInOneof(f)) {
@@ -2893,9 +2824,9 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearBaseField)(
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), zeros);
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearExtension)(
+UPB_API_INLINE void upb_Message_ClearExtension(
     struct upb_Message* msg, const upb_MiniTableExtension* e) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Message_IsFrozen)(msg));
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return;
   const upb_Extension* base = UPB_PTR_AT(in, in->ext_begin, upb_Extension);
@@ -2914,7 +2845,7 @@ UPB_INLINE void _upb_Message_AssertMapIsUntagged(
   uintptr_t default_val = 0;
   uintptr_t tagged;
   _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
-  UPB_ASSERT(!UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(tagged));
+  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(tagged));
 #endif
 }
 
@@ -3011,7 +2942,7 @@ UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
 //   ...
 // }
 
-#define kUpb_Map_Begin ((size_t)-1)
+#define kUpb_Map_Begin ((size_t) - 1)
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.
@@ -3052,9 +2983,7 @@ UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 UPB_API void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m);
 
 // Returns whether a map has been frozen.
-UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map) {
-  return UPB_PRIVATE(_upb_Map_IsFrozen)(map);
-}
+UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3103,9 +3032,7 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg);
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
 
 // Returns whether a message has been frozen.
-UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg) {
-  return UPB_PRIVATE(_upb_Message_IsFrozen)(msg);
-}
+UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3134,14 +3061,10 @@ extern "C" {
 // Users who enable unlinked sub-messages must use this to test whether a
 // message is empty before accessing it. If a message is empty, it must be
 // first promoted using the interfaces in message/promote.h.
-UPB_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr) {
-  return UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr);
-}
+UPB_API_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr);
 
-UPB_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
-    upb_TaggedMessagePtr ptr) {
-  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetNonEmptyMessage)(ptr);
-}
+UPB_API_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
+    upb_TaggedMessagePtr ptr);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3165,26 +3088,18 @@ extern "C" {
 // Constructors
 
 UPB_API_INLINE upb_MiniTableSub
-upb_MiniTableSub_FromEnum(const upb_MiniTableEnum* subenum) {
-  return UPB_PRIVATE(_upb_MiniTableSub_FromEnum)(subenum);
-}
+upb_MiniTableSub_FromEnum(const upb_MiniTableEnum* subenum);
 
 UPB_API_INLINE upb_MiniTableSub
-upb_MiniTableSub_FromMessage(const upb_MiniTable* submsg) {
-  return UPB_PRIVATE(_upb_MiniTableSub_FromMessage)(submsg);
-}
+upb_MiniTableSub_FromMessage(const upb_MiniTable* submsg);
 
 // Getters
 
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableSub_Enum(
-    upb_MiniTableSub sub) {
-  return UPB_PRIVATE(_upb_MiniTableSub_Enum)(sub);
-}
+    upb_MiniTableSub sub);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableSub_Message(
-    upb_MiniTableSub sub) {
-  return UPB_PRIVATE(_upb_MiniTableSub_Message)(sub);
-}
+    upb_MiniTableSub sub);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -3205,30 +3120,19 @@ extern "C" {
 // Functions ending in Extension() take a (upb_MiniTableExtension*) argument
 // and work only on extensions.
 
-UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
-                                      const upb_MiniTable* m) {
-  UPB_PRIVATE(_upb_Message_Clear)(msg, m);
-}
+UPB_API_INLINE void upb_Message_Clear(upb_Message* msg, const upb_MiniTable* m);
 
 UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
-                                               const upb_MiniTableField* f) {
-  UPB_PRIVATE(_upb_Message_ClearBaseField)(msg, f);
-}
+                                               const upb_MiniTableField* f);
 
-UPB_API_INLINE void upb_Message_ClearExtension(
-    upb_Message* msg, const upb_MiniTableExtension* e) {
-  UPB_PRIVATE(_upb_Message_ClearExtension)(msg, e);
-}
+UPB_API_INLINE void upb_Message_ClearExtension(upb_Message* msg,
+                                               const upb_MiniTableExtension* e);
 
 UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
-                                             const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_Message_HasBaseField)(msg, f);
-}
+                                             const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
-                                             const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_Message_HasExtension)(msg, e);
-}
+                                             const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field) {
@@ -3979,34 +3883,34 @@ struct upb_MiniTableFile {
 extern "C" {
 #endif
 
-UPB_INLINE int UPB_PRIVATE(_upb_MiniTableFile_EnumCount)(
+UPB_API_INLINE int upb_MiniTableFile_EnumCount(
     const struct upb_MiniTableFile* f) {
   return f->UPB_PRIVATE(enum_count);
 }
 
-UPB_INLINE int UPB_PRIVATE(_upb_MiniTableFile_ExtensionCount)(
+UPB_API_INLINE int upb_MiniTableFile_ExtensionCount(
     const struct upb_MiniTableFile* f) {
   return f->UPB_PRIVATE(ext_count);
 }
 
-UPB_INLINE int UPB_PRIVATE(_upb_MiniTableFile_MessageCount)(
+UPB_API_INLINE int upb_MiniTableFile_MessageCount(
     const struct upb_MiniTableFile* f) {
   return f->UPB_PRIVATE(msg_count);
 }
 
-UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableFile_Enum)(
+UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTableFile_Enum(
     const struct upb_MiniTableFile* f, int i) {
   UPB_ASSERT(i < f->UPB_PRIVATE(enum_count));
   return f->UPB_PRIVATE(enums)[i];
 }
 
-UPB_INLINE const struct upb_MiniTableExtension* UPB_PRIVATE(
-    _upb_MiniTableFile_Extension)(const struct upb_MiniTableFile* f, int i) {
+UPB_API_INLINE const struct upb_MiniTableExtension* upb_MiniTableFile_Extension(
+    const struct upb_MiniTableFile* f, int i) {
   UPB_ASSERT(i < f->UPB_PRIVATE(ext_count));
   return f->UPB_PRIVATE(exts)[i];
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableFile_Message)(
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableFile_Message(
     const struct upb_MiniTableFile* f, int i) {
   UPB_ASSERT(i < f->UPB_PRIVATE(msg_count));
   return f->UPB_PRIVATE(msgs)[i];
@@ -4028,32 +3932,19 @@ extern "C" {
 #endif
 
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableFile_Enum(
-    const upb_MiniTableFile* f, int i) {
-  return UPB_PRIVATE(_upb_MiniTableFile_Enum)(f, i);
-}
+    const upb_MiniTableFile* f, int i);
 
-UPB_API_INLINE int upb_MiniTableFile_EnumCount(const upb_MiniTableFile* f) {
-  return UPB_PRIVATE(_upb_MiniTableFile_EnumCount)(f);
-}
+UPB_API_INLINE int upb_MiniTableFile_EnumCount(const upb_MiniTableFile* f);
 
 UPB_API_INLINE const upb_MiniTableExtension* upb_MiniTableFile_Extension(
-    const upb_MiniTableFile* f, int i) {
-  return UPB_PRIVATE(_upb_MiniTableFile_Extension)(f, i);
-}
+    const upb_MiniTableFile* f, int i);
 
-UPB_API_INLINE int upb_MiniTableFile_ExtensionCount(
-    const upb_MiniTableFile* f) {
-  return UPB_PRIVATE(_upb_MiniTableFile_ExtensionCount)(f);
-}
+UPB_API_INLINE int upb_MiniTableFile_ExtensionCount(const upb_MiniTableFile* f);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableFile_Message(
-    const upb_MiniTableFile* f, int i) {
-  return UPB_PRIVATE(_upb_MiniTableFile_Message)(f, i);
-}
+    const upb_MiniTableFile* f, int i);
 
-UPB_API_INLINE int upb_MiniTableFile_MessageCount(const upb_MiniTableFile* f) {
-  return UPB_PRIVATE(_upb_MiniTableFile_MessageCount)(f);
-}
+UPB_API_INLINE int upb_MiniTableFile_MessageCount(const upb_MiniTableFile* f);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -13339,11 +13230,11 @@ UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
   return res.ptr;
 }
 
-UPB_INLINE uint32_t UPB_PRIVATE(_upb_WireReader_GetFieldNumber)(uint32_t tag) {
+UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
   return tag >> kUpb_WireReader_WireTypeBits;
 }
 
-UPB_INLINE uint8_t UPB_PRIVATE(_upb_WireReader_GetWireType)(uint32_t tag) {
+UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) {
   return tag & kUpb_WireReader_WireTypeMask;
 }
 
@@ -13397,14 +13288,10 @@ UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
 }
 
 // Given a tag, returns the field number.
-UPB_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
-  return UPB_PRIVATE(_upb_WireReader_GetFieldNumber)(tag);
-}
+UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
 
 // Given a tag, returns the wire type.
-UPB_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) {
-  return UPB_PRIVATE(_upb_WireReader_GetWireType)(tag);
-}
+UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag);
 
 UPB_INLINE const char* upb_WireReader_ReadVarint(const char* ptr,
                                                  uint64_t* val) {

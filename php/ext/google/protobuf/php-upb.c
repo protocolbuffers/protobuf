@@ -7849,7 +7849,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   // Set presence if necessary.
   if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(field)) {
     UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
-  } else if (UPB_PRIVATE(_upb_MiniTableField_IsInOneof)(field)) {
+  } else if (upb_MiniTableField_IsInOneof(field)) {
     // Oneof case
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
     if (op == kUpb_DecodeOp_SubMessage &&
