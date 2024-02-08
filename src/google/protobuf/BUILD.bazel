@@ -688,7 +688,7 @@ filegroup(
 filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
-    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 filegroup(
@@ -777,6 +777,7 @@ filegroup(
         "unittest_no_field_presence.proto",
         "unittest_preserve_unknown_enum.proto",
         "unittest_preserve_unknown_enum2.proto",
+        "unittest_string_view.proto",
     ],
     visibility = ["//:__subpackages__"],
 )
@@ -798,6 +799,7 @@ proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
+        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -854,6 +856,7 @@ proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
+        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -925,6 +928,30 @@ cc_proto_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [":test_protos"],
+)
+
+proto_library(
+    name = "unittest_string_view_proto",
+    srcs = ["unittest_string_view.proto"],
+    strip_import_prefix = "/src",
+    deps = [":cpp_features_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_string_view_cc_proto",
+    deps = [":unittest_string_view_proto"],
+)
+
+cc_test(
+    name = "string_view_test",
+    srcs = ["string_view_test.cc"],
+    deps = [
+        ":protobuf",
+        ":unittest_string_view_cc_proto",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
 
 # Filegroup for golden comparison test:

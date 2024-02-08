@@ -80,6 +80,9 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
     return {GetExtensionReflection(pb::cpp)};
   }
 
+  using CodeGenerator::GetEdition;
+  using CodeGenerator::GetResolvedSourceFeatures;
+
  private:
   bool opensource_runtime_ = PROTO2_IS_OSS;
   std::string runtime_include_base_;

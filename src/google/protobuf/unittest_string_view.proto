@@ -1,0 +1,18 @@
+edition = "2023";
+
+package protobuf_unittest;
+
+import "google/protobuf/cpp_features.proto";
+
+option java_multiple_files = true;
+option optimize_for = SPEED;
+option features.(pb.cpp).string_type = VIEW;
+
+// NEXT_TAG = 5;
+message TestStringView {
+  string singular_string = 1;
+  bytes singular_bytes = 2;
+
+  repeated string repeated_string = 3;
+  repeated bytes repeated_bytes = 4;
+}

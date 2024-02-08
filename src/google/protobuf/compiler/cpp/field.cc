@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -24,9 +25,11 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -223,6 +226,40 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 namespace {
+// Use internal types instead of ctype or string_type.
+enum class StringType {
+  kView,
+  kString,
+  kCord,
+  kStringPiece,
+};
+
+StringType GetStringType(const FieldDescriptor& field) {
+  ABSL_CHECK_EQ(field.cpp_type(), FieldDescriptor::CPPTYPE_STRING);
+
+  if (field.options().has_ctype()) {
+    switch (field.options().ctype()) {
+      case FieldOptions::CORD:
+        return StringType::kCord;
+      case FieldOptions::STRING_PIECE:
+        return StringType::kStringPiece;
+      default:
+        return StringType::kString;
+    }
+  }
+
+  const pb::CppFeatures& cpp_features =
+      CppGenerator::GetResolvedSourceFeatures(field).GetExtension(::pb::cpp);
+  switch (cpp_features.string_type()) {
+    case pb::CppFeatures::CORD:
+      return StringType::kCord;
+    case pb::CppFeatures::VIEW:
+      return StringType::kView;
+    default:
+      return StringType::kString;
+  }
+}
+
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   const Options& options,
                                                   MessageSCCAnalyzer* scc) {
@@ -236,8 +273,13 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return MakeRepeatedMessageGenerator(field, options, scc);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return MakeRepeatedStringGenerator(field, options, scc);
+      case FieldDescriptor::CPPTYPE_STRING: {
+        if (GetStringType(*field) == StringType::kView) {
+          return MakeRepeatedStringViewGenerator(field, options, scc);
+        } else {
+          return MakeRepeatedStringGenerator(field, options, scc);
+        }
+      }
       case FieldDescriptor::CPPTYPE_ENUM:
         return MakeRepeatedEnumGenerator(field, options, scc);
       default:
@@ -253,19 +295,25 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return MakeSinguarMessageGenerator(field, options, scc);
-    case FieldDescriptor::CPPTYPE_STRING:
-      if (field->type() == FieldDescriptor::TYPE_BYTES &&
-          field->options().ctype() == FieldOptions::CORD) {
-        if (field->real_containing_oneof()) {
-          return MakeOneofCordGenerator(field, options, scc);
-        } else {
-          return MakeSingularCordGenerator(field, options, scc);
-        }
-      } else {
-        return MakeSinguarStringGenerator(field, options, scc);
-      }
     case FieldDescriptor::CPPTYPE_ENUM:
       return MakeSinguarEnumGenerator(field, options, scc);
+    case FieldDescriptor::CPPTYPE_STRING: {
+      switch (GetStringType(*field)) {
+        case StringType::kView:
+          return MakeSingularStringViewGenerator(field, options, scc);
+        case StringType::kCord:
+          if (field->type() == FieldDescriptor::TYPE_BYTES) {
+            if (field->real_containing_oneof()) {
+              return MakeOneofCordGenerator(field, options, scc);
+            } else {
+              return MakeSingularCordGenerator(field, options, scc);
+            }
+          }
+          ABSL_FALLTHROUGH_INTENDED;
+        default:
+          return MakeSinguarStringGenerator(field, options, scc);
+      }
+    }
     default:
       return MakeSinguarPrimitiveGenerator(field, options, scc);
   }

@@ -239,6 +239,28 @@ def build_targets(name):
         strip_prefix = "src",
     )
 
+    internal_copy_files(
+        name = "copied_test_dependency_proto_files",
+        srcs = [
+            "//src/google/protobuf:cpp_features_proto_srcs",
+        ],
+        strip_prefix = "src",
+    )
+
+    internal_py_proto_library(
+        name = "test_dependency_proto_py_pb2",
+        srcs = [":copied_test_dependency_proto_files"],
+        include = ".",
+        default_runtime = "",
+        protoc = "//:protoc",
+        srcs_version = "PY2AND3",
+        visibility = [
+            "//:__pkg__",
+            "//upb:__subpackages__",
+        ],
+        deps = [":well_known_types_py_pb2"],
+    )
+
     internal_py_proto_library(
         name = "python_common_test_protos",
         testonly = 1,
@@ -248,7 +270,7 @@ def build_targets(name):
         protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = ["//:__pkg__"],
-        deps = [":well_known_types_py_pb2"],
+        deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
     )
 
     internal_py_proto_library(

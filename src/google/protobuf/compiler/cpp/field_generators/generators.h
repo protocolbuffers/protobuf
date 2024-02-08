@@ -54,6 +54,14 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 
+std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringViewGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);

@@ -66,6 +66,7 @@ cc_library(
         "field_generators/message_field.cc",
         "field_generators/primitive_field.cc",
         "field_generators/string_field.cc",
+        "field_generators/string_view_field.cc",
         "file.cc",
         "generator.cc",
         "message.cc",

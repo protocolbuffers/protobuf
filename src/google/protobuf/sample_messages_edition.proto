@@ -14,7 +14,10 @@ edition = "2023";
 
 package protobuf_test_messages.edition;
 
+import "google/protobuf/cpp_features.proto";
+
 option optimize_for = SPEED;
+option features.(pb.cpp).string_type = VIEW;
 
 // This proto includes every type of field in both singular and repeated
 // forms.
