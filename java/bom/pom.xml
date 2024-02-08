@@ -71,6 +71,11 @@
         <artifactId>protobuf-kotlin</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-kotlin-lite</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
