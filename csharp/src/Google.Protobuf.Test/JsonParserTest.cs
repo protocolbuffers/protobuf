@@ -13,6 +13,7 @@ using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using ProtobufTestMessages.Proto2;
 using ProtobufTestMessages.Proto3;
+using ProtobufUnittest;
 using System;
 using UnitTest.Issues.TestProtos;
 
@@ -922,6 +923,52 @@ namespace Google.Protobuf
         {
             string json = "{ \"singleForeignEnum\": " + value + " }";
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void Enum_InvalidString_IgnoreUnknownFields()
+        {
+            // When ignoring unknown fields, invalid enum value strings are ignored too.
+            // This test uses TestProto3Optional so we can check we're not just setting the field to the 0 value.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"optionalNestedEnum\": \"NOT_A_VALID_VALUE\" }";
+            var parsed = parser.Parse<TestProto3Optional>(json);
+            Assert.IsFalse(parsed.HasOptionalNestedEnum);
+        }
+
+        [Test]
+        public void RepeatedEnum_InvalidString_IgnoreUnknownFields()
+        {
+            // When ignoring unknown fields, invalid enum value strings are ignored too.
+            // For a repeated field, the value is removed entirely.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"repeatedForeignEnum\": [ \"FOREIGN_FOO\", \"NOT_A_VALID_VALUE\", \"FOREIGN_BAR\" ] }";
+            var parsed = parser.Parse<TestAllTypes>(json);
+            var expected = new[] { TestProtos.ForeignEnum.ForeignFoo, TestProtos.ForeignEnum.ForeignBar };
+            Assert.AreEqual(expected, parsed.RepeatedForeignEnum);
+        }
+
+        [Test]
+        public void EnumValuedMap_InvalidString_IgnoreUnknownFields()
+        {
+            // When ignoring unknown fields, invalid enum value strings are ignored too.
+            // For a map field, the entry is removed entirely.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"mapInt32Enum\": { \"1\": \"MAP_ENUM_BAR\", \"2\": \"NOT_A_VALID_VALUE\" } }";
+            var parsed = parser.Parse<TestMap>(json);
+            Assert.AreEqual(1, parsed.MapInt32Enum.Count);
+            Assert.AreEqual(MapEnum.Bar, parsed.MapInt32Enum[1]);
+            Assert.False(parsed.MapInt32Enum.ContainsKey(2));
+        }
+
+        [Test]
+        public void Enum_InvalidNumber_IgnoreUnknownFields()
+        {
+            // Even when ignoring unknown fields, fail for non-integer numeric values, because
+            // they could *never* be valid.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"singleForeignEnum\": 5.5 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => parser.Parse<TestAllTypes>(json));
         }
 
         [Test]
