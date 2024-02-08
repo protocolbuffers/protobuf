@@ -195,7 +195,7 @@ cc_test(
 )
 
 cc_library(
-    name = "type_resolver_util",
+    name = "type_resolver",
     srcs = ["type_resolver_util.cc"],
     hdrs = [
         "type_resolver.h",
@@ -228,7 +228,7 @@ cc_test(
         ":json_format_cc_proto",
         ":json_format_proto3_cc_proto",
         ":json_util",
-        ":type_resolver_util",
+        ":type_resolver",
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:cc_test_protos",
