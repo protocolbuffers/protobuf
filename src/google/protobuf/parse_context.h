@@ -24,7 +24,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
-#include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"

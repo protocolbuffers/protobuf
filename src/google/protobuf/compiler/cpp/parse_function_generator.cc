@@ -109,7 +109,8 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       descriptor_, ordered_fields_,
       {/* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
            FileOptions::LITE_RUNTIME,
-       /* uses_codegen */ true, options_.profile_driven_cluster_aux_subtable},
+       /* uses_codegen */ HasGeneratedMethods(descriptor->file(), options),
+       options_.profile_driven_cluster_aux_subtable},
       GeneratedOptionProvider(this), has_bit_indices, inlined_string_indices));
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
@@ -117,19 +118,11 @@ ParseFunctionGenerator::ParseFunctionGenerator(
 }
 
 void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
-  Formatter format(printer, variables_);
-  format(
-      "const char* _InternalParse(const char* ptr, "
-      "::$proto_ns$::internal::ParseContext* ctx) final;\n");
+  // DO NOT SUBMIT: REMOVE
 }
 
 void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
-  printer->Emit(R"cc(
-    const char* $classname$::_InternalParse(const char* ptr,
-                                            ::_pbi::ParseContext* ctx) {
-      return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-    }
-  )cc");
+  // DO NOT SUBMIT: REMOVE
 }
 
 struct SkipEntry16 {
@@ -279,7 +272,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   if (GetOptimizeFor(descriptor_->file(), options_) ==
       FileOptions::LITE_RUNTIME) {
     absl::StrAppend(&fallback, "Lite");
-  } else if (HasWeakFields(descriptor_)) {
+  } else if (HasWeakFields(descriptor_) ||
+             !HasGeneratedMethods(descriptor_->file(), options_)) {
     // weak=true fields are handled with the reflection fallback, but we don't
     // want to install that for normal messages because it has more overhead.
     ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
@@ -413,7 +407,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       format("65535, 65535\n");
     }
     if (ordered_fields_.empty() &&
-        !descriptor_->options().message_set_wire_format()) {
+        (!HasGeneratedMethods(descriptor_->file(), options_) ||
+         !descriptor_->options().message_set_wire_format())) {
       ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
           << "Invalid message: " << descriptor_->full_name() << " has "
           << tc_table_info_->aux_entries.size()

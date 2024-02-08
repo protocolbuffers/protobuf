@@ -193,7 +193,6 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;

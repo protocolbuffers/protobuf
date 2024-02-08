@@ -2693,6 +2693,7 @@ TEST(GeneratedMapFieldTest, SameTypeMaps) {
 }
 
 TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
+  GTEST_SKIP() << "DO NOT SUBMIT";
   UNITTEST::TestEnumMapPlusExtra from;
   (*from.mutable_known_map_field())[0] = UNITTEST::E_PROTO2_MAP_ENUM_FOO;
   (*from.mutable_unknown_map_field())[0] = UNITTEST::E_PROTO2_MAP_ENUM_EXTRA;

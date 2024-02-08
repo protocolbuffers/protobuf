@@ -97,7 +97,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
   }
   table -= 1;
   if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
-    table->post_loop_handler(msg, ctx);
+    return table->post_loop_handler(msg, ptr, ctx);
   }
   return ptr;
 }

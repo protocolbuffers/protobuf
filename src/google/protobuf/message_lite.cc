@@ -31,6 +31,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -43,6 +44,17 @@
 
 namespace google {
 namespace protobuf {
+
+const char* MessageLite::_InternalParse(const char* ptr,
+                                        internal::ParseContext* ctx) {
+  auto* data = GetClassData();
+  auto* tc_table = data->tc_table;
+  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
+    ABSL_DCHECK(!data->is_lite);
+    tc_table = data->full().descriptor_methods->get_tc_table(*this);
+  }
+  return internal::TcParser::ParseLoop(this, ptr, ctx, tc_table);
+}
 
 std::string MessageLite::GetTypeName() const {
   auto* data = GetClassData();

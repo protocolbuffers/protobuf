@@ -1947,8 +1947,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!NeedsPostLoopHandler(descriptor_, options_)) return;
           p->Emit(R"cc(
-            static void PostLoopHandler(MessageLite* msg,
-                                        $pbi$::ParseContext* ctx);
+            static const char* PostLoopHandler(MessageLite* msg,
+                                               const char* ptr,
+                                               $pbi$::ParseContext* ctx);
           )cc");
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
@@ -2301,11 +2302,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
           [&] {
           }}},
         R"cc(
-          void $classname$::PostLoopHandler(MessageLite* msg,
-                                            ::_pbi::ParseContext* ctx) {
+          const char* $classname$::PostLoopHandler(MessageLite* msg,
+                                                   const char* ptr,
+                                                   ::_pbi::ParseContext* ctx) {
             $classname$* _this = static_cast<$classname$*>(msg);
             $annotate_deserialize$;
             $required$;
+            return ptr;
           }
         )cc");
   }
@@ -3605,6 +3608,19 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"pin_weak_descriptor", pin_weak_descriptor},
+            {"table",
+             [&] {
+               // DO NOT SUBMIT: REMOVE
+               if (IsMapEntryMessage(descriptor_)) {
+                 p->Emit(R"cc(
+                   nullptr,  // tc_table
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   &_table_.header,
+                 )cc");
+               }
+             }},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -3625,6 +3641,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
                 ClassDataFull _data_ = {
                     {
+                        $table$,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,
@@ -3649,6 +3666,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ClassDataLite<$type_size$> _data_ =
                 {
                     {
+                        &_table_.header,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         true,

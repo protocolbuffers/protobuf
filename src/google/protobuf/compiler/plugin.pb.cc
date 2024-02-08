@@ -361,6 +361,7 @@ Version::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
               false,
@@ -447,10 +448,6 @@ PROTOBUF_NOINLINE void Version::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* Version::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-}
 
 ::uint8_t* Version::_InternalSerialize(
     ::uint8_t* target,
@@ -672,6 +669,7 @@ CodeGeneratorRequest::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
               false,
@@ -772,10 +770,6 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* CodeGeneratorRequest::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-}
 
 ::uint8_t* CodeGeneratorRequest::_InternalSerialize(
     ::uint8_t* target,
@@ -1019,6 +1013,7 @@ CodeGeneratorResponse_File::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
               false,
@@ -1114,10 +1109,6 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* CodeGeneratorResponse_File::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-}
 
 ::uint8_t* CodeGeneratorResponse_File::_InternalSerialize(
     ::uint8_t* target,
@@ -1339,6 +1330,7 @@ CodeGeneratorResponse::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
               false,
@@ -1435,10 +1427,6 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* CodeGeneratorResponse::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-}
 
 ::uint8_t* CodeGeneratorResponse::_InternalSerialize(
     ::uint8_t* target,
