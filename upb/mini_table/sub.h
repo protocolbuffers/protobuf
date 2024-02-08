@@ -24,26 +24,18 @@ extern "C" {
 // Constructors
 
 UPB_API_INLINE upb_MiniTableSub
-upb_MiniTableSub_FromEnum(const upb_MiniTableEnum* subenum) {
-  return UPB_PRIVATE(_upb_MiniTableSub_FromEnum)(subenum);
-}
+upb_MiniTableSub_FromEnum(const upb_MiniTableEnum* subenum);
 
 UPB_API_INLINE upb_MiniTableSub
-upb_MiniTableSub_FromMessage(const upb_MiniTable* submsg) {
-  return UPB_PRIVATE(_upb_MiniTableSub_FromMessage)(submsg);
-}
+upb_MiniTableSub_FromMessage(const upb_MiniTable* submsg);
 
 // Getters
 
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableSub_Enum(
-    upb_MiniTableSub sub) {
-  return UPB_PRIVATE(_upb_MiniTableSub_Enum)(sub);
-}
+    upb_MiniTableSub sub);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableSub_Message(
-    upb_MiniTableSub sub) {
-  return UPB_PRIVATE(_upb_MiniTableSub_Message)(sub);
-}
+    upb_MiniTableSub sub);
 
 #ifdef __cplusplus
 } /* extern "C" */

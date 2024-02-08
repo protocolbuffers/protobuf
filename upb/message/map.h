@@ -77,7 +77,7 @@ UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
 //   ...
 // }
 
-#define kUpb_Map_Begin ((size_t)-1)
+#define kUpb_Map_Begin ((size_t) - 1)
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.
@@ -118,9 +118,7 @@ UPB_API upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
 UPB_API void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m);
 
 // Returns whether a map has been frozen.
-UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map) {
-  return UPB_PRIVATE(_upb_Map_IsFrozen)(map);
-}
+UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map);
 
 #ifdef __cplusplus
 } /* extern "C" */
