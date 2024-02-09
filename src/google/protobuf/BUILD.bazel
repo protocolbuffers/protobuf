@@ -1487,6 +1487,7 @@ cc_test(
     deps = [
         ":arena",
         ":cc_test_protos",
+        ":internal_visibility",
         ":port",
         ":protobuf",
         ":protobuf_lite",

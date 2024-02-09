@@ -9,6 +9,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/explicitly_constructed.h"
+#include "google/protobuf/has_bits.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/unittest.pb.h"
 
 #define MESSAGE_TEST_NAME MessageTest
@@ -21,5 +27,4 @@
 // clang-format off
 #include "google/protobuf/test_util.inc"
 #include "google/protobuf/message_unittest.inc"
-#include "google/protobuf/arena.h"
 // clang-format on
