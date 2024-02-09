@@ -5027,6 +5027,217 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
 // Must be last.
 
+#define kUpb_BaseField_Begin ((size_t) - 1)
+#define kUpb_Extension_Begin ((size_t) - 1)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+static bool _upb_Message_NextBaseField(const upb_Message* msg,
+                                       const upb_MiniTable* m,
+                                       const upb_MiniTableField** out_f,
+                                       upb_MessageValue* out_v, size_t* iter) {
+  const size_t count = upb_MiniTable_FieldCount(m);
+  size_t i = *iter;
+
+  while (++i < count) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
+    const void* src = UPB_PRIVATE(_upb_Message_DataPtr)(msg, f);
+
+    upb_MessageValue val;
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &val, src);
+
+    // Skip field if unset or empty.
+    if (upb_MiniTableField_HasPresence(f)) {
+      if (!upb_Message_HasBaseField(msg, f)) continue;
+    } else {
+      if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(f, src)) continue;
+
+      if (upb_MiniTableField_IsArray(f)) {
+        if (upb_Array_Size(val.array_val) == 0) continue;
+      } else if (upb_MiniTableField_IsMap(f)) {
+        if (upb_Map_Size(val.map_val) == 0) continue;
+      }
+    }
+
+    *out_f = f;
+    *out_v = val;
+    *iter = i;
+    return true;
+  }
+
+  return false;
+}
+
+static bool _upb_Message_NextExtension(const upb_Message* msg,
+                                       const upb_MiniTable* m,
+                                       const upb_MiniTableExtension** out_e,
+                                       upb_MessageValue* out_v, size_t* iter) {
+  size_t count;
+  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+  size_t i = *iter;
+
+  if (++i < count) {
+    *out_e = exts[i].ext;
+    *out_v = exts[i].data;
+    *iter = i;
+    return true;
+  }
+
+  return false;
+}
+
+bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
+  if (upb_Message_ExtensionCount(msg)) return false;
+
+  const upb_MiniTableField* f;
+  upb_MessageValue v;
+  size_t iter = kUpb_BaseField_Begin;
+  return !_upb_Message_NextBaseField(msg, m, &f, &v, &iter);
+}
+
+static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
+                               upb_CType ctype, const upb_MiniTable* m) {
+  // Check for trivial equality.
+  if (arr1 == arr2) return true;
+
+  // Must have identical element counts.
+  const size_t size1 = arr1 ? upb_Array_Size(arr1) : 0;
+  const size_t size2 = arr2 ? upb_Array_Size(arr2) : 0;
+  if (size1 != size2) return false;
+
+  for (size_t i = 0; i < size1; i++) {
+    const upb_MessageValue val1 = upb_Array_Get(arr1, i);
+    const upb_MessageValue val2 = upb_Array_Get(arr2, i);
+
+    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m)) return false;
+  }
+
+  return true;
+}
+
+static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
+                             const upb_MiniTable* m) {
+  // Check for trivial equality.
+  if (map1 == map2) return true;
+
+  // Must have identical element counts.
+  size_t size1 = map1 ? upb_Map_Size(map1) : 0;
+  size_t size2 = map2 ? upb_Map_Size(map2) : 0;
+  if (size1 != size2) return false;
+
+  const upb_MiniTableField* f = upb_MiniTable_MapValue(m);
+  const upb_MiniTable* m2_value = upb_MiniTable_SubMessage(m, f);
+  const upb_CType ctype = upb_MiniTableField_CType(f);
+
+  upb_MessageValue key, val1, val2;
+  size_t iter = kUpb_Map_Begin;
+  while (upb_Map_Next(map1, &key, &val1, &iter)) {
+    if (!upb_Map_Get(map2, key, &val2)) return false;
+    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m2_value)) return false;
+  }
+
+  return true;
+}
+
+static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
+                                            const upb_Message* msg2,
+                                            const upb_MiniTable* m) {
+  // Iterate over all base fields for each message.
+  // The order will always match if the messages are equal.
+  size_t iter1 = kUpb_BaseField_Begin;
+  size_t iter2 = kUpb_BaseField_Begin;
+
+  for (;;) {
+    const upb_MiniTableField *f1, *f2;
+    upb_MessageValue val1, val2;
+
+    const bool got1 = _upb_Message_NextBaseField(msg1, m, &f1, &val1, &iter1);
+    const bool got2 = _upb_Message_NextBaseField(msg2, m, &f2, &val2, &iter2);
+
+    if (got1 != got2) return false;  // Must have identical field counts.
+    if (!got1) return true;          // Loop termination condition.
+    if (f1 != f2) return false;      // Must have identical fields set.
+
+    const upb_MiniTable* subm = upb_MiniTable_SubMessage(m, f1);
+    const upb_CType ctype = upb_MiniTableField_CType(f1);
+
+    bool eq;
+    switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f1)) {
+      case kUpb_FieldMode_Array:
+        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm);
+        break;
+      case kUpb_FieldMode_Map:
+        eq = _upb_Map_IsEqual(val1.map_val, val2.map_val, subm);
+        break;
+      case kUpb_FieldMode_Scalar:
+        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm);
+        break;
+    }
+    if (!eq) return false;
+  }
+}
+
+static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
+                                            const upb_Message* msg2,
+                                            const upb_MiniTable* m) {
+  // Must have identical extension counts.
+  if (upb_Message_ExtensionCount(msg1) != upb_Message_ExtensionCount(msg2)) {
+    return false;
+  }
+
+  const upb_MiniTableExtension* e;
+  upb_MessageValue val1;
+
+  // Iterate over all extensions for msg1, and search msg2 for each extension.
+  size_t iter1 = kUpb_Extension_Begin;
+  while (_upb_Message_NextExtension(msg1, m, &e, &val1, &iter1)) {
+    const upb_Extension* ext2 = UPB_PRIVATE(_upb_Message_Getext)(msg2, e);
+    if (!ext2) return false;
+
+    const upb_MessageValue val2 = ext2->data;
+    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
+    const upb_MiniTable* subm = upb_MiniTableField_IsSubMessage(f)
+                                    ? upb_MiniTableExtension_GetSubMessage(e)
+                                    : NULL;
+    const upb_CType ctype = upb_MiniTableField_CType(f);
+
+    bool eq;
+    switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
+      case kUpb_FieldMode_Array:
+        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm);
+        break;
+      case kUpb_FieldMode_Map:
+        UPB_UNREACHABLE();  // Maps cannot be extensions.
+        break;
+      case kUpb_FieldMode_Scalar: {
+        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm);
+        break;
+      }
+    }
+    if (!eq) return false;
+  }
+  return true;
+}
+
+bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
+                         const upb_MiniTable* m) {
+  if (UPB_UNLIKELY(msg1 == msg2)) return true;
+
+  if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m)) return false;
+  if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m)) return false;
+
+  // Check the unknown fields.
+  size_t usize1, usize2;
+  const char* uf1 = upb_Message_GetUnknown(msg1, &usize1);
+  const char* uf2 = upb_Message_GetUnknown(msg2, &usize2);
+
+  // The wire encoder enforces a maximum depth of 100 so we match that here.
+  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+             uf1, usize1, uf2, usize2, 100) == kUpb_UnknownCompareResult_Equal;
+}
+
 bool upb_Message_IsExactlyEqual(const upb_Message* msg1,
                                 const upb_Message* msg2,
                                 const upb_MiniTable* m) {
@@ -10702,6 +10913,282 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
     return 4;
   }
   return 0;
+}
+
+
+#include <stdlib.h>
+
+
+// Must be last.
+
+typedef struct upb_UnknownFields upb_UnknownFields;
+
+typedef struct {
+  uint32_t tag;
+  union {
+    uint64_t varint;
+    uint64_t uint64;
+    uint32_t uint32;
+    upb_StringView delimited;
+    upb_UnknownFields* group;
+  } data;
+} upb_UnknownField;
+
+struct upb_UnknownFields {
+  size_t size;
+  size_t capacity;
+  upb_UnknownField* fields;
+};
+
+typedef struct {
+  upb_EpsCopyInputStream stream;
+  upb_Arena* arena;
+  upb_UnknownField* tmp;
+  size_t tmp_size;
+  int depth;
+  upb_UnknownCompareResult status;
+  jmp_buf err;
+} upb_UnknownField_Context;
+
+UPB_NORETURN static void upb_UnknownFields_OutOfMemory(
+    upb_UnknownField_Context* ctx) {
+  ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+  UPB_LONGJMP(ctx->err, 1);
+}
+
+static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
+                                   upb_UnknownField** base,
+                                   upb_UnknownField** ptr,
+                                   upb_UnknownField** end) {
+  size_t old = (*ptr - *base);
+  size_t new = UPB_MAX(4, old * 2);
+
+  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base),
+                            new * sizeof(**base));
+  if (!*base) upb_UnknownFields_OutOfMemory(ctx);
+
+  *ptr = *base + old;
+  *end = *base + new;
+}
+
+// We have to implement our own sort here, since qsort() is not an in-order
+// sort. Here we use merge sort, the simplest in-order sort.
+static void upb_UnknownFields_Merge(upb_UnknownField* arr, size_t start,
+                                    size_t mid, size_t end,
+                                    upb_UnknownField* tmp) {
+  memcpy(tmp, &arr[start], (end - start) * sizeof(*tmp));
+
+  upb_UnknownField* ptr1 = tmp;
+  upb_UnknownField* end1 = &tmp[mid - start];
+  upb_UnknownField* ptr2 = &tmp[mid - start];
+  upb_UnknownField* end2 = &tmp[end - start];
+  upb_UnknownField* out = &arr[start];
+
+  while (ptr1 < end1 && ptr2 < end2) {
+    if (ptr1->tag <= ptr2->tag) {
+      *out++ = *ptr1++;
+    } else {
+      *out++ = *ptr2++;
+    }
+  }
+
+  if (ptr1 < end1) {
+    memcpy(out, ptr1, (end1 - ptr1) * sizeof(*out));
+  } else if (ptr2 < end2) {
+    memcpy(out, ptr1, (end2 - ptr2) * sizeof(*out));
+  }
+}
+
+static void upb_UnknownFields_SortRecursive(upb_UnknownField* arr, size_t start,
+                                            size_t end, upb_UnknownField* tmp) {
+  if (end - start > 1) {
+    size_t mid = start + ((end - start) / 2);
+    upb_UnknownFields_SortRecursive(arr, start, mid, tmp);
+    upb_UnknownFields_SortRecursive(arr, mid, end, tmp);
+    upb_UnknownFields_Merge(arr, start, mid, end, tmp);
+  }
+}
+
+static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
+                                   upb_UnknownFields* fields) {
+  if (ctx->tmp_size < fields->size) {
+    const int oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
+    while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
+    const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+  }
+  upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
+}
+
+static upb_UnknownFields* upb_UnknownFields_DoBuild(
+    upb_UnknownField_Context* ctx, const char** buf) {
+  upb_UnknownField* arr_base = NULL;
+  upb_UnknownField* arr_ptr = NULL;
+  upb_UnknownField* arr_end = NULL;
+  const char* ptr = *buf;
+  uint32_t last_tag = 0;
+  bool sorted = true;
+  while (!upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr)) {
+    uint32_t tag;
+    ptr = upb_WireReader_ReadTag(ptr, &tag);
+    UPB_ASSERT(tag <= UINT32_MAX);
+    int wire_type = upb_WireReader_GetWireType(tag);
+    if (wire_type == kUpb_WireType_EndGroup) break;
+    if (tag < last_tag) sorted = false;
+    last_tag = tag;
+
+    if (arr_ptr == arr_end) {
+      upb_UnknownFields_Grow(ctx, &arr_base, &arr_ptr, &arr_end);
+    }
+    upb_UnknownField* field = arr_ptr;
+    field->tag = tag;
+    arr_ptr++;
+
+    switch (wire_type) {
+      case kUpb_WireType_Varint:
+        ptr = upb_WireReader_ReadVarint(ptr, &field->data.varint);
+        break;
+      case kUpb_WireType_64Bit:
+        ptr = upb_WireReader_ReadFixed64(ptr, &field->data.uint64);
+        break;
+      case kUpb_WireType_32Bit:
+        ptr = upb_WireReader_ReadFixed32(ptr, &field->data.uint32);
+        break;
+      case kUpb_WireType_Delimited: {
+        int size;
+        ptr = upb_WireReader_ReadSize(ptr, &size);
+        const char* s_ptr = ptr;
+        ptr = upb_EpsCopyInputStream_ReadStringAliased(&ctx->stream, &s_ptr,
+                                                       size);
+        field->data.delimited.data = s_ptr;
+        field->data.delimited.size = size;
+        break;
+      }
+      case kUpb_WireType_StartGroup:
+        if (--ctx->depth == 0) {
+          ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
+          UPB_LONGJMP(ctx->err, 1);
+        }
+        field->data.group = upb_UnknownFields_DoBuild(ctx, &ptr);
+        ctx->depth++;
+        break;
+      default:
+        UPB_UNREACHABLE();
+    }
+  }
+
+  *buf = ptr;
+  upb_UnknownFields* ret = upb_Arena_Malloc(ctx->arena, sizeof(*ret));
+  if (!ret) upb_UnknownFields_OutOfMemory(ctx);
+  ret->fields = arr_base;
+  ret->size = arr_ptr - arr_base;
+  ret->capacity = arr_end - arr_base;
+  if (!sorted) {
+    upb_UnknownFields_Sort(ctx, ret);
+  }
+  return ret;
+}
+
+// Builds a upb_UnknownFields data structure from the binary data in buf.
+static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
+                                                  const char* ptr,
+                                                  size_t size) {
+  upb_EpsCopyInputStream_Init(&ctx->stream, &ptr, size, true);
+  upb_UnknownFields* fields = upb_UnknownFields_DoBuild(ctx, &ptr);
+  UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr) &&
+             !upb_EpsCopyInputStream_IsError(&ctx->stream));
+  return fields;
+}
+
+// Compares two sorted upb_UnknownFields structures for equality.
+static bool upb_UnknownFields_IsEqual(const upb_UnknownFields* uf1,
+                                      const upb_UnknownFields* uf2) {
+  if (uf1->size != uf2->size) return false;
+  for (size_t i = 0, n = uf1->size; i < n; i++) {
+    upb_UnknownField* f1 = &uf1->fields[i];
+    upb_UnknownField* f2 = &uf2->fields[i];
+    if (f1->tag != f2->tag) return false;
+    int wire_type = f1->tag & 7;
+    switch (wire_type) {
+      case kUpb_WireType_Varint:
+        if (f1->data.varint != f2->data.varint) return false;
+        break;
+      case kUpb_WireType_64Bit:
+        if (f1->data.uint64 != f2->data.uint64) return false;
+        break;
+      case kUpb_WireType_32Bit:
+        if (f1->data.uint32 != f2->data.uint32) return false;
+        break;
+      case kUpb_WireType_Delimited:
+        if (!upb_StringView_IsEqual(f1->data.delimited, f2->data.delimited)) {
+          return false;
+        }
+        break;
+      case kUpb_WireType_StartGroup:
+        if (!upb_UnknownFields_IsEqual(f1->data.group, f2->data.group)) {
+          return false;
+        }
+        break;
+      default:
+        UPB_UNREACHABLE();
+    }
+  }
+  return true;
+}
+
+static upb_UnknownCompareResult upb_UnknownField_DoCompare(
+    upb_UnknownField_Context* ctx, const char* buf1, size_t size1,
+    const char* buf2, size_t size2) {
+  upb_UnknownCompareResult ret;
+  // First build both unknown fields into a sorted data structure (similar
+  // to the UnknownFieldSet in C++).
+  upb_UnknownFields* uf1 = upb_UnknownFields_Build(ctx, buf1, size1);
+  upb_UnknownFields* uf2 = upb_UnknownFields_Build(ctx, buf2, size2);
+
+  // Now perform the equality check on the sorted structures.
+  if (upb_UnknownFields_IsEqual(uf1, uf2)) {
+    ret = kUpb_UnknownCompareResult_Equal;
+  } else {
+    ret = kUpb_UnknownCompareResult_NotEqual;
+  }
+  return ret;
+}
+
+static upb_UnknownCompareResult upb_UnknownField_Compare(
+    upb_UnknownField_Context* const ctx, const char* const buf1,
+    const size_t size1, const char* const buf2, const size_t size2) {
+  upb_UnknownCompareResult ret;
+  if (UPB_SETJMP(ctx->err) == 0) {
+    ret = upb_UnknownField_DoCompare(ctx, buf1, size1, buf2, size2);
+  } else {
+    ret = ctx->status;
+    UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
+  }
+
+  upb_Arena_Free(ctx->arena);
+  upb_gfree(ctx->tmp);
+  return ret;
+}
+
+upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+    const char* buf1, size_t size1, const char* buf2, size_t size2,
+    int max_depth) {
+  if (size1 == 0 && size2 == 0) return kUpb_UnknownCompareResult_Equal;
+  if (size1 == 0 || size2 == 0) return kUpb_UnknownCompareResult_NotEqual;
+  if (memcmp(buf1, buf2, size1) == 0) return kUpb_UnknownCompareResult_Equal;
+
+  upb_UnknownField_Context ctx = {
+      .arena = upb_Arena_New(),
+      .depth = max_depth,
+      .tmp = NULL,
+      .tmp_size = 0,
+      .status = kUpb_UnknownCompareResult_Equal,
+  };
+
+  if (!ctx.arena) return kUpb_UnknownCompareResult_OutOfMemory;
+
+  return upb_UnknownField_Compare(&ctx, buf1, size1, buf2, size2);
 }
 
 
