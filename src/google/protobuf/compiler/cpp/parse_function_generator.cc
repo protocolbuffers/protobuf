@@ -47,12 +47,6 @@ bool HasWeakFields(const Descriptor* descriptor) {
   }
   return false;
 }
-bool UseDirectTcParserTable(const FieldDescriptor* field,
-                            const Options& options) {
-  if (field->cpp_type() != field->CPPTYPE_MESSAGE) return false;
-  auto* m = field->message_type();
-  return !m->options().message_set_wire_format();
-}
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
     const Descriptor* descriptor, const Options& options) {
@@ -87,7 +81,7 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
         verify_flag(),
         IsStringInlined(field, gen_->options_),
         IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
-        UseDirectTcParserTable(field, gen_->options_),
+        /* use_direct_tcparser_table */ true,
         ShouldSplit(field, gen_->options_),
     };
   }
@@ -130,38 +124,12 @@ void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
 }
 
 void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
-  Formatter format(printer, variables_);
-  if (descriptor_->options().message_set_wire_format()) {
-    // Special-case MessageSet.
-    format(
-        "const char* $classname$::_InternalParse(const char* ptr,\n"
-        "                  ::_pbi::ParseContext* ctx) {\n");
-    if (HasOnDeserializeTracker(descriptor_, options_)) {
-      format(
-          "$classname$* _this = this;\n"
-          "$annotate_deserialize$");
+  printer->Emit(R"cc(
+    const char* $classname$::_InternalParse(const char* ptr,
+                                            ::_pbi::ParseContext* ctx) {
+      return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
     }
-    if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
-      format(
-          "  ctx->set_lazy_eager_verify_func(&$classname$::InternalVerify);\n");
-    }
-    format(
-        "  return $extensions$.ParseMessageSet(ptr, \n"
-        "      internal_default_instance(), &_internal_metadata_, ctx);\n"
-        "}\n");
-    return;
-  }
-  GenerateTailcallParseFunction(format);
-}
-
-void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
-  // Generate an `_InternalParse` that starts the tail-calling loop.
-  format(
-      "const char* $classname$::_InternalParse(\n"
-      "    const char* ptr, ::_pbi::ParseContext* ctx) {\n"
-      "  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);\n"
-      "  return ptr;\n"
-      "}\n\n");
+  )cc");
 }
 
 struct SkipEntry16 {
@@ -444,7 +412,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       if (line_entries) format("\n");
       format("65535, 65535\n");
     }
-    if (ordered_fields_.empty()) {
+    if (ordered_fields_.empty() &&
+        !descriptor_->options().message_set_wire_format()) {
       ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
           << "Invalid message: " << descriptor_->full_name() << " has "
           << tc_table_info_->aux_entries.size()
@@ -506,6 +475,13 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
                 format("{$1$::InternalVerify},\n",
                        QualifiedClassName(aux_entry.field->message_type(),
                                           options_));
+                break;
+              case TailCallTableInfo::kSelfVerifyFunc:
+                if (ShouldVerify(descriptor_, options_, scc_analyzer_)) {
+                  format("{&InternalVerify},\n");
+                } else {
+                  format("{},\n");
+                }
                 break;
               case TailCallTableInfo::kEnumRange:
                 format("{$1$, $2$},\n", aux_entry.enum_range.start,

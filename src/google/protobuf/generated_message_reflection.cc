@@ -3207,35 +3207,6 @@ static internal::TailCallParseFunc GetFastParseFunction(
   return kFuncs[index];
 }
 
-const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
-    const {
-  // ParseLoop can't parse message set wire format.
-  // Create a dummy table that only exists to make TcParser::ParseLoop jump
-  // into the reflective parse loop.
-
-  using Table = internal::TcParseTable<0, 0, 0, 0, 1>;
-  // We use `operator new` here because the destruction will be done with
-  // `operator delete` unconditionally.
-  void* p = ::operator new(sizeof(Table));
-  auto* full_table = ::new (p) Table{
-      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr, nullptr
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-       ,
-       nullptr
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-      },
-      {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-  // branches. Here we don't know which field is the hottest, so set the pointer
-  // to itself to avoid nullptr.
-  full_table->header.to_prefetch = &full_table->header;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
-                 static_cast<void*>(full_table));
-  return &full_table->header;
-}
-
 void Reflection::PopulateTcParseFastEntries(
     const internal::TailCallTableInfo& table_info,
     TcParseTableBase::FastFieldEntry* fast_entries) const {
@@ -3324,6 +3295,7 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSubMessageWeak:
       case internal::TailCallTableInfo::kCreateInArena:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
+      case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kMapAuxInfo:
@@ -3354,10 +3326,6 @@ void Reflection::PopulateTcParseFieldAux(
 
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
-
-  if (descriptor_->options().message_set_wire_format()) {
-    return CreateTcParseTableReflectionOnly();
-  }
 
   std::vector<const FieldDescriptor*> fields;
   constexpr int kNoHasbit = -1;

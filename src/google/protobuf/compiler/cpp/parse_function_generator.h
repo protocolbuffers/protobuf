@@ -51,9 +51,6 @@ class ParseFunctionGenerator {
  private:
   class GeneratedOptionProvider;
 
-  // Generates a tail-calling `_InternalParse` function.
-  void GenerateTailcallParseFunction(Formatter& format);
-
   // Generates the tail-call table definition.
   void GenerateTailCallTable(io::Printer* printer);
   void GenerateFastFieldEntries(Formatter& format);

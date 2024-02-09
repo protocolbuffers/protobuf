@@ -727,6 +727,34 @@ TailCallTableInfo::TailCallTableInfo(
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
+  if (descriptor->options().message_set_wire_format()) {
+    ABSL_DCHECK(ordered_fields.empty());
+    ABSL_DCHECK(inlined_string_indices.empty());
+    if (message_options.uses_codegen) {
+      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+          message_options.is_lite
+              ? TcParseFunction::kMessageSetWireFormatParseLoopLite
+              : TcParseFunction::kMessageSetWireFormatParseLoop,
+          0, 0}}};
+
+      aux_entries = {{kSelfVerifyFunc}};
+    } else {
+      ABSL_DCHECK(!message_options.is_lite);
+      // The message set parser loop only handles codegen because it hardcodes
+      // the generated extension registry. For reflection, use the reflection
+      // loop which can handle arbitrary message factories.
+      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+          TcParseFunction::kReflectionParseLoop, 0, 0}}};
+    }
+
+    table_size_log2 = 0;
+    num_to_entry_table = MakeNumToEntryTable(ordered_fields);
+    field_name_data = GenerateFieldNames(descriptor, field_entries,
+                                         message_options, option_provider);
+
+    return;
+  }
+
   ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
                              [](const auto* lhs, const auto* rhs) {
                                return lhs->number() < rhs->number();
