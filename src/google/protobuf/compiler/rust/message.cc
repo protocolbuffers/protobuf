@@ -406,6 +406,335 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
+// (
+//   1) identifier used in thunk name - keep in sync with kMapKeyCppTypes!,
+//   2) Rust key typename (K in Map<K, V>, so e.g. `[u8]` for bytes),
+//   3) whether previous needs $pb$ prefix,
+//   4) key typename as used in function parameter (e.g. `PtrAndLen` for bytes),
+//   5) whether previous needs $pbi$ prefix,
+//   6) expression converting `key` variable to expected thunk param type,
+//   7) fn expression converting thunk param type to map key type (e.g. from
+//   PtrAndLen to &[u8]).
+//   8) whether previous needs $pb$ prefix,
+//)
+struct MapKeyType {
+  absl::string_view thunk_ident;
+  absl::string_view key_t;
+  bool needs_key_t_prefix;
+  absl::string_view param_key_t;
+  bool needs_param_key_t_prefix;
+  absl::string_view key_expr;
+  absl::string_view from_ffi_key_expr;
+  bool needs_from_ffi_key_prefix;
+};
+
+constexpr MapKeyType kMapKeyTypes[] = {
+    {"i32", "i32", false, "i32", false, "key", "k", false},
+    {"u32", "u32", false, "u32", false, "key", "k", false},
+    {"i64", "i64", false, "i64", false, "key", "k", false},
+    {"u64", "u64", false, "u64", false, "key", "k", false},
+    {"bool", "bool", false, "bool", false, "key", "k", false},
+    {"string", "ProtoStr", true, "PtrAndLen", true, "key.as_bytes().into()",
+     "ProtoStr::from_utf8_unchecked(k.as_ref())", true},
+    {"bytes", "[u8]", false, "PtrAndLen", true, "key.into()", "k.as_ref()",
+     false}};
+
+void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      for (const auto& t : kMapKeyTypes) {
+        ctx.Emit(
+            {{"map_new_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "new")},
+             {"map_free_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "free")},
+             {"map_clear_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "clear")},
+             {"map_size_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "size")},
+             {"map_insert_thunk",
+              RawMapThunk(ctx, msg, t.thunk_ident, "insert")},
+             {"map_get_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "get")},
+             {"map_remove_thunk",
+              RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
+             {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
+             {"map_iter_next_thunk",
+              RawMapThunk(ctx, msg, t.thunk_ident, "iter_next")},
+             {"key_expr", t.key_expr},
+             io::Printer::Sub({"param_key_t",
+                               [&] {
+                                 if (t.needs_param_key_t_prefix) {
+                                   ctx.Emit({{"param_key_t", t.param_key_t}},
+                                            "$pbi$::$param_key_t$");
+                                 } else {
+                                   ctx.Emit({{"param_key_t", t.param_key_t}},
+                                            "$param_key_t$");
+                                 }
+                               }})
+                 .WithSuffix(""),
+             io::Printer::Sub({"key_t",
+                               [&] {
+                                 if (t.needs_key_t_prefix) {
+                                   ctx.Emit({{"key_t", t.key_t}},
+                                            "$pb$::$key_t$");
+                                 } else {
+                                   ctx.Emit({{"key_t", t.key_t}}, "$key_t$");
+                                 }
+                               }})
+                 .WithSuffix(""),
+             io::Printer::Sub(
+                 {"from_ffi_key_expr",
+                  [&] {
+                    if (t.needs_from_ffi_key_prefix) {
+                      ctx.Emit({{"from_ffi_key_expr", t.from_ffi_key_expr}},
+                               "$pb$::$from_ffi_key_expr$");
+                    } else {
+                      ctx.Emit({{"from_ffi_key_expr", t.from_ffi_key_expr}},
+                               "$from_ffi_key_expr$");
+                    }
+                  }})
+                 .WithSuffix("")},
+            R"rs(
+            extern "C" {
+                fn $map_new_thunk$() -> $pbi$::RawMap;
+                fn $map_free_thunk$(m: $pbi$::RawMap);
+                fn $map_clear_thunk$(m: $pbi$::RawMap);
+                fn $map_size_thunk$(m: $pbi$::RawMap) -> usize;
+                fn $map_insert_thunk$(m: $pbi$::RawMap, key: $param_key_t$, value: $pbi$::RawMessage) -> bool;
+                fn $map_get_thunk$(m: $pbi$::RawMap, key: $param_key_t$, value: *mut $pbi$::RawMessage) -> bool;
+                fn $map_remove_thunk$(m: $pbi$::RawMap, key: $param_key_t$, value: *mut $pbi$::RawMessage) -> bool;
+                fn $map_iter_thunk$(m: $pbi$::RawMap) -> $pbr$::UntypedMapIterator;
+                fn $map_iter_next_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $param_key_t$, value: *mut $pbi$::RawMessage);
+            }
+            impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
+                fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
+                    unsafe {
+                        $pb$::Map::from_inner(
+                            $pbi$::Private,
+                            $pbr$::InnerMapMut::new($pbi$::Private, $map_new_thunk$())
+                        )
+                    }
+                }
+
+                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
+                    unsafe { $map_free_thunk$(map.as_raw($pbi$::Private)); }
+                }
+
+                fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
+                    unsafe { $map_clear_thunk$(map.as_raw($pbi$::Private)); }
+                }
+
+                fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
+                    unsafe { $map_size_thunk$(map.as_raw($pbi$::Private)) }
+                }
+
+                fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: $pb$::View<'_, Self>) -> bool {
+                    unsafe { $map_insert_thunk$(map.as_raw($pbi$::Private), $key_expr$, value.raw_msg()) }
+                }
+
+                fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                    let key = $key_expr$;
+                    let mut value = $std$::mem::MaybeUninit::uninit();
+                    let found = unsafe { $map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
+                    if !found {
+                        return None;
+                    }
+                    Some($Msg$View::new($pbi$::Private, unsafe { value.assume_init() }))
+                }
+
+                fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
+                    let mut value = $std$::mem::MaybeUninit::uninit();
+                    unsafe { $map_remove_thunk$(map.as_raw($pbi$::Private), $key_expr$, value.as_mut_ptr()) }
+                }
+
+                fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
+                    // SAFETY:
+                    // - The backing map for `map.as_raw` is valid for at least '_.
+                    // - A View that is live for '_ guarantees the backing map is unmodified for '_.
+                    // - The `iter` function produces an iterator that is valid for the key
+                    //   and value types, and live for at least '_.
+                    unsafe {
+                        $pb$::MapIter::from_raw(
+                            $pbi$::Private,
+                            $map_iter_thunk$(map.as_raw($pbi$::Private))
+                        )
+                    }
+                }
+
+                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
+                    // SAFETY:
+                    // - The `MapIter` API forbids the backing map from being mutated for 'a,
+                    //   and guarantees that it's the correct key and value types.
+                    // - The thunk is safe to call as long as the iterator isn't at the end.
+                    // - The thunk always writes to key and value fields and does not read.
+                    // - The thunk does not increment the iterator.
+                    unsafe {
+                        iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
+                            $pbi$::Private,
+                            $map_iter_next_thunk$,
+                            |k| $from_ffi_key_expr$,
+                            |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
+                        )
+                    }
+                }
+            }
+      )rs");
+      }
+      return;
+    case Kernel::kUpb:
+      ctx.Emit(
+          {
+              {"minitable", UpbMinitableName(msg)},
+              {"new_thunk", ThunkName(ctx, msg, "new")},
+          },
+          R"rs(
+            impl $pbr$::UpbTypeConversions for $Msg$ {
+                fn upb_type() -> $pbr$::UpbCType {
+                    $pbr$::UpbCType::Message
+                }
+
+                fn to_message_value(
+                    val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
+                    $pbr$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
+                }
+
+                fn empty_message_value() -> $pbr$::upb_MessageValue {
+                    Self::to_message_value(
+                        $Msg$View::new(
+                            $pbi$::Private,
+                            $pbr$::ScratchSpace::zeroed_block($pbi$::Private)))
+                }
+
+                unsafe fn to_message_value_copy_if_required(
+                  arena: $pbi$::RawArena,
+                  val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
+                  // Self::to_message_value(val)
+                  // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
+                  let cloned_msg = $pbr$::upb_Message_DeepClone(
+                      val.raw_msg(), $std$::ptr::addr_of!($minitable$), arena)
+                      .expect("upb_Message_DeepClone failed.");
+                  Self::to_message_value(
+                      $Msg$View::new($pbi$::Private, cloned_msg))
+                  }
+
+                unsafe fn from_message_value<'msg>(msg: $pbr$::upb_MessageValue)
+                    -> $pb$::View<'msg, Self> {
+                    $Msg$View::new(
+                        $pbi$::Private,
+                        unsafe { msg.msg_val }
+                            .expect("expected present message value in map"))
+                }
+            }
+            )rs");
+      for (const auto& t : kMapKeyTypes) {
+        ctx.Emit({io::Printer::Sub({"key_t",
+                                    [&] {
+                                      if (t.needs_key_t_prefix) {
+                                        ctx.Emit({{"key_t", t.key_t}},
+                                                 "$pb$::$key_t$");
+                                      } else {
+                                        ctx.Emit({{"key_t", t.key_t}},
+                                                 "$key_t$");
+                                      }
+                                    }})
+                      .WithSuffix("")},
+                 R"rs(
+            impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
+                fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
+                    let arena = $pbr$::Arena::new();
+                    let raw_arena = arena.raw();
+                    std::mem::forget(arena);
+
+                    unsafe {
+                        $pb$::Map::from_inner(
+                            $pbi$::Private,
+                            $pbr$::InnerMapMut::new(
+                                $pbi$::Private,
+                                $pbr$::upb_Map_New(
+                                    raw_arena,
+                                    <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
+                                    <Self as $pbr$::UpbTypeConversions>::upb_type()),
+                                raw_arena))
+                    }
+                }
+
+                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
+                    // SAFETY:
+                    // - `map.raw_arena($pbi$::Private)` is a live `upb_Arena*`
+                    // - This function is only called once for `map` in `Drop`.
+                    unsafe {
+                        $pbr$::upb_Arena_Free(map.inner($pbi$::Private).raw_arena($pbi$::Private));
+                    }
+                }
+
+                fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
+                    unsafe {
+                        $pbr$::upb_Map_Clear(map.as_raw($pbi$::Private));
+                    }
+                }
+
+                fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
+                    unsafe {
+                        $pbr$::upb_Map_Size(map.as_raw($pbi$::Private))
+                    }
+                }
+
+                fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: $pb$::View<'_, Self>) -> bool {
+                    let arena = map.inner($pbi$::Private).raw_arena($pbi$::Private);
+                    unsafe {
+                        $pbr$::upb_Map_InsertAndReturnIfInserted(
+                            map.as_raw($pbi$::Private),
+                            <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
+                            <Self as $pbr$::UpbTypeConversions>::to_message_value_copy_if_required(arena, value),
+                            arena
+                        )
+                    }
+                }
+
+                fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                    let mut val = <Self as $pbr$::UpbTypeConversions>::empty_message_value();
+                    let found = unsafe {
+                        $pbr$::upb_Map_Get(
+                            map.as_raw($pbi$::Private),
+                            <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
+                            &mut val)
+                    };
+                    if !found {
+                        return None;
+                    }
+                    Some(unsafe { <Self as $pbr$::UpbTypeConversions>::from_message_value(val) })
+                }
+
+                fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
+                    let mut val = <Self as $pbr$::UpbTypeConversions>::empty_message_value();
+                    unsafe {
+                        $pbr$::upb_Map_Delete(
+                            map.as_raw($pbi$::Private),
+                            <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
+                            &mut val)
+                    }
+                }
+                fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
+                    // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
+                    unsafe {
+                        $pb$::MapIter::from_raw($pbi$::Private, $pbr$::RawMapIter::new($pbi$::Private, map.as_raw($pbi$::Private)))
+                    }
+                }
+
+                fn map_iter_next<'a>(
+                    iter: &mut $pb$::MapIter<'a, $key_t$, Self>
+                ) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
+                    // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
+                    unsafe { iter.as_raw_mut($pbi$::Private).next_unchecked($pbi$::Private) }
+                        // SAFETY: MapIter<K, V> returns key and values message values
+                        //         with the variants for K and V active.
+                        .map(|(k, v)| unsafe {(
+                            <$key_t$ as $pbr$::UpbTypeConversions>::from_message_value(k),
+                            <Self as $pbr$::UpbTypeConversions>::from_message_value(v),
+                        )})
+                }
+            }
+      )rs");
+      }
+  }
+}
+
 }  // namespace
 
 void GenerateRs(Context& ctx, const Descriptor& msg) {
@@ -522,6 +851,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"settable_impl_for_view",
         [&] { MessageSettableValueForView(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
+       {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
        {"unwrap_upb",
         [&] {
           if (ctx.is_upb()) {
@@ -567,7 +897,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl<'msg> $Msg$View<'msg> {
           #[doc(hidden)]
           pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
-            Self { msg, _phantom: std::marker::PhantomData }
+            Self { msg, _phantom: $std$::marker::PhantomData }
           }
 
           fn raw_msg(&self) -> $pbi$::RawMessage {
@@ -668,6 +998,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         $repeated_impl$
+        $map_value_impl$
 
         #[derive(Debug)]
         #[allow(dead_code)]
@@ -724,10 +1055,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl<'msg> $pb$::ViewProxy<'msg> for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
-            $Msg$View { msg: self.raw_msg(), _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.raw_msg(), _phantom: $std$::marker::PhantomData }
           }
           fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'msg: 'shorter {
-            $Msg$View { msg: self.raw_msg(), _phantom: std::marker::PhantomData }
+            $Msg$View { msg: self.raw_msg(), _phantom: $std$::marker::PhantomData }
           }
         }
 
@@ -893,6 +1224,108 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
         $nested_msg_thunks$
       )cc");
+  // (
+  //   1) identifier used in thunk name - keep in sync with kMapKeyTypes!,
+  //   2) c+ key typename (K in Map<K, V>, so e.g. `std::string` for bytes),
+  //   3) key typename as used in function parameter (e.g. `PtrAndLen` for
+  //   bytes),
+  //   4) expression converting `key` variable to expected C++ type,
+  //   5) expression convering `key` variable from the C++ type back into the
+  //   FFI type.
+  //)
+  struct MapKeyCppTypes {
+    absl::string_view thunk_ident;
+    absl::string_view key_t;
+    absl::string_view param_key_t;
+    absl::string_view key_expr;
+    absl::string_view to_ffi_key_expr;
+  };
+  constexpr MapKeyCppTypes kMapKeyCppTypes[] = {
+      {"i32", "int32_t", "int32_t", "key", "cpp_key"},
+      {"u32", "uint32_t", "uint32_t", "key", "cpp_key"},
+      {"i64", "int64_t", "int64_t", "key", "cpp_key"},
+      {"u64", "uint64_t", "uint64_t", "key", "cpp_key"},
+      {"bool", "bool", "bool", "key", "cpp_key"},
+      {"string", "std::string", "google::protobuf::rust_internal::PtrAndLen",
+       "std::string(key.ptr, key.len)",
+       "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"},
+      {"bytes", "std::string", "google::protobuf::rust_internal::PtrAndLen",
+       "std::string(key.ptr, key.len)",
+       "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
+  for (const auto& t : kMapKeyCppTypes) {
+    ctx.Emit(
+        {
+            {"map_new_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "new")},
+            {"map_free_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "free")},
+            {"map_clear_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "clear")},
+            {"map_size_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "size")},
+            {"map_insert_thunk",
+             RawMapThunk(ctx, msg, t.thunk_ident, "insert")},
+            {"map_get_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "get")},
+            {"map_remove_thunk",
+             RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
+            {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
+            {"map_iter_next_thunk",
+             RawMapThunk(ctx, msg, t.thunk_ident, "iter_next")},
+            {"key_t", t.key_t},
+            {"param_key_t", t.param_key_t},
+            {"key_expr", t.key_expr},
+            {"to_ffi_key_expr", t.to_ffi_key_expr},
+            {"pkg::Msg", cpp::QualifiedClassName(&msg)},
+            {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
+        },
+        R"cc(
+          extern $abi$ {
+            const google::protobuf::Map<$key_t$, $pkg::Msg$>* $map_new_thunk$() {
+              return new google::protobuf::Map<$key_t$, $pkg::Msg$>();
+            }
+            void $map_free_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) { delete m; }
+            void $map_clear_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m) { m->clear(); }
+            size_t $map_size_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
+              return m->size();
+            }
+            bool $map_insert_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m,
+                                    $param_key_t$ key, $pkg::Msg$ value) {
+              auto k = $key_expr$;
+              auto it = m->find(k);
+              if (it != m->end()) {
+                return false;
+              }
+              (*m)[k] = value;
+              return true;
+            }
+            bool $map_get_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m,
+                                 $param_key_t$ key, const $pkg::Msg$** value) {
+              auto it = m->find($key_expr$);
+              if (it == m->end()) {
+                return false;
+              }
+              const $pkg::Msg$* cpp_value = &it->second;
+              *value = cpp_value;
+              return true;
+            }
+            bool $map_remove_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m,
+                                    $param_key_t$ key, $pkg::Msg$ * value) {
+              auto num_removed = m->erase($key_expr$);
+              return num_removed > 0;
+            }
+            google::protobuf::internal::UntypedMapIterator $map_iter_thunk$(
+                const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
+              return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());
+            }
+            void $map_iter_next_thunk$(
+                const google::protobuf::internal::UntypedMapIterator* iter,
+                $param_key_t$* key, const $pkg::Msg$** value) {
+              auto typed_iter = iter->ToTyped<
+                  google::protobuf::Map<$key_t$, $pkg::Msg$>::const_iterator>();
+              const auto& cpp_key = typed_iter->first;
+              const auto& cpp_value = typed_iter->second;
+              *key = $to_ffi_key_expr$;
+              *value = &cpp_value;
+            }
+          }
+        )cc");
+  }
 }
 
 }  // namespace rust

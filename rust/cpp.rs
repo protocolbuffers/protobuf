@@ -402,9 +402,15 @@ pub struct InnerMapMut<'msg> {
     _phantom: PhantomData<&'msg ()>,
 }
 
+#[doc(hidden)]
 impl<'msg> InnerMapMut<'msg> {
     pub fn new(_private: Private, raw: RawMap) -> Self {
         InnerMapMut { raw, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw(&self, _private: Private) -> RawMap {
+        self.raw
     }
 }
 
@@ -547,6 +553,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = MaybeUninit::uninit();
                     let found = unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _get >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) };
+
                     if !found {
                         return None;
                     }

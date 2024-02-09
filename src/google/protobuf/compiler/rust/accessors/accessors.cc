@@ -36,10 +36,8 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     auto value_type = field.message_type()->map_value()->type();
     switch (value_type) {
       case FieldDescriptor::TYPE_ENUM:
-      case FieldDescriptor::TYPE_MESSAGE:
         return std::make_unique<UnsupportedField>(
-            "Maps with values of type enum and message are not "
-            "supported");
+            "Maps with values of type enum are not supported");
       default:
         return std::make_unique<Map>();
     }

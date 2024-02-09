@@ -67,6 +67,12 @@ std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
   return absl::StrCat(basename, ".proto.h");
 }
 
+std::string RawMapThunk(Context& ctx, const Descriptor& msg,
+                        absl::string_view key_t, absl::string_view op) {
+  return absl::StrCat("__rust_proto_thunk__", key_t, "_",
+                      GetUnderscoreDelimitedFullName(ctx, *&msg), "_", op);
+}
+
 namespace {
 
 template <typename T>

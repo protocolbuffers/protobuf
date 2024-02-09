@@ -46,10 +46,10 @@ pub struct Arena {
 
 extern "C" {
     // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
-    fn upb_Arena_New() -> Option<RawArena>;
-    fn upb_Arena_Free(arena: RawArena);
-    fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
-    fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
+    pub fn upb_Arena_New() -> Option<RawArena>;
+    pub fn upb_Arena_Free(arena: RawArena);
+    pub fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
+    pub fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
 }
 
 impl Arena {
@@ -716,13 +716,24 @@ pub struct InnerMapMut<'msg> {
     _phantom: PhantomData<&'msg Arena>,
 }
 
+#[doc(hidden)]
 impl<'msg> InnerMapMut<'msg> {
     pub fn new(_private: Private, raw: RawMap, raw_arena: RawArena) -> Self {
         InnerMapMut { raw, raw_arena, _phantom: PhantomData }
     }
+
+    #[doc(hidden)]
+    pub fn as_raw(&self, _private: Private) -> RawMap {
+        self.raw
+    }
+
+    #[doc(hidden)]
+    pub fn raw_arena(&self, _private: Private) -> RawArena {
+        self.raw_arena
+    }
 }
 
-trait UpbTypeConversions: Proxied {
+pub trait UpbTypeConversions: Proxied {
     fn upb_type() -> UpbCType;
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
     fn empty_message_value() -> upb_MessageValue;
@@ -858,7 +869,7 @@ impl RawMapIter {
     /// # Safety
     /// - `self.map` must be valid, and remain valid while the return value is
     ///   in use.
-    pub(crate) unsafe fn next_unchecked(
+    pub unsafe fn next_unchecked(
         &mut self,
         _private: Private,
     ) -> Option<(upb_MessageValue, upb_MessageValue)> {
@@ -986,7 +997,7 @@ impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoStr);
 
 #[repr(C)]
 #[allow(dead_code)]
-enum upb_MapInsertStatus {
+pub enum upb_MapInsertStatus {
     Inserted = 0,
     Replaced = 1,
     OutOfMemory = 2,
@@ -1019,25 +1030,25 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
 }
 
 extern "C" {
-    fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;
-    fn upb_Map_Size(map: RawMap) -> usize;
-    fn upb_Map_Insert(
+    pub fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;
+    pub fn upb_Map_Size(map: RawMap) -> usize;
+    pub fn upb_Map_Insert(
         map: RawMap,
         key: upb_MessageValue,
         value: upb_MessageValue,
         arena: RawArena,
     ) -> upb_MapInsertStatus;
-    fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
-    fn upb_Map_Delete(
+    pub fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
+    pub fn upb_Map_Delete(
         map: RawMap,
         key: upb_MessageValue,
         removed_value: *mut upb_MessageValue,
     ) -> bool;
-    fn upb_Map_Clear(map: RawMap);
+    pub fn upb_Map_Clear(map: RawMap);
 
     static __rust_proto_kUpb_Map_Begin: usize;
 
-    fn upb_Map_Next(
+    pub fn upb_Map_Next(
         map: RawMap,
         key: *mut upb_MessageValue,
         value: *mut upb_MessageValue,

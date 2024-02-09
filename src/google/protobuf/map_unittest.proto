@@ -39,6 +39,21 @@ message TestMap {
   map<int32, TestAllTypes> map_int32_all_types = 19;
 }
 
+message TestMapWithMessages {
+  map<int32, TestAllTypes> map_int32_all_types = 1;
+  map<int64, TestAllTypes> map_int64_all_types = 2;
+  map<uint32, TestAllTypes> map_uint32_all_types = 3;
+  map<uint64, TestAllTypes> map_uint64_all_types = 4;
+  map<sint32, TestAllTypes> map_sint32_all_types = 5;
+  map<sint64, TestAllTypes> map_sint64_all_types = 6;
+  map<fixed32, TestAllTypes> map_fixed32_all_types = 7;
+  map<fixed64, TestAllTypes> map_fixed64_all_types = 8;
+  map<sfixed32, TestAllTypes> map_sfixed32_all_types = 9;
+  map<sfixed64, TestAllTypes> map_sfixed64_all_types = 10;
+  map<bool, TestAllTypes> map_bool_all_types = 11;
+  map<string, TestAllTypes> map_string_all_types = 12;
+}
+
 message TestMapSubmessage {
   TestMap test_map = 1;
 }

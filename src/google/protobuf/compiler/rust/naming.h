@@ -33,6 +33,8 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op);
+std::string RawMapThunk(Context& ctx, const Descriptor& msg,
+                        absl::string_view key_t, absl::string_view op);
 
 // Returns the local constant that defines the vtable for mutating `field`.
 std::string VTableName(const FieldDescriptor& field);

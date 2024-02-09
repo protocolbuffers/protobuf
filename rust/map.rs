@@ -42,6 +42,12 @@ pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
     _phantom: PhantomData<(&'msg mut K, &'msg mut V)>,
 }
 
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    pub fn inner(&self, _private: Private) -> InnerMapMut {
+        self.inner
+    }
+}
+
 unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapMut<'msg, K, V> {}
 
 impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
@@ -177,6 +183,14 @@ where
     #[doc(hidden)]
     pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'static>) -> Self {
         Self { inner, _phantom: PhantomData }
+    }
+
+    pub fn as_raw(&self, _private: Private) -> RawMap {
+        self.inner.as_raw(Private)
+    }
+
+    pub fn inner(&self, _private: Private) -> InnerMapMut<'static> {
+        self.inner
     }
 }
 

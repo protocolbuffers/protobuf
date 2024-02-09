@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
@@ -115,13 +117,24 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
   )rs");
 }
 
+std::string MapElementTypeName(FieldDescriptor::CppType cpp_type,
+                               const Descriptor* message_type) {
+  if (cpp_type == FieldDescriptor::CPPTYPE_MESSAGE ||
+      cpp_type == FieldDescriptor::CPPTYPE_ENUM) {
+    return cpp::QualifiedClassName(message_type);
+  }
+  return cpp::PrimitiveTypeName(cpp_type);
+}
+
 void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
   ctx.Emit(
       {{"field", cpp::FieldName(&field)},
        {"Key",
-        cpp::PrimitiveTypeName(field.message_type()->map_key()->cpp_type())},
+        MapElementTypeName(field.message_type()->map_key()->cpp_type(),
+                           field.message_type()->map_key()->message_type())},
        {"Value",
-        cpp::PrimitiveTypeName(field.message_type()->map_value()->cpp_type())},
+        MapElementTypeName(field.message_type()->map_value()->cpp_type(),
+                           field.message_type()->map_value()->message_type())},
        {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
        {"getter_thunk", ThunkName(ctx, field, "get")},
        {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
