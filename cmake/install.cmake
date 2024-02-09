@@ -78,10 +78,12 @@ foreach(_header ${protobuf_HEADERS})
   elseif (_find_nosrc GREATER -1)
     set(_from_dir "${protobuf_SOURCE_DIR}")
   endif()
+  # Escape _from_dir for regex special characters in the directory name.
+  string(REGEX REPLACE "([.+*?\^$()[\]{}|\\])" "\\\\$1" _from_dir_regexp ${_from_dir})
   # On some platforms `_form_dir` ends up being just "protobuf", which can
   # easily match multiple times in our paths.  We force it to only replace
   # prefixes to avoid this case.
-  string(REGEX REPLACE "^${_from_dir}" "" _header ${_header})
+  string(REGEX REPLACE "^${_from_dir_regexp}" "" _header ${_header})
   get_filename_component(_extract_from "${_from_dir}/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
