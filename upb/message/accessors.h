@@ -434,9 +434,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[1];
   return _upb_Message_GetOrCreateMutableMap(
       msg, field,
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),

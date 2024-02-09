@@ -8,9 +8,13 @@
 #ifndef UPB_MESSAGE_COMPARE_H_
 #define UPB_MESSAGE_COMPARE_H_
 
+#include <stddef.h>
+
 #include "upb/base/descriptor_constants.h"
 #include "upb/message/message.h"
 #include "upb/message/value.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -20,15 +24,24 @@
 extern "C" {
 #endif
 
+// Returns true if no known fields or extensions are set in the message.
+UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
+                                 const upb_MiniTable* m);
+
+UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
+                                 const upb_Message* msg2,
+                                 const upb_MiniTable* m);
+
 // Compares two messages by serializing them and calling memcmp().
 UPB_API bool upb_Message_IsExactlyEqual(const upb_Message* msg1,
                                         const upb_Message* msg2,
                                         const upb_MiniTable* m);
 
-// Performs a shallow field comparison. Do not use on message types.
+// If |ctype| is a message then |m| must point to its minitable.
 UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
                                              upb_MessageValue val2,
-                                             upb_CType ctype) {
+                                             upb_CType ctype,
+                                             const upb_MiniTable* m) {
   switch (ctype) {
     case kUpb_CType_Bool:
       return val1.bool_val == val2.bool_val;
@@ -48,8 +61,11 @@ UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
     case kUpb_CType_Bytes:
       return upb_StringView_IsEqual(val1.str_val, val2.str_val);
 
-    default:  // Note: This includes kUpb_CType_Message
-      UPB_ASSERT(0);
+    case kUpb_CType_Message:
+      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m);
+
+    default:
+      UPB_UNREACHABLE();
       return false;
   }
 }
