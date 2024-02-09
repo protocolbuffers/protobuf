@@ -443,12 +443,10 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* DoubleValue::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* DoubleValue::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* DoubleValue::_InternalSerialize(
     ::uint8_t* target,
@@ -636,12 +634,10 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* FloatValue::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* FloatValue::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* FloatValue::_InternalSerialize(
     ::uint8_t* target,
@@ -829,12 +825,10 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* Int64Value::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* Int64Value::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* Int64Value::_InternalSerialize(
     ::uint8_t* target,
@@ -1008,12 +1002,10 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* UInt64Value::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* UInt64Value::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* UInt64Value::_InternalSerialize(
     ::uint8_t* target,
@@ -1187,12 +1179,10 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* Int32Value::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* Int32Value::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* Int32Value::_InternalSerialize(
     ::uint8_t* target,
@@ -1366,12 +1356,10 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* UInt32Value::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* UInt32Value::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* UInt32Value::_InternalSerialize(
     ::uint8_t* target,
@@ -1545,12 +1533,10 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* BoolValue::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* BoolValue::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* BoolValue::_InternalSerialize(
     ::uint8_t* target,
@@ -1740,12 +1726,10 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* StringValue::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* StringValue::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* StringValue::_InternalSerialize(
     ::uint8_t* target,
@@ -1936,12 +1920,10 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* BytesValue::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* BytesValue::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* BytesValue::_InternalSerialize(
     ::uint8_t* target,

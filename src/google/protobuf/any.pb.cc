@@ -246,12 +246,10 @@ PROTOBUF_NOINLINE void Any::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-const char* Any::_InternalParse(
-    const char* ptr, ::_pbi::ParseContext* ctx) {
-  ptr = ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-  return ptr;
+const char* Any::_InternalParse(const char* ptr,
+                                        ::_pbi::ParseContext* ctx) {
+  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
-
 
 ::uint8_t* Any::_InternalSerialize(
     ::uint8_t* target,
