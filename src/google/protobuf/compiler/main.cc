@@ -18,6 +18,10 @@
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
 #include "google/protobuf/compiler/rust/generator.h"
 
+#ifdef DISABLE_PROTOC_CONFIG
+#include "google/protobuf/compiler/allowlists/allowlists.h"
+#endif  // DISABLE_PROTOC_CONFIG
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -98,6 +102,9 @@ int ProtobufMain(int argc, char* argv[]) {
   rust::RustGenerator rust_generator;
   cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
                         "Generate Rust sources.");
+#ifdef DISABLE_PROTOC_CONFIG
+  internal::SetDisableAllowlistInternalOnly(true);
+#endif  // DISABLE_PROTOC_CONFIG
   return cli.Run(argc, argv);
 }
 
