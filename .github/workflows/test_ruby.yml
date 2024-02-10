@@ -142,7 +142,7 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-904cad5249547845454998ca3837a34c71fabf96', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
-          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && matrix.ruby == '2.7.0' && '--config=asan --test_env=ASAN_OPTIONS=halt_on_error=0:use_sigaltstack=0:detect_leaks=0' || '' }} ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+          bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && matrix.ruby == 'ruby-2.7.0' && '--config=asan --test_env=ASAN_OPTIONS=halt_on_error=0:use_sigaltstack=0:detect_leaks=0' || '' }} ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
   linux-32bit:
     name: Linux 32-bit
