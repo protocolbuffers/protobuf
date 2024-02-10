@@ -4099,7 +4099,7 @@ TEST_P(EncodeDecodeTest, Partial) {
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText(
-      "warning:  Input message is missing required fields:  a, b, c\n");
+      "input: warning: Input message is missing required fields:  a, b, c\n");
 }
 
 TEST_P(EncodeDecodeTest, DecodeRaw) {
