@@ -1398,11 +1398,11 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       file.add_message_type()->set_name("EmptyMessage");
       ABSL_CHECK(pool.BuildFile(file) != nullptr);
       codec_type_ = "EmptyMessage";
-      if (!EncodeOrDecode(&pool)) {
+      if (!EncodeOrDecode(&pool, error_collector.get())) {
         return 1;
       }
     } else {
-      if (!EncodeOrDecode(descriptor_pool.get())) {
+      if (!EncodeOrDecode(descriptor_pool.get(), error_collector.get())) {
         return 1;
       }
     }
@@ -2894,7 +2894,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   return true;
 }
 
-bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
+bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool, ErrorPrinter* default_error_collector) {
   // Look up the type.
   const Descriptor* type = pool->FindMessageTypeByName(codec_type_);
   if (type == nullptr) {
@@ -2936,8 +2936,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
   }
 
   if (!message->IsInitialized()) {
-    std::cerr << "warning:  Input message is missing required fields:  "
-              << message->InitializationErrorString() << std::endl;
+    std::string error_message("Input message is missing required fields:  " + 
+        message->InitializationErrorString());
+    default_error_collector->RecordWarning("input", -1, -1, error_message);
   }
 
   if (mode_ == MODE_ENCODE) {
