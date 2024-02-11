@@ -11,7 +11,7 @@ using System;
 
 namespace Google.Protobuf
 {
-    internal sealed class JsonToken : IEquatable<JsonToken>
+    internal readonly struct JsonToken : IEquatable<JsonToken>
     {
         internal static JsonToken Null { get; } = new JsonToken(TokenType.Null);
         internal static JsonToken False { get; } = new JsonToken(TokenType.False);
@@ -72,7 +72,7 @@ namespace Google.Protobuf
             this.numberValue = numberValue;
         }
 
-        public override bool Equals(object obj) => Equals(obj as JsonToken);
+        public override bool Equals(object obj) => Equals(obj is JsonToken jt ? jt : default(JsonToken));
 
         public override int GetHashCode()
         {
@@ -107,10 +107,6 @@ namespace Google.Protobuf
 
         public bool Equals(JsonToken other)
         {
-            if (other is null)
-            {
-                return false;
-            }
             // Note use of other.numberValue.Equals rather than ==, so that NaN compares appropriately.
             return other.type == type && other.stringValue == stringValue && other.numberValue.Equals(numberValue);
         }
