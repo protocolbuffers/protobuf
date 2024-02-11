@@ -177,6 +177,12 @@ namespace Google.Protobuf
             // The set of states in which a value is valid next token.
             private static readonly State ValueStates = State.ArrayStart | State.ArrayAfterComma | State.ObjectAfterColon | State.StartOfDocument;
 
+            private const int MAX_BUILDER_SIZE = 360;
+            private const int DEFAULT_CAPACITY = 16;
+
+            [ThreadStatic]
+            private static StringBuilder? t_cachedInstance;
+
             private readonly Stack<ContainerType> containerStack = new Stack<ContainerType>();
             private readonly PushBackReader reader;
             private State state;
@@ -301,7 +307,7 @@ namespace Google.Protobuf
             /// </summary>
             private string ReadString()
             {
-                var value = new StringBuilder();
+                var builder = AcquireStringBuilder();
                 bool haveHighSurrogate = false;
                 while (true)
                 {
@@ -316,7 +322,7 @@ namespace Google.Protobuf
                         {
                             throw reader.CreateException("Invalid use of surrogate pair code units");
                         }
-                        return value.ToString();
+                        return GetStringAndRelease(builder);
                     }
                     if (c == '\\')
                     {
@@ -330,7 +336,7 @@ namespace Google.Protobuf
                         throw reader.CreateException("Invalid use of surrogate pair code units");
                     }
                     haveHighSurrogate = char.IsHighSurrogate(c);
-                    value.Append(c);
+                    builder.Append(c);
                 }
             }
 
@@ -408,7 +414,7 @@ namespace Google.Protobuf
 
             private double ReadNumber(char initialCharacter)
             {
-                StringBuilder builder = new StringBuilder();
+                var builder = AcquireStringBuilder();
                 if (initialCharacter == '-')
                 {
                     builder.Append("-");
@@ -437,9 +443,10 @@ namespace Google.Protobuf
                 }
 
                 // TODO: What exception should we throw if the value can't be represented as a double?
+                var builderValue = GetStringAndRelease(builder);
                 try
                 {
-                    double result = double.Parse(builder.ToString(),
+                    double result = double.Parse(builderValue,
                         NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
                         CultureInfo.InvariantCulture);
 
@@ -447,14 +454,14 @@ namespace Google.Protobuf
                     // For compatibility with other Protobuf implementations the tokenizer should still throw.
                     if (double.IsInfinity(result))
                     {
-                        throw reader.CreateException("Numeric value out of range: " + builder);
+                        throw reader.CreateException("Numeric value out of range: " + builderValue);
                     }
 
                     return result;
                 }
                 catch (OverflowException)
                 {
-                    throw reader.CreateException("Numeric value out of range: " + builder);
+                    throw reader.CreateException("Numeric value out of range: " + builderValue);
                 }
             }
 
@@ -563,6 +570,38 @@ namespace Google.Protobuf
                     ContainerType.Document => State.ExpectedEndOfDocument,
                     _ => throw new InvalidOperationException("Unexpected container type: " + parent),
                 };
+            }
+
+            private static StringBuilder AcquireStringBuilder(int capacity = DEFAULT_CAPACITY)
+            {
+                if (capacity <= MAX_BUILDER_SIZE)
+                {
+                    var sb = t_cachedInstance;
+                    // Avoid stringbuilder block fragmentation by getting a new StringBuilder
+                    // when the requested size is larger than the current capacity
+                    if (capacity <= sb?.Capacity)
+                    {
+                        t_cachedInstance = null;
+                        sb.Clear();
+                        return sb;
+                    }
+                }
+                return new StringBuilder(capacity);
+            }
+
+            private static void Release(StringBuilder sb)
+            {
+                if (sb.Capacity <= MAX_BUILDER_SIZE)
+                {
+                    t_cachedInstance = sb;
+                }
+            }
+
+            private static string GetStringAndRelease(StringBuilder sb)
+            {
+                var result = sb.ToString();
+                Release(sb);
+                return result;
             }
 
             private enum ContainerType
