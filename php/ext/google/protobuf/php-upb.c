@@ -5523,7 +5523,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 }
 
 
-#include <string.h>
+#include <stddef.h>
 
 
 // Must be last.
@@ -5737,31 +5737,6 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   // The wire encoder enforces a maximum depth of 100 so we match that here.
   return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
              uf1, usize1, uf2, usize2, 100) == kUpb_UnknownCompareResult_Equal;
-}
-
-bool upb_Message_IsExactlyEqual(const upb_Message* msg1,
-                                const upb_Message* msg2,
-                                const upb_MiniTable* m) {
-  if (msg1 == msg2) return true;
-
-  int opts = kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic;
-  upb_Arena* a = upb_Arena_New();
-
-  // Compare deterministically serialized payloads with no unknown fields.
-  size_t size1, size2;
-  char *data1, *data2;
-  upb_EncodeStatus status1 = upb_Encode(msg1, m, opts, a, &data1, &size1);
-  upb_EncodeStatus status2 = upb_Encode(msg2, m, opts, a, &data2, &size2);
-
-  if (status1 != kUpb_EncodeStatus_Ok || status2 != kUpb_EncodeStatus_Ok) {
-    // TODO: How should we fail here? (In Ruby we throw an exception.)
-    upb_Arena_Free(a);
-    return false;
-  }
-
-  const bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
-  upb_Arena_Free(a);
-  return ret;
 }
 
 
