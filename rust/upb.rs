@@ -151,9 +151,11 @@ impl Drop for Arena {
 static mut INTERNAL_PTR: Option<RawMessage> = None;
 static INIT: Once = Once::new();
 
-// TODO:(b/304577017)
+// The scratch size of 64 KiB matches the maximum supported size that a
+// upb_Message can possibly be.
+// TODO: Allow dynamic sized ScratchSpace.
+const UPB_SCRATCH_SPACE_BYTES: usize = 65_536;
 const ALIGN: usize = 32;
-const UPB_SCRATCH_SPACE_BYTES: usize = 64_000;
 
 /// Holds a zero-initialized block of memory for use by upb.
 /// By default, if a message is not set in cpp, a default message is created.
