@@ -72,7 +72,7 @@ namespace Google.Protobuf
             this.numberValue = numberValue;
         }
 
-        public override bool Equals(object obj) => Equals(obj is JsonToken jt ? jt : default(JsonToken));
+        public override bool Equals(object obj) => obj is JsonToken jt && Equals(jt);
 
         public override int GetHashCode()
         {
