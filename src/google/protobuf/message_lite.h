@@ -130,6 +130,7 @@ class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
+struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
 
@@ -494,10 +495,8 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   int GetCachedSize() const;
 
-  virtual const char* _InternalParse(const char* /*ptr*/,
-                                     internal::ParseContext* /*ctx*/) {
-    return nullptr;
-  }
+  virtual const char* _InternalParse(const char* ptr,
+                                     internal::ParseContext* ctx);
 
   void OnDemandRegisterArenaDtor(Arena* arena);
 
@@ -536,6 +535,7 @@ class PROTOBUF_EXPORT MessageLite {
   // otherwise be null. We can have some metadata in ClassData telling us if we
   // have them and their offset.
   struct ClassData {
+    const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
 
     // Offset of the CachedSize member.
@@ -544,10 +544,22 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
+    // Temporary constructor while we migrate existing classes to populate the
+    // `tc_table` field.
     constexpr ClassData(void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
                         uint32_t cached_size_offset, bool is_lite)
-        : on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+        : tc_table(),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          cached_size_offset(cached_size_offset),
+          is_lite(is_lite) {}
+
+    constexpr ClassData(const internal::TcParseTableBase* tc_table,
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
+                                                              Arena&),
+                        uint32_t cached_size_offset, bool is_lite)
+        : tc_table(tc_table),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           cached_size_offset(cached_size_offset),
           is_lite(is_lite) {}
 

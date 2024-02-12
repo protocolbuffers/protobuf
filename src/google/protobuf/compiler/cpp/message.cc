@@ -3649,6 +3649,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ClassDataLite<$type_size$> _data_ =
                 {
                     {
+                        &_table_.header,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         true,
