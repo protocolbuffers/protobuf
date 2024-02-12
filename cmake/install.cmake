@@ -79,7 +79,7 @@ foreach(_header ${protobuf_HEADERS})
     set(_from_dir "${protobuf_SOURCE_DIR}")
   endif()
   # Escape _from_dir for regex special characters in the directory name.
-  string(REGEX REPLACE "([.+*?\^$()[\]{}|\\])" "\\\\$1" _from_dir_regexp ${_from_dir})
+  string(REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" _from_dir_regexp "${_from_dir}")
   # On some platforms `_form_dir` ends up being just "protobuf", which can
   # easily match multiple times in our paths.  We force it to only replace
   # prefixes to avoid this case.
