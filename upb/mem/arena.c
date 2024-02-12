@@ -171,6 +171,21 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
   return memsize;
 }
 
+bool UPB_PRIVATE(_upb_Arena_Contains)(const upb_Arena* a, void* ptr) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  UPB_ASSERT(ai);
+
+  upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
+  while (block) {
+    uintptr_t beg = (uintptr_t)block;
+    uintptr_t end = beg + block->size;
+    if ((uintptr_t)ptr >= beg && (uintptr_t)ptr < end) return true;
+    block = upb_Atomic_Load(&block->next, memory_order_relaxed);
+  }
+
+  return false;
+}
+
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   // These loads could probably be relaxed, but given that this is debug-only,
