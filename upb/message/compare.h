@@ -32,11 +32,6 @@ UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
                                  const upb_Message* msg2,
                                  const upb_MiniTable* m);
 
-// Compares two messages by serializing them and calling memcmp().
-UPB_API bool upb_Message_IsExactlyEqual(const upb_Message* msg1,
-                                        const upb_Message* msg2,
-                                        const upb_MiniTable* m);
-
 // If |ctype| is a message then |m| must point to its minitable.
 UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
                                              upb_MessageValue val2,

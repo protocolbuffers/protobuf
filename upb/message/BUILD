@@ -99,10 +99,8 @@ cc_library(
         ":internal",
         ":message",
         "//upb:base",
-        "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
-        "//upb:wire",
         "//upb/mini_table:internal",
     ],
 )
