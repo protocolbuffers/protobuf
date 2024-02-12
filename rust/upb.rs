@@ -684,12 +684,26 @@ where
 {
     // TODO: Consider creating a static empty map in C.
 
-    // Use `i32` for a shared empty map for all map types.
-    static EMPTY_MAP_VIEW: OnceLock<MapView<'static, i32, i32>> = OnceLock::new();
+    // Use `<bool, bool>` for a shared empty map for all map types.
+    //
+    // This relies on an implicit contract with UPB that it is OK to use an empty
+    // Map<bool, bool> as an empty map of all other types. The only const
+    // function on `upb_Map` that will care about the size of key or value is
+    // `get()` where it will hash the appropriate number of bytes of the
+    // provided `upb_MessageValue`, and that bool being the smallest type in the
+    // union means it will happen to work for all possible key types.
+    //
+    // If we used a larger key, then UPB would hash more bytes of the key than Rust
+    // initialized.
+    static EMPTY_MAP_VIEW: OnceLock<MapView<'static, bool, bool>> = OnceLock::new();
 
     // SAFETY:
-    // - Because the map is never mutated, the map type is unused and therefore
-    //   valid for `T`.
+    // - The map is empty and never mutated.
+    // - The value type is never used.
+    // - The size of the key type is used when `get()` computes the hash of the key.
+    //   The map is empty, therefore it doesn't matter what hash is computed, but we
+    //   have to use `bool` type as the smallest key possible (otherwise UPB would
+    //   read more bytes than Rust allocated).
     // - The view is leaked for `'static`.
     unsafe {
         MapView::from_raw(

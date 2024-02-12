@@ -292,7 +292,6 @@ generate_map_with_msg_values_tests!(
     (fixed64, 1u64, 2u64),
     (sfixed32, 1, 2),
     (sfixed64, 1, 2),
-    // TODO - b/324468833: fix msan failure
-    // (bool, true, false),
+    (bool, true, false),
     (string, "foo", "bar"),
 );
