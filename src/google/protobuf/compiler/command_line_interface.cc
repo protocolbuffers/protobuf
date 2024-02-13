@@ -95,6 +95,10 @@
 #include "google/protobuf/io/io_win32.h"
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "absl/strings/ascii.h"
+#endif
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -130,7 +134,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
 // copy in importer.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-  return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
+  return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
 #else
   return false;
