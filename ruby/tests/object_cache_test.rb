@@ -3,11 +3,11 @@ require 'test/unit'
 
 class PlatformTest < Test::Unit::TestCase
   def test_correct_implementation_for_platform
-    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
-    if Google::Protobuf::SIZEOF_LONG >= Google::Protobuf::SIZEOF_VALUE and not defined? JRUBY_VERSION
-      assert_instance_of Google::Protobuf::ObjectCache, Google::Protobuf::OBJECT_CACHE
+    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::Internal::OBJECT_CACHE
+    if Google::Protobuf::Internal::SIZEOF_LONG >= Google::Protobuf::Internal::SIZEOF_VALUE and not defined? JRUBY_VERSION
+      assert_instance_of Google::Protobuf::Internal::ObjectCache, Google::Protobuf::Internal::OBJECT_CACHE
     else
-      assert_instance_of Google::Protobuf::LegacyObjectCache, Google::Protobuf::OBJECT_CACHE
+      assert_instance_of Google::Protobuf::Internal::LegacyObjectCache, Google::Protobuf::Internal::OBJECT_CACHE
     end
   end
 end
@@ -47,8 +47,8 @@ end
 
 class ObjectCacheTest < Test::Unit::TestCase
   def create
-    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
-    Google::Protobuf::ObjectCache.new
+    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::Internal::OBJECT_CACHE
+    Google::Protobuf::Internal::ObjectCache.new
   end
 
   include ObjectCacheTestModule
@@ -56,10 +56,9 @@ end
 
 class LegacyObjectCacheTest < Test::Unit::TestCase
   def create
-    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::OBJECT_CACHE
-    Google::Protobuf::LegacyObjectCache.new
+    omit('OBJECT_CACHE not defined') unless defined? Google::Protobuf::Internal::OBJECT_CACHE
+    Google::Protobuf::Internal::LegacyObjectCache.new
   end
 
   include ObjectCacheTestModule
 end
-
