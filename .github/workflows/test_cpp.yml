@@ -320,12 +320,11 @@ jobs:
             os: macos-12
             cache_key: macos-12
             bazel: test //src/... //third_party/utf8_range/...
-          # TODO Enable these once mac setup is working for Bazel 7
-          #- name: MacOS Bazel 7
-          #  os: macos-12
-          #  cache_key: macos-12-bazel7
-          #  bazel: test //src/... //third_party/utf8_range/...
-          #  bazel_version: '7.0.0'
+          - name: MacOS Bazel 7
+            os: macos-12
+            cache_key: macos-12-bazel7
+            bazel: test //src/... //third_party/utf8_range/...
+            bazel_version: '7.0.0'
           - name: MacOS Apple Silicon (build only) Bazel
             os: macos-12
             cache_key: macos-12-arm
