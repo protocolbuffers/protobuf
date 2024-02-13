@@ -4086,9 +4086,10 @@ static upb_ArenaRoot _upb_Arena_FindRoot(upb_Arena* a) {
   return (upb_ArenaRoot){.root = ai, .tagged_count = poc};
 }
 
-size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
+size_t upb_Arena_SpaceAllocated(upb_Arena* arena, size_t* fused_count) {
   upb_ArenaInternal* ai = _upb_Arena_FindRoot(arena).root;
   size_t memsize = 0;
+  size_t local_fused_count = 0;
 
   while (ai != NULL) {
     upb_MemBlock* block = upb_Atomic_Load(&ai->blocks, memory_order_relaxed);
@@ -4097,8 +4098,10 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
       block = upb_Atomic_Load(&block->next, memory_order_relaxed);
     }
     ai = upb_Atomic_Load(&ai->next, memory_order_relaxed);
+    local_fused_count++;
   }
 
+  if (fused_count) *fused_count = local_fused_count;
   return memsize;
 }
 
