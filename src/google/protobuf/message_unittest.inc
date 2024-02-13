@@ -71,6 +71,20 @@ using google::protobuf::io::win32::open;
 #endif
 #endif
 
+namespace {
+
+UNITTEST::NestedTestAllTypes InitNestedProto(int depth) {
+  UNITTEST::NestedTestAllTypes p;
+  auto* child = p.mutable_child();
+  for (int i = 0; i < depth; i++) {
+    child->mutable_payload()->set_optional_int32(i);
+    child = child->mutable_child();
+  }
+  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+  child->mutable_payload()->set_optional_int32(-1);
+  return p;
+}
+}  // namespace
 
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
   // TODO:  Test more helpers?  They're all two-liners so it seems
@@ -552,18 +566,6 @@ TEST(MESSAGE_TEST_NAME, UninitializedAndMalformed) {
   serialized[serialized.size() - 1] = 0xFF;
   EXPECT_FALSE(p2.ParseFromString(serialized));
   EXPECT_FALSE(p2.IsInitialized());
-}
-
-inline UNITTEST::NestedTestAllTypes InitNestedProto(int depth) {
-  UNITTEST::NestedTestAllTypes p;
-  auto* child = p.mutable_child();
-  for (int i = 0; i < depth; i++) {
-    child->mutable_payload()->set_optional_int32(i);
-    child = child->mutable_child();
-  }
-  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
-  child->mutable_payload()->set_optional_int32(-1);
-  return p;
 }
 
 // Parsing proto must not access beyond the bound.
@@ -1103,7 +1105,6 @@ TEST(MESSAGE_TEST_NAME, Zero5BTagLazy) {
 
 
 namespace {
-
 void ExpectMessageMerged(const UNITTEST::TestAllTypes& message) {
   EXPECT_EQ(3, message.optional_int32());
   EXPECT_EQ(2, message.optional_int64());
@@ -1118,7 +1119,6 @@ void AssignParsingMergeMessages(UNITTEST::TestAllTypes* msg1,
   msg3->set_optional_int32(3);
   msg3->set_optional_string("hello");
 }
-
 }  // namespace
 
 // Test that if an optional or required message/group field appears multiple
@@ -1424,6 +1424,7 @@ TEST(MESSAGE_TEST_NAME,
   EXPECT_FALSE(in_message.ParseFromString(serialized));
 }
 
+namespace {
 const uint8_t* SkipTag(const uint8_t* buf) {
   while (*buf & 0x80) ++buf;
   ++buf;
@@ -1444,6 +1445,15 @@ uint8_t* AddNonCanonicalBytes(const uint8_t* buf, uint8_t* p,
     ++p;
   }
   return p;
+}
+
+std::string EncodeBoolValue(int number, bool value, int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteBoolToArray(number, value, p);
+  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
+  return std::string(buf, p);
 }
 
 std::string EncodeEnumValue(int number, int value, int non_canonical_bytes,
@@ -1532,6 +1542,7 @@ static std::vector<const FieldDescriptor*> GetFields() {
   }
   return fields;
 }
+}  // namespace
 
 TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
   UNITTEST::EnumParseTester obj;
@@ -1684,15 +1695,6 @@ TEST(MESSAGE_TEST_NAME, TestEnumParserForUnknownEnumValue) {
       }
     }
   }
-}
-
-std::string EncodeBoolValue(int number, bool value, int non_canonical_bytes) {
-  uint8_t buf[100];
-  uint8_t* p = buf;
-
-  p = internal::WireFormatLite::WriteBoolToArray(number, value, p);
-  p = AddNonCanonicalBytes(SkipTag(buf), p, non_canonical_bytes);
-  return std::string(buf, p);
 }
 
 TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
@@ -1898,6 +1900,7 @@ TEST(MESSAGE_TEST_NAME, IsDefaultInstance) {
   EXPECT_FALSE(r->IsDefaultInstance(msg));
 }
 
+namespace {
 std::string EncodeStringValue(int number, const std::string& value) {
   uint8_t buf[100];
   return std::string(
@@ -1946,6 +1949,7 @@ static const internal::TcParseTableBase* GetTableIfAvailable(
     decltype(internal::TcParser::GetTable<T>())) {
   return internal::TcParser::GetTable<T>();
 }
+}  // namespace
 
 TEST(MESSAGE_TEST_NAME, TestRegressionInlinedStringAuxIdxMismatchOnFastParser) {
   using Proto = UNITTEST::InlinedStringIdxRegressionProto;

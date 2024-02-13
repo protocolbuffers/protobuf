@@ -767,6 +767,7 @@ filegroup(
 filegroup(
     name = "test_proto_editions_srcs",
     srcs = [
+        "edition_unittest.proto",
         "map_proto3_unittest.proto",
         "unittest_arena.proto",
         "unittest_drop_unknown_fields.proto",
@@ -1481,6 +1482,37 @@ cc_test(
     name = "message_unittest",
     srcs = [
         "message_unittest.cc",
+        "message_unittest.inc",
+    ],
+    data = [":testdata"],
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":internal_visibility",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:scoped_mock_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "edition_message_unittest",
+    srcs = [
+        "edition_message_unittest.cc",
         "message_unittest.inc",
     ],
     data = [":testdata"],
