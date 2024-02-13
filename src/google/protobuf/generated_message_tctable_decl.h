@@ -285,7 +285,8 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const MessageLite* default_instance;
-  using PostLoopHandler = void (*)(MessageLite* msg, ParseContext* ctx);
+  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+                                          ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
   // Handler for fields which are not handled by table dispatch.
@@ -540,6 +541,38 @@ static_assert(std::is_standard_layout<TcParseTable<1>>::value,
 static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
+
+template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+  return func(static_cast<T*>(msg), ptr, ctx);
+}
+
+template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+constexpr TcParseTable<0> CreateStubTcParseTable(
+    const MessageLite* default_instance,
+    TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
+  return {
+      {
+          0,                  // has_bits_offset
+          0,                  // extension_offset
+          0,                  // max_field_number
+          0,                  // fast_idx_mask
+          0,                  // lookup_table_offset
+          0,                  // skipmap32
+          0,                  // field_entries_offset
+          0,                  // num_field_entries
+          0,                  // num_aux_entries
+          0,                  // aux_offset
+          default_instance,   //
+          post_loop_handler,  //
+          nullptr,            // fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,  // to_prefetch
+#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
+      },
+      {{{StubParseImpl<T, func>, {}}}},
+  };
+}
 
 }  // namespace internal
 }  // namespace protobuf

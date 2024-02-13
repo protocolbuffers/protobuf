@@ -1947,8 +1947,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!NeedsPostLoopHandler(descriptor_, options_)) return;
           p->Emit(R"cc(
-            static void PostLoopHandler(MessageLite* msg,
-                                        $pbi$::ParseContext* ctx);
+            static const char* PostLoopHandler(MessageLite* msg,
+                                               const char* ptr,
+                                               $pbi$::ParseContext* ctx);
           )cc");
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
@@ -2301,11 +2302,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
           [&] {
           }}},
         R"cc(
-          void $classname$::PostLoopHandler(MessageLite* msg,
-                                            ::_pbi::ParseContext* ctx) {
+          const char* $classname$::PostLoopHandler(MessageLite* msg,
+                                                   const char* ptr,
+                                                   ::_pbi::ParseContext* ctx) {
             $classname$* _this = static_cast<$classname$*>(msg);
             $annotate_deserialize$;
             $required$;
+            return ptr;
           }
         )cc");
   }
