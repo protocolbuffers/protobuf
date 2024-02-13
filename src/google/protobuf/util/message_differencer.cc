@@ -300,7 +300,7 @@ bool MessageDifferencer::ApproximatelyEquivalent(const Message& message1,
 // ===========================================================================
 
 MessageDifferencer::MessageDifferencer()
-    : reporter_(NULL),
+    : reporter_(nullptr),
       message_field_comparison_(EQUAL),
       scope_(FULL),
       repeated_field_comparison_(AS_LIST),
@@ -319,14 +319,14 @@ MessageDifferencer::~MessageDifferencer() {
 }
 
 void MessageDifferencer::set_field_comparator(FieldComparator* comparator) {
-  ABSL_CHECK(comparator) << "Field comparator can't be NULL.";
+  ABSL_CHECK(comparator) << "Field comparator can't be nullptr.";
   field_comparator_kind_ = kFCBase;
   field_comparator_.base = comparator;
 }
 
 void MessageDifferencer::set_field_comparator(
     DefaultFieldComparator* comparator) {
-  ABSL_CHECK(comparator) << "Field comparator can't be NULL.";
+  ABSL_CHECK(comparator) << "Field comparator can't be nullptr.";
   field_comparator_kind_ = kFCDefault;
   field_comparator_.default_impl = comparator;
 }
@@ -759,9 +759,9 @@ bool MessageDifferencer::ShouldCompareNoPresence(
   const bool compare_no_presence_by_address =
       !field2->is_repeated() && !field2->has_presence() &&
       ValidMissingField(*field2) &&
-      require_no_presence_fields_.addresses_.contains(
-          TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-              message1, reflection1, *field2));
+      require_no_presence_fields_.ids_.contains(
+          TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(message1,
+                                                                   *field2));
   return compare_no_presence_by_address;
 }
 

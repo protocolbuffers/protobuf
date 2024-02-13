@@ -46,34 +46,28 @@ enum FieldAccessorType {
 };
 
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message,
-                            const bool kdoc = false);
+                            Options options, bool kdoc = false);
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                          Options options, const bool kdoc = false);
+                          Options options, bool kdoc = false);
 void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
-                                  const FieldAccessorType type, Options options,
-                                  const bool builder = false,
-                                  const bool kdoc = false);
-void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
-                                           const FieldDescriptor* field,
-                                           const FieldAccessorType type,
-                                           Options options,
-                                           const bool builder = false,
-                                           const bool kdoc = false);
-void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
-                                             const FieldDescriptor* field,
-                                             const FieldAccessorType type,
-                                             Options options,
-                                             const bool builder = false,
-                                             const bool kdoc = false);
+                                  FieldAccessorType type, Options options,
+                                  bool builder = false, bool kdoc = false);
+void WriteFieldEnumValueAccessorDocComment(
+    io::Printer* printer, const FieldDescriptor* field, FieldAccessorType type,
+    Options options, bool builder = false, bool kdoc = false);
+void WriteFieldStringBytesAccessorDocComment(
+    io::Printer* printer, const FieldDescriptor* field, FieldAccessorType type,
+    Options options, bool builder = false, bool kdoc = false);
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
-                         const bool kdoc = false);
+                         Options options, bool kdoc = false);
 void WriteEnumValueDocComment(io::Printer* printer,
-                              const EnumValueDescriptor* value);
+                              const EnumValueDescriptor* value,
+                              Options options);
 void WriteServiceDocComment(io::Printer* printer,
-                            const ServiceDescriptor* service);
-void WriteMethodDocComment(io::Printer* printer,
-                           const MethodDescriptor* method);
+                            const ServiceDescriptor* service, Options options);
+void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method,
+                           Options options);
 
 // Exposed for testing only.
 // Also called by proto1-Java code generator.

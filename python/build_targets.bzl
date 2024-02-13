@@ -6,7 +6,7 @@
 #   //:protobuf_python
 #   //:well_known_types_py_pb2
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
@@ -221,6 +221,7 @@ def build_targets(name):
         testonly = 1,
         srcs = [
             "//:test_proto_srcs",
+            "//:test_proto_editions_srcs",
             "//src/google/protobuf/util:test_proto_srcs",
         ],
         strip_prefix = "src",
@@ -238,6 +239,28 @@ def build_targets(name):
         strip_prefix = "src",
     )
 
+    internal_copy_files(
+        name = "copied_test_dependency_proto_files",
+        srcs = [
+            "//src/google/protobuf:cpp_features_proto_srcs",
+        ],
+        strip_prefix = "src",
+    )
+
+    internal_py_proto_library(
+        name = "test_dependency_proto_py_pb2",
+        srcs = [":copied_test_dependency_proto_files"],
+        include = ".",
+        default_runtime = "",
+        protoc = "//:protoc",
+        srcs_version = "PY2AND3",
+        visibility = [
+            "//:__pkg__",
+            "//upb:__subpackages__",
+        ],
+        deps = [":well_known_types_py_pb2"],
+    )
+
     internal_py_proto_library(
         name = "python_common_test_protos",
         testonly = 1,
@@ -247,7 +270,7 @@ def build_targets(name):
         protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = ["//:__pkg__"],
-        deps = [":well_known_types_py_pb2"],
+        deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
     )
 
     internal_py_proto_library(
@@ -460,7 +483,6 @@ def build_targets(name):
             ":python_src_files",
             "README.md",
             "google/__init__.py",
-            "setup.cfg",
         ],
         strip_prefix = "",
         visibility = ["//python/dist:__pkg__"],
@@ -484,8 +506,6 @@ def build_targets(name):
             "google/protobuf/python_protobuf.h",
             "internal.bzl",
             "python_version_test.py",
-            "setup.cfg",
-            "setup.py",
         ],
         strip_prefix = strip_prefix.from_root(""),
         visibility = ["//pkg:__pkg__"],

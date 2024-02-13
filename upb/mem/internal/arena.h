@@ -40,12 +40,16 @@ void UPB_PRIVATE(_upb_Arena_SwapIn)(struct upb_Arena* des,
 void UPB_PRIVATE(_upb_Arena_SwapOut)(struct upb_Arena* des,
                                      const struct upb_Arena* src);
 
+// Returns whether |ptr| was allocated directly by |a| (so care must be used
+// with fused arenas).
+UPB_API bool UPB_ONLYBITS(_upb_Arena_Contains)(const struct upb_Arena* a,
+                                               void* ptr);
+
 UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
-UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Malloc)(struct upb_Arena* a,
-                                                size_t size) {
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
 
   size = UPB_ALIGN_MALLOC(size);
@@ -65,8 +69,8 @@ UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Malloc)(struct upb_Arena* a,
   return ret;
 }
 
-UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
-                                                 size_t oldsize, size_t size) {
+UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
+                                       size_t oldsize, size_t size) {
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   bool is_most_recent_alloc =
@@ -82,7 +86,7 @@ UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
     return ptr;
   }
 
-  void* ret = UPB_PRIVATE(_upb_Arena_Malloc)(a, size);
+  void* ret = upb_Arena_Malloc(a, size);
 
   if (ret && oldsize > 0) {
     memcpy(ret, ptr, UPB_MIN(oldsize, size));
@@ -91,9 +95,8 @@ UPB_INLINE void* UPB_PRIVATE(_upb_Arena_Realloc)(struct upb_Arena* a, void* ptr,
   return ret;
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Arena_ShrinkLast)(struct upb_Arena* a,
-                                                   void* ptr, size_t oldsize,
-                                                   size_t size) {
+UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
+                                         size_t oldsize, size_t size) {
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   // Must be the last alloc.

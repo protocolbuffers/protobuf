@@ -181,6 +181,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
   printer->Emit(R"cc(
     inline const ::absl::Cord& $classname$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$full_name$)
       return _internal_$name_internal$();
@@ -195,6 +196,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
   )cc");
   printer->Emit(R"cc(
     inline void $classname$::set_$name$(const ::absl::Cord& value) {
+      $WeakDescriptorSelfPin$;
       $PrepareSplitMessageForWrite$;
       _internal_set_$name_internal$(value);
       $annotate_set$;
@@ -203,6 +205,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
   )cc");
   printer->Emit(R"cc(
     inline void $classname$::set_$name$(::absl::string_view value) {
+      $WeakDescriptorSelfPin$;
       $PrepareSplitMessageForWrite$;
       $set_hasbit$;
       $field$ = value;
@@ -345,6 +348,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   printer->Emit(R"cc(
     inline const ::absl::Cord& $classname$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$full_name$)
       return _internal_$name_internal$();
@@ -352,6 +356,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   )cc");
   printer->Emit(R"cc(
     inline void $classname$::set_$name$(const ::absl::Cord& value) {
+      $WeakDescriptorSelfPin$;
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
@@ -368,6 +373,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   )cc");
   printer->Emit(R"cc(
     inline void $classname$::set_$name$(::absl::string_view value) {
+      $WeakDescriptorSelfPin$;
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();

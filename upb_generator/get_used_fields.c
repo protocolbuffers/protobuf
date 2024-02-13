@@ -7,12 +7,22 @@
 
 #include "upb_generator/get_used_fields.h"
 
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "google/protobuf/descriptor.upb.h"
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/reflection/def_pool.h"
-#include "upb/reflection/field_def.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
+#include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
-#include "upb/reflection/message_def.h"
 #include "upb/wire/decode.h"
 
 // Must be last.

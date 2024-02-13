@@ -3,7 +3,7 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
@@ -30,6 +30,7 @@ cc_test(
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -72,6 +73,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -96,6 +98,7 @@ cc_test(
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/memory",
@@ -138,6 +141,7 @@ cc_test(
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -184,13 +188,14 @@ cc_test(
         "//src/google/protobuf:duration_cc_proto",
         "//src/google/protobuf:timestamp_cc_proto",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_library(
-    name = "type_resolver_util",
+    name = "type_resolver",
     srcs = ["type_resolver_util.cc"],
     hdrs = [
         "type_resolver.h",
@@ -201,6 +206,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:port",
         "//src/google/protobuf:source_context_cc_proto",
         "//src/google/protobuf:type_cc_proto",
@@ -222,14 +228,16 @@ cc_test(
         ":json_format_cc_proto",
         ":json_format_proto3_cc_proto",
         ":json_util",
-        ":type_resolver_util",
+        ":type_resolver",
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:type_cc_proto",
         "//src/google/protobuf:wrappers_cc_proto",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

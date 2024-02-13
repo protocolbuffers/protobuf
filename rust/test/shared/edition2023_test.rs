@@ -13,7 +13,7 @@ use googletest::prelude::*;
 
 #[test]
 fn check_edition2023_works() {
-    let mut msg = edition2023_proto::test::EditionsMessage::new();
+    let mut msg = edition2023_proto::EditionsMessage::new();
 
     // plain_field supports presence.
     assert_that!(msg.plain_field_mut().or_default().get(), eq(0));

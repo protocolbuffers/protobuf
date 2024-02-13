@@ -163,14 +163,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Used to remove `RepeatedPtrField::GetArena() const`.
-// Owner: ezb@
-#define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
-
-// Used to lock down wrong ctype usages in proto file.
-// Owner: jieluo@
-#define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
-
 #endif
 
 // Defines the Protobuf C++ Version for checking version compatibility at
@@ -178,12 +170,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 4026000
+#define PROTOBUF_VERSION 5027000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX ""
+#define PROTOBUF_VERSION_SUFFIX "-dev"
 
 #ifdef PROTOBUF_MINIMUM_EDITION
 #error PROTOBUF_MINIMUM_EDITION was previously defined
@@ -440,10 +432,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
 #error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
-#endif
-
-#ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
-#error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
 #endif
 
 #ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
@@ -756,6 +744,16 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // TODO: Enable the feature by default and remove this flag.
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
 #error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
+#endif
+
+#ifdef PROTOBUF_PREFETCH_WITH_OFFSET
+#error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
+#endif
+#if defined(__x86_64__) && defined(__GNUC__)
+#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset) \
+  asm("prefetcht0 " #offset "(%0)" : : "r"(base));
+#else
+#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset)
 #endif
 
 // ThreadSafeArenaz is turned off completely in opensource builds.

@@ -108,6 +108,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kSubTable,
     kSubMessageWeak,
     kMessageVerifyFunc,
+    kSelfVerifyFunc,
     kEnumRange,
     kEnumValidator,
     kNumericOffset,

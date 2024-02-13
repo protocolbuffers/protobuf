@@ -60,7 +60,6 @@ cc_library(
         "//upb:mini_table",
         "//upb:wire",
         "//upb:wire_reader",
-        "//upb/message:internal",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

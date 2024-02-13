@@ -426,7 +426,6 @@ class DispatcherTestProto : public Message {
   explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
   DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
   DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
-  Metadata GetMetadata() const final { ABSL_LOG(FATAL); }
   const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
 };
 // We use a specialization to inject behavior for the test.
@@ -1622,6 +1621,31 @@ TEST(ArenaTest, AddCleanup) {
   for (int i = 0; i < 100; i++) {
     arena.Own(new int);
   }
+}
+
+struct DestroyOrderRecorder {
+  std::vector<int>* destroy_order;
+  int i;
+
+  DestroyOrderRecorder(std::vector<int>* destroy_order, int i)
+      : destroy_order(destroy_order), i(i) {}
+  ~DestroyOrderRecorder() { destroy_order->push_back(i); }
+};
+
+// TODO: we do not guarantee this behavior, but some users rely on
+// it. We need to decide whether we want to guarantee this. In the meantime,
+// user code should avoid adding new dependencies on this.
+// Tests that when using an Arena from a single thread, objects are destroyed in
+// reverse order from construction.
+TEST(ArenaTest, CleanupDestructionOrder) {
+  std::vector<int> destroy_order;
+  {
+    Arena arena;
+    for (int i = 0; i < 3; i++) {
+      Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i);
+    }
+  }
+  EXPECT_THAT(destroy_order, testing::ElementsAre(2, 1, 0));
 }
 
 TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {

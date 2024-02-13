@@ -293,7 +293,9 @@ def _subtract_files(a, b):
     cc_file_list_args = {}
     file_list_fields = ["srcs", "hdrs", "internal_hdrs", "textual_hdrs"]
     for field in file_list_fields:
-        to_remove = {e: None for e in getattr(b.cc_file_list, field).to_list()}
+        # only a subset of file.cc is used from protoc, to get all its symbols for tests we need to
+        # also build & link it to tests.
+        to_remove = {e: None for e in getattr(b.cc_file_list, field).to_list() if "src/google/protobuf/testing/file.cc" not in e.path}
         cc_file_list_args[field] = depset(
             [e for e in getattr(a.cc_file_list, field).to_list() if not e in to_remove],
         )

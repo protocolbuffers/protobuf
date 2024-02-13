@@ -9,7 +9,9 @@
 
 #include <vector>
 
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {

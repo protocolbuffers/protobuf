@@ -633,7 +633,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(io::CodedInputStream* input,
 }
 
 struct WireFormat::MessageSetParser {
-  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx) {
+  const char* ParseElement(const char* ptr, internal::ParseContext* ctx) {
     // Parse a MessageSetItem
     auto metadata = reflection->MutableInternalMetadata(msg);
     enum class State { kNoTag, kHasType, kHasPayload, kDone };
@@ -739,7 +739,8 @@ struct WireFormat::MessageSetParser {
       }
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
         // A message set item starts
-        ptr = ctx->ParseGroup(this, ptr, tag);
+        ptr = ctx->ParseGroupInlined(
+            ptr, tag, [&](const char* ptr) { return ParseElement(ptr, ctx); });
       } else {
         // Parse other fields as normal extensions.
         int field_number = WireFormatLite::GetTagFieldNumber(tag);
@@ -1757,8 +1758,9 @@ size_t WireFormat::MessageSetItemByteSize(const FieldDescriptor* field,
   our_size += io::CodedOutputStream::VarintSize32(field->number());
 
   // message
-  const Message& sub_message = message_reflection->GetMessage(message, field);
-  size_t message_size = sub_message.ByteSizeLong();
+  size_t message_size;
+    const Message& sub_message = message_reflection->GetMessage(message, field);
+    message_size = sub_message.ByteSizeLong();
 
   our_size += io::CodedOutputStream::VarintSize32(message_size);
   our_size += message_size;

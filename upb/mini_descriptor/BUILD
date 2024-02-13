@@ -25,6 +25,7 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb/base:internal",
+        "//upb/message:types",
         "//upb/mini_table:internal",
     ],
 )

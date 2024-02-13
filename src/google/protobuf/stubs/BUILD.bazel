@@ -2,7 +2,7 @@
 #   These are utilities that mirror the behavior of internal Google code.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
@@ -73,6 +73,7 @@ cc_test(
         ":lite",
         ":stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",

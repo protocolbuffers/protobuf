@@ -7,20 +7,22 @@
 
 #include "upb/mem/arena.h"
 
+#include <stddef.h>
+
 #include <array>
 #include <atomic>
 #include <thread>
 #include <vector>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
 #include "absl/synchronization/notification.h"
-
-// Must be last.
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "upb/mem/alloc.h"
+
+// Must be last.
 #include "upb/port/def.inc"
 
 namespace {
@@ -35,7 +37,7 @@ TEST(ArenaTest, ArenaFuse) {
   upb_Arena_Free(arena2);
 }
 
-/* Do nothing allocator for testing */
+// Do-nothing allocator for testing.
 extern "C" void* TestAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                size_t size) {
   return upb_alloc_global.func(alloc, ptr, oldsize, size);
@@ -129,6 +131,44 @@ TEST(ArenaTest, FuzzSingleThreaded) {
   while (absl::Now() < end) {
     env.RandomPoke(gen);
   }
+}
+
+TEST(ArenaTest, Contains) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+  void* ptr1a = upb_Arena_Malloc(arena1, 8);
+  void* ptr2a = upb_Arena_Malloc(arena2, 8);
+
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
+
+  void* ptr1b = upb_Arena_Malloc(arena1, 1000000);
+  void* ptr2b = upb_Arena_Malloc(arena2, 1000000);
+
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1b));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2b));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2b));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1b));
+
+  upb_Arena_Fuse(arena1, arena2);
+
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1a));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr1b));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2a));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr2b));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2a));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena1, ptr2b));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1a));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Arena_Contains)(arena2, ptr1b));
+
+  upb_Arena_Free(arena1);
+  upb_Arena_Free(arena2);
 }
 
 #ifdef UPB_USE_C11_ATOMICS

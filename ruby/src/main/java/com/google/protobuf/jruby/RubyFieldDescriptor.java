@@ -34,7 +34,6 @@ package com.google.protobuf.jruby;
 
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -90,6 +89,28 @@ public class RubyFieldDescriptor extends RubyObject {
       calculateLabel(context);
     }
     return label;
+  }
+
+  /*
+   * call-seq:
+   *     FieldDescriptor.has_presence? => bool
+   *
+   * Returns whether this field tracks presence.
+   */
+  @JRubyMethod(name = "has_presence?")
+  public IRubyObject hasPresence(ThreadContext context) {
+    return this.descriptor.hasPresence() ? context.runtime.getTrue() : context.runtime.getFalse();
+  }
+
+  /*
+   * call-seq:
+   *     FieldDescriptor.is_packed? => bool
+   *
+   * Returns whether this is a repeated field that uses packed encoding.
+   */
+  @JRubyMethod(name = "is_packed?")
+  public IRubyObject isPacked(ThreadContext context) {
+    return this.descriptor.isPacked() ? context.runtime.getTrue() : context.runtime.getFalse();
   }
 
   /*
@@ -254,14 +275,6 @@ public class RubyFieldDescriptor extends RubyObject {
 
   protected void setDescriptor(
       ThreadContext context, FieldDescriptor descriptor, RubyDescriptorPool pool) {
-    if (descriptor.isRequired()
-        && LegacyFileDescriptor.getSyntax(descriptor.getFile())
-            == LegacyFileDescriptor.Syntax.PROTO3) {
-      throw Utils.createTypeError(
-          context,
-          descriptor.getName()
-              + " is labeled required but required fields are unsupported in proto3");
-    }
     this.descriptor = descriptor;
     this.name = context.runtime.newString(descriptor.getName());
     this.pool = pool;

@@ -59,7 +59,7 @@ absl::Status File::ReadFileToString(const std::string& name,
                                     std::string* output, bool text_mode) {
   char buffer[1024];
   FILE* file = fopen(name.c_str(), text_mode ? "rt" : "rb");
-  if (file == NULL) return absl::NotFoundError("Could not open file");
+  if (file == nullptr) return absl::NotFoundError("Could not open file");
 
   while (true) {
     size_t n = fread(buffer, 1, sizeof(buffer), file);
@@ -80,7 +80,7 @@ void File::ReadFileToStringOrDie(const std::string& name, std::string* output) {
 absl::Status File::WriteStringToFile(absl::string_view contents,
                                      const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
-  if (file == NULL) {
+  if (file == nullptr) {
     return absl::InternalError(
         absl::StrCat("fopen(", name, ", \"wb\"): ", strerror(errno)));
   }
@@ -100,8 +100,8 @@ absl::Status File::WriteStringToFile(absl::string_view contents,
 void File::WriteStringToFileOrDie(absl::string_view contents,
                                   const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
-  ABSL_CHECK(file != NULL) << "fopen(" << name
-                           << ", \"wb\"): " << strerror(errno);
+  ABSL_CHECK(file != nullptr)
+      << "fopen(" << name << ", \"wb\"): " << strerror(errno);
   ABSL_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
                 contents.size())
       << "fwrite(" << name << "): " << strerror(errno);

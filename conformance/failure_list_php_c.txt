@@ -1,2 +1,8 @@
 Recommended.Proto2.JsonInput.FieldNameExtension.Validator
+Required.Proto2.JsonInput.BoolFieldFalse.JsonOutput
+Required.Proto2.JsonInput.BoolFieldFalse.ProtobufOutput
+Required.Proto2.JsonInput.EnumField.JsonOutput
+Required.Proto2.JsonInput.EnumField.ProtobufOutput
+Required.Proto2.JsonInput.EnumFieldNumericValueZero.JsonOutput
+Required.Proto2.JsonInput.EnumFieldNumericValueZero.ProtobufOutput
 Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator

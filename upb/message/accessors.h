@@ -34,32 +34,25 @@
 extern "C" {
 #endif
 
-UPB_API_INLINE void upb_Message_ClearField(upb_Message* msg,
-                                           const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    _upb_Message_ClearExtensionField(msg, ext);
-  } else {
-    _upb_Message_ClearNonExtensionField(msg, field);
-  }
-}
+// Functions ending in BaseField() take a (upb_MiniTableField*) argument
+// and work only on non-extension fields.
+//
+// Functions ending in Extension() take a (upb_MiniTableExtension*) argument
+// and work only on extensions.
 
-UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
-                                      const upb_MiniTable* l) {
-  // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
-  char* mem = (char*)msg - sizeof(upb_Message_Internal);
-  memset(mem, 0, upb_msg_sizeof(l));
-}
+UPB_API_INLINE void upb_Message_Clear(upb_Message* msg, const upb_MiniTable* m);
 
-UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
-                                         const upb_MiniTableField* field) {
-  if (upb_MiniTableField_IsExtension(field)) {
-    const upb_MiniTableExtension* ext = (const upb_MiniTableExtension*)field;
-    return _upb_Message_HasExtensionField(msg, ext);
-  } else {
-    return _upb_Message_HasNonExtensionField(msg, field);
-  }
-}
+UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
+                                               const upb_MiniTableField* f);
+
+UPB_API_INLINE void upb_Message_ClearExtension(upb_Message* msg,
+                                               const upb_MiniTableExtension* e);
+
+UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
+                                             const upb_MiniTableField* f);
+
+UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
+                                             const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field) {
@@ -325,11 +318,15 @@ UPB_API_INLINE upb_TaggedMessagePtr upb_Message_GetTaggedMessagePtr(
 }
 
 UPB_API_INLINE const upb_Message* upb_Message_GetMessage(
-    const upb_Message* msg, const upb_MiniTableField* field,
-    upb_Message* default_val) {
+    const upb_Message* msg, const upb_MiniTableField* field) {
   upb_TaggedMessagePtr tagged =
-      upb_Message_GetTaggedMessagePtr(msg, field, default_val);
+      upb_Message_GetTaggedMessagePtr(msg, field, NULL);
   return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+}
+
+UPB_API_INLINE upb_Message* upb_Message_GetMutableMessage(
+    upb_Message* msg, const upb_MiniTableField* field) {
+  return (upb_Message*)upb_Message_GetMessage(msg, field);
 }
 
 // For internal use only; users cannot set tagged messages because only the
@@ -411,8 +408,10 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, field, arena);
-  if (!arr || !_upb_Array_ResizeUninitialized(arr, size, arena)) return NULL;
-  return _upb_array_ptr(arr);
+  if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, size, arena)) {
+    return NULL;
+  }
+  return upb_Array_MutableDataPtr(arr);
 }
 
 UPB_API_INLINE const upb_Map* upb_Message_GetMap(
@@ -435,9 +434,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[1];
   return _upb_Message_GetOrCreateMutableMap(
       msg, field,
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),

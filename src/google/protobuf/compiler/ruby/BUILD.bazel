@@ -3,7 +3,7 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
@@ -52,6 +52,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

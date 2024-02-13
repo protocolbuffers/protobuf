@@ -271,6 +271,17 @@ TEST(MapTest, SizeTypeIsSizeT) {
   (void)x;
 }
 
+TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
+  Map<int, int> map;
+  EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cbegin()).node_,
+            nullptr);
+  map.insert({1, 1});
+  // This behavior is depended on by Rust FFI.
+  EXPECT_NE(internal::UntypedMapIterator::FromTyped(map.cbegin()).node_,
+            nullptr);
+  EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cend()).node_, nullptr);
+}
+
 template <typename Aligned, bool on_arena = false>
 void MapTest_Aligned() {
   Arena arena;

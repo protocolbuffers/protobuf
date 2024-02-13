@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 exports_files(
-    glob(["*.proto"]),
+    glob(["*.proto"]) + ["rust_bazel_crate_mapping.txt"],
     visibility = [
         "//src/google/protobuf/editions:__pkg__",
     ],

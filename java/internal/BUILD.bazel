@@ -1,4 +1,4 @@
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 
 package(default_visibility = ["//java:__subpackages__"])
 

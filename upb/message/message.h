@@ -15,12 +15,12 @@
 #include <stddef.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/internal/types.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-typedef struct upb_Extension upb_Extension;
 typedef struct upb_Message upb_Message;
 
 #ifdef __cplusplus
@@ -38,6 +38,12 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+// Mark a message and all of its descendents as frozen/immutable.
+UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
+
+// Returns whether a message has been frozen.
+UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
 
 #ifdef __cplusplus
 } /* extern "C" */

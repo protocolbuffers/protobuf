@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2024 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -149,12 +149,12 @@ class AnnotationProtoCollector : public AnnotationCollector {
 
 // A source code printer for assisting in code generation.
 //
-// This type implements a simple templating language for substiting variables
+// This type implements a simple templating language for substituting variables
 // into static, user-provided strings, and also tracks indentation
 // automatically.
 //
 // The main entry-point for this type is the Emit function, which can be used
-// thus:
+// as thus:
 //
 //   Printer p(output);
 //   p.Emit({{"class", my_class_name}}, R"cc(

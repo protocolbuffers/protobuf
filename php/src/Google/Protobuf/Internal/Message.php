@@ -1314,7 +1314,7 @@ class Message
         try {
             $this->mergeFromJsonArray($array, $ignore_unknown);
         } catch (\Exception $e) {
-            throw new GPBDecodeException($e->getMessage());
+            throw new GPBDecodeException($e->getMessage(), $e->getCode(), $e);
         }
     }
 

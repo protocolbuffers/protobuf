@@ -1,7 +1,7 @@
 """Starlark utilities for working with other build systems."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@rules_pkg//:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
+load("@rules_pkg//pkg:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
 load(":cc_dist_library.bzl", "CcFileList")
 
 ################################################################################

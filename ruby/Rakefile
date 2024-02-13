@@ -114,6 +114,13 @@ else
       'x86_64-linux', 'x86-linux',
       'x86_64-darwin', 'arm64-darwin',
     ]
+
+    ext.cross_compiling do |gem_spec|
+      # rake-compiler would call `spec.extensions.clear` which removes the `Rakefile` extension,
+      # that `rake` doesn't need to be a runtime dependency for native gems.
+      gem_spec.dependencies.delete_if { |dependency| dependency.name == 'rake' }
+      gem_spec.add_development_dependency 'rake', '>= 13'
+    end
   end
 
   task 'gem:java' do

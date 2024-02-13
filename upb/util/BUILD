@@ -144,42 +144,10 @@ cc_test(
     ],
 )
 
-# Compare
-
-cc_library(
-    name = "compare",
-    srcs = ["compare.c"],
-    hdrs = ["compare.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//upb:base",
-        "//upb:eps_copy_input_stream",
-        "//upb:mem",
-        "//upb:port",
-        "//upb:wire_reader",
-    ],
-)
-
-cc_test(
-    name = "compare_test",
-    srcs = ["compare_test.cc"],
-    deps = [
-        ":compare",
-        "//upb:port",
-        "//upb:wire_reader",
-        "//upb/base:internal",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
 # begin:github_only
 filegroup(
     name = "source_files",
     srcs = [
-        "compare.c",
-        "compare.h",
         "def_to_proto.c",
         "def_to_proto.h",
         "required_fields.c",

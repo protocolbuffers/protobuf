@@ -23,7 +23,7 @@ load(
 # end:github_only
 
 # begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
+# package(default_applicable_licenses = [":license"])
 #
 # license(
 #     name = "license",
@@ -79,20 +79,6 @@ package_group(
     packages = ["//..."],
 )
 
-cc_library(
-    name = "upb",
-    hdrs = [
-        "upb.hpp",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    deprecation = "use upb:base and/or upb:mem instead",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-    ],
-)
-
 # Common support routines used by generated code.  This library has no
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
@@ -134,13 +120,6 @@ cc_library(
 alias(
     name = "base",
     actual = "//upb/base",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "collections",
-    actual = "//upb/collections",
-    deprecation = "use upb:message instead",
     visibility = ["//visibility:public"],
 )
 
@@ -302,6 +281,7 @@ upb_amalgamation(
         "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
         "//upb/reflection:internal",
@@ -347,6 +327,7 @@ upb_amalgamation(
         "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
         "//upb/reflection:internal",
@@ -393,6 +374,7 @@ upb_amalgamation(
         "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
         "//upb/reflection:internal",
@@ -423,7 +405,6 @@ filegroup(
     srcs = glob(
         [
             "**/*.h",
-            "**/*.hpp",
         ],
         exclude = [
             "**/conformance_upb.c",
@@ -456,7 +437,11 @@ filegroup(
 #         "**/*.hpp",
 #     ]),
 #     kotlin_package = "upb",
-#     no_string_conversion = ["_upb_MiniTable_Build"],
+#     no_string_conversion = [
+#         "_upb_MiniTable_Build",
+#         "upb_Decode",
+#         "upb_StringView_FromDataAndSize",
+#     ],
 #     strict_enums = [
 #         "upb_CType",
 #         "upb_DecodeStatus",

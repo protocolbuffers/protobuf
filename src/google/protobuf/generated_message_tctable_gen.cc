@@ -225,10 +225,10 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
   const auto options = option_provider.GetForField(field);
-  ABSL_CHECK(!field->options().weak());
   // Map, oneof, weak, and split fields are not handled on the fast path.
   if (field->is_map() || field->real_containing_oneof() ||
-      options.is_implicitly_weak || options.should_split) {
+      field->options().weak() || options.is_implicitly_weak ||
+      options.should_split) {
     return false;
   }
 
@@ -727,6 +727,34 @@ TailCallTableInfo::TailCallTableInfo(
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
+  if (descriptor->options().message_set_wire_format()) {
+    ABSL_DCHECK(ordered_fields.empty());
+    ABSL_DCHECK(inlined_string_indices.empty());
+    if (message_options.uses_codegen) {
+      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+          message_options.is_lite
+              ? TcParseFunction::kMessageSetWireFormatParseLoopLite
+              : TcParseFunction::kMessageSetWireFormatParseLoop,
+          0, 0}}};
+
+      aux_entries = {{kSelfVerifyFunc}};
+    } else {
+      ABSL_DCHECK(!message_options.is_lite);
+      // The message set parser loop only handles codegen because it hardcodes
+      // the generated extension registry. For reflection, use the reflection
+      // loop which can handle arbitrary message factories.
+      fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
+          TcParseFunction::kReflectionParseLoop, 0, 0}}};
+    }
+
+    table_size_log2 = 0;
+    num_to_entry_table = MakeNumToEntryTable(ordered_fields);
+    field_name_data = GenerateFieldNames(descriptor, field_entries,
+                                         message_options, option_provider);
+
+    return;
+  }
+
   ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
                              [](const auto* lhs, const auto* rhs) {
                                return lhs->number() < rhs->number();
@@ -794,7 +822,7 @@ TailCallTableInfo::TailCallTableInfo(
         field->type() == FieldDescriptor::TYPE_GROUP) {
       // Message-typed fields have a FieldAux with the default instance pointer.
       if (field->is_map()) {
-        field_entries.back().aux_idx = aux_entries.size();
+        entry.aux_idx = aux_entries.size();
         aux_entries.push_back({kMapAuxInfo, {field}});
         if (message_options.uses_codegen) {
           // If we don't use codegen we can't add these.
@@ -807,9 +835,12 @@ TailCallTableInfo::TailCallTableInfo(
             aux_entries.push_back({kEnumValidator, {map_value}});
           }
         }
+      } else if (field->options().weak()) {
+        // Disable the type card for this entry to force the fallback.
+        entry.type_card = 0;
       } else if (HasLazyRep(field, options)) {
         if (message_options.uses_codegen) {
-          field_entries.back().aux_idx = aux_entries.size();
+          entry.aux_idx = aux_entries.size();
           aux_entries.push_back({kSubMessage, {field}});
           if (options.lazy_opt == field_layout::kTvEager) {
             aux_entries.push_back({kMessageVerifyFunc, {field}});
@@ -817,8 +848,7 @@ TailCallTableInfo::TailCallTableInfo(
             aux_entries.push_back({kNothing});
           }
         } else {
-          field_entries.back().aux_idx =
-              TcParseTableBase::FieldEntry::kNoAuxIdx;
+          entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
         AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
@@ -827,10 +857,10 @@ TailCallTableInfo::TailCallTableInfo(
         if (message_options.should_profile_driven_cluster_aux_subtable &&
             type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
-          field_entries.back().aux_idx = subtable_aux_idx;
+          entry.aux_idx = subtable_aux_idx;
           ++subtable_aux_idx;
         } else {
-          field_entries.back().aux_idx = aux_entries.size();
+          entry.aux_idx = aux_entries.size();
           aux_entries.push_back({type, {field}});
         }
       }

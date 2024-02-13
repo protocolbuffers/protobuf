@@ -32,6 +32,7 @@ enum AllowlistFlags : unsigned int {
   kMatchPrefix = 1 << 1,
   kAllowAllInOss = 1 << 2,
   kAllowAllWhenEmpty = 1 << 3,
+  kMatchRegex = 1 << 4,
 };
 
 

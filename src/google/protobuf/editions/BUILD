@@ -1,5 +1,4 @@
 load("@rules_python//python:proto.bzl", "py_proto_library")
-load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
@@ -79,6 +78,7 @@ cc_test(
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@bazel_tools//tools/cpp/runfiles",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
@@ -112,22 +112,15 @@ internal_objc_proto_library(
     visibility = ["//conformance:__pkg__"],
 )
 
-py_proto_library(
-    name = "test_messages_proto2_editions_py_pb2",
+java_proto_library(
+    name = "test_messages_proto2_editions_java_proto",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto2_editions_proto"],
 )
 
-rust_cc_proto_library(
-    name = "test_messages_proto2_editions_rust_cc_proto",
-    testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto2_editions_cc_proto"],
-)
-
-rust_upb_proto_library(
-    name = "test_messages_proto2_editions_rust_upb_proto",
+py_proto_library(
+    name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto2_editions_proto"],
@@ -181,22 +174,15 @@ internal_objc_proto_library(
     visibility = ["//conformance:__pkg__"],
 )
 
-py_proto_library(
-    name = "test_messages_proto3_editions_py_pb2",
+java_proto_library(
+    name = "test_messages_proto3_editions_java_proto",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
 )
 
-rust_cc_proto_library(
-    name = "test_messages_proto3_editions_rust_cc_proto",
-    testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto3_editions_cc_proto"],
-)
-
-rust_upb_proto_library(
-    name = "test_messages_proto3_editions_rust_upb_proto",
+py_proto_library(
+    name = "test_messages_proto3_editions_py_pb2",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],

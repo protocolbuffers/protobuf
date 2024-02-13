@@ -26,7 +26,7 @@ _extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_p
 def _upbc(generator, stage):
     return _upbc_base + generator + _stages[stage]
 
-def bootstrap_cc_library(name, visibility, deps, bootstrap_deps, **kwargs):
+def bootstrap_cc_library(name, visibility, deps = [], bootstrap_deps = [], **kwargs):
     for stage in _stages:
         stage_visibility = visibility if stage == "" else ["//upb_generator:__pkg__"]
         native.cc_library(
@@ -36,7 +36,7 @@ def bootstrap_cc_library(name, visibility, deps, bootstrap_deps, **kwargs):
             **kwargs
         )
 
-def bootstrap_cc_binary(name, deps, bootstrap_deps, **kwargs):
+def bootstrap_cc_binary(name, deps = [], bootstrap_deps = [], **kwargs):
     for stage in _stages:
         native.cc_binary(
             name = name + stage,
