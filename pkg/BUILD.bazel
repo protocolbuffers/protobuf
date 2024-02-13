@@ -1,9 +1,9 @@
 load(
-    "@rules_pkg//:mappings.bzl",
+    "@rules_pkg//pkg:mappings.bzl",
     "pkg_attributes",
     "pkg_files",
 )
-load("@rules_pkg//:pkg.bzl", "pkg_zip")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
 load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")

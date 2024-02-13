@@ -2,7 +2,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "objc_library")
 load(
-    "@rules_pkg//:mappings.bzl",
+    "@rules_pkg//pkg:mappings.bzl",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",

@@ -6,7 +6,7 @@
 #   //:protobuf_python
 #   //:well_known_types_py_pb2
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")

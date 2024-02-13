@@ -11,7 +11,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:github_only
-load("@rules_pkg//:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//python:build_targets.bzl", "build_targets")
 
 build_targets(name = "python")

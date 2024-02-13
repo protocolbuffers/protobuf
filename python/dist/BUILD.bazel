@@ -6,8 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@pip_deps//:requirements.bzl", "requirement")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")

@@ -2,7 +2,7 @@
 #   This package contains testonly utilities used in C++ unit tests.
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(

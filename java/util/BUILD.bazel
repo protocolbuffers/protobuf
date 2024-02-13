@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_versioned_java_library")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
