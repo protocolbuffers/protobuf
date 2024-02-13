@@ -1758,8 +1758,9 @@ size_t WireFormat::MessageSetItemByteSize(const FieldDescriptor* field,
   our_size += io::CodedOutputStream::VarintSize32(field->number());
 
   // message
-  const Message& sub_message = message_reflection->GetMessage(message, field);
-  size_t message_size = sub_message.ByteSizeLong();
+  size_t message_size;
+    const Message& sub_message = message_reflection->GetMessage(message, field);
+    message_size = sub_message.ByteSizeLong();
 
   our_size += io::CodedOutputStream::VarintSize32(message_size);
   our_size += message_size;
