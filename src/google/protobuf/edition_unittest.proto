@@ -20,6 +20,7 @@ import "google/protobuf/cpp_features.proto";
 
 option features.field_presence = EXPLICIT;
 option features.enum_type = CLOSED;
+option features.(pb.cpp).string_type = VIEW;
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default

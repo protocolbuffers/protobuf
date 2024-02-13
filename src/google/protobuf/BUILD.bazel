@@ -1018,6 +1018,7 @@ cc_library(
         "map_test_util.h",
         "map_test_util.inc",
         "message_unittest.inc",
+        "message_unittest_legacy_apis.inc",
         "reflection_tester.h",
         "repeated_field_reflection_unittest.inc",
         "test_util.h",
@@ -1483,6 +1484,7 @@ cc_test(
     srcs = [
         "message_unittest.cc",
         "message_unittest.inc",
+        "message_unittest_legacy_apis.inc",
     ],
     data = [":testdata"],
     deps = [
