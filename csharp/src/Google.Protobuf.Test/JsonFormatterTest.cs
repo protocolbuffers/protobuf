@@ -844,6 +844,56 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WriteValueWithIndentation_MapWithNested()
+        {
+            var value = new TestMap
+            {
+                MapInt32ForeignMessage =
+                {
+                    { 1, new ForeignMessage { C = 1 } },
+                    { 2, new ForeignMessage { C = 2 } },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'mapInt32ForeignMessage': {
+    '1': {
+      'c': 1
+    },
+    '2': {
+      'c': 2
+    }
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_MapWithEmptyNested()
+        {
+            var value = new TestMap
+            {
+                MapInt32ForeignMessage =
+                {
+                    { 1, new ForeignMessage() },
+                    { 2, new ForeignMessage() },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'mapInt32ForeignMessage': {
+    '1': {},
+    '2': {}
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
         public void WriteValueWithIndentation_List()
         {
             var value = new RepeatedField<int> { 1, 2, 3 };
