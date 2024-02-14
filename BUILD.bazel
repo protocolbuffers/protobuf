@@ -253,13 +253,13 @@ cc_binary(
 # a user-defined proto_lang_toolchain.
 alias(
     name = "protobuf",
-    actual = "//src/google/protobuf",
+    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "protobuf_nowkt",
-    actual = "//src/google/protobuf:protobuf_nowkt",
+    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
     deprecation = "Use //:protobuf instead",
     visibility = ["//visibility:public"],
 )
