@@ -7,6 +7,8 @@
 // clang-format off
 #include "absl/strings/string_view.h"
 // clang-format on
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest_string_view.pb.h"
 
@@ -95,6 +97,19 @@ TEST(StringViewFieldTest, SingularSetByStringMove) {
   std::string value = STRING_PAYLOAD;
 
   VerifySingularStringSet(message, std::move(value), STRING_PAYLOAD);
+}
+
+TEST(StringViewFieldTest, SingularSetAndGetByReflection) {
+  TestStringView message;
+
+  const Reflection* reflection = message.GetReflection();
+  const FieldDescriptor* field =
+      message.GetDescriptor()->FindFieldByName("singular_string");
+
+  reflection->SetString(&message, field, std::string{STRING_PAYLOAD});
+
+  EXPECT_THAT(reflection->GetString(message, field), StrEq(STRING_PAYLOAD));
+  EXPECT_THAT(message.singular_string(), StrEq(STRING_PAYLOAD));
 }
 
 TEST(StringViewFieldTest, RepeatedViewGetter) {
@@ -234,6 +249,49 @@ TEST(StringViewFieldTest, RepeatedViewSetter) {
 
   message.clear_repeated_string();
   EXPECT_EQ(message.repeated_string_size(), 0);
+}
+
+TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
+  TestStringView message;
+
+  const Reflection* reflection = message.GetReflection();
+  const FieldDescriptor* field =
+      message.GetDescriptor()->FindFieldByName("repeated_string");
+
+  // AddString().
+  reflection->AddString(&message, field, std::string{"000"});
+  reflection->AddString(&message, field, std::string{"111"});
+  reflection->AddString(&message, field, std::string{"222"});
+  {
+    const auto& rep_str =
+        reflection->GetRepeatedFieldRef<std::string>(message, field);
+    EXPECT_EQ(rep_str.size(), 3);
+    EXPECT_THAT(rep_str, ElementsAre("000", "111", "222"));
+  }
+
+  // SetRepeatedString().
+  reflection->SetRepeatedString(&message, field, 0, std::string{"000000"});
+  reflection->SetRepeatedString(&message, field, 1, std::string{"111111"});
+  reflection->SetRepeatedString(&message, field, 2, std::string{"222222"});
+  {
+    const auto& rep_str =
+        reflection->GetRepeatedFieldRef<std::string>(message, field);
+    EXPECT_EQ(rep_str.size(), 3);
+    EXPECT_THAT(rep_str, ElementsAre("000000", "111111", "222222"));
+  }
+
+  // MutableRepeatedPtrField().
+  for (auto& it :
+       *reflection->MutableRepeatedPtrField<std::string>(&message, field)) {
+    it.append(it);
+  }
+  {
+    const auto& rep_str =
+        reflection->GetRepeatedFieldRef<std::string>(message, field);
+    EXPECT_EQ(rep_str.size(), 3);
+    EXPECT_THAT(rep_str,
+                ElementsAre("000000000000", "111111111111", "222222222222"));
+  }
 }
 
 }  // namespace
