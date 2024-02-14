@@ -516,6 +516,36 @@ cc_library(
     ],
 )
 
+PROTOBUF_HEADERS = [
+    "cpp_edition_defaults.h",
+    "cpp_features.pb.h",
+    "descriptor.h",
+    "descriptor.pb.h",
+    "descriptor_database.h",
+    "descriptor_visitor.h",
+    "dynamic_message.h",
+    "feature_resolver.h",
+    "field_access_listener.h",
+    "generated_enum_reflection.h",
+    "generated_message_bases.h",
+    "generated_message_reflection.h",
+    "generated_message_tctable_gen.h",
+    "internal_message_util.h",
+    "map_entry.h",
+    "map_field.h",
+    "map_field_inl.h",
+    "message.h",
+    "metadata.h",
+    "reflection.h",
+    "reflection_internal.h",
+    "reflection_mode.h",
+    "reflection_ops.h",
+    "service.h",
+    "text_format.h",
+    "unknown_field_set.h",
+    "wire_format.h",
+]
+
 cc_library(
     name = "protobuf",
     srcs = [
@@ -541,35 +571,7 @@ cc_library(
         "unknown_field_set.cc",
         "wire_format.cc",
     ],
-    hdrs = [
-        "cpp_edition_defaults.h",
-        "cpp_features.pb.h",
-        "descriptor.h",
-        "descriptor.pb.h",
-        "descriptor_database.h",
-        "descriptor_visitor.h",
-        "dynamic_message.h",
-        "feature_resolver.h",
-        "field_access_listener.h",
-        "generated_enum_reflection.h",
-        "generated_message_bases.h",
-        "generated_message_reflection.h",
-        "generated_message_tctable_gen.h",
-        "internal_message_util.h",
-        "map_entry.h",
-        "map_field.h",
-        "map_field_inl.h",
-        "message.h",
-        "metadata.h",
-        "reflection.h",
-        "reflection_internal.h",
-        "reflection_mode.h",
-        "reflection_ops.h",
-        "service.h",
-        "text_format.h",
-        "unknown_field_set.h",
-        "wire_format.h",
-    ],
+    hdrs = PROTOBUF_HEADERS,
     copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
@@ -610,6 +612,44 @@ cc_library(
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
         "@com_google_absl//absl/types:variant",
+    ],
+)
+
+# This target exposes the headers for the protobuf runtime, and additionally
+# depends on the C++ well-known types and some other miscellaneous utilities.
+# The purpose is to preserve compatibility with projects that do not yet comply
+# with the layering check. Ideally everyone should get into compliance with the
+# layering check, which would mean for example taking a dependency on
+# //:any_cc_proto instead of relying on this target to make it available
+# indirectly.
+cc_library(
+    name = "protobuf_layering_check_legacy",
+    hdrs = PROTOBUF_HEADERS,
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
+    deps = [
+        ":any_cc_proto",
+        ":api_cc_proto",
+        ":duration_cc_proto",
+        ":empty_cc_proto",
+        ":field_mask_cc_proto",
+        ":protobuf",
+        ":source_context_cc_proto",
+        ":struct_cc_proto",
+        ":timestamp_cc_proto",
+        ":type_cc_proto",
+        ":wrappers_cc_proto",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver",
     ],
 )
 
