@@ -5577,23 +5577,6 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
   filename_ = proto.name();
 
-  // Check if the file already exists and is identical to the one being built.
-  // Note:  This only works if the input is canonical -- that is, it
-  //   fully-qualifies all type names, has no UninterpretedOptions, etc.
-  //   This is fine, because this idempotency "feature" really only exists to
-  //   accommodate one hack in the proto1->proto2 migration layer.
-  const FileDescriptor* existing_file = tables_->FindFile(filename_);
-  if (existing_file != nullptr) {
-    // File already in pool.  Compare the existing one to the input.
-    if (ExistingFileMatchesProto(existing_file->edition(), existing_file,
-                                 proto)) {
-      // They're identical.  Return the existing descriptor.
-      return existing_file;
-    }
-
-    // Not a match.  The error will be detected and handled later.
-  }
-
   // Check to see if this file is already on the pending files list.
   // TODO:  Allow recursive imports?  It may not work with some
   //   (most?) programming languages.  E.g., in C++, a forward declaration
