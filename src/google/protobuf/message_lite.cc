@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "absl/base/dynamic_annotations.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -50,10 +51,13 @@ const char* MessageLite::_InternalParse(const char* ptr,
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
 
-  if (data->tc_table != nullptr) {
-    return internal::TcParser::ParseLoop(this, ptr, ctx, data->tc_table);
+  auto* tc_table = data->tc_table;
+  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
+    ABSL_DCHECK(!data->is_lite);
+    tc_table = data->full().descriptor_methods->get_tc_table(*this);
   }
-  return nullptr;
+
+  return internal::TcParser::ParseLoop(this, ptr, ctx, tc_table);
 }
 
 std::string MessageLite::GetTypeName() const {
