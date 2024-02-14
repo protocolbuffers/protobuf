@@ -42,6 +42,9 @@ extern "C" void* __pb_rust_alloc(size_t size, size_t align);
 inline SerializedData SerializeMsg(const google::protobuf::Message* msg) {
   size_t len = msg->ByteSizeLong();
   void* bytes = __pb_rust_alloc(len, alignof(char));
+  if (bytes == nullptr) {
+    ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
+  }
   if (!msg->SerializeToArray(bytes, static_cast<int>(len))) {
     ABSL_LOG(FATAL) << "Couldn't serialize the message.";
   }

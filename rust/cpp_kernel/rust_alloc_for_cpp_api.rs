@@ -9,6 +9,12 @@ use std::alloc::{alloc, Layout};
 
 #[no_mangle]
 extern "C" fn __pb_rust_alloc(size: usize, align: usize) -> *mut u8 {
-    let layout = Layout::from_size_align(size, align).unwrap();
-    unsafe { alloc(layout) }
+    if size == 0 {
+        // A 0-sized layout is legal but the global allocator isn't required to support
+        // it so return a dangling pointer instead.
+        std::ptr::null_mut::<u8>().wrapping_add(align)
+    } else {
+        let layout = Layout::from_size_align(size, 1).unwrap();
+        unsafe { alloc(layout) }
+    }
 }
