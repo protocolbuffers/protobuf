@@ -10537,7 +10537,7 @@ inline int FileDescriptorSet::file_size() const {
   return _internal_file_size();
 }
 inline void FileDescriptorSet::clear_file() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_.Clear();
 }
 inline ::google::protobuf::FileDescriptorProto* FileDescriptorSet::mutable_file(int index)
@@ -10548,7 +10548,7 @@ inline ::google::protobuf::FileDescriptorProto* FileDescriptorSet::mutable_file(
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* FileDescriptorSet::mutable_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorSet.file)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_file();
 }
 inline const ::google::protobuf::FileDescriptorProto& FileDescriptorSet::file(int index) const
@@ -10557,7 +10557,7 @@ inline const ::google::protobuf::FileDescriptorProto& FileDescriptorSet::file(in
   return _internal_file().Get(index);
 }
 inline ::google::protobuf::FileDescriptorProto* FileDescriptorSet::add_file() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_file()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorSet.file)
   return _add;
@@ -10569,12 +10569,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescri
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>&
 FileDescriptorSet::_internal_file() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.file_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>*
 FileDescriptorSet::_internal_mutable_file() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.file_;
 }
 
@@ -10588,7 +10588,7 @@ inline bool FileDescriptorProto::has_name() const {
   return value;
 }
 inline void FileDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -10600,7 +10600,7 @@ inline const std::string& FileDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.name)
@@ -10611,21 +10611,21 @@ inline std::string* FileDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_
   return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void FileDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* FileDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* FileDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -10638,7 +10638,7 @@ inline std::string* FileDescriptorProto::release_name() {
   return released;
 }
 inline void FileDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -10659,7 +10659,7 @@ inline bool FileDescriptorProto::has_package() const {
   return value;
 }
 inline void FileDescriptorProto::clear_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -10671,7 +10671,7 @@ inline const std::string& FileDescriptorProto::package() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_package(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.package)
@@ -10682,21 +10682,21 @@ inline std::string* FileDescriptorProto::mutable_package() ABSL_ATTRIBUTE_LIFETI
   return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_package() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.package_.Get();
 }
 inline void FileDescriptorProto::_internal_set_package(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.package_.Set(value, GetArena());
 }
 inline std::string* FileDescriptorProto::_internal_mutable_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.package_.Mutable( GetArena());
 }
 inline std::string* FileDescriptorProto::release_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.package)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -10709,7 +10709,7 @@ inline std::string* FileDescriptorProto::release_package() {
   return released;
 }
 inline void FileDescriptorProto::set_allocated_package(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -10732,12 +10732,12 @@ inline int FileDescriptorProto::dependency_size() const {
   return _internal_dependency_size();
 }
 inline void FileDescriptorProto::clear_dependency() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.dependency_.Clear();
 }
 inline std::string* FileDescriptorProto::add_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_dependency()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _s;
@@ -10777,29 +10777,29 @@ inline void FileDescriptorProto::set_dependency(int index, absl::string_view val
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_dependency()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(std::string&& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_dependency()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_dependency()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value, std::size_t size) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_dependency()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(absl::string_view value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_dependency()->Add()->assign(value.data(),
                                                      value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FileDescriptorProto.dependency)
@@ -10812,17 +10812,17 @@ FileDescriptorProto::dependency() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 FileDescriptorProto::mutable_dependency() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.dependency)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_dependency();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FileDescriptorProto::_internal_dependency() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.dependency_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 FileDescriptorProto::_internal_mutable_dependency() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.dependency_;
 }
 
@@ -10834,7 +10834,7 @@ inline int FileDescriptorProto::public_dependency_size() const {
   return _internal_public_dependency_size();
 }
 inline void FileDescriptorProto::clear_public_dependency() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.public_dependency_.Clear();
 }
 inline ::int32_t FileDescriptorProto::public_dependency(int index) const {
@@ -10846,7 +10846,7 @@ inline void FileDescriptorProto::set_public_dependency(int index, ::int32_t valu
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.public_dependency)
 }
 inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_public_dependency()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.public_dependency)
 }
@@ -10858,16 +10858,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_public_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.public_dependency)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_public_dependency();
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>&
 FileDescriptorProto::_internal_public_dependency() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.public_dependency_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::_internal_mutable_public_dependency() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.public_dependency_;
 }
 
@@ -10879,7 +10879,7 @@ inline int FileDescriptorProto::weak_dependency_size() const {
   return _internal_weak_dependency_size();
 }
 inline void FileDescriptorProto::clear_weak_dependency() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_dependency_.Clear();
 }
 inline ::int32_t FileDescriptorProto::weak_dependency(int index) const {
@@ -10891,7 +10891,7 @@ inline void FileDescriptorProto::set_weak_dependency(int index, ::int32_t value)
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.weak_dependency)
 }
 inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_weak_dependency()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.weak_dependency)
 }
@@ -10903,16 +10903,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::mutable_weak_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.weak_dependency)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_weak_dependency();
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>&
 FileDescriptorProto::_internal_weak_dependency() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.weak_dependency_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* FileDescriptorProto::_internal_mutable_weak_dependency() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.weak_dependency_;
 }
 
@@ -10924,7 +10924,7 @@ inline int FileDescriptorProto::message_type_size() const {
   return _internal_message_type_size();
 }
 inline void FileDescriptorProto::clear_message_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.message_type_.Clear();
 }
 inline ::google::protobuf::DescriptorProto* FileDescriptorProto::mutable_message_type(int index)
@@ -10935,7 +10935,7 @@ inline ::google::protobuf::DescriptorProto* FileDescriptorProto::mutable_message
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* FileDescriptorProto::mutable_message_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.message_type)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_message_type();
 }
 inline const ::google::protobuf::DescriptorProto& FileDescriptorProto::message_type(int index) const
@@ -10944,7 +10944,7 @@ inline const ::google::protobuf::DescriptorProto& FileDescriptorProto::message_t
   return _internal_message_type().Get(index);
 }
 inline ::google::protobuf::DescriptorProto* FileDescriptorProto::add_message_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto* _add = _internal_mutable_message_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.message_type)
   return _add;
@@ -10956,12 +10956,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Descriptor
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>&
 FileDescriptorProto::_internal_message_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.message_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>*
 FileDescriptorProto::_internal_mutable_message_type() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.message_type_;
 }
 
@@ -10973,7 +10973,7 @@ inline int FileDescriptorProto::enum_type_size() const {
   return _internal_enum_type_size();
 }
 inline void FileDescriptorProto::clear_enum_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_type_.Clear();
 }
 inline ::google::protobuf::EnumDescriptorProto* FileDescriptorProto::mutable_enum_type(int index)
@@ -10984,7 +10984,7 @@ inline ::google::protobuf::EnumDescriptorProto* FileDescriptorProto::mutable_enu
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* FileDescriptorProto::mutable_enum_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.enum_type)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_enum_type();
 }
 inline const ::google::protobuf::EnumDescriptorProto& FileDescriptorProto::enum_type(int index) const
@@ -10993,7 +10993,7 @@ inline const ::google::protobuf::EnumDescriptorProto& FileDescriptorProto::enum_
   return _internal_enum_type().Get(index);
 }
 inline ::google::protobuf::EnumDescriptorProto* FileDescriptorProto::add_enum_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.enum_type)
   return _add;
@@ -11005,12 +11005,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescri
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>&
 FileDescriptorProto::_internal_enum_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.enum_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>*
 FileDescriptorProto::_internal_mutable_enum_type() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.enum_type_;
 }
 
@@ -11022,7 +11022,7 @@ inline int FileDescriptorProto::service_size() const {
   return _internal_service_size();
 }
 inline void FileDescriptorProto::clear_service() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.service_.Clear();
 }
 inline ::google::protobuf::ServiceDescriptorProto* FileDescriptorProto::mutable_service(int index)
@@ -11033,7 +11033,7 @@ inline ::google::protobuf::ServiceDescriptorProto* FileDescriptorProto::mutable_
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* FileDescriptorProto::mutable_service()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.service)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_service();
 }
 inline const ::google::protobuf::ServiceDescriptorProto& FileDescriptorProto::service(int index) const
@@ -11042,7 +11042,7 @@ inline const ::google::protobuf::ServiceDescriptorProto& FileDescriptorProto::se
   return _internal_service().Get(index);
 }
 inline ::google::protobuf::ServiceDescriptorProto* FileDescriptorProto::add_service() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::ServiceDescriptorProto* _add = _internal_mutable_service()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.service)
   return _add;
@@ -11054,12 +11054,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDes
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>&
 FileDescriptorProto::_internal_service() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.service_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>*
 FileDescriptorProto::_internal_mutable_service() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.service_;
 }
 
@@ -11071,7 +11071,7 @@ inline int FileDescriptorProto::extension_size() const {
   return _internal_extension_size();
 }
 inline void FileDescriptorProto::clear_extension() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extension_.Clear();
 }
 inline ::google::protobuf::FieldDescriptorProto* FileDescriptorProto::mutable_extension(int index)
@@ -11082,7 +11082,7 @@ inline ::google::protobuf::FieldDescriptorProto* FileDescriptorProto::mutable_ex
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* FileDescriptorProto::mutable_extension()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.extension)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_extension();
 }
 inline const ::google::protobuf::FieldDescriptorProto& FileDescriptorProto::extension(int index) const
@@ -11091,7 +11091,7 @@ inline const ::google::protobuf::FieldDescriptorProto& FileDescriptorProto::exte
   return _internal_extension().Get(index);
 }
 inline ::google::protobuf::FieldDescriptorProto* FileDescriptorProto::add_extension() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.extension)
   return _add;
@@ -11103,12 +11103,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescr
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>&
 FileDescriptorProto::_internal_extension() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.extension_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>*
 FileDescriptorProto::_internal_mutable_extension() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.extension_;
 }
 
@@ -11119,12 +11119,12 @@ inline bool FileDescriptorProto::has_options() const {
   return value;
 }
 inline void FileDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FileOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FileOptions&>(::google::protobuf::_FileOptions_default_instance_);
 }
@@ -11133,7 +11133,7 @@ inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() con
   return _internal_options();
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -11146,7 +11146,7 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_options(::google::pr
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.options)
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::FileOptions* released = _impl_.options_;
@@ -11165,7 +11165,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
   return released;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000008u;
@@ -11174,7 +11174,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_releas
   return temp;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FileOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
@@ -11189,7 +11189,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() A
 }
 inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -11215,12 +11215,12 @@ inline bool FileDescriptorProto::has_source_code_info() const {
   return value;
 }
 inline void FileDescriptorProto::clear_source_code_info() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_code_info_ != nullptr) _impl_.source_code_info_->Clear();
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::_internal_source_code_info() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::SourceCodeInfo* p = _impl_.source_code_info_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::SourceCodeInfo&>(::google::protobuf::_SourceCodeInfo_default_instance_);
 }
@@ -11229,7 +11229,7 @@ inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_cod
   return _internal_source_code_info();
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_code_info_);
   }
@@ -11242,7 +11242,7 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(::g
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000010u;
   ::google::protobuf::SourceCodeInfo* released = _impl_.source_code_info_;
@@ -11261,7 +11261,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_c
   return released;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.source_code_info)
 
   _impl_._has_bits_[0] &= ~0x00000010u;
@@ -11270,7 +11270,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_rel
   return temp;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_code_info_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceCodeInfo>(GetArena());
     _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
@@ -11285,7 +11285,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_c
 }
 inline void FileDescriptorProto::set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.source_code_info_);
   }
@@ -11310,7 +11310,7 @@ inline bool FileDescriptorProto::has_syntax() const {
   return value;
 }
 inline void FileDescriptorProto::clear_syntax() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -11322,7 +11322,7 @@ inline const std::string& FileDescriptorProto::syntax() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileDescriptorProto::set_syntax(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.syntax_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.syntax)
@@ -11333,21 +11333,21 @@ inline std::string* FileDescriptorProto::mutable_syntax() ABSL_ATTRIBUTE_LIFETIM
   return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_syntax() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.syntax_.Get();
 }
 inline void FileDescriptorProto::_internal_set_syntax(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.syntax_.Set(value, GetArena());
 }
 inline std::string* FileDescriptorProto::_internal_mutable_syntax() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.syntax_.Mutable( GetArena());
 }
 inline std::string* FileDescriptorProto::release_syntax() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.syntax)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
     return nullptr;
@@ -11360,7 +11360,7 @@ inline std::string* FileDescriptorProto::release_syntax() {
   return released;
 }
 inline void FileDescriptorProto::set_allocated_syntax(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
   } else {
@@ -11381,7 +11381,7 @@ inline bool FileDescriptorProto::has_edition() const {
   return value;
 }
 inline void FileDescriptorProto::clear_edition() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -11395,11 +11395,11 @@ inline void FileDescriptorProto::set_edition(::google::protobuf::Edition value) 
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition)
 }
 inline ::google::protobuf::Edition FileDescriptorProto::_internal_edition() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::Edition>(_impl_.edition_);
 }
 inline void FileDescriptorProto::_internal_set_edition(::google::protobuf::Edition value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_.edition_ = value;
 }
@@ -11414,7 +11414,7 @@ inline bool DescriptorProto_ExtensionRange::has_start() const {
   return value;
 }
 inline void DescriptorProto_ExtensionRange::clear_start() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.start_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -11428,11 +11428,11 @@ inline void DescriptorProto_ExtensionRange::set_start(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ExtensionRange.start)
 }
 inline ::int32_t DescriptorProto_ExtensionRange::_internal_start() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.start_;
 }
 inline void DescriptorProto_ExtensionRange::_internal_set_start(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.start_ = value;
 }
 
@@ -11442,7 +11442,7 @@ inline bool DescriptorProto_ExtensionRange::has_end() const {
   return value;
 }
 inline void DescriptorProto_ExtensionRange::clear_end() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -11456,11 +11456,11 @@ inline void DescriptorProto_ExtensionRange::set_end(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ExtensionRange.end)
 }
 inline ::int32_t DescriptorProto_ExtensionRange::_internal_end() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.end_;
 }
 inline void DescriptorProto_ExtensionRange::_internal_set_end(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = value;
 }
 
@@ -11471,12 +11471,12 @@ inline bool DescriptorProto_ExtensionRange::has_options() const {
   return value;
 }
 inline void DescriptorProto_ExtensionRange::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::ExtensionRangeOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions&>(::google::protobuf::_ExtensionRangeOptions_default_instance_);
 }
@@ -11485,7 +11485,7 @@ inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_Extensio
   return _internal_options();
 }
 inline void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -11498,7 +11498,7 @@ inline void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(:
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::ExtensionRangeOptions* released = _impl_.options_;
@@ -11517,7 +11517,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   return released;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.ExtensionRange.options)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -11526,7 +11526,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   return temp;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ExtensionRangeOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
@@ -11541,7 +11541,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
 }
 inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -11570,7 +11570,7 @@ inline bool DescriptorProto_ReservedRange::has_start() const {
   return value;
 }
 inline void DescriptorProto_ReservedRange::clear_start() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.start_ = 0;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -11584,11 +11584,11 @@ inline void DescriptorProto_ReservedRange::set_start(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ReservedRange.start)
 }
 inline ::int32_t DescriptorProto_ReservedRange::_internal_start() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.start_;
 }
 inline void DescriptorProto_ReservedRange::_internal_set_start(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.start_ = value;
 }
 
@@ -11598,7 +11598,7 @@ inline bool DescriptorProto_ReservedRange::has_end() const {
   return value;
 }
 inline void DescriptorProto_ReservedRange::clear_end() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -11612,11 +11612,11 @@ inline void DescriptorProto_ReservedRange::set_end(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ReservedRange.end)
 }
 inline ::int32_t DescriptorProto_ReservedRange::_internal_end() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.end_;
 }
 inline void DescriptorProto_ReservedRange::_internal_set_end(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = value;
 }
 
@@ -11630,7 +11630,7 @@ inline bool DescriptorProto::has_name() const {
   return value;
 }
 inline void DescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -11642,7 +11642,7 @@ inline const std::string& DescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void DescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.name)
@@ -11653,21 +11653,21 @@ inline std::string* DescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUN
   return _s;
 }
 inline const std::string& DescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void DescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* DescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* DescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -11680,7 +11680,7 @@ inline std::string* DescriptorProto::release_name() {
   return released;
 }
 inline void DescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -11703,7 +11703,7 @@ inline int DescriptorProto::field_size() const {
   return _internal_field_size();
 }
 inline void DescriptorProto::clear_field() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.field_.Clear();
 }
 inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::mutable_field(int index)
@@ -11714,7 +11714,7 @@ inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::mutable_field(
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* DescriptorProto::mutable_field()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.field)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_field();
 }
 inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::field(int index) const
@@ -11723,7 +11723,7 @@ inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::field(in
   return _internal_field().Get(index);
 }
 inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::add_field() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_field()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.field)
   return _add;
@@ -11735,12 +11735,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescr
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>&
 DescriptorProto::_internal_field() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.field_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>*
 DescriptorProto::_internal_mutable_field() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.field_;
 }
 
@@ -11752,7 +11752,7 @@ inline int DescriptorProto::extension_size() const {
   return _internal_extension_size();
 }
 inline void DescriptorProto::clear_extension() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extension_.Clear();
 }
 inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::mutable_extension(int index)
@@ -11763,7 +11763,7 @@ inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::mutable_extens
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* DescriptorProto::mutable_extension()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_extension();
 }
 inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::extension(int index) const
@@ -11772,7 +11772,7 @@ inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::extensio
   return _internal_extension().Get(index);
 }
 inline ::google::protobuf::FieldDescriptorProto* DescriptorProto::add_extension() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension)
   return _add;
@@ -11784,12 +11784,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescr
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>&
 DescriptorProto::_internal_extension() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.extension_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>*
 DescriptorProto::_internal_mutable_extension() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.extension_;
 }
 
@@ -11801,7 +11801,7 @@ inline int DescriptorProto::nested_type_size() const {
   return _internal_nested_type_size();
 }
 inline void DescriptorProto::clear_nested_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nested_type_.Clear();
 }
 inline ::google::protobuf::DescriptorProto* DescriptorProto::mutable_nested_type(int index)
@@ -11812,7 +11812,7 @@ inline ::google::protobuf::DescriptorProto* DescriptorProto::mutable_nested_type
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* DescriptorProto::mutable_nested_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.nested_type)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_nested_type();
 }
 inline const ::google::protobuf::DescriptorProto& DescriptorProto::nested_type(int index) const
@@ -11821,7 +11821,7 @@ inline const ::google::protobuf::DescriptorProto& DescriptorProto::nested_type(i
   return _internal_nested_type().Get(index);
 }
 inline ::google::protobuf::DescriptorProto* DescriptorProto::add_nested_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto* _add = _internal_mutable_nested_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.nested_type)
   return _add;
@@ -11833,12 +11833,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Descriptor
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>&
 DescriptorProto::_internal_nested_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.nested_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>*
 DescriptorProto::_internal_mutable_nested_type() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.nested_type_;
 }
 
@@ -11850,7 +11850,7 @@ inline int DescriptorProto::enum_type_size() const {
   return _internal_enum_type_size();
 }
 inline void DescriptorProto::clear_enum_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_type_.Clear();
 }
 inline ::google::protobuf::EnumDescriptorProto* DescriptorProto::mutable_enum_type(int index)
@@ -11861,7 +11861,7 @@ inline ::google::protobuf::EnumDescriptorProto* DescriptorProto::mutable_enum_ty
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* DescriptorProto::mutable_enum_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.enum_type)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_enum_type();
 }
 inline const ::google::protobuf::EnumDescriptorProto& DescriptorProto::enum_type(int index) const
@@ -11870,7 +11870,7 @@ inline const ::google::protobuf::EnumDescriptorProto& DescriptorProto::enum_type
   return _internal_enum_type().Get(index);
 }
 inline ::google::protobuf::EnumDescriptorProto* DescriptorProto::add_enum_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.enum_type)
   return _add;
@@ -11882,12 +11882,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescri
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>&
 DescriptorProto::_internal_enum_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.enum_type_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>*
 DescriptorProto::_internal_mutable_enum_type() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.enum_type_;
 }
 
@@ -11899,7 +11899,7 @@ inline int DescriptorProto::extension_range_size() const {
   return _internal_extension_range_size();
 }
 inline void DescriptorProto::clear_extension_range() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extension_range_.Clear();
 }
 inline ::google::protobuf::DescriptorProto_ExtensionRange* DescriptorProto::mutable_extension_range(int index)
@@ -11910,7 +11910,7 @@ inline ::google::protobuf::DescriptorProto_ExtensionRange* DescriptorProto::muta
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* DescriptorProto::mutable_extension_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension_range)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_extension_range();
 }
 inline const ::google::protobuf::DescriptorProto_ExtensionRange& DescriptorProto::extension_range(int index) const
@@ -11919,7 +11919,7 @@ inline const ::google::protobuf::DescriptorProto_ExtensionRange& DescriptorProto
   return _internal_extension_range().Get(index);
 }
 inline ::google::protobuf::DescriptorProto_ExtensionRange* DescriptorProto::add_extension_range() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto_ExtensionRange* _add = _internal_mutable_extension_range()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension_range)
   return _add;
@@ -11931,12 +11931,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Descriptor
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>&
 DescriptorProto::_internal_extension_range() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.extension_range_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>*
 DescriptorProto::_internal_mutable_extension_range() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.extension_range_;
 }
 
@@ -11948,7 +11948,7 @@ inline int DescriptorProto::oneof_decl_size() const {
   return _internal_oneof_decl_size();
 }
 inline void DescriptorProto::clear_oneof_decl() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneof_decl_.Clear();
 }
 inline ::google::protobuf::OneofDescriptorProto* DescriptorProto::mutable_oneof_decl(int index)
@@ -11959,7 +11959,7 @@ inline ::google::protobuf::OneofDescriptorProto* DescriptorProto::mutable_oneof_
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* DescriptorProto::mutable_oneof_decl()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.oneof_decl)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_oneof_decl();
 }
 inline const ::google::protobuf::OneofDescriptorProto& DescriptorProto::oneof_decl(int index) const
@@ -11968,7 +11968,7 @@ inline const ::google::protobuf::OneofDescriptorProto& DescriptorProto::oneof_de
   return _internal_oneof_decl().Get(index);
 }
 inline ::google::protobuf::OneofDescriptorProto* DescriptorProto::add_oneof_decl() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::OneofDescriptorProto* _add = _internal_mutable_oneof_decl()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.oneof_decl)
   return _add;
@@ -11980,12 +11980,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescr
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>&
 DescriptorProto::_internal_oneof_decl() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.oneof_decl_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>*
 DescriptorProto::_internal_mutable_oneof_decl() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.oneof_decl_;
 }
 
@@ -11996,12 +11996,12 @@ inline bool DescriptorProto::has_options() const {
   return value;
 }
 inline void DescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::MessageOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::MessageOptions&>(::google::protobuf::_MessageOptions_default_instance_);
 }
@@ -12010,7 +12010,7 @@ inline const ::google::protobuf::MessageOptions& DescriptorProto::options() cons
   return _internal_options();
 }
 inline void DescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -12023,7 +12023,7 @@ inline void DescriptorProto::unsafe_arena_set_allocated_options(::google::protob
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.options)
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::MessageOptions* released = _impl_.options_;
@@ -12042,7 +12042,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
   return released;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -12051,7 +12051,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release
   return temp;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MessageOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
@@ -12066,7 +12066,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() AB
 }
 inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -12093,7 +12093,7 @@ inline int DescriptorProto::reserved_range_size() const {
   return _internal_reserved_range_size();
 }
 inline void DescriptorProto::clear_reserved_range() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_range_.Clear();
 }
 inline ::google::protobuf::DescriptorProto_ReservedRange* DescriptorProto::mutable_reserved_range(int index)
@@ -12104,7 +12104,7 @@ inline ::google::protobuf::DescriptorProto_ReservedRange* DescriptorProto::mutab
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* DescriptorProto::mutable_reserved_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_range)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_range();
 }
 inline const ::google::protobuf::DescriptorProto_ReservedRange& DescriptorProto::reserved_range(int index) const
@@ -12113,7 +12113,7 @@ inline const ::google::protobuf::DescriptorProto_ReservedRange& DescriptorProto:
   return _internal_reserved_range().Get(index);
 }
 inline ::google::protobuf::DescriptorProto_ReservedRange* DescriptorProto::add_reserved_range() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto_ReservedRange* _add = _internal_mutable_reserved_range()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_range)
   return _add;
@@ -12125,12 +12125,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Descriptor
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>&
 DescriptorProto::_internal_reserved_range() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_range_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>*
 DescriptorProto::_internal_mutable_reserved_range() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_range_;
 }
 
@@ -12142,12 +12142,12 @@ inline int DescriptorProto::reserved_name_size() const {
   return _internal_reserved_name_size();
 }
 inline void DescriptorProto::clear_reserved_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_name_.Clear();
 }
 inline std::string* DescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_reserved_name()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _s;
@@ -12187,29 +12187,29 @@ inline void DescriptorProto::set_reserved_name(int index, absl::string_view valu
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(std::string&& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value, std::size_t size) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(absl::string_view value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value.data(),
                                                      value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.DescriptorProto.reserved_name)
@@ -12222,17 +12222,17 @@ DescriptorProto::reserved_name() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 DescriptorProto::mutable_reserved_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_name)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_name();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 DescriptorProto::_internal_reserved_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_name_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 DescriptorProto::_internal_mutable_reserved_name() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_name_;
 }
 
@@ -12246,7 +12246,7 @@ inline bool ExtensionRangeOptions_Declaration::has_number() const {
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_number() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -12260,11 +12260,11 @@ inline void ExtensionRangeOptions_Declaration::set_number(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.number)
 }
 inline ::int32_t ExtensionRangeOptions_Declaration::_internal_number() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.number_;
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_number(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = value;
 }
 
@@ -12274,7 +12274,7 @@ inline bool ExtensionRangeOptions_Declaration::has_full_name() const {
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_full_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.full_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -12286,7 +12286,7 @@ inline const std::string& ExtensionRangeOptions_Declaration::full_name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_full_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.full_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
@@ -12297,21 +12297,21 @@ inline std::string* ExtensionRangeOptions_Declaration::mutable_full_name() ABSL_
   return _s;
 }
 inline const std::string& ExtensionRangeOptions_Declaration::_internal_full_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.full_name_.Get();
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_full_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.full_name_.Set(value, GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::_internal_mutable_full_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.full_name_.Mutable( GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::release_full_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -12324,7 +12324,7 @@ inline std::string* ExtensionRangeOptions_Declaration::release_full_name() {
   return released;
 }
 inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -12345,7 +12345,7 @@ inline bool ExtensionRangeOptions_Declaration::has_type() const {
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -12357,7 +12357,7 @@ inline const std::string& ExtensionRangeOptions_Declaration::type() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void ExtensionRangeOptions_Declaration::set_type(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.type)
@@ -12368,21 +12368,21 @@ inline std::string* ExtensionRangeOptions_Declaration::mutable_type() ABSL_ATTRI
   return _s;
 }
 inline const std::string& ExtensionRangeOptions_Declaration::_internal_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.type_.Get();
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_type(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.type_.Set(value, GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::_internal_mutable_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.type_.Mutable( GetArena());
 }
 inline std::string* ExtensionRangeOptions_Declaration::release_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.Declaration.type)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -12395,7 +12395,7 @@ inline std::string* ExtensionRangeOptions_Declaration::release_type() {
   return released;
 }
 inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -12416,7 +12416,7 @@ inline bool ExtensionRangeOptions_Declaration::has_reserved() const {
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_reserved() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_ = false;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -12430,11 +12430,11 @@ inline void ExtensionRangeOptions_Declaration::set_reserved(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.reserved)
 }
 inline bool ExtensionRangeOptions_Declaration::_internal_reserved() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_;
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_reserved(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_ = value;
 }
 
@@ -12444,7 +12444,7 @@ inline bool ExtensionRangeOptions_Declaration::has_repeated() const {
   return value;
 }
 inline void ExtensionRangeOptions_Declaration::clear_repeated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.repeated_ = false;
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -12458,11 +12458,11 @@ inline void ExtensionRangeOptions_Declaration::set_repeated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.Declaration.repeated)
 }
 inline bool ExtensionRangeOptions_Declaration::_internal_repeated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.repeated_;
 }
 inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.repeated_ = value;
 }
 
@@ -12478,7 +12478,7 @@ inline int ExtensionRangeOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void ExtensionRangeOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::mutable_uninterpreted_option(int index)
@@ -12489,7 +12489,7 @@ inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::mutable_u
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* ExtensionRangeOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& ExtensionRangeOptions::uninterpreted_option(int index) const
@@ -12498,7 +12498,7 @@ inline const ::google::protobuf::UninterpretedOption& ExtensionRangeOptions::uni
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   return _add;
@@ -12510,12 +12510,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 ExtensionRangeOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 ExtensionRangeOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -12527,7 +12527,7 @@ inline int ExtensionRangeOptions::declaration_size() const {
   return _internal_declaration_size();
 }
 inline void ExtensionRangeOptions::clear_declaration() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.declaration_.Clear();
 }
 inline ::google::protobuf::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::mutable_declaration(int index)
@@ -12538,7 +12538,7 @@ inline ::google::protobuf::ExtensionRangeOptions_Declaration* ExtensionRangeOpti
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* ExtensionRangeOptions::mutable_declaration()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.declaration)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_declaration();
 }
 inline const ::google::protobuf::ExtensionRangeOptions_Declaration& ExtensionRangeOptions::declaration(int index) const
@@ -12547,7 +12547,7 @@ inline const ::google::protobuf::ExtensionRangeOptions_Declaration& ExtensionRan
   return _internal_declaration().Get(index);
 }
 inline ::google::protobuf::ExtensionRangeOptions_Declaration* ExtensionRangeOptions::add_declaration() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::ExtensionRangeOptions_Declaration* _add = _internal_mutable_declaration()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.declaration)
   return _add;
@@ -12559,12 +12559,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionR
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>&
 ExtensionRangeOptions::_internal_declaration() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.declaration_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>*
 ExtensionRangeOptions::_internal_mutable_declaration() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.declaration_;
 }
 
@@ -12575,12 +12575,12 @@ inline bool ExtensionRangeOptions::has_features() const {
   return value;
 }
 inline void ExtensionRangeOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -12589,7 +12589,7 @@ inline const ::google::protobuf::FeatureSet& ExtensionRangeOptions::features() c
   return _internal_features();
 }
 inline void ExtensionRangeOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -12602,7 +12602,7 @@ inline void ExtensionRangeOptions::unsafe_arena_set_allocated_features(::google:
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ExtensionRangeOptions.features)
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -12621,7 +12621,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::release_features()
   return released;
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ExtensionRangeOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -12630,7 +12630,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::unsafe_arena_relea
   return temp;
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -12645,7 +12645,7 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::mutable_features()
 }
 inline void ExtensionRangeOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -12670,7 +12670,7 @@ inline bool ExtensionRangeOptions::has_verification() const {
   return value;
 }
 inline void ExtensionRangeOptions::clear_verification() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.verification_ = 1;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -12684,11 +12684,11 @@ inline void ExtensionRangeOptions::set_verification(::google::protobuf::Extensio
   // @@protoc_insertion_point(field_set:google.protobuf.ExtensionRangeOptions.verification)
 }
 inline ::google::protobuf::ExtensionRangeOptions_VerificationState ExtensionRangeOptions::_internal_verification() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::ExtensionRangeOptions_VerificationState>(_impl_.verification_);
 }
 inline void ExtensionRangeOptions::_internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::ExtensionRangeOptions_VerificationState_IsValid(value));
   _impl_.verification_ = value;
 }
@@ -12703,7 +12703,7 @@ inline bool FieldDescriptorProto::has_name() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -12715,7 +12715,7 @@ inline const std::string& FieldDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.name)
@@ -12726,21 +12726,21 @@ inline std::string* FieldDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME
   return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void FieldDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -12753,7 +12753,7 @@ inline std::string* FieldDescriptorProto::release_name() {
   return released;
 }
 inline void FieldDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -12774,7 +12774,7 @@ inline bool FieldDescriptorProto::has_number() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_number() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
   _impl_._has_bits_[0] &= ~0x00000040u;
 }
@@ -12788,11 +12788,11 @@ inline void FieldDescriptorProto::set_number(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.number)
 }
 inline ::int32_t FieldDescriptorProto::_internal_number() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.number_;
 }
 inline void FieldDescriptorProto::_internal_set_number(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = value;
 }
 
@@ -12802,7 +12802,7 @@ inline bool FieldDescriptorProto::has_label() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_label() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.label_ = 1;
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
@@ -12816,11 +12816,11 @@ inline void FieldDescriptorProto::set_label(::google::protobuf::FieldDescriptorP
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.label)
 }
 inline ::google::protobuf::FieldDescriptorProto_Label FieldDescriptorProto::_internal_label() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FieldDescriptorProto_Label>(_impl_.label_);
 }
 inline void FieldDescriptorProto::_internal_set_label(::google::protobuf::FieldDescriptorProto_Label value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FieldDescriptorProto_Label_IsValid(value));
   _impl_.label_ = value;
 }
@@ -12831,7 +12831,7 @@ inline bool FieldDescriptorProto::has_type() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_ = 1;
   _impl_._has_bits_[0] &= ~0x00000400u;
 }
@@ -12845,11 +12845,11 @@ inline void FieldDescriptorProto::set_type(::google::protobuf::FieldDescriptorPr
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type)
 }
 inline ::google::protobuf::FieldDescriptorProto_Type FieldDescriptorProto::_internal_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FieldDescriptorProto_Type>(_impl_.type_);
 }
 inline void FieldDescriptorProto::_internal_set_type(::google::protobuf::FieldDescriptorProto_Type value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FieldDescriptorProto_Type_IsValid(value));
   _impl_.type_ = value;
 }
@@ -12860,7 +12860,7 @@ inline bool FieldDescriptorProto::has_type_name() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_type_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -12872,7 +12872,7 @@ inline const std::string& FieldDescriptorProto::type_name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_type_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.type_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type_name)
@@ -12883,21 +12883,21 @@ inline std::string* FieldDescriptorProto::mutable_type_name() ABSL_ATTRIBUTE_LIF
   return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_type_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.type_name_.Get();
 }
 inline void FieldDescriptorProto::_internal_set_type_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.type_name_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_type_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.type_name_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_type_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.type_name)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
     return nullptr;
@@ -12910,7 +12910,7 @@ inline std::string* FieldDescriptorProto::release_type_name() {
   return released;
 }
 inline void FieldDescriptorProto::set_allocated_type_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
   } else {
@@ -12931,7 +12931,7 @@ inline bool FieldDescriptorProto::has_extendee() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_extendee() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extendee_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -12943,7 +12943,7 @@ inline const std::string& FieldDescriptorProto::extendee() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_extendee(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.extendee_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.extendee)
@@ -12954,21 +12954,21 @@ inline std::string* FieldDescriptorProto::mutable_extendee() ABSL_ATTRIBUTE_LIFE
   return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_extendee() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.extendee_.Get();
 }
 inline void FieldDescriptorProto::_internal_set_extendee(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.extendee_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_extendee() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.extendee_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_extendee() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.extendee)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -12981,7 +12981,7 @@ inline std::string* FieldDescriptorProto::release_extendee() {
   return released;
 }
 inline void FieldDescriptorProto::set_allocated_extendee(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -13002,7 +13002,7 @@ inline bool FieldDescriptorProto::has_default_value() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_default_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.default_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -13014,7 +13014,7 @@ inline const std::string& FieldDescriptorProto::default_value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_default_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.default_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.default_value)
@@ -13025,21 +13025,21 @@ inline std::string* FieldDescriptorProto::mutable_default_value() ABSL_ATTRIBUTE
   return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_default_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.default_value_.Get();
 }
 inline void FieldDescriptorProto::_internal_set_default_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.default_value_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_default_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   return _impl_.default_value_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_default_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.default_value)
   if ((_impl_._has_bits_[0] & 0x00000008u) == 0) {
     return nullptr;
@@ -13052,7 +13052,7 @@ inline std::string* FieldDescriptorProto::release_default_value() {
   return released;
 }
 inline void FieldDescriptorProto::set_allocated_default_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
   } else {
@@ -13073,7 +13073,7 @@ inline bool FieldDescriptorProto::has_oneof_index() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_oneof_index() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneof_index_ = 0;
   _impl_._has_bits_[0] &= ~0x00000080u;
 }
@@ -13087,11 +13087,11 @@ inline void FieldDescriptorProto::set_oneof_index(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.oneof_index)
 }
 inline ::int32_t FieldDescriptorProto::_internal_oneof_index() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.oneof_index_;
 }
 inline void FieldDescriptorProto::_internal_set_oneof_index(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneof_index_ = value;
 }
 
@@ -13101,7 +13101,7 @@ inline bool FieldDescriptorProto::has_json_name() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_json_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.json_name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -13113,7 +13113,7 @@ inline const std::string& FieldDescriptorProto::json_name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FieldDescriptorProto::set_json_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.json_name)
@@ -13124,21 +13124,21 @@ inline std::string* FieldDescriptorProto::mutable_json_name() ABSL_ATTRIBUTE_LIF
   return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_json_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.json_name_.Get();
 }
 inline void FieldDescriptorProto::_internal_set_json_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.json_name_.Set(value, GetArena());
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_json_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   return _impl_.json_name_.Mutable( GetArena());
 }
 inline std::string* FieldDescriptorProto::release_json_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.json_name)
   if ((_impl_._has_bits_[0] & 0x00000010u) == 0) {
     return nullptr;
@@ -13151,7 +13151,7 @@ inline std::string* FieldDescriptorProto::release_json_name() {
   return released;
 }
 inline void FieldDescriptorProto::set_allocated_json_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000010u;
   } else {
@@ -13173,12 +13173,12 @@ inline bool FieldDescriptorProto::has_options() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FieldOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FieldOptions&>(::google::protobuf::_FieldOptions_default_instance_);
 }
@@ -13187,7 +13187,7 @@ inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() c
   return _internal_options();
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -13200,7 +13200,7 @@ inline void FieldDescriptorProto::unsafe_arena_set_allocated_options(::google::p
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldDescriptorProto.options)
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000020u;
   ::google::protobuf::FieldOptions* released = _impl_.options_;
@@ -13219,7 +13219,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options()
   return released;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000020u;
@@ -13228,7 +13228,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_rele
   return temp;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
@@ -13243,7 +13243,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options()
 }
 inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -13268,7 +13268,7 @@ inline bool FieldDescriptorProto::has_proto3_optional() const {
   return value;
 }
 inline void FieldDescriptorProto::clear_proto3_optional() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.proto3_optional_ = false;
   _impl_._has_bits_[0] &= ~0x00000100u;
 }
@@ -13282,11 +13282,11 @@ inline void FieldDescriptorProto::set_proto3_optional(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.proto3_optional)
 }
 inline bool FieldDescriptorProto::_internal_proto3_optional() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.proto3_optional_;
 }
 inline void FieldDescriptorProto::_internal_set_proto3_optional(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.proto3_optional_ = value;
 }
 
@@ -13300,7 +13300,7 @@ inline bool OneofDescriptorProto::has_name() const {
   return value;
 }
 inline void OneofDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -13312,7 +13312,7 @@ inline const std::string& OneofDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void OneofDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.OneofDescriptorProto.name)
@@ -13323,21 +13323,21 @@ inline std::string* OneofDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME
   return _s;
 }
 inline const std::string& OneofDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void OneofDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* OneofDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* OneofDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -13350,7 +13350,7 @@ inline std::string* OneofDescriptorProto::release_name() {
   return released;
 }
 inline void OneofDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -13372,12 +13372,12 @@ inline bool OneofDescriptorProto::has_options() const {
   return value;
 }
 inline void OneofDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::OneofOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::OneofOptions&>(::google::protobuf::_OneofOptions_default_instance_);
 }
@@ -13386,7 +13386,7 @@ inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() c
   return _internal_options();
 }
 inline void OneofDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -13399,7 +13399,7 @@ inline void OneofDescriptorProto::unsafe_arena_set_allocated_options(::google::p
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofDescriptorProto.options)
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::OneofOptions* released = _impl_.options_;
@@ -13418,7 +13418,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options()
   return released;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -13427,7 +13427,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_rele
   return temp;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::OneofOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
@@ -13442,7 +13442,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options()
 }
 inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -13471,7 +13471,7 @@ inline bool EnumDescriptorProto_EnumReservedRange::has_start() const {
   return value;
 }
 inline void EnumDescriptorProto_EnumReservedRange::clear_start() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.start_ = 0;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -13485,11 +13485,11 @@ inline void EnumDescriptorProto_EnumReservedRange::set_start(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.EnumReservedRange.start)
 }
 inline ::int32_t EnumDescriptorProto_EnumReservedRange::_internal_start() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.start_;
 }
 inline void EnumDescriptorProto_EnumReservedRange::_internal_set_start(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.start_ = value;
 }
 
@@ -13499,7 +13499,7 @@ inline bool EnumDescriptorProto_EnumReservedRange::has_end() const {
   return value;
 }
 inline void EnumDescriptorProto_EnumReservedRange::clear_end() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -13513,11 +13513,11 @@ inline void EnumDescriptorProto_EnumReservedRange::set_end(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.EnumReservedRange.end)
 }
 inline ::int32_t EnumDescriptorProto_EnumReservedRange::_internal_end() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.end_;
 }
 inline void EnumDescriptorProto_EnumReservedRange::_internal_set_end(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = value;
 }
 
@@ -13531,7 +13531,7 @@ inline bool EnumDescriptorProto::has_name() const {
   return value;
 }
 inline void EnumDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -13543,7 +13543,7 @@ inline const std::string& EnumDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void EnumDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.name)
@@ -13554,21 +13554,21 @@ inline std::string* EnumDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIME_
   return _s;
 }
 inline const std::string& EnumDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void EnumDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* EnumDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* EnumDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -13581,7 +13581,7 @@ inline std::string* EnumDescriptorProto::release_name() {
   return released;
 }
 inline void EnumDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -13604,7 +13604,7 @@ inline int EnumDescriptorProto::value_size() const {
   return _internal_value_size();
 }
 inline void EnumDescriptorProto::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.Clear();
 }
 inline ::google::protobuf::EnumValueDescriptorProto* EnumDescriptorProto::mutable_value(int index)
@@ -13615,7 +13615,7 @@ inline ::google::protobuf::EnumValueDescriptorProto* EnumDescriptorProto::mutabl
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* EnumDescriptorProto::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.value)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_value();
 }
 inline const ::google::protobuf::EnumValueDescriptorProto& EnumDescriptorProto::value(int index) const
@@ -13624,7 +13624,7 @@ inline const ::google::protobuf::EnumValueDescriptorProto& EnumDescriptorProto::
   return _internal_value().Get(index);
 }
 inline ::google::protobuf::EnumValueDescriptorProto* EnumDescriptorProto::add_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumValueDescriptorProto* _add = _internal_mutable_value()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.value)
   return _add;
@@ -13636,12 +13636,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueD
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>&
 EnumDescriptorProto::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>*
 EnumDescriptorProto::_internal_mutable_value() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.value_;
 }
 
@@ -13652,12 +13652,12 @@ inline bool EnumDescriptorProto::has_options() const {
   return value;
 }
 inline void EnumDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::EnumOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::EnumOptions&>(::google::protobuf::_EnumOptions_default_instance_);
 }
@@ -13666,7 +13666,7 @@ inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() con
   return _internal_options();
 }
 inline void EnumDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -13679,7 +13679,7 @@ inline void EnumDescriptorProto::unsafe_arena_set_allocated_options(::google::pr
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumDescriptorProto.options)
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumOptions* released = _impl_.options_;
@@ -13698,7 +13698,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
   return released;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -13707,7 +13707,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_releas
   return temp;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
@@ -13722,7 +13722,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() A
 }
 inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -13749,7 +13749,7 @@ inline int EnumDescriptorProto::reserved_range_size() const {
   return _internal_reserved_range_size();
 }
 inline void EnumDescriptorProto::clear_reserved_range() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_range_.Clear();
 }
 inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::mutable_reserved_range(int index)
@@ -13760,7 +13760,7 @@ inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* EnumDescriptor
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* EnumDescriptorProto::mutable_reserved_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_range)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_range();
 }
 inline const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& EnumDescriptorProto::reserved_range(int index) const
@@ -13769,7 +13769,7 @@ inline const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& EnumDesc
   return _internal_reserved_range().Get(index);
 }
 inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::add_reserved_range() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* _add = _internal_mutable_reserved_range()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_range)
   return _add;
@@ -13781,12 +13781,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescri
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>&
 EnumDescriptorProto::_internal_reserved_range() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_range_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>*
 EnumDescriptorProto::_internal_mutable_reserved_range() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_range_;
 }
 
@@ -13798,12 +13798,12 @@ inline int EnumDescriptorProto::reserved_name_size() const {
   return _internal_reserved_name_size();
 }
 inline void EnumDescriptorProto::clear_reserved_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_name_.Clear();
 }
 inline std::string* EnumDescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_reserved_name()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _s;
@@ -13843,29 +13843,29 @@ inline void EnumDescriptorProto::set_reserved_name(int index, absl::string_view 
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(std::string&& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value, std::size_t size) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(absl::string_view value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_reserved_name()->Add()->assign(value.data(),
                                                      value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.EnumDescriptorProto.reserved_name)
@@ -13878,17 +13878,17 @@ EnumDescriptorProto::reserved_name() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 EnumDescriptorProto::mutable_reserved_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_name)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_name();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 EnumDescriptorProto::_internal_reserved_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.reserved_name_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 EnumDescriptorProto::_internal_mutable_reserved_name() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.reserved_name_;
 }
 
@@ -13902,7 +13902,7 @@ inline bool EnumValueDescriptorProto::has_name() const {
   return value;
 }
 inline void EnumValueDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -13914,7 +13914,7 @@ inline const std::string& EnumValueDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void EnumValueDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueDescriptorProto.name)
@@ -13925,21 +13925,21 @@ inline std::string* EnumValueDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFE
   return _s;
 }
 inline const std::string& EnumValueDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void EnumValueDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* EnumValueDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* EnumValueDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -13952,7 +13952,7 @@ inline std::string* EnumValueDescriptorProto::release_name() {
   return released;
 }
 inline void EnumValueDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -13973,7 +13973,7 @@ inline bool EnumValueDescriptorProto::has_number() const {
   return value;
 }
 inline void EnumValueDescriptorProto::clear_number() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -13987,11 +13987,11 @@ inline void EnumValueDescriptorProto::set_number(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueDescriptorProto.number)
 }
 inline ::int32_t EnumValueDescriptorProto::_internal_number() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.number_;
 }
 inline void EnumValueDescriptorProto::_internal_set_number(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = value;
 }
 
@@ -14002,12 +14002,12 @@ inline bool EnumValueDescriptorProto::has_options() const {
   return value;
 }
 inline void EnumValueDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::EnumValueOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::EnumValueOptions&>(::google::protobuf::_EnumValueOptions_default_instance_);
 }
@@ -14016,7 +14016,7 @@ inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::opt
   return _internal_options();
 }
 inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -14029,7 +14029,7 @@ inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(::googl
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumValueOptions* released = _impl_.options_;
@@ -14048,7 +14048,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_o
   return released;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -14057,7 +14057,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_ar
   return temp;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumValueOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
@@ -14072,7 +14072,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_o
 }
 inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumValueOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -14101,7 +14101,7 @@ inline bool ServiceDescriptorProto::has_name() const {
   return value;
 }
 inline void ServiceDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -14113,7 +14113,7 @@ inline const std::string& ServiceDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void ServiceDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.ServiceDescriptorProto.name)
@@ -14124,21 +14124,21 @@ inline std::string* ServiceDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETI
   return _s;
 }
 inline const std::string& ServiceDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void ServiceDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* ServiceDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* ServiceDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -14151,7 +14151,7 @@ inline std::string* ServiceDescriptorProto::release_name() {
   return released;
 }
 inline void ServiceDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -14174,7 +14174,7 @@ inline int ServiceDescriptorProto::method_size() const {
   return _internal_method_size();
 }
 inline void ServiceDescriptorProto::clear_method() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.method_.Clear();
 }
 inline ::google::protobuf::MethodDescriptorProto* ServiceDescriptorProto::mutable_method(int index)
@@ -14185,7 +14185,7 @@ inline ::google::protobuf::MethodDescriptorProto* ServiceDescriptorProto::mutabl
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* ServiceDescriptorProto::mutable_method()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceDescriptorProto.method)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_method();
 }
 inline const ::google::protobuf::MethodDescriptorProto& ServiceDescriptorProto::method(int index) const
@@ -14194,7 +14194,7 @@ inline const ::google::protobuf::MethodDescriptorProto& ServiceDescriptorProto::
   return _internal_method().Get(index);
 }
 inline ::google::protobuf::MethodDescriptorProto* ServiceDescriptorProto::add_method() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::MethodDescriptorProto* _add = _internal_mutable_method()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceDescriptorProto.method)
   return _add;
@@ -14206,12 +14206,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDesc
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>&
 ServiceDescriptorProto::_internal_method() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.method_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>*
 ServiceDescriptorProto::_internal_mutable_method() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.method_;
 }
 
@@ -14222,12 +14222,12 @@ inline bool ServiceDescriptorProto::has_options() const {
   return value;
 }
 inline void ServiceDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::ServiceOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::ServiceOptions&>(::google::protobuf::_ServiceOptions_default_instance_);
 }
@@ -14236,7 +14236,7 @@ inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options
   return _internal_options();
 }
 inline void ServiceDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -14249,7 +14249,7 @@ inline void ServiceDescriptorProto::unsafe_arena_set_allocated_options(::google:
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceDescriptorProto.options)
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::ServiceOptions* released = _impl_.options_;
@@ -14268,7 +14268,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_optio
   return released;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -14277,7 +14277,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_
   return temp;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ServiceOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
@@ -14292,7 +14292,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_optio
 }
 inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -14321,7 +14321,7 @@ inline bool MethodDescriptorProto::has_name() const {
   return value;
 }
 inline void MethodDescriptorProto::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -14333,7 +14333,7 @@ inline const std::string& MethodDescriptorProto::name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.name)
@@ -14344,21 +14344,21 @@ inline std::string* MethodDescriptorProto::mutable_name() ABSL_ATTRIBUTE_LIFETIM
   return _s;
 }
 inline const std::string& MethodDescriptorProto::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_.Get();
 }
 inline void MethodDescriptorProto::_internal_set_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_.Set(value, GetArena());
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_.Mutable( GetArena());
 }
 inline std::string* MethodDescriptorProto::release_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.name)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -14371,7 +14371,7 @@ inline std::string* MethodDescriptorProto::release_name() {
   return released;
 }
 inline void MethodDescriptorProto::set_allocated_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -14392,7 +14392,7 @@ inline bool MethodDescriptorProto::has_input_type() const {
   return value;
 }
 inline void MethodDescriptorProto::clear_input_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.input_type_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -14404,7 +14404,7 @@ inline const std::string& MethodDescriptorProto::input_type() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_input_type(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.input_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.input_type)
@@ -14415,21 +14415,21 @@ inline std::string* MethodDescriptorProto::mutable_input_type() ABSL_ATTRIBUTE_L
   return _s;
 }
 inline const std::string& MethodDescriptorProto::_internal_input_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.input_type_.Get();
 }
 inline void MethodDescriptorProto::_internal_set_input_type(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.input_type_.Set(value, GetArena());
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_input_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.input_type_.Mutable( GetArena());
 }
 inline std::string* MethodDescriptorProto::release_input_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.input_type)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -14442,7 +14442,7 @@ inline std::string* MethodDescriptorProto::release_input_type() {
   return released;
 }
 inline void MethodDescriptorProto::set_allocated_input_type(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -14463,7 +14463,7 @@ inline bool MethodDescriptorProto::has_output_type() const {
   return value;
 }
 inline void MethodDescriptorProto::clear_output_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.output_type_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -14475,7 +14475,7 @@ inline const std::string& MethodDescriptorProto::output_type() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void MethodDescriptorProto::set_output_type(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.output_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.output_type)
@@ -14486,21 +14486,21 @@ inline std::string* MethodDescriptorProto::mutable_output_type() ABSL_ATTRIBUTE_
   return _s;
 }
 inline const std::string& MethodDescriptorProto::_internal_output_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.output_type_.Get();
 }
 inline void MethodDescriptorProto::_internal_set_output_type(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.output_type_.Set(value, GetArena());
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_output_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.output_type_.Mutable( GetArena());
 }
 inline std::string* MethodDescriptorProto::release_output_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.output_type)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
     return nullptr;
@@ -14513,7 +14513,7 @@ inline std::string* MethodDescriptorProto::release_output_type() {
   return released;
 }
 inline void MethodDescriptorProto::set_allocated_output_type(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
   } else {
@@ -14535,12 +14535,12 @@ inline bool MethodDescriptorProto::has_options() const {
   return value;
 }
 inline void MethodDescriptorProto::clear_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::_internal_options() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::MethodOptions* p = _impl_.options_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::MethodOptions&>(::google::protobuf::_MethodOptions_default_instance_);
 }
@@ -14549,7 +14549,7 @@ inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options()
   return _internal_options();
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.options_);
   }
@@ -14562,7 +14562,7 @@ inline void MethodDescriptorProto::unsafe_arena_set_allocated_options(::google::
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodDescriptorProto.options)
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::MethodOptions* released = _impl_.options_;
@@ -14581,7 +14581,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options
   return released;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.options)
 
   _impl_._has_bits_[0] &= ~0x00000008u;
@@ -14590,7 +14590,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_re
   return temp;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::_internal_mutable_options() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MethodOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
@@ -14605,7 +14605,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options
 }
 inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::MethodOptions* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.options_);
   }
@@ -14630,7 +14630,7 @@ inline bool MethodDescriptorProto::has_client_streaming() const {
   return value;
 }
 inline void MethodDescriptorProto::clear_client_streaming() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.client_streaming_ = false;
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -14644,11 +14644,11 @@ inline void MethodDescriptorProto::set_client_streaming(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.client_streaming)
 }
 inline bool MethodDescriptorProto::_internal_client_streaming() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.client_streaming_;
 }
 inline void MethodDescriptorProto::_internal_set_client_streaming(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.client_streaming_ = value;
 }
 
@@ -14658,7 +14658,7 @@ inline bool MethodDescriptorProto::has_server_streaming() const {
   return value;
 }
 inline void MethodDescriptorProto::clear_server_streaming() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.server_streaming_ = false;
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -14672,11 +14672,11 @@ inline void MethodDescriptorProto::set_server_streaming(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.server_streaming)
 }
 inline bool MethodDescriptorProto::_internal_server_streaming() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.server_streaming_;
 }
 inline void MethodDescriptorProto::_internal_set_server_streaming(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.server_streaming_ = value;
 }
 
@@ -14690,7 +14690,7 @@ inline bool FileOptions::has_java_package() const {
   return value;
 }
 inline void FileOptions::clear_java_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -14702,7 +14702,7 @@ inline const std::string& FileOptions::java_package() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_package(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.java_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_package)
@@ -14713,21 +14713,21 @@ inline std::string* FileOptions::mutable_java_package() ABSL_ATTRIBUTE_LIFETIME_
   return _s;
 }
 inline const std::string& FileOptions::_internal_java_package() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_package_.Get();
 }
 inline void FileOptions::_internal_set_java_package(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.java_package_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_java_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.java_package_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_java_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_package)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -14740,7 +14740,7 @@ inline std::string* FileOptions::release_java_package() {
   return released;
 }
 inline void FileOptions::set_allocated_java_package(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -14761,7 +14761,7 @@ inline bool FileOptions::has_java_outer_classname() const {
   return value;
 }
 inline void FileOptions::clear_java_outer_classname() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_outer_classname_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -14773,7 +14773,7 @@ inline const std::string& FileOptions::java_outer_classname() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_java_outer_classname(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.java_outer_classname_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_outer_classname)
@@ -14784,21 +14784,21 @@ inline std::string* FileOptions::mutable_java_outer_classname() ABSL_ATTRIBUTE_L
   return _s;
 }
 inline const std::string& FileOptions::_internal_java_outer_classname() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_outer_classname_.Get();
 }
 inline void FileOptions::_internal_set_java_outer_classname(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.java_outer_classname_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_java_outer_classname() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.java_outer_classname_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_java_outer_classname() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_outer_classname)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -14811,7 +14811,7 @@ inline std::string* FileOptions::release_java_outer_classname() {
   return released;
 }
 inline void FileOptions::set_allocated_java_outer_classname(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -14832,7 +14832,7 @@ inline bool FileOptions::has_java_multiple_files() const {
   return value;
 }
 inline void FileOptions::clear_java_multiple_files() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_multiple_files_ = false;
   _impl_._has_bits_[0] &= ~0x00000800u;
 }
@@ -14846,11 +14846,11 @@ inline void FileOptions::set_java_multiple_files(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_multiple_files)
 }
 inline bool FileOptions::_internal_java_multiple_files() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_multiple_files_;
 }
 inline void FileOptions::_internal_set_java_multiple_files(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_multiple_files_ = value;
 }
 
@@ -14860,7 +14860,7 @@ inline bool FileOptions::has_java_generate_equals_and_hash() const {
   return value;
 }
 inline void FileOptions::clear_java_generate_equals_and_hash() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_generate_equals_and_hash_ = false;
   _impl_._has_bits_[0] &= ~0x00001000u;
 }
@@ -14874,11 +14874,11 @@ inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generate_equals_and_hash)
 }
 inline bool FileOptions::_internal_java_generate_equals_and_hash() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_generate_equals_and_hash_;
 }
 inline void FileOptions::_internal_set_java_generate_equals_and_hash(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_generate_equals_and_hash_ = value;
 }
 
@@ -14888,7 +14888,7 @@ inline bool FileOptions::has_java_string_check_utf8() const {
   return value;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_string_check_utf8_ = false;
   _impl_._has_bits_[0] &= ~0x00002000u;
 }
@@ -14902,11 +14902,11 @@ inline void FileOptions::set_java_string_check_utf8(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_string_check_utf8)
 }
 inline bool FileOptions::_internal_java_string_check_utf8() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_string_check_utf8_;
 }
 inline void FileOptions::_internal_set_java_string_check_utf8(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_string_check_utf8_ = value;
 }
 
@@ -14916,7 +14916,7 @@ inline bool FileOptions::has_optimize_for() const {
   return value;
 }
 inline void FileOptions::clear_optimize_for() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.optimize_for_ = 1;
   _impl_._has_bits_[0] &= ~0x00040000u;
 }
@@ -14930,11 +14930,11 @@ inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_Optimi
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FileOptions_OptimizeMode>(_impl_.optimize_for_);
 }
 inline void FileOptions::_internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FileOptions_OptimizeMode_IsValid(value));
   _impl_.optimize_for_ = value;
 }
@@ -14945,7 +14945,7 @@ inline bool FileOptions::has_go_package() const {
   return value;
 }
 inline void FileOptions::clear_go_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.go_package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -14957,7 +14957,7 @@ inline const std::string& FileOptions::go_package() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_go_package(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.go_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.go_package)
@@ -14968,21 +14968,21 @@ inline std::string* FileOptions::mutable_go_package() ABSL_ATTRIBUTE_LIFETIME_BO
   return _s;
 }
 inline const std::string& FileOptions::_internal_go_package() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.go_package_.Get();
 }
 inline void FileOptions::_internal_set_go_package(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.go_package_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_go_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.go_package_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_go_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.go_package)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
     return nullptr;
@@ -14995,7 +14995,7 @@ inline std::string* FileOptions::release_go_package() {
   return released;
 }
 inline void FileOptions::set_allocated_go_package(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
   } else {
@@ -15016,7 +15016,7 @@ inline bool FileOptions::has_cc_generic_services() const {
   return value;
 }
 inline void FileOptions::clear_cc_generic_services() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cc_generic_services_ = false;
   _impl_._has_bits_[0] &= ~0x00004000u;
 }
@@ -15030,11 +15030,11 @@ inline void FileOptions::set_cc_generic_services(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_generic_services)
 }
 inline bool FileOptions::_internal_cc_generic_services() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.cc_generic_services_;
 }
 inline void FileOptions::_internal_set_cc_generic_services(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cc_generic_services_ = value;
 }
 
@@ -15044,7 +15044,7 @@ inline bool FileOptions::has_java_generic_services() const {
   return value;
 }
 inline void FileOptions::clear_java_generic_services() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_generic_services_ = false;
   _impl_._has_bits_[0] &= ~0x00008000u;
 }
@@ -15058,11 +15058,11 @@ inline void FileOptions::set_java_generic_services(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generic_services)
 }
 inline bool FileOptions::_internal_java_generic_services() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.java_generic_services_;
 }
 inline void FileOptions::_internal_set_java_generic_services(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.java_generic_services_ = value;
 }
 
@@ -15072,7 +15072,7 @@ inline bool FileOptions::has_py_generic_services() const {
   return value;
 }
 inline void FileOptions::clear_py_generic_services() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.py_generic_services_ = false;
   _impl_._has_bits_[0] &= ~0x00010000u;
 }
@@ -15086,11 +15086,11 @@ inline void FileOptions::set_py_generic_services(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.py_generic_services)
 }
 inline bool FileOptions::_internal_py_generic_services() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.py_generic_services_;
 }
 inline void FileOptions::_internal_set_py_generic_services(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.py_generic_services_ = value;
 }
 
@@ -15100,7 +15100,7 @@ inline bool FileOptions::has_deprecated() const {
   return value;
 }
 inline void FileOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00020000u;
 }
@@ -15114,11 +15114,11 @@ inline void FileOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.deprecated)
 }
 inline bool FileOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void FileOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -15128,7 +15128,7 @@ inline bool FileOptions::has_cc_enable_arenas() const {
   return value;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cc_enable_arenas_ = true;
   _impl_._has_bits_[0] &= ~0x00080000u;
 }
@@ -15142,11 +15142,11 @@ inline void FileOptions::set_cc_enable_arenas(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_enable_arenas)
 }
 inline bool FileOptions::_internal_cc_enable_arenas() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.cc_enable_arenas_;
 }
 inline void FileOptions::_internal_set_cc_enable_arenas(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cc_enable_arenas_ = value;
 }
 
@@ -15156,7 +15156,7 @@ inline bool FileOptions::has_objc_class_prefix() const {
   return value;
 }
 inline void FileOptions::clear_objc_class_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.objc_class_prefix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -15168,7 +15168,7 @@ inline const std::string& FileOptions::objc_class_prefix() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_objc_class_prefix(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.objc_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.objc_class_prefix)
@@ -15179,21 +15179,21 @@ inline std::string* FileOptions::mutable_objc_class_prefix() ABSL_ATTRIBUTE_LIFE
   return _s;
 }
 inline const std::string& FileOptions::_internal_objc_class_prefix() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.objc_class_prefix_.Get();
 }
 inline void FileOptions::_internal_set_objc_class_prefix(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.objc_class_prefix_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_objc_class_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000008u;
   return _impl_.objc_class_prefix_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_objc_class_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.objc_class_prefix)
   if ((_impl_._has_bits_[0] & 0x00000008u) == 0) {
     return nullptr;
@@ -15206,7 +15206,7 @@ inline std::string* FileOptions::release_objc_class_prefix() {
   return released;
 }
 inline void FileOptions::set_allocated_objc_class_prefix(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000008u;
   } else {
@@ -15227,7 +15227,7 @@ inline bool FileOptions::has_csharp_namespace() const {
   return value;
 }
 inline void FileOptions::clear_csharp_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.csharp_namespace_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -15239,7 +15239,7 @@ inline const std::string& FileOptions::csharp_namespace() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_csharp_namespace(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.csharp_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_namespace)
@@ -15250,21 +15250,21 @@ inline std::string* FileOptions::mutable_csharp_namespace() ABSL_ATTRIBUTE_LIFET
   return _s;
 }
 inline const std::string& FileOptions::_internal_csharp_namespace() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.csharp_namespace_.Get();
 }
 inline void FileOptions::_internal_set_csharp_namespace(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.csharp_namespace_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_csharp_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000010u;
   return _impl_.csharp_namespace_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_csharp_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.csharp_namespace)
   if ((_impl_._has_bits_[0] & 0x00000010u) == 0) {
     return nullptr;
@@ -15277,7 +15277,7 @@ inline std::string* FileOptions::release_csharp_namespace() {
   return released;
 }
 inline void FileOptions::set_allocated_csharp_namespace(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000010u;
   } else {
@@ -15298,7 +15298,7 @@ inline bool FileOptions::has_swift_prefix() const {
   return value;
 }
 inline void FileOptions::clear_swift_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.swift_prefix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -15310,7 +15310,7 @@ inline const std::string& FileOptions::swift_prefix() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_swift_prefix(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.swift_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.swift_prefix)
@@ -15321,21 +15321,21 @@ inline std::string* FileOptions::mutable_swift_prefix() ABSL_ATTRIBUTE_LIFETIME_
   return _s;
 }
 inline const std::string& FileOptions::_internal_swift_prefix() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.swift_prefix_.Get();
 }
 inline void FileOptions::_internal_set_swift_prefix(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   _impl_.swift_prefix_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_swift_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000020u;
   return _impl_.swift_prefix_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_swift_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
   if ((_impl_._has_bits_[0] & 0x00000020u) == 0) {
     return nullptr;
@@ -15348,7 +15348,7 @@ inline std::string* FileOptions::release_swift_prefix() {
   return released;
 }
 inline void FileOptions::set_allocated_swift_prefix(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000020u;
   } else {
@@ -15369,7 +15369,7 @@ inline bool FileOptions::has_php_class_prefix() const {
   return value;
 }
 inline void FileOptions::clear_php_class_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.php_class_prefix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000040u;
 }
@@ -15381,7 +15381,7 @@ inline const std::string& FileOptions::php_class_prefix() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_class_prefix(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.php_class_prefix_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_class_prefix)
@@ -15392,21 +15392,21 @@ inline std::string* FileOptions::mutable_php_class_prefix() ABSL_ATTRIBUTE_LIFET
   return _s;
 }
 inline const std::string& FileOptions::_internal_php_class_prefix() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.php_class_prefix_.Get();
 }
 inline void FileOptions::_internal_set_php_class_prefix(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   _impl_.php_class_prefix_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_php_class_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000040u;
   return _impl_.php_class_prefix_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_php_class_prefix() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_class_prefix)
   if ((_impl_._has_bits_[0] & 0x00000040u) == 0) {
     return nullptr;
@@ -15419,7 +15419,7 @@ inline std::string* FileOptions::release_php_class_prefix() {
   return released;
 }
 inline void FileOptions::set_allocated_php_class_prefix(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000040u;
   } else {
@@ -15440,7 +15440,7 @@ inline bool FileOptions::has_php_namespace() const {
   return value;
 }
 inline void FileOptions::clear_php_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.php_namespace_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000080u;
 }
@@ -15452,7 +15452,7 @@ inline const std::string& FileOptions::php_namespace() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_namespace(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.php_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_namespace)
@@ -15463,21 +15463,21 @@ inline std::string* FileOptions::mutable_php_namespace() ABSL_ATTRIBUTE_LIFETIME
   return _s;
 }
 inline const std::string& FileOptions::_internal_php_namespace() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.php_namespace_.Get();
 }
 inline void FileOptions::_internal_set_php_namespace(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   _impl_.php_namespace_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_php_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000080u;
   return _impl_.php_namespace_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_php_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
   if ((_impl_._has_bits_[0] & 0x00000080u) == 0) {
     return nullptr;
@@ -15490,7 +15490,7 @@ inline std::string* FileOptions::release_php_namespace() {
   return released;
 }
 inline void FileOptions::set_allocated_php_namespace(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000080u;
   } else {
@@ -15511,7 +15511,7 @@ inline bool FileOptions::has_php_metadata_namespace() const {
   return value;
 }
 inline void FileOptions::clear_php_metadata_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.php_metadata_namespace_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000100u;
 }
@@ -15523,7 +15523,7 @@ inline const std::string& FileOptions::php_metadata_namespace() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_php_metadata_namespace(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.php_metadata_namespace_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_metadata_namespace)
@@ -15534,21 +15534,21 @@ inline std::string* FileOptions::mutable_php_metadata_namespace() ABSL_ATTRIBUTE
   return _s;
 }
 inline const std::string& FileOptions::_internal_php_metadata_namespace() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.php_metadata_namespace_.Get();
 }
 inline void FileOptions::_internal_set_php_metadata_namespace(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   _impl_.php_metadata_namespace_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_php_metadata_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000100u;
   return _impl_.php_metadata_namespace_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_php_metadata_namespace() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_metadata_namespace)
   if ((_impl_._has_bits_[0] & 0x00000100u) == 0) {
     return nullptr;
@@ -15561,7 +15561,7 @@ inline std::string* FileOptions::release_php_metadata_namespace() {
   return released;
 }
 inline void FileOptions::set_allocated_php_metadata_namespace(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000100u;
   } else {
@@ -15582,7 +15582,7 @@ inline bool FileOptions::has_ruby_package() const {
   return value;
 }
 inline void FileOptions::clear_ruby_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.ruby_package_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
@@ -15594,7 +15594,7 @@ inline const std::string& FileOptions::ruby_package() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FileOptions::set_ruby_package(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.ruby_package_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.ruby_package)
@@ -15605,21 +15605,21 @@ inline std::string* FileOptions::mutable_ruby_package() ABSL_ATTRIBUTE_LIFETIME_
   return _s;
 }
 inline const std::string& FileOptions::_internal_ruby_package() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.ruby_package_.Get();
 }
 inline void FileOptions::_internal_set_ruby_package(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   _impl_.ruby_package_.Set(value, GetArena());
 }
 inline std::string* FileOptions::_internal_mutable_ruby_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000200u;
   return _impl_.ruby_package_.Mutable( GetArena());
 }
 inline std::string* FileOptions::release_ruby_package() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.ruby_package)
   if ((_impl_._has_bits_[0] & 0x00000200u) == 0) {
     return nullptr;
@@ -15632,7 +15632,7 @@ inline std::string* FileOptions::release_ruby_package() {
   return released;
 }
 inline void FileOptions::set_allocated_ruby_package(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000200u;
   } else {
@@ -15654,12 +15654,12 @@ inline bool FileOptions::has_features() const {
   return value;
 }
 inline void FileOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000400u;
 }
 inline const ::google::protobuf::FeatureSet& FileOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -15668,7 +15668,7 @@ inline const ::google::protobuf::FeatureSet& FileOptions::features() const ABSL_
   return _internal_features();
 }
 inline void FileOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -15681,7 +15681,7 @@ inline void FileOptions::unsafe_arena_set_allocated_features(::google::protobuf:
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileOptions.features)
 }
 inline ::google::protobuf::FeatureSet* FileOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000400u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -15700,7 +15700,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* FileOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000400u;
@@ -15709,7 +15709,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::unsafe_arena_release_feature
   return temp;
 }
 inline ::google::protobuf::FeatureSet* FileOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -15724,7 +15724,7 @@ inline ::google::protobuf::FeatureSet* FileOptions::mutable_features() ABSL_ATTR
 }
 inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -15751,7 +15751,7 @@ inline int FileOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void FileOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* FileOptions::mutable_uninterpreted_option(int index)
@@ -15762,7 +15762,7 @@ inline ::google::protobuf::UninterpretedOption* FileOptions::mutable_uninterpret
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* FileOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& FileOptions::uninterpreted_option(int index) const
@@ -15771,7 +15771,7 @@ inline const ::google::protobuf::UninterpretedOption& FileOptions::uninterpreted
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* FileOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FileOptions.uninterpreted_option)
   return _add;
@@ -15783,12 +15783,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 FileOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 FileOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -15802,7 +15802,7 @@ inline bool MessageOptions::has_message_set_wire_format() const {
   return value;
 }
 inline void MessageOptions::clear_message_set_wire_format() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.message_set_wire_format_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -15816,11 +15816,11 @@ inline void MessageOptions::set_message_set_wire_format(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.message_set_wire_format)
 }
 inline bool MessageOptions::_internal_message_set_wire_format() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.message_set_wire_format_;
 }
 inline void MessageOptions::_internal_set_message_set_wire_format(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.message_set_wire_format_ = value;
 }
 
@@ -15830,7 +15830,7 @@ inline bool MessageOptions::has_no_standard_descriptor_accessor() const {
   return value;
 }
 inline void MessageOptions::clear_no_standard_descriptor_accessor() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.no_standard_descriptor_accessor_ = false;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -15844,11 +15844,11 @@ inline void MessageOptions::set_no_standard_descriptor_accessor(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.no_standard_descriptor_accessor)
 }
 inline bool MessageOptions::_internal_no_standard_descriptor_accessor() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.no_standard_descriptor_accessor_;
 }
 inline void MessageOptions::_internal_set_no_standard_descriptor_accessor(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.no_standard_descriptor_accessor_ = value;
 }
 
@@ -15858,7 +15858,7 @@ inline bool MessageOptions::has_deprecated() const {
   return value;
 }
 inline void MessageOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -15872,11 +15872,11 @@ inline void MessageOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.deprecated)
 }
 inline bool MessageOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void MessageOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -15886,7 +15886,7 @@ inline bool MessageOptions::has_map_entry() const {
   return value;
 }
 inline void MessageOptions::clear_map_entry() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.map_entry_ = false;
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -15900,11 +15900,11 @@ inline void MessageOptions::set_map_entry(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.map_entry)
 }
 inline bool MessageOptions::_internal_map_entry() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.map_entry_;
 }
 inline void MessageOptions::_internal_set_map_entry(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.map_entry_ = value;
 }
 
@@ -15914,7 +15914,7 @@ inline bool MessageOptions::has_deprecated_legacy_json_field_conflicts() const {
   return value;
 }
 inline void MessageOptions::clear_deprecated_legacy_json_field_conflicts() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_legacy_json_field_conflicts_ = false;
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -15928,11 +15928,11 @@ inline void MessageOptions::set_deprecated_legacy_json_field_conflicts(bool valu
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.deprecated_legacy_json_field_conflicts)
 }
 inline bool MessageOptions::_internal_deprecated_legacy_json_field_conflicts() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_legacy_json_field_conflicts_;
 }
 inline void MessageOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_legacy_json_field_conflicts_ = value;
 }
 
@@ -15943,12 +15943,12 @@ inline bool MessageOptions::has_features() const {
   return value;
 }
 inline void MessageOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& MessageOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -15957,7 +15957,7 @@ inline const ::google::protobuf::FeatureSet& MessageOptions::features() const AB
   return _internal_features();
 }
 inline void MessageOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -15970,7 +15970,7 @@ inline void MessageOptions::unsafe_arena_set_allocated_features(::google::protob
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MessageOptions.features)
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -15989,7 +15989,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MessageOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -15998,7 +15998,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::unsafe_arena_release_feat
   return temp;
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16013,7 +16013,7 @@ inline ::google::protobuf::FeatureSet* MessageOptions::mutable_features() ABSL_A
 }
 inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -16040,7 +16040,7 @@ inline int MessageOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void MessageOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* MessageOptions::mutable_uninterpreted_option(int index)
@@ -16051,7 +16051,7 @@ inline ::google::protobuf::UninterpretedOption* MessageOptions::mutable_uninterp
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* MessageOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MessageOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& MessageOptions::uninterpreted_option(int index) const
@@ -16060,7 +16060,7 @@ inline const ::google::protobuf::UninterpretedOption& MessageOptions::uninterpre
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* MessageOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.MessageOptions.uninterpreted_option)
   return _add;
@@ -16072,12 +16072,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 MessageOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 MessageOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -16091,7 +16091,7 @@ inline bool FieldOptions_EditionDefault::has_edition() const {
   return value;
 }
 inline void FieldOptions_EditionDefault::clear_edition() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -16105,11 +16105,11 @@ inline void FieldOptions_EditionDefault::set_edition(::google::protobuf::Edition
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.edition)
 }
 inline ::google::protobuf::Edition FieldOptions_EditionDefault::_internal_edition() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::Edition>(_impl_.edition_);
 }
 inline void FieldOptions_EditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_.edition_ = value;
 }
@@ -16120,7 +16120,7 @@ inline bool FieldOptions_EditionDefault::has_value() const {
   return value;
 }
 inline void FieldOptions_EditionDefault::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -16132,7 +16132,7 @@ inline const std::string& FieldOptions_EditionDefault::value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void FieldOptions_EditionDefault::set_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.EditionDefault.value)
@@ -16143,21 +16143,21 @@ inline std::string* FieldOptions_EditionDefault::mutable_value() ABSL_ATTRIBUTE_
   return _s;
 }
 inline const std::string& FieldOptions_EditionDefault::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_.Get();
 }
 inline void FieldOptions_EditionDefault::_internal_set_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.value_.Set(value, GetArena());
 }
 inline std::string* FieldOptions_EditionDefault::_internal_mutable_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* FieldOptions_EditionDefault::release_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.EditionDefault.value)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -16170,7 +16170,7 @@ inline std::string* FieldOptions_EditionDefault::release_value() {
   return released;
 }
 inline void FieldOptions_EditionDefault::set_allocated_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -16195,7 +16195,7 @@ inline bool FieldOptions::has_ctype() const {
   return value;
 }
 inline void FieldOptions::clear_ctype() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.ctype_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -16209,11 +16209,11 @@ inline void FieldOptions::set_ctype(::google::protobuf::FieldOptions_CType value
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.ctype)
 }
 inline ::google::protobuf::FieldOptions_CType FieldOptions::_internal_ctype() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FieldOptions_CType>(_impl_.ctype_);
 }
 inline void FieldOptions::_internal_set_ctype(::google::protobuf::FieldOptions_CType value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FieldOptions_CType_IsValid(value));
   _impl_.ctype_ = value;
 }
@@ -16224,7 +16224,7 @@ inline bool FieldOptions::has_packed() const {
   return value;
 }
 inline void FieldOptions::clear_packed() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.packed_ = false;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -16238,11 +16238,11 @@ inline void FieldOptions::set_packed(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.packed)
 }
 inline bool FieldOptions::_internal_packed() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.packed_;
 }
 inline void FieldOptions::_internal_set_packed(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.packed_ = value;
 }
 
@@ -16252,7 +16252,7 @@ inline bool FieldOptions::has_jstype() const {
   return value;
 }
 inline void FieldOptions::clear_jstype() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.jstype_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -16266,11 +16266,11 @@ inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType val
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FieldOptions_JSType>(_impl_.jstype_);
 }
 inline void FieldOptions::_internal_set_jstype(::google::protobuf::FieldOptions_JSType value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FieldOptions_JSType_IsValid(value));
   _impl_.jstype_ = value;
 }
@@ -16281,7 +16281,7 @@ inline bool FieldOptions::has_lazy() const {
   return value;
 }
 inline void FieldOptions::clear_lazy() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.lazy_ = false;
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -16295,11 +16295,11 @@ inline void FieldOptions::set_lazy(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.lazy)
 }
 inline bool FieldOptions::_internal_lazy() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.lazy_;
 }
 inline void FieldOptions::_internal_set_lazy(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.lazy_ = value;
 }
 
@@ -16309,7 +16309,7 @@ inline bool FieldOptions::has_unverified_lazy() const {
   return value;
 }
 inline void FieldOptions::clear_unverified_lazy() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.unverified_lazy_ = false;
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -16323,11 +16323,11 @@ inline void FieldOptions::set_unverified_lazy(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.unverified_lazy)
 }
 inline bool FieldOptions::_internal_unverified_lazy() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.unverified_lazy_;
 }
 inline void FieldOptions::_internal_set_unverified_lazy(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.unverified_lazy_ = value;
 }
 
@@ -16337,7 +16337,7 @@ inline bool FieldOptions::has_deprecated() const {
   return value;
 }
 inline void FieldOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00000040u;
 }
@@ -16351,11 +16351,11 @@ inline void FieldOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.deprecated)
 }
 inline bool FieldOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void FieldOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -16365,7 +16365,7 @@ inline bool FieldOptions::has_weak() const {
   return value;
 }
 inline void FieldOptions::clear_weak() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_ = false;
   _impl_._has_bits_[0] &= ~0x00000080u;
 }
@@ -16379,11 +16379,11 @@ inline void FieldOptions::set_weak(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.weak)
 }
 inline bool FieldOptions::_internal_weak() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.weak_;
 }
 inline void FieldOptions::_internal_set_weak(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_ = value;
 }
 
@@ -16393,7 +16393,7 @@ inline bool FieldOptions::has_debug_redact() const {
   return value;
 }
 inline void FieldOptions::clear_debug_redact() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.debug_redact_ = false;
   _impl_._has_bits_[0] &= ~0x00000100u;
 }
@@ -16407,11 +16407,11 @@ inline void FieldOptions::set_debug_redact(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.debug_redact)
 }
 inline bool FieldOptions::_internal_debug_redact() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.debug_redact_;
 }
 inline void FieldOptions::_internal_set_debug_redact(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.debug_redact_ = value;
 }
 
@@ -16421,7 +16421,7 @@ inline bool FieldOptions::has_retention() const {
   return value;
 }
 inline void FieldOptions::clear_retention() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.retention_ = 0;
   _impl_._has_bits_[0] &= ~0x00000200u;
 }
@@ -16435,11 +16435,11 @@ inline void FieldOptions::set_retention(::google::protobuf::FieldOptions_OptionR
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
 }
 inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FieldOptions_OptionRetention>(_impl_.retention_);
 }
 inline void FieldOptions::_internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FieldOptions_OptionRetention_IsValid(value));
   _impl_.retention_ = value;
 }
@@ -16452,7 +16452,7 @@ inline int FieldOptions::targets_size() const {
   return _internal_targets_size();
 }
 inline void FieldOptions::clear_targets() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.targets_.Clear();
 }
 inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::targets(int index) const {
@@ -16466,7 +16466,7 @@ inline void FieldOptions::set_targets(int index, ::google::protobuf::FieldOption
 }
 inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTargetType value) {
   assert(::google::protobuf::FieldOptions_OptionTargetType_IsValid(value));
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_targets()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
@@ -16478,16 +16478,16 @@ inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() con
 inline ::google::protobuf::RepeatedField<int>* FieldOptions::mutable_targets()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.targets)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_targets();
 }
 inline const ::google::protobuf::RepeatedField<int>& FieldOptions::_internal_targets()
     const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.targets_;
 }
 inline ::google::protobuf::RepeatedField<int>* FieldOptions::_internal_mutable_targets() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.targets_;
 }
 
@@ -16499,7 +16499,7 @@ inline int FieldOptions::edition_defaults_size() const {
   return _internal_edition_defaults_size();
 }
 inline void FieldOptions::clear_edition_defaults() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_defaults_.Clear();
 }
 inline ::google::protobuf::FieldOptions_EditionDefault* FieldOptions::mutable_edition_defaults(int index)
@@ -16510,7 +16510,7 @@ inline ::google::protobuf::FieldOptions_EditionDefault* FieldOptions::mutable_ed
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* FieldOptions::mutable_edition_defaults()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.edition_defaults)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_edition_defaults();
 }
 inline const ::google::protobuf::FieldOptions_EditionDefault& FieldOptions::edition_defaults(int index) const
@@ -16519,7 +16519,7 @@ inline const ::google::protobuf::FieldOptions_EditionDefault& FieldOptions::edit
   return _internal_edition_defaults().Get(index);
 }
 inline ::google::protobuf::FieldOptions_EditionDefault* FieldOptions::add_edition_defaults() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldOptions_EditionDefault* _add = _internal_mutable_edition_defaults()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.edition_defaults)
   return _add;
@@ -16531,12 +16531,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptio
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>&
 FieldOptions::_internal_edition_defaults() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.edition_defaults_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>*
 FieldOptions::_internal_mutable_edition_defaults() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.edition_defaults_;
 }
 
@@ -16547,12 +16547,12 @@ inline bool FieldOptions::has_features() const {
   return value;
 }
 inline void FieldOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& FieldOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -16561,7 +16561,7 @@ inline const ::google::protobuf::FeatureSet& FieldOptions::features() const ABSL
   return _internal_features();
 }
 inline void FieldOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -16574,7 +16574,7 @@ inline void FieldOptions::unsafe_arena_set_allocated_features(::google::protobuf
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldOptions.features)
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -16593,7 +16593,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -16602,7 +16602,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::unsafe_arena_release_featur
   return temp;
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16617,7 +16617,7 @@ inline ::google::protobuf::FeatureSet* FieldOptions::mutable_features() ABSL_ATT
 }
 inline void FieldOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -16644,7 +16644,7 @@ inline int FieldOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void FieldOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* FieldOptions::mutable_uninterpreted_option(int index)
@@ -16655,7 +16655,7 @@ inline ::google::protobuf::UninterpretedOption* FieldOptions::mutable_uninterpre
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* FieldOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& FieldOptions::uninterpreted_option(int index) const
@@ -16664,7 +16664,7 @@ inline const ::google::protobuf::UninterpretedOption& FieldOptions::uninterprete
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* FieldOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.uninterpreted_option)
   return _add;
@@ -16676,12 +16676,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 FieldOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 FieldOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -16696,12 +16696,12 @@ inline bool OneofOptions::has_features() const {
   return value;
 }
 inline void OneofOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& OneofOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -16710,7 +16710,7 @@ inline const ::google::protobuf::FeatureSet& OneofOptions::features() const ABSL
   return _internal_features();
 }
 inline void OneofOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -16723,7 +16723,7 @@ inline void OneofOptions::unsafe_arena_set_allocated_features(::google::protobuf
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofOptions.features)
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -16742,7 +16742,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.OneofOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -16751,7 +16751,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::unsafe_arena_release_featur
   return temp;
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16766,7 +16766,7 @@ inline ::google::protobuf::FeatureSet* OneofOptions::mutable_features() ABSL_ATT
 }
 inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -16793,7 +16793,7 @@ inline int OneofOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void OneofOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* OneofOptions::mutable_uninterpreted_option(int index)
@@ -16804,7 +16804,7 @@ inline ::google::protobuf::UninterpretedOption* OneofOptions::mutable_uninterpre
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* OneofOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.OneofOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& OneofOptions::uninterpreted_option(int index) const
@@ -16813,7 +16813,7 @@ inline const ::google::protobuf::UninterpretedOption& OneofOptions::uninterprete
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* OneofOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.OneofOptions.uninterpreted_option)
   return _add;
@@ -16825,12 +16825,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 OneofOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 OneofOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -16844,7 +16844,7 @@ inline bool EnumOptions::has_allow_alias() const {
   return value;
 }
 inline void EnumOptions::clear_allow_alias() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.allow_alias_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -16858,11 +16858,11 @@ inline void EnumOptions::set_allow_alias(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.allow_alias)
 }
 inline bool EnumOptions::_internal_allow_alias() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.allow_alias_;
 }
 inline void EnumOptions::_internal_set_allow_alias(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.allow_alias_ = value;
 }
 
@@ -16872,7 +16872,7 @@ inline bool EnumOptions::has_deprecated() const {
   return value;
 }
 inline void EnumOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -16886,11 +16886,11 @@ inline void EnumOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.deprecated)
 }
 inline bool EnumOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void EnumOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -16900,7 +16900,7 @@ inline bool EnumOptions::has_deprecated_legacy_json_field_conflicts() const {
   return value;
 }
 inline void EnumOptions::clear_deprecated_legacy_json_field_conflicts() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_legacy_json_field_conflicts_ = false;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -16914,11 +16914,11 @@ inline void EnumOptions::set_deprecated_legacy_json_field_conflicts(bool value) 
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.deprecated_legacy_json_field_conflicts)
 }
 inline bool EnumOptions::_internal_deprecated_legacy_json_field_conflicts() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_legacy_json_field_conflicts_;
 }
 inline void EnumOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_legacy_json_field_conflicts_ = value;
 }
 
@@ -16929,12 +16929,12 @@ inline bool EnumOptions::has_features() const {
   return value;
 }
 inline void EnumOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& EnumOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -16943,7 +16943,7 @@ inline const ::google::protobuf::FeatureSet& EnumOptions::features() const ABSL_
   return _internal_features();
 }
 inline void EnumOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -16956,7 +16956,7 @@ inline void EnumOptions::unsafe_arena_set_allocated_features(::google::protobuf:
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumOptions.features)
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -16975,7 +16975,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -16984,7 +16984,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::unsafe_arena_release_feature
   return temp;
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -16999,7 +16999,7 @@ inline ::google::protobuf::FeatureSet* EnumOptions::mutable_features() ABSL_ATTR
 }
 inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -17026,7 +17026,7 @@ inline int EnumOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void EnumOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* EnumOptions::mutable_uninterpreted_option(int index)
@@ -17037,7 +17037,7 @@ inline ::google::protobuf::UninterpretedOption* EnumOptions::mutable_uninterpret
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* EnumOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& EnumOptions::uninterpreted_option(int index) const
@@ -17046,7 +17046,7 @@ inline const ::google::protobuf::UninterpretedOption& EnumOptions::uninterpreted
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* EnumOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumOptions.uninterpreted_option)
   return _add;
@@ -17058,12 +17058,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 EnumOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 EnumOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -17077,7 +17077,7 @@ inline bool EnumValueOptions::has_deprecated() const {
   return value;
 }
 inline void EnumValueOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -17091,11 +17091,11 @@ inline void EnumValueOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueOptions.deprecated)
 }
 inline bool EnumValueOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void EnumValueOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -17106,12 +17106,12 @@ inline bool EnumValueOptions::has_features() const {
   return value;
 }
 inline void EnumValueOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& EnumValueOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -17120,7 +17120,7 @@ inline const ::google::protobuf::FeatureSet& EnumValueOptions::features() const 
   return _internal_features();
 }
 inline void EnumValueOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -17133,7 +17133,7 @@ inline void EnumValueOptions::unsafe_arena_set_allocated_features(::google::prot
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueOptions.features)
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -17152,7 +17152,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -17161,7 +17161,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::unsafe_arena_release_fe
   return temp;
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -17176,7 +17176,7 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::mutable_features() ABSL
 }
 inline void EnumValueOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -17201,7 +17201,7 @@ inline bool EnumValueOptions::has_debug_redact() const {
   return value;
 }
 inline void EnumValueOptions::clear_debug_redact() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.debug_redact_ = false;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -17215,11 +17215,11 @@ inline void EnumValueOptions::set_debug_redact(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueOptions.debug_redact)
 }
 inline bool EnumValueOptions::_internal_debug_redact() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.debug_redact_;
 }
 inline void EnumValueOptions::_internal_set_debug_redact(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.debug_redact_ = value;
 }
 
@@ -17231,7 +17231,7 @@ inline int EnumValueOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void EnumValueOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* EnumValueOptions::mutable_uninterpreted_option(int index)
@@ -17242,7 +17242,7 @@ inline ::google::protobuf::UninterpretedOption* EnumValueOptions::mutable_uninte
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* EnumValueOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValueOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& EnumValueOptions::uninterpreted_option(int index) const
@@ -17251,7 +17251,7 @@ inline const ::google::protobuf::UninterpretedOption& EnumValueOptions::uninterp
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* EnumValueOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValueOptions.uninterpreted_option)
   return _add;
@@ -17263,12 +17263,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 EnumValueOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 EnumValueOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -17283,12 +17283,12 @@ inline bool ServiceOptions::has_features() const {
   return value;
 }
 inline void ServiceOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& ServiceOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -17297,7 +17297,7 @@ inline const ::google::protobuf::FeatureSet& ServiceOptions::features() const AB
   return _internal_features();
 }
 inline void ServiceOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -17310,7 +17310,7 @@ inline void ServiceOptions::unsafe_arena_set_allocated_features(::google::protob
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceOptions.features)
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -17329,7 +17329,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -17338,7 +17338,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::unsafe_arena_release_feat
   return temp;
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -17353,7 +17353,7 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::mutable_features() ABSL_A
 }
 inline void ServiceOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -17378,7 +17378,7 @@ inline bool ServiceOptions::has_deprecated() const {
   return value;
 }
 inline void ServiceOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -17392,11 +17392,11 @@ inline void ServiceOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.ServiceOptions.deprecated)
 }
 inline bool ServiceOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void ServiceOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -17408,7 +17408,7 @@ inline int ServiceOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void ServiceOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* ServiceOptions::mutable_uninterpreted_option(int index)
@@ -17419,7 +17419,7 @@ inline ::google::protobuf::UninterpretedOption* ServiceOptions::mutable_uninterp
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* ServiceOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& ServiceOptions::uninterpreted_option(int index) const
@@ -17428,7 +17428,7 @@ inline const ::google::protobuf::UninterpretedOption& ServiceOptions::uninterpre
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* ServiceOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceOptions.uninterpreted_option)
   return _add;
@@ -17440,12 +17440,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 ServiceOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 ServiceOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -17459,7 +17459,7 @@ inline bool MethodOptions::has_deprecated() const {
   return value;
 }
 inline void MethodOptions::clear_deprecated() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -17473,11 +17473,11 @@ inline void MethodOptions::set_deprecated(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.deprecated)
 }
 inline bool MethodOptions::_internal_deprecated() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.deprecated_;
 }
 inline void MethodOptions::_internal_set_deprecated(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = value;
 }
 
@@ -17487,7 +17487,7 @@ inline bool MethodOptions::has_idempotency_level() const {
   return value;
 }
 inline void MethodOptions::clear_idempotency_level() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.idempotency_level_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -17501,11 +17501,11 @@ inline void MethodOptions::set_idempotency_level(::google::protobuf::MethodOptio
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.idempotency_level)
 }
 inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_internal_idempotency_level() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::MethodOptions_IdempotencyLevel>(_impl_.idempotency_level_);
 }
 inline void MethodOptions::_internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::MethodOptions_IdempotencyLevel_IsValid(value));
   _impl_.idempotency_level_ = value;
 }
@@ -17517,12 +17517,12 @@ inline bool MethodOptions::has_features() const {
   return value;
 }
 inline void MethodOptions::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& MethodOptions::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -17531,7 +17531,7 @@ inline const ::google::protobuf::FeatureSet& MethodOptions::features() const ABS
   return _internal_features();
 }
 inline void MethodOptions::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -17544,7 +17544,7 @@ inline void MethodOptions::unsafe_arena_set_allocated_features(::google::protobu
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodOptions.features)
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -17563,7 +17563,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::release_features() {
   return released;
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.MethodOptions.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -17572,7 +17572,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::unsafe_arena_release_featu
   return temp;
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -17587,7 +17587,7 @@ inline ::google::protobuf::FeatureSet* MethodOptions::mutable_features() ABSL_AT
 }
 inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -17614,7 +17614,7 @@ inline int MethodOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
 }
 inline void MethodOptions::clear_uninterpreted_option() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption* MethodOptions::mutable_uninterpreted_option(int index)
@@ -17625,7 +17625,7 @@ inline ::google::protobuf::UninterpretedOption* MethodOptions::mutable_uninterpr
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* MethodOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MethodOptions.uninterpreted_option)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
 }
 inline const ::google::protobuf::UninterpretedOption& MethodOptions::uninterpreted_option(int index) const
@@ -17634,7 +17634,7 @@ inline const ::google::protobuf::UninterpretedOption& MethodOptions::uninterpret
   return _internal_uninterpreted_option().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption* MethodOptions::add_uninterpreted_option() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.MethodOptions.uninterpreted_option)
   return _add;
@@ -17646,12 +17646,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>&
 MethodOptions::_internal_uninterpreted_option() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.uninterpreted_option_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>*
 MethodOptions::_internal_mutable_uninterpreted_option() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.uninterpreted_option_;
 }
 
@@ -17665,7 +17665,7 @@ inline bool UninterpretedOption_NamePart::has_name_part() const {
   return value;
 }
 inline void UninterpretedOption_NamePart::clear_name_part() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_part_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -17677,7 +17677,7 @@ inline const std::string& UninterpretedOption_NamePart::name_part() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption_NamePart::set_name_part(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_part_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.name_part)
@@ -17688,21 +17688,21 @@ inline std::string* UninterpretedOption_NamePart::mutable_name_part() ABSL_ATTRI
   return _s;
 }
 inline const std::string& UninterpretedOption_NamePart::_internal_name_part() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_part_.Get();
 }
 inline void UninterpretedOption_NamePart::_internal_set_name_part(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.name_part_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption_NamePart::_internal_mutable_name_part() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.name_part_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption_NamePart::release_name_part() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.NamePart.name_part)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -17715,7 +17715,7 @@ inline std::string* UninterpretedOption_NamePart::release_name_part() {
   return released;
 }
 inline void UninterpretedOption_NamePart::set_allocated_name_part(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -17736,7 +17736,7 @@ inline bool UninterpretedOption_NamePart::has_is_extension() const {
   return value;
 }
 inline void UninterpretedOption_NamePart::clear_is_extension() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.is_extension_ = false;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -17750,11 +17750,11 @@ inline void UninterpretedOption_NamePart::set_is_extension(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.is_extension)
 }
 inline bool UninterpretedOption_NamePart::_internal_is_extension() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.is_extension_;
 }
 inline void UninterpretedOption_NamePart::_internal_set_is_extension(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.is_extension_ = value;
 }
 
@@ -17770,7 +17770,7 @@ inline int UninterpretedOption::name_size() const {
   return _internal_name_size();
 }
 inline void UninterpretedOption::clear_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.Clear();
 }
 inline ::google::protobuf::UninterpretedOption_NamePart* UninterpretedOption::mutable_name(int index)
@@ -17781,7 +17781,7 @@ inline ::google::protobuf::UninterpretedOption_NamePart* UninterpretedOption::mu
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* UninterpretedOption::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.UninterpretedOption.name)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_name();
 }
 inline const ::google::protobuf::UninterpretedOption_NamePart& UninterpretedOption::name(int index) const
@@ -17790,7 +17790,7 @@ inline const ::google::protobuf::UninterpretedOption_NamePart& UninterpretedOpti
   return _internal_name().Get(index);
 }
 inline ::google::protobuf::UninterpretedOption_NamePart* UninterpretedOption::add_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption_NamePart* _add = _internal_mutable_name()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.UninterpretedOption.name)
   return _add;
@@ -17802,12 +17802,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Uninterpre
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>&
 UninterpretedOption::_internal_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.name_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>*
 UninterpretedOption::_internal_mutable_name() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.name_;
 }
 
@@ -17817,7 +17817,7 @@ inline bool UninterpretedOption::has_identifier_value() const {
   return value;
 }
 inline void UninterpretedOption::clear_identifier_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.identifier_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -17829,7 +17829,7 @@ inline const std::string& UninterpretedOption::identifier_value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_identifier_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.identifier_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.identifier_value)
@@ -17840,21 +17840,21 @@ inline std::string* UninterpretedOption::mutable_identifier_value() ABSL_ATTRIBU
   return _s;
 }
 inline const std::string& UninterpretedOption::_internal_identifier_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.identifier_value_.Get();
 }
 inline void UninterpretedOption::_internal_set_identifier_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.identifier_value_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption::_internal_mutable_identifier_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.identifier_value_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption::release_identifier_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.identifier_value)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -17867,7 +17867,7 @@ inline std::string* UninterpretedOption::release_identifier_value() {
   return released;
 }
 inline void UninterpretedOption::set_allocated_identifier_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -17888,7 +17888,7 @@ inline bool UninterpretedOption::has_positive_int_value() const {
   return value;
 }
 inline void UninterpretedOption::clear_positive_int_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.positive_int_value_ = ::uint64_t{0u};
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -17902,11 +17902,11 @@ inline void UninterpretedOption::set_positive_int_value(::uint64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.positive_int_value)
 }
 inline ::uint64_t UninterpretedOption::_internal_positive_int_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.positive_int_value_;
 }
 inline void UninterpretedOption::_internal_set_positive_int_value(::uint64_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.positive_int_value_ = value;
 }
 
@@ -17916,7 +17916,7 @@ inline bool UninterpretedOption::has_negative_int_value() const {
   return value;
 }
 inline void UninterpretedOption::clear_negative_int_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.negative_int_value_ = ::int64_t{0};
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -17930,11 +17930,11 @@ inline void UninterpretedOption::set_negative_int_value(::int64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.negative_int_value)
 }
 inline ::int64_t UninterpretedOption::_internal_negative_int_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.negative_int_value_;
 }
 inline void UninterpretedOption::_internal_set_negative_int_value(::int64_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.negative_int_value_ = value;
 }
 
@@ -17944,7 +17944,7 @@ inline bool UninterpretedOption::has_double_value() const {
   return value;
 }
 inline void UninterpretedOption::clear_double_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.double_value_ = 0;
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -17958,11 +17958,11 @@ inline void UninterpretedOption::set_double_value(double value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.double_value)
 }
 inline double UninterpretedOption::_internal_double_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.double_value_;
 }
 inline void UninterpretedOption::_internal_set_double_value(double value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.double_value_ = value;
 }
 
@@ -17972,7 +17972,7 @@ inline bool UninterpretedOption::has_string_value() const {
   return value;
 }
 inline void UninterpretedOption::clear_string_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.string_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -17984,7 +17984,7 @@ inline const std::string& UninterpretedOption::string_value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_string_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.string_value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.string_value)
@@ -17995,21 +17995,21 @@ inline std::string* UninterpretedOption::mutable_string_value() ABSL_ATTRIBUTE_L
   return _s;
 }
 inline const std::string& UninterpretedOption::_internal_string_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.string_value_.Get();
 }
 inline void UninterpretedOption::_internal_set_string_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.string_value_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption::_internal_mutable_string_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.string_value_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption::release_string_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.string_value)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -18022,7 +18022,7 @@ inline std::string* UninterpretedOption::release_string_value() {
   return released;
 }
 inline void UninterpretedOption::set_allocated_string_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -18043,7 +18043,7 @@ inline bool UninterpretedOption::has_aggregate_value() const {
   return value;
 }
 inline void UninterpretedOption::clear_aggregate_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.aggregate_value_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -18055,7 +18055,7 @@ inline const std::string& UninterpretedOption::aggregate_value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void UninterpretedOption::set_aggregate_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.aggregate_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.aggregate_value)
@@ -18066,21 +18066,21 @@ inline std::string* UninterpretedOption::mutable_aggregate_value() ABSL_ATTRIBUT
   return _s;
 }
 inline const std::string& UninterpretedOption::_internal_aggregate_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.aggregate_value_.Get();
 }
 inline void UninterpretedOption::_internal_set_aggregate_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.aggregate_value_.Set(value, GetArena());
 }
 inline std::string* UninterpretedOption::_internal_mutable_aggregate_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000004u;
   return _impl_.aggregate_value_.Mutable( GetArena());
 }
 inline std::string* UninterpretedOption::release_aggregate_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.aggregate_value)
   if ((_impl_._has_bits_[0] & 0x00000004u) == 0) {
     return nullptr;
@@ -18093,7 +18093,7 @@ inline std::string* UninterpretedOption::release_aggregate_value() {
   return released;
 }
 inline void UninterpretedOption::set_allocated_aggregate_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000004u;
   } else {
@@ -18118,7 +18118,7 @@ inline bool FeatureSet::has_field_presence() const {
   return value;
 }
 inline void FeatureSet::clear_field_presence() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.field_presence_ = 0;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -18132,11 +18132,11 @@ inline void FeatureSet::set_field_presence(::google::protobuf::FeatureSet_FieldP
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.field_presence)
 }
 inline ::google::protobuf::FeatureSet_FieldPresence FeatureSet::_internal_field_presence() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FeatureSet_FieldPresence>(_impl_.field_presence_);
 }
 inline void FeatureSet::_internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FeatureSet_FieldPresence_IsValid(value));
   _impl_.field_presence_ = value;
 }
@@ -18147,7 +18147,7 @@ inline bool FeatureSet::has_enum_type() const {
   return value;
 }
 inline void FeatureSet::clear_enum_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_type_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -18161,11 +18161,11 @@ inline void FeatureSet::set_enum_type(::google::protobuf::FeatureSet_EnumType va
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.enum_type)
 }
 inline ::google::protobuf::FeatureSet_EnumType FeatureSet::_internal_enum_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FeatureSet_EnumType>(_impl_.enum_type_);
 }
 inline void FeatureSet::_internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FeatureSet_EnumType_IsValid(value));
   _impl_.enum_type_ = value;
 }
@@ -18176,7 +18176,7 @@ inline bool FeatureSet::has_repeated_field_encoding() const {
   return value;
 }
 inline void FeatureSet::clear_repeated_field_encoding() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.repeated_field_encoding_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -18190,11 +18190,11 @@ inline void FeatureSet::set_repeated_field_encoding(::google::protobuf::FeatureS
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.repeated_field_encoding)
 }
 inline ::google::protobuf::FeatureSet_RepeatedFieldEncoding FeatureSet::_internal_repeated_field_encoding() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FeatureSet_RepeatedFieldEncoding>(_impl_.repeated_field_encoding_);
 }
 inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FeatureSet_RepeatedFieldEncoding_IsValid(value));
   _impl_.repeated_field_encoding_ = value;
 }
@@ -18205,7 +18205,7 @@ inline bool FeatureSet::has_utf8_validation() const {
   return value;
 }
 inline void FeatureSet::clear_utf8_validation() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.utf8_validation_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -18219,11 +18219,11 @@ inline void FeatureSet::set_utf8_validation(::google::protobuf::FeatureSet_Utf8V
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.utf8_validation)
 }
 inline ::google::protobuf::FeatureSet_Utf8Validation FeatureSet::_internal_utf8_validation() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FeatureSet_Utf8Validation>(_impl_.utf8_validation_);
 }
 inline void FeatureSet::_internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FeatureSet_Utf8Validation_IsValid(value));
   _impl_.utf8_validation_ = value;
 }
@@ -18234,7 +18234,7 @@ inline bool FeatureSet::has_message_encoding() const {
   return value;
 }
 inline void FeatureSet::clear_message_encoding() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.message_encoding_ = 0;
   _impl_._has_bits_[0] &= ~0x00000010u;
 }
@@ -18248,11 +18248,11 @@ inline void FeatureSet::set_message_encoding(::google::protobuf::FeatureSet_Mess
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.message_encoding)
 }
 inline ::google::protobuf::FeatureSet_MessageEncoding FeatureSet::_internal_message_encoding() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FeatureSet_MessageEncoding>(_impl_.message_encoding_);
 }
 inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FeatureSet_MessageEncoding_IsValid(value));
   _impl_.message_encoding_ = value;
 }
@@ -18263,7 +18263,7 @@ inline bool FeatureSet::has_json_format() const {
   return value;
 }
 inline void FeatureSet::clear_json_format() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.json_format_ = 0;
   _impl_._has_bits_[0] &= ~0x00000020u;
 }
@@ -18277,11 +18277,11 @@ inline void FeatureSet::set_json_format(::google::protobuf::FeatureSet_JsonForma
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSet.json_format)
 }
 inline ::google::protobuf::FeatureSet_JsonFormat FeatureSet::_internal_json_format() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::FeatureSet_JsonFormat>(_impl_.json_format_);
 }
 inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::FeatureSet_JsonFormat_IsValid(value));
   _impl_.json_format_ = value;
 }
@@ -18296,7 +18296,7 @@ inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_edition() const {
   return value;
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_edition() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -18310,11 +18310,11 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::set_edition(::google::p
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.edition)
 }
 inline ::google::protobuf::Edition FeatureSetDefaults_FeatureSetEditionDefault::_internal_edition() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::Edition>(_impl_.edition_);
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(::google::protobuf::Edition value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_.edition_ = value;
 }
@@ -18326,12 +18326,12 @@ inline bool FeatureSetDefaults_FeatureSetEditionDefault::has_features() const {
   return value;
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::clear_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ != nullptr) _impl_.features_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditionDefault::_internal_features() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   const ::google::protobuf::FeatureSet* p = _impl_.features_;
   return p != nullptr ? *p : reinterpret_cast<const ::google::protobuf::FeatureSet&>(::google::protobuf::_FeatureSet_default_instance_);
 }
@@ -18340,7 +18340,7 @@ inline const ::google::protobuf::FeatureSet& FeatureSetDefaults_FeatureSetEditio
   return _internal_features();
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.features_);
   }
@@ -18353,7 +18353,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_set_alloca
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
 
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
@@ -18372,7 +18372,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   return released;
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_release_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault.features)
 
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -18381,7 +18381,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   return temp;
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_features() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
@@ -18396,7 +18396,7 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_features(::google::protobuf::FeatureSet* value) {
   ::google::protobuf::Arena* message_arena = GetArena();
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
     delete (_impl_.features_);
   }
@@ -18427,7 +18427,7 @@ inline int FeatureSetDefaults::defaults_size() const {
   return _internal_defaults_size();
 }
 inline void FeatureSetDefaults::clear_defaults() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.defaults_.Clear();
 }
 inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* FeatureSetDefaults::mutable_defaults(int index)
@@ -18438,7 +18438,7 @@ inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* FeatureS
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* FeatureSetDefaults::mutable_defaults()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FeatureSetDefaults.defaults)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_defaults();
 }
 inline const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& FeatureSetDefaults::defaults(int index) const
@@ -18447,7 +18447,7 @@ inline const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& Fe
   return _internal_defaults().Get(index);
 }
 inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* FeatureSetDefaults::add_defaults() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* _add = _internal_mutable_defaults()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.FeatureSetDefaults.defaults)
   return _add;
@@ -18459,12 +18459,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSet
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>&
 FeatureSetDefaults::_internal_defaults() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.defaults_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>*
 FeatureSetDefaults::_internal_mutable_defaults() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.defaults_;
 }
 
@@ -18474,7 +18474,7 @@ inline bool FeatureSetDefaults::has_minimum_edition() const {
   return value;
 }
 inline void FeatureSetDefaults::clear_minimum_edition() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.minimum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -18488,11 +18488,11 @@ inline void FeatureSetDefaults::set_minimum_edition(::google::protobuf::Edition 
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.minimum_edition)
 }
 inline ::google::protobuf::Edition FeatureSetDefaults::_internal_minimum_edition() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::Edition>(_impl_.minimum_edition_);
 }
 inline void FeatureSetDefaults::_internal_set_minimum_edition(::google::protobuf::Edition value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_.minimum_edition_ = value;
 }
@@ -18503,7 +18503,7 @@ inline bool FeatureSetDefaults::has_maximum_edition() const {
   return value;
 }
 inline void FeatureSetDefaults::clear_maximum_edition() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.maximum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -18517,11 +18517,11 @@ inline void FeatureSetDefaults::set_maximum_edition(::google::protobuf::Edition 
   // @@protoc_insertion_point(field_set:google.protobuf.FeatureSetDefaults.maximum_edition)
 }
 inline ::google::protobuf::Edition FeatureSetDefaults::_internal_maximum_edition() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::Edition>(_impl_.maximum_edition_);
 }
 inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf::Edition value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::Edition_IsValid(value));
   _impl_.maximum_edition_ = value;
 }
@@ -18538,7 +18538,7 @@ inline int SourceCodeInfo_Location::path_size() const {
   return _internal_path_size();
 }
 inline void SourceCodeInfo_Location::clear_path() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.path_.Clear();
 }
 inline ::int32_t SourceCodeInfo_Location::path(int index) const {
@@ -18550,7 +18550,7 @@ inline void SourceCodeInfo_Location::set_path(int index, ::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.path)
 }
 inline void SourceCodeInfo_Location::add_path(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_path()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.path)
 }
@@ -18562,16 +18562,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Locati
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_path()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.path)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_path();
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>&
 SourceCodeInfo_Location::_internal_path() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.path_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::_internal_mutable_path() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.path_;
 }
 
@@ -18583,7 +18583,7 @@ inline int SourceCodeInfo_Location::span_size() const {
   return _internal_span_size();
 }
 inline void SourceCodeInfo_Location::clear_span() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.span_.Clear();
 }
 inline ::int32_t SourceCodeInfo_Location::span(int index) const {
@@ -18595,7 +18595,7 @@ inline void SourceCodeInfo_Location::set_span(int index, ::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.span)
 }
 inline void SourceCodeInfo_Location::add_span(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_span()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.span)
 }
@@ -18607,16 +18607,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Locati
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::mutable_span()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.span)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_span();
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>&
 SourceCodeInfo_Location::_internal_span() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.span_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* SourceCodeInfo_Location::_internal_mutable_span() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.span_;
 }
 
@@ -18626,7 +18626,7 @@ inline bool SourceCodeInfo_Location::has_leading_comments() const {
   return value;
 }
 inline void SourceCodeInfo_Location::clear_leading_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.leading_comments_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -18638,7 +18638,7 @@ inline const std::string& SourceCodeInfo_Location::leading_comments() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_leading_comments(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.leading_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_comments)
@@ -18649,21 +18649,21 @@ inline std::string* SourceCodeInfo_Location::mutable_leading_comments() ABSL_ATT
   return _s;
 }
 inline const std::string& SourceCodeInfo_Location::_internal_leading_comments() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.leading_comments_.Get();
 }
 inline void SourceCodeInfo_Location::_internal_set_leading_comments(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.leading_comments_.Set(value, GetArena());
 }
 inline std::string* SourceCodeInfo_Location::_internal_mutable_leading_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.leading_comments_.Mutable( GetArena());
 }
 inline std::string* SourceCodeInfo_Location::release_leading_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -18676,7 +18676,7 @@ inline std::string* SourceCodeInfo_Location::release_leading_comments() {
   return released;
 }
 inline void SourceCodeInfo_Location::set_allocated_leading_comments(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -18697,7 +18697,7 @@ inline bool SourceCodeInfo_Location::has_trailing_comments() const {
   return value;
 }
 inline void SourceCodeInfo_Location::clear_trailing_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.trailing_comments_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -18709,7 +18709,7 @@ inline const std::string& SourceCodeInfo_Location::trailing_comments() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void SourceCodeInfo_Location::set_trailing_comments(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.trailing_comments_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.trailing_comments)
@@ -18720,21 +18720,21 @@ inline std::string* SourceCodeInfo_Location::mutable_trailing_comments() ABSL_AT
   return _s;
 }
 inline const std::string& SourceCodeInfo_Location::_internal_trailing_comments() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.trailing_comments_.Get();
 }
 inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.trailing_comments_.Set(value, GetArena());
 }
 inline std::string* SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000002u;
   return _impl_.trailing_comments_.Mutable( GetArena());
 }
 inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
   if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
     return nullptr;
@@ -18747,7 +18747,7 @@ inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
   return released;
 }
 inline void SourceCodeInfo_Location::set_allocated_trailing_comments(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
@@ -18770,12 +18770,12 @@ inline int SourceCodeInfo_Location::leading_detached_comments_size() const {
   return _internal_leading_detached_comments_size();
 }
 inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.leading_detached_comments_.Clear();
 }
 inline std::string* SourceCodeInfo_Location::add_leading_detached_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_leading_detached_comments()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _s;
@@ -18815,29 +18815,29 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, ab
   // @@protoc_insertion_point(field_set_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(std::string&& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_leading_detached_comments()->Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
   ABSL_DCHECK(value != nullptr);
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value, std::size_t size) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(
       reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(absl::string_view value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_leading_detached_comments()->Add()->assign(value.data(),
                                                      value.size());
   // @@protoc_insertion_point(field_add_string_piece:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
@@ -18850,17 +18850,17 @@ SourceCodeInfo_Location::leading_detached_comments() const ABSL_ATTRIBUTE_LIFETI
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 SourceCodeInfo_Location::mutable_leading_detached_comments() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_leading_detached_comments();
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 SourceCodeInfo_Location::_internal_leading_detached_comments() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.leading_detached_comments_;
 }
 inline ::google::protobuf::RepeatedPtrField<std::string>*
 SourceCodeInfo_Location::_internal_mutable_leading_detached_comments() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.leading_detached_comments_;
 }
 
@@ -18876,7 +18876,7 @@ inline int SourceCodeInfo::location_size() const {
   return _internal_location_size();
 }
 inline void SourceCodeInfo::clear_location() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.location_.Clear();
 }
 inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::mutable_location(int index)
@@ -18887,7 +18887,7 @@ inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::mutable_loca
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* SourceCodeInfo::mutable_location()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.location)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_location();
 }
 inline const ::google::protobuf::SourceCodeInfo_Location& SourceCodeInfo::location(int index) const
@@ -18896,7 +18896,7 @@ inline const ::google::protobuf::SourceCodeInfo_Location& SourceCodeInfo::locati
   return _internal_location().Get(index);
 }
 inline ::google::protobuf::SourceCodeInfo_Location* SourceCodeInfo::add_location() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::SourceCodeInfo_Location* _add = _internal_mutable_location()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.location)
   return _add;
@@ -18908,12 +18908,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCode
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>&
 SourceCodeInfo::_internal_location() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.location_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>*
 SourceCodeInfo::_internal_mutable_location() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.location_;
 }
 
@@ -18929,7 +18929,7 @@ inline int GeneratedCodeInfo_Annotation::path_size() const {
   return _internal_path_size();
 }
 inline void GeneratedCodeInfo_Annotation::clear_path() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.path_.Clear();
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::path(int index) const {
@@ -18941,7 +18941,7 @@ inline void GeneratedCodeInfo_Annotation::set_path(int index, ::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
 inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_path()->Add(value);
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
@@ -18953,16 +18953,16 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Ann
 inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::mutable_path()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_path();
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>&
 GeneratedCodeInfo_Annotation::_internal_path() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.path_;
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* GeneratedCodeInfo_Annotation::_internal_mutable_path() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.path_;
 }
 
@@ -18972,7 +18972,7 @@ inline bool GeneratedCodeInfo_Annotation::has_source_file() const {
   return value;
 }
 inline void GeneratedCodeInfo_Annotation::clear_source_file() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.source_file_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -18984,7 +18984,7 @@ inline const std::string& GeneratedCodeInfo_Annotation::source_file() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void GeneratedCodeInfo_Annotation::set_source_file(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.source_file_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
@@ -18995,21 +18995,21 @@ inline std::string* GeneratedCodeInfo_Annotation::mutable_source_file() ABSL_ATT
   return _s;
 }
 inline const std::string& GeneratedCodeInfo_Annotation::_internal_source_file() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.source_file_.Get();
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.source_file_.Set(value, GetArena());
 }
 inline std::string* GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.source_file_.Mutable( GetArena());
 }
 inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
   if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
     return nullptr;
@@ -19022,7 +19022,7 @@ inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   return released;
 }
 inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
@@ -19043,7 +19043,7 @@ inline bool GeneratedCodeInfo_Annotation::has_begin() const {
   return value;
 }
 inline void GeneratedCodeInfo_Annotation::clear_begin() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.begin_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -19057,11 +19057,11 @@ inline void GeneratedCodeInfo_Annotation::set_begin(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.begin)
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::_internal_begin() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.begin_;
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_begin(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.begin_ = value;
 }
 
@@ -19071,7 +19071,7 @@ inline bool GeneratedCodeInfo_Annotation::has_end() const {
   return value;
 }
 inline void GeneratedCodeInfo_Annotation::clear_end() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
@@ -19085,11 +19085,11 @@ inline void GeneratedCodeInfo_Annotation::set_end(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.end)
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::_internal_end() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.end_;
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_end(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.end_ = value;
 }
 
@@ -19099,7 +19099,7 @@ inline bool GeneratedCodeInfo_Annotation::has_semantic() const {
   return value;
 }
 inline void GeneratedCodeInfo_Annotation::clear_semantic() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.semantic_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
@@ -19113,11 +19113,11 @@ inline void GeneratedCodeInfo_Annotation::set_semantic(::google::protobuf::Gener
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.semantic)
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::_internal_semantic() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic>(_impl_.semantic_);
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_IsValid(value));
   _impl_.semantic_ = value;
 }
@@ -19134,7 +19134,7 @@ inline int GeneratedCodeInfo::annotation_size() const {
   return _internal_annotation_size();
 }
 inline void GeneratedCodeInfo::clear_annotation() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.annotation_.Clear();
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::mutable_annotation(int index)
@@ -19145,7 +19145,7 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::muta
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* GeneratedCodeInfo::mutable_annotation()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.annotation)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_annotation();
 }
 inline const ::google::protobuf::GeneratedCodeInfo_Annotation& GeneratedCodeInfo::annotation(int index) const
@@ -19154,7 +19154,7 @@ inline const ::google::protobuf::GeneratedCodeInfo_Annotation& GeneratedCodeInfo
   return _internal_annotation().Get(index);
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::add_annotation() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::GeneratedCodeInfo_Annotation* _add = _internal_mutable_annotation()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.annotation)
   return _add;
@@ -19166,12 +19166,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedC
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>&
 GeneratedCodeInfo::_internal_annotation() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.annotation_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>*
 GeneratedCodeInfo::_internal_mutable_annotation() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.annotation_;
 }
 

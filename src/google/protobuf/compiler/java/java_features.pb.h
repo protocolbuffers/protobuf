@@ -325,7 +325,7 @@ inline bool JavaFeatures::has_legacy_closed_enum() const {
   return value;
 }
 inline void JavaFeatures::clear_legacy_closed_enum() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -339,11 +339,11 @@ inline void JavaFeatures::set_legacy_closed_enum(bool value) {
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
 }
 inline bool JavaFeatures::_internal_legacy_closed_enum() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.legacy_closed_enum_;
 }
 inline void JavaFeatures::_internal_set_legacy_closed_enum(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = value;
 }
 
@@ -353,7 +353,7 @@ inline bool JavaFeatures::has_utf8_validation() const {
   return value;
 }
 inline void JavaFeatures::clear_utf8_validation() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.utf8_validation_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -367,11 +367,11 @@ inline void JavaFeatures::set_utf8_validation(::pb::JavaFeatures_Utf8Validation 
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.utf8_validation)
 }
 inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::_internal_utf8_validation() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::pb::JavaFeatures_Utf8Validation>(_impl_.utf8_validation_);
 }
 inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::pb::JavaFeatures_Utf8Validation_IsValid(value));
   _impl_.utf8_validation_ = value;
 }

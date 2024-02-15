@@ -327,7 +327,7 @@ inline bool CppFeatures::has_legacy_closed_enum() const {
   return value;
 }
 inline void CppFeatures::clear_legacy_closed_enum() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
@@ -341,11 +341,11 @@ inline void CppFeatures::set_legacy_closed_enum(bool value) {
   // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
 }
 inline bool CppFeatures::_internal_legacy_closed_enum() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.legacy_closed_enum_;
 }
 inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = value;
 }
 
@@ -355,7 +355,7 @@ inline bool CppFeatures::has_string_type() const {
   return value;
 }
 inline void CppFeatures::clear_string_type() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.string_type_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
@@ -369,11 +369,11 @@ inline void CppFeatures::set_string_type(::pb::CppFeatures_StringType value) {
   // @@protoc_insertion_point(field_set:pb.CppFeatures.string_type)
 }
 inline ::pb::CppFeatures_StringType CppFeatures::_internal_string_type() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return static_cast<::pb::CppFeatures_StringType>(_impl_.string_type_);
 }
 inline void CppFeatures::_internal_set_string_type(::pb::CppFeatures_StringType value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   assert(::pb::CppFeatures_StringType_IsValid(value));
   _impl_.string_type_ = value;
 }

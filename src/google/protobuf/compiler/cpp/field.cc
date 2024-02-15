@@ -72,9 +72,11 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 
       // For TSan validation.
       {"TsanDetectConcurrentMutation",
-       "PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race)"},
+       absl::StrCat("::", ProtobufNamespace(opts),
+                    "::internal::TSanWrite(&_impl_)")},
       {"TsanDetectConcurrentRead",
-       "PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race)"},
+       absl::StrCat("::", ProtobufNamespace(opts),
+                    "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
       {"field", FieldMemberName(field, split)},
