@@ -732,7 +732,10 @@ namespace Google.Protobuf
                 }
             }
 
-            /// <summary>Provide a cached reusable instance of stringbuilder per thread.</summary>
+            /// <summary>
+            /// Provide a cached reusable instance of stringbuilder per thread.
+            /// Copied from https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Text/StringBuilderCache.cs
+            /// </summary>
             private static class StringBuilderCache
             {
                 private const int MaxCachedStringBuilderSize = 360;
