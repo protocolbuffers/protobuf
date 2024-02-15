@@ -61,7 +61,7 @@ namespace Google.Protobuf
         // token returned, and allow a parameterless Rewind() method (which could only be called once, just like the current PushBack).
         internal void PushBack(JsonToken token)
         {
-            if (bufferedToken != null)
+            if (bufferedToken != default)
             {
                 throw new InvalidOperationException("Can't push back twice");
             }
@@ -87,10 +87,10 @@ namespace Google.Protobuf
         internal JsonToken Next()
         {
             JsonToken tokenToReturn;
-            if (bufferedToken != null)
+            if (bufferedToken != default)
             {
                 tokenToReturn = bufferedToken;
-                bufferedToken = null;
+                bufferedToken = default;
             }
             else
             {

@@ -39,7 +39,7 @@ namespace Google.Protobuf
 
         internal enum TokenType
         {
-            Null,
+            Null = 1, //zero is reserved for check with default(JsonToken)
             False,
             True,
             StringValue,
@@ -109,6 +109,15 @@ namespace Google.Protobuf
         {
             // Note use of other.numberValue.Equals rather than ==, so that NaN compares appropriately.
             return other.type == type && other.stringValue == stringValue && other.numberValue.Equals(numberValue);
+        }
+
+        public static bool operator ==(JsonToken x, JsonToken y)
+        {
+            return x.Equals(y);
+        }
+        public static bool operator !=(JsonToken x, JsonToken y)
+        {
+            return !x.Equals(y);
         }
     }
 }
