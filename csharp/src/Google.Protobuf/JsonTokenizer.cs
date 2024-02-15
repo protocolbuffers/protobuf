@@ -30,7 +30,7 @@ namespace Google.Protobuf
     /// </remarks>
     internal abstract class JsonTokenizer
     {
-        private JsonToken bufferedToken;
+        private JsonToken? bufferedToken;
 
         /// <summary>
         ///  Creates a tokenizer that reads from the given text reader.
@@ -61,7 +61,7 @@ namespace Google.Protobuf
         // token returned, and allow a parameterless Rewind() method (which could only be called once, just like the current PushBack).
         internal void PushBack(JsonToken token)
         {
-            if (bufferedToken != default)
+            if (bufferedToken != null)
             {
                 throw new InvalidOperationException("Can't push back twice");
             }
@@ -87,10 +87,10 @@ namespace Google.Protobuf
         internal JsonToken Next()
         {
             JsonToken tokenToReturn;
-            if (bufferedToken != default)
+            if (bufferedToken != null)
             {
-                tokenToReturn = bufferedToken;
-                bufferedToken = default;
+                tokenToReturn = bufferedToken.Value;
+                bufferedToken = null;
             }
             else
             {
