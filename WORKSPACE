@@ -168,11 +168,31 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("@system_python//:pip.bzl", "pip_parse")
+load("@rules_python//python:repositories.bzl", "python_register_multi_toolchains")
+
+SUPPORTED_PYTHON_VERSIONS = [
+    "3.8",
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+]
+
+python_register_multi_toolchains(
+    name = "python",
+    default_version = SUPPORTED_PYTHON_VERSIONS[-1],
+    python_versions = SUPPORTED_PYTHON_VERSIONS,
+    ignore_root_user_error = True,
+)
+
+load("@python_{}//:defs.bzl".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")), "interpreter")
+
+load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "//python:requirements.txt",
+    requirements_lock = "//python:requirements.txt",
+    python_interpreter_target = interpreter,
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")
@@ -195,10 +215,6 @@ rules_fuzzing_dependencies()
 load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
 
 rules_fuzzing_init()
-
-load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
-
-fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",
