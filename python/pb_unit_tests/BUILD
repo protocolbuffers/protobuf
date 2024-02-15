@@ -41,7 +41,6 @@ py_test(
     srcs = ["numpy_test_wrapper.py"],
     main = "numpy_test_wrapper.py",
     target_compatible_with = select({
-        "@system_python//:supported": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     deps = [

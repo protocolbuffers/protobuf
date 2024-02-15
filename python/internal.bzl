@@ -127,7 +127,6 @@ def internal_py_test(deps = [], **kwargs):
         imports = ["."],
         deps = deps + ["//python:python_test_lib"],
         target_compatible_with = select({
-            "@system_python//:supported": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }),
         **kwargs
