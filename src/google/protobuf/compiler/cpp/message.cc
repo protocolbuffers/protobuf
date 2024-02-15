@@ -4522,9 +4522,22 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   // function, since advancing is actually slower. We sometimes
   // prefetch more than sizeof(message), because it helps with
   // next message on arena.
-  p->Emit(R"cc(
-    ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  )cc");
+  bool generate_prefetch = false;
+  // Skip trivial messages 0/1 filed, not-repeated to reduce codesize.
+  switch (optimized_order_.size()) {
+    case 1:
+      generate_prefetch = optimized_order_[0]->is_repeated();
+      break;
+    case 0:
+      break;
+    default:
+      generate_prefetch = true;
+  }
+  if (generate_prefetch) {
+    p->Emit(R"cc(
+      ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
+    )cc");
+  }
 
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
