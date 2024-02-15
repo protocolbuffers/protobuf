@@ -739,7 +739,7 @@ namespace Google.Protobuf
                 private const int DefaultStringBuilderCapacity = 16; // == StringBuilder.DefaultCapacity
 
                 [ThreadStatic]
-                private static StringBuilder? cachedInstance;
+                private static StringBuilder cachedInstance;
 
                 /// <summary>Get a StringBuilder for the specified capacity.</summary>
                 /// <remarks>If a StringBuilder of an appropriate size is cached, it will be returned and the cache emptied.</remarks>
@@ -747,7 +747,7 @@ namespace Google.Protobuf
                 {
                     if (capacity <= MaxCachedStringBuilderSize)
                     {
-                        StringBuilder? sb = cachedInstance;
+                        StringBuilder sb = cachedInstance;
                         if (sb != null)
                         {
                             // Avoid stringbuilder block fragmentation by getting a new StringBuilder
