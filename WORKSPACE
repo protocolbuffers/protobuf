@@ -164,11 +164,21 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("@system_python//:pip.bzl", "pip_parse")
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python_3_12",
+    python_version = "3.12",
+)
+
+load("@python_3_12//:defs.bzl", "interpreter")
+
+load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "//python:requirements.txt",
+    requirements_lock = "//python:requirements.txt",
+    python_interpreter_target = interpreter,
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")

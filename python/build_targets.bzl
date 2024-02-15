@@ -87,7 +87,7 @@ def build_targets(name):
         ],
         deps = select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
+            ":use_fast_cpp_protos": ["@rules_python//python/cc:current_py_cc_headers"],
         }),
     )
 
@@ -136,7 +136,7 @@ def build_targets(name):
             "@com_google_absl//absl/strings",
         ] + select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
+            ":use_fast_cpp_protos": ["@rules_python//python/cc:current_py_cc_headers"],
         }),
     )
 
@@ -421,7 +421,7 @@ def build_targets(name):
         hdrs = ["google/protobuf/proto_api.h"],
         visibility = ["//visibility:public"],
         deps = [
-            "@system_python//:python_headers",
+            "@rules_python//python/cc:current_py_cc_headers",
         ],
     )
 
@@ -435,7 +435,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
         failure_list = "//conformance:failure_list_python.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
@@ -450,7 +449,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
         failure_list = "//conformance:failure_list_python.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }),
@@ -464,7 +462,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb"},
         failure_list = "//conformance:failure_list_python_upb.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
