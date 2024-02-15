@@ -25,12 +25,13 @@ bool AnyMetadata::PackFrom(Arena* arena, const Message& message) {
 
 bool AnyMetadata::PackFrom(Arena* arena, const Message& message,
                            absl::string_view type_url_prefix) {
-  type_url_->Set(GetTypeUrl(message.GetTypeName(), type_url_prefix), arena);
+  type_url_->Set(
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix), arena);
   return message.SerializeToString(value_->Mutable(arena));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {
-  if (!InternalIs(message->GetTypeName())) {
+  if (!InternalIs(message->GetDescriptor()->full_name())) {
     return false;
   }
   return message->ParseFromString(value_->Get());
