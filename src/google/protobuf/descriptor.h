@@ -2237,9 +2237,13 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Asynchronous execution is undefined behavior.
   void SetRecursiveBuildDispatcher(
       absl::AnyInvocable<void(absl::FunctionRef<void()>) const> dispatcher) {
-    dispatcher_ = std::make_unique<
-        absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>(
-        std::move(dispatcher));
+    if (dispatcher != nullptr) {
+      dispatcher_ = std::make_unique<
+          absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>(
+          std::move(dispatcher));
+    } else {
+      dispatcher_.reset(nullptr);
+    }
   }
 #endif  // SWIG
 
