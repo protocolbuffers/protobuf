@@ -22,9 +22,13 @@ extern "C" google::protobuf::rust_internal::SerializedData SerializeTestAllTypes
   return google::protobuf::rust_internal::SerializeMsg(msg);
 }
 
+extern "C" void DeleteTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
+  delete msg;
+}
+
 extern "C" void* DeserializeTestAllTypes(const void* data, size_t size) {
   auto* proto = new protobuf_unittest::TestAllTypes;
-  proto->ParseFromArray(data, size);
+  proto->ParseFromArray(data, static_cast<int>(size));
   return proto;
 }
 

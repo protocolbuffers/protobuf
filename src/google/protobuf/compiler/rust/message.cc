@@ -1126,6 +1126,32 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           self.raw_msg()
         }
       }
+
+      impl<'a> $Msg$Mut<'a> {
+        //~ msg is a &mut so that the borrow checker enforces exclusivity to
+        //~ prevent constructing multiple Muts/Views from the same RawMessage.
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(
+            msg: &'a mut $pbi$::RawMessage) -> Self {
+          Self {
+            inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
+          }
+        }
+        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
+          self.raw_msg()
+        }
+      }
+
+      impl<'a> $Msg$View<'a> {
+        //~ msg is a & so that the caller can claim the message is live for the
+        //~ corresponding lifetime.
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(
+          msg: &'a $pbi$::RawMessage) -> Self {
+          Self::new($pbi$::Private, *msg)
+        }
+        pub fn __unstable_cpp_repr_grant_permission_to_break(&self) -> $pbi$::RawMessage {
+          self.msg
+        }
+      }
     )rs");
   }
 }

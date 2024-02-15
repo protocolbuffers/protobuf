@@ -213,11 +213,15 @@ impl<'msg> MutatorMessageRef<'msg> {
         _parent_msg: MutatorMessageRef<'msg>,
         message_field_ptr: RawMessage,
     ) -> Self {
-        MutatorMessageRef { msg: message_field_ptr, _phantom: PhantomData }
+        Self { msg: message_field_ptr, _phantom: PhantomData }
     }
 
     pub fn msg(&self) -> RawMessage {
         self.msg
+    }
+
+    pub fn from_raw_msg(_private: Private, msg: &RawMessage) -> Self {
+        Self { msg: *msg, _phantom: PhantomData }
     }
 }
 
