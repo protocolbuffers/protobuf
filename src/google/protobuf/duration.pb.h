@@ -260,7 +260,7 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
 
 // int64 seconds = 1;
 inline void Duration::clear_seconds() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.seconds_ = ::int64_t{0};
 }
 inline ::int64_t Duration::seconds() const {
@@ -272,17 +272,17 @@ inline void Duration::set_seconds(::int64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.seconds)
 }
 inline ::int64_t Duration::_internal_seconds() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.seconds_;
 }
 inline void Duration::_internal_set_seconds(::int64_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.seconds_ = value;
 }
 
 // int32 nanos = 2;
 inline void Duration::clear_nanos() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nanos_ = 0;
 }
 inline ::int32_t Duration::nanos() const {
@@ -294,11 +294,11 @@ inline void Duration::set_nanos(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }
 inline ::int32_t Duration::_internal_nanos() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.nanos_;
 }
 inline void Duration::_internal_set_nanos(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nanos_ = value;
 }
 

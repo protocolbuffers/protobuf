@@ -254,7 +254,7 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
 
 // string file_name = 1;
 inline void SourceContext::clear_file_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.ClearToEmpty();
 }
 inline const std::string& SourceContext::file_name() const
@@ -265,7 +265,7 @@ inline const std::string& SourceContext::file_name() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
@@ -275,24 +275,24 @@ inline std::string* SourceContext::mutable_file_name() ABSL_ATTRIBUTE_LIFETIME_B
   return _s;
 }
 inline const std::string& SourceContext::_internal_file_name() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.file_name_.Get();
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.Set(value, GetArena());
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.file_name_.Mutable( GetArena());
 }
 inline std::string* SourceContext::release_file_name() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   return _impl_.file_name_.Release();
 }
 inline void SourceContext::set_allocated_file_name(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.file_name_.IsDefault()) {
