@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
