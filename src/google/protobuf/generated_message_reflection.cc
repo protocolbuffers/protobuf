@@ -3484,6 +3484,10 @@ ReflectionSchema MigrationToReflectionSchema(
   result.sizeof_split_ = offsets[migration_schema.offsets_index + 7];
   result.inlined_string_indices_ =
       offsets + migration_schema.inlined_string_indices_index;
+  result.object_alignment_ = migration_schema.object_alignment;
+  result.default_construct_ = migration_schema.default_construct;
+  result.copy_construct_ = migration_schema.copy_construct;
+  result.move_construct_ = migration_schema.move_construct;
   return result;
 }
 

@@ -179,6 +179,33 @@ inline int AlignOffset(int offset) { return AlignTo(offset, kSafeAlignment); }
 
 class DynamicMessage final : public Message {
  public:
+  static google::protobuf::Message* DefaultConstruct(void* address, google::protobuf::Arena* arena,
+                                           const google::protobuf::Message* prototype) {
+    DynamicMessage* message;
+    if (arena != nullptr) {
+      message = ::new (address) DynamicMessage(
+          static_cast<const DynamicMessage*>(prototype)->type_info_, arena);
+    } else {
+      message = ::new (address) DynamicMessage(
+          static_cast<const DynamicMessage*>(prototype)->type_info_);
+    }
+    return message;
+  }
+
+  static google::protobuf::Message* CopyConstruct(void* address, google::protobuf::Arena* arena,
+                                        const google::protobuf::Message* from) {
+    auto* to = DefaultConstruct(address, arena, from);
+    to->CopyFrom(*from);
+    return to;
+  }
+
+  static google::protobuf::Message* MoveConstruct(void* address, google::protobuf::Arena* arena,
+                                        google::protobuf::Message* from) {
+    auto* to = DefaultConstruct(address, arena, from);
+    to->GetReflection()->Swap(to, from);
+    return to;
+  }
+
   explicit DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info);
 
   // This should only be used by GetPrototypeNoLock() to avoid dead lock.
@@ -551,12 +578,12 @@ DynamicMessage::~DynamicMessage() {
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          if (!is_prototype()) {
-        Message* message = *reinterpret_cast<Message**>(field_ptr);
-        if (message != nullptr) {
-          delete message;
+        if (!is_prototype()) {
+          Message* message = *reinterpret_cast<Message**>(field_ptr);
+          if (message != nullptr) {
+            delete message;
+          }
         }
-      }
     }
   }
 }
@@ -765,10 +792,16 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->oneof_case_offset,
       type_info->size,
       type_info->weak_field_map_offset,
-      nullptr,  // inlined_string_indices_
-      0,        // inlined_string_donated_offset_
-      -1,       // split_offset_
-      -1,       // sizeof_split_
+      nullptr,                  // inlined_string_indices_
+      0,                        // inlined_string_donated_offset_
+      -1,                       // split_offset_
+      -1,                       // sizeof_split_
+      alignof(DynamicMessage),  // object_alignment_
+      true,                     // arena_constructable_
+      false,                    // destructor_skippable_
+      &DynamicMessage::DefaultConstruct,
+      &DynamicMessage::CopyConstruct,
+      &DynamicMessage::MoveConstruct,
   };
 
   type_info->class_data.reflection = new Reflection(

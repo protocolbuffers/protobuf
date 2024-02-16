@@ -2094,6 +2094,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           friend class ::$proto_ns$::Arena;
           template <typename T>
           friend class ::$proto_ns$::Arena::InternalHelper;
+          template <typename T>
+          friend struct ::$proto_ns$::internal::MessageTraits;
           using InternalArenaConstructable_ = void;
           using DestructorSkippable_ = void;
           $decl_impl$;
@@ -2151,7 +2153,16 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
           {"string_offsets", inlined_string_indices_offset},
       },
       R"cc(
-        {$offset$, $has_offset$, $string_offsets$, sizeof($classtype$)},
+        {$offset$,
+         $has_offset$,
+         $string_offsets$,
+         sizeof($classtype$),
+         alignof($classtype$),
+         ::$proto_ns$::Arena::is_arena_constructable<$classtype$>::value,
+         ::$proto_ns$::Arena::is_destructor_skippable<$classtype$>::value,
+         &::$proto_ns$::internal::MessageTraits<$classtype$>::DefaultConstruct,
+         &::$proto_ns$::internal::MessageTraits<$classtype$>::CopyConstruct,
+         &::$proto_ns$::internal::MessageTraits<$classtype$>::MoveConstruct},
       )cc");
 }
 

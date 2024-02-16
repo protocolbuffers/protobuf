@@ -434,6 +434,17 @@ class PROTOBUF_EXPORT Reflection final {
   Reflection& operator=(const Reflection&) = delete;
   ~Reflection();
 
+  size_t GetObjectSize() const { return schema_.GetObjectSize(); }
+
+  size_t GetObjectAlignment() const { return schema_.GetObjectAlignment(); }
+
+  google::protobuf::Message* DefaultConstruct(void* address,
+                                    google::protobuf::Arena* arena = nullptr) const;
+
+  bool IsArenaConstructable() const { return schema_.IsArenaConstructable(); }
+
+  bool IsDestructorSkippable() const { return schema_.IsDestructorSkippable(); }
+
   // Get the UnknownFieldSet for the message.  This contains fields which
   // were seen when the Message was parsed but were not recognized according
   // to the Message's definition.

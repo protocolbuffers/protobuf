@@ -41,6 +41,7 @@ class MapValueRef;
 class MessageLayoutInspector;
 class Message;
 struct Metadata;
+class Arena;
 
 namespace io {
 class CodedOutputStream;
@@ -113,6 +114,18 @@ struct ReflectionSchema {
  public:
   // Size of a google::protobuf::Message object of this type.
   uint32_t GetObjectSize() const { return static_cast<uint32_t>(object_size_); }
+
+  uint32_t GetObjectAlignment() const {
+    return static_cast<uint32_t>(object_alignment_);
+  }
+
+  bool IsArenaConstructable() const { return arena_constructable_; }
+
+  bool IsDestructorSkippable() const { return destructor_skippable_; }
+
+  google::protobuf::Message* DefaultConstruct(void* address, google::protobuf::Arena* arena) {
+    return (*default_construct_)(address, arena, default_instance_);
+  }
 
   bool InRealOneof(const FieldDescriptor* field) const {
     return field->real_containing_oneof();
@@ -257,6 +270,14 @@ struct ReflectionSchema {
   int inlined_string_donated_offset_;
   int split_offset_;
   int sizeof_split_;
+  int object_alignment_;
+  bool arena_constructable_;
+  bool destructor_skippable_;
+  google::protobuf::Message* (*default_construct_)(void*, google::protobuf::Arena*,
+                                         const google::protobuf::Message*);
+  google::protobuf::Message* (*copy_construct_)(void*, google::protobuf::Arena*,
+                                      const google::protobuf::Message*);
+  google::protobuf::Message* (*move_construct_)(void*, google::protobuf::Arena*, google::protobuf::Message*);
 
   // We tag offset values to provide additional data about fields (such as
   // "unused" or "lazy" or "inlined").
@@ -280,6 +301,24 @@ struct ReflectionSchema {
   }
 };
 
+template <typename T>
+struct MessageTraits {
+  static google::protobuf::Message* DefaultConstruct(void* address, google::protobuf::Arena* arena,
+                                           const google::protobuf::Message*) {
+    return ::new (address) T(arena);
+  }
+
+  static google::protobuf::Message* CopyConstruct(void* address, google::protobuf::Arena* arena,
+                                        const google::protobuf::Message* from) {
+    return ::new (address) T(arena, *static_cast<const T*>(from));
+  }
+
+  static google::protobuf::Message* MoveConstruct(void* address, google::protobuf::Arena* arena,
+                                        google::protobuf::Message* from) {
+    return ::new (address) T(arena, std::move(*static_cast<T*>(from)));
+  }
+};
+
 // Structs that the code generator emits directly to describe a message.
 // These should never used directly except to build a ReflectionSchema
 // object.
@@ -291,6 +330,14 @@ struct MigrationSchema {
   int32_t has_bit_indices_index;
   int32_t inlined_string_indices_index;
   int object_size;
+  int object_alignment;
+  bool arena_constructable;
+  bool destructor_skippable;
+  google::protobuf::Message* (*default_construct)(void*, google::protobuf::Arena*,
+                                        const google::protobuf::Message*);
+  google::protobuf::Message* (*copy_construct)(void*, google::protobuf::Arena*,
+                                     const google::protobuf::Message*);
+  google::protobuf::Message* (*move_construct)(void*, google::protobuf::Arena*, google::protobuf::Message*);
 };
 
 // This struct tries to reduce unnecessary padding.
@@ -362,7 +409,7 @@ const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire );
+  const std::string** cache = deci.cache.load(std::memory_order_acquire);
   if (PROTOBUF_PREDICT_TRUE(cache != nullptr)) {
     if (PROTOBUF_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];
