@@ -10,8 +10,15 @@ use unittest_proto::TestAllTypes;
 
 #[test]
 fn serialize_zero_length() {
-    let msg = TestAllTypes::new();
+    let mut msg = TestAllTypes::new();
+
     let serialized = msg.serialize();
+    assert_that!(serialized.len(), eq(0));
+
+    let serialized = msg.as_view().serialize();
+    assert_that!(serialized.len(), eq(0));
+
+    let serialized = msg.as_mut().serialize();
     assert_that!(serialized.len(), eq(0));
 }
 

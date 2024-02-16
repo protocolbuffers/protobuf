@@ -904,6 +904,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.msg
           }
 
+          pub fn serialize(&self) -> $pbr$::SerializedData {
+            $Msg::serialize$
+          }
+
           $accessor_fns_for_views$
         }
 
@@ -1034,6 +1038,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner
           }
 
+          pub fn serialize(&self) -> $pbr$::SerializedData {
+            $pb$::ViewProxy::as_view(self).serialize()
+          }
+
           $raw_arena_getter_for_msgmut$
 
           $accessor_fns_for_muts$
@@ -1079,7 +1087,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           $raw_arena_getter_for_message$
 
           pub fn serialize(&self) -> $pbr$::SerializedData {
-            $Msg::serialize$
+            self.as_view().serialize()
           }
           pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
             $Msg::deserialize$
