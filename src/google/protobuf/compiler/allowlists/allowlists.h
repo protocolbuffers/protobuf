@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_ALLOWLISTS_ALLOWLISTS_H__
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/allowlists/allowlist.h"
 
 namespace google {
 namespace protobuf {
