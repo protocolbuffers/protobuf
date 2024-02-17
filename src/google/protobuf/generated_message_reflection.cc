@@ -182,10 +182,11 @@ void ReportReflectionUsageError(const Descriptor* descriptor,
                   << method
                   << "\n"
                      "  Message type: "
-                  << descriptor->full_name()
+                  << (descriptor == nullptr ? "<null>"
+                                            : descriptor->full_name())
                   << "\n"
                      "  Field       : "
-                  << field->full_name()
+                  << (field == nullptr ? "<null>" : field->full_name())
                   << "\n"
                      "  Problem     : "
                   << description;
@@ -262,6 +263,9 @@ static void ReportReflectionUsageEnumTypeError(
   USAGE_CHECK((A) == (B), METHOD, ERROR_DESCRIPTION)
 #define USAGE_CHECK_NE(A, B, METHOD, ERROR_DESCRIPTION) \
   USAGE_CHECK((A) != (B), METHOD, ERROR_DESCRIPTION)
+
+#define USAGE_CHECK_FIELD_NOT_NULL(METHOD) \
+  USAGE_CHECK(field != nullptr, METHOD, "Field descriptor is null.");
 
 #define USAGE_CHECK_TYPE(METHOD, CPPTYPE)                      \
   if (field->cpp_type() != FieldDescriptor::CPPTYPE_##CPPTYPE) \
@@ -1197,6 +1201,7 @@ void Reflection::UnsafeArenaSwapFields(
 
 bool Reflection::HasField(const Message& message,
                           const FieldDescriptor* field) const {
+  USAGE_CHECK_FIELD_NOT_NULL(HasField);
   USAGE_CHECK_MESSAGE(HasField, &message);
   USAGE_CHECK_MESSAGE_TYPE(HasField);
   USAGE_CHECK_SINGULAR(HasField);
