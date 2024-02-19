@@ -162,6 +162,99 @@ TEST(GeneratedMessageReflectionTest, GetStringReferenceCopy) {
           &cord_scratch));
 }
 
+TEST(GeneratedMessageReflectionTest, GetStringView) {
+  unittest::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+
+  const Reflection* reflection = message.GetReflection();
+  Reflection::ScratchSpace scratch;
+
+  EXPECT_EQ("115",
+            reflection->GetStringView(message, F("optional_string"), scratch));
+  EXPECT_EQ("124", reflection->GetStringView(
+                       message, F("optional_string_piece"), scratch));
+  EXPECT_EQ("125",
+            reflection->GetStringView(message, F("optional_cord"), scratch));
+}
+
+TEST(GeneratedMessageReflectionTest, GetStringViewWithExtensions) {
+  unittest::TestAllExtensions message;
+  google::protobuf::FileDescriptor const* descriptor_file =
+      message.GetDescriptor()->file();
+  google::protobuf::FieldDescriptor const* string_ext =
+      descriptor_file->FindExtensionByName("optional_string_extension");
+  google::protobuf::FieldDescriptor const* string_piece_ext =
+      descriptor_file->FindExtensionByName("optional_string_piece_extension");
+  google::protobuf::FieldDescriptor const* cord_ext =
+      descriptor_file->FindExtensionByName("optional_cord_extension");
+  message.SetExtension(protobuf_unittest::optional_string_extension, "foo");
+  message.SetExtension(protobuf_unittest::optional_string_piece_extension, "bar");
+  message.SetExtension(protobuf_unittest::optional_cord_extension, "baz");
+  const Reflection* reflection = message.GetReflection();
+  Reflection::ScratchSpace scratch;
+
+  EXPECT_EQ("foo", reflection->GetStringView(message, string_ext, scratch));
+  EXPECT_EQ("bar",
+            reflection->GetStringView(message, string_piece_ext, scratch));
+  EXPECT_EQ("baz", reflection->GetStringView(message, cord_ext, scratch));
+}
+
+TEST(GeneratedMessageReflectionTest, GetStringViewWithOneof) {
+  unittest::TestOneof2 message;
+  const Reflection* reflection = message.GetReflection();
+  const FieldDescriptor* string_field =
+      message.GetDescriptor()->FindFieldByName("foo_string");
+  const FieldDescriptor* string_piece_field =
+      message.GetDescriptor()->FindFieldByName("foo_string_piece");
+  Reflection::ScratchSpace scratch;
+
+  message.set_foo_string("foo");
+  EXPECT_EQ("foo", reflection->GetStringView(message, string_field, scratch));
+  EXPECT_EQ("",
+            reflection->GetStringView(message, string_piece_field, scratch));
+
+}
+
+TEST(GeneratedMessageReflectionTest, GetRepeatedStringView) {
+  unittest::TestAllTypes message;
+  TestUtil::AddRepeatedFields1(&message);
+  TestUtil::AddRepeatedFields2(&message);
+
+  const Reflection* reflection = message.GetReflection();
+  Reflection::ScratchSpace scratch;
+
+  EXPECT_EQ("215", reflection->GetRepeatedStringView(
+                       message, F("repeated_string"), 0, scratch));
+  EXPECT_EQ("224", reflection->GetRepeatedStringView(
+                       message, F("repeated_string_piece"), 0, scratch));
+  EXPECT_EQ("225", reflection->GetRepeatedStringView(
+                       message, F("repeated_cord"), 0, scratch));
+}
+
+TEST(GeneratedMessageReflectionTest, GetRepeatedStringViewWithExtensions) {
+  unittest::TestAllExtensions message;
+  google::protobuf::FileDescriptor const* descriptor_file =
+      message.GetDescriptor()->file();
+  google::protobuf::FieldDescriptor const* string_ext =
+      descriptor_file->FindExtensionByName("repeated_string_extension");
+  google::protobuf::FieldDescriptor const* string_piece_ext =
+      descriptor_file->FindExtensionByName("repeated_string_piece_extension");
+  google::protobuf::FieldDescriptor const* cord_ext =
+      descriptor_file->FindExtensionByName("repeated_cord_extension");
+  message.AddExtension(protobuf_unittest::repeated_string_extension, "foo");
+  message.AddExtension(protobuf_unittest::repeated_string_piece_extension, "bar");
+  message.AddExtension(protobuf_unittest::repeated_cord_extension, "baz");
+  const Reflection* reflection = message.GetReflection();
+  Reflection::ScratchSpace scratch;
+
+  EXPECT_EQ("foo",
+            reflection->GetRepeatedStringView(message, string_ext, 0, scratch));
+  EXPECT_EQ("bar", reflection->GetRepeatedStringView(message, string_piece_ext,
+                                                     0, scratch));
+  EXPECT_EQ("baz",
+            reflection->GetRepeatedStringView(message, cord_ext, 0, scratch));
+}
+
 
 class GeneratedMessageReflectionSwapTest : public testing::TestWithParam<bool> {
  protected:
