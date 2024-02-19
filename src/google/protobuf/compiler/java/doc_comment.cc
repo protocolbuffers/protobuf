@@ -126,6 +126,12 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
                                            const SourceLocation& location,
                                            const Options options,
                                            const bool kdoc) {
+  if (options.strip_nonfunctional_codegen) {
+    // TODO: Remove once prototiller can avoid making
+    // extraneous formatting changes to comments.
+    return;
+  }
+
   std::string comments = location.leading_comments.empty()
                              ? location.trailing_comments
                              : location.leading_comments;
@@ -147,24 +153,20 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
       printer->Print(" * <pre>\n");
     }
 
-    // TODO: Remove once prototiller can avoid making
-    // extraneous formatting changes to comments.
-    if (!options.strip_nonfunctional_codegen) {
-      for (size_t i = 0; i < lines.size(); i++) {
-        // Lines should start with a single space and any extraneous leading
-        // spaces should be stripped. For lines starting with a /, the leading
-        // space will prevent putting it right after the leading asterick from
-        // closing the comment.
-        std::string line = lines[i];
-        line.erase(line.begin(),
-                   std::find_if(line.begin(), line.end(), [](unsigned char ch) {
-                     return !std::isspace(ch);
-                   }));
-        if (!line.empty()) {
-          printer->Print(" * $line$\n", "line", line);
-        } else {
-          printer->Print(" *\n");
-        }
+    for (size_t i = 0; i < lines.size(); i++) {
+      // Lines should start with a single space and any extraneous leading
+      // spaces should be stripped. For lines starting with a /, the leading
+      // space will prevent putting it right after the leading asterick from
+      // closing the comment.
+      std::string line = lines[i];
+      line.erase(line.begin(),
+                 std::find_if(line.begin(), line.end(), [](unsigned char ch) {
+                   return !std::isspace(ch);
+                 }));
+      if (!line.empty()) {
+        printer->Print(" * $line$\n", "line", line);
+      } else {
+        printer->Print(" *\n");
       }
     }
 
