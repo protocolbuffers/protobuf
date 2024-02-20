@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <new>
+#include <new>  // IWYU pragma: keep for operator new().
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -25,8 +25,6 @@
 namespace std {
 using type_info = ::type_info;
 }
-#else
-#include <typeinfo>
 #endif
 
 #include "absl/base/attributes.h"
@@ -80,17 +78,6 @@ class TcParser;              // defined in generated_message_tctable_impl.h
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
-
-template <bool destructor_skippable, typename T>
-struct ObjectDestructor {
-  constexpr static void (*destructor)(void*) =
-      &internal::cleanup::arena_destruct_object<T>;
-};
-
-template <typename T>
-struct ObjectDestructor<true, T> {
-  constexpr static void (*destructor)(void*) = nullptr;
-};
 
 template <typename T>
 void arena_delete_object(void* object) {
