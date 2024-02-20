@@ -1,0 +1,26 @@
+# Download sources
+sources:
+  - type: git
+    name: ruby/gem_rbs_collection
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    revision: main
+    repo_dir: gems
+
+# You can specify local directories as sources also.
+# - type: local
+#   path: path/to/your/local/repository
+
+# A directory to install the downloaded RBSs
+path: .gem_rbs_collection
+
+gems:
+  - name: bigdecimal
+  - name: forwardable
+  - name: json
+  - name: pp
+  - name: prettyprint
+  - name: time
+  - name: steep
+    ignore: true
+  - name: rake
+    ignore: true

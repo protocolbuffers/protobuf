@@ -1,0 +1,5 @@
+class Time
+  # Missing override
+  def self.at: (Numeric time, Numeric usec, ?in: String | Integer) -> Time
+             | ...
+end

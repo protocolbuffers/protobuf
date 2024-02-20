@@ -1,0 +1,159 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/map.c
+# - protobuf_ffi: lib/google/protobuf/ffi/map.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyMap.java
+
+module Google
+  module Protobuf
+    class Map[K, V, KWrite, VWrite]
+      include Enumerable[[K, V]]
+
+      type key_types = :int32 | :int64 | :uint32 | :uint64 | :bool | :string | :bytes
+      type simple_value_types = :int32 | :int64 | :uint32 | :uint64 | :bool | :string | :bytes
+
+      ##
+      # call-seq:
+      #    Map.new(key_type, value_type, value_typeclass = nil, init_hashmap = {})
+      #    => new map
+      #
+      # Allocates a new Map container. This constructor may be called with 2, 3, or 4
+      # arguments. The first two arguments are always present and are symbols (taking
+      # on the same values as field-type symbols in message descriptors) that
+      # indicate the type of the map key and value fields.
+      #
+      # The supported key types are: :int32, :int64, :uint32, :uint64, :bool,
+      # :string, :bytes.
+      #
+      # The supported value types are: :int32, :int64, :uint32, :uint64, :bool,
+      # :string, :bytes, :enum, :message.
+      #
+      # The third argument, value_typeclass, must be present if value_type is :enum
+      # or :message. As in RepeatedField#new, this argument must be a message class
+      # (for :message) or enum module (for :enum).
+      #
+      # The last argument, if present, provides initial content for map. Note that
+      # this may be an ordinary Ruby hashmap or another Map instance with identical
+      # key and value types. Also note that this argument may be present whether or
+      # not value_typeclass is present (and it is unambiguously separate from
+      # value_typeclass because value_typeclass's presence is strictly determined by
+      # value_type). The contents of this initial hashmap or Map instance are
+      # shallow-copied into the new Map: the original map is unmodified, but
+      # references to underlying objects will be shared if the value type is a
+      # message type.
+      def initialize: (key_types key_type, simple_value_types value_type, ?Hash[K, V] init_hashmap) -> void
+                    | (key_types key_type, :enum value_type, _EnumModule value_typeclass, ?Hash[K, V] init_hashmap) -> void
+                    | (key_types key_type, :message value_type, singleton(AbstractMessage) value_typeclass, ?Hash[K, V] init_hashmap) -> void
+
+      ##
+      # call-seq:
+      #     Map.keys => [list_of_keys]
+      #
+      # Returns the list of keys contained in the map, in unspecified order.
+      def keys: () -> Array[K]
+
+      ##
+      # call-seq:
+      #     Map.values => [list_of_values]
+      #
+      # Returns the list of values contained in the map, in unspecified order.
+      def values: () -> Array[V]
+
+      ##
+      # call-seq:
+      #    Map.[](key) => value
+      #
+      #  Accesses the element at the given key. Throws an exception if the key type is
+      #  incorrect. Returns nil when the key is not present in the map.
+      def []: %a{implicitly-returns-nil} (KWrite key) -> V
+
+      ##
+      # call-seq:
+      #     Map.[]=(key, value) => value
+      #
+      # Inserts or overwrites the value at the given key with the given new value.
+      # Throws an exception if the key type is incorrect. Returns the new value that
+      # was just inserted.
+      def []=: (KWrite key, VWrite value) -> void
+
+      def has_key?: (KWrite key) -> bool
+
+      ##
+      # call-seq:
+      #    Map.delete(key) => old_value
+      #
+      # Deletes the value at the given key, if any, returning either the old value or
+      # nil if none was present. Throws an exception if the key is of the wrong type.
+      def delete: (KWrite key) -> V?
+
+      def clear: () -> nil
+
+      def length: () -> Integer
+      alias size length
+
+      def freeze: () -> self
+
+      ##
+      # call-seq:
+      #    Map.dup => new_map
+      #
+      # Duplicates this map with a shallow copy. References to all non-primitive
+      # element objects (e.g., submessages) are shared.
+      def dup: () -> self
+      alias clone dup
+
+      ##
+      # call-seq:
+      #     Map.==(other) => boolean
+      #
+      # Compares this map to another. Maps are equal if they have identical key sets,
+      # and for each key, the values in both maps compare equal. Elements are
+      # compared as per normal Ruby semantics, by calling their :== methods (or
+      # performing a more efficient comparison for primitive types).
+      #
+      # Maps with dissimilar key types or value types/typeclasses are never equal,
+      # even if value comparison (for example, between integers and floats) would
+      # have otherwise indicated that every element has equal value.
+      def ==: (untyped other) -> bool
+
+      def hash: () -> Integer
+
+      ##
+      # call-seq:
+      #    Map.to_h => {}
+      #
+      # Returns a Ruby Hash object containing all the values within the map
+      def to_h: () -> Hash[K, untyped]
+
+      def inspect: () -> String
+
+      ##
+      # call-seq:
+      #    Map.merge(other_map) => map
+      #
+      # Copies key/value pairs from other_map into a copy of this map. If a key is
+      # set in other_map and this map, the value from other_map overwrites the value
+      # in the new copy of this map. Returns the new copy of this map with merged
+      # contents.
+      def merge: (Hash[KWrite, VWrite] | Map[K, V, KWrite, VWrite] other) -> Map[K, V, KWrite, VWrite]
+
+      ##
+      # call-seq:
+      #    Map.each(&block)
+      #
+      # Invokes &block on each |key, value| pair in the map, in unspecified order.
+      # Note that Map also includes Enumerable; map thus acts like a normal Ruby
+      # sequence.
+      def each: () { (K, V) -> void } -> nil
+              | () { (K) -> void } -> nil
+              # Dummy overload to convince Enumerable
+              | () { ([K, V]) -> void } -> nil
+    end
+  end
+end

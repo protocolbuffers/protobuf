@@ -1,0 +1,47 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/internal/convert.rb
+
+##
+# Implementation details below are subject to breaking changes without
+# warning and are intended for use only within the gem.
+module Google
+  module Protobuf
+    module Internal
+      module Convert
+
+        # Arena should be the
+        # @param value [Object] Value to convert
+        # @param arena [Arena] Arena that owns the Message where the MessageValue
+        #   will be set
+        # @return [Google::Protobuf::FFI::MessageValue]
+        def convert_ruby_to_upb: (untyped value, Arena arena, FFI::ffi_c_type c_type, (Descriptor | EnumDescriptor)? msg_or_enum_def) -> FFI::MessageValue
+
+        ##
+        # Safe to call without an arena if the caller has checked that c_type
+        # is not :message.
+        # @param message_value [Google::Protobuf::FFI::MessageValue] Value to be converted.
+        # @param c_type [Google::Protobuf::FFI::CType] Enum representing the type of message_value
+        # @param msg_or_enum_def [::FFI::Pointer] Pointer to the MsgDef or EnumDef definition
+        # @param arena [Google::Protobuf::Internal::Arena] Arena to create Message instances, if needed
+        def convert_upb_to_ruby: (FFI::MessageValue message_value, FFI::ffi_c_type c_type, ?(Descriptor | EnumDescriptor)? msg_or_enum_def, ?Arena? arena) -> untyped
+
+        def to_h_internal: (FFI::ffi_message? msg, Descriptor message_descriptor) -> Hash[Symbol, untyped]?
+
+        def map_create_hash: (FFI::ffi_map map_ptr, FieldDescriptor field_descriptor) -> Hash[untyped, untyped]
+
+        def repeated_field_create_array: (FFI::ffi_array? array, FieldDescriptor field_descriptor, FFI::ffi_c_type type) -> Array[untyped]
+
+        # @param field_descriptor [FieldDescriptor] Descriptor of the field to convert to a hash.
+        def scalar_create_hash: (FFI::MessageValue message_value, FFI::ffi_c_type type, ?field_descriptor: FieldDescriptor?, ?msg_or_enum_descriptor: (Descriptor | EnumDescriptor)?) -> untyped
+
+        def message_value_deep_copy: (FFI::MessageValue message_value, FFI::ffi_c_type type, Descriptor descriptor, Arena arena) -> FFI::MessageValue
+      end
+    end
+  end
+end

@@ -1,0 +1,7 @@
+module FFI
+  module Compiler
+    module Loader
+      def self.find: (String name, ?String? start_path) -> String
+    end
+  end
+end

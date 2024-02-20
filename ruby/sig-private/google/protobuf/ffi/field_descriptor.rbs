@@ -1,0 +1,106 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/field_descriptor.rb
+
+module Google
+  module Protobuf
+    class FieldDescriptor
+      attr_reader field_def: native_type
+      attr_reader descriptor_pool: DescriptorPool
+
+      include Google::Protobuf::Internal::Convert
+
+      # FFI Interface methods and setup
+      extend ::FFI::DataConverter[FieldDescriptor, native_type]
+      type native_type = ::FFI::Pointer
+
+      extend Google::Protobuf::Internal::TypeSafety[FieldDescriptor, native_type]
+      extend Google::Protobuf::Internal::PointerHelper[FieldDescriptor]
+      def self.from_native: (native_type value, ?untyped context) -> FieldDescriptor
+
+      def to_s: () -> String
+
+      def inspect: () -> String
+
+      def map?: () -> bool
+
+      def repeated?: () -> bool
+
+      def sub_message?: () -> bool
+
+      def wrapper?: () -> bool
+
+      @name: String?
+      @json_name: String?
+      @number: Integer?
+      @type: Symbol?
+      @label: Symbol?
+      @default: untyped?
+      @submsg_name: String?
+      @subtype: (EnumDescriptor | Descriptor)?
+      @has_presence: bool?
+      @is_packed: bool?
+      @map: bool?
+      @repeated: bool?
+      @sub_message: bool?
+      @wrapper: bool
+      @options: FieldOptions
+
+      private
+
+      def initialize: (native_type field_def, DescriptorPool descriptor_pool) -> void
+
+      def self.private_constructor: (native_type field_def, DescriptorPool descriptor_pool) -> instance
+
+      @real_containing_oneof: OneofDescriptor?
+
+      # TODO Can this be added to the public API?
+      def real_containing_oneof: () -> OneofDescriptor?
+
+      # Implementation details below are subject to breaking changes without
+      # warning and are intended for use only within the gem.
+
+      ##
+      # Sets the field this FieldDescriptor represents to the given value on the given message.
+      # @param value [Object] Value to be set
+      # @param msg [::FFI::Pointer] Pointer the the upb_Message
+      # @param arena [Arena] Arena of the message that owns msg
+      def set_value_on_message: (untyped value, FFI::ffi_message msg, Internal::Arena arena, ?wrap: bool) -> void
+
+      @c_type: FFI::ffi_c_type
+
+      def c_type: () -> FFI::ffi_c_type
+    end
+
+    class FFI
+      # MessageDef
+      def self.get_field_by_index: (Descriptor, Integer) -> FieldDescriptor
+      def self.get_field_by_name: (Descriptor, String, Integer) -> FieldDescriptor
+      def self.get_field_by_number: (Descriptor, Integer) -> FieldDescriptor
+
+      # FieldDescriptor
+      def self.field_options: (FieldDescriptor, ::FFI::Pointer, Internal::Arena) -> ::FFI::Pointer
+      def self.get_containing_message_def: (FieldDescriptor) -> Descriptor
+      def self.get_c_type: (FieldDescriptor) -> ffi_c_type
+      def self.get_default: (FieldDescriptor) -> MessageValue
+      def self.get_subtype_as_enum: (FieldDescriptor) -> EnumDescriptor
+      def self.get_has_presence: (FieldDescriptor) -> bool
+      def self.get_is_packed: (FieldDescriptor) -> bool
+      def self.is_map: (FieldDescriptor) -> bool
+      def self.is_repeated: (FieldDescriptor) -> bool
+      def self.is_sub_message: (FieldDescriptor) -> bool
+      def self.get_json_name: (FieldDescriptor) -> String
+      def self.get_label: (FieldDescriptor) -> ffi_label
+      def self.get_subtype_as_message: (FieldDescriptor) -> Descriptor
+      def self.get_full_name: (FieldDescriptor) -> String
+      def self.get_number: (FieldDescriptor) -> Integer
+      def self.get_type: (FieldDescriptor) -> ffi_field_type
+      def self.file_def_by_raw_field_def: (::FFI::Pointer) -> ffi_file_def
+    end
+  end
+end

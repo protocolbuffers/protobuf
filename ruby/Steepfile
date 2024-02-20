@@ -1,0 +1,359 @@
+D = Steep::Diagnostic
+
+target :lib do
+  signature "sig", "sig-private"
+
+  check "lib"
+  ignore "lib/google/protobuf.rb"
+  ignore "lib/google/protobuf/ffi/descriptor.rb"
+  ignore "lib/google/protobuf/ffi/descriptor_pool.rb"
+  ignore "lib/google/protobuf/ffi/enum_descriptor.rb"
+  ignore "lib/google/protobuf/ffi/field_descriptor.rb"
+  ignore "lib/google/protobuf/ffi/internal/arena.rb"
+  ignore "lib/google/protobuf/ffi/internal/convert.rb"
+  ignore "lib/google/protobuf/ffi/internal/pointer_helper.rb"
+  ignore "lib/google/protobuf/ffi/internal/type_safety.rb"
+  ignore "lib/google/protobuf/ffi/map.rb"
+  ignore "lib/google/protobuf/ffi/message.rb"
+  ignore "lib/google/protobuf/ffi/oneof_descriptor.rb"
+  ignore "lib/google/protobuf/ffi/repeated_field.rb"
+  ignore "lib/google/protobuf/message_exts.rb"
+  ignore "lib/google/protobuf/repeated_field.rb"
+  ignore "lib/google/protobuf/well_known_types.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+end
+
+target :lib_protobuf do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_ffi_descriptor do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/descriptor.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::DifferentMethodParameterKind] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_ffi_descriptor_pool do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/descriptor_pool.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+  end
+end
+
+target :lib_ffi_enum_descriptor do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/enum_descriptor.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::DifferentMethodParameterKind] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::MethodParameterMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::UnknownInstanceVariable] = :information
+  end
+end
+
+target :lib_ffi_field_descriptor do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/field_descriptor.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::DifferentMethodParameterKind] = :information
+    hash[D::Ruby::IncompatibleAssignment] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::MethodParameterMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::ReturnTypeMismatch] = :information
+  end
+end
+
+target :lib_ffi_internal_arena do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/internal/arena.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::MethodParameterMismatch] = :information
+  end
+end
+
+target :lib_ffi_internal_convert do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/internal/convert.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::UnresolvedOverloading] = :information
+  end
+end
+
+target :lib_ffi_internal_pointer_helper do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/internal/pointer_helper.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_ffi_internal_type_safety do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/internal/type_safety.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_ffi_map do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/map.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::MethodArityMismatch] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_ffi_message do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/message.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::DifferentMethodParameterKind] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::IncompatibleAssignment] = :information
+    hash[D::Ruby::InsufficientPositionalArguments] = :information
+    hash[D::Ruby::MethodArityMismatch] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::UnknownInstanceVariable] = :information
+  end
+end
+
+target :lib_ffi_oneof_descriptor do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/oneof_descriptor.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::DifferentMethodParameterKind] = :information
+  end
+end
+
+target :lib_ffi_repeated_field do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/ffi/repeated_field.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::DifferentMethodParameterKind] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_message_exts do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/message_exts.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :lib_repeated_field do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/repeated_field.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::RequiredBlockMissing] = :information
+    hash[D::Ruby::UnexpectedPositionalArgument] = :information
+    hash[D::Ruby::UnresolvedOverloading] = :information
+  end
+end
+
+target :lib_well_known_types do
+  signature "sig", "sig-private"
+
+  check "lib/google/protobuf/well_known_types.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::MethodBodyTypeMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :test do
+  signature "sig", "sig-private"
+
+  check "tests"
+  ignore "tests/basic.rb"
+  ignore "tests/basic_proto2.rb"
+  ignore "tests/common_tests.rb"
+  ignore "tests/encode_decode_test.rb"
+  ignore "tests/object_cache_test.rb"
+  ignore "tests/repeated_field_test.rb"
+  ignore "tests/ruby_version.rb"
+  ignore "tests/well_known_types_test.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+end
+
+target :test_basic do
+  signature "sig", "sig-private"
+
+  check "tests/basic.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::UnexpectedPositionalArgument] = :information
+  end
+end
+
+target :test_basic_proto2 do
+  signature "sig", "sig-private"
+
+  check "tests/basic_proto2.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :test_common_tests do
+  signature "sig", "sig-private"
+
+  check "tests/common_tests.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::UnknownConstant] = :information
+    hash[D::Ruby::UnresolvedOverloading] = :information
+  end
+end
+
+target :test_encode_decode_test do
+  signature "sig", "sig-private"
+
+  check "tests/encode_decode_test.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :test_object_cache_test do
+  signature "sig", "sig-private"
+
+  check "tests/object_cache_test.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::FallbackAny] = :information
+  end
+end
+
+target :test_repeated_field_test do
+  signature "sig", "sig-private"
+
+  check "tests/repeated_field_test.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+    hash[D::Ruby::UnexpectedBlockGiven] = :information
+  end
+end
+
+target :test_ruby_version do
+  signature "sig", "sig-private"
+
+  check "tests/ruby_version.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::NoMethod] = :information
+  end
+end
+
+target :test_well_known_types_test do
+  signature "sig", "sig-private"
+
+  check "tests/well_known_types_test.rb"
+
+  configure_code_diagnostics(D::Ruby.strict)
+  configure_code_diagnostics do |hash|
+    hash[D::Ruby::ArgumentTypeMismatch] = :information
+    hash[D::Ruby::FallbackAny] = :information
+    hash[D::Ruby::NoMethod] = :information
+  end
+end

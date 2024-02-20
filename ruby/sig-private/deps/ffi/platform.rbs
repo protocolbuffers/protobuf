@@ -1,0 +1,5 @@
+module FFI
+  module Platform
+    ARCH: String
+  end
+end

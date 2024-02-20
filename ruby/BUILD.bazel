@@ -7,7 +7,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//python:internal.bzl", "internal_copy_files")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
+load("//ruby:defs.bzl", "internal_ruby_proto_library", "internal_rbs_proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 load("//conformance:defs.bzl", "conformance_test")
 
@@ -107,6 +107,16 @@ internal_ruby_proto_library(
     ],
 )
 
+internal_rbs_proto_library(
+    name = "well_known_rbs_protos",
+    srcs = [":copied_wkt_proto_files"],
+    includes = ["."],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__subpackages__",
+    ],
+)
+
 internal_copy_files(
     name = "copied_conformance_test_files",
     testonly = 1,
@@ -147,8 +157,10 @@ genrule(
         "//third_party/utf8_range:LICENSE",
         "//ruby/lib/google:copy_jar",
         "//ruby/lib/google:dist_files",
+        "//ruby/sig/google:dist_files",
         "//ruby/ext/google/protobuf_c:dist_files",
         ":well_known_ruby_protos",
+        ":well_known_rbs_protos",
         "google-protobuf.gemspec",
     ],
     outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + "-java.gem"],
@@ -164,6 +176,9 @@ genrule(
         done
         for wkt in $(execpaths :well_known_ruby_protos); do
             mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        for wkt in $(execpaths :well_known_rbs_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/sig/google/protobuf/"
         done
         mv "tmp/$(execpath //ruby/lib/google:copy_jar)" "tmp/ruby/lib/google"
         cd tmp/ruby
@@ -186,7 +201,9 @@ genrule(
         "//third_party/utf8_range:LICENSE",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
+        "//ruby/sig/google:dist_files",
         ":well_known_ruby_protos",
+        ":well_known_rbs_protos",
         "google-protobuf.gemspec",
     ],
     outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + ".gem"],
@@ -202,6 +219,9 @@ genrule(
         done
         for wkt in $(execpaths :well_known_ruby_protos); do
             mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        for wkt in $(execpaths :well_known_rbs_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/sig/google/protobuf/"
         done
         cd tmp/ruby
         chmod -R 777 ./
@@ -293,6 +313,7 @@ pkg_files(
         "Rakefile",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
+        "//ruby/sig/google:dist_files",
         "//ruby/src/main/java:dist_files",
         "//ruby/tests:dist_files",
     ],

@@ -1,0 +1,49 @@
+class RepeatedFieldTest < Test::Unit::TestCase
+  class TestMessage = RepeatedFieldTestProtos::TestMessage
+  class TestMessage2 = RepeatedFieldTestProtos::TestMessage2
+
+  def test_acts_like_enumerator: () -> void
+  def test_acts_like_an_array: () -> void
+  def test_first: () -> void
+  def test_last: () -> void
+  def test_pop: () -> void
+  def test_each: () -> void
+  def test_each_index: () -> void
+  def test_empty?: () -> void
+  def test_reassign: () -> void
+  def test_array_accessor: () -> void
+  def test_array_settor: () -> void
+  def test_push: () -> void
+  def test_clear: () -> void
+  def test_concat: () -> void
+  def test_equal: () -> void
+  def test_hash: () -> void
+  def test_plus: () -> void
+  def test_replace: () -> void
+  def test_to_a: () -> void
+  def test_to_ary: () -> void
+  def test_collect!: () -> void
+  def test_delete: () -> void
+  def test_delete_at: () -> void
+  def test_delete_if: () -> void
+  def test_fill: () -> void
+  def test_flatten!: () -> void
+  def test_insert: () -> void
+  def test_inspect: () -> void
+  def test_reverse!: () -> void
+  def test_rotate!: () -> void
+  def test_select!: () -> void
+  def test_shift: () -> void
+  def test_shuffle!: () -> void
+  def test_slice!: () -> void
+  def test_sort!: () -> void
+  def test_sort_by!: () -> void
+  def test_uniq!: () -> void
+  def test_unshift: () -> void
+
+  ##### HELPER METHODS
+
+  def check_self_modifying_method: (Google::Protobuf::RepeatedField[untyped, untyped] repeated_field, Array[untyped] ref_array) { (Google::Protobuf::RepeatedField[untyped, untyped] | Array[untyped] arr) -> untyped } -> void
+  def repeated_field_names: (singleton(Google::Protobuf::AbstractMessage) klass) -> Array[String]
+  def fill_test_msg: (TestMessage test_msg) -> void
+end

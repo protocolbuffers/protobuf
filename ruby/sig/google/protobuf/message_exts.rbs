@@ -1,0 +1,30 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/message_exts.rb
+
+module Google
+  module Protobuf
+    module MessageExts
+
+      #this is only called in jruby; mri loades the ClassMethods differently
+      def self.included: (Class klass) -> void
+
+      module ClassMethods
+      end
+
+      def to_json: (?encode_json_options options) -> String
+
+      def to_proto: (?encode_options options) -> String
+    end
+
+    class AbstractMessage
+      include MessageExts
+      extend MessageExts::ClassMethods
+    end
+  end
+end

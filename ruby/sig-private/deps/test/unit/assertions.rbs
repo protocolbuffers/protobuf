@@ -1,0 +1,77 @@
+module Test
+  module Unit
+    module Assertions
+      def assert_block: (?(String | _ToS) message) { () -> boolish } -> void
+      def assert: (boolish object, ?(String | _ToS)? message) -> void
+                | (?(String | _ToS)? message) { () -> boolish } -> void
+      def refute: (boolish object, ?(String | _ToS)? message) -> void
+      def assert_equal: (untyped expected, untyped actual, ?(String | _ToS)? message) -> void
+      def assert_raise: (*(singleton(Exception) | Exception | String | _ToS) exceptions_or_message) { () -> void } -> Exception
+      alias assert_raises assert_raise
+      def assert_raise_with_message: (singleton(Exception) expected_exception_class, untyped expected_message, ?(String | _ToS)? message) { () -> void } -> Exception
+      def assert_raise_kind_of: (*(singleton(Exception) | Exception | String | _ToS) exceptions_or_message) { () -> void } -> Exception
+      def assert_instance_of: (Class klass, untyped object, ?(String | _ToS)? message) -> void
+                            | (Array[Class] klasses, untyped object, ?(String | _ToS)? message) -> void
+      def assert_not_instance_of: (Class klass, untyped object, ?(String | _ToS)? message) -> void
+                                | (Array[Class] klasses, untyped object, ?(String | _ToS)? message) -> void
+      def assert_nil: (untyped object, ?(String | _ToS)? message) -> void
+      def assert_kind_of: (Class klass, untyped object, ?(String | _ToS)? message) -> void
+                        | (Array[Class] klasses, untyped object, ?(String | _ToS)? message) -> void
+      def assert_not_kind_of: (Class klass, untyped object, ?(String | _ToS)? message) -> void
+                            | (Array[Class] klasses, untyped object, ?(String | _ToS)? message) -> void
+      alias refute_kind_of assert_not_kind_of
+      def assert_respond_to: (untyped object, interned method, ?(String | _ToS)? message) -> void
+      def assert_not_respond_to: (untyped object, interned method, ?(String | _ToS)? message) -> void
+      alias refute_respond_to assert_not_respond_to
+      def assert_match: ((Regexp | String) pattern, String string, ?(String | _ToS)? message) -> void
+      def assert_same: (untyped expected, untyped actual, ?(String | _ToS)? message) -> void
+      def assert_operator: (untyped object1, interned operator, untyped object2, ?(String | _ToS)? message) -> void
+      def assert_not_operator: (untyped object1, interned operator, untyped object2, ?(String | _ToS)? message) -> void
+      alias refute_operator assert_not_operator
+      def assert_nothing_raised: (*(singleton(Exception) | Exception | String | _ToS) exceptions_or_message) { () -> void } -> void
+      def flunk: (?(String | _ToS)? message) -> void
+      def assert_not_same: (untyped expected, untyped actual, ?(String | _ToS)? message) -> void
+      alias refute_same assert_not_same
+      def assert_not_equal: (untyped expected, untyped actual, ?(String | _ToS)? message) -> void
+      alias refute_equal assert_not_equal
+      def assert_not_nil: (untyped object, ?(String | _ToS)? message) -> void
+      alias refute_nil assert_not_nil
+      def assert_not_match: ((Regexp | String) pattern, String string, ?(String | _ToS)? message) -> void
+      alias refute_match assert_not_match
+      def assert_no_match: (Regexp regexp, String string, ?(String | _ToS)? message) -> void
+      def assert_throw: (untyped expected_object, ?(String | _ToS)? message) { () -> void } -> void
+      alias assert_throws assert_throw
+      def assert_nothing_thrown: (?(String | _ToS)? message) { () -> void } -> void
+      def assert_in_delta: (Numeric expected_float, Numeric actual_float, ?Numeric delta, ?(String | _ToS)? message) -> void
+      def assert_not_in_delta: (Numeric expected_float, Numeric actual_float, ?Numeric delta, ?(String | _ToS)? message) -> void
+      alias refute_in_delta assert_not_in_delta
+      def assert_in_epsilon: (Numeric expected_float, Numeric actual_float, ?Numeric epsilon, ?(String | _ToS)? message) -> void
+      def assert_not_in_epsilon: (Numeric expected_float, Numeric actual_float, ?Numeric epsilon, ?(String | _ToS)? message) -> void
+      alias refute_in_epsilon assert_not_in_epsilon
+      def assert_send: (Array[untyped] send_array, ?(String | _ToS)? message) -> void
+      def assert_not_send: (Array[untyped] send_array, ?(String | _ToS)? message) -> void
+      def assert_boolean: (untyped actual, ?(String | _ToS)? message) -> void
+      def assert_true: (untyped actual, ?(String | _ToS)? message) -> void
+      def assert_false: (untyped actual, ?(String | _ToS)? message) -> void
+      def assert_compare: (untyped expected, interned operator, untyped actual, ?(String | _ToS)? message) -> void
+      def assert_fail_assertion: (?(String | _ToS)? message) { () -> void } -> void
+      def assert_raise_message: (String | Regexp expected, ?(String | _ToS)? message) { () -> void } -> void
+      def assert_const_defined: (untyped object, interned constant_name, ?(String | _ToS)? message) -> void
+      def assert_const_not_defined: (untyped object, interned constant_name, ?(String | _ToS)? message) -> void
+      def assert_predicate: (untyped object, interned predicate, ?(String | _ToS)? message) -> void
+      def assert_not_predicate: (untyped object, interned predicate, ?(String | _ToS)? message) -> void
+      alias refute_predicate assert_not_predicate
+      def assert_alias_method: (untyped object, interned alias_name, interned original_name, ?(String | _ToS)? message) -> void
+      def assert_path_exist: (String path, ?(String | _ToS)? message) -> void
+      def assert_path_not_exist: (String path, ?(String | _ToS)? message) -> void
+      def assert_include: (untyped collection, untyped object, ?(String | _ToS)? message) -> void
+      alias assert_includes assert_include
+      def assert_not_include: (untyped collection, untyped object, ?(String | _ToS)? message) -> void
+      alias assert_not_includes assert_not_include
+      alias refute_includes assert_not_include
+      def assert_empty: (untyped object, ?(String | _ToS)? message) -> void
+      def assert_not_empty: (untyped object, ?(String | _ToS)? message) -> void
+      alias refute_empty assert_not_empty
+    end
+  end
+end

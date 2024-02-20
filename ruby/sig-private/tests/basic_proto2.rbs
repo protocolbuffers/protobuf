@@ -1,0 +1,23 @@
+module BasicTestProto2
+  class MessageContainerTest < Test::Unit::TestCase
+    def proto_module: () -> singleton(BasicTestProto2)
+    include CommonTests
+
+    def test_has_field: () -> void
+    def test_defined_defaults: () -> void
+    def test_set_clear_defaults: () -> void
+    def test_assign_nil: () -> void
+    def test_initialization_map_errors: () -> void
+    def test_to_h: () -> void
+    def test_respond_to: () -> void
+    def test_file_descriptor: () -> void
+    def test_oneof_fields_respond_to?: () -> void
+    def test_is_packed: () -> void
+    def test_extension: () -> void
+    def test_extension_json: () -> void
+    def test_extension_json_separate_pool: () -> void
+    def test_nested_extension: () -> void
+    def test_message_set_extension_json_roundtrip: () -> void
+    def test_message_set_extension_roundtrip: () -> void
+  end
+end

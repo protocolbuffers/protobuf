@@ -1,0 +1,70 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/message.rb
+
+module Google
+  module Protobuf
+    class FFI
+      # Message
+      def self.clear_message_field: (ffi_message, FieldDescriptor) -> void
+      def self.get_message_value: (ffi_message, FieldDescriptor) -> MessageValue
+      def self.get_message_has: (ffi_message, FieldDescriptor) -> bool
+      def self.set_message_field: (ffi_message, FieldDescriptor, MessageValue, Internal::Arena) -> bool
+      def self.encode_message: (ffi_message, MiniTable, Integer, Internal::Arena, ::FFI::Pointer, ::FFI::Pointer) -> ffi_encode_status
+      def self.json_decode_message: ((ffi_binary_string | String)?, Integer, ffi_message, Descriptor, ffi_def_pool, Integer, Internal::Arena, Status) -> bool
+      def self.json_encode_message: (ffi_message, Descriptor, ffi_def_pool, Integer, (ffi_binary_string | String)?, Integer, Status) -> Integer
+      def self.decode_message: ((ffi_binary_string | String)?, Integer, ffi_message, MiniTable, ffi_extension_registry?, Integer, Internal::Arena) -> ffi_decode_status
+      def self.get_mutable_message: (ffi_message, FieldDescriptor, Internal::Arena) -> MutableMessageValue
+      def self.get_message_which_oneof: (ffi_message, OneofDescriptor) -> FieldDescriptor
+      def self.message_discard_unknown: (ffi_message, Descriptor, Integer) -> bool
+      def self.message_next: (ffi_message, Descriptor, ffi_def_pool?, ffi_field_def_pointer, MessageValue, ::FFI::Pointer) -> bool
+      # MessageValue
+      def self.message_value_equal: (MessageValue, MessageValue, ffi_c_type, Descriptor) -> bool
+      def self.message_value_hash: (MessageValue, ffi_c_type, Descriptor?, Integer) -> Integer
+    end
+
+    class Descriptor
+      def build_message_class: -> singleton(AbstractMessage)
+    end
+
+    class AbstractMessage
+      attr_writer self.descriptor(): Descriptor
+      private attr_accessor self.oneof_field_names: Array[Symbol]
+      @msg: FFI::ffi_message
+      @arena: Internal::Arena
+      extend ::Google::Protobuf::Internal::Convert
+      include Google::Protobuf::Internal::Convert
+
+      alias original_method_missing method_missing
+      def method_missing: (Symbol, *untyped) -> untyped
+      def respond_to_missing?: (Symbol, ?bool include_private) -> bool
+
+      def self.new: (?Hash[String | Symbol, untyped]? initial_value) -> instance
+
+      private
+
+      def self.setup_accessors!: -> void
+      def self.setup_oneof_accessors!: -> void
+      def self.add_oneof_accessors_for!: (OneofDescriptor oneof_descriptor) -> void
+      def self.private_constructor: (Internal::Arena arena, ?msg: FFI::ffi_message?, ?initial_value: untyped) -> instance
+      def self.inspect_field: (FieldDescriptor field_descriptor, FFI::ffi_c_type c_type, Google::Protobuf::FFI::MessageValue message_value) -> String
+      def self.inspect_internal: (FFI::ffi_message msg) -> String
+      def self.deep_copy: (FFI::ffi_message msg, ?Internal::Arena? arena) -> self
+      def self.encode_internal: [R] (FFI::ffi_message msg, ?Integer encoding_options) { (::FFI::Pointer, Integer, FFI::MiniTable) -> R } -> R
+      def method_missing_internal: (Symbol method_name, *untyped args, ?mode: (:method_missing | :respond_to_missing?)?) -> untyped
+      def clear_internal: (FieldDescriptor field_def) -> void
+      def index_internal: (String name) -> untyped
+      def index_assign_internal: (untyped value, ?name: String?, ?field_descriptor: FieldDescriptor?, ?wrap: bool) -> void
+      def initialize: (?untyped? initial_value, ?Internal::Arena? arena, ?FFI::ffi_message? msg) -> void
+                    | ...
+      def get_field: (FieldDescriptor field, ?unwrap: bool) -> untyped
+      def get_repeated_field: (FFI::ffi_array array, FieldDescriptor field) -> untyped
+      def get_map_field: (FFI::ffi_map map, FieldDescriptor field) -> untyped
+    end
+  end
+end

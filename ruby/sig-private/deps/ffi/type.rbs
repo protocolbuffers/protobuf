@@ -1,0 +1,43 @@
+module FFI
+  class Type
+    STRING: Builtin
+    BUFFER_IN: Builtin
+    BUFFER_OUT: Builtin
+    BUFFER_INOUT: Builtin
+    BOOL: Builtin
+    VARARGS: Builtin
+    VOID: Builtin
+    UCHAR: Builtin
+    SHORT: Builtin
+    USHORT: Builtin
+    INT: Builtin
+    CHAR: Builtin
+    UINT: Builtin
+    LONG: Builtin
+    LONG_LONG: Builtin
+    ULONG_LONG: Builtin
+    ULONG: Builtin
+    FLOAT: Builtin
+    DOUBLE: Builtin
+    INT8: Builtin
+    SCHAR: Builtin
+    UINT8: Builtin
+    INT16: Builtin
+    SSHORT: Builtin
+    UINT16: Builtin
+    INT32: Builtin
+    SINT: Builtin
+    UINT32: Builtin
+    INT64: Builtin
+    SLONG_LONG: Builtin
+    UINT64: Builtin
+    SLONG: Builtin
+    FLOAT32: Builtin
+    FLOAT64: Builtin
+    LONGDOUBLE: Builtin
+    POINTER: Builtin
+
+    class Builtin < Type
+    end
+  end
+end

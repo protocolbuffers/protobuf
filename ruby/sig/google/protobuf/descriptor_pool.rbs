@@ -1,0 +1,41 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/defs.c
+# - protobuf_ffi: lib/google/protobuf/ffi/descriptor_pool.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyDescriptorPool.java
+
+module Google
+  module Protobuf
+    class DescriptorPool
+      def initialize: () -> void
+
+      ##
+      # call-seq:
+      #     DescriptorPool.add_serialized_file(serialized_file_proto)
+      # Adds the given serialized FileDescriptorProto to the pool.
+      def add_serialized_file: (String file_contents) -> void
+
+      ##
+      # call-seq:
+      #     DescriptorPool.lookup(name) => descriptor
+      # Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+      # or nil if none exists with the given name.
+      def lookup: (String name) -> (Descriptor | EnumDescriptor | FieldDescriptor)?
+
+      ##
+      # call-seq:
+      #     DescriptorPool.generated_pool => descriptor_pool
+      # Class method that returns the global DescriptorPool. This is a singleton into
+      # which generated-code message and enum types are registered. The user may also
+      # register types in this pool for convenience so that they do not have to hold
+      # a reference to a private pool instance.
+      attr_reader self.generated_pool(): DescriptorPool
+    end
+  end
+end

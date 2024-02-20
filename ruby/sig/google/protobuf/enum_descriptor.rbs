@@ -1,0 +1,87 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/defs.c
+# - protobuf_ffi: lib/google/protobuf/ffi/enum_descriptor.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyEnumDescriptor.java
+
+module Google
+  module Protobuf
+    class EnumDescriptor
+      include Enumerable[[Symbol, Integer]]
+
+      def self.new: (bot not_callable_from_ruby) -> top
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.file_descriptor
+      # Returns the FileDescriptor object this enum belongs to.
+      attr_reader file_descriptor(): FileDescriptor
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.name => name
+      # Returns the name of this enum type.
+      attr_reader name(): String
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.lookup_name(name) => value
+      # Returns the numeric value corresponding to the given key name (as a Ruby
+      # symbol), or nil if none.
+      def lookup_name: (Symbol name) -> Integer?
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.lookup_value(name) => value
+      # Returns the key name (as a Ruby symbol) corresponding to the integer value,
+      # or nil if none.
+      def lookup_value: (int number) -> Symbol?
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.each(&block)
+      # Iterates over key => value mappings in this enum's definition, yielding to
+      # the block with (key, value) arguments for each one.
+      def each: () { (Symbol, Integer) -> void } -> nil
+              | () { (Symbol) -> void } -> nil
+              # Dummy overload to convince Enumerable
+              | () { ([Symbol, Integer]) -> void } -> nil
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.enummodule => module
+      # Returns the Ruby module corresponding to this enum type.
+      def enummodule: () -> (Module & _EnumModule)
+
+      # Currently only implemented in protobuf_c
+      # ##
+      # # call-seq:
+      # #     EnumDescriptor.is_closed? => bool
+      # #
+      # # Returns whether this enum is open or closed.
+      # attr_reader is_closed?(): bool
+
+      ##
+      # call-seq:
+      #     EnumDescriptor.options => options
+      # Returns the `EnumOptions` for this `EnumDescriptor`.
+      def options: () -> EnumOptions
+    end
+
+    ##
+    # This interface allows narrowing EnumDescriptor to a specific enum type.
+    interface _SpecificEnumDescriptor[M < _EnumModule]
+      ##
+      # call-seq:
+      #     EnumDescriptor.enummodule => module
+      # Returns the Ruby module corresponding to this enum type.
+      def enummodule: () -> M
+    end
+  end
+end

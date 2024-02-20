@@ -1,0 +1,5 @@
+module FFI
+  class AutoPointer < Pointer
+    def initialize: (Pointer pointer, ?(Method | ^(Integer id) -> void)? proc) -> void
+  end
+end

@@ -1,0 +1,6 @@
+class Numeric
+  # Many parts of google-protobuf assumes Numeric = Integer | Float
+  # and this declaration will temporarily aid the discrepancy.
+  def to_i: () -> Integer
+  def to_f: () -> Float
+end

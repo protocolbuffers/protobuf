@@ -1,0 +1,16 @@
+module FFI
+  class Struct
+    def self.by_value: () -> Type
+    def self.by_ref: (?Symbol flags) -> Type
+    def self.layout: (*untyped spec) -> StructLayout
+    def self.ptr: (?Symbol flags) -> Type
+    def self.size: () -> Integer
+
+    def clear: () -> self
+    def to_ptr: () -> Pointer
+    def size: () -> Integer
+  end
+
+  class StructLayout
+  end
+end

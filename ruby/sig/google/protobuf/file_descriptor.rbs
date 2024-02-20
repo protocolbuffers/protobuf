@@ -1,0 +1,32 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/defs.c
+# - protobuf_ffi: lib/google/protobuf/ffi/file_descriptor.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyFileDescriptor.java
+
+module Google
+  module Protobuf
+    class FileDescriptor
+      def self.new: (bot not_callable_from_ruby) -> top
+
+      ##
+      # call-seq:
+      #     FileDescriptor.name => name
+      # Returns the name of the file.
+      attr_reader name(): String
+
+      ##
+      # call-seq:
+      #     FileDescriptor.options => options
+      #
+      # Returns the `FileOptions` for this `FileDescriptor`.
+      attr_reader options(): FileOptions
+    end
+  end
+end

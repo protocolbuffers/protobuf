@@ -1,0 +1,46 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/internal/arena.rb
+
+##
+# Implementation details below are subject to breaking changes without
+# warning and are intended for use only within the gem.
+module Google
+  module Protobuf
+    module Internal
+      class Arena
+        attr_reader pinned_messages: Array[top]
+
+        # FFI Interface methods and setup
+        extend ::FFI::DataConverter[Arena, native_type]
+        type native_type = ::FFI::Pointer
+
+        extend Google::Protobuf::Internal::TypeSafety[Arena, native_type]
+
+        @arena: ::FFI::AutoPointer
+        @pinned_messages: Array[top]
+
+        def initialize: (native_type pointer) -> void
+
+        def fuse: (Arena other_arena) -> void
+
+        def pin: (top message) -> void
+      end
+    end
+
+    class FFI
+      # Arena
+      def self.create_arena: () -> Internal::Arena
+      def self.fuse_arena: (Internal::Arena, Internal::Arena) -> bool
+      # Argument takes a :pointer rather than a typed Arena here due to
+      # implementation details of FFI::AutoPointer.
+      def self.free_arena: (::FFI::Pointer) -> void
+      def self.arena_malloc: (Internal::Arena, Integer) -> ::FFI::Pointer
+    end
+  end
+end

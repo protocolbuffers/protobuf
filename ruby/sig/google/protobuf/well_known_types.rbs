@@ -1,0 +1,106 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/well_known_types.rb
+
+module Google
+  module Protobuf
+    class Any
+      def self.pack: (AbstractMessage msg, ?String type_url_prefix) -> Any
+
+      def pack: (AbstractMessage msg, ?String type_url_prefix) -> void
+
+      def unpack: [T < AbstractMessage] (singleton(AbstractMessage) & _MessageClass[T] klass) -> T?
+
+      def type_name: () -> String?
+
+      def is: (singleton(AbstractMessage) klass) -> bool
+    end
+
+    class Timestamp
+      def to_time: () -> Time
+
+      def self.from_time: (Time time) -> Timestamp
+
+      def from_time: (Time time) -> self
+
+      def to_i: () -> Integer
+
+      def to_f: () -> Float
+    end
+
+    class Duration
+      def to_f: () -> Float
+    end
+
+    class UnexpectedStructType < Google::Protobuf::Error
+    end
+
+    type value =
+        nil
+      | bool
+      | Float
+      | String
+      | Array[value]
+      | Hash[String, value]
+    type value_shallow =
+        nil
+      | bool
+      | Float
+      | String
+      | ListValue
+      | Struct
+    type value_to_write =
+        nil
+      | bool
+      | Numeric
+      | String
+      | Array[value_to_write]
+      | ListValue
+      | Hash[String | Symbol, value_to_write]
+      | Struct
+
+    class Value
+      def to_ruby: (?false recursive) -> value_shallow
+                 | (true recursive) -> value
+
+      def self.from_ruby: (value_to_write value) -> Value
+
+      def from_ruby: (value_to_write value) -> self
+    end
+
+    class Struct
+      def []: (String | Symbol key) -> value_shallow?
+
+      def []=: (String | Symbol key, value_to_write value) -> void
+
+      def to_h: () -> Hash[String, value]
+
+      def self.from_hash: (Hash[String | Symbol, value_to_write] hash) -> Struct
+
+      def has_key?: (String | Symbol key) -> bool
+    end
+
+    class ListValue
+      include Enumerable[value_shallow]
+
+      def length: () -> Integer
+
+      def []: (Integer index) -> value_shallow
+
+      def []=: (Integer index, value_to_write value) -> void
+
+      def <<: (value_to_write value) -> RepeatedField[Value, Value]
+
+      def each: () { (value_shallow) -> void } -> void
+
+      def to_a: () -> Array[value]
+
+      def self.from_a: (_Each[value_to_write] arr) -> ListValue
+    end
+  end
+end

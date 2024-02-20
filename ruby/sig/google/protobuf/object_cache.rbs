@@ -1,0 +1,64 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/object_cache.rb
+
+module Google
+  module Protobuf
+    # A pointer -> Ruby Object cache that keeps references to Ruby wrapper
+    # objects.  This allows us to look up any Ruby wrapper object by the address
+    # of the object it is wrapping. That way we can avoid ever creating two
+    # different wrapper objects for the same C object, which saves memory and
+    # preserves object identity.
+    #
+    # We use WeakMap for the cache. If sizeof(long) > sizeof(VALUE), we also
+    # need a secondary Hash to store WeakMap keys, because our pointer keys may
+    # need to be stored as Bignum instead of Fixnum.  Since WeakMap is weak for
+    # both keys and values, a Bignum key will cause the WeakMap entry to be
+    # collected immediately unless there is another reference to the Bignum.
+    # This happens on 64-bit Windows, on which pointers are 64 bits but longs
+    # are 32 bits. In this case, we enable the secondary Hash to hold the keys
+    # and prevent them from being collected.
+    class ObjectCache
+      @map: ObjectSpace::WeakMap
+      @mutex: Mutex
+      def initialize: () -> void
+
+      def get: (Object key) -> Object?
+
+      def try_add: (Object key, Object value) -> Object
+    end
+
+    class LegacyObjectCache
+      @secondary_map: Hash[Object, Object]
+      @map: ObjectSpace::WeakMap
+      @mutex: Mutex
+      def initialize: () -> void
+
+      def get: (Object key) -> Object?
+
+      def try_add: (Object key, Object value) -> Object
+
+      private
+
+      def purge: () -> void
+    end
+
+    private
+
+    SIZEOF_LONG: Integer
+    SIZEOF_VALUE: Integer
+
+    public
+    OBJECT_CACHE: ObjectCache | LegacyObjectCache
+  end
+end
+
+# Define WeakMap so the type checker doesn't complain about it.
+# Can be removed once Ruby comes with type definitions for it.
+class ObjectSpace::WeakMap
+end

@@ -56,17 +56,27 @@ unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
+    rbs_output_file = "sig/" + proto_file.sub(/\.proto$/, "_pb.rbs")
     genproto_output << output_file
+    genproto_output << rbs_output_file
     file output_file => input_file do |file_task|
       sh "#{protoc_command} -I../src --ruby_out=lib #{input_file}"
+    end
+    file rbs_output_file => input_file do |file_task|
+      sh "#{protoc_command} -I../src --rbs_out=sig #{input_file}"
     end
   end
 
   test_protos.each do |proto_file|
     output_file = proto_file.sub(/\.proto$/, "_pb.rb")
+    rbs_output_file = proto_file.sub(/tests\//, "sig-private/tests/").sub(/\.proto$/, "_pb.rbs")
     genproto_output << output_file
+    genproto_output << rbs_output_file
     file output_file => proto_file do |file_task|
-      sh "#{protoc_command} -I../src -I./tests --ruby_out=tests  #{proto_file}"
+      sh "#{protoc_command} -I../src -I./tests --ruby_out=tests #{proto_file}"
+    end
+    file rbs_output_file => proto_file do |file_task|
+      sh "#{protoc_command} -I../src -I./tests --rbs_out=sig-private/tests #{proto_file}"
     end
   end
 end
@@ -179,6 +189,10 @@ end
 # be done already.
 Rake::TestTask.new(:test => ENV['BAZEL'] == 'true' ? [] : [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
+end
+
+task :steep => ENV['BAZEL'] == 'true' ? [] : [:genproto] do
+  sh "steep check"
 end
 
 # gc_test needs to be split out to ensure the generated file hasn't been

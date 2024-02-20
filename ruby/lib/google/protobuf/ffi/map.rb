@@ -350,7 +350,7 @@ module Google
         @value_type = value_type
 
         if !descriptor.nil?
-          raise ArgumentError "Expected descriptor to be a Descriptor or EnumDescriptor" unless [EnumDescriptor, Descriptor].include? descriptor.class
+          raise ArgumentError.new "Expected descriptor to be a Descriptor or EnumDescriptor" unless [EnumDescriptor, Descriptor].include? descriptor.class
           @descriptor = descriptor
         elsif [:message, :enum].include? value_type
           raise ArgumentError.new "Expected at least 3 arguments for message/enum." if value_type_class.nil?

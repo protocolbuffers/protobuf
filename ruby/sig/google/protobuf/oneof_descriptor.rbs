@@ -1,0 +1,27 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/defs.c
+# - protobuf_ffi: lib/google/protobuf/ffi/oneof_descriptor.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyOneofDescriptor.java
+
+module Google
+  module Protobuf
+    class OneofDescriptor
+      include Enumerable[FieldDescriptor]
+
+      def self.new: (bot not_callable_from_ruby) -> top
+
+      attr_reader name(): String
+
+      def each: () { (FieldDescriptor) -> void } -> nil
+
+      attr_reader options(): OneofOptions
+    end
+  end
+end

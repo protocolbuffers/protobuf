@@ -1,0 +1,84 @@
+module CommonTests: Test::Unit::TestCase, _ProtoModule
+  interface _ProtoModule
+    def proto_module: () -> (singleton(BasicTest) | singleton(BasicTestProto2))
+  end
+
+  def test_defaults: () -> void
+  def test_setters: () -> void
+  def test_ctor_args: () -> void
+  def test_ctor_string_symbol_args: () -> void
+  def test_ctor_nil_args: () -> void
+  def test_embeddedmsg_hash_init: () -> void
+  def test_inspect_eq_to_s: () -> void
+  def test_hash: () -> void
+  def test_unknown_field_errors: () -> void
+  def test_type_errors: () -> void
+  def test_string_encoding: () -> void
+  def test_rptfield_int32: () -> void
+  def test_parent_rptfield: () -> void
+  def test_rptfield_msg: () -> void
+  def test_rptfield_enum: () -> void
+  def test_rptfield_initialize: () -> void
+  def test_rptfield_array_ducktyping: () -> void
+  def test_map_basic: () -> void
+  def test_b_8385: () -> void
+  def test_map_ctor: () -> void
+  def test_map_keytypes: () -> void
+  def test_map_msg_enum_valuetypes: () -> void
+  def test_map_dup_deep_copy: () -> void
+  def test_oneof_descriptors: () -> void
+  def test_oneof: () -> void
+  def test_enum_field: () -> void
+  def test_dup: () -> void
+  def test_deep_copy: () -> void
+  def test_sub_message_deep_copy: () -> void
+  def test_message_eq: () -> void
+  def test_enum_lookup: () -> void
+  def test_enum_const_get_helpers: () -> void
+  def test_enum_getter: () -> void
+  def test_enum_getter_oneof: () -> void
+  def test_enum_getter_only_enums: () -> void
+  def test_repeated_push: () -> void
+  def test_parse_serialize: () -> void
+  def test_encode_decode_helpers: () -> void
+  def test_protobuf_encode_decode_helpers: () -> void
+  def test_protobuf_encode_decode_json_helpers: () -> void
+  def test_corecursive: () -> void
+  def test_serialize_cycle: () -> void
+  def test_bad_field_names: () -> void
+  def test_int_ranges: () -> void
+  def test_stress_test: () -> void
+  def test_reflection: () -> void
+  def test_json: () -> void
+  def test_json_empty: () -> void
+  def test_json_emit_defaults: () -> void
+  def test_json_emit_defaults_submsg: () -> void
+  def test_json_emit_defaults_repeated_submsg: () -> void
+  def value_from_ruby: (String | Google::Protobuf::Struct | Hash[untyped, untyped] | Google::Protobuf::ListValue | Array[untyped] value) -> Google::Protobuf::Value
+  def list_from_ruby: (_Each[untyped] arr) -> Google::Protobuf::ListValue
+  def struct_from_ruby: (_Each[[untyped, untyped]] hash) -> Google::Protobuf::Struct
+  def test_deep_json: () -> void
+  def test_comparison_with_arbitrary_object: () -> void
+  def test_wrappers_set_to_default: () -> void
+  def test_wrapper_getters: () -> void
+  def test_repeated_wrappers: () -> void
+  def test_oneof_wrappers: () -> void
+  def test_top_level_wrappers: () -> void
+  def test_wrapper_setters_as_value: () -> void
+  def test_wrapper_setters: () -> void
+  def test_wrappers_only: () -> void
+  def test_converts_time: () -> void
+
+  # Defined within test_converts_time
+  def test_time: (Integer year, Integer month, Integer day) -> void
+
+  def test_converts_duration: () -> void
+  def test_freeze: () -> void
+  def test_eq: () -> void
+  def cruby_or_jruby_9_3_or_higher?: () -> boolish
+  def test_object_gc: () -> void
+  def test_object_gc_freeze: () -> void
+  def test_optional_fields_respond_to?: () -> void
+  def test_oneof_fields_respond_to?: () -> void
+  def test_wrapped_fields_respond_to?: () -> void
+end

@@ -1,0 +1,9 @@
+module Test
+  module Unit
+    class Omission
+      module TestCaseOmissionSupport
+        def omit: (?(String | _ToS) message) ?{ () -> void } -> void
+      end
+    end
+  end
+end

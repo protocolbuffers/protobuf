@@ -1,0 +1,3 @@
+class GeneratedCodeTest < Test::Unit::TestCase
+  def test_generated_msg: () -> void
+end

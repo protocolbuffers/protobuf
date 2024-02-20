@@ -1,0 +1,7 @@
+class BackendTest < Test::Unit::TestCase
+  def test_prefer_ffi_aligns_with_implementation: () -> void
+  def test_prefer_ffi: () -> void
+  def test_ffi_implementation: () -> void
+  def test_prefer_native: () -> void
+  def test_native_implementation: () -> void
+end

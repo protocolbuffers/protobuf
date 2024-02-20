@@ -1,0 +1,68 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/descriptor.rb
+
+module Google
+  module Protobuf
+    ##
+    # Message Descriptor - Descriptor for short.
+    class Descriptor
+      attr_reader descriptor_pool(): DescriptorPool
+      attr_reader msg_class(): singleton(AbstractMessage)
+
+      # FFI Interface methods and setup
+      extend ::FFI::DataConverter[Descriptor?, native_type]
+      type native_type = ::FFI::Pointer
+
+      extend Google::Protobuf::Internal::TypeSafety[Descriptor?, native_type]
+      extend Google::Protobuf::Internal::PointerHelper[Descriptor]
+
+      def to_native: () -> native_type?
+
+      def to_s: () -> String
+
+      def inspect: () -> String
+
+      @name: String?
+      @options: MessageOptions?
+
+      private
+
+      extend Google::Protobuf::Internal::Convert
+
+      @msg_def: FFI::ffi_message
+      @msg_class: singleton(AbstractMessage)?
+      @descriptor_pool: DescriptorPool
+
+      def initialize: (FFI::ffi_message msg_def, DescriptorPool descriptor_pool) -> void
+
+      def self.private_constructor: (FFI::ffi_message msg_def, DescriptorPool descriptor_pool) -> instance
+
+      @wrapper: bool
+
+      def wrapper?: () -> bool
+
+      def self.get_message: (FFI::ffi_message? msg, Descriptor descriptor, Internal::Arena? arena) -> AbstractMessage?
+
+      attr_reader pool(): DescriptorPool
+    end
+
+    class FFI
+      # MessageDef
+      def self.new_message_from_def: (Descriptor, Internal::Arena) -> ffi_message
+      def self.field_count: (Descriptor) -> Integer
+      def self.get_message_file_def: (FFI::Pointer) -> ffi_file_def
+      def self.get_message_fullname: (Descriptor) -> String
+      def self.get_mini_table: (Descriptor) -> MiniTable
+      def self.oneof_count: (Descriptor) -> Integer
+      def self.message_options: (Descriptor, FFI::Pointer, Internal::Arena) -> FFI::Pointer
+      def self.get_well_known_type: (Descriptor) -> ffi_well_known
+      def self.find_msg_def_by_name: (Descriptor, String, Integer, ffi_field_def_pointer, ffi_oneof_def_pointer) -> bool
+    end
+  end
+end

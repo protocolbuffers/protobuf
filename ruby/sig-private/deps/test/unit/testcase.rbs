@@ -1,0 +1,8 @@
+module Test
+  module Unit
+    class TestCase
+      include Assertions
+      include Omission::TestCaseOmissionSupport
+    end
+  end
+end
