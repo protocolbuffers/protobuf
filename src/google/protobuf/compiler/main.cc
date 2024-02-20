@@ -93,10 +93,9 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--ruby_out", "--ruby_opt", &rb_generator,
                         "Generate Ruby source file.");
 
-  // Ruby
-  ruby::RbsGenerator rbs_generator;
-  cli.RegisterGenerator("--rbs_out", &rb_generator,
-                        "Generate Ruby rbs stub.");
+  ruby::RBSGenerator rbs_generator;
+  cli.RegisterGenerator("--rbs_out", "--rbs_opt", &rbs_generator,
+                        "Generate RBS type definition.");
 
   // CSharp
   csharp::Generator csharp_generator;

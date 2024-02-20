@@ -5,12 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Author: jieluo@google.com (Jie Luo)
-//
-// Generates Ruby type definition (.rbs) for a given .proto file.
+// Generates Ruby code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_RBS_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUBY_RBS_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RBS_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_RBS_GENERATOR_H__
 
 #include <string>
 
@@ -22,22 +20,14 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace ruby {
-
-class PROTOC_EXPORT RbsGenerator : public CodeGenerator {
- public:
-  RbsGenerator();
-  RbsGenerator(const RbsGenerator&) = delete;
-  RbsGenerator& operator=(const RbsGenerator&) = delete;
-  ~RbsGenerator() override;
-
-  // CodeGenerator methods.
-  uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
-  }
+// CodeGenerator implementation for generated RBS type definition.
+class PROTOC_EXPORT RBSGenerator : public CodeGenerator {
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* generator_context,
                 std::string* error) const override;
-
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
+  }
 };
 
 }  // namespace ruby
@@ -47,4 +37,4 @@ class PROTOC_EXPORT RbsGenerator : public CodeGenerator {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_RBS_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
