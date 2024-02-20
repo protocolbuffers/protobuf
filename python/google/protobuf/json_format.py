@@ -658,11 +658,8 @@ class _Parser(object):
                         path, name, index
                     )
                 )
-              getattr(message, field.name).append(
-                  _ConvertScalarFieldValue(
-                      item, field, '{0}.{1}[{2}]'.format(path, name, index)
-                  )
-              )
+              self._ConvertAndAppendScalar(
+                message, field, item, '{0}.{1}[{2}]'.format(path, name, index))
         elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
           if field.is_extension:
             sub_message = message.Extensions[field]
@@ -672,17 +669,9 @@ class _Parser(object):
           self.ConvertMessage(value, sub_message, '{0}.{1}'.format(path, name))
         else:
           if field.is_extension:
-            message.Extensions[field] = _ConvertScalarFieldValue(
-                value, field, '{0}.{1}'.format(path, name)
-            )
+            self._ConvertAndSetScalarExtension(message, field, value, '{0}.{1}'.format(path, name))
           else:
-            setattr(
-                message,
-                field.name,
-                _ConvertScalarFieldValue(
-                    value, field, '{0}.{1}'.format(path, name)
-                ),
-            )
+            self._ConvertAndSetScalar(message, field, value, '{0}.{1}'.format(path, name))
       except ParseError as e:
         if field and field.containing_oneof is None:
           raise ParseError(
@@ -795,11 +784,7 @@ class _Parser(object):
   def _ConvertWrapperMessage(self, value, message, path):
     """Convert a JSON representation into Wrapper message."""
     field = message.DESCRIPTOR.fields_by_name['value']
-    setattr(
-        message,
-        'value',
-        _ConvertScalarFieldValue(value, field, path='{0}.value'.format(path)),
-    )
+    self._ConvertAndSetScalar(message, field, value, path='{0}.value'.format(path))
 
   def _ConvertMapFieldValue(self, value, message, field, path):
     """Convert map field value for a message map field.
@@ -832,9 +817,35 @@ class _Parser(object):
             '{0}[{1}]'.format(path, key_value),
         )
       else:
-        getattr(message, field.name)[key_value] = _ConvertScalarFieldValue(
-            value[key], value_field, path='{0}[{1}]'.format(path, key_value)
-        )
+        self._ConvertAndSetScalarToMapKey(
+            message,
+            field,
+            key_value,
+            value[key],
+            path='{0}[{1}]'.format(path, key_value))
+
+  def _ConvertAndSetScalarExtension(self, message, extension_field, js_value, path):
+    """Convert scalar from js_value and assign it to message.Extensions[extension_field]."""
+    message.Extensions[extension_field] = _ConvertScalarFieldValue(
+        js_value, extension_field, path)
+
+  def _ConvertAndSetScalar(self, message, field, js_value, path):
+    """Convert scalar from js_value and assign it to message.field."""
+    setattr(
+        message,
+        field.name,
+        _ConvertScalarFieldValue(js_value, field, path))
+
+  def _ConvertAndAppendScalar(self, message, repeated_field, js_value, path):
+    """Convert scalar from js_value and append it to message.repeated_field."""
+    getattr(message, repeated_field.name).append(
+        _ConvertScalarFieldValue(js_value, repeated_field, path))
+
+  def _ConvertAndSetScalarToMapKey(self, message, map_field, converted_key, js_value, path):
+    """Convert scalar from 'js_value' and add it to message.map_field[converted_key]."""
+    getattr(message, map_field.name)[converted_key] = _ConvertScalarFieldValue(
+        js_value, map_field.message_type.fields_by_name['value'], path,
+    )
 
 
 def _ConvertScalarFieldValue(value, field, path, require_str=False):
