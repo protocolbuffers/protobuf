@@ -1786,8 +1786,8 @@ void BinaryAndJsonConformanceSuiteImpl<
     repeated_nested_enum: FOO
   )");
 
-  // This test is similar to "InMapValue" from above with mixture of known and unknown
-  // enum string values in the map.
+  // This test is similar to "InMapValue" from above with mixture of known and
+  // unknown enum string values in the map.
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownEnumStringValueInMapPart",
                                 RECOMMENDED,
                                 R"json({
