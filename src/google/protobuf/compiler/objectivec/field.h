@@ -88,6 +88,7 @@ class FieldGenerator {
   bool WantsHasProperty() const;
 
   const FieldDescriptor* descriptor_;
+  const GenerationOptions& generation_options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 

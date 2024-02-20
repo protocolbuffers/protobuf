@@ -192,7 +192,7 @@ FieldGenerator* FieldGenerator::Make(
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* descriptor,
                                const GenerationOptions& generation_options)
-    : descriptor_(descriptor) {
+    : descriptor_(descriptor), generation_options_(generation_options) {
   SetCommonFieldVariables(descriptor, &variables_);
 }
 
@@ -294,9 +294,12 @@ void SingleFieldGenerator::GenerateFieldStorageDeclaration(
 void SingleFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
-  printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
-      R"objc(
+  printer->Emit({{"comments",
+                  [&] {
+                    EmitCommentsString(printer, generation_options_,
+                                       descriptor_);
+                  }}},
+                R"objc(
         $comments$
         @property(nonatomic, readwrite) $property_type$$name$$ deprecated_attribute$;
       )objc");
@@ -349,9 +352,12 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   // conventions (init*, new*, etc.)
 
   auto vars = printer->WithVars(variables_);
-  printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
-      R"objc(
+  printer->Emit({{"comments",
+                  [&] {
+                    EmitCommentsString(printer, generation_options_,
+                                       descriptor_);
+                  }}},
+                R"objc(
         $comments$
         @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
       )objc");
@@ -398,7 +404,8 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
 
   auto vars = printer->WithVars(variables_);
   printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }},
+      {{"comments",
+        [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
        {"array_comment", [&] { EmitArrayComment(printer); }}},
       R"objc(
         $comments$
