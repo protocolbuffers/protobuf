@@ -272,6 +272,8 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     return MakeMapGenerator(field, options, scc);
   }
   if (field->is_repeated()) {
+    ABSL_CHECK(!field->options().unverified_lazy());
+
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return MakeRepeatedMessageGenerator(field, options, scc);
