@@ -70,9 +70,9 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
                                        descriptor_);
                   }}},
                 R"objc(
-        $comments$;
-        @property(nonatomic, readonly) $enum_name$ $name$OneOfCase;
-      )objc");
+                  $comments$;
+                  @property(nonatomic, readonly) $enum_name$ $name$OneOfCase;
+                )objc");
   printer->Emit("\n");
 }
 

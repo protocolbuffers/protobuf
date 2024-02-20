@@ -300,9 +300,9 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
                                        descriptor_);
                   }}},
                 R"objc(
-        $comments$
-        @property(nonatomic, readwrite) $property_type$$name$$ deprecated_attribute$;
-      )objc");
+                  $comments$
+                  @property(nonatomic, readwrite) $property_type$$name$$ deprecated_attribute$;
+                )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
       @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
@@ -358,9 +358,9 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
                                        descriptor_);
                   }}},
                 R"objc(
-        $comments$
-        @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
-      )objc");
+                  $comments$
+                  @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
+                )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
         /** Test to see if @c $name$ has been set. */
