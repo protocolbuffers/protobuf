@@ -43,5 +43,23 @@ message Proto2Optional {
     optional string string_field = 30;
     optional bytes bytes_field = 31;
   }
+
+  oneof oneof_field {
+    int32 int32_oneof_field = 152;
+    float float_oneof_field = 153;
+    double double_oneof_field = 154;
+    int64 int64_oneof_field = 155;
+    uint32 uint32_oneof_field = 156;
+    uint64 uint64_oneof_field = 157;
+    sint32 sint32_oneof_field = 158;
+    sint64 sint64_oneof_field = 159;
+    fixed32 fixed32_oneof_field = 160;
+    fixed64 fixed64_oneof_field = 161;
+    sfixed32 sfixed32_oneof_field = 162;
+    sfixed64 sfixed64_oneof_field = 163;
+    bool bool_oneof_field = 164;
+    string string_oneof_field = 165;
+    bytes bytes_oneof_field = 166;
+  }
   optional SubMessage sub_message = 2;
 }
