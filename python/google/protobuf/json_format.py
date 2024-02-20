@@ -70,6 +70,12 @@ class ParseError(Error):
   """Thrown in case of parsing error."""
 
 
+class EnumStringValueParseError(ParseError):
+  """Thrown if unknown string enum value is encountered.
+  This exception is suppressed if ignore_unknown_fields is set.
+  """
+
+
 def MessageToJson(
     message,
     preserving_proto_field_name=False,
@@ -826,26 +832,42 @@ class _Parser(object):
 
   def _ConvertAndSetScalarExtension(self, message, extension_field, js_value, path):
     """Convert scalar from js_value and assign it to message.Extensions[extension_field]."""
-    message.Extensions[extension_field] = _ConvertScalarFieldValue(
-        js_value, extension_field, path)
+    try:
+      message.Extensions[extension_field] = _ConvertScalarFieldValue(
+          js_value, extension_field, path)
+    except EnumStringValueParseError:
+      if not self.ignore_unknown_fields:
+        raise
 
   def _ConvertAndSetScalar(self, message, field, js_value, path):
     """Convert scalar from js_value and assign it to message.field."""
-    setattr(
-        message,
-        field.name,
-        _ConvertScalarFieldValue(js_value, field, path))
+    try:
+      setattr(
+          message,
+          field.name,
+          _ConvertScalarFieldValue(js_value, field, path))
+    except EnumStringValueParseError:
+      if not self.ignore_unknown_fields:
+        raise
 
   def _ConvertAndAppendScalar(self, message, repeated_field, js_value, path):
     """Convert scalar from js_value and append it to message.repeated_field."""
-    getattr(message, repeated_field.name).append(
-        _ConvertScalarFieldValue(js_value, repeated_field, path))
+    try:
+      getattr(message, repeated_field.name).append(
+          _ConvertScalarFieldValue(js_value, repeated_field, path))
+    except EnumStringValueParseError:
+      if not self.ignore_unknown_fields:
+        raise
 
   def _ConvertAndSetScalarToMapKey(self, message, map_field, converted_key, js_value, path):
     """Convert scalar from 'js_value' and add it to message.map_field[converted_key]."""
-    getattr(message, map_field.name)[converted_key] = _ConvertScalarFieldValue(
-        js_value, map_field.message_type.fields_by_name['value'], path,
-    )
+    try:
+      getattr(message, map_field.name)[converted_key] = _ConvertScalarFieldValue(
+          js_value, map_field.message_type.fields_by_name['value'], path,
+      )
+    except EnumStringValueParseError:
+      if not self.ignore_unknown_fields:
+        raise
 
 
 def _ConvertScalarFieldValue(value, field, path, require_str=False):
@@ -862,6 +884,7 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
 
   Raises:
     ParseError: In case of convert problems.
+    EnumStringValueParseError: In case of unknown enum string value.
   """
   try:
     if field.cpp_type in _INT_TYPES:
@@ -893,7 +916,9 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
           number = int(value)
           enum_value = field.enum_type.values_by_number.get(number, None)
         except ValueError as e:
-          raise ParseError(
+          # Since parsing to integer failed and lookup in values_by_name didn't
+          # find this name, we have an enum string value which is unknown.
+          raise EnumStringValueParseError(
               'Invalid enum value {0} for enum type {1}'.format(
                   value, field.enum_type.full_name
               )
@@ -908,6 +933,8 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
           else:
             return number
       return enum_value.number
+  except EnumStringValueParseError as e:
+    raise EnumStringValueParseError('{0} at {1}'.format(e, path)) from e
   except ParseError as e:
     raise ParseError('{0} at {1}'.format(e, path)) from e
 
