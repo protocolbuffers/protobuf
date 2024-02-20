@@ -1,7 +1,10 @@
 include(GNUInstallDirs)
 
 foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
-  string(REPLACE :: _ _modified_target ${_target})
+  # shared abseil on windows breaks the absl::foo -> absl_foo replacement logic -
+  # preempt this by a more specific replace (harmless if it doesn't apply); see GH-15883
+  string(REPLACE "absl::abseil_dll" "abseil_dll" _modified_target ${_target})
+  string(REPLACE :: _ _modified_target ${_modified_target})
   list(APPEND _pc_targets ${_modified_target})
 endforeach()
 list(APPEND _pc_targets "utf8_range")
