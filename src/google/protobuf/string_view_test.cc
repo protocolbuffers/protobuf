@@ -109,6 +109,9 @@ TEST(StringViewFieldTest, SingularSetAndGetByReflection) {
   reflection->SetString(&message, field, std::string{STRING_PAYLOAD});
 
   EXPECT_THAT(reflection->GetString(message, field), StrEq(STRING_PAYLOAD));
+  Reflection::ScratchSpace scratch;
+  EXPECT_THAT(reflection->GetStringView(message, field, scratch),
+              StrEq(STRING_PAYLOAD));
   EXPECT_THAT(message.singular_string(), StrEq(STRING_PAYLOAD));
 }
 
@@ -292,6 +295,15 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
     EXPECT_THAT(rep_str,
                 ElementsAre("000000000000", "111111111111", "222222222222"));
   }
+
+  // GetRepeatedStringView.
+  Reflection::ScratchSpace scratch;
+  EXPECT_THAT(reflection->GetRepeatedStringView(message, field, 0, scratch),
+              StrEq("000000000000"));
+  EXPECT_THAT(reflection->GetRepeatedStringView(message, field, 1, scratch),
+              StrEq("111111111111"));
+  EXPECT_THAT(reflection->GetRepeatedStringView(message, field, 2, scratch),
+              StrEq("222222222222"));
 }
 
 }  // namespace

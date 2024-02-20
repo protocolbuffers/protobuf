@@ -1868,6 +1868,32 @@ absl::Cord Reflection::GetCord(const Message& message,
   }
 }
 
+absl::string_view Reflection::GetStringView(const Message& message,
+                                            const FieldDescriptor* field,
+                                            ScratchSpace& scratch) const {
+  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
+
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetString(field->number(),
+                                              field->default_value_string());
+  }
+  if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    return field->default_value_string();
+  }
+
+  switch (internal::cpp::EffectiveStringCType(field)) {
+    case FieldOptions::CORD: {
+      const auto& cord = schema_.InRealOneof(field)
+                             ? *GetField<absl::Cord*>(message, field)
+                             : GetField<absl::Cord>(message, field);
+      return scratch.CopyFromCord(cord);
+    }
+    default:
+      auto str = GetField<ArenaStringPtr>(message, field);
+      return str.IsDefault() ? field->default_value_string() : str.Get();
+  }
+}
+
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
@@ -1999,6 +2025,24 @@ const std::string& Reflection::GetRepeatedStringReference(
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
+  }
+}
+
+// See GetStringView(), above.
+absl::string_view Reflection::GetRepeatedStringView(
+    const Message& message, const FieldDescriptor* field, int index,
+    ScratchSpace& scratch) const {
+  (void)scratch;
+  USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
+
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
+  }
+
+  switch (internal::cpp::EffectiveStringCType(field)) {
+    case FieldOptions::STRING:
+    default:
+      return GetRepeatedPtrField<std::string>(message, field, index);
   }
 }
 
