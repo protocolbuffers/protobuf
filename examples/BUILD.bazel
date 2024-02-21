@@ -18,7 +18,7 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 proto_library(
     name = "addressbook_proto",
     srcs = ["addressbook.proto"],
-    deps = ["@com_google_protobuf//:timestamp_proto"],
+    deps = ["@protobuf//:timestamp_proto"],
 )
 
 # The cc_proto_library rule generates C++ code for a proto_library rule. It
@@ -38,8 +38,8 @@ cc_binary(
     srcs = ["add_person.cc"],
     deps = [
         ":addressbook_cc_proto",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/util:time_util",
+        "@protobuf",
+        "@protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
@@ -48,8 +48,8 @@ cc_binary(
     srcs = ["list_people.cc"],
     deps = [
         ":addressbook_cc_proto",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/util:time_util",
+        "@protobuf",
+        "@protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
