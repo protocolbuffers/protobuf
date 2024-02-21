@@ -47,7 +47,7 @@ class FieldGeneratorBase {
   // variable instead of calling GetArena()'
   enum class GeneratorFunction { kMergeFrom };
 
-  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options,
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
                      MessageSCCAnalyzer* scc_analyzer);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
@@ -142,7 +142,7 @@ class FieldGeneratorBase {
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
     ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
-        << descriptor_->cpp_type_name();
+        << field_->cpp_type_name();
   }
 
   // Generates constexpr member initialization code, e.g.: `foo_{5}`.
@@ -191,7 +191,7 @@ class FieldGeneratorBase {
   }
 
  protected:
-  const FieldDescriptor* descriptor_;
+  const FieldDescriptor* field_;
   const Options& options_;
   MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;

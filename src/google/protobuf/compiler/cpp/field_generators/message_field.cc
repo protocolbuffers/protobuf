@@ -84,7 +84,6 @@ class SingularMessage : public FieldGeneratorBase {
   SingularMessage(const FieldDescriptor* field, const Options& opts,
                   MessageSCCAnalyzer* scc)
       : FieldGeneratorBase(field, opts, scc),
-        field_(field),
         opts_(&opts),
         has_required_(scc->HasRequiredFields(field->message_type())),
         has_hasbit_(HasHasbit(field)) {}
@@ -143,7 +142,6 @@ class SingularMessage : public FieldGeneratorBase {
  private:
   friend class OneofMessage;
 
-  const FieldDescriptor* field_;
   const Options* opts_;
   bool has_required_;
   bool has_hasbit_;
@@ -689,7 +687,6 @@ class RepeatedMessage : public FieldGeneratorBase {
   RepeatedMessage(const FieldDescriptor* field, const Options& opts,
                   MessageSCCAnalyzer* scc)
       : FieldGeneratorBase(field, opts, scc),
-        field_(field),
         opts_(&opts),
         has_required_(scc->HasRequiredFields(field->message_type())) {}
 
@@ -713,7 +710,6 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateIsInitialized(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
   bool has_required_;
 };

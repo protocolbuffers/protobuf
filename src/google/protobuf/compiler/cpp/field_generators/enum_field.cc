@@ -55,7 +55,7 @@ class SingularEnum : public FieldGeneratorBase {
  public:
   SingularEnum(const FieldDescriptor* field, const Options& opts,
                MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~SingularEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -142,7 +142,6 @@ class SingularEnum : public FieldGeneratorBase {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -221,7 +220,6 @@ class RepeatedEnum : public FieldGeneratorBase {
   RepeatedEnum(const FieldDescriptor* field, const Options& opts,
                MessageSCCAnalyzer* scc)
       : FieldGeneratorBase(field, opts, scc),
-        field_(field),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
                          HasGeneratedMethods(field_->file(), opts) &&
@@ -369,7 +367,6 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
   bool has_cached_size_;
 };

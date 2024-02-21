@@ -67,7 +67,7 @@ class SingularStringView : public FieldGeneratorBase {
  public:
   SingularStringView(const FieldDescriptor* field, const Options& opts,
                      MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~SingularStringView() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -198,7 +198,6 @@ class SingularStringView : public FieldGeneratorBase {
  private:
   bool EmptyDefault() const { return field_->default_value_string().empty(); }
 
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -559,7 +558,7 @@ class RepeatedStringView : public FieldGeneratorBase {
  public:
   RepeatedStringView(const FieldDescriptor* field, const Options& opts,
                      MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~RepeatedStringView() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -645,7 +644,6 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 

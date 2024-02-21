@@ -77,10 +77,10 @@ class CordFieldGenerator : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
-    if (descriptor_->default_value_string().empty()) {
+    if (field_->default_value_string().empty()) {
       p->Emit("$name$_{}");
     } else {
-      p->Emit({{"Split", ShouldSplit(descriptor_, options_) ? "Split::" : ""}},
+      p->Emit({{"Split", ShouldSplit(field_, options_) ? "Split::" : ""}},
               "$name$_{::absl::strings_internal::MakeStringConstant("
               "$classname$::Impl_::$Split$_default_$name$_func_{})}");
     }
@@ -88,7 +88,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
 
   void GenerateMemberConstructor(io::Printer* p) const override {
     auto vars = p->WithVars(variables_);
-    if (descriptor_->default_value_string().empty()) {
+    if (field_->default_value_string().empty()) {
       p->Emit("$name$_{}");
     } else {
       p->Emit("$name$_{::absl::string_view($default$, $default_length$)}");
@@ -142,7 +142,7 @@ CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
 void CordFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("::absl::Cord $name$_;\n");
-  if (!descriptor_->default_value_string().empty()) {
+  if (!field_->default_value_string().empty()) {
     format(
         "struct _default_$name$_func_ {\n"
         "  constexpr absl::string_view operator()() const {\n"
@@ -156,18 +156,18 @@ void CordFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$deprecated_attr$const ::absl::Cord& ${1$$name$$}$() const;\n",
-         descriptor_);
+         field_);
   format(
       "$deprecated_attr$void ${1$set_$name$$}$(const ::absl::Cord& value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(::absl::string_view value);\n",
-      std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
+      std::make_tuple(field_, GeneratedCodeInfo::Annotation::SET));
   format(
       "private:\n"
       "const ::absl::Cord& ${1$_internal_$name$$}$() const;\n"
       "void ${1$_internal_set_$name$$}$(const ::absl::Cord& value);\n"
       "::absl::Cord* ${1$_internal_mutable_$name$$}$();\n"
       "public:\n",
-      descriptor_);
+      field_);
 }
 
 void CordFieldGenerator::GenerateInlineAccessorDefinitions(
@@ -223,7 +223,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (descriptor_->default_value_string().empty()) {
+  if (field_->default_value_string().empty()) {
     format("$field$.Clear();\n");
   } else {
     format("$field$ = ::absl::string_view($default$, $default_length$);\n");
@@ -243,7 +243,7 @@ void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   ABSL_CHECK(!should_split());
   Formatter format(printer, variables_);
-  if (!descriptor_->default_value_string().empty()) {
+  if (!field_->default_value_string().empty()) {
     format("$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
 }
@@ -259,9 +259,9 @@ void CordFieldGenerator::GenerateArenaDestructorCode(
 void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (descriptor_->type() == FieldDescriptor::TYPE_STRING) {
+  if (field_->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForCord(
-        descriptor_, options_, false,
+        field_, options_, false,
         absl::Substitute("this->_internal_$0(), ", printer->LookupVar("name")),
         format);
   }
@@ -281,7 +281,7 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
-  if (descriptor_->default_value_string().empty()) {
+  if (field_->default_value_string().empty()) {
     p->Emit(R"cc(
       /*decltype($field$)*/ {},
     )cc");
@@ -323,7 +323,7 @@ void CordOneofFieldGenerator::GeneratePrivateMembers(
 void CordOneofFieldGenerator::GenerateStaticMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (!descriptor_->default_value_string().empty()) {
+  if (!field_->default_value_string().empty()) {
     format(
         "struct _default_$name$_func_ {\n"
         "  constexpr absl::string_view operator()() const {\n"
@@ -407,7 +407,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 void CordOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (!descriptor_->default_value_string().empty()) {
+  if (!field_->default_value_string().empty()) {
     format(
         "PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT "
         "const ::absl::Cord $classname$::$default_variable_field$(\n"
