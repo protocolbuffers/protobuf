@@ -28,7 +28,7 @@ TEST(CopyMessageTest, ArenaEnabledCopyConstructorNull) {
   protobuf_unittest::TestAllTypes message1;
   TestUtil::SetAllFields(&message1);
   protobuf_unittest::TestAllTypes* message2 =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(nullptr, message1);
+      Arena::Create<protobuf_unittest::TestAllTypes>(nullptr, message1);
   TestUtil::ExpectAllFieldsSet(*message2);
   delete message2;
 }
@@ -38,7 +38,7 @@ TEST(CopyMessageTest, ArenaEnabledCopyConstructor) {
   TestUtil::SetAllFields(&message1);
   Arena arena;
   protobuf_unittest::TestAllTypes* message2 =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena, message1);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena, message1);
   TestUtil::ExpectAllFieldsSet(*message2);
 }
 
@@ -53,7 +53,7 @@ TEST(CopyMessageTest, ArenaEnabledCopyConstructorArenaLeakTest) {
 
   Arena arena;
   protobuf_unittest::TestAllTypes* message2 =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena, message1);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena, message1);
 
   EXPECT_EQ(message2->optional_string(), message1.optional_string());
   EXPECT_EQ(message2->repeated_string(0), message1.repeated_string(0));
