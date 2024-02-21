@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -27,7 +27,7 @@ namespace Google.Protobuf.Reflection
         private readonly OneofAccessor accessor;
 
         internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, string clrName)
-            : base(file, file.ComputeFullName(parent, proto.Name), index)
+            : base(file, file.ComputeFullName(parent, proto.Name), index, parent.Features.MergedWith(proto.Options?.Features))
         {
             this.Proto = proto;
             containingType = parent;

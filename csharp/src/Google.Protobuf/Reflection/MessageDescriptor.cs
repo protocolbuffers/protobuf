@@ -13,7 +13,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 
 namespace Google.Protobuf.Reflection
 {
@@ -42,7 +41,7 @@ namespace Google.Protobuf.Reflection
         private Func<IMessage, bool> extensionSetIsInitialized;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
-            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
+            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex, (parent?.Features ?? file.Features).MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Parser = generatedCodeInfo?.Parser;

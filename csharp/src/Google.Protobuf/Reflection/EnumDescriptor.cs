@@ -19,7 +19,7 @@ namespace Google.Protobuf.Reflection
     public sealed class EnumDescriptor : DescriptorBase
     {
         internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type clrType)
-            : base(file, file.ComputeFullName(parent, proto.Name), index)
+            : base(file, file.ComputeFullName(parent, proto.Name), index, (parent?.Features ?? file.Features).MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             ClrType = clrType;

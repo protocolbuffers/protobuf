@@ -19,7 +19,7 @@ namespace Google.Protobuf.Reflection
     public sealed class ServiceDescriptor : DescriptorBase
     {
         internal ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
-            : base(file, file.ComputeFullName(null, proto.Name), index)
+            : base(file, file.ComputeFullName(null, proto.Name), index, file.Features.MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
@@ -105,4 +105,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 

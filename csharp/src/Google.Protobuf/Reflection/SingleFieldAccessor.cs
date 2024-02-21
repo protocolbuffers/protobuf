@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -64,8 +64,9 @@ namespace Google.Protobuf.Reflection
                     }
                 };
             }
-            // Primitive fields always support presence in proto2, and support presence in proto3 for optional fields.
-            else if (descriptor.File.Syntax == Syntax.Proto2 || descriptor.Proto.Proto3Optional)
+            // Anything else that supports presence should have a "HasXyz" property and a "ClearXyz"
+            // method.
+            else if (descriptor.HasPresence)
             {
                 MethodInfo hasMethod = messageType.GetRuntimeProperty("Has" + property.Name).GetMethod;
                 if (hasMethod == null)
@@ -80,8 +81,7 @@ namespace Google.Protobuf.Reflection
                 }
                 clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod);
             }
-            // What's left?
-            // Primitive proto3 fields without the optional keyword, which aren't in oneofs.
+            // Otherwise, we don't support presence.
             else
             {
                 hasDelegate = message => throw new InvalidOperationException("Presence is not implemented for this field");

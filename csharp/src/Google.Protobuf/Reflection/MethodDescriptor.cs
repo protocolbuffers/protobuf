@@ -17,7 +17,6 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class MethodDescriptor : DescriptorBase
     {
-
         /// <value>
         /// The service this method belongs to.
         /// </value>
@@ -78,7 +77,7 @@ namespace Google.Protobuf.Reflection
 
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
-            : base(file, parent.FullName + "." + proto.Name, index)
+            : base(file, parent.FullName + "." + proto.Name, index, parent.Features.MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Service = parent;
@@ -118,4 +117,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 

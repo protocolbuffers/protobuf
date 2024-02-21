@@ -19,7 +19,7 @@ namespace Google.Protobuf.Reflection
     {
         internal EnumValueDescriptor(EnumValueDescriptorProto proto, FileDescriptor file,
                                      EnumDescriptor parent, int index)
-            : base(file, parent.FullName + "." + proto.Name, index)
+            : base(file, parent.FullName + "." + proto.Name, index, parent.Features.MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             EnumDescriptor = parent;
@@ -86,4 +86,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 

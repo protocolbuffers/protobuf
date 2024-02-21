@@ -14,16 +14,23 @@ namespace Google.Protobuf.Reflection
 {
     /// <summary>
     /// Base class for nearly all descriptors, providing common functionality.
+    /// The exceptions to this are <see cref="FileDescriptor"/> and <see cref="FeatureSetDescriptor"/>.
     /// </summary>
     [DebuggerDisplay("Type = {GetType().Name,nq}, FullName = {FullName}")]
     public abstract class DescriptorBase : IDescriptor
     {
-        internal DescriptorBase(FileDescriptor file, string fullName, int index)
+        internal DescriptorBase(FileDescriptor file, string fullName, int index, FeatureSetDescriptor features)
         {
             File = file;
             FullName = fullName;
             Index = index;
+            Features = features;
         }
+
+        /// <summary>
+        /// The feature set for this descriptor, including inherited features.
+        /// </summary>
+        public FeatureSetDescriptor Features { get; }
 
         /// <value>
         /// The index of this descriptor within its parent descriptor.
