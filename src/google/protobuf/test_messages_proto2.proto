@@ -46,7 +46,7 @@ message TestAllTypesProto2 {
   }
 
   // Singular
-  optional int32 optional_int32 = 1;
+  optional int32 optional_int32 = 1 [deprecated = true];
   optional int64 optional_int64 = 2;
   optional uint32 optional_uint32 = 3;
   optional uint64 optional_uint64 = 4;
