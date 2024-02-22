@@ -489,8 +489,7 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
 
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(desc->file(), opts)
-              ? absl::StrCat("::", ProtobufNamespace(opts),
-                             "::internal::StrongReference(default_instance());")
+              ? absl::StrCat(StrongReferenceToType(desc, opts), ";")
               : "")
           .WithSuffix(";"),
   };
@@ -2090,6 +2089,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_oneof_has$;
           $decl_data$;
           $post_loop_handler$;
+
+          static constexpr const void* _raw_default_instance_ =
+              &_$classname$_default_instance_;
+
           friend class ::$proto_ns$::MessageLite;
           friend class ::$proto_ns$::Arena;
           template <typename T>
@@ -3587,9 +3590,10 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     const auto pin_weak_descriptor = [&] {
       if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) return;
 
-      p->Emit(R"cc(
-        ::_pbi::StrongPointer(&_$classname$_default_instance_);
-      )cc");
+      p->Emit({{"pin", StrongReferenceToType(descriptor_, options_)}},
+              R"cc(
+                $pin$;
+              )cc");
 
       // For CODE_SIZE types, we need to pin the submessages too.
       // SPEED types will pin them via the TcParse table automatically.
@@ -3597,11 +3601,11 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
       for (int i = 0; i < descriptor_->field_count(); ++i) {
         auto* field = descriptor_->field(i);
         if (field->type() != field->TYPE_MESSAGE) continue;
-        p->Emit({{"sub_default_name", QualifiedDefaultInstanceName(
-                                          field->message_type(), options_)}},
-                R"cc(
-                  ::_pbi::StrongPointer(&$sub_default_name$);
-                )cc");
+        p->Emit(
+            {{"pin", StrongReferenceToType(field->message_type(), options_)}},
+            R"cc(
+              $pin$;
+            )cc");
       }
     };
     p->Emit(

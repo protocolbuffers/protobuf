@@ -674,6 +674,26 @@ class PROTOBUF_EXPORT MessageLite {
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
+
+  template <typename T, const void* ptr = T::_raw_default_instance_>
+  static constexpr auto GetStrongPointerForTypeImpl(int) {
+    return ptr;
+  }
+  template <typename T>
+  static constexpr auto GetStrongPointerForTypeImpl(char) {
+    return &T::default_instance;
+  }
+  // Return a pointer we can use to make a strong reference to a type.
+  // Ideally, this is a pointer to the default instance.
+  // If we can't get that, then we use a pointer to the `default_instance`
+  // function. The latter always works but pins the function artificially into
+  // the binary so we avoid it.
+  template <typename T>
+  static constexpr auto GetStrongPointerForType() {
+    return GetStrongPointerForTypeImpl<T>(0);
+  }
+  template <typename T>
+  friend void internal::StrongReferenceToType();
 };
 
 namespace internal {

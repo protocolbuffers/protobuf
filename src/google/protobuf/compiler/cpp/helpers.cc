@@ -1489,6 +1489,13 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
          !options.opensource_runtime;
 }
 
+std::string StrongReferenceToType(const Descriptor* desc,
+                                  const Options& options) {
+  const auto name = QualifiedDefaultInstanceName(desc, options);
+  return absl::StrFormat("::%s::internal::StrongPointer<decltype(%s)*, &%s>()",
+                         ProtobufNamespace(options), name, name);
+}
+
 std::string WeakDescriptorDataSection(absl::string_view prefix,
                                       const Descriptor* descriptor,
                                       int index_in_file_messages,
