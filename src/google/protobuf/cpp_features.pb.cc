@@ -330,8 +330,13 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
 void CppFeatures::CopyFrom(const CppFeatures& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:pb.CppFeatures)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+    CppFeatures* const _this = this;
+  ABSL_DCHECK_NE(&from, _this);
+  _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
+  _this->_impl_.string_type_ = from._impl_.string_type_;
+  _impl_._has_bits_.Copy(from._impl_._has_bits_);
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
 PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {

@@ -1138,6 +1138,8 @@ PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 
 bool HasMessageFieldOrExtension(const Descriptor* desc);
 
+bool HasOnlyPrimitive(const Descriptor* desc);
+
 // Generates a vector of substitutions for use with Printer::WithVars that
 // contains annotated accessor names for a particular field.
 //

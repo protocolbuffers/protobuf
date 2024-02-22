@@ -3948,7 +3948,35 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
   format.Indent();
 
   format("if (&from == this) return;\n");
-
+  /*
+  Extension -> Clear
+  has_bits -> copy
+  internal_metadata -> Clear + Merge
+  HasMessageField -> fallback
+  */
+  bool has_oneof = false;
+  for (auto oneof : OneOfRange(descriptor_)) {
+    (void)oneof;
+    has_oneof = true;
+  }
+  if (HasOnlyPrimitive(descriptor_) && !has_oneof) {
+    format("  $classname$* const _this = this;\n");
+    format("$DCHK$_NE(&from, _this);\n");
+    for (const auto* field : optimized_order_) {
+      const auto& generator = field_generators_.get(field);
+      generator.GenerateMergingCode(p);
+    }
+    if (!has_bit_indices_.empty()) {
+      format("$has_bits$.Copy(from.$has_bits$);\n");
+    }
+    format("_internal_metadata_.Clear<$unknown_fields_type$>();\n");
+    format(
+        "_internal_metadata_.MergeFrom<$unknown_fields_type$>(from._internal_"
+        "metadata_);\n");
+    format.Outdent();
+    format("}\n");
+    return;
+  }
   if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_)) {
     // This check is disabled in the opensource release because we're
     // concerned that many users do not define NDEBUG in their release builds.

@@ -40,6 +40,10 @@ class HasBits {
     memset(has_bits_, 0, sizeof(has_bits_));
   }
 
+  PROTOBUF_NDEBUG_INLINE void Copy(const HasBits<doublewords>& rhs) {
+    memcpy(has_bits_, rhs.has_bits_, sizeof(has_bits_));
+  }
+
   PROTOBUF_NDEBUG_INLINE uint32_t& operator[](int index) {
     return has_bits_[index];
   }

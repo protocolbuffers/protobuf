@@ -3606,8 +3606,13 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
 void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+    DescriptorProto_ReservedRange* const _this = this;
+  ABSL_DCHECK_NE(&from, _this);
+  _this->_impl_.start_ = from._impl_.start_;
+  _this->_impl_.end_ = from._impl_.end_;
+  _impl_._has_bits_.Copy(from._impl_._has_bits_);
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
 PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
@@ -5783,8 +5788,13 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
 void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+    EnumDescriptorProto_EnumReservedRange* const _this = this;
+  ABSL_DCHECK_NE(&from, _this);
+  _this->_impl_.start_ = from._impl_.start_;
+  _this->_impl_.end_ = from._impl_.end_;
+  _impl_._has_bits_.Copy(from._impl_._has_bits_);
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
 PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() const {

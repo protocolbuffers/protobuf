@@ -330,8 +330,13 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
 void JavaFeatures::CopyFrom(const JavaFeatures& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:pb.JavaFeatures)
   if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+    JavaFeatures* const _this = this;
+  ABSL_DCHECK_NE(&from, _this);
+  _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
+  _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
+  _impl_._has_bits_.Copy(from._impl_._has_bits_);
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
 }
 
 PROTOBUF_NOINLINE bool JavaFeatures::IsInitialized() const {

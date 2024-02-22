@@ -1876,6 +1876,17 @@ bool HasMessageFieldOrExtension(const Descriptor* desc) {
   return false;
 }
 
+bool HasOnlyPrimitive(const Descriptor* desc) {
+  if (desc->extension_range_count() > 0) return false;
+  for (const auto* f : FieldRange(desc)) {
+    if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+        f->cpp_type() == FieldDescriptor::CPPTYPE_STRING)
+      return false;
+    if (f->is_repeated() || f->is_map()) return false;
+  }
+  return true;
+}
+
 std::vector<io::Printer::Sub> AnnotatedAccessors(
     const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
     absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic) {
