@@ -28,6 +28,9 @@
 #include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -385,6 +388,54 @@ absl::string_view MultiCasePrefixStripper::StripPrefix(
   }
   return name;
 }
+
+PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
+    {/*thunk_ident=*/"i32", /*rs_key_t=*/"i32", /*rs_ffi_key_t=*/"i32",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"int32_t", /*cc_ffi_key_t=*/"int32_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"u32", /*rs_key_t=*/"u32", /*rs_ffi_key_t=*/"u32",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"uint32_t", /*cc_ffi_key_t=*/"uint32_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"i64", /*rs_key_t=*/"i64", /*rs_ffi_key_t=*/"i64",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"int64_t", /*cc_ffi_key_t=*/"int64_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"u64", /*rs_key_t=*/"u64", /*rs_ffi_key_t=*/"u64",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"uint64_t", /*cc_ffi_key_t=*/"uint64_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"bool", /*rs_key_t=*/"bool", /*rs_ffi_key_t=*/"bool",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"bool", /*cc_ffi_key_t=*/"bool",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"string",
+     /*rs_key_t=*/"$pb$::ProtoStr",
+     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
+     /*rs_to_ffi_key_expr=*/"key.as_bytes().into()",
+     /*rs_from_ffi_key_expr=*/
+     "$pb$::ProtoStr::from_utf8_unchecked(ffi_key.as_ref())",
+     /*cc_key_t=*/"std::string",
+     /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
+     /*cc_from_ffi_key_expr=*/
+     "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
+     "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"},
+    {/*thunk_ident=*/"bytes",
+     /*rs_key_t=*/"[u8]",
+     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
+     /*rs_to_ffi_key_expr=*/"key.into()",
+     /*rs_from_ffi_key_expr=*/"ffi_key.as_ref()",
+     /*cc_key_t=*/"std::string",
+     /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
+     /*cc_from_ffi_key_expr=*/
+     "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
+     "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
 
 }  // namespace rust
 }  // namespace compiler

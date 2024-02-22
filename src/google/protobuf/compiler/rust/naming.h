@@ -106,6 +106,41 @@ class MultiCasePrefixStripper final {
 std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
                             absl::string_view value_name);
 
+// Describes the names and conversions for a supported map key type.
+struct MapKeyType {
+  // Identifier used in thunk name.
+  absl::string_view thunk_ident;
+
+  // Rust key typename (K in Map<K, V>, so e.g. `[u8]` for bytes).
+  // This field may have an unexpanded `$pb$` variable.
+  absl::string_view rs_key_t;
+
+  // Rust key typename used by thunks for FFI (e.g. `PtrAndLen` for bytes).
+  // This field may have an unexpanded `$pbi$` variable.
+  absl::string_view rs_ffi_key_t;
+
+  // Rust expression converting `key: rs_key_t` into an `rs_ffi_key_t`.
+  absl::string_view rs_to_ffi_key_expr;
+
+  // Rust expression converting `ffi_key: rs_ffi_key_t` into an `rs_key_t`.
+  // This field may have an unexpanded `$pb$` variable.
+  absl::string_view rs_from_ffi_key_expr;
+
+  // C++ key typename (K in Map<K, V>, so e.g. `std::string` for bytes).
+  absl::string_view cc_key_t;
+
+  // C++ key typename used by thunks for FFI (e.g. `PtrAndLen` for bytes).
+  absl::string_view cc_ffi_key_t;
+
+  // C++ expression converting `cc_ffi_key_t key` into a `cc_key_t`.
+  absl::string_view cc_from_ffi_key_expr;
+
+  // C++ expression converting `cc_key_t cpp_key` into a `cc_ffi_key_t`.
+  absl::string_view cc_to_ffi_key_expr;
+};
+
+extern const MapKeyType kMapKeyTypes[7];
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

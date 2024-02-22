@@ -198,6 +198,7 @@ cc_library(
         ":context",
         ":rust_field_type",
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/cpp:names_internal",
         "@com_google_absl//absl/container:flat_hash_set",
