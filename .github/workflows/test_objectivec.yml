@@ -72,9 +72,8 @@ jobs:
         CONFIGURATION: ["Debug", "Release"]
         include:
           - OS: macos-12
-          - XCODE: Xcode_14.1
-          - PLATFORM: "visionos"
-            OS: macos-14
+          - OS: macos-14
+            PLATFORM: "visionos"
             XCODE: Xcode_15.2
     name: CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
     runs-on: ${{ matrix.OS }}
@@ -84,6 +83,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Xcode version
+        if: matrix.OS == 'macos-14'
         run: sudo xcode-select -switch /Applications/${{ matrix.XCODE }}.app
       - name: Pod lib lint
         uses: protocolbuffers/protobuf-ci/bash@v2
