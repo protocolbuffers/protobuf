@@ -524,6 +524,7 @@ class PROTOBUF_EXPORT MessageLite {
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
     std::string (*initialization_error_string)(const MessageLite&);
+    const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
   };
   struct ClassDataFull;
   // Note: The order of arguments in the functions is chosen so that it has

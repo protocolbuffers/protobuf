@@ -341,9 +341,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   bool IsInitialized() const override;
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
-  // Reflective parser
-  const char* _InternalParse(const char* ptr,
-                             internal::ParseContext* ctx) override;
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
@@ -376,6 +373,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
+
+  static const internal::TcParseTableBase* GetTcParseTableImpl(
+      const MessageLite& msg);
 
   static const DescriptorMethods kDescriptorMethods;
 
