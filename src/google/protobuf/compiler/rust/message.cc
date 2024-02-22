@@ -421,8 +421,8 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
              {"map_remove_thunk",
               RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
              {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
-             {"map_iter_next_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "iter_next")},
+             {"map_iter_get_thunk",
+              RawMapThunk(ctx, msg, t.thunk_ident, "iter_get")},
              {"key_expr", t.rs_to_ffi_key_expr},
              io::Printer::Sub("ffi_key_t", [&] { ctx.Emit(t.rs_ffi_key_t); })
                  .WithSuffix(""),
@@ -441,7 +441,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 fn $map_get_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $pbi$::RawMessage) -> bool;
                 fn $map_remove_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $pbi$::RawMessage) -> bool;
                 fn $map_iter_thunk$(m: $pbi$::RawMap) -> $pbr$::UntypedMapIterator;
-                fn $map_iter_next_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $pbi$::RawMessage);
+                fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $pbi$::RawMessage);
             }
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
@@ -508,7 +508,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                             $pbi$::Private,
-                            $map_iter_next_thunk$,
+                            $map_iter_get_thunk$,
                             |ffi_key| $from_ffi_key_expr$,
                             |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
                         )
@@ -1206,8 +1206,8 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
             {"map_remove_thunk",
              RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
             {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
-            {"map_iter_next_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "iter_next")},
+            {"map_iter_get_thunk",
+             RawMapThunk(ctx, msg, t.thunk_ident, "iter_get")},
             {"key_t", t.cc_key_t},
             {"ffi_key_t", t.cc_ffi_key_t},
             {"key_expr", t.cc_from_ffi_key_expr},
@@ -1254,7 +1254,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
                 const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
               return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());
             }
-            void $map_iter_next_thunk$(
+            void $map_iter_get_thunk$(
                 const google::protobuf::internal::UntypedMapIterator* iter,
                 $ffi_key_t$* key, const $pkg::Msg$** value) {
               auto typed_iter = iter->ToTyped<

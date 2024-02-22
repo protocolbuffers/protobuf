@@ -514,7 +514,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t) -> bool;
                 fn [< __rust_proto_thunk__Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
                 fn [< __rust_proto_thunk__Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
-                fn [< __rust_proto_thunk__MapIter_ $key_t _ $t _get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_t);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_t);
                 fn [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
 
@@ -595,7 +595,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     unsafe {
                         iter.as_raw_mut(Private).next_unchecked::<$key_t, Self, _, _>(
                             Private,
-                            [< __rust_proto_thunk__MapIter_ $key_t _ $t _get >],
+                            [< __rust_proto_thunk__Map_ $key_t _ $t _iter_get >],
                             $from_ffi_key,
                             $from_ffi_value,
                         )

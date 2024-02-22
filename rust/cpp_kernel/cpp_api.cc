@@ -142,7 +142,7 @@ void __rust_proto_thunk__UntypedMapIterator_increment(
           const google::protobuf::Map<key_ty, value_ty>* m) {                            \
     return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());       \
   }                                                                            \
-  void __rust_proto_thunk__MapIter_##rust_key_ty##_##rust_value_ty##_get(      \
+  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_iter_get(     \
       const google::protobuf::internal::UntypedMapIterator* iter, ffi_key_ty* key,       \
       ffi_value_ty* value) {                                                   \
     auto typed_iter =                                                          \
