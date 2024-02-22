@@ -1060,3 +1060,16 @@ fn test_set_message_from_view() {
 
     assert_that!(m2.optional_int32(), eq(1i32));
 }
+
+#[test]
+fn test_group() {
+    let mut m = TestAllTypes::new();
+
+    // Groups are exposed the same as nested message types.
+    assert_that!(m.optionalgroup_opt().is_set(), eq(false));
+    assert_that!(m.optionalgroup().a(), eq(0));
+
+    m.optionalgroup_mut().or_default().a_mut().set(7);
+    assert_that!(m.optionalgroup_opt().is_set(), eq(true));
+    assert_that!(m.optionalgroup().a(), eq(7));
+}

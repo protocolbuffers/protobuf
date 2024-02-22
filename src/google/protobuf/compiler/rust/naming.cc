@@ -24,6 +24,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
 
@@ -194,40 +195,31 @@ std::string GetFullyQualifiedPath(Context& ctx, const EnumDescriptor& enum_) {
 }
 
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
-  switch (field.type()) {
-    case FieldDescriptor::TYPE_BOOL:
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::BOOL:
       return "bool";
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SFIXED32:
+    case RustFieldType::INT32:
       return "i32";
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_SFIXED64:
+    case RustFieldType::INT64:
       return "i64";
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_UINT32:
+    case RustFieldType::UINT32:
       return "u32";
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_UINT64:
+    case RustFieldType::UINT64:
       return "u64";
-    case FieldDescriptor::TYPE_FLOAT:
+    case RustFieldType::FLOAT:
       return "f32";
-    case FieldDescriptor::TYPE_DOUBLE:
+    case RustFieldType::DOUBLE:
       return "f64";
-    case FieldDescriptor::TYPE_BYTES:
+    case RustFieldType::BYTES:
       return "[u8]";
-    case FieldDescriptor::TYPE_STRING:
+    case RustFieldType::STRING:
       return "::__pb::ProtoStr";
-    case FieldDescriptor::TYPE_MESSAGE:
+    case RustFieldType::MESSAGE:
       return GetFullyQualifiedPath(ctx, *field.message_type());
-    case FieldDescriptor::TYPE_ENUM:
+    case RustFieldType::ENUM:
       return GetFullyQualifiedPath(ctx, *field.enum_type());
-    default:
-      break;
   }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
-  return "";
 }
 
 std::string RustModule(Context& ctx, const Descriptor& msg) {

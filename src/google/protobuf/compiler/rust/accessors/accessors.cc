@@ -13,6 +13,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -43,43 +44,25 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     }
   }
 
-  switch (field.type()) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_SFIXED64:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_BOOL:
-      if (field.is_repeated()) {
-        return std::make_unique<RepeatedField>();
-      }
-      return std::make_unique<SingularScalar>();
-    case FieldDescriptor::TYPE_ENUM:
-      if (field.is_repeated()) {
-        return std::make_unique<RepeatedField>();
-      }
-      return std::make_unique<SingularScalar>();
-    case FieldDescriptor::TYPE_BYTES:
-    case FieldDescriptor::TYPE_STRING:
-      if (field.is_repeated()) {
-        return std::make_unique<RepeatedField>();
-      }
-      return std::make_unique<SingularString>();
-    case FieldDescriptor::TYPE_MESSAGE:
-      if (field.is_repeated()) {
-        return std::make_unique<RepeatedField>();
-      }
-      return std::make_unique<SingularMessage>();
+  if (field.is_repeated()) {
+    return std::make_unique<RepeatedField>();
+  }
 
-    case FieldDescriptor::TYPE_GROUP:
-      return std::make_unique<UnsupportedField>("group not supported");
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::INT32:
+    case RustFieldType::INT64:
+    case RustFieldType::UINT32:
+    case RustFieldType::UINT64:
+    case RustFieldType::FLOAT:
+    case RustFieldType::DOUBLE:
+    case RustFieldType::BOOL:
+    case RustFieldType::ENUM:
+      return std::make_unique<SingularScalar>();
+    case RustFieldType::BYTES:
+    case RustFieldType::STRING:
+      return std::make_unique<SingularString>();
+    case RustFieldType::MESSAGE:
+      return std::make_unique<SingularMessage>();
   }
 
   ABSL_LOG(FATAL) << "Unexpected field type: " << field.type();

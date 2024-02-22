@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -86,31 +87,23 @@ std::string RsTypeNameView(Context& ctx, const FieldDescriptor& field) {
   if (field.options().has_ctype()) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
   }
-  switch (field.type()) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_SFIXED64:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_BOOL:
+  switch (GetRustFieldType(field.type())) {
+    case RustFieldType::INT32:
+    case RustFieldType::INT64:
+    case RustFieldType::UINT32:
+    case RustFieldType::UINT64:
+    case RustFieldType::FLOAT:
+    case RustFieldType::DOUBLE:
+    case RustFieldType::BOOL:
       return RsTypePath(ctx, field);
-    case FieldDescriptor::TYPE_BYTES:
+    case RustFieldType::BYTES:
       return "&'msg [u8]";
-    case FieldDescriptor::TYPE_STRING:
+    case RustFieldType::STRING:
       return "&'msg ::__pb::ProtoStr";
-    case FieldDescriptor::TYPE_MESSAGE:
+    case RustFieldType::MESSAGE:
       return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
-    case FieldDescriptor::TYPE_ENUM:
+    case RustFieldType::ENUM:
       return absl::StrCat("::__pb::View<'msg, ", RsTypePath(ctx, field), ">");
-    case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
-      return "";
   }
 
   ABSL_LOG(FATAL) << "Unexpected field type: " << field.type_name();
@@ -122,32 +115,24 @@ std::string RsTypeNameMut(Context& ctx, const FieldDescriptor& field) {
   if (field.options().has_ctype()) {
     return "";  // TODO: b/308792377 - ctype fields not supported yet.
   }
-  switch (field.type()) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_SFIXED64:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_BOOL:
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::INT32:
+    case RustFieldType::INT64:
+    case RustFieldType::UINT32:
+    case RustFieldType::UINT64:
+    case RustFieldType::FLOAT:
+    case RustFieldType::DOUBLE:
+    case RustFieldType::BOOL:
       return absl::StrCat("::__pb::PrimitiveMut<'msg, ", RsTypePath(ctx, field),
                           ">");
-    case FieldDescriptor::TYPE_BYTES:
+    case RustFieldType::BYTES:
       return "::__pb::BytesMut<'msg>";
-    case FieldDescriptor::TYPE_STRING:
+    case RustFieldType::STRING:
       return "::__pb::ProtoStrMut<'msg>";
-    case FieldDescriptor::TYPE_MESSAGE:
+    case RustFieldType::MESSAGE:
       return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
-    case FieldDescriptor::TYPE_ENUM:
+    case RustFieldType::ENUM:
       return absl::StrCat("::__pb::Mut<'msg, ", RsTypePath(ctx, field), ">");
-    case FieldDescriptor::TYPE_GROUP:  // Not supported yet.
-      return "";
   }
 
   ABSL_LOG(FATAL) << "Unexpected field type: " << field.type_name();
