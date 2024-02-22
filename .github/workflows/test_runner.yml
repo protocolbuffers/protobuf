@@ -62,11 +62,11 @@ jobs:
     if: |
       (github.event_name != 'pull_request' &&
        github.event_name != 'pull_request_target' &&
-       github.event.repository.full_name == 'protocolbuffers/protobuf') ||
+       github.event.repository.full_name == 'mmorel-35/protobuf') ||
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
+       github.event.pull_request.head.repo.full_name == 'mmorel-35/protobuf') ||
       (github.event_name == 'pull_request_target' &&
-       github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
+       github.event.pull_request.head.repo.full_name != 'mmorel-35/protobuf')
 
     runs-on: ubuntu-latest
     outputs:
