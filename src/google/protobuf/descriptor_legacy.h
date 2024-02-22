@@ -4,6 +4,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 
+// No port_def include needed
+
 namespace google {
 namespace protobuf {
 

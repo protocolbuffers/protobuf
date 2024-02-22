@@ -24,6 +24,9 @@
 #include "google/protobuf/descriptor.pb.h"
 
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 
@@ -1035,3 +1038,5 @@ bool MergedDescriptorDatabase::FindAllFileNames(
 
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

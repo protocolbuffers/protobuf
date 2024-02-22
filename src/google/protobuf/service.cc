@@ -11,6 +11,8 @@
 
 #include "google/protobuf/service.h"
 
+// No port_def include needed
+
 namespace google {
 namespace protobuf {
 
