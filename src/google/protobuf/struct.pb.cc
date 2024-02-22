@@ -732,7 +732,6 @@ const char* Value::_InternalParse(const char* ptr,
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   switch (kind_case()) {
     // .google.protobuf.NullValue null_value = 1;
     case kNullValue: {
