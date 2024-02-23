@@ -247,7 +247,7 @@ inline constexpr bool DebugHardenStringValues() {
 // past the end of message/valid memory, however we are doing this
 // inside inline asm block, since computing the invalid pointer
 // is a potential UB. Only insert prefetch once per function,
-PROTOBUF_ALWAYS_INLINE inline void Prefetch5LinesFrom7Lines(const void* ptr) {
+inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
@@ -275,7 +275,7 @@ Unreachable() {
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 template <typename T>
-PROTOBUF_ALWAYS_INLINE inline void TSanRead(const T* impl) {
+inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
   char protobuf_tsan_dummy =
       *reinterpret_cast<const char*>(&impl->_tsan_detect_race);
   asm volatile("" : "+r"(protobuf_tsan_dummy));
@@ -285,12 +285,12 @@ PROTOBUF_ALWAYS_INLINE inline void TSanRead(const T* impl) {
 // member is not important. We can unconditionally write to it without affecting
 // correctness of the rest of the class.
 template <typename T>
-PROTOBUF_ALWAYS_INLINE inline void TSanWrite(T* impl) {
+inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
   *reinterpret_cast<char*>(&impl->_tsan_detect_race) = 0;
 }
 #else
-PROTOBUF_ALWAYS_INLINE inline void TSanRead(const void*) {}
-PROTOBUF_ALWAYS_INLINE inline void TSanWrite(const void*) {}
+inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
+inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
 
 }  // namespace internal
