@@ -50,6 +50,18 @@ fn test_optional_fixed32_accessors() {
     msg.optional_fixed32_mut().clear();
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
+
+    msg.set_optional_fixed32(7);
+    assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(7)));
+    assert_that!(msg.optional_fixed32(), eq(7));
+
+    msg.set_optional_fixed32_opt(Some(8));
+    assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(8)));
+    assert_that!(msg.optional_fixed32(), eq(8));
+
+    msg.set_optional_fixed32_opt(None);
+    assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
+    assert_that!(msg.optional_fixed32(), eq(0));
 }
 
 #[test]
@@ -59,6 +71,12 @@ fn test_default_fixed32_accessors() {
     assert_that!(msg.default_fixed32_mut().get(), eq(47));
     assert_that!(msg.default_fixed32_mut().is_set(), eq(false));
     assert_that!(msg.default_fixed32_opt(), eq(Optional::Unset(47)));
+
+    msg.set_default_fixed32(7);
+    assert_that!(msg.default_fixed32(), eq(7));
+    assert_that!(msg.default_fixed32_mut().get(), eq(7));
+    assert_that!(msg.default_fixed32_mut().is_set(), eq(true));
+    assert_that!(msg.default_fixed32_opt(), eq(Optional::Set(7)));
 
     msg.default_fixed32_mut().set(999);
     assert_that!(msg.default_fixed32(), eq(999));
@@ -85,6 +103,10 @@ fn test_optional_fixed64_accessors() {
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed64(), eq(0));
 
+    msg.set_optional_fixed64(99);
+    assert_that!(msg.optional_fixed64_opt(), eq(Optional::Set(99)));
+    assert_that!(msg.optional_fixed64(), eq(99));
+
     msg.optional_fixed64_mut().set(2000);
     assert_that!(msg.optional_fixed64_opt(), eq(Optional::Set(2000)));
     assert_that!(msg.optional_fixed64(), eq(2000));
@@ -101,6 +123,12 @@ fn test_default_fixed64_accessors() {
     assert_that!(msg.default_fixed64_mut().get(), eq(48));
     assert_that!(msg.default_fixed64_mut().is_set(), eq(false));
     assert_that!(msg.default_fixed64_opt(), eq(Optional::Unset(48)));
+
+    msg.set_default_fixed64(4);
+    assert_that!(msg.default_fixed64(), eq(4));
+    assert_that!(msg.default_fixed64_mut().get(), eq(4));
+    assert_that!(msg.default_fixed64_mut().is_set(), eq(true));
+    assert_that!(msg.default_fixed64_opt(), eq(Optional::Set(4)));
 
     msg.default_fixed64_mut().set(999);
     assert_that!(msg.default_fixed64(), eq(999));
@@ -127,6 +155,10 @@ fn test_optional_int32_accessors() {
     assert_that!(msg.optional_int32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_int32(), eq(0));
 
+    msg.set_optional_int32(0);
+    assert_that!(msg.optional_int32_opt(), eq(Optional::Set(0)));
+    assert_that!(msg.optional_int32(), eq(0));
+
     msg.optional_int32_mut().set(1);
     assert_that!(msg.optional_int32_opt(), eq(Optional::Set(1)));
     assert_that!(msg.optional_int32(), eq(1));
@@ -139,6 +171,18 @@ fn test_optional_int32_accessors() {
 #[test]
 fn test_default_int32_accessors() {
     let mut msg = TestAllTypes::new();
+    assert_that!(msg.default_int32(), eq(41));
+    assert_that!(msg.default_int32_mut().get(), eq(41));
+    assert_that!(msg.default_int32_mut().is_set(), eq(false));
+    assert_that!(msg.default_int32_opt(), eq(Optional::Unset(41)));
+
+    msg.set_default_int32_opt(Some(41));
+    assert_that!(msg.default_int32(), eq(41));
+    assert_that!(msg.default_int32_mut().get(), eq(41));
+    assert_that!(msg.default_int32_mut().is_set(), eq(true));
+    assert_that!(msg.default_int32_opt(), eq(Optional::Set(41)));
+
+    msg.set_default_int32_opt(None);
     assert_that!(msg.default_int32(), eq(41));
     assert_that!(msg.default_int32_mut().get(), eq(41));
     assert_that!(msg.default_int32_mut().is_set(), eq(false));
@@ -571,7 +615,7 @@ fn test_nonempty_default_bytes_accessors() {
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
     assert_that!(msg.default_bytes_mut(), is_unset());
 
-    msg.default_bytes_mut().set(b"");
+    msg.set_default_bytes(b"");
     assert_that!(*msg.default_bytes(), empty());
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b""[..])));
 
@@ -579,6 +623,10 @@ fn test_nonempty_default_bytes_accessors() {
     msg.default_bytes_mut().or_default();
     assert_that!(msg.default_bytes(), eq(b"world"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b"world"[..])));
+
+    msg.set_default_bytes_opt(None::<&[u8]>);
+    assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
+    assert_that!(msg.default_bytes_mut(), is_unset());
 
     msg.default_bytes_mut().or_default().set(b"\xffbinary\x85non-utf8");
     assert_that!(msg.default_bytes(), eq(b"\xffbinary\x85non-utf8"));
@@ -617,11 +665,11 @@ fn test_optional_string_accessors() {
     assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
     assert_that!(msg.optional_string_mut(), is_unset());
 
-    msg.optional_string_mut().set("");
+    msg.set_optional_string("");
     assert_that!(msg.optional_string(), eq(""));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 
-    msg.optional_string_mut().clear();
+    msg.set_optional_string_opt(None::<&str>);
     msg.optional_string_mut().or_default();
     assert_that!(msg.optional_string(), eq(""));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));

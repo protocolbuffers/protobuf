@@ -25,9 +25,9 @@ fn serialize_zero_length() {
 #[test]
 fn serialize_deserialize_message() {
     let mut msg = TestAllTypes::new();
-    msg.optional_int64_mut().set(42);
-    msg.optional_bool_mut().set(true);
-    msg.optional_bytes_mut().set(b"serialize deserialize test");
+    msg.set_optional_int64(42);
+    msg.set_optional_bool(true);
+    msg.set_optional_bytes(b"serialize deserialize test");
 
     let serialized = msg.serialize();
 
@@ -55,9 +55,9 @@ fn deserialize_error() {
 #[test]
 fn set_bytes_with_serialized_data() {
     let mut msg = TestAllTypes::new();
-    msg.optional_int64_mut().set(42);
-    msg.optional_bool_mut().set(true);
+    msg.set_optional_int64(42);
+    msg.set_optional_bool(true);
     let mut msg2 = TestAllTypes::new();
-    msg2.optional_bytes_mut().set(msg.serialize());
+    msg2.set_optional_bytes(msg.serialize());
     assert_that!(msg2.optional_bytes(), eq(msg.serialize().as_ref()));
 }
