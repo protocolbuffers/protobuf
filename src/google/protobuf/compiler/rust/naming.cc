@@ -35,14 +35,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-namespace {
-std::string GetUnderscoreDelimitedFullName(Context& ctx,
-                                           const Descriptor& msg) {
-  std::string result = msg.full_name();
-  absl::StrReplaceAll({{".", "_"}}, &result);
-  return result;
-}
-}  // namespace
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
   return RsSafeName(ctx.generator_context().ImportPathToCrateName(dep.name()));
@@ -73,8 +65,14 @@ std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
 
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("__rust_proto_thunk__", key_t, "_",
+  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
                       GetUnderscoreDelimitedFullName(ctx, *&msg), "_", op);
+}
+
+std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
+                        absl::string_view key_t, absl::string_view op) {
+  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+                      GetUnderscoreDelimitedFullName(ctx, *&desc), "_", op);
 }
 
 namespace {
@@ -195,6 +193,20 @@ std::string GetFullyQualifiedPath(Context& ctx, const EnumDescriptor& enum_) {
     return absl::StrCat("crate::", rel_path);
   }
   return absl::StrCat(GetCrateName(ctx, *enum_.file()), "::", rel_path);
+}
+
+std::string GetUnderscoreDelimitedFullName(Context& ctx,
+                                           const Descriptor& msg) {
+  std::string result = msg.full_name();
+  absl::StrReplaceAll({{".", "_"}}, &result);
+  return result;
+}
+
+std::string GetUnderscoreDelimitedFullName(Context& ctx,
+                                           const EnumDescriptor& enum_) {
+  std::string result = enum_.full_name();
+  absl::StrReplaceAll({{".", "_"}}, &result);
+  return result;
 }
 
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {

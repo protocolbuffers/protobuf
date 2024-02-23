@@ -34,14 +34,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
   }
 
   if (field.is_map()) {
-    auto value_type = field.message_type()->map_value()->type();
-    switch (value_type) {
-      case FieldDescriptor::TYPE_ENUM:
-        return std::make_unique<UnsupportedField>(
-            "Maps with values of type enum are not supported");
-      default:
-        return std::make_unique<Map>();
-    }
+    return std::make_unique<Map>();
   }
 
   if (field.is_repeated()) {

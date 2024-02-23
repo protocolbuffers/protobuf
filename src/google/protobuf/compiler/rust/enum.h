@@ -23,7 +23,11 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
+// Generates code for a particular enum in `.pb.rs`.
 void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc);
+
+// Generates code for a particular enum in `.pb.thunk.cc`.
+void GenerateEnumThunksCc(Context& ctx, const EnumDescriptor& desc);
 
 // An enum value with a unique number and any aliases for it.
 struct RustEnumValue {
