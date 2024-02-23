@@ -28,6 +28,7 @@ using type_info = ::type_info;
 #endif
 
 #include "absl/base/attributes.h"
+#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
@@ -135,48 +136,12 @@ struct ArenaOptions {
 // Arena allocator. Arena allocation replaces ordinary (heap-based) allocation
 // with new/delete, and improves performance by aggregating allocations into
 // larger blocks and freeing allocations all at once. Protocol messages are
-// allocated on an arena by using Arena::CreateMessage<T>(Arena*), below, and
-// are automatically freed when the arena is destroyed.
+// allocated on an arena by using Arena::Create<T>(Arena*), below, and are
+// automatically freed when the arena is destroyed.
 //
 // This is a thread-safe implementation: multiple threads may allocate from the
 // arena concurrently. Destruction is not thread-safe and the destructing
 // thread must synchronize with users of the arena first.
-//
-// An arena provides two allocation interfaces: CreateMessage<T>, which works
-// for arena-enabled proto2 message types as well as other types that satisfy
-// the appropriate protocol (described below), and Create<T>, which works for
-// any arbitrary type T. CreateMessage<T> is better when the type T supports it,
-// because this interface (i) passes the arena pointer to the created object so
-// that its sub-objects and internal allocations can use the arena too, and (ii)
-// elides the object's destructor call when possible. Create<T> does not place
-// any special requirements on the type T, and will invoke the object's
-// destructor when the arena is destroyed.
-//
-// The arena message allocation protocol, required by
-// CreateMessage<T>(Arena* arena, Args&&... args), is as follows:
-//
-// - The type T must have (at least) two constructors: a constructor callable
-//   with `args` (without `arena`), called when a T is allocated on the heap;
-//   and a constructor callable with `Arena* arena, Args&&... args`, called when
-//   a T is allocated on an arena. If the second constructor is called with a
-//   null arena pointer, it must be equivalent to invoking the first
-//   (`args`-only) constructor.
-//
-// - The type T must have a particular type trait: a nested type
-//   |InternalArenaConstructable_|. This is usually a typedef to |void|. If no
-//   such type trait exists, then the instantiation CreateMessage<T> will fail
-//   to compile.
-//
-// - The type T *may* have the type trait |DestructorSkippable_|. If this type
-//   trait is present in the type, then its destructor will not be called if and
-//   only if it was passed a non-null arena pointer. If this type trait is not
-//   present on the type, then its destructor is always called when the
-//   containing arena is destroyed.
-//
-// This protocol is implemented by all arena-enabled proto2 message classes as
-// well as protobuf container types like RepeatedPtrField and Map. The protocol
-// is internal to protobuf and is not guaranteed to be stable. Non-proto types
-// should not rely on this protocol.
 class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
  public:
   // Default constructor with sensible default options, tuned for average
@@ -208,52 +173,42 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   inline ~Arena() = default;
 
-  // API to create proto2 message objects on the arena. If the arena passed in
-  // is nullptr, then a heap allocated object is returned. Type T must be a
-  // message defined in a .proto file with cc_enable_arenas set to true,
-  // otherwise a compilation error will occur.
-  //
-  // RepeatedField and RepeatedPtrField may also be instantiated directly on an
-  // arena with this method.
-  //
-  // This function also accepts any type T that satisfies the arena message
-  // allocation protocol, documented above.
+  // Deprecated. Use Create<T> instead. TODO: depreate OSS version
+  // once internal migration to Arena::Create is done.
   template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateMessage(Arena* arena, Args&&... args) {
+  PROTOBUF_ALWAYS_INLINE
+      static T*
+      CreateMessage(Arena* arena, Args&&... args) {
     using Type = std::remove_const_t<T>;
     static_assert(
         is_arena_constructable<Type>::value,
         "CreateMessage can only construct types that are ArenaConstructable");
-#ifdef __cpp_if_constexpr
-    constexpr auto construct_type = GetConstructType<T, Args&&...>();
-    // We delegate to DefaultConstruct/CopyConstruct where appropriate
-    // because protobuf generated classes have external templates for these
-    // functions for code size reasons.
-    // When `if constexpr` is not available always use the fallback.
-    if constexpr (construct_type == ConstructType::kDefault) {
-      return static_cast<Type*>(DefaultConstruct<Type>(arena));
-    } else if constexpr (construct_type == ConstructType::kCopy) {
-      return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
-    }
-#endif
-    return CreateMessageInternal<Type>(arena, std::forward<Args>(args)...);
+    return Create<Type>(arena, std::forward<Args>(args)...);
   }
 
-  // API to create any objects on the arena.
-  //
-  // If an object is arena-constructable, this API behaves like
-  // Arena::CreateMessage. Arena constructable types are expected to accept
-  // Arena* as the first argument and one is implicitly added by the API.
-  //
-  // If the object is not arena-constructable, only the object will be created
-  // on the arena; the underlying ptrs will be still heap allocated.
+  // Allocates an object type T if the arena passed in is not nullptr;
+  // otherwise, returns a heap-allocated object.
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
     return absl::utility_internal::IfConstexprElse<
         is_arena_constructable<T>::value>(
         // Arena-constructable
         [arena](auto&&... args) {
-          return CreateMessage<T>(arena, std::forward<Args>(args)...);
+          using Type = std::remove_const_t<T>;
+#ifdef __cpp_if_constexpr
+          constexpr auto construct_type = GetConstructType<T, Args&&...>();
+          // We delegate to DefaultConstruct/CopyConstruct where appropriate
+          // because protobuf generated classes have external templates for
+          // these functions for code size reasons. When `if constexpr` is not
+          // available always use the fallback.
+          if constexpr (construct_type == ConstructType::kDefault) {
+            return static_cast<Type*>(DefaultConstruct<Type>(arena));
+          } else if constexpr (construct_type == ConstructType::kCopy) {
+            return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
+          }
+#endif
+          return CreateArenaCompatible<Type>(arena,
+                                             std::forward<Args>(args)...);
         },
         // Non arena-constructable
         [arena](auto&&... args) {
@@ -415,6 +370,37 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       return nullptr;
     }
 
+    // If an object type T satisfies the appropriate protocol, it is deemed
+    // "arena compatible" and handled more efficiently because this interface
+    // (i) passes the arena pointer to the created object so that its
+    // sub-objects and internal allocations can use the arena too, and (ii)
+    // elides the object's destructor call when possible; e.g. protobuf
+    // messages, RepeatedField, etc. Otherwise, the arena will invoke the
+    // object's destructor when the arena is destroyed.
+    //
+    // To be "arena-compatible", a type T must satisfy the following:
+    //
+    // - The type T must have (at least) two constructors: a constructor
+    //   callable with `args` (without `arena`), called when a T is allocated on
+    //   the heap; and a constructor callable with `Arena* arena, Args&&...
+    //   args`, called when a T is allocated on an arena. If the second
+    //   constructor is called with a null arena pointer, it must be equivalent
+    //   to invoking the first
+    //   (`args`-only) constructor.
+    //
+    // - The type T must have a particular type trait: a nested type
+    //   |InternalArenaConstructable_|. This is usually a typedef to |void|.
+    //
+    // - The type T *may* have the type trait |DestructorSkippable_|. If this
+    //   type trait is present in the type, then its destructor will not be
+    //   called if and only if it was passed a non-null arena pointer. If this
+    //   type trait is not present on the type, then its destructor is always
+    //   called when the containing arena is destroyed.
+    //
+    // The protocol is implemented by all protobuf message classes as well as
+    // protobuf container types like RepeatedPtrField and Map. It is internal to
+    // protobuf and is not guaranteed to be stable. Non-proto types should not
+    // rely on this protocol.
     template <typename U>
     static char DestructorSkippable(const typename U::DestructorSkippable_*);
     template <typename U>
@@ -514,11 +500,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   }
 
   template <typename T, typename... Args>
-  PROTOBUF_NDEBUG_INLINE static T* CreateMessageInternal(Arena* arena,
+  PROTOBUF_NDEBUG_INLINE static T* CreateArenaCompatible(Arena* arena,
                                                          Args&&... args) {
-    static_assert(
-        is_arena_constructable<T>::value,
-        "CreateMessage can only construct types that are ArenaConstructable");
+    static_assert(is_arena_constructable<T>::value,
+                  "Can only construct types that are ArenaConstructable");
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
@@ -530,10 +515,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // slightly different.  When the arena pointer is nullptr, it calls T()
   // instead of T(nullptr).
   template <typename T>
-  PROTOBUF_NDEBUG_INLINE static T* CreateMessageInternal(Arena* arena) {
-    static_assert(
-        is_arena_constructable<T>::value,
-        "CreateMessage can only construct types that are ArenaConstructable");
+  PROTOBUF_NDEBUG_INLINE static T* CreateArenaCompatible(Arena* arena) {
+    static_assert(is_arena_constructable<T>::value,
+                  "Can only construct types that are ArenaConstructable");
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       // Generated arena constructor T(Arena*) is protected. Call via
       // InternalHelper.
