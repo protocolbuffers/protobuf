@@ -535,13 +535,6 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     $pbr$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
                 }
 
-                fn empty_message_value() -> $pbr$::upb_MessageValue {
-                    Self::to_message_value(
-                        $Msg$View::new(
-                            $pbi$::Private,
-                            $pbr$::ScratchSpace::zeroed_block($pbi$::Private)))
-                }
-
                 unsafe fn to_message_value_copy_if_required(
                   arena: $pbi$::RawArena,
                   val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
@@ -620,26 +613,25 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
-                    let mut val = <Self as $pbr$::UpbTypeConversions>::empty_message_value();
+                    let mut val = $std$::mem::MaybeUninit::uninit();
                     let found = unsafe {
                         $pbr$::upb_Map_Get(
                             map.as_raw($pbi$::Private),
                             <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                            &mut val)
+                            val.as_mut_ptr())
                     };
                     if !found {
                         return None;
                     }
-                    Some(unsafe { <Self as $pbr$::UpbTypeConversions>::from_message_value(val) })
+                    Some(unsafe { <Self as $pbr$::UpbTypeConversions>::from_message_value(val.assume_init()) })
                 }
 
                 fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
-                    let mut val = <Self as $pbr$::UpbTypeConversions>::empty_message_value();
                     unsafe {
                         $pbr$::upb_Map_Delete(
                             map.as_raw($pbi$::Private),
                             <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                            &mut val)
+                            $std$::ptr::null_mut())
                     }
                 }
                 fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {

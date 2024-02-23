@@ -752,7 +752,6 @@ impl<'msg> InnerMapMut<'msg> {
 pub trait UpbTypeConversions: Proxied {
     fn upb_type() -> UpbCType;
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
-    fn empty_message_value() -> upb_MessageValue;
 
     /// # Safety
     /// - `raw_arena` must point to a valid upb arena.
@@ -779,11 +778,6 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                 #[inline(always)]
                 fn to_message_value(val: View<'_, $t>) -> upb_MessageValue {
                     upb_MessageValue { $ufield: val }
-                }
-
-                #[inline(always)]
-                fn empty_message_value() -> upb_MessageValue {
-                    Self::to_message_value($zero_val)
                 }
 
                 #[inline(always)]
@@ -819,10 +813,6 @@ impl UpbTypeConversions for [u8] {
         upb_MessageValue { str_val: val.into() }
     }
 
-    fn empty_message_value() -> upb_MessageValue {
-        Self::to_message_value(b"")
-    }
-
     unsafe fn to_message_value_copy_if_required(
         raw_arena: RawArena,
         val: View<'_, [u8]>,
@@ -846,10 +836,6 @@ impl UpbTypeConversions for ProtoStr {
 
     fn to_message_value(val: View<'_, ProtoStr>) -> upb_MessageValue {
         upb_MessageValue { str_val: val.as_bytes().into() }
-    }
-
-    fn empty_message_value() -> upb_MessageValue {
-        Self::to_message_value("".into())
     }
 
     unsafe fn to_message_value_copy_if_required(
@@ -955,23 +941,22 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 }
 
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
-                    let mut val = <$t as UpbTypeConversions>::empty_message_value();
+                    let mut val = MaybeUninit::uninit();
                     let found = unsafe {
                         upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
-                            &mut val)
+                            val.as_mut_ptr())
                     };
                     if !found {
                         return None;
                     }
-                    Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val) })
+                    Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val.assume_init()) })
                 }
 
                 fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
-                    let mut val = <$t as UpbTypeConversions>::empty_message_value();
                     unsafe {
                         upb_Map_Delete(map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
-                            &mut val)
+                            ptr::null_mut())
                     }
                 }
 
