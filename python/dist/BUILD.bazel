@@ -9,7 +9,6 @@ load("@pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("@bazel_skylib//lib:selects.bzl", "selects")
@@ -271,7 +270,6 @@ pkg_tar(
     package_file_name = "protobuf.tar.gz",
     strip_prefix = ".",
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
 )
@@ -290,7 +288,6 @@ genrule(
         mv protobuf/dist/*.tar.gz $@
     """,
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     tools = [requirement("setuptools")],
@@ -336,7 +333,7 @@ py_wheel(
         "//python:full_api_3.8": "cp38",
         "//python:full_api_3.9": "cp39",
         "//python:limited_api_3.10": "cp310",
-        "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
+        "//conditions:default": "cp38",  #TODO: Make more formal
     }),
     strip_path_prefixes = [
         "python/dist/",
@@ -344,7 +341,6 @@ py_wheel(
         "src/",
     ],
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     version = PROTOBUF_PYTHON_VERSION,
@@ -384,7 +380,6 @@ py_wheel(
         "src/",
     ],
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     version = PROTOBUF_PYTHON_VERSION,
@@ -410,7 +405,6 @@ py_wheel(
         "src/",
     ],
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     version = PROTOBUF_PYTHON_VERSION,

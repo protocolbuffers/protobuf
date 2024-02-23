@@ -17,10 +17,6 @@ load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
-
 # Bazel platform rules.
 http_archive(
     name = "platforms",
@@ -30,6 +26,14 @@ http_archive(
     ],
     sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
 )
+
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_multi_toolchains")
+
+py_repositories()
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
 
 http_archive(
     name = "com_google_googletest",
@@ -160,31 +164,11 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//bazel:system_python.bzl", "system_python")
-
-system_python(
-    name = "system_python",
-    minimum_python_version = "3.7",
-)
-
-load("@system_python//:pip.bzl", "pip_parse")
-
-pip_parse(
-    name = "pip_deps",
-    requirements = "//python:requirements.txt",
-)
-
-load("@pip_deps//:requirements.bzl", "install_deps")
-
-install_deps()
 
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
-    strip_prefix = "rules_fuzzing-0.4.1",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
-    patches = ["//third_party:rules_fuzzing.patch"],
-    patch_args = ["-p1"],
+    strip_prefix = "rules_fuzzing-master",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/refs/heads/master.tar.gz"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
@@ -195,9 +179,41 @@ load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
 
 rules_fuzzing_init()
 
-load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
+DEFAULT_PYTHON = "3.11"
 
-fuzzing_py_deps_install_deps()
+python_register_multi_toolchains(
+    name = "python",
+    default_version = DEFAULT_PYTHON,
+    python_versions = [
+      "3.12",
+      "3.11",
+      "3.10",
+      "3.9",
+      "3.8",
+    ],
+    ignore_root_user_error = True,
+)
+
+load("@python//:pip.bzl", "multi_pip_parse")
+
+multi_pip_parse(
+    name = "pip_deps",
+    default_version = DEFAULT_PYTHON,
+    python_interpreter_target = {
+        "3.12": "@python_3_12_host//:python",
+        "3.11": "@python_3_11_host//:python",
+        "3.10": "@python_3_10_host//:python",
+        "3.9": "@python_3_9_host//:python",
+        "3.8": "@python_3_8_host//:python",
+    },
+    requirements_lock = {
+        "3.12": "//python/requirements:requirements_lock_3_12.txt",
+        "3.11": "//python/requirements:requirements_lock_3_11.txt",
+        "3.10": "//python/requirements:requirements_lock_3_10.txt",
+        "3.9": "//python/requirements:requirements_lock_3_9.txt",
+        "3.8": "//python/requirements:requirements_lock_3_8.txt",
+    },
+)
 
 http_archive(
     name = "rules_rust",

@@ -74,7 +74,7 @@ jobs:
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           cache: pip
-          cache-dependency-path: 'python/requirements.txt'
+          cache-dependency-path: 'python/requirements/requirements.in'
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           cache: pip
-          cache-dependency-path: 'python/requirements.txt'
+          cache-dependency-path: 'python/requirements/requirements.in'
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v2
         with:
@@ -158,7 +158,7 @@ jobs:
         with:
           name: requirements
           # Tests shouldn't have access to the whole upb repo, upload the one file we need
-          path: python/requirements.txt
+          path: python/requirements/requirements.in
 
   test_wheels:
     name: Test Wheels

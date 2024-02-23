@@ -12,6 +12,13 @@ cd $(dirname -- "$0")
 
 readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS}"
 
+# Update lockfiles
+${BazelBin} run //python/requirements:requirements_3_12.update
+${BazelBin} run //python/requirements:requirements_3_11.update
+${BazelBin} run //python/requirements:requirements_3_10.update
+${BazelBin} run //python/requirements:requirements_3_9.update
+${BazelBin} run //python/requirements:requirements_3_8.update
+
 # Run and fix all staleness tests.
 ${BazelBin} test src:cmake_lists_staleness_test "$@" || ./bazel-bin/src/cmake_lists_staleness_test --fix
 ${BazelBin} test src/google/protobuf:well_known_types_staleness_test "$@" || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix

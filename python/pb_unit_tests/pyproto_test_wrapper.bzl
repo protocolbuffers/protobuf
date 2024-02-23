@@ -15,10 +15,6 @@ def pyproto_test_wrapper(name, deps = []):
             "//:python_test_srcs",
             "//:python_srcs",
         ] + deps,
-        target_compatible_with = select({
-            "@system_python//:supported": [],
-            "//conditions:default": ["@platforms//:incompatible"],
-        }),
     )
 
 # end:github_only

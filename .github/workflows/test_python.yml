@@ -77,7 +77,7 @@ jobs:
         with:
           python-version: ${{ matrix.version }}
           cache: pip
-          cache-dependency-path: 'python/requirements.txt'
+          cache-dependency-path: 'python/requirements/requirements.in'
 
       - name: Validate version
         run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
