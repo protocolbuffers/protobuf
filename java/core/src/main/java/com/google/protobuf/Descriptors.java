@@ -75,7 +75,13 @@ public final class Descriptors {
   @SuppressWarnings("NonFinalStaticField")
   private static volatile FeatureSetDefaults javaEditionDefaults = null;
 
-  private static FeatureSet getEditionDefaults(Edition edition) {
+  /** Sets the default feature mappings used during the build. Exposed for tests. */
+  static void setTestJavaEditionDefaults(FeatureSetDefaults defaults) {
+    javaEditionDefaults = defaults;
+  }
+
+  /** Gets the default feature mappings used during the build. */
+  static FeatureSetDefaults getJavaEditionDefaults() {
     // Force explicit initialization before synchronized block which can trigger initialization in
     // `JavaFeaturesProto.registerAllExtensions()` and `FeatureSetdefaults.parseFrom()` calls.
     // Otherwise, this can result in deadlock if another threads holds the static init block's
@@ -88,18 +94,22 @@ public final class Descriptors {
           try {
             ExtensionRegistry registry = ExtensionRegistry.newInstance();
             registry.add(JavaFeaturesProto.java);
-            javaEditionDefaults =
+            setTestJavaEditionDefaults(
                 FeatureSetDefaults.parseFrom(
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
                         Internal.ISO_8859_1),
-                    registry);
+                    registry));
           } catch (Exception e) {
             throw new AssertionError(e);
           }
         }
       }
     }
+    return javaEditionDefaults;
+  }
 
+  static FeatureSet getEditionDefaults(Edition edition) {
+    FeatureSetDefaults javaEditionDefaults = getJavaEditionDefaults();
     if (edition.getNumber() < javaEditionDefaults.getMinimumEdition().getNumber()) {
       throw new IllegalArgumentException(
           "Edition "
@@ -1116,16 +1126,17 @@ public final class Descriptors {
         enumType.resolveAllFeatures();
       }
 
+      // Oneofs must be resolved before any children oneof fields.
+      for (OneofDescriptor oneof : oneofs) {
+        oneof.resolveAllFeatures();
+      }
+
       for (FieldDescriptor field : fields) {
         field.resolveAllFeatures();
       }
 
       for (FieldDescriptor extension : extensions) {
         extension.resolveAllFeatures();
-      }
-
-      for (OneofDescriptor oneof : oneofs) {
-        oneof.resolveAllFeatures();
       }
     }
 
@@ -1703,6 +1714,7 @@ public final class Descriptors {
           extensionScope = parent;
         } else {
           extensionScope = null;
+          this.parent = file;
         }
 
         if (proto.hasOneofIndex()) {
@@ -1726,6 +1738,7 @@ public final class Descriptors {
           }
           containingOneof = parent.getOneofs().get(proto.getOneofIndex());
           containingOneof.fieldCount++;
+          this.parent = containingOneof;
         } else {
           containingOneof = null;
         }
