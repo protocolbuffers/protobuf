@@ -484,10 +484,6 @@ class Struct_FieldsEntry_DoNotUse final
     return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
   }
-  static bool ValidateKey(std::string* s) {
-    return ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::google::protobuf::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
- }
-  static bool ValidateValue(void*) { return true; }
 const ::google::protobuf::Message::ClassData* GetClassData() const final;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
