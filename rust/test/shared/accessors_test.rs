@@ -55,11 +55,7 @@ fn test_optional_fixed32_accessors() {
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.optional_fixed32(), eq(7));
 
-    msg.set_optional_fixed32_opt(Some(8));
-    assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(8)));
-    assert_that!(msg.optional_fixed32(), eq(8));
-
-    msg.set_optional_fixed32_opt(None);
+    msg.clear_optional_fixed32();
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 }
@@ -176,13 +172,13 @@ fn test_default_int32_accessors() {
     assert_that!(msg.default_int32_mut().is_set(), eq(false));
     assert_that!(msg.default_int32_opt(), eq(Optional::Unset(41)));
 
-    msg.set_default_int32_opt(Some(41));
+    msg.set_default_int32(41);
     assert_that!(msg.default_int32(), eq(41));
     assert_that!(msg.default_int32_mut().get(), eq(41));
     assert_that!(msg.default_int32_mut().is_set(), eq(true));
     assert_that!(msg.default_int32_opt(), eq(Optional::Set(41)));
 
-    msg.set_default_int32_opt(None);
+    msg.clear_default_int32();
     assert_that!(msg.default_int32(), eq(41));
     assert_that!(msg.default_int32_mut().get(), eq(41));
     assert_that!(msg.default_int32_mut().is_set(), eq(false));
@@ -624,7 +620,7 @@ fn test_nonempty_default_bytes_accessors() {
     assert_that!(msg.default_bytes(), eq(b"world"));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b"world"[..])));
 
-    msg.set_default_bytes_opt(None::<&[u8]>);
+    msg.clear_default_bytes();
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
     assert_that!(msg.default_bytes_mut(), is_unset());
 
@@ -669,7 +665,7 @@ fn test_optional_string_accessors() {
     assert_that!(msg.optional_string(), eq(""));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 
-    msg.set_optional_string_opt(None::<&str>);
+    msg.clear_optional_string();
     msg.optional_string_mut().or_default();
     assert_that!(msg.optional_string(), eq(""));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
@@ -1120,4 +1116,17 @@ fn test_group() {
     m.optionalgroup_mut().or_default().a_mut().set(7);
     assert_that!(m.optionalgroup_opt().is_set(), eq(true));
     assert_that!(m.optionalgroup().a(), eq(7));
+}
+
+#[test]
+fn test_submsg_setter() {
+    use TestAllTypes_::*;
+
+    let mut nested = NestedMessage::new();
+    nested.set_bb(7);
+
+    let mut parent = TestAllTypes::new();
+    parent.set_optional_nested_message(nested);
+
+    assert_that!(parent.optional_nested_message().bb(), eq(7));
 }

@@ -81,27 +81,21 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
              ctx.Emit(R"rs(
-            pub fn set_$raw_field_name$(&mut self, val: impl $pb$::SettableValue<$proxied_type$>) {
-              //~ TODO: Optimize this to not go through the
-              //~ FieldEntry.
-              self.$raw_field_name$_mut().set(val);
-            }
-          )rs");
+                pub fn set_$raw_field_name$(&mut self, val: impl $pb$::SettableValue<$proxied_type$>) {
+                  //~ TODO: Optimize this to not go through the
+                  //~ FieldEntry.
+                  self.$raw_field_name$_mut().set(val);
+                }
+              )rs");
            }},
-          {"setter_opt",
+          {"clearer",
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
              if (!field.has_presence()) return;
-             ctx.Emit(R"rs(
-            pub fn set_$raw_field_name$_opt(&mut self, val: Option<impl $pb$::SettableValue<$proxied_type$>>) {
-              //~ TODO: Optimize this to not go through the
-              //~ FieldEntry.
-              match val {
-                Some(val) => self.$raw_field_name$_mut().set(val),
-                None => self.$raw_field_name$_mut().clear(),
-              }
-            }
-          )rs");
+             ctx.Emit({}, R"rs(
+                pub fn clear_$raw_field_name$(&mut self) {
+                  unsafe { $clearer_thunk$(self.raw_msg()) }
+                })rs");
            }},
           {"vtable_name", VTableName(field)},
           {"vtable",
@@ -176,7 +170,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
         $getter$
         $getter_opt$
         $setter$
-        $setter_opt$
+        $clearer$
         $vtable$
         $field_mutator_getter$
       )rs");

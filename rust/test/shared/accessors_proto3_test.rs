@@ -269,7 +269,7 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
 
-    msg.set_oneof_uint32_opt(None);
+    msg.clear_oneof_uint32();
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
@@ -334,10 +334,18 @@ fn test_oneof_mut_accessors() {
         matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
     );
 
-    msg.set_oneof_uint32_opt(None);
+    // Clearing a different field in the same oneof doesn't affect the other, set
+    // field.
+    msg.clear_oneof_bytes();
+    assert_that!(
+        msg.oneof_field(),
+        matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
+    );
+
+    msg.clear_oneof_uint32();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.set_oneof_uint32_opt(Some(7));
+    msg.set_oneof_uint32(7);
     msg.set_oneof_bytes(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
 }
@@ -356,4 +364,17 @@ fn test_oneof_mut_enum_accessors() {
     msg.set_foo_enum(NestedEnum::Bar);
     assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
     assert_that!(msg.foo_mut(), matches_pattern!(FooMut::FooEnum(_)));
+}
+
+#[test]
+fn test_submsg_setter() {
+    use TestAllTypes_::*;
+
+    let mut nested = NestedMessage::new();
+    nested.set_bb(7);
+
+    let mut parent = TestAllTypes::new();
+    parent.set_optional_nested_message(nested);
+
+    assert_that!(parent.optional_nested_message().bb(), eq(7));
 }
