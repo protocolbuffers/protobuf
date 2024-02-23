@@ -453,8 +453,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set(
-              $pb$::Arena::CreateMessage<$pb$::RepeatedField<int>>(GetArena()));
+          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<int>>(GetArena()));
         }
         return $field_$.Get();
       }
