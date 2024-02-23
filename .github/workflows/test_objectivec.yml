@@ -68,20 +68,28 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        PLATFORM: ["ios", "macos", "tvos", "watchos"]
+        PLATFORM: ["ios", "macos", "tvos", "watchos", "visionos"]
         CONFIGURATION: ["Debug", "Release"]
-    name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
-    runs-on: macos-12
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
+        include:
+          - OS: macos-12
+            XCODE: Xcode_14.1
+          - OS: macos-14
+            PLATFORM: "visionos"
+            XCODE: Xcode_15.2
+    name: CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
+    runs-on: ${{ matrix.OS }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
+      - name: Xcode version
+        run: sudo xcode-select -switch /Applications/${{ matrix.XCODE }}.app
       - name: Pod lib lint
         uses: protocolbuffers/protobuf-ci/bash@v2
         with:
+          env:
+            DEVELOPER_DIR: '/Applications/${{ matrix.XCODE }}.app/Contents/Developer'
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
             pod lib lint --verbose \
