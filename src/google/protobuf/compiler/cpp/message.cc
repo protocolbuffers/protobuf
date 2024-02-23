@@ -1292,67 +1292,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
             &_$classname$_default_instance_);
       }
   )cc");
-  auto utf8_check = internal::cpp::GetUtf8CheckMode(
-      descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
-                                 FileOptions::LITE_RUNTIME);
-  if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-      utf8_check != Utf8CheckMode::kNone) {
-    if (utf8_check == Utf8CheckMode::kStrict) {
-      format(
-          "  static bool ValidateKey(std::string* s) {\n"
-          "    return ::$proto_ns$::internal::WireFormatLite::"
-          "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-          " }\n",
-          descriptor_->field(0)->full_name());
-    } else {
-      ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-      format(
-          "  static bool ValidateKey(std::string* s) {\n"
-          "#ifndef NDEBUG\n"
-          "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-          "       s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::"
-          "WireFormatLite::PARSE, \"$1$\");\n"
-          "#else\n"
-          "    (void) s;\n"
-          "#endif\n"
-          "    return true;\n"
-          " }\n",
-          descriptor_->field(0)->full_name());
-    }
-  } else {
-    format("  static bool ValidateKey(void*) { return true; }\n");
-  }
-  if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-      utf8_check != Utf8CheckMode::kNone) {
-    if (utf8_check == Utf8CheckMode::kStrict) {
-      format(
-          "  static bool ValidateValue(std::string* s) {\n"
-          "    return ::$proto_ns$::internal::WireFormatLite::"
-          "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-          " }\n",
-          descriptor_->field(1)->full_name());
-    } else {
-      ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-      format(
-          "  static bool ValidateValue(std::string* s) {\n"
-          "#ifndef NDEBUG\n"
-          "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-          "       s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::"
-          "WireFormatLite::PARSE, \"$1$\");\n"
-          "#else\n"
-          "    (void) s;\n"
-          "#endif\n"
-          "    return true;\n"
-          " }\n",
-          descriptor_->field(1)->full_name());
-    }
-  } else {
-    format("  static bool ValidateValue(void*) { return true; }\n");
-  }
   p->Emit(R"cc(
     const $superclass$::ClassData* GetClassData() const final;
   )cc");
