@@ -12,7 +12,11 @@ add_subdirectory(${at_media_deps_dir}/protobuf/cmake ${CMAKE_BINARY_DIR}/protobu
 # On Clang 9 (Starting Android NDK r21b) this is nesserary to compile.
 # (Error later seen on Xcode 12 too).
 target_compile_options(libprotobuf PRIVATE -Wno-enum-compare-switch)
-target_compile_options(libprotoc PRIVATE -Wno-enum-compare-switch)
+
+# We don't build libprotoc for android or ios
+if (TARGET libprotoc)
+  target_compile_options(libprotoc PRIVATE -Wno-enum-compare-switch)
+endif()
 
 # On iOS and Android we need to make sure we use the host version of protoc to generate files
 set(PROTOBUF_PROTOC_EXECUTABLE "")
