@@ -69,6 +69,11 @@ class GeneratedMessageReflectionTestHelper {
                                         const FieldDescriptor* field) {
     return msg.GetReflection()->IsLazilyVerifiedLazyField(field);
   }
+  template <typename T>
+  static const T& GetRaw(const Message& msg, const FieldDescriptor* field) {
+    const Reflection* reflection = msg.GetReflection();
+    return reflection->GetRaw<T>(msg, field);
+  }
 };
 
 namespace {
