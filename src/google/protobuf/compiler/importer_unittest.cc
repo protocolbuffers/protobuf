@@ -16,7 +16,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -238,9 +237,9 @@ class DiskSourceTreeTest : public testing::Test {
  protected:
   void SetUp() override {
     dirnames_.push_back(
-        absl::StrCat(TestTempDir(), "/test_proto2_import_path_1"));
+        absl::StrCat(::testing::TempDir(), "/test_proto2_import_path_1"));
     dirnames_.push_back(
-        absl::StrCat(TestTempDir(), "/test_proto2_import_path_2"));
+        absl::StrCat(::testing::TempDir(), "/test_proto2_import_path_2"));
 
     for (int i = 0; i < dirnames_.size(); i++) {
       if (FileExists(dirnames_[i])) {

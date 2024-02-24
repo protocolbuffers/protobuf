@@ -135,7 +135,7 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
-  // is replaced with TestTempDir().
+  // is replaced with ::testing::TempDir().
   void Run(std::string command);
   void RunWithArgs(std::vector<std::string> args);
 
@@ -3937,7 +3937,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   }
 
   void RedirectStdinFromText(const std::string& input) {
-    std::string filename = absl::StrCat(TestTempDir(), "/test_stdin");
+    std::string filename = absl::StrCat(::testing::TempDir(), "/test_stdin");
     ABSL_CHECK_OK(File::SetContents(filename, input, true));
     ABSL_CHECK(RedirectStdinFromFile(filename));
   }
@@ -4039,8 +4039,8 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
  private:
   void WriteUnittestProtoDescriptorSet() {
-    unittest_proto_descriptor_set_filename_ =
-        absl::StrCat(TestTempDir(), "/unittest_proto_descriptor_set.bin");
+    unittest_proto_descriptor_set_filename_ = absl::StrCat(
+        ::testing::TempDir(), "/unittest_proto_descriptor_set.bin");
     FileDescriptorSet file_descriptor_set;
     protobuf_unittest::TestAllTypes test_all_types;
     test_all_types.descriptor()->file()->CopyTo(file_descriptor_set.add_file());

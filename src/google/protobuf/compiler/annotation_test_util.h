@@ -9,8 +9,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_ANNOTATION_TEST_UTIL_H__
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
-#include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
@@ -40,7 +38,7 @@ struct ExpectedOutput {
 void AddFile(absl::string_view filename, absl::string_view data);
 
 // Runs proto compiler. Captures proto file structure in FileDescriptorProto.
-// Files will be generated in TestTempDir() folder. Callers of this
+// Files will be generated in ::testing::TempDir() folder. Callers of this
 // function must read generated files themselves.
 //
 // filename: source .proto file used to generate code.

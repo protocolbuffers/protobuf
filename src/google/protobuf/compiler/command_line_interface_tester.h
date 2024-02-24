@@ -41,7 +41,7 @@ class CommandLineInterfaceTester : public testing::Test {
 
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
-  // is replaced with TestTempDir().
+  // is replaced with ::testing::TempDir().
   void RunProtoc(absl::string_view command);
   void RunProtocWithArgs(std::vector<std::string> args);
 
@@ -128,7 +128,7 @@ class CommandLineInterfaceTester : public testing::Test {
   // The object we are testing.
   CommandLineInterface cli_;
 
-  // We create a directory within TestTempDir() in order to add extra
+  // We create a directory within ::testing::TempDir() in order to add extra
   // protection against accidentally deleting user files (since we recursively
   // delete this directory during the test).  This is the full path of that
   // directory.

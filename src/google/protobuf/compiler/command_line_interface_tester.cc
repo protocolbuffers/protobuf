@@ -38,7 +38,7 @@ bool FileExists(const std::string& path) {
 }  // namespace
 
 CommandLineInterfaceTester::CommandLineInterfaceTester() {
-  temp_directory_ = absl::StrCat(TestTempDir(), "/proto2_cli_test_temp");
+  temp_directory_ = absl::StrCat(::testing::TempDir(), "/proto2_cli_test_temp");
 
   // If the temp directory already exists, it must be left over from a
   // previous run.  Delete it.
