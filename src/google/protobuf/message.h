@@ -375,9 +375,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
 
-  static const internal::TcParseTableBase* GetTcParseTableImpl(
-      const MessageLite& msg);
-
   static const DescriptorMethods kDescriptorMethods;
 
 };
@@ -1043,22 +1040,19 @@ class PROTOBUF_EXPORT Reflection final {
   // _InternalParse. It uses the reflection information to do so.
   mutable absl::once_flag tcparse_table_once_;
   using TcParseTableBase = internal::TcParseTableBase;
-  mutable const TcParseTableBase* tcparse_table_ = nullptr;
 
-  const TcParseTableBase* GetTcParseTable() const {
-    absl::call_once(tcparse_table_once_,
-                    [&] { tcparse_table_ = CreateTcParseTable(); });
-    return tcparse_table_;
-  }
-
-  const TcParseTableBase* CreateTcParseTable() const;
+  const TcParseTableBase* CreateTcParseTable(
+      absl::FunctionRef<const Message*(const FieldDescriptor*)> get_prototype)
+      const;
   void PopulateTcParseFastEntries(
       const internal::TailCallTableInfo& table_info,
       TcParseTableBase::FastFieldEntry* fast_entries) const;
   void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
                               TcParseTableBase::FieldEntry* entries) const;
-  void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
-                               TcParseTableBase::FieldAux* field_aux) const;
+  void PopulateTcParseFieldAux(
+      const internal::TailCallTableInfo& table_info,
+      absl::FunctionRef<const Message*(const FieldDescriptor*)> get_prototype,
+      TcParseTableBase::FieldAux* field_aux) const;
 
   template <typename T, typename Enable>
   friend class RepeatedFieldRef;

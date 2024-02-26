@@ -25,6 +25,7 @@
 #include "absl/base/call_once.h"
 #include "absl/base/const_init.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
@@ -320,11 +321,7 @@ Reflection::Reflection(const Descriptor* descriptor,
   last_non_weak_field_index_ = descriptor_->field_count() - 1;
 }
 
-Reflection::~Reflection() {
-  // No need to use sized delete. This code path is uncommon and it would not be
-  // worth saving or recalculating the size.
-  ::operator delete(const_cast<internal::TcParseTableBase*>(tcparse_table_));
-}
+Reflection::~Reflection() {}
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
     const Message& message) const {
@@ -3317,6 +3314,7 @@ void Reflection::PopulateTcParseEntries(
 
 void Reflection::PopulateTcParseFieldAux(
     const internal::TailCallTableInfo& table_info,
+    absl::FunctionRef<const Message*(const FieldDescriptor*)> get_prototype,
     TcParseTableBase::FieldAux* field_aux) const {
   for (const auto& aux_entry : table_info.aux_entries) {
     switch (aux_entry.type) {
@@ -3348,8 +3346,7 @@ void Reflection::PopulateTcParseFieldAux(
         field_aux++->map_info = internal::MapAuxInfo{};
         break;
       case internal::TailCallTableInfo::kSubMessage:
-        field_aux++->message_default_p =
-            GetDefaultMessageInstance(aux_entry.field);
+        field_aux++->message_default_p = get_prototype(aux_entry.field);
         break;
       case internal::TailCallTableInfo::kEnumRange:
         field_aux++->enum_range = {aux_entry.enum_range.start,
@@ -3366,7 +3363,9 @@ void Reflection::PopulateTcParseFieldAux(
 }
 
 
-const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
+const internal::TcParseTableBase* Reflection::CreateTcParseTable(
+    absl::FunctionRef<const Message*(const FieldDescriptor*)> get_prototype)
+    const {
   using TcParseTableBase = internal::TcParseTableBase;
 
   std::vector<const FieldDescriptor*> fields;
@@ -3485,7 +3484,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   PopulateTcParseEntries(table_info, res->field_entries_begin());
 
-  PopulateTcParseFieldAux(table_info, res->field_aux(0u));
+  PopulateTcParseFieldAux(table_info, get_prototype, res->field_aux(0u));
 
   // Copy the name data.
   if (!table_info.field_name_data.empty()) {
@@ -3563,6 +3562,23 @@ class AssignDescriptorsHelper {
             MigrationToReflectionSchema(default_instance_data_, offsets_,
                                         *schemas_),
             DescriptorPool::internal_generated_pool(), factory_));
+
+        // Eagerly populate the tc_table for MapEntry objects.
+        // We do not codegen these to save on binary size, but we need the field
+        // to be populated.
+        if (descriptor->options().map_entry()) {
+          class_data.tc_table = class_data.reflection->CreateTcParseTable(
+              [&](const auto* field) -> const Message* {
+                // We can't get a prototype because we are currently building
+                // reflection for said prototypes.
+                // Any message field in map entries will be handled by the
+                // reflection fallback instead.
+                internal::Unreachable();
+              });
+          OnShutdownRun(
+              [](const void* p) { ::operator delete(const_cast<void*>(p)); },
+              class_data.tc_table);
+        }
       }
     }
     for (int i = 0; i < descriptor->enum_type_count(); i++) {

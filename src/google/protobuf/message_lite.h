@@ -524,7 +524,6 @@ class PROTOBUF_EXPORT MessageLite {
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
     std::string (*initialization_error_string)(const MessageLite&);
-    const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
   };
   struct ClassDataFull;
   // Note: The order of arguments in the functions is chosen so that it has
@@ -536,7 +535,7 @@ class PROTOBUF_EXPORT MessageLite {
   // otherwise be null. We can have some metadata in ClassData telling us if we
   // have them and their offset.
   struct ClassData {
-    const internal::TcParseTableBase* tc_table;
+    mutable const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
 
     // Offset of the CachedSize member.

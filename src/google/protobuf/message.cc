@@ -201,16 +201,10 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).InitializationErrorString();
 }
 
-const internal::TcParseTableBase* Message::GetTcParseTableImpl(
-    const MessageLite& msg) {
-  return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
-}
-
 PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
     Message::kDescriptorMethods = {
         GetTypeNameImpl,
         InitializationErrorStringImpl,
-        GetTcParseTableImpl,
 };
 
 namespace internal {

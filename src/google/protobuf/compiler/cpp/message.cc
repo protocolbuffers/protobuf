@@ -3545,6 +3545,19 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     };
     p->Emit(
         {
+            {"tc_table",
+             [&] {
+               // Current state of tc_table field:
+               //  - SPEED messages leave null, but override _InternalParse
+               //  - CODE_SIZE messages populate at compile time
+               //  - MapEntry fields of either kind populate at runtime
+               if (!IsMapEntryMessage(descriptor_) &&
+                   !HasGeneratedMethods(descriptor_->file(), options_)) {
+                 p->Emit(R"cc(
+                   &_table_.header,
+                 )cc");
+               }
+             }},
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"tracker_on_get_metadata",
@@ -3567,6 +3580,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
                 ClassDataFull _data_ = {
                     {
+                        $tc_table$,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,

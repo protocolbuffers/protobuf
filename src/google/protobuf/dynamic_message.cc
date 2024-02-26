@@ -282,6 +282,8 @@ struct DynamicMessageFactory::TypeInfo {
 
   ~TypeInfo() {
     delete prototype;
+    ::operator delete(
+        const_cast<void*>(static_cast<const void*>(class_data.tc_table)));
     delete class_data.reflection;
 
     auto* type = class_data.descriptor;
@@ -773,6 +775,12 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   type_info->class_data.reflection = new Reflection(
       type_info->class_data.descriptor, schema, type_info->pool, this);
+
+  type_info->class_data.tc_table =
+      type_info->class_data.reflection->CreateTcParseTable(
+          [&](const auto* field) {
+            return GetPrototypeNoLock(field->message_type());
+          });
 
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

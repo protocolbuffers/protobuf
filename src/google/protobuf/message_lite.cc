@@ -50,14 +50,8 @@ const char* MessageLite::_InternalParse(const char* ptr,
                                         internal::ParseContext* ctx) {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
-
-  auto* tc_table = data->tc_table;
-  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
-    ABSL_DCHECK(!data->is_lite);
-    tc_table = data->full().descriptor_methods->get_tc_table(*this);
-  }
-
-  return internal::TcParser::ParseLoop(this, ptr, ctx, tc_table);
+  ABSL_DCHECK(data->tc_table != nullptr);
+  return internal::TcParser::ParseLoop(this, ptr, ctx, data->tc_table);
 }
 
 std::string MessageLite::GetTypeName() const {
