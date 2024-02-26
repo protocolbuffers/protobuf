@@ -58,7 +58,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
         // to complain when generating the XML documentation
         // Issue https://github.com/grpc/grpc/issues/35905
         if (line[0] == '/') {
-            line.replace(0,1,"&#x2F;");
+          line.replace(0, 1, "&#x2F;");
         }
         printer->Print("///$line$\n", "line", line);
       }
