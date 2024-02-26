@@ -233,10 +233,6 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_UInt64Value_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -403,10 +399,6 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_UInt32Value_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -579,10 +571,6 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
       0, 1, 0,
       41, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_StringValue_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -749,10 +737,6 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_Int64Value_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -919,10 +903,6 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_Int32Value_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1089,10 +1069,6 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_FloatValue_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1259,10 +1235,6 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_DoubleValue_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1435,10 +1407,6 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_BytesValue_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1605,10 +1573,6 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
-
-  static constexpr const void* _raw_default_instance_ =
-      &_BoolValue_default_instance_;
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
