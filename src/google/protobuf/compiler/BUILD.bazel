@@ -83,7 +83,6 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:retention",
-        "//src/google/protobuf/compiler/allowlists",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
         "@com_google_absl//absl/container:flat_hash_map",
@@ -152,7 +151,6 @@ cc_library(
         ":versions",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
-        "//src/google/protobuf/compiler/allowlists",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/io:printer",
@@ -600,7 +598,6 @@ filegroup(
         ],
         allow_empty = True,
     ) + [
-        "//src/google/protobuf/compiler/allowlists:test_srcs",
         "//src/google/protobuf/compiler/cpp:test_srcs",
         "//src/google/protobuf/compiler/csharp:test_srcs",
         "//src/google/protobuf/compiler/java:test_srcs",
