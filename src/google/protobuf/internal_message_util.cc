@@ -26,7 +26,7 @@ class MessageUtil {
   }
 
   // Walks the entire message tree and eager parses all lazy fields.
-  static void EagerParseLazyField(Message* message);
+  static void EagerParseLazyFieldIgnoreUnparsedByMutation(Message* message);
 };
 
 namespace {
@@ -56,7 +56,8 @@ inline bool IsNonMessageField(const FieldDescriptor* field) {
 
 // To eagerly parse lazy fields in the entire message tree, mutates all the
 // message fields (optional, repeated, extensions).
-void MessageUtil::EagerParseLazyField(Message* message) {
+void MessageUtil::EagerParseLazyFieldIgnoreUnparsedByMutation(
+    Message* message) {
   const Reflection* reflection = message->GetReflection();
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
@@ -65,7 +66,8 @@ void MessageUtil::EagerParseLazyField(Message* message) {
     if (IsNonMessageField(field)) continue;
 
     if (!field->is_repeated()) {
-      EagerParseLazyField(reflection->MutableMessage(message, field));
+      EagerParseLazyFieldIgnoreUnparsedByMutation(
+          reflection->MutableMessage(message, field));
       continue;
     }
 
@@ -73,7 +75,8 @@ void MessageUtil::EagerParseLazyField(Message* message) {
     if (UseMapIterator(reflection, *message, field)) {
       auto end = reflection->MapEnd(message, field);
       for (auto it = reflection->MapBegin(message, field); it != end; ++it) {
-        EagerParseLazyField(it.MutableValueRef()->MutableMessageValue());
+        EagerParseLazyFieldIgnoreUnparsedByMutation(
+            it.MutableValueRef()->MutableMessageValue());
       }
       continue;
     }
@@ -82,15 +85,15 @@ void MessageUtil::EagerParseLazyField(Message* message) {
     if (field->is_repeated()) {
       for (int i = 0, end = reflection->FieldSize(*message, field); i < end;
            ++i) {
-        EagerParseLazyField(
+        EagerParseLazyFieldIgnoreUnparsedByMutation(
             reflection->MutableRepeatedMessage(message, field, i));
       }
     }
   }
 }
 
-void EagerParseLazyField(Message& message) {
-  MessageUtil::EagerParseLazyField(&message);
+void EagerParseLazyFieldIgnoreUnparsed(Message& message) {
+  MessageUtil::EagerParseLazyFieldIgnoreUnparsedByMutation(&message);
 }
 
 }  // namespace internal
