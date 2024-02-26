@@ -154,7 +154,9 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.2', '8.3']
+        # TODO: Add back 8.2 once
+        # https://github.com/shivammathur/setup-php/issues/823 is fixed.
+        version: ['8.3']
 
     name: MacOS PHP ${{ matrix.version }}
     runs-on: macos-12
