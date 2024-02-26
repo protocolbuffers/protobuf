@@ -287,7 +287,6 @@ set(libprotobuf_lite_hdrs
 
 # @//pkg:protoc
 set(libprotoc_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/open_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.cc
@@ -410,8 +409,6 @@ set(libprotoc_srcs
 
 # @//pkg:protoc
 set(libprotoc_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlists.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.h
@@ -796,7 +793,6 @@ set(fake_plugin_files
 
 # @//src/google/protobuf/compiler:test_srcs
 set(compiler_test_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/arena_ctor_visibility_test.cc
