@@ -12,14 +12,17 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -44,7 +47,7 @@ class FieldGeneratorBase {
   // variable instead of calling GetArena()'
   enum class GeneratorFunction { kMergeFrom };
 
-  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options,
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
                      MessageSCCAnalyzer* scc_analyzer);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
@@ -139,7 +142,7 @@ class FieldGeneratorBase {
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
     ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
-        << descriptor_->cpp_type_name();
+        << field_->cpp_type_name();
   }
 
   // Generates constexpr member initialization code, e.g.: `foo_{5}`.
@@ -188,7 +191,7 @@ class FieldGeneratorBase {
   }
 
  protected:
-  const FieldDescriptor* descriptor_;
+  const FieldDescriptor* field_;
   const Options& options_;
   MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
@@ -507,7 +510,8 @@ class FieldGeneratorTable {
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);
-    return fields_[field->index()];
+    ABSL_DCHECK_GE(field->index(), 0);
+    return fields_[static_cast<size_t>(field->index())];
   }
 
  private:

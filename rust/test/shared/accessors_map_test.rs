@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use map_unittest_proto::{TestMap, TestMapWithMessages};
+use map_unittest_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
 use std::collections::HashMap;
 use unittest_proto::TestAllTypes;
@@ -91,6 +91,7 @@ generate_map_primitives_tests!(
     (i32, f64, int32, double, 1, 1.),
     (bool, bool, bool, bool, true, true),
     (i32, &[u8], int32, bytes, 1, b"foo"),
+    (i32, MapEnum, int32, enum, 1, MapEnum::Baz),
 );
 
 #[test]

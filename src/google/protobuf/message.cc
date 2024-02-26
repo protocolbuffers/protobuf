@@ -154,16 +154,6 @@ Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
   return {data.descriptor, data.reflection};
 }
 
-const char* Message::_InternalParse(const char* ptr,
-                                    internal::ParseContext* ctx) {
-#if defined(PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION)
-  return internal::TcParser::ParseLoop(this, ptr, ctx,
-                                       GetReflection()->GetTcParseTable());
-#else
-  return WireFormat::_InternalParse(this, ptr, ctx);
-#endif
-}
-
 uint8_t* Message::_InternalSerialize(uint8_t* target,
                                      io::EpsCopyOutputStream* stream) const {
   return WireFormat::_InternalSerialize(*this, target, stream);
@@ -211,10 +201,16 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).InitializationErrorString();
 }
 
+const internal::TcParseTableBase* Message::GetTcParseTableImpl(
+    const MessageLite& msg) {
+  return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
+}
+
 PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
     Message::kDescriptorMethods = {
         GetTypeNameImpl,
         InitializationErrorStringImpl,
+        GetTcParseTableImpl,
 };
 
 namespace internal {

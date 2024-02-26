@@ -19,14 +19,16 @@ use std::cell::UnsafeCell;
 use std::ffi::c_int;
 use std::fmt;
 use std::marker::PhantomData;
-use std::mem::{size_of, ManuallyDrop, MaybeUninit};
+use std::mem::{align_of, size_of, ManuallyDrop, MaybeUninit};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
-use std::sync::{Once, OnceLock};
+use std::sync::OnceLock;
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
+const _CHECK_UPB_MALLOC_ALIGN_AT_LEAST_POINTER_ALIGNED: () =
+    assert!(UPB_MALLOC_ALIGN >= align_of::<*const ()>());
 
 /// A wrapper over a `upb_Arena`.
 ///
@@ -148,37 +150,23 @@ impl Drop for Arena {
     }
 }
 
-static mut INTERNAL_PTR: Option<RawMessage> = None;
-static INIT: Once = Once::new();
-
-// The scratch size of 64 KiB matches the maximum supported size that a
-// upb_Message can possibly be.
-// TODO: Allow dynamic sized ScratchSpace.
+/// The scratch size of 64 KiB matches the maximum supported size that a
+/// upb_Message can possibly be.
 const UPB_SCRATCH_SPACE_BYTES: usize = 65_536;
-const ALIGN: usize = 32;
 
 /// Holds a zero-initialized block of memory for use by upb.
+///
 /// By default, if a message is not set in cpp, a default message is created.
 /// upb departs from this and returns a null ptr. However, since contiguous
 /// chunks of memory filled with zeroes are legit messages from upb's point of
 /// view, we can allocate a large block and refer to that when dealing
 /// with readonly access.
-pub struct ScratchSpace;
+#[repr(C, align(8))] // align to UPB_MALLOC_ALIGN = 8
+pub struct ScratchSpace([u8; UPB_SCRATCH_SPACE_BYTES]);
 impl ScratchSpace {
     pub fn zeroed_block(_private: Private) -> RawMessage {
-        unsafe {
-            INIT.call_once(|| {
-                let layout =
-                    std::alloc::Layout::from_size_align(UPB_SCRATCH_SPACE_BYTES, ALIGN).unwrap();
-                let Some(ptr) =
-                    crate::__internal::RawMessage::new(std::alloc::alloc_zeroed(layout).cast())
-                else {
-                    std::alloc::handle_alloc_error(layout)
-                };
-                INTERNAL_PTR = Some(ptr)
-            });
-            INTERNAL_PTR.unwrap()
-        }
+        static ZEROED_BLOCK: ScratchSpace = ScratchSpace([0; UPB_SCRATCH_SPACE_BYTES]);
+        NonNull::from(&ZEROED_BLOCK).cast()
     }
 }
 
@@ -752,7 +740,6 @@ impl<'msg> InnerMapMut<'msg> {
 pub trait UpbTypeConversions: Proxied {
     fn upb_type() -> UpbCType;
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
-    fn empty_message_value() -> upb_MessageValue;
 
     /// # Safety
     /// - `raw_arena` must point to a valid upb arena.
@@ -779,11 +766,6 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                 #[inline(always)]
                 fn to_message_value(val: View<'_, $t>) -> upb_MessageValue {
                     upb_MessageValue { $ufield: val }
-                }
-
-                #[inline(always)]
-                fn empty_message_value() -> upb_MessageValue {
-                    Self::to_message_value($zero_val)
                 }
 
                 #[inline(always)]
@@ -819,10 +801,6 @@ impl UpbTypeConversions for [u8] {
         upb_MessageValue { str_val: val.into() }
     }
 
-    fn empty_message_value() -> upb_MessageValue {
-        Self::to_message_value(b"")
-    }
-
     unsafe fn to_message_value_copy_if_required(
         raw_arena: RawArena,
         val: View<'_, [u8]>,
@@ -846,10 +824,6 @@ impl UpbTypeConversions for ProtoStr {
 
     fn to_message_value(val: View<'_, ProtoStr>) -> upb_MessageValue {
         upb_MessageValue { str_val: val.as_bytes().into() }
-    }
-
-    fn empty_message_value() -> upb_MessageValue {
-        Self::to_message_value("".into())
     }
 
     unsafe fn to_message_value_copy_if_required(
@@ -955,23 +929,22 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 }
 
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
-                    let mut val = <$t as UpbTypeConversions>::empty_message_value();
+                    let mut val = MaybeUninit::uninit();
                     let found = unsafe {
                         upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
-                            &mut val)
+                            val.as_mut_ptr())
                     };
                     if !found {
                         return None;
                     }
-                    Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val) })
+                    Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val.assume_init()) })
                 }
 
                 fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
-                    let mut val = <$t as UpbTypeConversions>::empty_message_value();
                     unsafe {
                         upb_Map_Delete(map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
-                            &mut val)
+                            ptr::null_mut())
                     }
                 }
 

@@ -19,6 +19,21 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
+namespace {
+
+std::string MapElementTypeName(const FieldDescriptor& field) {
+  auto cpp_type = field.cpp_type();
+  switch (cpp_type) {
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return cpp::QualifiedClassName(field.message_type());
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return cpp::QualifiedClassName(field.enum_type());
+    default:
+      return cpp::PrimitiveTypeName(cpp_type);
+  }
+}
+
+}  // namespace
 
 void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     AccessorCase accessor_case) const {
@@ -117,38 +132,24 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
   )rs");
 }
 
-std::string MapElementTypeName(FieldDescriptor::CppType cpp_type,
-                               const Descriptor* message_type) {
-  if (cpp_type == FieldDescriptor::CPPTYPE_MESSAGE ||
-      cpp_type == FieldDescriptor::CPPTYPE_ENUM) {
-    return cpp::QualifiedClassName(message_type);
-  }
-  return cpp::PrimitiveTypeName(cpp_type);
-}
-
 void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
-  ctx.Emit(
-      {{"field", cpp::FieldName(&field)},
-       {"Key",
-        MapElementTypeName(field.message_type()->map_key()->cpp_type(),
-                           field.message_type()->map_key()->message_type())},
-       {"Value",
-        MapElementTypeName(field.message_type()->map_value()->cpp_type(),
-                           field.message_type()->map_value()->message_type())},
-       {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-       {"getter_thunk", ThunkName(ctx, field, "get")},
-       {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
-       {"impls",
-        [&] {
-          ctx.Emit(
-              R"cc(
-                const void* $getter_thunk$(const $QualifiedMsg$* msg) {
-                  return &msg->$field$();
-                }
-                void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
-              )cc");
-        }}},
-      "$impls$");
+  ctx.Emit({{"field", cpp::FieldName(&field)},
+            {"Key", MapElementTypeName(*field.message_type()->map_key())},
+            {"Value", MapElementTypeName(*field.message_type()->map_value())},
+            {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"impls",
+             [&] {
+               ctx.Emit(
+                   R"cc(
+                     const void* $getter_thunk$(const $QualifiedMsg$* msg) {
+                       return &msg->$field$();
+                     }
+                     void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
+                   )cc");
+             }}},
+           "$impls$");
 }
 
 }  // namespace rust

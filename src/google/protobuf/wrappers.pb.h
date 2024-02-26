@@ -233,6 +233,10 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_UInt64Value_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -399,6 +403,10 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_UInt32Value_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -571,6 +579,10 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
       0, 1, 0,
       41, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_StringValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -737,6 +749,10 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Int64Value_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -903,6 +919,10 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Int32Value_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1069,6 +1089,10 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_FloatValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1235,6 +1259,10 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_DoubleValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1407,6 +1435,10 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_BytesValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1573,6 +1605,10 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
       0, 1, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_BoolValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1612,7 +1648,7 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
 
 // double value = 1;
 inline void DoubleValue::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
 }
 inline double DoubleValue::value() const {
@@ -1624,11 +1660,11 @@ inline void DoubleValue::set_value(double value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DoubleValue.value)
 }
 inline double DoubleValue::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void DoubleValue::_internal_set_value(double value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1638,7 +1674,7 @@ inline void DoubleValue::_internal_set_value(double value) {
 
 // float value = 1;
 inline void FloatValue::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
 }
 inline float FloatValue::value() const {
@@ -1650,11 +1686,11 @@ inline void FloatValue::set_value(float value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FloatValue.value)
 }
 inline float FloatValue::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void FloatValue::_internal_set_value(float value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1664,7 +1700,7 @@ inline void FloatValue::_internal_set_value(float value) {
 
 // int64 value = 1;
 inline void Int64Value::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = ::int64_t{0};
 }
 inline ::int64_t Int64Value::value() const {
@@ -1676,11 +1712,11 @@ inline void Int64Value::set_value(::int64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
 inline ::int64_t Int64Value::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void Int64Value::_internal_set_value(::int64_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1690,7 +1726,7 @@ inline void Int64Value::_internal_set_value(::int64_t value) {
 
 // uint64 value = 1;
 inline void UInt64Value::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = ::uint64_t{0u};
 }
 inline ::uint64_t UInt64Value::value() const {
@@ -1702,11 +1738,11 @@ inline void UInt64Value::set_value(::uint64_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
 inline ::uint64_t UInt64Value::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void UInt64Value::_internal_set_value(::uint64_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1716,7 +1752,7 @@ inline void UInt64Value::_internal_set_value(::uint64_t value) {
 
 // int32 value = 1;
 inline void Int32Value::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
 }
 inline ::int32_t Int32Value::value() const {
@@ -1728,11 +1764,11 @@ inline void Int32Value::set_value(::int32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
 inline ::int32_t Int32Value::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void Int32Value::_internal_set_value(::int32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1742,7 +1778,7 @@ inline void Int32Value::_internal_set_value(::int32_t value) {
 
 // uint32 value = 1;
 inline void UInt32Value::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0u;
 }
 inline ::uint32_t UInt32Value::value() const {
@@ -1754,11 +1790,11 @@ inline void UInt32Value::set_value(::uint32_t value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
 inline ::uint32_t UInt32Value::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void UInt32Value::_internal_set_value(::uint32_t value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1768,7 +1804,7 @@ inline void UInt32Value::_internal_set_value(::uint32_t value) {
 
 // bool value = 1;
 inline void BoolValue::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = false;
 }
 inline bool BoolValue::value() const {
@@ -1780,11 +1816,11 @@ inline void BoolValue::set_value(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.BoolValue.value)
 }
 inline bool BoolValue::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
 inline void BoolValue::_internal_set_value(bool value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = value;
 }
 
@@ -1794,7 +1830,7 @@ inline void BoolValue::_internal_set_value(bool value) {
 
 // string value = 1;
 inline void StringValue::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
 }
 inline const std::string& StringValue::value() const
@@ -1805,7 +1841,7 @@ inline const std::string& StringValue::value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
@@ -1815,24 +1851,24 @@ inline std::string* StringValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return _s;
 }
 inline const std::string& StringValue::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_.Get();
 }
 inline void StringValue::_internal_set_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.Set(value, GetArena());
 }
 inline std::string* StringValue::_internal_mutable_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* StringValue::release_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
   return _impl_.value_.Release();
 }
 inline void StringValue::set_allocated_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {
@@ -1848,7 +1884,7 @@ inline void StringValue::set_allocated_value(std::string* value) {
 
 // bytes value = 1;
 inline void BytesValue::clear_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
 }
 inline const std::string& BytesValue::value() const
@@ -1859,7 +1895,7 @@ inline const std::string& BytesValue::value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
@@ -1869,24 +1905,24 @@ inline std::string* BytesValue::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return _s;
 }
 inline const std::string& BytesValue::_internal_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_.Get();
 }
 inline void BytesValue::_internal_set_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.Set(value, GetArena());
 }
 inline std::string* BytesValue::_internal_mutable_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.value_.Mutable( GetArena());
 }
 inline std::string* BytesValue::release_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
   return _impl_.value_.Release();
 }
 inline void BytesValue::set_allocated_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.SetAllocated(value, GetArena());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.value_.IsDefault()) {

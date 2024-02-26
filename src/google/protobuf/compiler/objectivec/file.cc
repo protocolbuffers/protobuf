@@ -155,7 +155,7 @@ void EmitLinkWKTs(absl::string_view name, io::Printer* p) {
             // This is to help make sure that the GPBWellKnownTypes.* categories get linked and
             // developers do not have to use the `-ObjC` linker flag. More information
             // here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
-            __attribute__((used)) static NSString* $basename$_importCategories () {
+            __attribute__((used)) static NSString* $basename$_importCategories(void) {
               return GPBWellKnownTypesErrorDomain;
             }
           )objc");

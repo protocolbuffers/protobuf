@@ -19,13 +19,17 @@ fn test_fixed32_accessors() {
     assert_that!(msg.optional_fixed32(), eq(0));
     assert_that!(msg.optional_fixed32_mut().get(), eq(0));
 
-    msg.optional_fixed32_mut().set(42);
+    msg.set_optional_fixed32(42);
     assert_that!(msg.optional_fixed32_mut().get(), eq(42));
     assert_that!(msg.optional_fixed32(), eq(42));
 
-    msg.optional_fixed32_mut().set(u32::default());
+    msg.set_optional_fixed32(u32::default());
     assert_that!(msg.optional_fixed32(), eq(0));
     assert_that!(msg.optional_fixed32_mut().get(), eq(0));
+
+    msg.optional_fixed32_mut().set(43);
+    assert_that!(msg.optional_fixed32(), eq(43));
+    assert_that!(msg.optional_fixed32_mut().get(), eq(43));
 }
 
 #[test]
@@ -34,13 +38,17 @@ fn test_bool_accessors() {
     assert_that!(msg.optional_bool(), eq(false));
     assert_that!(msg.optional_bool_mut().get(), eq(false));
 
-    msg.optional_bool_mut().set(true);
+    msg.set_optional_bool(true);
     assert_that!(msg.optional_bool(), eq(true));
     assert_that!(msg.optional_bool_mut().get(), eq(true));
 
-    msg.optional_bool_mut().set(bool::default());
+    msg.set_optional_bool(bool::default());
     assert_that!(msg.optional_bool(), eq(false));
     assert_that!(msg.optional_bool_mut().get(), eq(false));
+
+    msg.optional_bool_mut().set(true);
+    assert_that!(msg.optional_bool(), eq(true));
+    assert_that!(msg.optional_bool_mut().get(), eq(true));
 }
 
 #[test]
@@ -51,13 +59,13 @@ fn test_bytes_accessors() {
     assert_that!(*msg.optional_bytes(), empty());
     assert_that!(*msg.optional_bytes_mut().get(), empty());
 
-    msg.optional_bytes_mut().set(b"accessors_test");
+    msg.set_optional_bytes(b"accessors_test");
     assert_that!(msg.optional_bytes(), eq(b"accessors_test"));
     assert_that!(msg.optional_bytes_mut().get(), eq(b"accessors_test"));
 
     {
         let s = Vec::from(&b"hello world"[..]);
-        msg.optional_bytes_mut().set(&s[..]);
+        msg.set_optional_bytes(&s[..]);
     }
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
     assert_that!(msg.optional_bytes_mut().get(), eq(b"hello world"));
@@ -66,7 +74,7 @@ fn test_bytes_accessors() {
     assert_that!(*msg.optional_bytes(), empty());
     assert_that!(*msg.optional_bytes_mut().get(), empty());
 
-    msg.optional_bytes_mut().set(b"");
+    msg.set_optional_bytes(b"");
     assert_that!(*msg.optional_bytes(), empty());
     assert_that!(*msg.optional_bytes_mut().get(), empty());
 }
@@ -81,7 +89,7 @@ fn test_optional_bytes_accessors() {
 
     {
         let s = Vec::from(&b"hello world"[..]);
-        msg.optional_bytes_mut().set(&s[..]);
+        msg.set_optional_bytes(&s[..]);
     }
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
@@ -100,7 +108,7 @@ fn test_optional_bytes_accessors() {
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
     assert_that!(msg.optional_bytes_mut(), is_unset());
 
-    msg.optional_bytes_mut().set(b"");
+    msg.set_optional_bytes(b"");
     assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 
@@ -125,13 +133,13 @@ fn test_string_accessors() {
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
-    msg.optional_string_mut().set("accessors_test");
+    msg.set_optional_string("accessors_test");
     assert_that!(msg.optional_string(), eq("accessors_test"));
     assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
 
     {
         let s = String::from("hello world");
-        msg.optional_string_mut().set(&s[..]);
+        msg.set_optional_string(&s[..]);
     }
     assert_that!(msg.optional_string(), eq("hello world"));
     assert_that!(msg.optional_string_mut().get(), eq("hello world"));
@@ -140,7 +148,7 @@ fn test_string_accessors() {
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
-    msg.optional_string_mut().set("");
+    msg.set_optional_string("");
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 }
@@ -155,7 +163,7 @@ fn test_optional_string_accessors() {
 
     {
         let s = String::from("hello world");
-        msg.optional_string_mut().set(&s[..]);
+        msg.set_optional_string(&s[..]);
     }
     assert_that!(msg.optional_string(), eq("hello world"));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("hello world".into())));
@@ -174,7 +182,7 @@ fn test_optional_string_accessors() {
     assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
     assert_that!(msg.optional_string_mut(), is_unset());
 
-    msg.optional_string_mut().set("");
+    msg.set_optional_string("");
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 
@@ -192,11 +200,11 @@ fn test_nested_enum_accessors() {
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
     assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Zero));
 
-    msg.optional_nested_enum_mut().set(NestedEnum::Baz);
+    msg.set_optional_nested_enum(NestedEnum::Baz);
     assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Baz));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
 
-    msg.optional_nested_enum_mut().set(NestedEnum::default());
+    msg.set_optional_nested_enum(NestedEnum::default());
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
     assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Zero));
 }
@@ -210,12 +218,12 @@ fn test_optional_nested_enum_accessors() {
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Unspecified)));
     assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
 
-    msg.optional_nested_enum_mut().set(NestedEnum::Baz);
+    msg.set_optional_nested_enum(NestedEnum::Baz);
     assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Baz));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Baz)));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
 
-    msg.optional_nested_enum_mut().set(NestedEnum::default());
+    msg.set_optional_nested_enum(NestedEnum::default());
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Unspecified)));
     assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
@@ -241,11 +249,11 @@ fn test_foreign_enum_accessors() {
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
     assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignZero));
 
-    msg.optional_foreign_enum_mut().set(ForeignEnum::ForeignBaz);
+    msg.set_optional_foreign_enum(ForeignEnum::ForeignBaz);
     assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBaz));
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignBaz));
 
-    msg.optional_foreign_enum_mut().set(ForeignEnum::default());
+    msg.set_optional_foreign_enum(ForeignEnum::default());
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
     assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignZero));
 }
@@ -257,11 +265,11 @@ fn test_oneof_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
+    msg.set_oneof_uint32(7);
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofUint32(eq(7))));
 
-    msg.oneof_uint32_mut().clear();
+    msg.set_oneof_uint32_opt(None);
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
@@ -275,8 +283,8 @@ fn test_oneof_accessors() {
     // eq(Optional::Unset(_))); assert_that!(msg.oneof_field(),
     // matches_pattern!(OneofNestedMessage(_)));
 
-    msg.oneof_uint32_mut().set(7);
-    msg.oneof_bytes_mut().set(b"123");
+    msg.set_oneof_uint32(7);
+    msg.set_oneof_bytes(b"123");
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
 
@@ -295,7 +303,7 @@ fn test_oneof_enum_accessors() {
     assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
     assert_that!(msg.foo(), matches_pattern!(Foo::not_set(_)));
 
-    msg.foo_enum_mut().set(NestedEnum::Bar);
+    msg.set_foo_enum(NestedEnum::Bar);
     assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
     assert_that!(msg.foo(), matches_pattern!(Foo::FooEnum(eq(NestedEnum::Bar))));
 }
@@ -307,7 +315,7 @@ fn test_oneof_mut_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
+    msg.set_oneof_uint32(7);
 
     match msg.oneof_field_mut() {
         OneofUint32(mut v) => {
@@ -326,11 +334,11 @@ fn test_oneof_mut_accessors() {
         matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
     );
 
-    msg.oneof_uint32_mut().clear();
+    msg.set_oneof_uint32_opt(None);
     assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
 
-    msg.oneof_uint32_mut().set(7);
-    msg.oneof_bytes_mut().set(b"123");
+    msg.set_oneof_uint32_opt(Some(7));
+    msg.set_oneof_bytes(b"123");
     assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
 }
 
@@ -345,7 +353,7 @@ fn test_oneof_mut_enum_accessors() {
     assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
     assert_that!(msg.foo_mut(), matches_pattern!(FooMut::not_set(_)));
 
-    msg.foo_enum_mut().set(NestedEnum::Bar);
+    msg.set_foo_enum(NestedEnum::Bar);
     assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
     assert_that!(msg.foo_mut(), matches_pattern!(FooMut::FooEnum(_)));
 }

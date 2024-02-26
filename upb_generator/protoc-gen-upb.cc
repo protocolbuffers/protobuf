@@ -1106,6 +1106,8 @@ bool ParseOptions(Plugin* plugin, Options* options) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
     if (pair.first == "bootstrap_upb") {
       options->bootstrap = true;
+    } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
+      continue;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;

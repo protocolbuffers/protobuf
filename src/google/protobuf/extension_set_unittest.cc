@@ -44,6 +44,9 @@ namespace protobuf {
 
 
 namespace internal {
+
+extern bool fully_verify_message_sets_opt_out;
+
 namespace {
 
 using ::google::protobuf::internal::DownCast;

@@ -181,6 +181,10 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
       0, 0, 0,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Empty_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>

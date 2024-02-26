@@ -261,6 +261,10 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       0, 1, 1,
       0, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_ListValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -432,6 +436,10 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       0, 1, 2,
       37, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Struct_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -476,10 +484,6 @@ class Struct_FieldsEntry_DoNotUse final
     return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
   }
-  static bool ValidateKey(std::string* s) {
-    return ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::google::protobuf::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
- }
-  static bool ValidateValue(void*) { return true; }
 const ::google::protobuf::Message::ClassData* GetClassData() const final;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
@@ -731,6 +735,10 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       0, 6, 2,
       42, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Value_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -788,11 +796,11 @@ inline int Struct::fields_size() const {
   return _internal_fields_size();
 }
 inline void Struct::clear_fields() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.fields_.Clear();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.fields_.GetMap();
 }
 inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& Struct::fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -800,7 +808,7 @@ inline const ::google::protobuf::Map<std::string, ::google::protobuf::Value>& St
   return _internal_fields();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::_internal_mutable_fields() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.fields_.MutableMap();
 }
 inline ::google::protobuf::Map<std::string, ::google::protobuf::Value>* Struct::mutable_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -820,7 +828,7 @@ inline void Value::set_has_null_value() {
   _impl_._oneof_case_[0] = kNullValue;
 }
 inline void Value::clear_null_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kNullValue) {
     _impl_.kind_.null_value_ = 0;
     clear_has_kind();
@@ -853,7 +861,7 @@ inline void Value::set_has_number_value() {
   _impl_._oneof_case_[0] = kNumberValue;
 }
 inline void Value::clear_number_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kNumberValue) {
     _impl_.kind_.number_value_ = 0;
     clear_has_kind();
@@ -886,7 +894,7 @@ inline void Value::set_has_string_value() {
   _impl_._oneof_case_[0] = kStringValue;
 }
 inline void Value::clear_string_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kStringValue) {
     _impl_.kind_.string_value_.Destroy();
     clear_has_kind();
@@ -900,7 +908,7 @@ inline const std::string& Value::string_value() const
 template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg,
                                                      Args_... args) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
 
@@ -916,14 +924,14 @@ inline std::string* Value::mutable_string_value() ABSL_ATTRIBUTE_LIFETIME_BOUND 
   return _s;
 }
 inline const std::string& Value::_internal_string_value() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   if (kind_case() != kStringValue) {
     return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
   }
   return _impl_.kind_.string_value_.Get();
 }
 inline void Value::_internal_set_string_value(const std::string& value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
 
@@ -933,7 +941,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
   _impl_.kind_.string_value_.Set(value, GetArena());
 }
 inline std::string* Value::_internal_mutable_string_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() != kStringValue) {
     clear_kind();
 
@@ -943,7 +951,7 @@ inline std::string* Value::_internal_mutable_string_value() {
   return _impl_.kind_.string_value_.Mutable( GetArena());
 }
 inline std::string* Value::release_string_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (kind_case() != kStringValue) {
     return nullptr;
@@ -952,7 +960,7 @@ inline std::string* Value::release_string_value() {
   return _impl_.kind_.string_value_.Release();
 }
 inline void Value::set_allocated_string_value(std::string* value) {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (has_kind()) {
     clear_kind();
   }
@@ -971,7 +979,7 @@ inline void Value::set_has_bool_value() {
   _impl_._oneof_case_[0] = kBoolValue;
 }
 inline void Value::clear_bool_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kBoolValue) {
     _impl_.kind_.bool_value_ = false;
     clear_has_kind();
@@ -1007,7 +1015,7 @@ inline void Value::set_has_struct_value() {
   _impl_._oneof_case_[0] = kStructValue;
 }
 inline void Value::clear_struct_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kStructValue) {
     if (GetArena() == nullptr) {
       delete _impl_.kind_.struct_value_;
@@ -1084,7 +1092,7 @@ inline void Value::set_has_list_value() {
   _impl_._oneof_case_[0] = kListValue;
 }
 inline void Value::clear_list_value() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kListValue) {
     if (GetArena() == nullptr) {
       delete _impl_.kind_.list_value_;
@@ -1171,7 +1179,7 @@ inline int ListValue::values_size() const {
   return _internal_values_size();
 }
 inline void ListValue::clear_values() {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.values_.Clear();
 }
 inline ::google::protobuf::Value* ListValue::mutable_values(int index)
@@ -1182,7 +1190,7 @@ inline ::google::protobuf::Value* ListValue::mutable_values(int index)
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* ListValue::mutable_values()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_values();
 }
 inline const ::google::protobuf::Value& ListValue::values(int index) const
@@ -1191,7 +1199,7 @@ inline const ::google::protobuf::Value& ListValue::values(int index) const
   return _internal_values().Get(index);
 }
 inline ::google::protobuf::Value* ListValue::add_values() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::Value* _add = _internal_mutable_values()->Add();
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
@@ -1203,12 +1211,12 @@ inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& Li
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>&
 ListValue::_internal_values() const {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.values_;
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>*
 ListValue::_internal_mutable_values() {
-  PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race);
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.values_;
 }
 

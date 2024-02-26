@@ -193,7 +193,7 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n) {
   AllocateNewBlock(n);
-  void* ret;
+  void* ret = nullptr;
   bool res = MaybeAllocateAligned(n, &ret);
   ABSL_DCHECK(res);
   return ret;

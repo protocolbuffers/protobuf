@@ -68,7 +68,7 @@ class SingularString : public FieldGeneratorBase {
  public:
   SingularString(const FieldDescriptor* field, const Options& opts,
                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -201,7 +201,6 @@ class SingularString : public FieldGeneratorBase {
   void ReleaseImpl(io::Printer* p) const;
   void SetAllocatedImpl(io::Printer* p) const;
 
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -733,7 +732,7 @@ class RepeatedString : public FieldGeneratorBase {
  public:
   RepeatedString(const FieldDescriptor* field, const Options& opts,
                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~RepeatedString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -819,7 +818,6 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -996,9 +994,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set(
-              $pb$::Arena::CreateMessage<$pb$::RepeatedPtrField<std::string>>(
-                  GetArena()));
+          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedPtrField<std::string>>(
+              GetArena()));
         }
         return $field_$.Get();
       }

@@ -43,7 +43,7 @@ static GPBFileDescription GPBAnyRoot_FileDescription = {
 // This is to help make sure that the GPBWellKnownTypes.* categories get linked and
 // developers do not have to use the `-ObjC` linker flag. More information
 // here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
-__attribute__((used)) static NSString* any_importCategories () {
+__attribute__((used)) static NSString* any_importCategories(void) {
   return GPBWellKnownTypesErrorDomain;
 }
 

@@ -15,6 +15,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -106,17 +107,19 @@ enum CommentStringFlags : unsigned int {
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
-void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+void EmitCommentsString(io::Printer* printer, const GenerationOptions& opts,
+                        const SourceLocation& location,
                         CommentStringFlags flags = kCommentStringFlags_None);
 
 // Emits HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
 template <class TDescriptor>
-void EmitCommentsString(io::Printer* printer, const TDescriptor* descriptor,
+void EmitCommentsString(io::Printer* printer, const GenerationOptions& opts,
+                        const TDescriptor* descriptor,
                         CommentStringFlags flags = kCommentStringFlags_None) {
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
-    EmitCommentsString(printer, location, flags);
+    EmitCommentsString(printer, opts, location, flags);
   }
 }
 

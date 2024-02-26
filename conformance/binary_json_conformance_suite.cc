@@ -1769,6 +1769,38 @@ void BinaryAndJsonConformanceSuiteImpl<
         absl::StrCat("IgnoreUnknownEnumStringValue", test_case.enum_location),
         RECOMMENDED, test_case.input_json, "");
   }
+
+  // This test is similar to "InRepeatedField" from above, but it highlights the
+  // potentially unexpected behavior in an array with mixed known and unknown
+  // enum string values.
+  RunValidJsonIgnoreUnknownTest("IgnoreUnknownEnumStringValueInRepeatedPart",
+                                RECOMMENDED,
+                                R"json({
+    "repeated_nested_enum": [
+      "FOO",
+      "UNKNOWN_ENUM_VALUE",
+      "FOO"
+    ]})json",
+                                R"(
+    repeated_nested_enum: FOO
+    repeated_nested_enum: FOO
+  )");
+
+  // This test is similar to "InMapValue" from above with mixture of known and
+  // unknown enum string values in the map.
+  RunValidJsonIgnoreUnknownTest("IgnoreUnknownEnumStringValueInMapPart",
+                                RECOMMENDED,
+                                R"json({
+    "map_string_nested_enum": {
+      "key1": "FOO",
+      "key2": "UNKNOWN_ENUM_VALUE"
+    }})json",
+                                R"(
+    map_string_nested_enum: {
+      key: "key1"
+      value: FOO
+    }
+  )");
 }
 
 template <typename MessageType>

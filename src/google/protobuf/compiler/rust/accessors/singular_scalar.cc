@@ -26,6 +26,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   ctx.Emit(
       {
           {"field", RsSafeName(field.name())},
+          {"raw_field_name", field.name()},  // Never r# prefixed
           {"view_self", ViewReceiver(accessor_case)},
           {"Scalar", RsTypePath(ctx, field)},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},
@@ -43,7 +44,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (!field.is_optional()) return;
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
-                  pub fn $field$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
+                  pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
                     if !unsafe { $hazzer_thunk$(self.raw_msg()) } {
                       return $pb$::Optional::Unset($default_value$);
                     }
@@ -51,6 +52,29 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     $pb$::Optional::Set(value)
                   }
                   )rs");
+           }},
+          {"setter",
+           [&] {
+             ctx.Emit({}, R"rs(
+                 pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
+                   unsafe { $setter_thunk$(self.raw_msg(), val) }
+                 }
+               )rs");
+           }},
+          {"setter_opt",
+           [&] {
+             if (field.has_presence()) {
+               ctx.Emit({}, R"rs(
+                  pub fn set_$raw_field_name$_opt(&mut self, val: Option<$Scalar$>) {
+                    unsafe {
+                      match val {
+                        Some(val) => $setter_thunk$(self.raw_msg(), val),
+                        None => $clearer_thunk$(self.raw_msg()),
+                      }
+                    }
+                  }
+                )rs");
+             }
            }},
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
@@ -90,7 +114,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              }
              if (field.has_presence()) {
                ctx.Emit(R"rs(
-                  pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
+                  pub fn $raw_field_name$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
                     unsafe {
                       let has = $hazzer_thunk$(self.raw_msg());
                       $pbi$::new_vtable_field_entry::<$Scalar$>(
@@ -104,7 +128,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 )rs");
              } else {
                ctx.Emit(R"rs(
-                  pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
+                  pub fn $raw_field_name$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
                     // SAFETY:
                     // - The message is valid for the output lifetime.
                     // - The vtable is valid for the field.
@@ -128,6 +152,8 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
       R"rs(
           $getter$
           $getter_opt$
+          $setter$
+          $setter_opt$
           $vtable$
           $getter_mut$
         )rs");

@@ -72,9 +72,11 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 
       // For TSan validation.
       {"TsanDetectConcurrentMutation",
-       "PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race)"},
+       absl::StrCat("::", ProtobufNamespace(opts),
+                    "::internal::TSanWrite(&_impl_)")},
       {"TsanDetectConcurrentRead",
-       "PROTOBUF_TSAN_READ(&_impl_._tsan_detect_race)"},
+       absl::StrCat("::", ProtobufNamespace(opts),
+                    "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
       {"field", FieldMemberName(field, split)},
@@ -85,8 +87,8 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
-              ? absl::StrCat("::", ProtobufNamespace(opts),
-                             "::internal::StrongReference(default_instance());")
+              ? absl::StrCat(
+                    StrongReferenceToType(field->containing_type(), opts), ";")
               : "")
           .WithSuffix(";"),
   };
@@ -107,14 +109,14 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   return vars;
 }
 
-FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
+FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
                                        const Options& options,
                                        MessageSCCAnalyzer* scc)
-    : descriptor_(descriptor), options_(options) {
-  bool is_repeated_or_map = descriptor->is_repeated();
-  should_split_ = ShouldSplit(descriptor, options);
-  is_oneof_ = descriptor->real_containing_oneof() != nullptr;
-  switch (descriptor->cpp_type()) {
+    : field_(field), options_(options) {
+  bool is_repeated_or_map = field->is_repeated();
+  should_split_ = ShouldSplit(field, options);
+  is_oneof_ = field->real_containing_oneof() != nullptr;
+  switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
     case FieldDescriptor::CPPTYPE_INT32:
     case FieldDescriptor::CPPTYPE_INT64:
@@ -128,55 +130,55 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
       break;
     case FieldDescriptor::CPPTYPE_STRING:
       is_string_ = true;
-      string_type_ = descriptor->options().ctype();
-      is_inlined_ = IsStringInlined(descriptor, options);
-      is_bytes_ = descriptor->type() == FieldDescriptor::TYPE_BYTES;
+      string_type_ = field->options().ctype();
+      is_inlined_ = IsStringInlined(field, options);
+      is_bytes_ = field->type() == FieldDescriptor::TYPE_BYTES;
       has_default_constexpr_constructor_ = is_repeated_or_map;
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
       is_message_ = true;
-      is_group_ = descriptor->type() == FieldDescriptor::TYPE_GROUP;
-      is_foreign_ = IsCrossFileMessage(descriptor);
-      is_weak_ = IsImplicitWeakField(descriptor, options, scc);
-      is_lazy_ = IsLazy(descriptor, options, scc);
+      is_group_ = field->type() == FieldDescriptor::TYPE_GROUP;
+      is_foreign_ = IsCrossFileMessage(field);
+      is_weak_ = IsImplicitWeakField(field, options, scc);
+      is_lazy_ = IsLazy(field, options, scc);
       has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
       has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;
       break;
   }
 
-  has_trivial_zero_default_ = CanInitializeByZeroing(descriptor, options, scc);
+  has_trivial_zero_default_ = CanInitializeByZeroing(field, options, scc);
 }
 
 void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
-  ABSL_CHECK(!descriptor_->is_extension());
-  if (descriptor_->is_repeated()) {
+  ABSL_CHECK(!field_->is_extension());
+  if (field_->is_repeated()) {
     p->Emit("$name$_{}");
   } else {
-    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+    p->Emit({{"default", DefaultValue(options_, field_)}},
             "$name$_{$default$}");
   }
 }
 
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
-  ABSL_CHECK(!descriptor_->is_extension());
-  if (descriptor_->is_map()) {
+  ABSL_CHECK(!field_->is_extension());
+  if (field_->is_map()) {
     p->Emit("$name$_{visibility, arena}");
-  } else if (descriptor_->is_repeated()) {
-    if (ShouldSplit(descriptor_, options_)) {
+  } else if (field_->is_repeated()) {
+    if (ShouldSplit(field_, options_)) {
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
       p->Emit("$name$_{visibility, arena}");
     }
   } else {
-    p->Emit({{"default", DefaultValue(options_, descriptor_)}},
+    p->Emit({{"default", DefaultValue(options_, field_)}},
             "$name$_{$default$}");
   }
 }
 
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
-  ABSL_CHECK(!descriptor_->is_extension());
-  if (descriptor_->is_repeated()) {
+  ABSL_CHECK(!field_->is_extension());
+  if (field_->is_repeated()) {
     p->Emit("$name$_{visibility, arena, from.$name$_}");
   } else {
     p->Emit("$name$_{from.$name$_}");
@@ -184,14 +186,14 @@ void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
 }
 
 void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
-  ABSL_CHECK(!descriptor_->is_extension()) << "Not supported";
-  ABSL_CHECK(!descriptor_->is_repeated()) << "Not supported";
-  ABSL_CHECK(!descriptor_->is_map()) << "Not supported";
+  ABSL_CHECK(!field_->is_extension()) << "Not supported";
+  ABSL_CHECK(!field_->is_repeated()) << "Not supported";
+  ABSL_CHECK(!field_->is_map()) << "Not supported";
   p->Emit("$field$ = from.$field$;\n");
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(descriptor_, options_)) {
+  if (ShouldSplit(field_, options_)) {
     p->Emit(R"cc(
       decltype(Impl_::Split::$name$_){arena},
     )cc");
@@ -270,6 +272,8 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     return MakeMapGenerator(field, options, scc);
   }
   if (field->is_repeated()) {
+    ABSL_CHECK(!field->options().unverified_lazy());
+
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return MakeRepeatedMessageGenerator(field, options, scc);
