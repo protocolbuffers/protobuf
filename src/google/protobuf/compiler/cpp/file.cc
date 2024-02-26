@@ -1264,10 +1264,13 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     if (UsingImplicitWeakDescriptor(file_, options_)) {
       for (auto* pinned : GetMessagesToPinGloballyForWeakDescriptors(file_)) {
         static_initializers_.push_back([this, pinned](auto* p) {
-          p->Emit({{"pin", StrongReferenceToType(pinned, options_)}},
-                  R"cc(
-                    $pin$,
-                  )cc");
+          p->Emit(
+              {
+                  {"default", QualifiedDefaultInstanceName(pinned, options_)},
+              },
+              R"cc(
+                ::_pbi::StrongPointer(&$default$),
+              )cc");
         });
       }
     }

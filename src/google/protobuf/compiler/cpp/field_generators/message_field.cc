@@ -72,8 +72,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       {"_weak", weak ? "_weak" : ""},
       Sub("StrongRef",
           !weak ? ""
-                : absl::StrCat(
-                      StrongReferenceToType(field->message_type(), opts), ";"))
+                : absl::Substitute("::google::protobuf::internal::StrongReference("
+                                   "reinterpret_cast<const $0&>($1));\n",
+                                   qualified_type, default_ref))
           .WithSuffix(";"),
   };
 }
