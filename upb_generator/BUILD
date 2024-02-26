@@ -250,6 +250,17 @@ cc_library(
 
 bootstrap_cc_binary(
     name = "protoc-gen-upb",
+    bootstrap_deps = [
+        ":protoc-gen-upb_hack",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//visibility:public"],
+)
+
+# TODO: This wrapper lib is a hack that we need because of Bazel 6;
+# Bazel 7 does not require it.
+bootstrap_cc_library(
+    name = "protoc-gen-upb_hack",
     srcs = ["protoc-gen-upb.cc"],
     bootstrap_deps = [
         ":common",
@@ -261,7 +272,7 @@ bootstrap_cc_binary(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//pkg:__pkg__"],
     deps = [
         "//upb:base",
         "//upb:mem",
@@ -318,6 +329,17 @@ bootstrap_cc_library(
 
 bootstrap_cc_binary(
     name = "protoc-gen-upb_minitable",
+    bootstrap_deps = [
+        ":protoc-gen-upb_minitable_hack",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//visibility:public"],
+)
+
+# TODO: This wrapper lib is a hack that we need because of Bazel 6;
+# Bazel 7 does not require it.
+bootstrap_cc_library(
+    name = "protoc-gen-upb_minitable_hack",
     srcs = ["protoc-gen-upb_minitable-main.cc"],
     bootstrap_deps = [
         ":file_layout",
@@ -326,7 +348,7 @@ bootstrap_cc_binary(
         ":protoc-gen-upb_minitable_lib",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//pkg:__pkg__"],
     deps = [
         "//upb:base",
         "//upb:port",
@@ -348,16 +370,26 @@ proto_lang_toolchain(
 
 cc_binary(
     name = "protoc-gen-upbdefs",
+    linkopts = ["-lm"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protoc-gen-upbdefs_hack",
+    ],
+)
+
+# TODO: This wrapper lib is a hack that we need because of Bazel 6;
+# Bazel 7 does not require it.
+cc_library(
+    name = "protoc-gen-upbdefs_hack",
     srcs = [
         "protoc-gen-upbdefs.cc",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//pkg:__pkg__"],
     # To work around the following link error from ABSL:
     # /usr/bin/x86_64-linux-gnu-ld: bazel-out/k8-opt-exec-2B5CBBC6-ST-c1776f9924ec/bin/external/com_google_absl/absl/time/libtime.a(duration.o): undefined reference to symbol 'floor@@GLIBC_2.2.5'
     # /usr/bin/x86_64-linux-gnu-ld: /opt/manylinux/2014/x86_64/lib64/libm.so.6: error adding symbols: DSO missing from command line
     # clang-14: error: linker command failed with exit code 1 (use -v to see invocation)
-    linkopts = ["-lm"],
-    visibility = ["//visibility:public"],
     deps = [
         ":common",
         ":file_layout",

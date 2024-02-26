@@ -164,12 +164,23 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["def_to_proto_fuzz_test.cc"],
     ),
     visibility = ["//pkg:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_util",
+    srcs = glob(
+        [
+            "**/*test.h",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
     srcs = glob(
         [
             "**/*test.proto",

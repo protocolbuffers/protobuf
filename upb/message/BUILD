@@ -417,10 +417,10 @@ filegroup(
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_protos",
     srcs = glob(
         [
-            "**/*test.proto",
+            "**/*.proto",
         ],
     ),
     visibility = ["//pkg:__pkg__"],

@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+// These tests require C++17
+#if (defined(__cplusplus) && __cplusplus >= 201703L)
+
 #include "upb/message/internal/compare_unknown.h"
 
 #include <stdint.h>
@@ -175,3 +178,5 @@ TEST(CompareTest, MaxDepth) {
           {{1, Group({{2, Group({{4, Fixed64(123)}, {3, Fixed32(456)}})}})}},
           2));
 }
+
+#endif  // C++17
