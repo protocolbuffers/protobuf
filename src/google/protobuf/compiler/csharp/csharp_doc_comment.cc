@@ -54,7 +54,13 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
           printer->Print("///\n");
         }
         last_was_empty = false;
-        printer->Print("///$line$\n", "line", *it);
+        // If the comment has an extra slash at the start then this can cause the C# compiler
+        // to complain when generating the XML documentation
+        // Issue https://github.com/grpc/grpc/issues/35905
+        if (line[0] == '/') {
+            line.replace(0,1,"&#x2F;");
+        }
+        printer->Print("///$line$\n", "line", line);
       }
     }
     printer->Print("/// </summary>\n");
