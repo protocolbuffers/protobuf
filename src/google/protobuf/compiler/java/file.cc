@@ -490,7 +490,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     }
     printer->Print(
         "com.google.protobuf.Descriptors.FileDescriptor\n"
-        "    .internalUpdateFileDescriptorImmutable(descriptor, registry);\n");
+        "    .internalUpdateFileDescriptor(descriptor, registry);\n");
   }
 
   printer->Outdent();
