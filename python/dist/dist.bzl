@@ -123,9 +123,6 @@ py_dist_module = rule(
         ),
         "_limited_api": attr.label(default = "//python:limited_api"),
         "_python_version": attr.label(default = "//python:python_version"),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
     },
 )
 
@@ -186,8 +183,5 @@ py_dist = rule(
         "limited_api_wheels": attr.string_dict(),
         "full_api_versions": attr.string_list(),
         "full_api_cpus": attr.string_list(),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
     },
 )
