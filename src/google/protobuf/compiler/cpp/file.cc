@@ -1490,7 +1490,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     )");
     IncludeFile("third_party/protobuf/port_undef.inc", p);
   }
-
   // OK, it's now safe to #include other files.
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/arena.h", p);
