@@ -39,6 +39,8 @@ jobs:
         run: echo "MAIN_RUN=1" >> $GITHUB_ENV
 
       - name: Run all staleness tests
+        env:
+          USE_BAZEL_VERSION: '6.3.0'
         # Run all tests if either of the following is true, otherwise simply run the query to make
         # sure it continues to work:
         # 1) If this is not a commit-based run it means it's scheduled or manually dispatched. In
