@@ -44,6 +44,16 @@ embed_edition_defaults(
     template = "defaults_test_embedded.h.template",
 )
 
+embed_edition_defaults(
+    name = "embed_test_defaults_base64",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "base64",
+    output = "defaults_test_embedded_base64.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_base64.h.template",
+)
+
 cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
@@ -51,6 +61,9 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -59,6 +72,7 @@ cc_library(
     name = "defaults_test_embedded",
     hdrs = [
         "defaults_test_embedded.h",
+        "defaults_test_embedded_base64.h",
     ],
     strip_include_prefix = "/src",
 )
