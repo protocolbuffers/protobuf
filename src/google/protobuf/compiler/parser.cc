@@ -178,8 +178,7 @@ Parser::Parser()
       stop_after_syntax_identifier_(false) {
 }
 
-Parser::~Parser() {}
-
+Parser::~Parser() = default;
 // ===================================================================
 
 inline bool Parser::LookingAt(absl::string_view text) {
