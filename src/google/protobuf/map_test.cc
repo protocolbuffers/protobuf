@@ -242,7 +242,7 @@ TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
   for (int i = 0; i < kNumFields; ++i) {
-    values.push_back(Arena::CreateMessage<Map<int, int>>(&arena));
+    values.push_back(Arena::Create<Map<int, int>>(&arena));
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
       field[j] = j;

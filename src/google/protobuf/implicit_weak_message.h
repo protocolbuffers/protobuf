@@ -59,7 +59,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   const ClassData* GetClassData() const final;
 
   MessageLite* New(Arena* arena) const override {
-    return Arena::CreateMessage<ImplicitWeakMessage>(arena);
+    return Arena::Create<ImplicitWeakMessage>(arena);
   }
 
   void Clear() override { data_->clear(); }

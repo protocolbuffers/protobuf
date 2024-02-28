@@ -108,7 +108,7 @@ class MapEntry : public Message {
   using DestructorSkippable_ = void;
 
   Message* New(Arena* arena) const final {
-    return Arena::CreateMessage<Derived>(arena);
+    return Arena::Create<Derived>(arena);
   }
 
  protected:

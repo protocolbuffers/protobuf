@@ -142,12 +142,12 @@ TEST(EditionMessageTest,
     encoded = proto.SerializeAsString();
   }
   Arena arena;
-  auto* proto = Arena::CreateMessage<Proto>(&arena);
+  auto* proto = Arena::Create<Proto>(&arena);
   // We don't alter donation here, so it works even if the idx are bad.
   ASSERT_TRUE(proto->ParseFromString(encoded));
   // Now we alter donation bits. str2's bit (#2) will be off, but its aux_idx
   // (#3) will point to a donated string.
-  proto = Arena::CreateMessage<Proto>(&arena);
+  proto = Arena::Create<Proto>(&arena);
   // String view fields don't allow mutable accessors which obviate the needs
   // for donation tracker. We will clean up the internal logic after migration
   // to string view fields matures.

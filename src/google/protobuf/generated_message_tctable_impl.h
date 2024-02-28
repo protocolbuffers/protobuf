@@ -612,7 +612,7 @@ class PROTOBUF_EXPORT TcParser final {
     if (!is_split) return RefAt<T>(x, offset);
     void*& ptr = RefAt<void*>(x, offset);
     if (ptr == DefaultRawPtr()) {
-      ptr = Arena::CreateMessage<T>(msg->GetArena());
+      ptr = Arena::Create<T>(msg->GetArena());
     }
     return *static_cast<T*>(ptr);
   }

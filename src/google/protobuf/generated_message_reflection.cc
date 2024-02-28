@@ -2729,11 +2729,10 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
     if (field->cpp_type() < FieldDescriptor::CPPTYPE_STRING ||
         (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD)) {
-      ptr = reinterpret_cast<Type*>(
-          Arena::CreateMessage<RepeatedField<int32_t>>(arena));
+      ptr =
+          reinterpret_cast<Type*>(Arena::Create<RepeatedField<int32_t>>(arena));
     } else {
-      ptr = reinterpret_cast<Type*>(
-          Arena::CreateMessage<RepeatedPtrFieldBase>(arena));
+      ptr = reinterpret_cast<Type*>(Arena::Create<RepeatedPtrFieldBase>(arena));
     }
   }
   return ptr;
