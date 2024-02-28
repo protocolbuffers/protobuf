@@ -1095,7 +1095,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
   if (msg.map_key() != nullptr) {
-    ABSL_LOG(WARNING) << "unsupported map field: " << msg.full_name();
+    // Don't generate code for synthetic MapEntry messages.
     return;
   }
 
