@@ -62,9 +62,10 @@ namespace Google.Protobuf.Reflection
             : IsRepeated ? false
             : IsMap ? false
             : FieldType == FieldType.Message ? true
+            : FieldType == FieldType.Group ? true
             // This covers "real oneof members" and "proto3 optional fields"
             : ContainingOneof != null ? true
-            : File.Syntax == Syntax.Proto2;
+            : Features.FieldPresence != FeatureSet.Types.FieldPresence.Implicit;
 
         internal FieldDescriptorProto Proto { get; }
 
@@ -83,10 +84,11 @@ namespace Google.Protobuf.Reflection
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
                                  MessageDescriptor parent, int index, string propertyName, Extension extension)
-            : base(file, file.ComputeFullName(parent, proto.Name), index)
+            : base(file, file.ComputeFullName(parent, proto.Name), index,
+                  GetDirectParentFeatures(proto, file, parent).MergedWith(InferFeatures(file, proto)).MergedWith(proto.Options?.Features))
         {
             Proto = proto;
-            if (proto.Type != 0)
+            if (proto.HasType)
             {
                 fieldType = GetFieldTypeFromProtoType(proto.Type);
             }
@@ -117,6 +119,52 @@ namespace Google.Protobuf.Reflection
             JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
 
+        /// <summary>
+        /// Returns the features from the direct parent:
+        /// - The file for top-level extensions
+        /// - The oneof for one-of fields
+        /// - Otherwise the message
+        /// </summary>
+        private static FeatureSetDescriptor GetDirectParentFeatures(FieldDescriptorProto proto, FileDescriptor file, MessageDescriptor parent) =>
+            parent is null ? file.Features
+            // Ignore invalid oneof indexes here; they'll be validated later anyway.
+            : proto.OneofIndex >= 0 && proto.OneofIndex < parent.Proto.OneofDecl.Count ? parent.Oneofs[proto.OneofIndex].Features
+            : parent.Features;
+
+        /// <summary>
+        /// Returns a feature set with inferred features for the given field, or null if no features
+        /// need to be inferred.
+        /// </summary>
+        private static FeatureSet InferFeatures(FileDescriptor file, FieldDescriptorProto proto)
+        {
+            if ((int) file.Edition >= (int) Edition._2023)
+            {
+                return null;
+            }
+            // This is lazily initialized, as most fields won't need it.
+            FeatureSet features = null;
+            if (proto.Label == FieldDescriptorProto.Types.Label.Required)
+            {
+                features ??= new FeatureSet();
+                features.FieldPresence = FeatureSet.Types.FieldPresence.LegacyRequired;
+            }
+            if (proto.Type == FieldDescriptorProto.Types.Type.Group)
+            {
+                features ??= new FeatureSet();
+                features.MessageEncoding = FeatureSet.Types.MessageEncoding.Delimited;
+            }
+            if (file.Edition == Edition.Proto2 && (proto.Options?.Packed ?? false))
+            {
+                features ??= new FeatureSet();
+                features.RepeatedFieldEncoding = FeatureSet.Types.RepeatedFieldEncoding.Packed;
+            }
+            if (file.Edition == Edition.Proto3 && !(proto.Options?.Packed ?? true))
+            {
+                features ??= new FeatureSet();
+                features.RepeatedFieldEncoding = FeatureSet.Types.RepeatedFieldEncoding.Expanded;
+            }
+            return features;
+        }
 
         /// <summary>
         /// The brief name of the descriptor's target.
@@ -185,7 +233,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a required field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsRequired => Proto.Label == FieldDescriptorProto.Types.Label.Required;
+        public bool IsRequired => Features.FieldPresence == FeatureSet.Types.FieldPresence.LegacyRequired;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
@@ -195,21 +243,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsPacked
-        {
-            get
-            {
-                if (File.Syntax != Syntax.Proto3)
-                {
-                    return Proto.Options?.Packed ?? false;
-                }
-                else
-                {
-                    // Packed by default with proto3
-                    return Proto.Options == null || !Proto.Options.HasPacked || Proto.Options.Packed;
-                }
-            }
-        }
+        public bool IsPacked => Features.RepeatedFieldEncoding == FeatureSet.Types.RepeatedFieldEncoding.Packed;
 
         /// <summary>
         /// Returns <c>true</c> if this field extends another message type; <c>false</c> otherwise.
@@ -219,7 +253,8 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns the type of the field.
         /// </summary>
-        public FieldType FieldType => fieldType;
+        public FieldType FieldType => fieldType == FieldType.Message && Features.MessageEncoding == FeatureSet.Types.MessageEncoding.Delimited
+            ? FieldType.Group : fieldType;
 
         /// <summary>
         /// Returns the field number declared in the proto file.
@@ -299,12 +334,23 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public FieldOptions GetOptions() => Proto.Options?.Clone();
+        public FieldOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value field option for this descriptor
         /// </summary>
-         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<FieldOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
@@ -330,7 +376,8 @@ namespace Google.Protobuf.Reflection
                 IDescriptor typeDescriptor =
                     File.DescriptorPool.LookupSymbol(Proto.TypeName, this);
 
-                if (Proto.HasType)
+                // TODO: See how much of this is actually required.
+                if (!Proto.HasType)
                 {
                     // Choose field type based on symbol.
                     if (typeDescriptor is MessageDescriptor)
@@ -423,4 +470,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 
