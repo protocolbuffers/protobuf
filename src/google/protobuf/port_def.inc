@@ -825,6 +825,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef REASON_UNKNOWN
 #pragma push_macro("SERVICE_DISABLED")
 #undef SERVICE_DISABLED
+#pragma push_macro("SERVICE_STOP")
+#undef SERVICE_STOP
 #pragma push_macro("SEVERITY_ERROR")
 #undef SEVERITY_ERROR
 #pragma push_macro("STATUS_PENDING")

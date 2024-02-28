@@ -136,6 +136,7 @@
 #pragma pop_macro("NO_ERROR")
 #pragma pop_macro("REASON_UNKNOWN")
 #pragma pop_macro("SERVICE_DISABLED")
+#pragma pop_macro("SERVICE_STOP")
 #pragma pop_macro("SEVERITY_ERROR")
 #pragma pop_macro("STRICT")
 #pragma pop_macro("STATUS_PENDING")
