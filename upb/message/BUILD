@@ -113,6 +113,7 @@ cc_library(
     hdrs = [
         "copy.h",
     ],
+    aspect_hints = ["//upb:upb_kotlin_native_hint"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
