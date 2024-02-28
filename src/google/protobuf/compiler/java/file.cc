@@ -402,16 +402,6 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "final", options_.opensource_runtime ? "" : "final");
   printer->Indent();
 
-  // Force descriptor initialization of all dependencies.
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    if (ShouldIncludeDependency(file_->dependency(i), true)) {
-      std::string dependency =
-          name_resolver_->GetImmutableClassName(file_->dependency(i));
-      printer->Print("$dependency$.getDescriptor();\n", "dependency",
-                     dependency);
-    }
-  }
-
   if (options_.opensource_runtime) {
     SharedCodeGenerator shared_code_generator(file_, options_);
     shared_code_generator.GenerateDescriptors(printer);
@@ -469,6 +459,16 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     absl::erase_if(extensions, [](const FieldDescriptor* field) {
       return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
     });
+  }
+
+  // Force descriptor initialization of all dependencies.
+  for (int i = 0; i < file_->dependency_count(); i++) {
+    if (ShouldIncludeDependency(file_->dependency(i), true)) {
+      std::string dependency =
+          name_resolver_->GetImmutableClassName(file_->dependency(i));
+      printer->Print("$dependency$.getDescriptor();\n", "dependency",
+                     dependency);
+    }
   }
 
   if (!extensions.empty()) {
