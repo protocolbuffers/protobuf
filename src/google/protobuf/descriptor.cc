@@ -5661,14 +5661,12 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   FileDescriptor* result = alloc.AllocateArray<FileDescriptor>(1);
   file_ = result;
 
-  // TODO: Report error when the syntax is empty after all the protos
-  // have added the syntax statement.
-  if (proto.syntax().empty() || proto.syntax() == "proto2") {
+  if (proto.has_edition()) {
+    file_->edition_ = proto.edition();
+  } else if (proto.syntax().empty() || proto.syntax() == "proto2") {
     file_->edition_ = Edition::EDITION_PROTO2;
   } else if (proto.syntax() == "proto3") {
     file_->edition_ = Edition::EDITION_PROTO3;
-  } else if (proto.syntax() == "editions") {
-    file_->edition_ = proto.edition();
   } else {
     file_->edition_ = Edition::EDITION_UNKNOWN;
     AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER, [&] {
