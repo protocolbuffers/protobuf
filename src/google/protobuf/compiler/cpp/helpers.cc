@@ -28,7 +28,9 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
@@ -54,10 +56,6 @@ namespace cpp {
 namespace {
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
-
-std::string DotsToColons(absl::string_view name) {
-  return absl::StrReplaceAll(name, {{".", "::"}});
-}
 
 static const char* const kKeywordList[] = {
     // clang-format off
@@ -427,6 +425,21 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
   return QualifiedExtensionName(d, Options());
 }
 
+std::string ResolveKeyword(absl::string_view name) {
+  if (Keywords().count(name) > 0) {
+    return absl::StrCat(name, "_");
+  }
+  return std::string(name);
+}
+
+std::string DotsToColons(absl::string_view name) {
+  std::vector<std::string> scope = absl::StrSplit(name, ".", absl::SkipEmpty());
+  for (auto& word : scope) {
+    word = ResolveKeyword(word);
+  }
+  return absl::StrJoin(scope, "::");
+}
+
 std::string Namespace(absl::string_view package) {
   if (package.empty()) return "";
   return absl::StrCat("::", DotsToColons(package));
@@ -502,13 +515,6 @@ std::string SuperClassName(const Descriptor* descriptor,
   }
   return absl::StrCat("::", ProtobufNamespace(options),
                       "::internal::", simple_base);
-}
-
-std::string ResolveKeyword(absl::string_view name) {
-  if (Keywords().count(name) > 0) {
-    return absl::StrCat(name, "_");
-  }
-  return std::string(name);
 }
 
 std::string FieldName(const FieldDescriptor* field) {
