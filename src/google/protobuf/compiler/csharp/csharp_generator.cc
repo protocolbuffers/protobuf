@@ -28,7 +28,8 @@ Generator::Generator() {}
 Generator::~Generator() {}
 
 uint64_t Generator::GetSupportedFeatures() const {
-  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |
+         CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
 }
 
 void GenerateFile(const FileDescriptor* file, io::Printer* printer,
