@@ -154,7 +154,7 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
   return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;
 }
 
-UPB_INLINE bool upb_MiniTableField_IsInOneof(
+UPB_API_INLINE bool upb_MiniTableField_IsInOneof(
     const struct upb_MiniTableField* f) {
   return f->presence < 0;
 }
