@@ -1196,7 +1196,9 @@ class PROTOBUF_EXPORT Reflection final {
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
 
-  inline bool IsInlined(const FieldDescriptor* field) const;
+  inline bool IsInlined(const FieldDescriptor* field) const {
+    return schema_.IsFieldInlined(field);
+  }
 
   bool HasBit(const Message& message, const FieldDescriptor* field) const;
   void SetBit(Message* message, const FieldDescriptor* field) const;

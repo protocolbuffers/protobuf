@@ -540,6 +540,8 @@ PROTOBUF_HEADERS = [
     "reflection_internal.h",
     "reflection_mode.h",
     "reflection_ops.h",
+    "reflection_visit_fields.h",
+    "reflection_visit_field_info.h",
     "service.h",
     "text_format.h",
     "unknown_field_set.h",

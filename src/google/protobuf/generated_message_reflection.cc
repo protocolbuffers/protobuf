@@ -357,10 +357,6 @@ bool Reflection::IsEagerlyVerifiedLazyField(
           schema_.IsEagerlyVerifiedLazyField(field));
 }
 
-bool Reflection::IsInlined(const FieldDescriptor* field) const {
-  return schema_.IsFieldInlined(field);
-}
-
 size_t Reflection::SpaceUsedLong(const Message& message) const {
   // object_size_ already includes the in-memory representation of each field
   // in the message, so we only need to account for additional memory used by
