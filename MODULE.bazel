@@ -1,2 +1,51 @@
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
+"""Bazel dependencies
+
+Currently only used by external users via the Bazel Central Registry.
+TODO(alexeagle): empty the WORKSPACE file and enable bzlmod for this repo.
+
+Note, originally this file existed as a patch:
+https://github.com/bazelbuild/bazel-central-registry/blob/main/modules/protobuf/23.1/patches/0001-Add-MODULE.bazel.patch
+"""
+module(
+    name = "protobuf",
+    compatibility_level = 1,
+    version = "23.1",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.0.3")
+bazel_dep(name = "rules_python", version = "0.10.2")
+bazel_dep(name = "rules_cc", version = "0.0.1")
+bazel_dep(name = "rules_proto", version = "4.0.0")
+bazel_dep(name = "rules_java", version = "4.0.0")
+bazel_dep(name = "rules_pkg", version = "0.7.0")
+bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "abseil-cpp", repo_name = "com_google_absl", version = "20230802.0.bcr.1")
+bazel_dep(name = "zlib", version = "1.2.11")
+bazel_dep(name = "upb", version = "0.0.0-20230516-61a97ef")
+
+# TODO: Add missing rules_kotlin
+
+# Maven dependencies
+bazel_dep(name = "rules_jvm_external", version = "4.4.2")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
+maven.install(
+    name = "maven",
+    artifacts = [
+        "com.google.code.findbugs:jsr305:3.0.2",
+        "com.google.code.gson:gson:2.8.9",
+        "com.google.errorprone:error_prone_annotations:2.3.2",
+        "com.google.j2objc:j2objc-annotations:1.3",
+        "com.google.guava:guava:31.1-jre",
+        "com.google.guava:guava-testlib:31.1-jre",
+        "com.google.truth:truth:1.1.2",
+        "junit:junit:4.13.2",
+        "org.mockito:mockito-core:4.3.1",
+    ],
+)
+
+use_repo(maven, "maven")
+
+# Dependencies needed in tests
+bazel_dep(name = "googletest", repo_name = "com_google_googletest", version = "1.11.0")
