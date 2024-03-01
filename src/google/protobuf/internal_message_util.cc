@@ -7,15 +7,11 @@
 
 #include "google/protobuf/internal_message_util.h"
 
-#include <queue>
 #include <vector>
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/port.h"
-#include "google/protobuf/reflection_visit_fields.h"
-
 
 namespace google {
 namespace protobuf {
