@@ -22,6 +22,10 @@
 #include "google/protobuf/wire_format_lite.h"
 
 
+// clang-format off
+#include "google/protobuf/port_def.inc"
+// clang-format on
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -1414,5 +1418,7 @@ struct MapDynamicFieldInfo {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_REFLECTION_VISIT_FIELD_INFO_H__
