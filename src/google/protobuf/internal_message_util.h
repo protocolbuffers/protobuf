@@ -17,9 +17,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Walks the entire message tree, eager parses all lazy fields and configures
-// them to ignore unparsed.
-void EagerParseLazyFieldIgnoreUnparsed(Message& message);
 
 }  // namespace internal
 }  // namespace protobuf

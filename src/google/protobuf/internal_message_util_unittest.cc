@@ -20,9 +20,11 @@
 
 namespace google {
 namespace protobuf {
+namespace internal {
 namespace {
 
 
 }  // namespace
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
