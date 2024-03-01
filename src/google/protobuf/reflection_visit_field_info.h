@@ -210,6 +210,12 @@ struct DynamicExtensionInfoHelper {
     return DownCast<const Message&>(
         ext.lazymessage_value->GetMessage(prototype, arena));
   }
+  static const Message& GetLazyMessageIgnoreUnparsed(const Extension& ext,
+                                                     const Message& prototype,
+                                                     Arena* arena) {
+    return DownCast<const Message&>(
+        ext.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
+  }
   static Message& MutableLazyMessage(Extension& ext, const Message& prototype,
                                      Arena* arena) {
     return DownCast<Message&>(
@@ -657,6 +663,10 @@ struct LazyMessageDynamicExtensionInfo
   }
   const Message& Get() const {
     return DynamicExtensionInfoHelper::GetLazyMessage(ext, prototype, arena);
+  }
+  const Message& GetIgnoreUnparsed() const {
+    return DynamicExtensionInfoHelper::GetLazyMessageIgnoreUnparsed(
+        ext, prototype, arena);
   }
   Message& Mutable() {
     return DynamicExtensionInfoHelper::MutableLazyMessage(ext, prototype,

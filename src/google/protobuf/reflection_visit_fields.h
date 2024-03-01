@@ -296,7 +296,6 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   auto& set = ExtensionSet(reflection, message);
   auto* extendee = reflection->descriptor_;
   auto* pool = reflection->descriptor_pool_;
-  auto* factory = reflection->message_factory_;
   auto* arena = message.GetArena();
 
   set.ForEach([&](int number, auto& ext) {

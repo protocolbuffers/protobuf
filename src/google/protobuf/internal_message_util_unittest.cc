@@ -17,6 +17,8 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
+
 
 namespace google {
 namespace protobuf {
