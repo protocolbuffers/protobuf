@@ -593,9 +593,27 @@ impl<'msg> ProtoStrMut<'msg> {
 
     /// Sets the string to the given `val`, cloning any borrowed data.
     ///
-    /// This method accepts both owned and borrowed strings; if the runtime
-    /// supports it, an owned value will not reallocate when setting the
-    /// string.
+    /// This method accepts many string types:
+    ///
+    /// - `&ProtoStr`
+    /// - `&str`
+    /// - `String`
+    /// - `Cow<str>`
+    ///
+    /// If the runtime supports it, an owned value will not reallocate when
+    /// setting the string.
+    ///
+    /// # Setting a `string` field to a `[u8]` value
+    ///
+    /// While a `string` field can be trivially set to a known-UTF-8 value,
+    /// the situation is more complicated when working with raw bytes. The two
+    /// broad choices are:
+    ///
+    /// - Check for UTF-8 validity and bail if not valid:
+    ///   `msg.name_mut().set(ProtoStr::try_from(name_bytes).unwrap())`
+    ///
+    /// - Replace invalid characters. This may involve an extra allocation and
+    ///   copy: `msg.name_mut().set(String::from_utf8_lossy(name_bytes))`
     pub fn set(&mut self, val: impl SettableValue<ProtoStr>) {
         val.set_on(Private, MutProxy::as_mut(self))
     }
