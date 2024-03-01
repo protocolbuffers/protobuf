@@ -17,6 +17,10 @@
 #include "google/protobuf/reflection_visit_fields.h"
 
 
+// clang-format off
+#include "google/protobuf/port_def.inc"
+// clang-format on
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -25,3 +29,5 @@ namespace internal {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
