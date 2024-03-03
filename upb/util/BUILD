@@ -144,6 +144,22 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "tracing_metrics",
+    srcs = ["tracing_metrics.cc"],
+    hdrs = ["tracing_metrics.h"],
+    visibility = ["//upb:friends"],
+    deps = [
+        "//upb:mem",
+        "//upb:mini_table",
+        "//upb:tracing",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:no_destructor",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
 # begin:github_only
 filegroup(
     name = "source_files",

@@ -306,6 +306,26 @@ cc_test(
     ],
 )
 
+upb_minitable_proto_library(
+    name = "trace_tracing_proto",
+    testonly = 1,
+    deps = [":test_proto"],
+)
+
+# begin:google_only
+# cc_test(
+#     name = "test_tracing",
+#     srcs = ["test_tracing.cc"],
+#     copts = UPB_DEFAULT_CPPOPTS + ["-DUPB_TRACING_ENABLED"],
+#     deps = [
+#         ":trace_tracing_proto",
+#         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
+#         "//upb/message:internal",
+#         "//upb/util:tracing_metrics",
+#     ],
+# )
+# end:google_only
+
 # begin:github_only
 filegroup(
     name = "test_srcs",
