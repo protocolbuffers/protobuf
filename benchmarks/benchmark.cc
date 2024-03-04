@@ -214,7 +214,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     for (auto file : serialized_files) {
       absl::string_view input(file.data, file.size);
       auto proto =
-          protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(&arena);
+          protobuf::Arena::Create<protobuf::FileDescriptorProto>(&arena);
       bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
                 pool.BuildFile(*proto) != nullptr;
       if (!ok) {
@@ -292,7 +292,7 @@ struct Proto2Factory<NoArena, P> {
 template <class P>
 struct Proto2Factory<UseArena, P> {
  public:
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
+  P* GetProto() { return protobuf::Arena::Create<P>(&arena); }
 
  private:
   protobuf::Arena arena;
@@ -302,7 +302,7 @@ template <class P>
 struct Proto2Factory<InitBlock, P> {
  public:
   Proto2Factory() : arena(GetOptions()) {}
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
+  P* GetProto() { return protobuf::Arena::Create<P>(&arena); }
 
  private:
   protobuf::ArenaOptions GetOptions() {
