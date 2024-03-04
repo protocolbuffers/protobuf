@@ -308,6 +308,7 @@ bootstrap_cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
+        "//upb/mini_table:internal",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
