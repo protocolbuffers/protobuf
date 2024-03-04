@@ -25,6 +25,7 @@ namespace Google.Protobuf.Reflection
             EnumDescriptor = parent;
             file.DescriptorPool.AddSymbol(this);
             file.DescriptorPool.AddEnumValueByNumber(this);
+            file.DescriptorPool.AddEnumValueByFullName(this);
         }
 
         internal EnumValueDescriptorProto Proto { get; }

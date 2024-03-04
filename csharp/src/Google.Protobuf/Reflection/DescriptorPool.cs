@@ -27,6 +27,9 @@ namespace Google.Protobuf.Reflection
         private readonly IDictionary<ObjectIntPair<IDescriptor>, EnumValueDescriptor> enumValuesByNumber =
             new Dictionary<ObjectIntPair<IDescriptor>, EnumValueDescriptor>();
 
+        private readonly IDictionary<ObjectFullNamePair<IDescriptor>, EnumValueDescriptor> enumValuesByName =
+            new Dictionary<ObjectFullNamePair<IDescriptor>, EnumValueDescriptor>();
+
         private readonly HashSet<FileDescriptor> dependencies = new HashSet<FileDescriptor>();
 
         internal DescriptorPool(IEnumerable<FileDescriptor> dependencyFiles)
@@ -129,27 +132,33 @@ namespace Google.Protobuf.Reflection
 
             if (descriptorsByName.TryGetValue(fullName, out IDescriptor old))
             {
-                int dotPos = fullName.LastIndexOf('.');
-                string message;
-                if (descriptor.File == old.File)
+                throw new DescriptorValidationException(descriptor, GetDescriptorAlreadyAddedExceptionMessage(descriptor, fullName, old));
+            }
+            descriptorsByName[fullName] = descriptor;
+        }
+
+        private static string GetDescriptorAlreadyAddedExceptionMessage(IDescriptor descriptor, string fullName, IDescriptor old)
+        {
+            int dotPos = fullName.LastIndexOf('.');
+            string message;
+            if (descriptor.File == old.File)
+            {
+                if (dotPos == -1)
                 {
-                    if (dotPos == -1)
-                    {
-                        message = "\"" + fullName + "\" is already defined.";
-                    }
-                    else
-                    {
-                        message = "\"" + fullName.Substring(dotPos + 1) + "\" is already defined in \"" +
-                                  fullName.Substring(0, dotPos) + "\".";
-                    }
+                    message = "\"" + fullName + "\" is already defined.";
                 }
                 else
                 {
-                    message = "\"" + fullName + "\" is already defined in file \"" + old.File.Name + "\".";
+                    message = "\"" + fullName.Substring(dotPos + 1) + "\" is already defined in \"" +
+                              fullName.Substring(0, dotPos) + "\".";
                 }
-                throw new DescriptorValidationException(descriptor, message);
             }
-            descriptorsByName[fullName] = descriptor;
+            else
+            {
+                message = "\"" + fullName + "\" is already defined in file \"" + old.File.Name + "\".";
+            }
+
+            return message;
         }
 
         /// <summary>
@@ -197,6 +206,22 @@ namespace Google.Protobuf.Reflection
         {
             enumValuesByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(enumDescriptor, number), out EnumValueDescriptor ret);
             return ret;
+        }
+
+        internal EnumValueDescriptor FindEnumValueByFullName(EnumDescriptor enumDescriptor, string fullName, string name)
+        {
+            enumValuesByName.TryGetValue(new ObjectFullNamePair<IDescriptor>(enumDescriptor, fullName, name), out EnumValueDescriptor ret);
+            return ret;
+        }
+
+        internal void AddEnumValueByFullName(EnumValueDescriptor enumValue)
+        {
+            ObjectFullNamePair<IDescriptor> key = new ObjectFullNamePair<IDescriptor>(enumValue.EnumDescriptor, enumValue.EnumDescriptor.FullName, enumValue.Name);
+            if (enumValuesByName.TryGetValue(key, out EnumValueDescriptor old))
+            {
+                throw new DescriptorValidationException(enumValue, GetDescriptorAlreadyAddedExceptionMessage(enumValue, enumValue.FullName, old));
+            }
+            enumValuesByName[key] = enumValue;
         }
 
         /// <summary>

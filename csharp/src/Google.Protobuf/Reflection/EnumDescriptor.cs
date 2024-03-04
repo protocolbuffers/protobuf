@@ -92,7 +92,7 @@ namespace Google.Protobuf.Reflection
         /// <returns>The value's descriptor, or null if not found.</returns>
         public EnumValueDescriptor FindValueByName(string name)
         {
-            return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
+            return File.DescriptorPool.FindEnumValueByFullName(this, FullName, name);
         }
 
         /// <summary>
