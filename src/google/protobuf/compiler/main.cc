@@ -19,7 +19,7 @@
 #include "google/protobuf/compiler/rust/generator.h"
 
 #ifdef DISABLE_PROTOC_CONFIG
-#include "google/protobuf/compiler/allowlists/allowlists.h"
+#include "google/protobuf/compiler/allowlists/allowlist.h"
 #endif  // DISABLE_PROTOC_CONFIG
 
 // Must be included last.

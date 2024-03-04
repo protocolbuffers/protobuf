@@ -21,7 +21,6 @@ namespace Google.Protobuf.Reflection
         private EnumDescriptor enumType;
         private MessageDescriptor extendeeType;
         private MessageDescriptor messageType;
-        private FieldType fieldType;
         private IFieldAccessor accessor;
 
         /// <summary>
@@ -90,7 +89,12 @@ namespace Google.Protobuf.Reflection
             Proto = proto;
             if (proto.HasType)
             {
-                fieldType = GetFieldTypeFromProtoType(proto.Type);
+                FieldType = GetFieldTypeFromProtoType(proto.Type);
+                if (FieldType == FieldType.Message &&
+                    Features.MessageEncoding == FeatureSet.Types.MessageEncoding.Delimited)
+                {
+                    FieldType = FieldType.Group;
+                }
             }
 
             if (FieldNumber <= 0)
@@ -238,7 +242,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsMap => fieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;
+        public bool IsMap => FieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
@@ -253,8 +257,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns the type of the field.
         /// </summary>
-        public FieldType FieldType => fieldType == FieldType.Message && Features.MessageEncoding == FeatureSet.Types.MessageEncoding.Delimited
-            ? FieldType.Group : fieldType;
+        public FieldType FieldType { get; private set; }
 
         /// <summary>
         /// Returns the field number declared in the proto file.
@@ -284,7 +287,7 @@ namespace Google.Protobuf.Reflection
         {
             get
             {
-                if (fieldType != FieldType.Enum)
+                if (FieldType != FieldType.Enum)
                 {
                     throw new InvalidOperationException("EnumType is only valid for enum fields.");
                 }
@@ -299,7 +302,7 @@ namespace Google.Protobuf.Reflection
         {
             get
             {
-                if (fieldType != FieldType.Message && fieldType != FieldType.Group)
+                if (FieldType != FieldType.Message && FieldType != FieldType.Group)
                 {
                     throw new InvalidOperationException("MessageType is only valid for message or group fields.");
                 }
@@ -382,11 +385,14 @@ namespace Google.Protobuf.Reflection
                     // Choose field type based on symbol.
                     if (typeDescriptor is MessageDescriptor)
                     {
-                        fieldType = FieldType.Message;
+                        FieldType =
+                            Features.MessageEncoding == FeatureSet.Types.MessageEncoding.Delimited
+                            ? FieldType.Group
+                            : FieldType.Message;
                     }
                     else if (typeDescriptor is EnumDescriptor)
                     {
-                        fieldType = FieldType.Enum;
+                        FieldType = FieldType.Enum;
                     }
                     else
                     {
@@ -394,7 +400,7 @@ namespace Google.Protobuf.Reflection
                     }
                 }
 
-                if (fieldType == FieldType.Message || fieldType == FieldType.Group)
+                if (FieldType == FieldType.Message || FieldType == FieldType.Group)
                 {
                     if (typeDescriptor is not MessageDescriptor m)
                     {
@@ -407,7 +413,7 @@ namespace Google.Protobuf.Reflection
                         throw new DescriptorValidationException(this, "Messages can't have default values.");
                     }
                 }
-                else if (fieldType == FieldType.Enum)
+                else if (FieldType == FieldType.Enum)
                 {
                     if (typeDescriptor is not EnumDescriptor e)
                     {
@@ -422,7 +428,7 @@ namespace Google.Protobuf.Reflection
             }
             else
             {
-                if (fieldType == FieldType.Message || fieldType == FieldType.Enum)
+                if (FieldType == FieldType.Message || FieldType == FieldType.Enum)
                 {
                     throw new DescriptorValidationException(this, "Field with message or enum type missing type_name.");
                 }

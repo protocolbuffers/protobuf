@@ -176,9 +176,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Deprecated. Use Create<T> instead. TODO: depreate OSS version
   // once internal migration to Arena::Create is done.
   template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE
-      static T*
-      CreateMessage(Arena* arena, Args&&... args) {
+  ABSL_DEPRECATED("Use Create")
+  static T* CreateMessage(Arena* arena, Args&&... args) {
     using Type = std::remove_const_t<T>;
     static_assert(
         is_arena_constructable<Type>::value,
