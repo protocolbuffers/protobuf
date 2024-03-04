@@ -57,7 +57,9 @@ struct upb_MiniTable {
   uint8_t UPB_PRIVATE(dense_below);
   uint8_t UPB_PRIVATE(table_mask);
   uint8_t UPB_PRIVATE(required_count);  // Required fields have the low hasbits.
-
+#if defined(UPB_TRACING_ENABLED) && !defined(NDEBUG)
+  const char* UPB_PRIVATE(full_name);
+#endif
   // To statically initialize the tables of variable length, we need a flexible
   // array member, and we need to compile in gnu99 mode (constant initialization
   // of flexible array members is a GNU extension, not in C99 unfortunately.
@@ -153,6 +155,13 @@ UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const struct upb_MiniTable* m) {
   UPB_ASSERT(0 < n && n <= 64);
   return (1ULL << n) - 1;
 }
+
+#if defined(UPB_TRACING_ENABLED) && !defined(NDEBUG)
+UPB_INLINE const char* upb_tracing_GetName(
+    const struct upb_MiniTable* mini_table) {
+  return mini_table->UPB_PRIVATE(full_name);
+}
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
