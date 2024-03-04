@@ -339,6 +339,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
   std::map<int, std::string> subs;
 
+  // Construct map of sub messages by field number.
   for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
     const upb_MiniTableField* f = &mt_64->UPB_PRIVATE(fields)[i];
     uint32_t index = f->UPB_PRIVATE(submsg_index);
@@ -349,7 +350,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
       ABSL_CHECK(pair.second);
     }
   }
-
+  // Write upb_MiniTableSub table for sub messages referenced from fields.
   if (!subs.empty()) {
     std::string submsgs_array_name = msg_name + "_submsgs";
     submsgs_array_ref = "&" + submsgs_array_name + "[0]";
@@ -365,6 +366,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("};\n\n");
   }
 
+  // Write upb_MiniTableField table.
   if (mt_64->UPB_PRIVATE(field_count) > 0) {
     std::string fields_array_name = msg_name + "__fields";
     fields_array_ref = "&" + fields_array_name + "[0]";
@@ -407,6 +409,9 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
          mt_64->UPB_PRIVATE(field_count), msgext,
          mt_64->UPB_PRIVATE(dense_below), table_mask,
          mt_64->UPB_PRIVATE(required_count));
+  output("#ifdef UPB_TRACING_ENABLED\n");
+  output("  \"$0\",\n", message.full_name());
+  output("#endif\n");
   if (!table.empty()) {
     output("  UPB_FASTTABLE_INIT({\n");
     for (const auto& ent : table) {

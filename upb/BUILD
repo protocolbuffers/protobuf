@@ -232,6 +232,12 @@ alias(
 )
 
 alias(
+    name = "tracing",
+    actual = "//upb/tracing",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "wire",
     actual = "//upb/wire",
     visibility = ["//visibility:public"],
