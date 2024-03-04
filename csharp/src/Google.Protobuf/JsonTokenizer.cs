@@ -180,9 +180,7 @@ namespace Google.Protobuf
             private readonly Stack<ContainerType> containerStack = new Stack<ContainerType>();
             private readonly PushBackReader reader;
             private State state;
-#if NET5_0_OR_GREATER == False
-            private char[] numberParsingBuffer;
-#endif
+            private readonly char[] numberParsingBuffer = new char[64];
 
             internal JsonTextTokenizer(TextReader reader)
             {
@@ -411,17 +409,10 @@ namespace Google.Protobuf
 
             private double ReadNumber(char initialCharacter)
             {
-                char[] buffer;
-#if NET5_0_OR_GREATER
-                buffer = System.Buffers.ArrayPool<char>.Shared.Rent(1024);
-#else
-                numberParsingBuffer ??= new char[1024];
-                buffer = numberParsingBuffer;
-#endif
                 int position = 0;
                 if (initialCharacter == '-')
                 {
-                    buffer[0] = '-';
+                    numberParsingBuffer[0] = '-';
                     position++;
                 }
                 else
@@ -431,14 +422,14 @@ namespace Google.Protobuf
                 // Each method returns the character it read that doesn't belong in that part,
                 // so we know what to do next, including pushing the character back at the end.
                 // null is returned for "end of text".
-                char? next = ReadInt(buffer, ref position);
+                char? next = ReadInt(numberParsingBuffer, ref position);
                 if (next == '.')
                 {
-                    next = ReadFrac(buffer, ref position);
+                    next = ReadFrac(numberParsingBuffer, ref position);
                 }
                 if (next == 'e' || next == 'E')
                 {
-                    next = ReadExp(buffer, ref position);
+                    next = ReadExp(numberParsingBuffer, ref position);
                 }
                 // If we read a character which wasn't part of the number, push it back so we can read it again
                 // to parse the next token.
@@ -451,33 +442,30 @@ namespace Google.Protobuf
                 try
                 {
 #if NET5_0_OR_GREATER
-                    if (!double.TryParse(buffer.AsSpan(0, position),
+                    if (!double.TryParse(numberParsingBuffer.AsSpan(0, position),
 #else
-                    if (!double.TryParse(new string(buffer, 0, position),
+                    if (!double.TryParse(new string(numberParsingBuffer, 0, position),
 #endif
                             NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
                             CultureInfo.InvariantCulture,
                             out double result))
 
                     {
-                        throw reader.CreateException("Cannot parse double value: " + new string(buffer, 0, position));
+                        throw reader.CreateException("Cannot parse double value: " + new string(numberParsingBuffer, 0, position));
                     }
 
                     // .NET Core 3.0 and later returns infinity if the number is too large or small to be represented.
                     // For compatibility with other Protobuf implementations the tokenizer should still throw.
                     if (double.IsInfinity(result))
                     {
-                        throw reader.CreateException("Numeric value out of range: " + new string(buffer, 0, position));
+                        throw reader.CreateException("Numeric value out of range: " + new string(numberParsingBuffer, 0, position));
                     }
-#if NET5_0_OR_GREATER
-                    System.Buffers.ArrayPool<char>.Shared.Return(buffer);
-#endif
 
                     return result;
                 }
                 catch (OverflowException)
                 {
-                    throw reader.CreateException("Numeric value out of range: " + new string(buffer, 0, position));
+                    throw reader.CreateException("Numeric value out of range: " + new string(numberParsingBuffer, 0, position));
                 }
             }
 
