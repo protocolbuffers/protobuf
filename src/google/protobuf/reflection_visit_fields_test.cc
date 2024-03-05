@@ -33,6 +33,7 @@ using ::protobuf_unittest::NestedTestAllTypes;
 using ::protobuf_unittest::TestAllExtensions;
 using ::protobuf_unittest::TestAllTypes;
 using ::protobuf_unittest::TestMap;
+using ::protobuf_unittest::TestOneof2;
 using ::protobuf_unittest::TestPackedExtensions;
 using ::protobuf_unittest::TestPackedTypes;
 using ::proto2_wireformat_unittest::TestMessageSet;
@@ -327,6 +328,13 @@ INSTANTIATE_TEST_SUITE_P(
                     ABSL_CHECK(
                         parsed->ParseFromString(original->SerializeAsString()));
                     return parsed;
+                  }},
+        TestParam{"TestOneof2LazyField",
+                  [](Arena& arena) -> Message* {
+                    auto* msg = Arena::Create<TestOneof2>(&arena);
+                    TestUtil::SetOneof2(msg);
+                    msg->mutable_foo_lazy_message()->set_moo_int(0);
+                    return msg;
                   }},
         TestParam{"TestPacked",
                   [](Arena& arena) -> Message* {
