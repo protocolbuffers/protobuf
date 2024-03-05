@@ -109,6 +109,7 @@ internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_javalite",
     javalite = True,
     deps = [
+        ":java_features_proto",
         "//:any_proto",
         "//:api_proto",
         "//:duration_proto",
@@ -155,6 +156,7 @@ protobuf_java_export(
     maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/lite:pom_template.xml",
     resources = [
+        ":java_features_proto",
         "//:lite_well_known_protos",
     ],
     tags = ["manual"],
