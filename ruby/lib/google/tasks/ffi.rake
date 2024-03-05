@@ -9,7 +9,7 @@ def configure_common_compile_task(task)
   end
 
   task.add_include_path third_party_path
-  task.add_define 'NDEBUG'
+  # task.add_define 'NDEBUG'
   task.cflags << "-std=gnu99 -O3"
   [
     :convert, :defs, :map, :message, :protobuf, :repeated_field, :wrap_memcpy

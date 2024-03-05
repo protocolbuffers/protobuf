@@ -100,9 +100,9 @@ cc_library(
         "-Wno-declaration-after-statement",
     ],
     linkstatic = True,
-    local_defines = [
-        "NDEBUG",
-    ],
+    #    local_defines = [
+    #        "NDEBUG",
+    #    ],
     target_compatible_with = select({
         "//ruby:ffi_disabled": ["@platforms//:incompatible"],
         "//conditions:default": [],
