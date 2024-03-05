@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
     ]
     s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
   end
-  s.required_ruby_version = '>= 2.7'
+  s.required_ruby_version = '>= 3.0'
   # TODO: evaluate removing Rakefile and moving logic to extconf.rb, so that we
   # can remove this runtime dependency on rake. See the discussion here for
   # more details:
