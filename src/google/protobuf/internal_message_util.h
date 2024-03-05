@@ -13,6 +13,9 @@
 
 #include "google/protobuf/message.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -21,5 +24,6 @@ namespace internal {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_INTERNAL_MESSAGE_UTIL_H__

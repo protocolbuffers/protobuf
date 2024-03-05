@@ -11,6 +11,8 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_LITE_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_LITE_H__
 
+// No port_def include needed
+
 namespace google {
 namespace protobuf {
 namespace internal {

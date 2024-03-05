@@ -12,6 +12,9 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -72,3 +75,5 @@ bool ParseAnyTypeUrl(absl::string_view type_url, std::string* full_type_name) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

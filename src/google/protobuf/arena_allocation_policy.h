@@ -11,6 +11,8 @@
 #include <cstddef>
 #include <cstdint>
 
+// No port_def include needed
+
 namespace google {
 namespace protobuf {
 namespace internal {

@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_H__
 #define GOOGLE_PROTOBUF_METADATA_H__
 
+// No port_def include needed
 // TODO: Remove this file and all instances where it gets imported.
 
 #endif  // GOOGLE_PROTOBUF_METADATA_H__

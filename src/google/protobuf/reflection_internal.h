@@ -13,6 +13,9 @@
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -347,5 +350,6 @@ class RepeatedPtrFieldMessageAccessor final
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
