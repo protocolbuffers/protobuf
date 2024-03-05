@@ -772,7 +772,7 @@ namespace Google.Protobuf
                 {
                     if (sb.Capacity <= MaxCachedStringBuilderSize)
                     {
-                        cachedInstance = sb;
+                        cachedInstance = cachedInstance?.Capacity >= sb.Capacity ? cachedInstance : sb;
                     }
                 }
 
