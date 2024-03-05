@@ -38,6 +38,13 @@ public final class TextFormat {
 
   private static final String DEBUG_STRING_SILENT_MARKER = "\t ";
 
+  private static final String REDACTED_MARKER = getRedactedMarker();
+
+  private static String getRedactedMarker() {
+    String redactedMarker = "[REDACTED]";
+    return redactedMarker;
+  }
+
   /**
    * Generates a human readable form of this message, useful for debugging and other purposes, with
    * no newline characters. This is just a trivial wrapper around {@link
@@ -58,7 +65,7 @@ public final class TextFormat {
    */
   public static void printUnknownFieldValue(
       final int tag, final Object value, final Appendable output) throws IOException {
-    printUnknownFieldValue(tag, value, multiLineOutput(output));
+    printUnknownFieldValue(tag, value, setLineOutput(output, false));
   }
 
   private static void printUnknownFieldValue(
@@ -109,21 +116,31 @@ public final class TextFormat {
     // Printer instance which escapes non-ASCII characters.
     private static final Printer DEFAULT =
         new Printer(
-            true, TypeRegistry.getEmptyTypeRegistry(), ExtensionRegistryLite.getEmptyRegistry());
+            true,
+            TypeRegistry.getEmptyTypeRegistry(),
+            ExtensionRegistryLite.getEmptyRegistry(),
+            false,
+            false);
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
     private final TypeRegistry typeRegistry;
     private final ExtensionRegistryLite extensionRegistry;
+    private final boolean redacting;
+    private final boolean singleLine;
 
     private Printer(
         boolean escapeNonAscii,
         TypeRegistry typeRegistry,
-        ExtensionRegistryLite extensionRegistry) {
+        ExtensionRegistryLite extensionRegistry,
+        boolean redacting,
+        boolean singleLine) {
       this.escapeNonAscii = escapeNonAscii;
       this.typeRegistry = typeRegistry;
       this.extensionRegistry = extensionRegistry;
+      this.redacting = redacting;
+      this.singleLine = singleLine;
     }
 
     /**
@@ -136,7 +153,7 @@ public final class TextFormat {
      *     with the escape mode set to the given parameter.
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
-      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
     }
 
     /**
@@ -149,7 +166,7 @@ public final class TextFormat {
       if (this.typeRegistry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one typeRegistry is allowed.");
       }
-      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
     }
 
     /**
@@ -162,7 +179,30 @@ public final class TextFormat {
       if (this.extensionRegistry != ExtensionRegistryLite.getEmptyRegistry()) {
         throw new IllegalArgumentException("Only one extensionRegistry is allowed.");
       }
-      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
+    }
+
+    /**
+     * Return a new Printer instance with the specified redaction status.
+     *
+     * @param redacting If true, the new Printer will redact all proto fields that are marked by a
+     *     debug_redact=true option.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the redact mode set to the given parameter.
+     */
+    Printer redacting(boolean redacting) {
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
+    }
+
+    /**
+     * Return a new Printer instance with the specified line formatting status.
+     *
+     * @param singleLine If true, the new Printer will output no newline characters.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the singleLine mode set to the given parameter.
+     */
+    Printer emittingSingleLine(boolean singleLine) {
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
     }
 
     /**
@@ -171,12 +211,12 @@ public final class TextFormat {
      * original Protocol Buffer system)
      */
     public void print(final MessageOrBuilder message, final Appendable output) throws IOException {
-      print(message, multiLineOutput(output));
+      print(message, setLineOutput(output, this.singleLine));
     }
 
     /** Outputs a textual representation of {@code fields} to {@code output}. */
     public void print(final UnknownFieldSet fields, final Appendable output) throws IOException {
-      printUnknownFields(fields, multiLineOutput(output));
+      printUnknownFields(fields, setLineOutput(output, this.singleLine));
     }
 
     private void print(final MessageOrBuilder message, final TextGenerator generator)
@@ -253,7 +293,7 @@ public final class TextFormat {
 
     public void printField(final FieldDescriptor field, final Object value, final Appendable output)
         throws IOException {
-      printField(field, value, multiLineOutput(output));
+      printField(field, value, setLineOutput(output, this.singleLine));
     }
 
     private void printField(
@@ -358,12 +398,16 @@ public final class TextFormat {
     public void printFieldValue(
         final FieldDescriptor field, final Object value, final Appendable output)
         throws IOException {
-      printFieldValue(field, value, multiLineOutput(output));
+      printFieldValue(field, value, setLineOutput(output, this.singleLine));
     }
 
     private void printFieldValue(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
+      if (shouldRedact(field)) {
+        generator.print(REDACTED_MARKER);
+        return;
+      }
       switch (field.getType()) {
         case INT32:
         case SINT32:
@@ -429,6 +473,43 @@ public final class TextFormat {
       }
     }
 
+    private boolean shouldRedactOptionValue(EnumValueDescriptor optionValue) {
+      if (optionValue.getOptions().hasDebugRedact()) {
+        return true;
+      }
+      return false;
+    }
+
+    private boolean shouldRedact(final FieldDescriptor field) {
+      if (!this.redacting) {
+        return false;
+      }
+      if (field.getOptions().hasDebugRedact()) {
+        return true;
+      }
+      Map<Descriptors.FieldDescriptor, Object> optFields = field.getOptions().getAllFields();
+      for (Map.Entry<Descriptors.FieldDescriptor, Object> entry : optFields.entrySet()) {
+        Descriptors.FieldDescriptor option = entry.getKey();
+        if (option.getType() != Descriptors.FieldDescriptor.Type.ENUM) {
+          continue;
+        }
+        boolean isRepeated = option.isRepeated();
+        if (option.isRepeated()) {
+          for (EnumValueDescriptor value : (List<EnumValueDescriptor>) entry.getValue()) {
+            if (shouldRedactOptionValue(value)) {
+              return true;
+            }
+          }
+        } else {
+          EnumValueDescriptor optionValue = (EnumValueDescriptor) entry.getValue();
+          if (shouldRedactOptionValue(optionValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
     public String printToString(final MessageOrBuilder message) {
       try {
@@ -457,7 +538,7 @@ public final class TextFormat {
     public String shortDebugString(final MessageOrBuilder message) {
       try {
         final StringBuilder text = new StringBuilder();
-        print(message, singleLineOutput(text));
+        print(message, setLineOutput(text, true));
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -471,7 +552,7 @@ public final class TextFormat {
     public String shortDebugString(final FieldDescriptor field, final Object value) {
       try {
         final StringBuilder text = new StringBuilder();
-        printField(field, value, singleLineOutput(text));
+        printField(field, value, setLineOutput(text, true));
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -485,13 +566,14 @@ public final class TextFormat {
     public String shortDebugString(final UnknownFieldSet fields) {
       try {
         final StringBuilder text = new StringBuilder();
-        printUnknownFields(fields, singleLineOutput(text));
+        printUnknownFields(fields, setLineOutput(text, true));
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
     }
 
+    // TODO : implement unknown field redaction, as in cl/575006343
     private static void printUnknownFieldValue(
         final int tag, final Object value, final TextGenerator generator) throws IOException {
       switch (WireFormat.getTagWireType(tag)) {
@@ -637,12 +719,8 @@ public final class TextFormat {
     }
   }
 
-  private static TextGenerator multiLineOutput(Appendable output) {
-    return new TextGenerator(output, false);
-  }
-
-  private static TextGenerator singleLineOutput(Appendable output) {
-    return new TextGenerator(output, true);
+  private static TextGenerator setLineOutput(Appendable output, boolean singleLine) {
+    return new TextGenerator(output, singleLine);
   }
 
   /** An inner class for writing text to the output stream. */
