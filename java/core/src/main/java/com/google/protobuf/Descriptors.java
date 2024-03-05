@@ -482,20 +482,17 @@ public final class Descriptors {
       return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
     }
 
-    public static void internalUpdateFileDescriptorImmutable(
+    /**
+     * This method is to be called by generated code only. It updates the FileDescriptorProto
+     * associated with the descriptor by parsing it again with the given ExtensionRegistry. This is
+     * needed to recognize custom options.
+     */
+    public static void internalUpdateFileDescriptor(
         FileDescriptor descriptor, ExtensionRegistry registry) {
-      internalUpdateFileDescriptor(descriptor, registry, false);
-    }
-
-    private static void internalUpdateFileDescriptor(
-        FileDescriptor descriptor, ExtensionRegistry registry, boolean mutable) {
       ByteString bytes = descriptor.proto.toByteString();
       try {
         FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
-        synchronized (descriptor) {
-          descriptor.setProto(proto);
-          descriptor.resolveAllFeaturesImmutable();
-        }
+        descriptor.setProto(proto);
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
@@ -712,10 +709,10 @@ public final class Descriptors {
      * construct the descriptors we have to have parsed the descriptor protos. So, we have to parse
      * the descriptor protos a second time after constructing the descriptors.
      */
-    private void setProto(final FileDescriptorProto proto) {
+    private synchronized void setProto(final FileDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < messageTypes.length; i++) {
         messageTypes[i].setProto(proto.getMessageType(i));
@@ -1167,8 +1164,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final DescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < nestedTypes.length; i++) {
         nestedTypes[i].setProto(proto.getNestedType(i));
@@ -1983,8 +1980,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final FieldDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
 
     /** For internal use only. This is to satisfy the FieldDescriptorLite interface. */
@@ -2263,8 +2260,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < values.length; i++) {
         values[i].setProto(proto.getValue(i));
@@ -2412,8 +2409,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumValueDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
   }
 
@@ -2537,8 +2534,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final ServiceDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < methods.length; i++) {
         methods[i].setProto(proto.getMethod(i));
@@ -2687,8 +2684,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final MethodDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
   }
 
@@ -3223,8 +3220,8 @@ public final class Descriptors {
 
     private void setProto(final OneofDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
 
     private OneofDescriptor(
