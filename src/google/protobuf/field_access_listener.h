@@ -14,6 +14,9 @@
 #include "google/protobuf/port.h"
 
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 
@@ -157,5 +160,6 @@ using AccessListener = NoOpAccessListener<T>;
 // All hooks are subject to approval by protobuf-team@.
 
 #endif  // !REPLACE_PROTO_LISTENER_IMPL
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__
