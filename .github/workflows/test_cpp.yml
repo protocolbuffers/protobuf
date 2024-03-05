@@ -181,6 +181,7 @@ jobs:
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
             -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             -Dprotobuf_BUILD_CONFORMANCE=ON
+            -Dprotobuf_BUILD_LIBUPB=OFF
             -DCMAKE_CXX_STANDARD=14
             -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
 
@@ -404,6 +405,7 @@ jobs:
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
+              -Dprotobuf_BUILD_LIBUPB=OFF
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
     name: ${{ matrix.name }}

@@ -72,7 +72,12 @@ def _stage0_proto_staleness_test(name, base_dir, src_files, src_rules, strip_pre
     )
 
     staleness_test(
-        name = name + "_staleness_test",
+        # begin:google_only
+        #         name = name + "_staleness_test",
+        # end:google_only
+        # begin:github_only
+        name = name + "_stage0_staleness_test",
+        # end:github_only
         outs = _generated_srcs(base_dir + "stage0", src_files),
         generated_pattern = "bootstrap_generated_sources/%s",
         target_files = native.glob([base_dir + "stage0/**"]),
@@ -87,11 +92,21 @@ def _generate_stage1_proto(name, base_dir, src_files, src_rules, generator, kwar
     native.genrule(
         name = "gen_{}_{}_stage1".format(name, generator),
         srcs = src_rules,
-        outs = _generated_srcs_for_generator(base_dir + "stage1", src_files, generator),
+        # begin:google_only
+        #         outs = _generated_srcs_for_generator(base_dir + "stage1", src_files, generator),
+        # end:google_only
+        # begin:github_only
+        outs = _generated_srcs_for_generator("bootstrap_generated_sources/" + base_dir + "stage1", src_files, generator),
+        # end:github_only
         cmd = "$(location " + _protoc + ") " +
               "--plugin=protoc-gen-" + generator +
               "=$(location " + _upbc(generator, 0) + ") " + _extra_proto_path +
-              "--" + generator + "_out=$(RULEDIR)/" + base_dir + "stage1 " +
+              # begin:google_only
+              #               "--" + generator + "_out=$(RULEDIR)/" + base_dir + "stage1 " +
+              # end:google_only
+              # begin:github_only
+              "--" + generator + "_out=$(RULEDIR)/bootstrap_generated_sources/" + base_dir + "stage1 " +
+              # end:github_only
               " ".join(src_files),
         visibility = ["//upb_generator:__pkg__"],
         tools = [
@@ -100,6 +115,21 @@ def _generate_stage1_proto(name, base_dir, src_files, src_rules, generator, kwar
         ],
         **kwargs
     )
+
+    # begin:github_only
+    staleness_test(
+        name = "{}_{}_stage1_staleness_test".format(name, generator),
+        outs = _generated_srcs_for_generator(base_dir + "stage1", src_files, generator),
+        generated_pattern = "bootstrap_generated_sources/%s",
+        target_files = native.glob([base_dir + "stage1/**"]),
+        # To avoid skew problems for descriptor.proto/pluging.proto between
+        # GitHub repos.  It's not critical that the checked-in protos are up to
+        # date for every change, they just needs to be complete enough to have
+        # everything needed by the code generator itself.
+        tags = ["manual"],
+    )
+
+# end:github_only
 
 def bootstrap_upb_proto_library(
         name,
@@ -172,7 +202,12 @@ def bootstrap_upb_proto_library(
         name = name + "_stage1",
         hdrs = _generated_srcs_for_suffix(base_dir + "stage1", src_files, ".upb.h"),
         includes = [base_dir + "stage1"],
-        visibility = ["//upb_generator:__pkg__"],
+        visibility = [
+            # begin:github_only
+            "//pkg:__pkg__",
+            # end:github_only
+            "//upb_generator:__pkg__",
+        ],
         deps = [
             "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
             ":" + name + "_minitable_stage1",

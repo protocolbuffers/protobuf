@@ -309,17 +309,29 @@ cc_test(
 # begin:github_only
 filegroup(
     name = "test_srcs",
-    srcs = glob(
-        [
-            "**/*.cc",
-            "**/*.h",
-        ],
-    ),
+    srcs = [
+        "editions_test.cc",
+        "proto3_test.cc",
+        "test_cpp.cc",
+        "test_generated_code.cc",
+        "test_import_empty_srcs.cc",
+        "test_mini_table_oneof.cc",
+    ],
     visibility = ["//pkg:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_util",
+    srcs = [
+        "fuzz_util.cc",
+        "fuzz_util.h",
+        "parse_text_proto.h",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
     srcs = glob(
         [
             "**/*.proto",

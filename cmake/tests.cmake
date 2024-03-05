@@ -34,9 +34,34 @@ macro(compile_proto_file filename)
     COMMAND ${protobuf_PROTOC_EXE} ${filename}
         --proto_path=${protobuf_SOURCE_DIR}/src
         --cpp_out=${protoc_cpp_args}${protobuf_BINARY_DIR}/src
-        --experimental_allow_proto3_optional
   )
 endmacro(compile_proto_file)
+
+macro(compile_upb_proto_file filename generator)
+  file(RELATIVE_PATH rel_filename ${protobuf_SOURCE_DIR} ${filename})
+  string(REPLACE .proto .${generator}.h pb_hdr ${rel_filename})
+  string(REPLACE .proto .${generator}.c pb_src ${rel_filename})
+  if (${filename} MATCHES ".*src/.*")
+    add_custom_command(
+      OUTPUT ${pb_hdr} ${pb_src}
+      DEPENDS ${protobuf_PROTOC_EXE} ${filename} $<TARGET_FILE:protoc-gen-${generator}>
+      COMMAND ${protobuf_PROTOC_EXE} ${filename}
+          --proto_path=${protobuf_SOURCE_DIR}/src
+          --${generator}_out=${protobuf_BINARY_DIR}/src
+	  --plugin=protoc-gen-${generator}=$<TARGET_FILE:protoc-gen-${generator}>
+    )
+  else()
+    add_custom_command(
+      OUTPUT ${pb_hdr} ${pb_src}
+      DEPENDS ${protobuf_PROTOC_EXE} ${filename} $<TARGET_FILE:protoc-gen-${generator}>
+      COMMAND ${protobuf_PROTOC_EXE} ${filename}
+          --proto_path=${protobuf_SOURCE_DIR}/src
+          --proto_path=${protobuf_SOURCE_DIR}
+          --${generator}_out=${protobuf_BINARY_DIR}
+	  --plugin=protoc-gen-${generator}=$<TARGET_FILE:protoc-gen-${generator}>
+    )
+  endif()
+endmacro(compile_upb_proto_file)
 
 set(lite_test_proto_files)
 foreach(proto_file ${lite_test_protos})
@@ -195,6 +220,36 @@ add_custom_target(full-test
 add_test(NAME full-test
   COMMAND tests ${protobuf_GTEST_ARGS}
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
+
+if (protobuf_BUILD_LIBUPB)
+  set(upb_test_proto_genfiles)
+  foreach(proto_file ${upb_test_protos_files})
+    compile_upb_proto_file(${proto_file} upb)
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_src} ${pb_hdr})
+    compile_upb_proto_file(${proto_file} upbdefs)
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_src} ${pb_hdr})
+    compile_upb_proto_file(${proto_file} upb_minitable)
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_src} ${pb_hdr})
+  endforeach(proto_file)
+  compile_upb_proto_file(${descriptor_proto_proto_srcs} upbdefs)
+  set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_src} ${pb_hdr})
+
+  add_executable(upb-test
+    ${upb_test_files}
+    ${upb_test_proto_genfiles}
+    ${upb_test_util_files})
+
+  target_link_libraries(upb-test
+    libprotobuf
+    libupb
+    ${protobuf_ABSL_USED_TARGETS}
+    ${protobuf_ABSL_USED_TEST_TARGETS}
+    GTest::gmock_main)
+
+  add_test(NAME upb-test
+    COMMAND upb-test ${protobuf_GTEST_ARGS}
+    WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
+endif()
 
 # For test purposes, remove headers that should already be installed.  This
 # prevents accidental conflicts and also version skew (since local headers take
