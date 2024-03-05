@@ -78,6 +78,9 @@ upb_Message_GetField(const upb_Message* msg, const upb_MiniTableField* field,
   return ret;
 }
 
+// Sets the value of the given field in the given msg. The return value is true
+// if the operation completed successfully, or false if memory allocation
+// failed.
 UPB_INLINE bool upb_Message_SetField(upb_Message* msg,
                                      const upb_MiniTableField* field,
                                      upb_MessageValue val, upb_Arena* a) {
