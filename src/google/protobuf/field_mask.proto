@@ -32,7 +32,9 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option java_package = "com.google.protobuf";
+option java_api_version = 1;
+option java_alt_api_package = "com.google.protobuf";
+option java_package = "com.google.protobuf.proto1api";
 option java_outer_classname = "FieldMaskProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
