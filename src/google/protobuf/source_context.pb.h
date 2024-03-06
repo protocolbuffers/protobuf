@@ -10,13 +10,12 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/port_def.inc"
+#include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 5027000
 #error "Protobuf C++ gencode is built with an incompatible version of"
 #error "Protobuf C++ headers/runtime. See"
 #error "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
 #endif
-#include "google/protobuf/port_undef.inc"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
