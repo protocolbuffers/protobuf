@@ -180,6 +180,7 @@ namespace Google.Protobuf
             private readonly Stack<ContainerType> containerStack = new Stack<ContainerType>();
             private readonly PushBackReader reader;
             private State state;
+            private readonly char[] numberParsingBuffer = new char[64];
 
             internal JsonTextTokenizer(TextReader reader)
             {
@@ -408,10 +409,11 @@ namespace Google.Protobuf
 
             private double ReadNumber(char initialCharacter)
             {
-                StringBuilder builder = new StringBuilder();
+                int position = 0;
                 if (initialCharacter == '-')
                 {
-                    builder.Append("-");
+                    numberParsingBuffer[0] = '-';
+                    position++;
                 }
                 else
                 {
@@ -420,14 +422,14 @@ namespace Google.Protobuf
                 // Each method returns the character it read that doesn't belong in that part,
                 // so we know what to do next, including pushing the character back at the end.
                 // null is returned for "end of text".
-                char? next = ReadInt(builder);
+                char? next = ReadInt(numberParsingBuffer, ref position);
                 if (next == '.')
                 {
-                    next = ReadFrac(builder);
+                    next = ReadFrac(numberParsingBuffer, ref position);
                 }
                 if (next == 'e' || next == 'E')
                 {
-                    next = ReadExp(builder);
+                    next = ReadExp(numberParsingBuffer, ref position);
                 }
                 // If we read a character which wasn't part of the number, push it back so we can read it again
                 // to parse the next token.
@@ -439,34 +441,43 @@ namespace Google.Protobuf
                 // TODO: What exception should we throw if the value can't be represented as a double?
                 try
                 {
-                    double result = double.Parse(builder.ToString(),
-                        NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
-                        CultureInfo.InvariantCulture);
+#if NET5_0_OR_GREATER
+                    if (!double.TryParse(numberParsingBuffer.AsSpan(0, position),
+#else
+                    if (!double.TryParse(new string(numberParsingBuffer, 0, position),
+#endif
+                            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
+                            CultureInfo.InvariantCulture,
+                            out double result))
+
+                    {
+                        throw reader.CreateException("Cannot parse double value: " + new string(numberParsingBuffer, 0, position));
+                    }
 
                     // .NET Core 3.0 and later returns infinity if the number is too large or small to be represented.
                     // For compatibility with other Protobuf implementations the tokenizer should still throw.
                     if (double.IsInfinity(result))
                     {
-                        throw reader.CreateException("Numeric value out of range: " + builder);
+                        throw reader.CreateException("Numeric value out of range: " + new string(numberParsingBuffer, 0, position));
                     }
 
                     return result;
                 }
                 catch (OverflowException)
                 {
-                    throw reader.CreateException("Numeric value out of range: " + builder);
+                    throw reader.CreateException("Numeric value out of range: " + new string(numberParsingBuffer, 0, position));
                 }
             }
 
-            private char? ReadInt(StringBuilder builder)
+            private char? ReadInt(char[] buffer, ref int position)
             {
                 char first = reader.ReadOrFail("Invalid numeric literal");
                 if (first < '0' || first > '9')
                 {
                     throw reader.CreateException("Invalid numeric literal");
                 }
-                builder.Append(first);
-                char? next = ConsumeDigits(builder, out int digitCount);
+                buffer[position++] = first;
+                char? next = ConsumeDigits(buffer, ref position, out int digitCount);
                 if (first == '0' && digitCount != 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: leading 0 for non-zero value.");
@@ -474,10 +485,10 @@ namespace Google.Protobuf
                 return next;
             }
 
-            private char? ReadFrac(StringBuilder builder)
+            private char? ReadFrac(char[] buffer, ref int position)
             {
-                builder.Append('.'); // Already consumed this
-                char? next = ConsumeDigits(builder, out int digitCount);
+                buffer[position++] = '.'; // Already consumed this
+                char? next = ConsumeDigits(buffer, ref position, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: fraction with no trailing digits");
@@ -485,9 +496,9 @@ namespace Google.Protobuf
                 return next;
             }
 
-            private char? ReadExp(StringBuilder builder)
+            private char? ReadExp(char[] buffer, ref int position)
             {
-                builder.Append('E'); // Already consumed this (or 'e')
+                buffer[position++] = 'E'; // Already consumed this (or 'e')
                 char? next = reader.Read();
                 if (next == null)
                 {
@@ -495,13 +506,13 @@ namespace Google.Protobuf
                 }
                 if (next == '-' || next == '+')
                 {
-                    builder.Append(next.Value);
+                    buffer[position++] = next.Value;
                 }
                 else
                 {
                     reader.PushBack(next.Value);
                 }
-                next = ConsumeDigits(builder, out int digitCount);
+                next = ConsumeDigits(buffer, ref position, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: exponent without value");
@@ -509,7 +520,7 @@ namespace Google.Protobuf
                 return next;
             }
 
-            private char? ConsumeDigits(StringBuilder builder, out int count)
+            private char? ConsumeDigits(char[] buffer, ref int position, out int count)
             {
                 count = 0;
                 while (true)
@@ -520,7 +531,8 @@ namespace Google.Protobuf
                         return next;
                     }
                     count++;
-                    builder.Append(next.Value);
+                    buffer[position++] = next.Value;
+                    if (position >= buffer.Length) throw reader.CreateException($"Invalid numeric value: exceeds {buffer.Length} digits!");
                 }
             }
 
