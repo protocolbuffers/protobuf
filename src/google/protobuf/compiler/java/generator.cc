@@ -89,7 +89,8 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   }
 
   // TODO: Remove once Java lite supports editions
-  if (enforce_editions && file_options.enforce_lite &&
+  if (enforce_editions && !CanSkipEditionCheck(file->name()) &&
+      file_options.enforce_lite &&
       GetEdition(*file) > google::protobuf::Edition::EDITION_PROTO3) {
     *error = "lite runtime generator option cannot be used with editions yet.";
     return false;
