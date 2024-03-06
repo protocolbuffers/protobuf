@@ -80,6 +80,47 @@ TEST_P(VisitFieldsTest, VisitedMessageFieldsCountMatchesListFields) {
   EXPECT_EQ(count, message_count);
 }
 
+// Counts present message fields using ListFields() where:
+// --N elements in a repeated message field are counted N times
+// --M message values in a map field are counted M times.
+// --A map field whose value type is not message is ignored.
+int CountAllMessageFieldsViaListFields(const Reflection* reflection,
+                                       const Message& message) {
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(message, &fields);
+
+  int message_count = 0;
+  for (auto field : fields) {
+    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+    if (field->is_map()) {
+      if (field->message_type()->map_value()->cpp_type() !=
+          FieldDescriptor::CPPTYPE_MESSAGE)
+        continue;
+    }
+    if (field->is_repeated()) {
+      message_count += reflection->FieldSize(message, field);
+    } else {
+      ++message_count;
+    }
+  }
+  return message_count;
+}
+
+TEST_P(VisitFieldsTest, VisitMessageFieldsCountIncludesRepeatedElements) {
+  int count = 0;
+  VisitMessageFields(*message_, [&](const Message& msg) { ++count; });
+
+  EXPECT_EQ(count, CountAllMessageFieldsViaListFields(reflection_, *message_));
+}
+
+TEST_P(VisitFieldsTest,
+       VisitMutableMessageFieldsCountIncludesRepeatedElements) {
+  int count = 0;
+  VisitMutableMessageFields(*message_, [&](Message& msg) { ++count; });
+
+  EXPECT_EQ(count, CountAllMessageFieldsViaListFields(reflection_, *message_));
+}
+
 TEST_P(VisitFieldsTest, ClearByVisitFieldsMustBeEmpty) {
   VisitFields(*message_, [](auto info) { info.Clear(); });
 
