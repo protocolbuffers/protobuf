@@ -245,6 +245,12 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
         upb_MiniTableField_Number(field));
   }
 
+  if (singular && upb_MiniTableField_IsSubMessage(field)) {
+    upb_MdDecoder_ErrorJmp(&d->base,
+                           "Field %" PRIu32 " cannot be a singular submessage",
+                           upb_MiniTableField_Number(field));
+  }
+
   if (singular) field->UPB_PRIVATE(offset) = kNoPresence;
   if (required) {
     field->UPB_PRIVATE(offset) = kRequiredPresence;

@@ -13,18 +13,24 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
+#include "absl/base/log_severity.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
-#include "google/protobuf/compiler/allowlists/allowlists.h"
 #include "google/protobuf/compiler/versions.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/feature_resolver.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
 
@@ -42,7 +48,6 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include <ctype.h>
 #include <errno.h>
 
 #include <fstream>
@@ -61,7 +66,6 @@
 #include <sys/sysctl.h>
 #endif
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/container/flat_hash_set.h"
@@ -81,11 +85,18 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
 
+
+#ifdef _WIN32
+#include "google/protobuf/io/io_win32.h"
+#endif
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "absl/strings/ascii.h"
+#endif
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -122,7 +133,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
 // copy in importer.cc?
 static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-  return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
+  return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
 #else
   return false;
@@ -178,7 +189,7 @@ bool TryCreateParentDirectory(const std::string& prefix,
   std::vector<std::string> parts =
       absl::StrSplit(filename, absl::ByAnyChar("/\\"), absl::SkipEmpty());
   std::string path_so_far = prefix;
-  for (int i = 0; i < parts.size() - 1; i++) {
+  for (size_t i = 0; i < parts.size() - 1; ++i) {
     path_so_far += parts[i];
     if (mkdir(path_so_far.c_str(), 0777) != 0) {
       if (errno != EEXIST) {
@@ -310,7 +321,7 @@ void CommandLineInterface::GetTransitiveDependencies(
   }
 
   // Add all dependencies.
-  for (int i = 0; i < file->dependency_count(); i++) {
+  for (int i = 0; i < file->dependency_count(); ++i) {
     GetTransitiveDependencies(file->dependency(i), already_seen, output,
                               options);
   }
@@ -335,12 +346,12 @@ class CommandLineInterface::ErrorPrinter
       public io::ErrorCollector,
       public DescriptorPool::ErrorCollector {
  public:
-  ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = nullptr)
+  explicit ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = nullptr)
       : format_(format),
         tree_(tree),
         found_errors_(false),
         found_warnings_(false) {}
-  ~ErrorPrinter() override {}
+  ~ErrorPrinter() override = default;
 
   // implements MultiFileErrorCollector ------------------------------
   void RecordError(absl::string_view filename, int line, int column,
@@ -431,7 +442,8 @@ class CommandLineInterface::ErrorPrinter
 // them all to disk on demand.
 class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
  public:
-  GeneratorContextImpl(const std::vector<const FileDescriptor*>& parsed_files);
+  explicit GeneratorContextImpl(
+      const std::vector<const FileDescriptor*>& parsed_files);
 
   // Write all files in the directory to disk at the given output location,
   // which must end in a '/'.
@@ -734,10 +746,11 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
     int inner_indent = 0;
     // insertion_content is guaranteed to end in an endline. This last endline
     // has no effect on indentation.
-    for (; pos < source_annotation.end() && pos < insertion_content.size() - 1;
+    for (; pos < static_cast<size_t>(source_annotation.end()) &&
+           pos < insertion_content.size() - 1;
          ++pos) {
       if (insertion_content[pos] == '\n') {
-        if (pos >= source_annotation.begin()) {
+        if (pos >= static_cast<size_t>(source_annotation.begin())) {
           // The beginning of the annotation is at insertion_offset, but the end
           // can still move further in the target file.
           inner_indent += indent_length;
@@ -797,7 +810,8 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     // insert the new metadata from info_to_insert_. Shift all annotations
     // after the new metadata by the length of the text that was inserted
     // (including any additional indent length).
-    if (source_annotation.begin() >= insertion_offset && !crossed_offset) {
+    if (static_cast<size_t>(source_annotation.begin()) >= insertion_offset &&
+        !crossed_offset) {
       crossed_offset = true;
       InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
                         new_metadata);
@@ -905,7 +919,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   }
   // Calculate how much space we need.
   int indent_size = 0;
-  for (int i = 0; i < data_.size(); i++) {
+  for (size_t i = 0; i < data_.size(); ++i) {
     if (data_[i] == '\n') indent_size += indent_.size();
   }
 
@@ -947,7 +961,7 @@ CommandLineInterface::CommandLineInterface()
     : direct_dependencies_violation_msg_(
           kDefaultDirectDependenciesViolationMsg) {}
 
-CommandLineInterface::~CommandLineInterface() {}
+CommandLineInterface::~CommandLineInterface() = default;
 
 void CommandLineInterface::RegisterGenerator(const std::string& flag_name,
                                              CodeGenerator* generator,
@@ -978,13 +992,13 @@ void CommandLineInterface::AllowPlugins(const std::string& exe_name_prefix) {
 namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
-  for (int i = 0; i < desc->field_count(); i++) {
+  for (int i = 0; i < desc->field_count(); ++i) {
     if (desc->field(i)->real_containing_oneof() == nullptr &&
         desc->field(i)->containing_oneof() != nullptr) {
       return true;
     }
   }
-  for (int i = 0; i < desc->nested_type_count(); i++) {
+  for (int i = 0; i < desc->nested_type_count(); ++i) {
     if (ContainsProto3Optional(desc->nested_type(i))) {
       return true;
     }
@@ -994,7 +1008,7 @@ bool ContainsProto3Optional(const Descriptor* desc) {
 
 bool ContainsProto3Optional(Edition edition, const FileDescriptor* file) {
   if (edition == Edition::EDITION_PROTO3) {
-    for (int i = 0; i < file->message_type_count(); i++) {
+    for (int i = 0; i < file->message_type_count(); ++i) {
       if (ContainsProto3Optional(file->message_type(i))) {
         return true;
       }
@@ -1207,8 +1221,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
          databases_per_descriptor_set) {
       raw_databases_per_descriptor_set.push_back(db.get());
     }
-    descriptor_set_in_database.reset(
-        new MergedDescriptorDatabase(raw_databases_per_descriptor_set));
+    descriptor_set_in_database = std::make_unique<MergedDescriptorDatabase>(
+        raw_databases_per_descriptor_set);
   }
 
   if (proto_path_.empty()) {
@@ -1219,26 +1233,26 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       return 1;
     }
 
-    error_collector.reset(new ErrorPrinter(error_format_));
-    descriptor_pool.reset(new DescriptorPool(descriptor_set_in_database.get(),
-                                             error_collector.get()));
+    error_collector = std::make_unique<ErrorPrinter>(error_format_);
+    descriptor_pool = std::make_unique<DescriptorPool>(
+        descriptor_set_in_database.get(), error_collector.get());
   } else {
-    disk_source_tree.reset(new DiskSourceTree());
+    disk_source_tree = std::make_unique<DiskSourceTree>();
     if (!InitializeDiskSourceTree(disk_source_tree.get(),
                                   descriptor_set_in_database.get())) {
       return 1;
     }
 
-    error_collector.reset(
-        new ErrorPrinter(error_format_, disk_source_tree.get()));
+    error_collector =
+        std::make_unique<ErrorPrinter>(error_format_, disk_source_tree.get());
 
-    source_tree_database.reset(new SourceTreeDescriptorDatabase(
-        disk_source_tree.get(), descriptor_set_in_database.get()));
+    source_tree_database = std::make_unique<SourceTreeDescriptorDatabase>(
+        disk_source_tree.get(), descriptor_set_in_database.get());
     source_tree_database->RecordErrorsTo(error_collector.get());
 
-    descriptor_pool.reset(new DescriptorPool(
+    descriptor_pool = std::make_unique<DescriptorPool>(
         source_tree_database.get(),
-        source_tree_database->GetValidationErrorCollector()));
+        source_tree_database->GetValidationErrorCollector());
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
@@ -1318,7 +1332,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   // Generate output.
   if (mode_ == MODE_COMPILE) {
-    for (int i = 0; i < output_directives_.size(); i++) {
+    for (size_t i = 0; i < output_directives_.size(); ++i) {
       std::string output_location = output_directives_[i].output_location;
       if (!absl::EndsWith(output_location, ".zip") &&
           !absl::EndsWith(output_location, ".jar") &&
@@ -1405,7 +1419,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   if (mode_ == MODE_PRINT) {
     switch (print_mode_) {
       case PRINT_FREE_FIELDS:
-        for (int i = 0; i < parsed_files.size(); ++i) {
+        for (size_t i = 0; i < parsed_files.size(); ++i) {
           const FileDescriptor* fd = parsed_files[i];
           for (int j = 0; j < fd->message_type_count(); ++j) {
             PrintFreeFieldNumbers(fd->message_type(j));
@@ -1429,7 +1443,7 @@ bool CommandLineInterface::InitializeDiskSourceTree(
   AddDefaultProtoPaths(&proto_path_);
 
   // Set up the source tree.
-  for (int i = 0; i < proto_path_.size(); i++) {
+  for (size_t i = 0; i < proto_path_.size(); ++i) {
     source_tree->MapPath(proto_path_[i].first, proto_path_[i].second);
   }
 
@@ -1514,10 +1528,13 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
   Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
-  Edition maximum_edition = PROTOBUF_MAXIMUM_EDITION;
+  // Override maximum_edition if experimental_editions is true.
+  Edition maximum_edition =
+      !experimental_editions_ ? PROTOBUF_MAXIMUM_EDITION : Edition::EDITION_MAX;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
-    if ((output.generator->GetSupportedFeatures() &
+    if (!experimental_editions_ &&
+        (output.generator->GetSupportedFeatures() &
          CodeGenerator::FEATURE_SUPPORTS_EDITIONS) != 0) {
       // Only validate min/max edition on generators that advertise editions
       // support.  Generators still under development will always use the
@@ -1628,7 +1645,7 @@ bool CommandLineInterface::ParseInputFiles(
     // Enforce --direct_dependencies
     if (direct_dependencies_explicitly_set_) {
       bool indirect_imports = false;
-      for (int i = 0; i < parsed_file->dependency_count(); i++) {
+      for (int i = 0; i < parsed_file->dependency_count(); ++i) {
         if (direct_dependencies_.find(parsed_file->dependency(i)->name()) ==
             direct_dependencies_.end()) {
           indirect_imports = true;
@@ -1771,7 +1788,7 @@ bool CommandLineInterface::ExpandArgumentFile(
 // proper supported utf8 wstring. If we dont then the file can't be opened.
 #ifdef _MSC_VER
   // Convert the file name to wide chars.
-  int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), NULL, 0);
+  int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), nullptr, 0);
   std::wstring file_str;
   file_str.resize(size);
   MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), &file_str[0],
@@ -1818,7 +1835,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
   }
 
   // Iterate through all arguments and parse them.
-  for (int i = 0; i < arguments.size(); ++i) {
+  for (size_t i = 0; i < arguments.size(); ++i) {
     std::string name, value;
 
     if (ParseArgument(arguments[i].c_str(), &name, &value)) {
@@ -2064,7 +2081,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
         value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
         absl::SkipEmpty());
 
-    for (int i = 0; i < parts.size(); i++) {
+    for (size_t i = 0; i < parts.size(); ++i) {
       std::string virtual_path;
       std::string disk_path;
 
@@ -2116,7 +2133,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
-        absl::StrSplit(value, ":", absl::SkipEmpty());
+        absl::StrSplit(value, ':', absl::SkipEmpty());
     ABSL_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
@@ -2576,15 +2593,11 @@ bool CommandLineInterface::EnforceEditionsSupport(
   for (const auto* fd : parsed_files) {
     Edition edition =
         ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
-    if (edition < Edition::EDITION_2023) {
-      // Legacy proto2/proto3 files don't need any checks.
+    if (edition < Edition::EDITION_2023 || CanSkipEditionCheck(fd->name())) {
+      // Legacy proto2/proto3 or exempted files don't need any checks.
       continue;
     }
 
-    if (absl::StartsWith(fd->name(), "google/protobuf/") ||
-        absl::StartsWith(fd->name(), "upb/")) {
-      continue;
-    }
     if ((supported_features & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
       std::cerr << absl::Substitute(
           "$0: is an editions file, but code generator $1 hasn't been "
@@ -2687,7 +2700,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   FileDescriptorSet file_set;
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
-  for (int i = 0; i < parsed_files.size(); i++) {
+  for (size_t i = 0; i < parsed_files.size(); ++i) {
     GetTransitiveDependencies(parsed_files[i], &already_seen,
                               file_set.mutable_file());
   }
@@ -2698,7 +2711,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     GeneratorContextImpl* directory = pair.second.get();
     std::vector<std::string> relative_output_filenames;
     directory->GetOutputFilenames(&relative_output_filenames);
-    for (int i = 0; i < relative_output_filenames.size(); i++) {
+    for (size_t i = 0; i < relative_output_filenames.size(); ++i) {
       std::string output_filename = location + relative_output_filenames[i];
       if (output_filename.compare(0, 2, "./") == 0) {
         output_filename = output_filename.substr(2);
@@ -2733,7 +2746,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     io::FileOutputStream out(fd);
     io::Printer printer(&out, '$');
 
-    for (size_t i = 0; i < output_filenames.size(); i++) {
+    for (size_t i = 0; i < output_filenames.size(); ++i) {
       printer.Print(output_filenames[i]);
       if (i == output_filenames.size() - 1) {
         printer.Print(":");
@@ -2742,7 +2755,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
       }
     }
 
-    for (int i = 0; i < file_set.file_size(); i++) {
+    for (int i = 0; i < file_set.file_size(); ++i) {
       const FileDescriptorProto& file = file_set.file(i);
       const std::string& virtual_file = file.name();
       std::string disk_file;
@@ -2831,7 +2844,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   // Write the files.  We do this even if there was a generator error in order
   // to match the behavior of a compiled-in generator.
   std::unique_ptr<io::ZeroCopyOutputStream> current_output;
-  for (int i = 0; i < response.file_size(); i++) {
+  for (int i = 0; i < response.file_size(); ++i) {
     const CodeGeneratorResponse::File& output_file = response.file(i);
 
     if (!output_file.insertion_point().empty()) {
@@ -2961,7 +2974,7 @@ bool CommandLineInterface::WriteDescriptorSet(
     // in GetTransitiveDependencies.
     absl::flat_hash_set<const FileDescriptor*> to_output;
     to_output.insert(parsed_files.begin(), parsed_files.end());
-    for (int i = 0; i < parsed_files.size(); i++) {
+    for (size_t i = 0; i < parsed_files.size(); ++i) {
       const FileDescriptor* file = parsed_files[i];
       for (int j = 0; j < file->dependency_count(); j++) {
         const FileDescriptor* dependency = file->dependency(j);
@@ -2976,7 +2989,7 @@ bool CommandLineInterface::WriteDescriptorSet(
   options.include_json_name = true;
   options.include_source_code_info = source_info_in_descriptor_set_;
   options.retain_options = retain_options_in_descriptor_set_;
-  for (int i = 0; i < parsed_files.size(); i++) {
+  for (size_t i = 0; i < parsed_files.size(); ++i) {
     GetTransitiveDependencies(parsed_files[i], &already_seen,
                               file_set.mutable_file(), options);
   }
@@ -3192,7 +3205,7 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
   std::vector<const Descriptor*> nested_messages;
   GatherOccupiedFieldRanges(descriptor, &ranges, &nested_messages);
 
-  for (int i = 0; i < nested_messages.size(); ++i) {
+  for (size_t i = 0; i < nested_messages.size(); ++i) {
     PrintFreeFieldNumbers(nested_messages[i]);
   }
   FormatFreeFieldNumbers(descriptor->full_name(), ranges);

@@ -45,7 +45,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Map_ShallowFreeze)(struct upb_Map* map) {
   map->UPB_PRIVATE(is_frozen) = true;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Map_IsFrozen)(const struct upb_Map* map) {
+UPB_API_INLINE bool upb_Map_IsFrozen(const struct upb_Map* map) {
   return map->UPB_PRIVATE(is_frozen);
 }
 
@@ -106,14 +106,14 @@ UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_strtable_clear(&map->table);
 }
 
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
                                 size_t key_size, upb_value* val) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_StringView k = _upb_map_tokey(key, key_size);
   return upb_strtable_remove2(&map->table, k.data, k.size, val);
@@ -134,7 +134,7 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                const void* key, size_t key_size,
                                                void* val, size_t val_size,
                                                upb_Arena* a) {
-  UPB_ASSERT(!UPB_PRIVATE(_upb_Map_IsFrozen)(map));
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   upb_StringView strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};

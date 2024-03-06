@@ -89,6 +89,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -97,8 +98,10 @@
 #include "absl/base/call_once.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -339,9 +342,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   bool IsInitialized() const override;
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
-  // Reflective parser
-  const char* _InternalParse(const char* ptr,
-                             internal::ParseContext* ctx) override;
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
@@ -374,6 +374,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
+
+  static const internal::TcParseTableBase* GetTcParseTableImpl(
+      const MessageLite& msg);
 
   static const DescriptorMethods kDescriptorMethods;
 
@@ -585,6 +588,40 @@ class PROTOBUF_EXPORT Reflection final {
   absl::Cord GetCord(const Message& message,
                      const FieldDescriptor* field) const;
 
+  // Enables GetStringView() and GetRepeatedStringView() APIs to return
+  // absl::string_view even though the underlying implementation doesn't have
+  // contiguous bytes; e.g. absl::Cord.
+  class ScratchSpace {
+   public:
+    ScratchSpace() = default;
+
+    ScratchSpace(const ScratchSpace&) = delete;
+    ScratchSpace& operator=(const ScratchSpace&) = delete;
+
+   private:
+    friend class Reflection;
+
+    absl::string_view CopyFromCord(const absl::Cord& cord) {
+      if (absl::optional<absl::string_view> flat = cord.TryFlat()) {
+        return *flat;
+      }
+      if (!buffer_) {
+        buffer_ = absl::make_unique<std::string>();
+      }
+      absl::CopyCordToString(cord, buffer_.get());
+      return *buffer_;
+    }
+
+    std::unique_ptr<std::string> buffer_;
+  };
+
+  // Returns a view into the contents of a string field. "scratch" is used to
+  // flatten bytes if it is non-contiguous. The lifetime of absl::string_view is
+  // either tied to "message" (contiguous) or "scratch" (otherwise).
+  absl::string_view GetStringView(
+      const Message& message, const FieldDescriptor* field,
+      ScratchSpace& scratch ABSL_ATTRIBUTE_LIFETIME_BOUND) const;
+
 
   // Singular field mutators -----------------------------------------
   // These mutate the value of a non-repeated field.
@@ -705,6 +742,11 @@ class PROTOBUF_EXPORT Reflection final {
                                                 const FieldDescriptor* field,
                                                 int index,
                                                 std::string* scratch) const;
+
+  // See GetStringView(), above.
+  absl::string_view GetRepeatedStringView(
+      const Message& message, const FieldDescriptor* field, int index,
+      ScratchSpace& scratch ABSL_ATTRIBUTE_LIFETIME_BOUND) const;
 
 
   // Repeated field mutators -----------------------------------------
@@ -1010,7 +1052,6 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   const TcParseTableBase* CreateTcParseTable() const;
-  const TcParseTableBase* CreateTcParseTableReflectionOnly() const;
   void PopulateTcParseFastEntries(
       const internal::TailCallTableInfo& table_info,
       TcParseTableBase::FastFieldEntry* fast_entries) const;
@@ -1155,7 +1196,9 @@ class PROTOBUF_EXPORT Reflection final {
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
 
-  inline bool IsInlined(const FieldDescriptor* field) const;
+  inline bool IsInlined(const FieldDescriptor* field) const {
+    return schema_.IsFieldInlined(field);
+  }
 
   bool HasBit(const Message& message, const FieldDescriptor* field) const;
   void SetBit(Message* message, const FieldDescriptor* field) const;

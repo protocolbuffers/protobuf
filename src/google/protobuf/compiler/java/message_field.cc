@@ -214,7 +214,7 @@ void ImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
   printer->Print(" {\n");
   printer->Indent();
   PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
-  if (trailing_code != NULL) {
+  if (trailing_code != nullptr) {
     printer->Print(variables_, trailing_code);
   }
   printer->Outdent();
@@ -253,7 +253,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
   PrintNestedBuilderFunction(
       printer, "$deprecation$public $type$ ${$get$capitalized_name$$}$()",
       "return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n",
-      "return $name$Builder_.getMessage();\n", NULL);
+      "return $name$Builder_.getMessage();\n", nullptr);
 
   // Field.Builder setField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -602,7 +602,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "}\n"
       "return $type$.getDefaultInstance();\n",
 
-      NULL);
+      nullptr);
 
   // Field.Builder setField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -974,7 +974,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "return java.util.Collections.unmodifiableList($name$_);\n",
       "return $name$Builder_.getMessageList();\n",
 
-      NULL);
+      nullptr);
 
   // int getRepeatedFieldCount()
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -983,7 +983,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "return $name$_.size();\n", "return $name$Builder_.getCount();\n",
 
-      NULL);
+      nullptr);
 
   // Field getRepeatedField(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -995,7 +995,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "return $name$Builder_.getMessage(index);\n",
 
-      NULL);
+      nullptr);
 
   // Builder setRepeatedField(int index, Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());

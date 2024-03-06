@@ -46,7 +46,7 @@ void TestParseCorruptedString(const T& message) {
     for (int c = 1 + (i % 17); c < 256; c += 2 * c + (i & 3)) {
       s[i] ^= c;
       Arena arena;
-      T* message = Arena::CreateMessage<T>(use_arena ? &arena : nullptr);
+      T* message = Arena::Create<T>(use_arena ? &arena : nullptr);
       if (message->ParseFromString(s)) {
         ++success_count;
       }
@@ -118,8 +118,7 @@ template <typename T>
 class ArenaHolder {
  public:
   explicit ArenaHolder(Arena* arena)
-      : field_(Arena::CreateMessage<T>(arena)),
-        owned_by_arena_(arena != nullptr) {
+      : field_(Arena::Create<T>(arena)), owned_by_arena_(arena != nullptr) {
     ABSL_DCHECK(google::protobuf::Arena::is_arena_constructable<T>::value);
     ABSL_DCHECK(google::protobuf::Arena::is_destructor_skippable<T>::value);
   }

@@ -9,15 +9,11 @@
 #define GOOGLE_PROTOBUF_ARENA_CLEANUP_H__
 
 #include <cstddef>
-#include <cstdint>
-#include <string>
+#include <cstring>
 #include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
-#include "absl/strings/cord.h"
-
+#include "absl/base/prefetch.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -54,6 +50,10 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos, void* elem,
 
 // Optimization: performs a prefetch on the elem for the cleanup node at `pos`.
 inline ABSL_ATTRIBUTE_ALWAYS_INLINE void PrefetchNode(void* pos) {
+  // We explicitly use NTA prefetch here to avoid polluting remote caches: we
+  // are destroying these instances, there is no purpose for these cache lines
+  // to linger around in remote caches.
+  absl::PrefetchToLocalCacheNta(ToCleanup(pos)->elem);
 }
 
 // Destroys the object referenced by the cleanup node.

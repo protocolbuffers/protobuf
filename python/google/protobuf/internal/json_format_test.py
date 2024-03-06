@@ -266,71 +266,12 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, message)
     self.assertEqual(message.int32_value, 1)
 
-  def testAlwaysSeriliaze(self):
-    message = json_format_proto3_pb2.TestMessage(string_value='foo')
-    self.assertEqual(
-        json.loads(
-            json_format.MessageToJson(
-                message, including_default_value_fields=True
-            )
-        ),
-        json.loads(
-            '{'
-            '"repeatedStringValue": [],'
-            '"stringValue": "foo",'
-            '"repeatedBoolValue": [],'
-            '"repeatedUint32Value": [],'
-            '"repeatedInt32Value": [],'
-            '"enumValue": "FOO",'
-            '"int32Value": 0,'
-            '"floatValue": 0,'
-            '"int64Value": "0",'
-            '"uint32Value": 0,'
-            '"repeatedBytesValue": [],'
-            '"repeatedUint64Value": [],'
-            '"repeatedDoubleValue": [],'
-            '"bytesValue": "",'
-            '"boolValue": false,'
-            '"repeatedEnumValue": [],'
-            '"uint64Value": "0",'
-            '"doubleValue": 0,'
-            '"repeatedFloatValue": [],'
-            '"repeatedInt64Value": [],'
-            '"repeatedMessageValue": []}'
-        ),
-    )
-    parsed_message = json_format_proto3_pb2.TestMessage()
-    self.CheckParseBack(message, parsed_message)
-
-  def testProto3Optional_IncludingDefaultValueFields(self):
-    message = test_proto3_optional_pb2.TestProto3Optional()
-    self.assertEqual(
-        json.loads(
-            json_format.MessageToJson(
-                message, including_default_value_fields=True
-            )
-        ),
-        json.loads('{"repeatedInt32": [], "repeatedNestedMessage": []}'),
-    )
-    message.optional_int32 = 0
-    self.assertEqual(
-        json.loads(
-            json_format.MessageToJson(
-                message, including_default_value_fields=True
-            )
-        ),
-        json.loads(
-            '{"optionalInt32": 0,"repeatedInt32": [],'
-            ' "repeatedNestedMessage": []}'
-        ),
-    )
-
   def testProto3Optional_IncludingDefaultValueWithoutPresenceFields(self):
     message = test_proto3_optional_pb2.TestProto3Optional()
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads('{"repeatedInt32": [], "repeatedNestedMessage": []}'),
@@ -339,51 +280,13 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
             '{"optionalInt32": 0,"repeatedInt32": [],'
             ' "repeatedNestedMessage": []}'
         ),
-    )
-
-  def testProto2_IncludingDefaultValueFields(self):
-    message = test_proto2_pb2.TestProto2()
-    self.assertEqual(
-        json.loads(
-            json_format.MessageToJson(
-                message, including_default_value_fields=True
-            )
-        ),
-        json.loads("""{
-            "optionalBool":false,
-            "optionalBytes":"",
-            "optionalDouble":0.0,
-            "optionalInt32":0,
-            "optionalNestedEnum":"UNSPECIFIED",
-            "optionalString":"",
-            "repeatedInt32":[],
-            "repeatedNestedMessage": []
-        }"""),
-    )
-    message.optional_int32 = 99
-    self.assertEqual(
-        json.loads(
-            json_format.MessageToJson(
-                message, including_default_value_fields=True
-            )
-        ),
-        json.loads("""{
-            "optionalBool":false,
-            "optionalBytes":"",
-            "optionalDouble":0.0,
-            "optionalInt32":99,
-            "optionalNestedEnum":"UNSPECIFIED",
-            "optionalString":"",
-            "repeatedInt32":[],
-            "repeatedNestedMessage": []
-        }"""),
     )
 
   def testProto2_IncludingDefaultValueWithoutPresenceFields(self):
@@ -391,7 +294,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads('{"repeatedInt32": [], "repeatedNestedMessage": []}'),
@@ -400,7 +303,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_without_presence_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -423,7 +326,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -454,7 +357,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=False
+                message, always_print_fields_with_no_presence=False
             )
         ),
         json.loads(
@@ -476,12 +379,16 @@ class JsonFormatTest(JsonFormatBase):
     message = json_format_proto3_pb2.TestOneof()
     # Always print does not affect oneof fields.
     self.assertEqual(
-        json_format.MessageToJson(message, including_default_value_fields=True),
+        json_format.MessageToJson(
+            message, always_print_fields_with_no_presence=True
+        ),
         '{}',
     )
     message.oneof_int32_value = 0
     self.assertEqual(
-        json_format.MessageToJson(message, including_default_value_fields=True),
+        json_format.MessageToJson(
+            message, always_print_fields_with_no_presence=True
+        ),
         '{\n  "oneofInt32Value": 0\n}',
     )
     parsed_message = json_format_proto3_pb2.TestOneof()
@@ -526,7 +433,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -570,7 +477,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -594,7 +501,9 @@ class JsonFormatTest(JsonFormatBase):
     message.value.paths.append('foo.bar')
     message.value.paths.append('bar')
     self.assertEqual(
-        json_format.MessageToJson(message, including_default_value_fields=True),
+        json_format.MessageToJson(
+            message, always_print_fields_with_no_presence=True
+        ),
         '{\n  "value": "foo.bar,bar"\n}',
     )
     parsed_message = json_format_proto3_pb2.TestFieldMask()
@@ -602,7 +511,9 @@ class JsonFormatTest(JsonFormatBase):
 
     message.value.Clear()
     self.assertEqual(
-        json_format.MessageToJson(message, including_default_value_fields=True),
+        json_format.MessageToJson(
+            message, always_print_fields_with_no_presence=True
+        ),
         '{\n  "value": ""\n}',
     )
     self.CheckParseBack(message, parsed_message)
@@ -619,7 +530,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -661,7 +572,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=False
+                message, always_print_fields_with_no_presence=False
             )
         ),
         json.loads(
@@ -698,7 +609,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=False
+                message, always_print_fields_with_no_presence=False
             )
         ),
         json.loads(
@@ -712,7 +623,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=False
+                message, always_print_fields_with_no_presence=False
             )
         ),
         json.loads(
@@ -754,7 +665,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=False
+                message, always_print_fields_with_no_presence=False
             )
         ),
         json.loads(
@@ -793,7 +704,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -829,7 +740,7 @@ class JsonFormatTest(JsonFormatBase):
     message.value.Pack(test_message)
     self.assertEqual(
         json_format.MessageToJson(
-            message, including_default_value_fields=False
+            message, always_print_fields_with_no_presence=False
         )[0:68],
         '{\n'
         '  "value": {\n'
@@ -845,7 +756,7 @@ class JsonFormatTest(JsonFormatBase):
     with self.assertRaises(TypeError) as cm:
       json_format.MessageToJson(
           message,
-          including_default_value_fields=True,
+          always_print_fields_with_no_presence=True,
           descriptor_pool=empty_pool,
       )
     self.assertEqual(
@@ -862,7 +773,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -880,7 +791,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -898,7 +809,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -917,7 +828,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -935,7 +846,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -954,7 +865,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(
         json.loads(
             json_format.MessageToJson(
-                message, including_default_value_fields=True
+                message, always_print_fields_with_no_presence=True
             )
         ),
         json.loads(
@@ -1489,24 +1400,24 @@ class JsonFormatTest(JsonFormatBase):
         '{\n  "int32_value": 12345\n}',
         json_format.MessageToJson(
             message,
-            including_default_value_fields=False,
+            always_print_fields_with_no_presence=False,
             preserving_proto_field_name=True,
         ),
     )
-    # When including_default_value_fields is True.
+    # When always_print_fields_with_no_presence is True.
     message = json_format_proto3_pb2.TestTimestamp()
     self.assertEqual(
         '{\n  "repeatedValue": []\n}',
         json_format.MessageToJson(
             message,
-            including_default_value_fields=True,
+            always_print_fields_with_no_presence=True,
         ),
     )
     self.assertEqual(
         '{\n  "repeated_value": []\n}',
         json_format.MessageToJson(
             message,
-            including_default_value_fields=True,
+            always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
         ),
     )

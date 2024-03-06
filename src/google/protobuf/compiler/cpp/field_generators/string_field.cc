@@ -68,7 +68,7 @@ class SingularString : public FieldGeneratorBase {
  public:
   SingularString(const FieldDescriptor* field, const Options& opts,
                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -201,7 +201,6 @@ class SingularString : public FieldGeneratorBase {
   void ReleaseImpl(io::Printer* p) const;
   void SetAllocatedImpl(io::Printer* p) const;
 
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -733,13 +732,13 @@ class RepeatedString : public FieldGeneratorBase {
  public:
   RepeatedString(const FieldDescriptor* field, const Options& opts,
                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~RepeatedString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $pbi$::RawPtr<$pb$::RepeatedPtrField<std::string>> $name$_;
       )cc");
@@ -766,7 +765,7 @@ class RepeatedString : public FieldGeneratorBase {
         _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
-    if (!ShouldSplit(descriptor_, options_)) {
+    if (!should_split()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
@@ -778,14 +777,14 @@ class RepeatedString : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+    ABSL_CHECK(!should_split());
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $field_$.DeleteIfNotDefault();
       )cc");
@@ -795,7 +794,7 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (ShouldSplit(descriptor_, options_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
           _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
@@ -819,7 +818,6 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -984,7 +982,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
               return _internal_mutable_$name_internal$();
             }
           )cc");
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedPtrField<std::string>&
       $Msg$::_internal_$name_internal$() const {
@@ -996,9 +994,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set(
-              $pb$::Arena::CreateMessage<$pb$::RepeatedPtrField<std::string>>(
-                  GetArena()));
+          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedPtrField<std::string>>(
+              GetArena()));
         }
         return $field_$.Get();
       }

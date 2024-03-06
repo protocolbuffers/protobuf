@@ -700,7 +700,7 @@ public class RubyMessage extends RubyObject {
           options.fastARef(runtime.newSymbol("format_enums_as_integers"));
 
       if (emitDefaults != null && emitDefaults.isTrue()) {
-        printer = printer.includingDefaultValueFields();
+        printer = printer.alwaysPrintFieldsWithNoPresence();
       }
 
       if (preserveNames != null && preserveNames.isTrue()) {

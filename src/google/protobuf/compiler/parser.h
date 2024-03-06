@@ -47,7 +47,7 @@ class SourceLocationTable;
 // to a FileDescriptorProto.  It does not resolve import directives or perform
 // many other kinds of validation needed to construct a complete
 // FileDescriptor.
-class PROTOBUF_EXPORT Parser {
+class PROTOBUF_EXPORT Parser final {
  public:
   Parser();
   Parser(const Parser&) = delete;

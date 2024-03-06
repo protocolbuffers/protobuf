@@ -87,27 +87,21 @@ void PrintEnumVerifierLogic(
 
 void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
                                   absl::string_view java_class_name) {
-  if (oss_runtime) {
-    const auto& version = GetProtobufJavaVersion();
-    printer->Print(
-        "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
-        "  com.google.protobuf.RuntimeVersion.RuntimeDomain.PUBLIC,\n"
-        "  $major$,\n"
-        "  $minor$,\n"
-        "  $patch$,\n"
-        "  $suffix$,\n"
-        "  $location$);\n",
-        "major", absl::StrCat("/* major= */ ", version.major()), "minor",
-        absl::StrCat("/* minor= */ ", version.minor()), "patch",
-        absl::StrCat("/* patch= */ ", version.patch()), "suffix",
-        absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
-        absl::StrCat(java_class_name, ".class.getName()"));
-  } else {
-    printer->Print(
-        "com.google.protobuf.RuntimeVersion.validateProtobufGencodeDomain(\n"
-        "  "
-        "com.google.protobuf.RuntimeVersion.RuntimeDomain.GOOGLE_INTERNAL);\n");
-  }
+  const auto& version = GetProtobufJavaVersion(oss_runtime);
+  printer->Print(
+      "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "  com.google.protobuf.RuntimeVersion.RuntimeDomain.$domain$,\n"
+      "  $major$,\n"
+      "  $minor$,\n"
+      "  $patch$,\n"
+      "  $suffix$,\n"
+      "  $location$);\n",
+      "domain", oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "major",
+      absl::StrCat("/* major= */ ", version.major()), "minor",
+      absl::StrCat("/* minor= */ ", version.minor()), "patch",
+      absl::StrCat("/* patch= */ ", version.patch()), "suffix",
+      absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+      absl::StrCat(java_class_name, ".class.getName()"));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,

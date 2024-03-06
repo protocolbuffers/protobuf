@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/util/compare.h"
+#include "upb/message/internal/compare_unknown.h"
 
 #include <stdint.h>
 
@@ -105,8 +105,8 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(UnknownFields uf1,
                                                     int max_depth) {
   std::string buf1 = ToBinaryPayload(uf1);
   std::string buf2 = ToBinaryPayload(uf2);
-  return upb_Message_UnknownFieldsAreEqual(buf1.data(), buf1.size(),
-                                           buf2.data(), buf2.size(), max_depth);
+  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+      buf1.data(), buf1.size(), buf2.data(), buf2.size(), max_depth);
 }
 
 upb_UnknownCompareResult CompareUnknown(UnknownFields uf1, UnknownFields uf2) {

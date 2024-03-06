@@ -1,5 +1,4 @@
 load("@rules_python//python:proto.bzl", "py_proto_library")
-load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
@@ -45,6 +44,16 @@ embed_edition_defaults(
     template = "defaults_test_embedded.h.template",
 )
 
+embed_edition_defaults(
+    name = "embed_test_defaults_base64",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "base64",
+    output = "defaults_test_embedded_base64.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_base64.h.template",
+)
+
 cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
@@ -52,6 +61,9 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -60,6 +72,7 @@ cc_library(
     name = "defaults_test_embedded",
     hdrs = [
         "defaults_test_embedded.h",
+        "defaults_test_embedded_base64.h",
     ],
     strip_include_prefix = "/src",
 )
@@ -127,20 +140,6 @@ py_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
-rust_cc_proto_library(
-    name = "test_messages_proto2_editions_rust_cc_proto",
-    testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto2_editions_cc_proto"],
-)
-
-rust_upb_proto_library(
-    name = "test_messages_proto2_editions_rust_upb_proto",
-    testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto2_editions_proto"],
-)
-
 upb_c_proto_library(
     name = "test_messages_proto2_editions_upb_proto",
     testonly = 1,
@@ -198,20 +197,6 @@ java_proto_library(
 
 py_proto_library(
     name = "test_messages_proto3_editions_py_pb2",
-    testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto3_editions_proto"],
-)
-
-rust_cc_proto_library(
-    name = "test_messages_proto3_editions_rust_cc_proto",
-    testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto3_editions_cc_proto"],
-)
-
-rust_upb_proto_library(
-    name = "test_messages_proto3_editions_rust_upb_proto",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],

@@ -642,25 +642,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TSAN_WRITE
 #error PROTOBUF_TSAN_WRITE was previously defined
 #endif
-#ifdef PROTOBUF_TSAN
-// TODO: it would be preferable to use __tsan_external_read/
-// __tsan_external_write, but they can cause dlopen issues.
-#define PROTOBUF_TSAN_READ(addr)                                      \
-  do {                                                                \
-    char protobuf_tsan_dummy = *reinterpret_cast<const char *>(addr); \
-    asm volatile("" : "+r"(protobuf_tsan_dummy));                     \
-  } while (0)
-// We currently use a dedicated member for TSan checking so the value of this
-// member is not important. We can unconditionally write to it without affecting
-// correctness of the rest of the class.
-#define PROTOBUF_TSAN_WRITE(addr)        \
-  do {                                   \
-    *reinterpret_cast<char *>(addr) = 0; \
-  } while (0)
-#else  // PROTOBUF_TSAN
-#define PROTOBUF_TSAN_READ(addr) (void)0
-#define PROTOBUF_TSAN_WRITE(addr) (void)0
-#endif  // PROTOBUF_TSAN
 
 #ifdef PROTOBUF_TSAN
 #define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
@@ -744,6 +725,16 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // TODO: Enable the feature by default and remove this flag.
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
 #error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
+#endif
+
+#ifdef PROTOBUF_PREFETCH_WITH_OFFSET
+#error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
+#endif
+#if defined(__x86_64__) && defined(__GNUC__)
+#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset) \
+  asm("prefetcht0 " #offset "(%0)" : : "r"(base));
+#else
+#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset)
 #endif
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
@@ -834,6 +825,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef REASON_UNKNOWN
 #pragma push_macro("SERVICE_DISABLED")
 #undef SERVICE_DISABLED
+#pragma push_macro("SERVICE_STOP")
+#undef SERVICE_STOP
 #pragma push_macro("SEVERITY_ERROR")
 #undef SEVERITY_ERROR
 #pragma push_macro("STATUS_PENDING")

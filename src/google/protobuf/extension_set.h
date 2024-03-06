@@ -420,20 +420,14 @@ class PROTOBUF_EXPORT ExtensionSet {
   const char* ParseMessageSet(const char* ptr, const Msg* extendee,
                               InternalMetadata* metadata,
                               internal::ParseContext* ctx) {
-    struct MessageSetItem {
-      const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-        return me->ParseMessageSetItem(ptr, extendee, metadata, ctx);
-      }
-      ExtensionSet* me;
-      const Msg* extendee;
-      InternalMetadata* metadata;
-    } item{this, extendee, metadata};
     while (!ctx->Done(&ptr)) {
       uint32_t tag;
       ptr = ReadTag(ptr, &tag);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
-        ptr = ctx->ParseGroup(&item, ptr, tag);
+        ptr = ctx->ParseGroupInlined(ptr, tag, [&](const char* ptr) {
+          return ParseMessageSetItem(ptr, extendee, metadata, ctx);
+        });
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       } else {
         if (tag == 0 || (tag & 7) == 4) {
@@ -571,6 +565,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual LazyMessageExtension* New(Arena* arena) const = 0;
     virtual const MessageLite& GetMessage(const MessageLite& prototype,
                                           Arena* arena) const = 0;
+    virtual const MessageLite& GetMessageIgnoreUnparsed(
+        const MessageLite& prototype, Arena* arena) const = 0;
     virtual MessageLite* MutableMessage(const MessageLite& prototype,
                                         Arena* arena) = 0;
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;

@@ -174,9 +174,9 @@ public final class Timestamps {
 
   /**
    * Convert Timestamp to RFC 3339 date string format. The output will always be Z-normalized and
-   * uses 3, 6 or 9 fractional digits as required to represent the exact value. Note that Timestamp
-   * can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. See
-   * https://www.ietf.org/rfc/rfc3339.txt
+   * uses 0, 3, 6 or 9 fractional digits as required to represent the exact value. Note that
+   * Timestamp can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
+   * See https://www.ietf.org/rfc/rfc3339.txt
    *
    * <p>Example of generated format: "1972-01-01T10:00:20.021Z"
    *

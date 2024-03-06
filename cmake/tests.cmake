@@ -21,15 +21,19 @@ set(protoc_cpp_args)
 if (protobuf_BUILD_SHARED_LIBS)
   set(protoc_cpp_args "dllexport_decl=PROTOBUF_TEST_EXPORTS:")
 endif ()
+
+file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
+
 macro(compile_proto_file filename)
-  string(REPLACE .proto .pb.h pb_hdr ${filename})
-  string(REPLACE .proto .pb.cc pb_src ${filename})
+  file(RELATIVE_PATH rel_filename ${protobuf_SOURCE_DIR} ${filename})
+  string(REPLACE .proto .pb.h pb_hdr ${rel_filename})
+  string(REPLACE .proto .pb.cc pb_src ${rel_filename})
   add_custom_command(
     OUTPUT ${pb_hdr} ${pb_src}
     DEPENDS ${protobuf_PROTOC_EXE} ${filename}
     COMMAND ${protobuf_PROTOC_EXE} ${filename}
         --proto_path=${protobuf_SOURCE_DIR}/src
-        --cpp_out=${protoc_cpp_args}${protobuf_SOURCE_DIR}/src
+        --cpp_out=${protoc_cpp_args}${protobuf_BINARY_DIR}/src
         --experimental_allow_proto3_optional
   )
 endmacro(compile_proto_file)

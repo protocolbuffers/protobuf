@@ -357,10 +357,6 @@ bool Reflection::IsEagerlyVerifiedLazyField(
           schema_.IsEagerlyVerifiedLazyField(field));
 }
 
-bool Reflection::IsInlined(const FieldDescriptor* field) const {
-  return schema_.IsFieldInlined(field);
-}
-
 size_t Reflection::SpaceUsedLong(const Message& message) const {
   // object_size_ already includes the in-memory representation of each field
   // in the message, so we only need to account for additional memory used by
@@ -1868,6 +1864,32 @@ absl::Cord Reflection::GetCord(const Message& message,
   }
 }
 
+absl::string_view Reflection::GetStringView(const Message& message,
+                                            const FieldDescriptor* field,
+                                            ScratchSpace& scratch) const {
+  USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
+
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetString(field->number(),
+                                              field->default_value_string());
+  }
+  if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    return field->default_value_string();
+  }
+
+  switch (internal::cpp::EffectiveStringCType(field)) {
+    case FieldOptions::CORD: {
+      const auto& cord = schema_.InRealOneof(field)
+                             ? *GetField<absl::Cord*>(message, field)
+                             : GetField<absl::Cord>(message, field);
+      return scratch.CopyFromCord(cord);
+    }
+    default:
+      auto str = GetField<ArenaStringPtr>(message, field);
+      return str.IsDefault() ? field->default_value_string() : str.Get();
+  }
+}
+
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
@@ -1999,6 +2021,24 @@ const std::string& Reflection::GetRepeatedStringReference(
       case FieldOptions::STRING:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
+  }
+}
+
+// See GetStringView(), above.
+absl::string_view Reflection::GetRepeatedStringView(
+    const Message& message, const FieldDescriptor* field, int index,
+    ScratchSpace& scratch) const {
+  (void)scratch;
+  USAGE_CHECK_ALL(GetRepeatedStringView, REPEATED, STRING);
+
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
+  }
+
+  switch (internal::cpp::EffectiveStringCType(field)) {
+    case FieldOptions::STRING:
+    default:
+      return GetRepeatedPtrField<std::string>(message, field, index);
   }
 }
 
@@ -2589,7 +2629,7 @@ const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
 bool Reflection::ContainsMapKey(const Message& message,
                                 const FieldDescriptor* field,
                                 const MapKey& key) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "LookupMapValue",
+  USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
               "Field is not a map field.");
   return GetRaw<MapFieldBase>(message, field).ContainsMapKey(key);
 }
@@ -2598,7 +2638,7 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
                                         const FieldDescriptor* field,
                                         const MapKey& key,
                                         MapValueRef* val) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "InsertOrLookupMapValue",
+  USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
               "Field is not a map field.");
   val->SetType(field->message_type()->map_value()->cpp_type());
   return MutableRaw<MapFieldBase>(message, field)
@@ -2608,7 +2648,7 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
 bool Reflection::LookupMapValue(const Message& message,
                                 const FieldDescriptor* field, const MapKey& key,
                                 MapValueConstRef* val) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "LookupMapValue",
+  USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
               "Field is not a map field.");
   val->SetType(field->message_type()->map_value()->cpp_type());
   return GetRaw<MapFieldBase>(message, field).LookupMapValue(key, val);
@@ -2616,14 +2656,14 @@ bool Reflection::LookupMapValue(const Message& message,
 
 bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
                                 const MapKey& key) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "DeleteMapValue",
+  USAGE_CHECK(IsMapFieldInApi(field), DeleteMapValue,
               "Field is not a map field.");
   return MutableRaw<MapFieldBase>(message, field)->DeleteMapValue(key);
 }
 
 MapIterator Reflection::MapBegin(Message* message,
                                  const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "MapBegin", "Field is not a map field.");
+  USAGE_CHECK(IsMapFieldInApi(field), MapBegin, "Field is not a map field.");
   MapIterator iter(message, field);
   GetRaw<MapFieldBase>(*message, field).MapBegin(&iter);
   return iter;
@@ -2631,7 +2671,7 @@ MapIterator Reflection::MapBegin(Message* message,
 
 MapIterator Reflection::MapEnd(Message* message,
                                const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "MapEnd", "Field is not a map field.");
+  USAGE_CHECK(IsMapFieldInApi(field), MapEnd, "Field is not a map field.");
   MapIterator iter(message, field);
   GetRaw<MapFieldBase>(*message, field).MapEnd(&iter);
   return iter;
@@ -2639,7 +2679,7 @@ MapIterator Reflection::MapEnd(Message* message,
 
 int Reflection::MapSize(const Message& message,
                         const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "MapSize", "Field is not a map field.");
+  USAGE_CHECK(IsMapFieldInApi(field), MapSize, "Field is not a map field.");
   return GetRaw<MapFieldBase>(message, field).size();
 }
 
@@ -2685,11 +2725,10 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
     if (field->cpp_type() < FieldDescriptor::CPPTYPE_STRING ||
         (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD)) {
-      ptr = reinterpret_cast<Type*>(
-          Arena::CreateMessage<RepeatedField<int32_t>>(arena));
+      ptr =
+          reinterpret_cast<Type*>(Arena::Create<RepeatedField<int32_t>>(arena));
     } else {
-      ptr = reinterpret_cast<Type*>(
-          Arena::CreateMessage<RepeatedPtrFieldBase>(arena));
+      ptr = reinterpret_cast<Type*>(Arena::Create<RepeatedPtrFieldBase>(arena));
     }
   }
   return ptr;
@@ -3173,15 +3212,13 @@ void* Reflection::RepeatedFieldData(Message* message,
 
 MapFieldBase* Reflection::MutableMapData(Message* message,
                                          const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "GetMapData",
-              "Field is not a map field.");
+  USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
   return MutableRaw<MapFieldBase>(message, field);
 }
 
 const MapFieldBase* Reflection::GetMapData(const Message& message,
                                            const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), "GetMapData",
-              "Field is not a map field.");
+  USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
   return &(GetRaw<MapFieldBase>(message, field));
 }
 
@@ -3205,35 +3242,6 @@ static internal::TailCallParseFunc GetFastParseFunction(
     return &internal::TcParser::MiniParse;
   }
   return kFuncs[index];
-}
-
-const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
-    const {
-  // ParseLoop can't parse message set wire format.
-  // Create a dummy table that only exists to make TcParser::ParseLoop jump
-  // into the reflective parse loop.
-
-  using Table = internal::TcParseTable<0, 0, 0, 0, 1>;
-  // We use `operator new` here because the destruction will be done with
-  // `operator delete` unconditionally.
-  void* p = ::operator new(sizeof(Table));
-  auto* full_table = ::new (p)
-      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-             ,
-             nullptr
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-            },
-            {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-  // branches. Here we don't know which field is the hottest, so set the pointer
-  // to itself to avoid nullptr.
-  full_table->header.to_prefetch = &full_table->header;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
-                 static_cast<void*>(full_table));
-  return &full_table->header;
 }
 
 void Reflection::PopulateTcParseFastEntries(
@@ -3324,6 +3332,7 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSubMessageWeak:
       case internal::TailCallTableInfo::kCreateInArena:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
+      case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kMapAuxInfo:
@@ -3351,12 +3360,9 @@ void Reflection::PopulateTcParseFieldAux(
   }
 }
 
+
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
-
-  if (descriptor_->options().message_set_wire_format()) {
-    return CreateTcParseTableReflectionOnly();
-  }
 
   std::vector<const FieldDescriptor*> fields;
   constexpr int kNoHasbit = -1;
@@ -3453,6 +3459,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
       schema_.default_instance_,
+      nullptr,
       &internal::TcParser::ReflectionFallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ,

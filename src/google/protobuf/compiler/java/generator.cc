@@ -147,7 +147,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
         &annotations);
     io::Printer printer(
         output.get(), '$',
-        file_options.annotate_code ? &annotation_collector : NULL);
+        file_options.annotate_code ? &annotation_collector : nullptr);
 
     file_generator->Generate(&printer);
 

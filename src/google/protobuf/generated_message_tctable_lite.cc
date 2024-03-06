@@ -95,6 +95,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
+  table -= 1;
+  if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+    return table->post_loop_handler(msg, ptr, ctx);
+  }
   return ptr;
 }
 
@@ -2810,6 +2814,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
+const char* TcParser::MessageSetWireFormatParseLoopLite(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<MessageLite>(
+      PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 std::string TypeCardToString(uint16_t type_card) {

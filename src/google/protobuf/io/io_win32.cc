@@ -37,6 +37,8 @@
 #include <sys/types.h>
 #include <wctype.h>
 
+#include "absl/strings/ascii.h"
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -64,7 +66,7 @@ struct CharTraits {
 
 template <>
 struct CharTraits<char> {
-  static bool is_alpha(char ch) { return isalpha(ch); }
+  static bool is_alpha(char ch) { return absl::ascii_isalpha(ch); }
 };
 
 template <>

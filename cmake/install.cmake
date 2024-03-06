@@ -1,7 +1,10 @@
 include(GNUInstallDirs)
 
 foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
-  string(REPLACE :: _ _modified_target ${_target})
+  # shared abseil on windows breaks the absl::foo -> absl_foo replacement logic -
+  # preempt this by a more specific replace (harmless if it doesn't apply); see GH-15883
+  string(REPLACE "absl::abseil_dll" "abseil_dll" _modified_target ${_target})
+  string(REPLACE :: _ _modified_target ${_modified_target})
   list(APPEND _pc_targets ${_modified_target})
 endforeach()
 list(APPEND _pc_targets "utf8_range")
@@ -78,10 +81,12 @@ foreach(_header ${protobuf_HEADERS})
   elseif (_find_nosrc GREATER -1)
     set(_from_dir "${protobuf_SOURCE_DIR}")
   endif()
+  # Escape _from_dir for regex special characters in the directory name.
+  string(REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" _from_dir_regexp "${_from_dir}")
   # On some platforms `_form_dir` ends up being just "protobuf", which can
   # easily match multiple times in our paths.  We force it to only replace
   # prefixes to avoid this case.
-  string(REGEX REPLACE "^${_from_dir}" "" _header ${_header})
+  string(REGEX REPLACE "^${_from_dir_regexp}" "" _header ${_header})
   get_filename_component(_extract_from "${_from_dir}/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)

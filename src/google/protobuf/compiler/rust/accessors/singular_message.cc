@@ -26,6 +26,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   std::string msg_type = RsTypePath(ctx, field);
   ctx.Emit({{"msg_type", msg_type},
             {"field", RsSafeName(field.name())},
+            {"raw_field_name", field.name()},
             {"view_lifetime", ViewLifetime(accessor_case)},
             {"view_self", ViewReceiver(accessor_case)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
@@ -72,7 +73,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  return;
                }
                ctx.Emit({}, R"rs(
-                pub fn $field$_mut(&mut self)
+                pub fn $raw_field_name$_mut(&mut self)
                     -> $pb$::FieldEntry<'_, $msg_type$> {
                   static VTABLE: $pbr$::MessageVTable =
                     $pbr$::MessageVTable::new($pbi$::Private,
@@ -92,7 +93,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             {"getter_opt",
              [&] {
                ctx.Emit({}, R"rs(
-                pub fn $field$_opt($view_self$) ->
+                pub fn $raw_field_name$_opt($view_self$) ->
                 $pb$::Optional<$msg_type$View<$view_lifetime$>> {
                   let view = self.$field$();
                   $pb$::Optional::new(view, unsafe {
@@ -101,13 +102,22 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             }
             )rs");
              }},
+            {"setter",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) return;
+               ctx.Emit(R"rs(
+                pub fn set_$raw_field_name$(&mut self, val: impl $pb$::SettableValue<$msg_type$>) {
+                  //~ TODO: Optimize this to not go through the
+                  //~ FieldEntry.
+                  self.$raw_field_name$_mut().set(val);
+                }
+              )rs");
+             }},
             {"clearer",
              [&] {
-               if (accessor_case == AccessorCase::VIEW) {
-                 return;
-               }
+               if (accessor_case == AccessorCase::VIEW) return;
                ctx.Emit({}, R"rs(
-                  pub fn $field$_clear(&mut self) {
+                  pub fn clear_$raw_field_name$(&mut self) {
                     unsafe { $clearer_thunk$(self.raw_msg()) }
                   })rs");
              }}},
@@ -115,6 +125,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             $getter$
             $getter_mut$
             $getter_opt$
+            $setter$
             $clearer$
         )rs");
 }

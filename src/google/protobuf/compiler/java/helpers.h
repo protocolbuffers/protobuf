@@ -154,7 +154,7 @@ inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
 // `immutable` should be set to true if we're generating for the immutable API.
 template <typename Descriptor>
 bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
-  return descriptor->containing_type() == NULL &&
+  return descriptor->containing_type() == nullptr &&
          MultipleJavaFiles(descriptor->file(), immutable);
 }
 

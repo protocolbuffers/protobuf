@@ -23,7 +23,7 @@ struct upb_MiniTableEnum {
 extern "C" {
 #endif
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableEnum_CheckValue)(
+UPB_API_INLINE bool upb_MiniTableEnum_CheckValue(
     const struct upb_MiniTableEnum* e, uint32_t val) {
   if (UPB_LIKELY(val < 64)) {
     const uint64_t mask =

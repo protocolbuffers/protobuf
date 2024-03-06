@@ -68,6 +68,28 @@ macro_rules! generate_repeated_numeric_test {
                   eq(mutator2.iter().collect::<Vec<_>>())
               );
           }
+
+          #[test]
+          fn [< test_repeated_ $field _exact_size_iterator >]() {
+            let mut msg = TestAllTypes::new();
+            let mut mutator = msg.[<repeated_ $field _mut>]();
+            for i in 0..5 {
+                mutator.push(i as $t);
+            }
+            let mut iter = mutator.iter();
+            // size_hint/len must indicate the _remaining_ items in the iterator.
+            for i in 0..5 {
+                assert_that!(iter.len(), eq(5 - i));
+                assert_that!(iter.size_hint(), eq((5 - i, Some(5 - i))));
+                assert_that!(iter.next(), eq(Some(i as $t)));
+            }
+            assert_that!(iter.size_hint(), eq((0, Some(0))));
+            assert_that!(iter.len(), eq(0));
+            assert_that!(iter.next(), eq(None));
+
+            // Also check FusedIterator - calling `next` multiple times should return `None`.
+            assert_that!(iter.next(), eq(None));
+          }
       )* }
   };
 }
@@ -179,11 +201,10 @@ fn test_repeated_message() {
     msg2.repeated_nested_message_mut().copy_from(msg.repeated_nested_message());
     assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 
-    msg2.repeated_nested_message_mut().clear();
-    assert_that!(msg2.repeated_nested_message().len(), eq(0));
-
     let mut nested2 = NestedMessage::new();
     nested2.bb_mut().set(2);
+
+    // TODO: b/320936046 - Test SettableValue once available
     msg.repeated_nested_message_mut().set(0, nested2.as_view());
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(2));
 
@@ -191,6 +212,12 @@ fn test_repeated_message() {
         msg.repeated_nested_message().iter().map(|m| m.bb()).collect::<Vec<_>>(),
         eq(vec![2]),
     );
+
+    drop(msg);
+
+    assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+    msg2.repeated_nested_message_mut().clear();
+    assert_that!(msg2.repeated_nested_message().len(), eq(0));
 }
 
 #[test]
@@ -200,17 +227,31 @@ fn test_repeated_strings() {
         let mut msg = TestAllTypes::new();
         assert_that!(msg.repeated_string(), empty());
         {
+            let s = String::from("set from Mut");
             // TODO: b/320936046 - Test SettableValue once available
-            msg.repeated_string_mut().push("set from Mut".into());
+            msg.repeated_string_mut().push(s.as_str().into());
         }
-        assert_that!(msg.repeated_string().len(), eq(1));
-        // TODO: b/320932827 - Use elements_are! when ready
+        msg.repeated_string_mut().push("second str".into());
+        {
+            let s2 = String::from("set second str");
+            // TODO: b/320936046 - Test SettableValue once available
+            msg.repeated_string_mut().set(1, s2.as_str().into());
+        }
+        assert_that!(msg.repeated_string().len(), eq(2));
         assert_that!(msg.repeated_string().get(0).unwrap(), eq("set from Mut"));
+        assert_that!(msg.repeated_string().get(1).unwrap(), eq("set second str"));
+        assert_that!(
+            msg.repeated_string().iter().collect::<Vec<_>>(),
+            elements_are![eq("set from Mut"), eq("set second str")]
+        );
         older_msg.repeated_string_mut().copy_from(msg.repeated_string());
     }
 
-    // TODO: b/320932827 - Use elements_are! when ready
-    assert_that!(older_msg.repeated_string().len(), eq(1));
+    assert_that!(older_msg.repeated_string().len(), eq(2));
+    assert_that!(
+        older_msg.repeated_string().iter().collect::<Vec<_>>(),
+        elements_are![eq("set from Mut"), eq("set second str")]
+    );
 
     older_msg.repeated_string_mut().clear();
     assert_that!(older_msg.repeated_string(), empty());
@@ -223,17 +264,33 @@ fn test_repeated_bytes() {
         let mut msg = TestAllTypes::new();
         assert_that!(msg.repeated_bytes(), empty());
         {
+            let s = Vec::from(b"set from Mut");
             // TODO: b/320936046 - Test SettableValue once available
-            msg.repeated_bytes_mut().push(b"set from Mut");
+            msg.repeated_bytes_mut().push(&s[..]);
         }
-        assert_that!(msg.repeated_bytes().len(), eq(1));
-        // TODO: b/320932827 - Use elements_are! when ready
+        msg.repeated_bytes_mut().push(b"second bytes");
+        {
+            let s2 = Vec::from(b"set second bytes");
+            // TODO: b/320936046 - Test SettableValue once available
+            msg.repeated_bytes_mut().set(1, &s2[..]);
+        }
+        assert_that!(msg.repeated_bytes().len(), eq(2));
         assert_that!(msg.repeated_bytes().get(0).unwrap(), eq(b"set from Mut"));
+        assert_that!(msg.repeated_bytes().get(1).unwrap(), eq(b"set second bytes"));
+        assert_that!(
+            msg.repeated_bytes().iter().collect::<Vec<_>>(),
+            elements_are![eq(b"set from Mut"), eq(b"set second bytes")]
+        );
         older_msg.repeated_bytes_mut().copy_from(msg.repeated_bytes());
     }
 
-    // TODO: b/320932827 - Use elements_are! when ready
-    assert_that!(older_msg.repeated_bytes().len(), eq(1));
+    assert_that!(older_msg.repeated_bytes().len(), eq(2));
+    assert_that!(older_msg.repeated_bytes().get(0).unwrap(), eq(b"set from Mut"));
+    assert_that!(older_msg.repeated_bytes().get(1).unwrap(), eq(b"set second bytes"));
+    assert_that!(
+        older_msg.repeated_bytes().iter().collect::<Vec<_>>(),
+        elements_are![eq(b"set from Mut"), eq(b"set second bytes")]
+    );
 
     older_msg.repeated_bytes_mut().clear();
     assert_that!(older_msg.repeated_bytes(), empty());

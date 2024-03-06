@@ -6,9 +6,6 @@ require_once('test_util.php');
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
-use Bar\TestLegacyMessage;
-use Bar\TestLegacyMessage_NestedEnum;
-use Bar\TestLegacyMessage_NestedMessage;
 use Foo\Test32Fields;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
@@ -16,7 +13,6 @@ use Foo\TestIncludePrefixMessage;
 use Foo\TestSpecialCharacters;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
-use Foo\TestMessage_Sub;
 use Foo\TestMessage\NestedEnum;
 use Foo\TestReverseFieldOrder;
 use Foo\testLowerCaseMessage;
@@ -323,37 +319,6 @@ class GeneratedClassTest extends TestBase
         $this->assertTrue(true);
     }
 
-    public function testLegacyNestedEnum()
-    {
-        $m = new TestMessage();
-        $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
-        $this->assertTrue(true);
-    }
-
-    public function testLegacyTypehintWithNestedEnums()
-    {
-        $this->legacyEnum(new TestLegacyMessage\NestedEnum);
-    }
-
-    public function testLegacyReadOnlyMessage()
-    {
-        $this->assertTrue(class_exists('\Upper\READONLY'));
-        $this->assertTrue(class_exists('\Lower\readonly'));
-        $this->assertTrue(class_exists('\Php\Test\TestNamespace\PBEmpty\ReadOnly'));
-    }
-
-    public function testLegacyReadOnlyEnum()
-    {
-        $this->assertTrue(class_exists('\Upper_enum\READONLY'));
-        $this->assertTrue(class_exists('\Lower_enum\readonly'));
-    }
-
-    private function legacyEnum(TestLegacyMessage_NestedEnum $enum)
-    {
-        // If we made it here without a PHP Fatal error, the typehint worked
-        $this->assertTrue(true);
-    }
-
     #########################################################
     # Test float field.
     #########################################################
@@ -515,31 +480,6 @@ class GeneratedClassTest extends TestBase
         $m->setOptionalMessage($null);
         $this->assertNull($m->getOptionalMessage());
         $this->assertFalse($m->hasOptionalMessage());
-    }
-
-    public function testLegacyMessageField()
-    {
-        $m = new TestMessage();
-
-        $sub_m = new TestMessage_Sub();
-        $sub_m->setA(1);
-        $m->setOptionalMessage($sub_m);
-        $this->assertSame(1, $m->getOptionalMessage()->getA());
-
-        $null = null;
-        $m->setOptionalMessage($null);
-        $this->assertNull($m->getOptionalMessage());
-    }
-
-    public function testLegacyTypehintWithNestedMessages()
-    {
-        $this->legacyMessage(new TestLegacyMessage\NestedMessage);
-    }
-
-    private function legacyMessage(TestLegacyMessage_NestedMessage $sub)
-    {
-        // If we made it here without a PHP Fatal error, the typehint worked
-        $this->assertTrue(true);
     }
 
     #########################################################

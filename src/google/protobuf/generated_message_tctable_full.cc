@@ -91,6 +91,12 @@ const char* TcParser::ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL) {
   return WireFormat::_InternalParse(DownCast<Message*>(msg), ptr, ctx);
 }
 
+const char* TcParser::MessageSetWireFormatParseLoop(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<Message>(
+      PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

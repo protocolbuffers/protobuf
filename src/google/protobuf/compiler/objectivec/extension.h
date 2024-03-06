@@ -44,6 +44,7 @@ class ExtensionGenerator {
   std::string method_name_;
   std::string full_method_name_;
   const FieldDescriptor* descriptor_;
+  const GenerationOptions& generation_options_;
 };
 
 }  // namespace objectivec

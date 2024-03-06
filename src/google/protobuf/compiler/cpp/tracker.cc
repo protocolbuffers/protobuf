@@ -149,7 +149,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
       opts, message, absl::nullopt,
       {
           Call("serialize", "OnSerialize"),
-          Call("deserialize", "OnDeserialize"),
+          Call("deserialize", "OnDeserialize").This("_this"),
           // TODO: Ideally annotate_reflection should not exist and we
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we

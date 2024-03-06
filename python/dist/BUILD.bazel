@@ -6,8 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@pip_deps//:requirements.bzl", "requirement")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
@@ -427,7 +427,6 @@ py_dist(
     name = "dist",
     binary_wheel = ":binary_wheel",
     full_api_cpus = [
-        # TODO: fix win32 build
         "win32",
         "win64",
     ],
@@ -443,7 +442,6 @@ py_dist(
     # 3.10, but on Linux we can get away with using 3.7 (see ../python_api.h for
     # details).
     limited_api_wheels = {
-        # TODO: fix win32 build
         "win32": "310",
         "win64": "310",
         "linux-x86_64": "38",

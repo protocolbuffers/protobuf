@@ -17,6 +17,7 @@
 #include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
 
@@ -26,8 +27,8 @@ namespace compiler {
 namespace rust {
 
 std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
-  switch (field.type()) {
-    case FieldDescriptor::TYPE_DOUBLE:
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::DOUBLE:
       if (std::isfinite(field.default_value_double())) {
         return absl::StrCat(io::SimpleDtoa(field.default_value_double()),
                             "f64");
@@ -42,7 +43,7 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
       } else {
         ABSL_LOG(FATAL) << "unreachable";
       }
-    case FieldDescriptor::TYPE_FLOAT:
+    case RustFieldType::FLOAT:
       if (std::isfinite(field.default_value_float())) {
         return absl::StrCat(io::SimpleFtoa(field.default_value_float()), "f32");
       } else if (std::isnan(field.default_value_float())) {
@@ -56,27 +57,21 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
       } else {
         ABSL_LOG(FATAL) << "unreachable";
       }
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_SINT32:
+    case RustFieldType::INT32:
       return absl::StrFormat("%d", field.default_value_int32());
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_SFIXED64:
-    case FieldDescriptor::TYPE_SINT64:
+    case RustFieldType::INT64:
       return absl::StrFormat("%d", field.default_value_int64());
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_UINT64:
+    case RustFieldType::UINT64:
       return absl::StrFormat("%u", field.default_value_uint64());
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_UINT32:
+    case RustFieldType::UINT32:
       return absl::StrFormat("%u", field.default_value_uint32());
-    case FieldDescriptor::TYPE_BOOL:
+    case RustFieldType::BOOL:
       return absl::StrFormat("%v", field.default_value_bool());
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
+    case RustFieldType::STRING:
+    case RustFieldType::BYTES:
       return absl::StrFormat("b\"%s\"",
                              absl::CHexEscape(field.default_value_string()));
-    case FieldDescriptor::TYPE_ENUM:
+    case RustFieldType::ENUM:
       // `$EnumName$::default()` might seem like the right choice here, but
       // it is not. The default value for the enum type isn't the same as the
       // field, since in `syntax = "proto2"`, an enum field can have a default
@@ -88,9 +83,8 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
       // expression. Trait methods in a `const` context aren't currently stable.
       return absl::StrCat(RsTypePath(ctx, field),
                           "::", EnumValueRsName(*field.default_value_enum()));
-    case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_MESSAGE:
-      ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
+    case RustFieldType::MESSAGE:
+      ABSL_LOG(FATAL) << "Messages can't have defaults: " << field.type_name();
   }
   ABSL_LOG(FATAL) << "unreachable";
 }

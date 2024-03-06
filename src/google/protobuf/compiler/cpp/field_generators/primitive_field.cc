@@ -89,7 +89,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
  public:
   SingularPrimitive(const FieldDescriptor* field, const Options& opts,
                     MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~SingularPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -164,7 +164,6 @@ class SingularPrimitive final : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -239,10 +238,10 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
 
 void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  if ((descriptor_->number() < 16) &&
-      (descriptor_->type() == FieldDescriptor::TYPE_INT32 ||
-       descriptor_->type() == FieldDescriptor::TYPE_INT64 ||
-       descriptor_->type() == FieldDescriptor::TYPE_ENUM)) {
+  if ((field_->number() < 16) &&
+      (field_->type() == FieldDescriptor::TYPE_INT32 ||
+       field_->type() == FieldDescriptor::TYPE_INT64 ||
+       field_->type() == FieldDescriptor::TYPE_ENUM)) {
     // Call special non-inlined routine with tag number hardcoded as a
     // template parameter that handles the EnsureSpace and the writing
     // of the tag+value to the array
@@ -291,7 +290,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
                     MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -421,7 +420,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -524,8 +522,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set($pb$::Arena::CreateMessage<$pb$::RepeatedField<$Type$>>(
-              GetArena()));
+          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<$Type$>>(GetArena()));
         }
         return $field_$.Get();
       }
@@ -597,7 +594,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
       {
           Sub{"data_size",
               [&] {
-                auto fixed_size = FixedSize(descriptor_->type());
+                auto fixed_size = FixedSize(field_->type());
                 if (fixed_size.has_value()) {
                   p->Emit({{"kFixed", *fixed_size}}, R"cc(
                     std::size_t{$kFixed$} *

@@ -5,10 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_UTIL_COMPARE_H_
-#define UPB_UTIL_COMPARE_H_
+#ifndef UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
+#define UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
 
 #include <stddef.h>
+
+// Must be last.
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,14 +36,14 @@ typedef enum {
   kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
 } upb_UnknownCompareResult;
 
-upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char* buf1,
-                                                           size_t size1,
-                                                           const char* buf2,
-                                                           size_t size2,
-                                                           int max_depth);
+upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+    const char* buf1, size_t size1, const char* buf2, size_t size2,
+    int max_depth);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* UPB_UTIL_COMPARE_H_ */
+#include "upb/port/undef.inc"
+
+#endif /* UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_ */

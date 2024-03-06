@@ -3975,7 +3975,7 @@ class DescriptorBuilder {
 
   ~DescriptorBuilder();
 
-  const FileDescriptor* BuildFile(const FileDescriptorProto& original_proto);
+  const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
 
  private:
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
@@ -5574,10 +5574,8 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
 }
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
-    const FileDescriptorProto& original_proto) {
-  filename_ = original_proto.name();
-
-  const FileDescriptorProto& proto = original_proto;
+    const FileDescriptorProto& proto) {
+  filename_ = proto.name();
 
   // Check if the file already exists and is identical to the one being built.
   // Note:  This only works if the input is canonical -- that is, it
@@ -5663,14 +5661,12 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   FileDescriptor* result = alloc.AllocateArray<FileDescriptor>(1);
   file_ = result;
 
-  // TODO: Report error when the syntax is empty after all the protos
-  // have added the syntax statement.
-  if (proto.syntax().empty() || proto.syntax() == "proto2") {
+  if (proto.has_edition()) {
+    file_->edition_ = proto.edition();
+  } else if (proto.syntax().empty() || proto.syntax() == "proto2") {
     file_->edition_ = Edition::EDITION_PROTO2;
   } else if (proto.syntax() == "proto3") {
     file_->edition_ = Edition::EDITION_PROTO3;
-  } else if (proto.syntax() == "editions") {
-    file_->edition_ = proto.edition();
   } else {
     file_->edition_ = Edition::EDITION_UNKNOWN;
     AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER, [&] {
@@ -6054,6 +6050,10 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   BUILD_ARRAY(proto, result, extension, BuildExtension, result);
   BUILD_ARRAY(proto, result, reserved_range, BuildReservedRange, result);
 
+  // Copy options.
+  AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
+                  "google.protobuf.MessageOptions", alloc);
+
   // Before building submessages, check recursion limit.
   --recursion_depth_;
   IncrementWhenDestroyed revert{recursion_depth_};
@@ -6074,10 +6074,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   for (int i = 0; i < reserved_name_count; ++i) {
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
-
-  // Copy options.
-  AllocateOptions(proto, result, DescriptorProto::kOptionsFieldNumber,
-                  "google.protobuf.MessageOptions", alloc);
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
@@ -7658,24 +7654,33 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
-  if (field->file()->edition() >= Edition::EDITION_2023 &&
-      field->options().has_ctype()) {
-    if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
-      AddError(
-          field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
-          absl::StrFormat(
-              "Field %s specifies ctype, but is not a string nor bytes field.",
-              field->full_name())
-              .c_str());
-    }
-    if (field->options().ctype() == FieldOptions::CORD) {
-      if (field->is_extension()) {
+  auto edition = field->file()->edition();
+  auto& field_options = field->options();
+
+  if (field_options.has_ctype()) {
+    if (edition >= Edition::EDITION_2024) {
+      // "ctype" is no longer supported in edition 2024 and beyond.
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "ctype option is not allowed under edition 2024 and beyond. Use "
+               "the feature string_type = VIEW|CORD|STRING|... instead.");
+    } else if (edition == Edition::EDITION_2023) {
+      if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
-                 absl::StrFormat("Extension %s specifies ctype=CORD which is "
-                                 "not supported for extensions.",
+                 absl::StrFormat("Field %s specifies ctype, but is not a "
+                                 "string nor bytes field.",
                                  field->full_name())
                      .c_str());
+      }
+      if (field_options.ctype() == FieldOptions::CORD) {
+        if (field->is_extension()) {
+          AddError(field->full_name(), proto,
+                   DescriptorPool::ErrorCollector::TYPE,
+                   absl::StrFormat("Extension %s specifies ctype=CORD which is "
+                                   "not supported for extensions.",
+                                   field->full_name())
+                       .c_str());
+        }
       }
     }
   }
@@ -7866,8 +7871,9 @@ void DescriptorBuilder::ValidateFieldFeatures(
              "message_encoding = DELIMITED to control this behavior.");
   }
 
+  auto& field_options = field->options();
   // Validate legacy options that have been migrated to features.
-  if (field->options().has_packed()) {
+  if (field_options.has_packed()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Field option packed is not allowed under editions.  Use the "
              "repeated_field_encoding feature to control this behavior.");

@@ -73,9 +73,9 @@ static constexpr absl::string_view kSecondInsertionPoint =
 
 MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {
   const char* c_key = getenv("TEST_CASE");
-  if (c_key == NULL) {
+  if (c_key == nullptr) {
     // In Windows, setting 'TEST_CASE=' is equivalent to unsetting
-    // and therefore c_key can be NULL
+    // and therefore c_key can be nullptr
     c_key = "";
   }
   absl::string_view key(c_key);

@@ -88,7 +88,7 @@ TEST(Proto3ArenaLiteTest, Parsing) {
   SetAllFields(&original);
 
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   ExpectAllFieldsSet(*arena_message);
 }
@@ -98,8 +98,8 @@ TEST(Proto3ArenaLiteTest, Swap) {
   Arena arena2;
 
   // Test Swap().
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
   arena1_message->Swap(arena2_message);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
@@ -107,7 +107,7 @@ TEST(Proto3ArenaLiteTest, Swap) {
 
 TEST(Proto3ArenaLiteTest, SetAllocatedMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
@@ -116,7 +116,7 @@ TEST(Proto3ArenaLiteTest, SetAllocatedMessage) {
 
 TEST(Proto3ArenaLiteTest, ReleaseMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());

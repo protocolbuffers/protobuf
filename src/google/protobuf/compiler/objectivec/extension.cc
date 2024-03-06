@@ -34,7 +34,8 @@ ExtensionGenerator::ExtensionGenerator(
     : method_name_(ExtensionMethodName(descriptor)),
       full_method_name_(
           absl::StrCat(root_or_message_class_name, "_", method_name_)),
-      descriptor_(descriptor) {
+      descriptor_(descriptor),
+      generation_options_(generation_options) {
   ABSL_CHECK(!descriptor->is_map())
       << "error: Extension is a map<>!"
       << " That used to be blocked by the compiler.";
@@ -43,7 +44,8 @@ ExtensionGenerator::ExtensionGenerator(
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
   printer->Emit(
       {{"method_name", method_name_},
-       {"comments", [&] { EmitCommentsString(printer, descriptor_); }},
+       {"comments",
+        [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
        {"storage_attribute",
         IsRetainedName(method_name_) ? "NS_RETURNS_NOT_RETAINED" : ""},
        {"deprecated_attribute",

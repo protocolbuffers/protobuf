@@ -58,10 +58,8 @@ impl<'msg, T: ?Sized> Debug for RepeatedMut<'msg, T> {
     }
 }
 
-impl<'msg, T> RepeatedView<'msg, T>
-where
-    T: ProxiedInRepeated + ?Sized + 'msg,
-{
+#[doc(hidden)]
+impl<'msg, T: ?Sized> RepeatedView<'msg, T> {
     #[doc(hidden)]
     pub fn as_raw(&self, _private: Private) -> RawRepeatedField {
         self.raw
@@ -73,7 +71,12 @@ where
     pub unsafe fn from_raw(_private: Private, raw: RawRepeatedField) -> Self {
         Self { raw, _phantom: PhantomData }
     }
+}
 
+impl<'msg, T> RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
     /// Gets the length of the repeated field.
     pub fn len(&self) -> usize {
         T::repeated_len(*self)
@@ -110,10 +113,8 @@ where
     }
 }
 
-impl<'msg, T> RepeatedMut<'msg, T>
-where
-    T: ProxiedInRepeated + ?Sized + 'msg,
-{
+#[doc(hidden)]
+impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
     /// # Safety
     /// - `inner` must be valid to read and write from for `'msg`
     /// - There must be no aliasing references or mutations on the same
@@ -123,18 +124,16 @@ where
         Self { inner, _phantom: PhantomData }
     }
 
-    /// # Safety
-    /// - The return value must not be mutated through without synchronization.
-    #[allow(dead_code)]
-    pub(crate) unsafe fn into_inner(self) -> InnerRepeatedMut<'msg> {
-        self.inner
-    }
-
     #[doc(hidden)]
     pub fn as_raw(&mut self, _private: Private) -> RawRepeatedField {
         self.inner.raw
     }
+}
 
+impl<'msg, T> RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
     /// Gets the length of the repeated field.
     pub fn len(&self) -> usize {
         self.as_view().len()
@@ -271,21 +270,6 @@ impl<'msg, T: ?Sized> Debug for RepeatedIter<'msg, T> {
     }
 }
 
-/// An iterator over the mutators inside of a [`Mut<Repeated<T>>`](RepeatedMut).
-pub struct RepeatedIterMut<'msg, T: ?Sized> {
-    mutator: RepeatedMut<'msg, T>,
-    current_index: usize,
-}
-
-impl<'msg, T: ?Sized> Debug for RepeatedIterMut<'msg, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RepeatedIterMut")
-            .field("mutator", &self.mutator)
-            .field("current_index", &self.current_index)
-            .finish()
-    }
-}
-
 /// A `repeated` field of `T`, used as the owned target for `Proxied`.
 ///
 /// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
@@ -397,7 +381,6 @@ where
     }
 }
 
-// TODO: impl ExactSizeIterator
 impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
 where
     T: ProxiedInRepeated + ?Sized + 'msg,
@@ -411,14 +394,20 @@ where
         }
         val
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.len();
+        (len, Some(len))
+    }
 }
 
 impl<'msg, T: ?Sized + ProxiedInRepeated> ExactSizeIterator for RepeatedIter<'msg, T> {
     fn len(&self) -> usize {
-        self.view.len()
+        self.view.len() - self.current_index
     }
 }
 
+// TODO: impl DoubleEndedIterator
 impl<'msg, T: ?Sized + ProxiedInRepeated> FusedIterator for RepeatedIter<'msg, T> {}
 
 impl<'msg, T> iter::IntoIterator for RepeatedView<'msg, T>

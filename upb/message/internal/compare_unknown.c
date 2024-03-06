@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/util/compare.h"
+#include "upb/message/internal/compare_unknown.h"
 
 #include <stdlib.h>
 
@@ -14,10 +14,10 @@
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
-struct upb_UnknownFields;
 typedef struct upb_UnknownFields upb_UnknownFields;
 
 typedef struct {
@@ -268,11 +268,9 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   return ret;
 }
 
-upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char* buf1,
-                                                           size_t size1,
-                                                           const char* buf2,
-                                                           size_t size2,
-                                                           int max_depth) {
+upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+    const char* buf1, size_t size1, const char* buf2, size_t size2,
+    int max_depth) {
   if (size1 == 0 && size2 == 0) return kUpb_UnknownCompareResult_Equal;
   if (size1 == 0 || size2 == 0) return kUpb_UnknownCompareResult_NotEqual;
   if (memcmp(buf1, buf2, size1) == 0) return kUpb_UnknownCompareResult_Equal;

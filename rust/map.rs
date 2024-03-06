@@ -8,15 +8,14 @@
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::{Private, RawMap},
-    __runtime::InnerMapMut,
+    __runtime::{InnerMapMut, RawMapIter},
 };
 use std::marker::PhantomData;
 
 #[repr(transparent)]
 pub struct MapView<'msg, K: ?Sized, V: ?Sized> {
-    pub raw: RawMap,
-    _phantom_key: PhantomData<&'msg K>,
-    _phantom_value: PhantomData<&'msg V>,
+    raw: RawMap,
+    _phantom: PhantomData<(&'msg K, &'msg V)>,
 }
 
 impl<'msg, K: ?Sized, V: ?Sized> Copy for MapView<'msg, K, V> {}
@@ -40,8 +39,13 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapView<'msg, K, V> {
 
 pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
     pub(crate) inner: InnerMapMut<'msg>,
-    _phantom_key: PhantomData<&'msg K>,
-    _phantom_value: PhantomData<&'msg V>,
+    _phantom: PhantomData<(&'msg mut K, &'msg mut V)>,
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    pub fn inner(&self, _private: Private) -> InnerMapMut {
+        self.inner
+    }
 }
 
 unsafe impl<'msg, K: ?Sized, V: ?Sized> Sync for MapMut<'msg, K, V> {}
@@ -56,9 +60,8 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
 }
 
 pub struct Map<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> {
-    pub(crate) inner: InnerMapMut<'static>,
-    _phantom_key: PhantomData<K>,
-    _phantom_value: PhantomData<V>,
+    inner: InnerMapMut<'static>,
+    _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
 }
 
 impl<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> Drop for Map<K, V> {
@@ -85,6 +88,9 @@ where
     fn map_insert(map: Mut<'_, Map<K, Self>>, key: View<'_, K>, value: View<'_, Self>) -> bool;
     fn map_get<'a>(map: View<'a, Map<K, Self>>, key: View<'_, K>) -> Option<View<'a, Self>>;
     fn map_remove(map: Mut<'_, Map<K, Self>>, key: View<'_, K>) -> bool;
+
+    fn map_iter(map: View<'_, Map<K, Self>>) -> MapIter<'_, K, Self>;
+    fn map_iter_next<'a>(iter: &mut MapIter<'a, K, Self>) -> Option<(View<'a, K>, View<'a, Self>)>;
 }
 
 impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxied for Map<K, V> {
@@ -116,7 +122,7 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg
     where
         'msg: 'shorter,
     {
-        MapView { raw: self.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapView { raw: self.raw, _phantom: PhantomData }
     }
 }
 
@@ -126,14 +132,14 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg
     type Proxied = Map<K, V>;
 
     fn as_view(&self) -> View<'_, Self::Proxied> {
-        MapView { raw: self.inner.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
 
     fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
         'msg: 'shorter,
     {
-        MapView { raw: self.inner.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
 }
 
@@ -141,14 +147,14 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MutProxy<'msg>
     for MapMut<'msg, K, V>
 {
     fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-        MapMut { inner: self.inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapMut { inner: self.inner, _phantom: PhantomData }
     }
 
     fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
     where
         'msg: 'shorter,
     {
-        MapMut { inner: self.inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapMut { inner: self.inner, _phantom: PhantomData }
     }
 }
 
@@ -163,27 +169,33 @@ where
     }
 
     pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
-        MapMut { inner: self.inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapMut { inner: self.inner, _phantom: PhantomData }
     }
 
     pub fn as_view(&self) -> MapView<'_, K, V> {
-        MapView { raw: self.inner.raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
 
     /// # Safety
     /// - `inner` must be valid to read and write from for `'static`.
     /// - There must be no aliasing references or mutations on the same
     ///   underlying object.
+    #[doc(hidden)]
     pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'static>) -> Self {
-        Self { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        Self { inner, _phantom: PhantomData }
+    }
+
+    pub fn as_raw(&self, _private: Private) -> RawMap {
+        self.inner.as_raw(Private)
+    }
+
+    pub fn inner(&self, _private: Private) -> InnerMapMut<'static> {
+        self.inner
     }
 }
 
-impl<'msg, K, V> MapView<'msg, K, V>
-where
-    K: Proxied + ?Sized + 'msg,
-    V: ProxiedInMapValue<K> + ?Sized + 'msg,
-{
+#[doc(hidden)]
+impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
     #[doc(hidden)]
     pub fn as_raw(&self, _private: Private) -> RawMap {
         self.raw
@@ -193,9 +205,15 @@ where
     /// - `raw` must be valid to read from for `'msg`.
     #[doc(hidden)]
     pub unsafe fn from_raw(_private: Private, raw: RawMap) -> Self {
-        Self { raw, _phantom_key: PhantomData, _phantom_value: PhantomData }
+        Self { raw, _phantom: PhantomData }
     }
+}
 
+impl<'msg, K, V> MapView<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
     pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
     where
         K: 'a,
@@ -210,6 +228,43 @@ where
     pub fn is_empty(self) -> bool {
         self.len() == 0
     }
+
+    /// Returns an iterator visiting all key-value pairs in arbitrary order.
+    ///
+    /// The iterator element type is `(View<K>, View<V>)`.
+    /// This is an alias for `<Self as IntoIterator>::into_iter`.
+    pub fn iter(self) -> MapIter<'msg, K, V> {
+        self.into_iter()
+    }
+
+    /// Returns an iterator visiting all keys in arbitrary order.
+    ///
+    /// The iterator element type is `View<K>`.
+    pub fn keys(self) -> impl Iterator<Item = View<'msg, K>> + 'msg {
+        self.into_iter().map(|(k, _)| k)
+    }
+
+    /// Returns an iterator visiting all values in arbitrary order.
+    ///
+    /// The iterator element type is `View<V>`.
+    pub fn values(self) -> impl Iterator<Item = View<'msg, V>> + 'msg {
+        self.into_iter().map(|(_, v)| v)
+    }
+}
+
+#[doc(hidden)]
+impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
+    /// # Safety
+    /// - `inner` must be valid to read and write from for `'msg`.
+    #[doc(hidden)]
+    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'msg>) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw(&mut self, _private: Private) -> RawMap {
+        self.inner.raw
+    }
 }
 
 impl<'msg, K, V> MapMut<'msg, K, V>
@@ -217,12 +272,6 @@ where
     K: Proxied + ?Sized + 'msg,
     V: ProxiedInMapValue<K> + ?Sized + 'msg,
 {
-    /// # Safety
-    /// - `inner` must be valid to read and write from for `'msg`.
-    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'msg>) -> Self {
-        Self { inner, _phantom_key: PhantomData, _phantom_value: PhantomData }
-    }
-
     pub fn len(self) -> usize {
         self.as_view().len()
     }
@@ -266,6 +315,119 @@ where
 
     pub fn copy_from(&mut self, _src: MapView<'_, K, V>) {
         todo!("implement b/28530933");
+    }
+
+    /// Returns an iterator visiting all key-value pairs in arbitrary order.
+    ///
+    /// The iterator element type is `(View<K>, View<V>)`.
+    pub fn iter(&self) -> MapIter<'_, K, V> {
+        self.into_iter()
+    }
+
+    /// Returns an iterator visiting all keys in arbitrary order.
+    ///
+    /// The iterator element type is `View<K>`.
+    pub fn keys(&self) -> impl Iterator<Item = View<'_, K>> + '_ {
+        self.as_view().keys()
+    }
+
+    /// Returns an iterator visiting all values in arbitrary order.
+    ///
+    /// The iterator element type is `View<V>`.
+    pub fn values(&self) -> impl Iterator<Item = View<'_, V>> + '_ {
+        self.as_view().values()
+    }
+}
+
+/// An iterator visiting all key-value pairs in arbitrary order.
+///
+/// The iterator element type is `(View<Key>, View<Value>)`.
+pub struct MapIter<'msg, K: ?Sized, V: ?Sized> {
+    raw: RawMapIter,
+    _phantom: PhantomData<(&'msg K, &'msg V)>,
+}
+
+impl<'msg, K: ?Sized, V: ?Sized> MapIter<'msg, K, V> {
+    /// # Safety
+    /// - `raw` must be a valid instance of the raw iterator for `'msg`.
+    /// - The untyped `raw` iterator must be for a map of `K,V`.
+    /// - The backing map must be live and unmodified for `'msg`.
+    #[doc(hidden)]
+    pub unsafe fn from_raw(_private: Private, raw: RawMapIter) -> Self {
+        Self { raw, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw_mut(&mut self, _private: Private) -> &mut RawMapIter {
+        &mut self.raw
+    }
+}
+
+impl<'msg, K, V> Iterator for MapIter<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        V::map_iter_next(self)
+    }
+}
+
+impl<'msg, K, V> IntoIterator for MapView<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'msg, K, V>;
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn into_iter(self) -> MapIter<'msg, K, V> {
+        V::map_iter(self)
+    }
+}
+
+impl<'msg, K, V> IntoIterator for &'msg Map<K, V>
+where
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'msg, K, V>;
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn into_iter(self) -> MapIter<'msg, K, V> {
+        self.as_view().into_iter()
+    }
+}
+
+impl<'a, 'msg, K, V> IntoIterator for &'a MapView<'msg, K, V>
+where
+    'msg: 'a,
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'msg, K, V>;
+    type Item = (View<'msg, K>, View<'msg, V>);
+
+    fn into_iter(self) -> MapIter<'msg, K, V> {
+        (*self).into_iter()
+    }
+}
+
+impl<'a, 'msg, K, V> IntoIterator for &'a MapMut<'msg, K, V>
+where
+    'msg: 'a,
+    K: Proxied + ?Sized + 'msg,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg,
+{
+    type IntoIter = MapIter<'a, K, V>;
+    // The View's are valid for 'a instead of 'msg.
+    // This is because the mutator may mutate past 'a but before 'msg expires.
+    type Item = (View<'a, K>, View<'a, V>);
+
+    fn into_iter(self) -> MapIter<'a, K, V> {
+        self.as_view().into_iter()
     }
 }
 
@@ -324,6 +486,45 @@ mod tests {
 
         let map_view_4 = map_view_2.into_view();
         assert_that!(map_view_4.is_empty(), eq(false));
+    }
+
+    #[test]
+    fn test_proxied_iter() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        map_mut.insert(15, "fizzbuzz");
+        map_mut.insert(5, "buzz");
+        map_mut.insert(3, "fizz");
+
+        // ProtoStr::from_str is necessary below because
+        // https://doc.rust-lang.org/std/primitive.tuple.html#impl-PartialEq-for-(T,)
+        // only compares where the types are the same, even when the tuple types can
+        // compare with each other.
+        // googletest-rust matchers also do not currently implement Clone.
+        assert_that!(
+            map.as_view().iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((3, ProtoStr::from_str("fizz"))),
+                eq((5, ProtoStr::from_str("buzz"))),
+                eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((3, ProtoStr::from_str("fizz"))),
+                eq((5, ProtoStr::from_str("buzz"))),
+                eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+        assert_that!(
+            map.as_mut().iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((3, ProtoStr::from_str("fizz"))),
+                eq((5, ProtoStr::from_str("buzz"))),
+                eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
     }
 
     #[test]

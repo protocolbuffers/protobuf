@@ -73,6 +73,8 @@ $PROTOC -Isrc -I. \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
     src/google/protobuf/test_messages_proto2.proto \
+    src/google/protobuf/unittest_features.proto \
+    src/google/protobuf/unittest_legacy_features.proto \
     src/google/protobuf/unittest_proto3_optional.proto \
     src/google/protobuf/unittest_retention.proto
 

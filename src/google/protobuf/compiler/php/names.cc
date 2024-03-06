@@ -79,7 +79,7 @@ template <typename DescriptorType>
 std::string GeneratedClassNameImpl(const DescriptorType* desc) {
   std::string classname = ClassNamePrefixImpl(desc->name(), desc) + desc->name();
   const Descriptor* containing = desc->containing_type();
-  while (containing != NULL) {
+  while (containing != nullptr) {
     classname = ClassNamePrefixImpl(containing->name(), desc) + containing->name()
        + '\\' + classname;
     containing = containing->containing_type();

@@ -575,7 +575,7 @@ static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
   const bool e2 = PyUpb_Message_IsEmpty(m2_msg, m1_msgdef, symtab);
   if (e1 || e2) return e1 && e2;
 
-  return upb_Message_IsEqual(m1_msg, m2_msg, m1_msgdef);
+  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef);
 }
 
 static const upb_FieldDef* PyUpb_Message_InitAsMsg(PyUpb_Message* m,

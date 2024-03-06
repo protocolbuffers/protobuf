@@ -19,8 +19,9 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/status/status.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -79,6 +80,9 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return {GetExtensionReflection(pb::cpp)};
   }
+
+  using CodeGenerator::GetEdition;
+  using CodeGenerator::GetResolvedSourceFeatures;
 
  private:
   bool opensource_runtime_ = PROTO2_IS_OSS;

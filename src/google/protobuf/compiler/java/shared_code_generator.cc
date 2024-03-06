@@ -52,9 +52,9 @@ void SharedCodeGenerator::Generate(
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
-    std::unique_ptr<io::Printer> printer(
-        new io::Printer(output.get(), '$',
-                        options_.annotate_code ? &annotation_collector : NULL));
+    std::unique_ptr<io::Printer> printer(new io::Printer(
+        output.get(), '$',
+        options_.annotate_code ? &annotation_collector : nullptr));
     std::string info_relative_path = absl::StrCat(classname, ".java.pb.meta");
     std::string info_full_path = absl::StrCat(filename, ".pb.meta");
     printer->Print(
@@ -76,9 +76,6 @@ void SharedCodeGenerator::Generate(
                              options_.annotate_code ? info_relative_path : "",
                              options_);
 
-    if (!options_.opensource_runtime) {
-      printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
-    }
 
     printer->Print(
 
@@ -87,17 +84,12 @@ void SharedCodeGenerator::Generate(
         "returns\n"
         "  * an incomplete descriptor for internal use only. */\n"
         "  public static com.google.protobuf.Descriptors.FileDescriptor\n"
-        "      descriptor;\n"
-        "  /* This method is to be called by generated code only. It returns\n"
-        "  * an incomplete descriptor for internal use only. */\n"
-        "  public static com.google.protobuf.Descriptors.FileDescriptor "
-        "getDescriptor() {\n"
-        "    descriptor.resolveAllFeatures();\n"
-        "    return descriptor;\n"
-        "  }\n"
-        "  static {\n",
+        "      descriptor;\n",
         "classname", classname);
     printer->Annotate("classname", file_->name());
+
+
+    printer->Print("  static {\n");
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());

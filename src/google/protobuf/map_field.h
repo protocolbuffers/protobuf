@@ -671,7 +671,7 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is nullptr.
   EntryType* NewEntry() const {
-    return Arena::CreateMessage<EntryType>(this->arena());
+    return Arena::Create<EntryType>(this->arena());
   }
 
  private:

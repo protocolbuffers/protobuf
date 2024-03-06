@@ -292,7 +292,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
            .WithSuffix(";"),
        {"message_comments",
         [&] {
-          EmitCommentsString(printer, descriptor_,
+          EmitCommentsString(printer, generation_options_, descriptor_,
                              kCommentStringFlags_ForceMultiline);
         }},
        {"message_fieldnum_enum",

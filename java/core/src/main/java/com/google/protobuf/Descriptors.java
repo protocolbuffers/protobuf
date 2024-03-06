@@ -75,7 +75,13 @@ public final class Descriptors {
   @SuppressWarnings("NonFinalStaticField")
   private static volatile FeatureSetDefaults javaEditionDefaults = null;
 
-  private static FeatureSet getEditionDefaults(Edition edition) {
+  /** Sets the default feature mappings used during the build. Exposed for tests. */
+  static void setTestJavaEditionDefaults(FeatureSetDefaults defaults) {
+    javaEditionDefaults = defaults;
+  }
+
+  /** Gets the default feature mappings used during the build. */
+  static FeatureSetDefaults getJavaEditionDefaults() {
     // Force explicit initialization before synchronized block which can trigger initialization in
     // `JavaFeaturesProto.registerAllExtensions()` and `FeatureSetdefaults.parseFrom()` calls.
     // Otherwise, this can result in deadlock if another threads holds the static init block's
@@ -88,18 +94,22 @@ public final class Descriptors {
           try {
             ExtensionRegistry registry = ExtensionRegistry.newInstance();
             registry.add(JavaFeaturesProto.java);
-            javaEditionDefaults =
+            setTestJavaEditionDefaults(
                 FeatureSetDefaults.parseFrom(
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
                         Internal.ISO_8859_1),
-                    registry);
+                    registry));
           } catch (Exception e) {
             throw new AssertionError(e);
           }
         }
       }
     }
+    return javaEditionDefaults;
+  }
 
+  static FeatureSet getEditionDefaults(Edition edition) {
+    FeatureSetDefaults javaEditionDefaults = getJavaEditionDefaults();
     if (edition.getNumber() < javaEditionDefaults.getMinimumEdition().getNumber()) {
       throw new IllegalArgumentException(
           "Edition "
@@ -348,7 +358,7 @@ public final class Descriptors {
      * Construct a {@code FileDescriptor}.
      *
      * @param proto the protocol message form of the FileDescriptort
-     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies
+     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies.
      * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
      *     for a number of reasons; for instance, because a field has an undefined type or because
      *     two messages were defined with the same name.
@@ -397,7 +407,9 @@ public final class Descriptors {
       result.crossLink();
       // Skip feature resolution until later for calls from gencode.
       if (!allowUnresolvedFeatures) {
-        result.resolveAllFeatures();
+        // We do not need to force feature resolution for proto1 dependencies
+        // since dependencies from non-gencode should already be fully feature resolved.
+        result.resolveAllFeaturesInternal();
       }
       return result;
     }
@@ -415,7 +427,11 @@ public final class Descriptors {
       if (strings.length == 1) {
         return strings[0].getBytes(Internal.ISO_8859_1);
       }
-      return String.join("", strings).getBytes(Internal.ISO_8859_1);
+      StringBuilder descriptorData = new StringBuilder();
+      for (String part : strings) {
+        descriptorData.append(part);
+      }
+      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
     }
 
     private static FileDescriptor[] findDescriptors(
@@ -486,10 +502,7 @@ public final class Descriptors {
       ByteString bytes = descriptor.proto.toByteString();
       try {
         FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
-        synchronized (descriptor) {
-          descriptor.setProto(proto);
-          descriptor.resolveAllFeatures();
-        }
+        descriptor.setProto(proto);
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
@@ -614,11 +627,15 @@ public final class Descriptors {
       pool.addSymbol(message);
     }
 
+    public void resolveAllFeaturesImmutable() {
+      resolveAllFeaturesInternal();
+    }
+
     /**
      * This method is to be called by generated code only. It resolves features for the descriptor
      * and all of its children.
      */
-    public void resolveAllFeatures() {
+    private void resolveAllFeaturesInternal() {
       if (this.features != null) {
         return;
       }
@@ -702,10 +719,10 @@ public final class Descriptors {
      * construct the descriptors we have to have parsed the descriptor protos. So, we have to parse
      * the descriptor protos a second time after constructing the descriptors.
      */
-    private void setProto(final FileDescriptorProto proto) {
+    private synchronized void setProto(final FileDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < messageTypes.length; i++) {
         messageTypes[i].setProto(proto.getMessageType(i));
@@ -1106,16 +1123,17 @@ public final class Descriptors {
         enumType.resolveAllFeatures();
       }
 
+      // Oneofs must be resolved before any children oneof fields.
+      for (OneofDescriptor oneof : oneofs) {
+        oneof.resolveAllFeatures();
+      }
+
       for (FieldDescriptor field : fields) {
         field.resolveAllFeatures();
       }
 
       for (FieldDescriptor extension : extensions) {
         extension.resolveAllFeatures();
-      }
-
-      for (OneofDescriptor oneof : oneofs) {
-        oneof.resolveAllFeatures();
       }
     }
 
@@ -1157,8 +1175,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final DescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < nestedTypes.length; i++) {
         nestedTypes[i].setProto(proto.getNestedType(i));
@@ -1249,7 +1267,7 @@ public final class Descriptors {
      * FieldDescriptorProto.Type} maps to exactly one Java type.
      */
     public JavaType getJavaType() {
-      return type.getJavaType();
+      return getType().getJavaType();
     }
 
     /** For internal use only. */
@@ -1280,12 +1298,12 @@ public final class Descriptors {
     /** For internal use only. */
     @Override
     public WireFormat.FieldType getLiteType() {
-      return table[type.ordinal()];
+      return table[getType().ordinal()];
     }
 
     /** For internal use only. */
     public boolean needsUtf8Check() {
-      if (type != Type.STRING) {
+      if (getType() != Type.STRING) {
         return false;
       }
       if (getContainingType().toProto().getOptions().getMapEntry()) {
@@ -1433,7 +1451,8 @@ public final class Descriptors {
       if (isRepeated()) {
         return false;
       }
-      return getType() == Type.MESSAGE
+      return isProto3Optional
+          || getType() == Type.MESSAGE
           || getType() == Type.GROUP
           || getContainingOneof() != null
           || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
@@ -1692,6 +1711,7 @@ public final class Descriptors {
           extensionScope = parent;
         } else {
           extensionScope = null;
+          this.parent = file;
         }
 
         if (proto.hasOneofIndex()) {
@@ -1715,6 +1735,7 @@ public final class Descriptors {
           }
           containingOneof = parent.getOneofs().get(proto.getOneofIndex());
           containingOneof.fieldCount++;
+          this.parent = containingOneof;
         } else {
           containingOneof = null;
         }
@@ -1973,8 +1994,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final FieldDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
 
     /** For internal use only. This is to satisfy the FieldDescriptorLite interface. */
@@ -2253,8 +2274,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < values.length; i++) {
         values[i].setProto(proto.getValue(i));
@@ -2402,8 +2423,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final EnumValueDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
   }
 
@@ -2527,8 +2548,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final ServiceDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
 
       for (int i = 0; i < methods.length; i++) {
         methods[i].setProto(proto.getMethod(i));
@@ -2677,8 +2698,8 @@ public final class Descriptors {
     /** See {@link FileDescriptor#setProto}. */
     private void setProto(final MethodDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
   }
 
@@ -3213,8 +3234,8 @@ public final class Descriptors {
 
     private void setProto(final OneofDescriptorProto proto) {
       this.proto = proto;
-      this.features = null;
       this.options = null;
+      this.features = resolveFeatures(proto.getOptions().getFeatures());
     }
 
     private OneofDescriptor(

@@ -1095,7 +1095,7 @@ TYPED_TEST(LiteTest, AllLite47) {
 TYPED_TEST(LiteTest, MapCrash) {
   // See b/113635730
   Arena arena;
-  auto msg = Arena::CreateMessage<protobuf_unittest::TestMapLite>(&arena);
+  auto msg = Arena::Create<protobuf_unittest::TestMapLite>(&arena);
   // Payload for the map<string, Enum> with a enum varint that's longer >
   // 10 bytes. This causes a parse fail and a subsequent delete. field 16
   // (map<int32, MapEnumLite>) tag = 128+2 = \202 \1

@@ -40,30 +40,19 @@ extern "C" {
 // Functions ending in Extension() take a (upb_MiniTableExtension*) argument
 // and work only on extensions.
 
-UPB_API_INLINE void upb_Message_Clear(upb_Message* msg,
-                                      const upb_MiniTable* m) {
-  UPB_PRIVATE(_upb_Message_Clear)(msg, m);
-}
+UPB_API_INLINE void upb_Message_Clear(upb_Message* msg, const upb_MiniTable* m);
 
 UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
-                                               const upb_MiniTableField* f) {
-  UPB_PRIVATE(_upb_Message_ClearBaseField)(msg, f);
-}
+                                               const upb_MiniTableField* f);
 
-UPB_API_INLINE void upb_Message_ClearExtension(
-    upb_Message* msg, const upb_MiniTableExtension* e) {
-  UPB_PRIVATE(_upb_Message_ClearExtension)(msg, e);
-}
+UPB_API_INLINE void upb_Message_ClearExtension(upb_Message* msg,
+                                               const upb_MiniTableExtension* e);
 
 UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
-                                             const upb_MiniTableField* f) {
-  return UPB_PRIVATE(_upb_Message_HasBaseField)(msg, f);
-}
+                                             const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
-                                             const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_Message_HasExtension)(msg, e);
-}
+                                             const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field) {
@@ -89,6 +78,9 @@ upb_Message_GetField(const upb_Message* msg, const upb_MiniTableField* field,
   return ret;
 }
 
+// Sets the value of the given field in the given msg. The return value is true
+// if the operation completed successfully, or false if memory allocation
+// failed.
 UPB_INLINE bool upb_Message_SetField(upb_Message* msg,
                                      const upb_MiniTableField* field,
                                      upb_MessageValue val, upb_Arena* a) {
@@ -445,9 +437,9 @@ UPB_API_INLINE upb_Map* upb_Message_GetOrCreateMutableMap(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
   const upb_MiniTableField* map_entry_key_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[0];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[0];
   const upb_MiniTableField* map_entry_value_field =
-      &map_entry_mini_table->UPB_PRIVATE(fields)[1];
+      &map_entry_mini_table->UPB_ONLYBITS(fields)[1];
   return _upb_Message_GetOrCreateMutableMap(
       msg, field,
       _upb_Map_CTypeSize(upb_MiniTableField_CType(map_entry_key_field)),

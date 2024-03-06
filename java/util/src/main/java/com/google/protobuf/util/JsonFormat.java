@@ -179,34 +179,6 @@ public class JsonFormat {
     }
 
     /**
-     * Creates a new {@link Printer} that will always print fields unless they are a message type or
-     * in a oneof.
-     *
-     * <p>Note that this does print Proto2 Optional but does not print Proto3 Optional fields, as
-     * the latter is represented using a synthetic oneof.
-     *
-     * <p>The new Printer clones all other configurations from the current {@link Printer}.
-     *
-     * @deprecated Prefer {@link #includingDefaultValueWithoutPresenceFields}
-     */
-    @Deprecated
-    public Printer includingDefaultValueFields() {
-      if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
-        throw new IllegalStateException(
-            "JsonFormat includingDefaultValueFields has already been set.");
-      }
-      return new Printer(
-          registry,
-          oldRegistry,
-          ShouldPrintDefaults.ALWAYS_PRINT_EXCEPT_MESSAGES_AND_ONEOFS,
-          ImmutableSet.of(),
-          preservingProtoFieldNames,
-          omittingInsignificantWhitespace,
-          printingEnumsAsInts,
-          sortingMapKeys);
-    }
-
-    /**
      * Creates a new {@link Printer} that will also print default-valued fields if their
      * FieldDescriptors are found in the supplied set. Empty repeated fields and map fields will be
      * printed as well, if they match. The new Printer clones all other configurations from the
@@ -241,10 +213,9 @@ public class JsonFormat {
      * presence scalars set to their default value). The new Printer clones all other configurations
      * from the current {@link Printer}.
      */
-    public Printer includingDefaultValueWithoutPresenceFields() {
+    public Printer alwaysPrintFieldsWithNoPresence() {
       if (shouldPrintDefaults != ShouldPrintDefaults.ONLY_IF_PRESENT) {
-        throw new IllegalStateException(
-            "JsonFormat includingDefaultValueFields has already been set.");
+        throw new IllegalStateException("Only one of the JsonFormat defaults options can be set.");
       }
       return new Printer(
           registry,

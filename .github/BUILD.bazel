@@ -11,7 +11,7 @@ xcode_version(
     default_macos_sdk_version = "13.1",
     default_tvos_sdk_version = "16.1",
     default_watchos_sdk_version = "9.1",
-    version = "14.2.14C18",
+    version = "14.2.0.14C18",
 )
 
 xcode_version(
@@ -26,7 +26,7 @@ xcode_version(
 
 xcode_config(
     name = "host_xcodes",
-    default = ":version14_1_0_14B47b",
+    default = ":version14_2_14C18",
     versions = [
         ":version14_2_14C18",
         ":version14_1_0_14B47b",

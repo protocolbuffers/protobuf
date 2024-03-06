@@ -1150,7 +1150,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
             }}},
           R"cc(
             $inline $void $classname$::clear_$name$() {
-              PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);
+              $pbi$::TSanWrite(&_impl_);
               $WeakDescriptorSelfPin$;
               $body$;
               $annotate_clear$;
@@ -1293,67 +1293,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
             &_$classname$_default_instance_);
       }
   )cc");
-  auto utf8_check = internal::cpp::GetUtf8CheckMode(
-      descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
-                                 FileOptions::LITE_RUNTIME);
-  if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-      utf8_check != Utf8CheckMode::kNone) {
-    if (utf8_check == Utf8CheckMode::kStrict) {
-      format(
-          "  static bool ValidateKey(std::string* s) {\n"
-          "    return ::$proto_ns$::internal::WireFormatLite::"
-          "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-          " }\n",
-          descriptor_->field(0)->full_name());
-    } else {
-      ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-      format(
-          "  static bool ValidateKey(std::string* s) {\n"
-          "#ifndef NDEBUG\n"
-          "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-          "       s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::"
-          "WireFormatLite::PARSE, \"$1$\");\n"
-          "#else\n"
-          "    (void) s;\n"
-          "#endif\n"
-          "    return true;\n"
-          " }\n",
-          descriptor_->field(0)->full_name());
-    }
-  } else {
-    format("  static bool ValidateKey(void*) { return true; }\n");
-  }
-  if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-      utf8_check != Utf8CheckMode::kNone) {
-    if (utf8_check == Utf8CheckMode::kStrict) {
-      format(
-          "  static bool ValidateValue(std::string* s) {\n"
-          "    return ::$proto_ns$::internal::WireFormatLite::"
-          "VerifyUtf8String(s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::WireFormatLite::PARSE, \"$1$\");\n"
-          " }\n",
-          descriptor_->field(1)->full_name());
-    } else {
-      ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
-      format(
-          "  static bool ValidateValue(std::string* s) {\n"
-          "#ifndef NDEBUG\n"
-          "    ::$proto_ns$::internal::WireFormatLite::VerifyUtf8String(\n"
-          "       s->data(), static_cast<int>(s->size()), "
-          "::$proto_ns$::internal::"
-          "WireFormatLite::PARSE, \"$1$\");\n"
-          "#else\n"
-          "    (void) s;\n"
-          "#endif\n"
-          "    return true;\n"
-          " }\n",
-          descriptor_->field(1)->full_name());
-    }
-  } else {
-    format("  static bool ValidateValue(void*) { return true; }\n");
-  }
   p->Emit(R"cc(
     const $superclass$::ClassData* GetClassData() const final;
   )cc");
@@ -1943,6 +1882,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
         }},
        {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
+       {"post_loop_handler",
+        [&] {
+          if (!NeedsPostLoopHandler(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            static const char* PostLoopHandler(MessageLite* msg,
+                                               const char* ptr,
+                                               $pbi$::ParseContext* ctx);
+          )cc");
+        }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"split_friend",
         [&] {
@@ -2080,6 +2028,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_set_has$;
           $decl_oneof_has$;
           $decl_data$;
+          $post_loop_handler$;
           friend class ::$proto_ns$::MessageLite;
           friend class ::$proto_ns$::Arena;
           template <typename T>
@@ -2284,6 +2233,23 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         return $superclass$::GetMetadataImpl(GetClassData()->full());
       }
     )cc");
+  }
+
+  if (NeedsPostLoopHandler(descriptor_, options_)) {
+    p->Emit(
+        {{"required",
+          [&] {
+          }}},
+        R"cc(
+          const char* $classname$::PostLoopHandler(MessageLite* msg,
+                                                   const char* ptr,
+                                                   ::_pbi::ParseContext* ctx) {
+            $classname$* _this = static_cast<$classname$*>(msg);
+            $annotate_deserialize$;
+            $required$;
+            return ptr;
+          }
+        )cc");
   }
 
   if (HasTracker(descriptor_, options_)) {
@@ -3197,7 +3163,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       "// @@protoc_insertion_point(message_clear_start:$full_name$)\n");
   format.Indent();
 
-  format("PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);\n");
+  format("$pbi$::TSanWrite(&_impl_);\n");
 
   format(
       // TODO: It would be better to avoid emitting this if it is not used,
@@ -3399,7 +3365,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
         "void $classname$::clear_$oneofname$() {\n"
         "// @@protoc_insertion_point(one_of_clear_start:$full_name$)\n");
     format.Indent();
-    format("PROTOBUF_TSAN_WRITE(&_impl_._tsan_detect_race);\n");
+    format("$pbi$::TSanWrite(&_impl_);\n");
     format("switch ($oneofname$_case()) {\n");
     format.Indent();
     for (auto field : FieldRange(oneof)) {
@@ -3625,6 +3591,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ClassDataLite<$type_size$> _data_ =
                 {
                     {
+                        &_table_.header,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         true,
@@ -4488,6 +4455,32 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       "$uint32$ cached_has_bits = 0;\n"
       "// Prevent compiler warnings about cached_has_bits being unused\n"
       "(void) cached_has_bits;\n\n");
+
+  // See comment in third_party/protobuf/port.h for details,
+  // on how much we are prefetching. Only insert prefetch once per
+  // function, since advancing is actually slower. We sometimes
+  // prefetch more than sizeof(message), because it helps with
+  // next message on arena.
+  bool generate_prefetch = false;
+  // Skip trivial messages with 0 or 1 fields, unless they are repeated,
+  // to reduce codesize.
+  switch (optimized_order_.size()) {
+    case 1:
+      generate_prefetch = optimized_order_[0]->is_repeated();
+      break;
+    case 0:
+      break;
+    default:
+      generate_prefetch = true;
+  }
+  if (!IsPresentMessage(descriptor_, options_)) {
+    generate_prefetch = false;
+  }
+  if (generate_prefetch) {
+    p->Emit(R"cc(
+      ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
+    )cc");
+  }
 
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);

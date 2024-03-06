@@ -3,7 +3,7 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
@@ -66,6 +66,7 @@ cc_library(
         "field_generators/message_field.cc",
         "field_generators/primitive_field.cc",
         "field_generators/string_field.cc",
+        "field_generators/string_view_field.cc",
         "file.cc",
         "generator.cc",
         "message.cc",
@@ -120,6 +121,7 @@ cc_library(
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
     ],
 )
 

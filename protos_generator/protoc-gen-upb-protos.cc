@@ -37,9 +37,8 @@ void WriteTypedefForwardingHeader(
     const protobuf::FileDescriptor* file,
     const std::vector<const protobuf::Descriptor*>& file_messages,
     Output& output);
-void WriteHeaderMessageForwardDecls(
-    const protobuf::FileDescriptor* file,
-    Output& output);
+void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
+                                    Output& output);
 
 class Generator : public protoc::CodeGenerator {
  public:
@@ -63,6 +62,8 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   for (const auto& pair : params) {
     if (pair.first == "fasttable") {
       fasttable_enabled = true;
+    } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
+      continue;
     } else {
       *error = "Unknown parameter: " + pair.first;
       return false;
@@ -237,9 +238,8 @@ void WriteTypedefForwardingHeader(
 }
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.
-void WriteHeaderMessageForwardDecls(
-    const protobuf::FileDescriptor* file,
-    Output& output) {
+void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
+                                    Output& output) {
   // Import forward-declaration of types defined in this file.
   output("#include \"$0\"\n", UpbCFilename(file));
   output("#include \"$0\"\n", ForwardingHeaderFilename(file));

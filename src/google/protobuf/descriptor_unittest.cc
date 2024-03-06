@@ -7660,6 +7660,32 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 1);
 }
 
+TEST_F(FeaturesTest, Edition2024Defaults) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2024
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false string_type: VIEW }
+              )pb"));
+
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
+  EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 1);
+}
+
 TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
@@ -9440,6 +9466,30 @@ TEST_F(FeaturesTest, InvalidFieldPacked) {
       "foo.proto: Foo.bar: NAME: Field option packed is not allowed under "
       "editions.  Use the repeated_field_encoding feature to control this "
       "behavior.\n");
+}
+
+TEST_F(FeaturesTest, NoCtypeFromEdition2024) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "bar"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            options { ctype: CORD }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: ctype option is not allowed under edition "
+      "2024 and beyond. Use the feature string_type = VIEW|CORD|STRING|... "
+      "instead.\n");
 }
 
 
