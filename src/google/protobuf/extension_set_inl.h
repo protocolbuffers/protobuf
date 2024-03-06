@@ -12,9 +12,6 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 
-// Must be included last.
-#include "google/protobuf/port_def.inc"
-
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -262,6 +259,5 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__

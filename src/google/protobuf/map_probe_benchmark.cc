@@ -18,8 +18,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 
-// No port_def include needed
-
 namespace google::protobuf::internal {
 struct MapBenchmarkPeer {
   template <typename T>

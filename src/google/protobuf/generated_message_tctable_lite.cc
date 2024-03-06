@@ -2957,5 +2957,3 @@ std::string TypeCardToString(uint16_t type_card) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"

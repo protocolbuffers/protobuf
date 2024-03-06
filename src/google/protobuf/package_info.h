@@ -41,4 +41,3 @@ namespace protobuf {
 // from combining the brackets. Which would mess with extract script
 }  // namespace protobuf
 }  // namespace google
-// No port_def include needed

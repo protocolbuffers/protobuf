@@ -17,9 +17,6 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format_lite.h"
 
-// Must be included last.
-#include "google/protobuf/port_def.inc"
-
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
@@ -376,6 +373,5 @@ struct MapEntryFuncs {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__

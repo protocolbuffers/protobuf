@@ -7,8 +7,6 @@
 #ifndef GOOGLE_PROTOBUF_INTERNAL_VISIBILITY_H__
 #define GOOGLE_PROTOBUF_INTERNAL_VISIBILITY_H__
 
-// No port_def include needed
-
 namespace google {
 namespace protobuf {
 

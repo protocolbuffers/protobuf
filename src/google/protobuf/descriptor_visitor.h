@@ -12,8 +12,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_reflection.h"
 
-// No port_def include needed
-
 namespace google {
 namespace protobuf {
 namespace internal {
