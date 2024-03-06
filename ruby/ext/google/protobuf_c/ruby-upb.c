@@ -13510,10 +13510,11 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->type_ == kUpb_FieldType_Message || f->type_ == kUpb_FieldType_Group ||
-       upb_FieldDef_ContainingOneof(f) ||
-       UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
-           UPB_DESC(FeatureSet_IMPLICIT));
+      (f->is_extension ||
+       (f->type_ == kUpb_FieldType_Message ||
+        f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
+        UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
+            UPB_DESC(FeatureSet_IMPLICIT)));
 }
 
 static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
