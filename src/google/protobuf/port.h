@@ -39,12 +39,38 @@ class MessageLite;
 namespace internal {
 
 template <typename T>
-void StrongPointer(T* var) {
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #if defined(__GNUC__)
   asm("" : : "r"(var));
 #else
   auto volatile unused = var;
   (void)&unused;  // Use address to avoid an extra load of "unused".
+#endif
+}
+
+// Similar to the overload above, but optimized for constant inputs.
+template <typename T, T ptr>
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+#if defined(__x86_64__) && defined(__linux__) && !defined(__APPLE__) &&     \
+    !defined(__ANDROID__) && defined(__clang__) && __clang_major__ >= 19 && \
+    !defined(PROTOBUF_INTERNAL_TEMPORARY_STRONG_POINTER_OPT_OUT)
+  // This injects a relocation in the code path without having to run code, but
+  // we can only do it with a newer clang.
+  asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
+#else
+  StrongPointer(ptr);
+#endif
+}
+
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  constexpr auto ptr = T::template GetStrongPointerForType<T>();
+#if defined(__cpp_nontype_template_args) && \
+    __cpp_nontype_template_args >= 201411L
+  // We can only use `ptr` as a template parameter since C++17
+  return StrongPointer<decltype(ptr), ptr>();
+#else
+  return StrongPointer(ptr);
 #endif
 }
 

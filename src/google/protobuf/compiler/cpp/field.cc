@@ -87,8 +87,8 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
-              ? absl::StrCat("::", ProtobufNamespace(opts),
-                             "::internal::StrongReference(default_instance());")
+              ? absl::StrCat(
+                    StrongReferenceToType(field->containing_type(), opts), ";")
               : "")
           .WithSuffix(";"),
   };
