@@ -195,19 +195,19 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
   return PyUpb_UpbToPy(u_val, val_f, self->arena);
 }
 
-static PyObject* PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
+static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
-  if (!map) Py_RETURN_FALSE;
+  if (!map) return 0;
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
   upb_MessageValue u_key;
-  if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
+  if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return -1;
   if (upb_Map_Get(map, u_key, NULL)) {
-    Py_RETURN_TRUE;
+    return 1;
   } else {
-    Py_RETURN_FALSE;
+    return 0;
   }
 }
 
@@ -339,8 +339,6 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
 // -----------------------------------------------------------------------------
 
 static PyMethodDef PyUpb_ScalarMapContainer_Methods[] = {
-    {"__contains__", PyUpb_MapContainer_Contains, METH_O,
-     "Tests whether a key is a member of the map."},
     {"clear", PyUpb_MapContainer_Clear, METH_NOARGS,
      "Removes all elements from the map."},
     {"get", (PyCFunction)PyUpb_MapContainer_Get, METH_VARARGS | METH_KEYWORDS,
@@ -363,6 +361,7 @@ static PyType_Slot PyUpb_ScalarMapContainer_Slots[] = {
     {Py_mp_length, PyUpb_MapContainer_Length},
     {Py_mp_subscript, PyUpb_MapContainer_Subscript},
     {Py_mp_ass_subscript, PyUpb_MapContainer_AssignSubscript},
+    {Py_sq_contains, PyUpb_MapContainer_Contains},
     {Py_tp_methods, PyUpb_ScalarMapContainer_Methods},
     {Py_tp_iter, PyUpb_MapIterator_New},
     {Py_tp_repr, PyUpb_MapContainer_Repr},
@@ -382,8 +381,6 @@ static PyType_Spec PyUpb_ScalarMapContainer_Spec = {
 // -----------------------------------------------------------------------------
 
 static PyMethodDef PyUpb_MessageMapContainer_Methods[] = {
-    {"__contains__", PyUpb_MapContainer_Contains, METH_O,
-     "Tests whether the map contains this element."},
     {"clear", PyUpb_MapContainer_Clear, METH_NOARGS,
      "Removes all elements from the map."},
     {"get", (PyCFunction)PyUpb_MapContainer_Get, METH_VARARGS | METH_KEYWORDS,
@@ -408,6 +405,7 @@ static PyType_Slot PyUpb_MessageMapContainer_Slots[] = {
     {Py_mp_length, PyUpb_MapContainer_Length},
     {Py_mp_subscript, PyUpb_MapContainer_Subscript},
     {Py_mp_ass_subscript, PyUpb_MapContainer_AssignSubscript},
+    {Py_sq_contains, PyUpb_MapContainer_Contains},
     {Py_tp_methods, PyUpb_MessageMapContainer_Methods},
     {Py_tp_iter, PyUpb_MapIterator_New},
     {Py_tp_repr, PyUpb_MapContainer_Repr},
@@ -477,28 +475,38 @@ static PyType_Spec PyUpb_MapIterator_Spec = {
 static PyObject* GetMutableMappingBase(void) {
   PyObject* collections = NULL;
   PyObject* mapping = NULL;
-  PyObject* bases = NULL;
+  PyObject* base = NULL;
   if ((collections = PyImport_ImportModule("collections.abc")) &&
       (mapping = PyObject_GetAttrString(collections, "MutableMapping"))) {
-    bases = Py_BuildValue("(O)", mapping);
+    base = Py_BuildValue("O", mapping);
   }
   Py_XDECREF(collections);
   Py_XDECREF(mapping);
-  return bases;
+  return base;
 }
 
 bool PyUpb_Map_Init(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
-  PyObject* bases = GetMutableMappingBase();
-  if (!bases) return false;
+  PyObject* base = GetMutableMappingBase();
+  if (!base) return false;
 
-  state->message_map_container_type =
-      PyUpb_AddClassWithBases(m, &PyUpb_MessageMapContainer_Spec, bases);
-  state->scalar_map_container_type =
-      PyUpb_AddClassWithBases(m, &PyUpb_ScalarMapContainer_Spec, bases);
+  const char* methods[] = {"keys", "items",   "values", "__eq__",     "__ne__",
+                           "pop",  "popitem", "update", "setdefault", NULL};
+
+  state->message_map_container_type = PyUpb_AddClassWithRegister(
+      m, &PyUpb_MessageMapContainer_Spec, base, methods);
+  if (!state->message_map_container_type) {
+    return false;
+  }
+  state->scalar_map_container_type = PyUpb_AddClassWithRegister(
+      m, &PyUpb_ScalarMapContainer_Spec, base, methods);
+  if (!state->scalar_map_container_type) {
+    return false;
+  }
   state->map_iterator_type = PyUpb_AddClass(m, &PyUpb_MapIterator_Spec);
 
-  Py_DECREF(bases);
+  Py_DECREF(base);
+  Py_DECREF(methods);
 
   return state->message_map_container_type &&
          state->scalar_map_container_type && state->map_iterator_type;
