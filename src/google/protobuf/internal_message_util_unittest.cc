@@ -8,6 +8,7 @@
 #include "google/protobuf/internal_message_util.h"
 
 #include <memory>
+#include <queue>
 #include <string>
 
 #include <gmock/gmock.h>
@@ -16,6 +17,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 
