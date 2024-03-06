@@ -1475,23 +1475,26 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
 
+  IncludeFile("third_party/protobuf/runtime_version.h", p);
+  int version;
   if (options_.opensource_runtime) {
-    // Verify the protobuf library header version is compatible with the protoc
-    // version before going any further.
-    IncludeFile("third_party/protobuf/port_def.inc", p);
-    p->Emit(
-        {
-            {"version", PROTOBUF_VERSION},
-        },
-        R"(
-      #if PROTOBUF_VERSION != $version$
-      #error "Protobuf C++ gencode is built with an incompatible version of"
-      #error "Protobuf C++ headers/runtime. See"
-      #error "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
-      #endif
-    )");
-    IncludeFile("third_party/protobuf/port_undef.inc", p);
+    const auto& v = GetProtobufCPPVersion(/*oss_runtime=*/true);
+    version = v.major() * 1000000 + v.minor() * 1000 + v.patch();
+  } else {
+    version = GetProtobufCPPVersion(/*oss_runtime=*/false).minor();
   }
+  p->Emit(
+      {
+          {"version", version},
+      },
+      R"(
+    #if PROTOBUF_VERSION != $version$
+    #error "Protobuf C++ gencode is built with an incompatible version of"
+    #error "Protobuf C++ headers/runtime. See"
+    #error "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
+    #endif
+  )");
+
   // OK, it's now safe to #include other files.
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/arena.h", p);

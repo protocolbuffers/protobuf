@@ -494,6 +494,7 @@ cc_library(
         "raw_ptr.h",
         "repeated_field.h",
         "repeated_ptr_field.h",
+        "runtime_version.h",
         "serial_arena.h",
         "thread_safe_arena.h",
         "wire_format_lite.h",
