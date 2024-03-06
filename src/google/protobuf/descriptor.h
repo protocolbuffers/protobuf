@@ -2845,6 +2845,11 @@ bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to
 // In particular, questions like "does this field have a has bit?" have a
 // different answer depending on the language.
 namespace cpp {
+
+// The maximum allowed nesting for message declarations.
+// Going over this limit will make the proto definition invalid.
+constexpr int MaxMessageDeclarationNestingDepth() { return 32; }
+
 // Returns true if 'enum' semantics are such that unknown values are preserved
 // in the enum field itself, rather than going to the UnknownFieldSet.
 PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(

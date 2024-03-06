@@ -4051,7 +4051,7 @@ class DescriptorBuilder {
   // Counts down to 0 when there is no depth remaining.
   //
   // Maximum recursion depth corresponds to 32 nested message declarations.
-  int recursion_depth_ = 32;
+  int recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
 
   // Note: Both AddError and AddWarning functions are extremely sensitive to
   // the *caller* stack space used. We call these functions many times in

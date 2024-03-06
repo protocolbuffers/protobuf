@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "absl/base/casts.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -774,6 +775,8 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
+    // Maximum depth allowed by the DescriptorPool.
+    recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
     return ParseMessageDefinition(file->add_message_type(), location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
@@ -851,6 +854,12 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
 bool Parser::ParseMessageDefinition(
     DescriptorProto* message, const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
+  const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
+  if (--recursion_depth_ <= 0) {
+    RecordError("Reached maximum recursion limit for nested messages.");
+    return false;
+  }
+
   DO(Consume("message"));
   {
     LocationRecorder location(message_location,
