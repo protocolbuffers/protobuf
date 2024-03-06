@@ -799,9 +799,9 @@ TailCallTableInfo::TailCallTableInfo(
       // the following typed fields are supported.
       return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
               field->type() == FieldDescriptor::TYPE_GROUP) &&
-             !field->is_map() && !HasLazyRep(field, options) &&
-             !options.is_implicitly_weak && options.use_direct_tcparser_table &&
-             is_non_cold(options);
+             !field->is_map() && !field->options().weak() &&
+             !HasLazyRep(field, options) && !options.is_implicitly_weak &&
+             options.use_direct_tcparser_table && is_non_cold(options);
     };
     for (const FieldDescriptor* field : ordered_fields) {
       if (is_non_cold_subtable(field)) {

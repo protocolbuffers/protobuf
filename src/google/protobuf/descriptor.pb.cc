@@ -4576,7 +4576,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
     {::_pbi::TcParser::MiniParse, {}},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {::_pbi::TcParser::FastMtR2,
-     {16058, 63, 3, PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_)}},
+     {16058, 63, 2, PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_)}},
   }}, {{
     50, 0, 1,
     65534, 2,999, 0, 1,
@@ -4587,19 +4587,19 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
     {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.declaration_), -1, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
-    {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.verification_), _Internal::kHasBitsOffset + 1, 1,
+    {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.verification_), _Internal::kHasBitsOffset + 1, 3,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet features = 50;
-    {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 2,
+    {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-    {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_), -1, 3,
+    {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_), -1, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions_Declaration>()},
-    {0, 2},
     {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+    {0, 2},
   }}, {{
   }},
 };
@@ -4938,7 +4938,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
      {58, 3, 0, PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.default_value_)}},
     // optional .google.protobuf.FieldOptions options = 8;
     {::_pbi::TcParser::FastMtS1,
-     {66, 5, 2, PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.options_)}},
+     {66, 5, 0, PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.options_)}},
     // optional int32 oneof_index = 9;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(FieldDescriptorProto, _impl_.oneof_index_), 7>(),
      {72, 7, 0, PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.oneof_index_)}},
@@ -4963,10 +4963,10 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.number_), _Internal::kHasBitsOffset + 6, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
-    {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.label_), _Internal::kHasBitsOffset + 9, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.label_), _Internal::kHasBitsOffset + 9, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
-    {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.type_), _Internal::kHasBitsOffset + 10, 1,
+    {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.type_), _Internal::kHasBitsOffset + 10, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional string type_name = 6;
     {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.type_name_), _Internal::kHasBitsOffset + 2, 0,
@@ -4975,7 +4975,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.default_value_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.FieldOptions options = 8;
-    {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 5, 2,
+    {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // optional int32 oneof_index = 9;
     {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.oneof_index_), _Internal::kHasBitsOffset + 7, 0,
@@ -4987,9 +4987,9 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.proto3_optional_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
   }}, {{
+    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions>()},
     {1, 3},
     {1, 18},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions>()},
   }}, {{
     "\44\4\10\0\0\0\11\15\0\0\11\0\0\0\0\0"
     "google.protobuf.FieldDescriptorProto"
@@ -7332,7 +7332,7 @@ constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_outer_classname_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.optimize_for_), _Internal::kHasBitsOffset + 18, 0,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.optimize_for_), _Internal::kHasBitsOffset + 18, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool java_multiple_files = 10 [default = false];
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_), _Internal::kHasBitsOffset + 11, 0,
@@ -7383,15 +7383,15 @@ constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.ruby_package_), _Internal::kHasBitsOffset + 9, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
     // optional .google.protobuf.FeatureSet features = 50;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_), _Internal::kHasBitsOffset + 10, 1,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_), _Internal::kHasBitsOffset + 10, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.uninterpreted_option_), -1, 2,
+    {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
-    {1, 3},
     {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+    {1, 3},
   }}, {{
     "\33\14\24\0\0\12\0\0\0\0\0\0\0\21\20\14\20\15\26\14\0\0\0\0"
     "google.protobuf.FileOptions"
@@ -8686,7 +8686,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
      {24, 6, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_)}},
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
     {::_pbi::TcParser::FastMtR2,
-     {418, 63, 4, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_)}},
+     {418, 63, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_)}},
     // optional bool lazy = 5 [default = false];
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.lazy_), 4>(),
      {40, 4, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_)}},
@@ -8695,7 +8695,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
      {48, 2, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_)}},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {::_pbi::TcParser::FastMtR2,
-     {16058, 63, 6, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_)}},
+     {16058, 63, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool weak = 10 [default = false];
@@ -8714,7 +8714,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
     65535, 65535
   }}, {{
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_), _Internal::kHasBitsOffset + 1, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_), _Internal::kHasBitsOffset + 1, 3,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool packed = 2;
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_), _Internal::kHasBitsOffset + 3, 0,
@@ -8726,7 +8726,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 2, 1,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 2, 4,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool weak = 10 [default = false];
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 7, 0,
@@ -8738,28 +8738,28 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.retention_), _Internal::kHasBitsOffset + 9, 2,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.retention_), _Internal::kHasBitsOffset + 9, 5,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.targets_), -1, 3,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.targets_), -1, 6,
     (0 | ::_fl::kFcRepeated | ::_fl::kEnumRange)},
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_), -1, 4,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_), -1, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // optional .google.protobuf.FeatureSet features = 21;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 5,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_), -1, 6,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_), -1, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
+    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_EditionDefault>()},
+    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
+    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
     {0, 3},
     {0, 3},
     {0, 3},
     {0, 10},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_EditionDefault>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
   }}, {{
   }},
 };
@@ -10474,13 +10474,13 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
      {656, 2, 2, PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.idempotency_level_)}},
     // optional .google.protobuf.FeatureSet features = 35;
     {::_pbi::TcParser::FastMtS2,
-     {666, 0, 1, PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.features_)}},
+     {666, 0, 0, PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.features_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {::_pbi::TcParser::FastMtR2,
-     {16058, 63, 2, PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_)}},
+     {16058, 63, 1, PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_)}},
   }}, {{
     33, 0, 1,
     65528, 0,999, 0, 1,
@@ -10491,18 +10491,18 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
     {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
-    {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.idempotency_level_), _Internal::kHasBitsOffset + 2, 0,
+    {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.idempotency_level_), _Internal::kHasBitsOffset + 2, 2,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional .google.protobuf.FeatureSet features = 35;
-    {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 1,
+    {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-    {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_), -1, 2,
+    {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_), -1, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
-    {0, 3},
     {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
+    {0, 3},
   }}, {{
   }},
 };
