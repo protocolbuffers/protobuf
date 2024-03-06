@@ -3774,7 +3774,8 @@ bool FieldDescriptor::requires_utf8_validation() const {
 
 bool FieldDescriptor::has_presence() const {
   if (is_repeated()) return false;
-  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
+  return cpp_type() == CPPTYPE_MESSAGE || is_extension() ||
+         containing_oneof() ||
          features().field_presence() != FeatureSet::IMPLICIT;
 }
 

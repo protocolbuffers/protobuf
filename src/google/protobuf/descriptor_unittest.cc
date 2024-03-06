@@ -7634,6 +7634,41 @@ TEST_F(FeaturesTest, Proto3Extensions) {
                                     R"pb([bar_ext] { baz: 1 })pb"));
 }
 
+TEST_F(FeaturesTest, Proto3ExtensionPresence) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "proto3"
+    dependency: "google/protobuf/descriptor.proto"
+    extension {
+      name: "singular_ext"
+      number: 1001
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      extendee: ".google.protobuf.FileOptions"
+    }
+    extension {
+      name: "singular_proto3_optional_ext"
+      number: 1002
+      label: LABEL_OPTIONAL
+      type: TYPE_STRING
+      extendee: ".google.protobuf.FileOptions"
+      proto3_optional: true
+    }
+    extension {
+      name: "repeated_ext"
+      number: 1003
+      label: LABEL_REPEATED
+      type: TYPE_STRING
+      extendee: ".google.protobuf.FileOptions"
+    }
+  )pb");
+
+  EXPECT_TRUE(file->extension(0)->has_presence());
+  EXPECT_TRUE(file->extension(1)->has_presence());
+  EXPECT_FALSE(file->extension(2)->has_presence());
+}
+
 TEST_F(FeaturesTest, Edition2023Defaults) {
   FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
     name: "foo.proto"
