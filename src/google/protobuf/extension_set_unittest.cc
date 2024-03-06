@@ -32,6 +32,7 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest_proto3_extensions.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -1391,6 +1392,19 @@ TEST(ExtensionSetTest, Proto3PackedDynamicExtensions) {
   std::string reserialized_options;
   ASSERT_TRUE(message_options.SerializeToString(&reserialized_options));
   EXPECT_EQ(reserialized_options, "\xca\xb5\x18\x01\x01");
+}
+
+TEST(ExtensionSetTest, Proto3ExtensionPresenceSingular) {
+  using protobuf_unittest::Proto3FileExtensions;
+  FileDescriptorProto file;
+
+  EXPECT_FALSE(file.options().HasExtension(Proto3FileExtensions::singular_int));
+  EXPECT_EQ(file.options().GetExtension(Proto3FileExtensions::singular_int), 0);
+
+  file.mutable_options()->SetExtension(Proto3FileExtensions::singular_int, 1);
+
+  EXPECT_TRUE(file.options().HasExtension(Proto3FileExtensions::singular_int));
+  EXPECT_EQ(file.options().GetExtension(Proto3FileExtensions::singular_int), 1);
 }
 
 TEST(ExtensionSetTest, BoolExtension) {
