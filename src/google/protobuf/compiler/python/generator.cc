@@ -370,11 +370,22 @@ void Generator::PrintTopBoilerplate() const {
   printer_->Print(
       "from google.protobuf import descriptor as _descriptor\n"
       "from google.protobuf import descriptor_pool as _descriptor_pool\n"
+      "from google.protobuf import runtime_version as _runtime_version\n"
       "from google.protobuf import symbol_database as _symbol_database\n"
       "from google.protobuf.internal import builder as _builder\n");
 
   printer_->Print("# @@protoc_insertion_point(imports)\n\n");
   printer_->Print("_sym_db = _symbol_database.Default()\n");
+  const auto& version = GetProtobufPythonVersion(opensource_runtime_);
+  printer_->Print(
+      "_runtime_version.ValidateProtobufRuntimeVersion("
+      "$domain$, $major$, $minor$, $patch$, '$suffix$', '$location$')",
+      "domain",
+      opensource_runtime_ ? "_runtime_version.Domain.PUBLIC"
+                          : "_runtime_version.Domain.GOOGLE_INTERNAL",
+      "major", absl::StrCat(version.major()), "minor",
+      absl::StrCat(version.minor()), "patch", absl::StrCat(version.patch()),
+      "suffix", version.suffix(), "location", file_->name());
   printer_->Print("\n\n");
 }
 

@@ -89,7 +89,7 @@ def ValidateProtobufRuntimeVersion(
         f' cannot be older than the linked gencode version. {error_prompt}'
     )
 
-  if gen_suffix is not SUFFIX:
+  if gen_suffix != SUFFIX:
     raise VersionError(
         'Detected mismatched Protobuf Gencode/Runtime version suffixes when'
         f' loading {location}: gencode {gen_version} runtime {version}.'
