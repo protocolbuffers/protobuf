@@ -57,3 +57,20 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
   UPB_ASSERT(in->ext_begin - in->unknown_end >= need);
   return true;
 }
+
+#if UPB_TRACING_ENABLED
+static void (*_new_message_trace_handler)(const upb_MiniTable*,
+                                          const upb_Arena*);
+
+void upb_Message_SetNewMessageTraceHandler(
+    void (*new_message_trace_handler)(const upb_MiniTable*, const upb_Arena*)) {
+  _new_message_trace_handler = new_message_trace_handler;
+}
+
+void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
+                               const upb_Arena* arena) {
+  if (_new_message_trace_handler) {
+    _new_message_trace_handler(mini_table, arena);
+  }
+}
+#endif
