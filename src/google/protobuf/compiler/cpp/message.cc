@@ -1682,6 +1682,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           if (!HasGeneratedMethods(descriptor_->file(), options_)) return;
 
+          p->Emit(R"cc(
+            private:
+            void PreParse(const $pbi$::TcParseTableBase** ptr) final {
+              *ptr = &_table_.header;
+              Clear();
+            }
+
+            public:
+          )cc");
+
           if (HasDescriptorMethods(descriptor_->file(), options_)) {
             if (!HasSimpleBaseClass(descriptor_, options_)) {
               // Use Message's built-in MergeFrom and CopyFrom when the
@@ -1727,7 +1737,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           if (!HasSimpleBaseClass(descriptor_, options_)) {
             p->Emit(R"cc(
-              ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear();
               bool IsInitialized() const final;
 
               ::size_t ByteSizeLong() const final;
@@ -3551,6 +3561,19 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"pin_weak_descriptor", pin_weak_descriptor},
+            {"tc_table",
+             [&] {
+               // Map entries use the dynamic parser.
+               if (IsMapEntryMessage(descriptor_)) {
+                 p->Emit(R"cc(
+                   nullptr,  // tc_table
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   &_table_.header,
+                 )cc");
+               }
+             }},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -3571,6 +3594,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
                 ClassDataFull _data_ = {
                     {
+                        $tc_table$,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,

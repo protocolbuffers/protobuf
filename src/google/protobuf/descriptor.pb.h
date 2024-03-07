@@ -777,6 +777,13 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   UninterpretedOption_NamePart* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<UninterpretedOption_NamePart>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -788,7 +795,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -968,6 +975,13 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   SourceCodeInfo_Location* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<SourceCodeInfo_Location>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -979,7 +993,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1237,6 +1251,13 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   GeneratedCodeInfo_Annotation* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<GeneratedCodeInfo_Annotation>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1248,7 +1269,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1495,6 +1516,13 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   FieldOptions_EditionDefault* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FieldOptions_EditionDefault>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions_EditionDefault& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1506,7 +1534,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -1686,6 +1714,13 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   FeatureSet* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FeatureSet>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSet& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -1697,7 +1732,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -2224,6 +2259,13 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   ExtensionRangeOptions_Declaration* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<ExtensionRangeOptions_Declaration>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions_Declaration& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2235,7 +2277,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -2460,6 +2502,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   EnumDescriptorProto_EnumReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<EnumDescriptorProto_EnumReservedRange>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2471,7 +2520,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -2645,6 +2694,13 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   DescriptorProto_ReservedRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<DescriptorProto_ReservedRange>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2656,7 +2712,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -2830,6 +2886,13 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   UninterpretedOption* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<UninterpretedOption>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -2841,7 +2904,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -3105,6 +3168,13 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   SourceCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<SourceCodeInfo>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3116,7 +3186,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -3283,6 +3353,13 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   GeneratedCodeInfo* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<GeneratedCodeInfo>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3294,7 +3371,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -3461,6 +3538,13 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   FeatureSetDefaults_FeatureSetEditionDefault* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FeatureSetDefaults_FeatureSetEditionDefault>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3472,7 +3556,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -3650,6 +3734,13 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   ServiceOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<ServiceOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -3661,7 +3752,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -4038,6 +4129,13 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   OneofOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<OneofOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4049,7 +4147,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -4413,6 +4511,13 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   MethodOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<MethodOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4424,7 +4529,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -4834,6 +4939,13 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   MessageOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<MessageOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MessageOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -4845,7 +4957,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -5274,6 +5386,13 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   FileOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FileOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -5285,7 +5404,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -5976,6 +6095,13 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   FieldOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FieldOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -5987,7 +6113,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -6596,6 +6722,13 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   FeatureSetDefaults* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FeatureSetDefaults>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FeatureSetDefaults& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6607,7 +6740,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -6801,6 +6934,13 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   ExtensionRangeOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<ExtensionRangeOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -6812,7 +6952,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -7228,6 +7368,13 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   EnumValueOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<EnumValueOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7239,7 +7386,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -7629,6 +7776,13 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   EnumOptions* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<EnumOptions>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumOptions& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -7640,7 +7794,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -8043,6 +8197,13 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   OneofDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<OneofDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8054,7 +8215,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -8238,6 +8399,13 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   MethodDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<MethodDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8249,7 +8417,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -8497,6 +8665,13 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   FieldDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FieldDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8508,7 +8683,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -8888,6 +9063,13 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   EnumValueDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<EnumValueDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -8899,7 +9081,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -9096,6 +9278,13 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   DescriptorProto_ExtensionRange* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<DescriptorProto_ExtensionRange>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -9107,7 +9296,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -9298,6 +9487,13 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   ServiceDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<ServiceDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -9309,7 +9505,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -9512,6 +9708,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   EnumDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<EnumDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -9523,7 +9726,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -9776,6 +9979,13 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   DescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<DescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -9787,7 +9997,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -10136,6 +10346,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   FileDescriptorProto* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FileDescriptorProto>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -10147,7 +10364,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -10545,6 +10762,13 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   FileDescriptorSet* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<FileDescriptorSet>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -10556,7 +10780,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;

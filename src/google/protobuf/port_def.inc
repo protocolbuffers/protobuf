@@ -197,7 +197,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // This is useful for lambdas where it is not easy to specify ALWAYS_INLINE.
 // Use like:
 //   PROTOBUF_ALWAYS_INLINE_CALL res = SomeFunc(args...);
-#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL) && \
+// Disabled on clang<18 because it is known to crash the compiler on certain
+// inputs.
+#if defined(__clang__) && __clang_major__ >= 18 && \
+    !defined(PROTOBUF_NO_INLINE_CALL) &&           \
     ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline)
 #define PROTOBUF_ALWAYS_INLINE_CALL [[clang::always_inline]]
 #else

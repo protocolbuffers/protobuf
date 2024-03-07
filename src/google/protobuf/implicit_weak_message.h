@@ -62,7 +62,12 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     return Arena::Create<ImplicitWeakMessage>(arena);
   }
 
-  void Clear() override { data_->clear(); }
+  void Clear() { data_->clear(); }
+
+  void PreParse(const internal::TcParseTableBase** ptr) final {
+    *ptr = GetClassData()->tc_table;
+    Clear();
+  }
 
   bool IsInitialized() const override { return true; }
 

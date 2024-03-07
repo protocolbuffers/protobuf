@@ -110,7 +110,10 @@ void Message::CopyFrom(const Message& from) {
   }
 }
 
-void Message::Clear() { ReflectionOps::Clear(this); }
+void Message::PreParse(const internal::TcParseTableBase** ptr) {
+  *ptr = GetReflection()->GetTcParseTable();
+  ReflectionOps::Clear(this);
+}
 
 bool Message::IsInitialized() const {
   return ReflectionOps::IsInitialized(*this);
@@ -204,6 +207,10 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
 
 const internal::TcParseTableBase* Message::GetTcParseTableImpl(
     const MessageLite& msg) {
+  auto* ref = DownCast<const Message&>(msg).GetReflection();
+  if (!DownCast<const Message&>(msg).GetDescriptor()->options().map_entry())
+    ABSL_CHECK_NE(ref->GetMessageFactory(), MessageFactory::generated_factory())
+        << msg.GetTypeName();
   return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
 }
 

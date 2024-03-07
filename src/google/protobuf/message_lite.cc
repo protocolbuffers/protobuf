@@ -46,8 +46,12 @@
 namespace google {
 namespace protobuf {
 
-const char* MessageLite::_InternalParse(const char* ptr,
-                                        internal::ParseContext* ctx) {
+void MessageLite::Clear() {
+  const internal::TcParseTableBase* ptr;
+  PreParse(&ptr);
+}
+
+const internal::TcParseTableBase* MessageLite::GetTcParseTable() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
 
@@ -56,8 +60,13 @@ const char* MessageLite::_InternalParse(const char* ptr,
     ABSL_DCHECK(!data->is_lite);
     tc_table = data->full().descriptor_methods->get_tc_table(*this);
   }
+  return tc_table;
+}
 
-  return internal::TcParser::ParseLoop(this, ptr, ctx, tc_table);
+const char* MessageLite::_InternalParse(const char* ptr,
+                                        internal::ParseContext* ctx) {
+  return internal::TcParser::ParseLoopInlined(this, ptr, ctx,
+                                              GetTcParseTable());
 }
 
 std::string MessageLite::GetTypeName() const {
@@ -165,11 +174,12 @@ namespace internal {
 
 template <bool aliasing>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags) {
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  ptr = msg->_InternalParse(ptr, &ctx);
+  ptr = TcParser::ParseLoopInlined(msg, ptr, &ctx, table);
   // ctx has an explicit limit set (length of string_view).
   if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtLimit())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
@@ -179,11 +189,12 @@ bool MergeFromImpl(absl::string_view input, MessageLite* msg,
 
 template <bool aliasing>
 bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags) {
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  ptr = msg->_InternalParse(ptr, &ctx);
+  ptr = TcParser::ParseLoopInlined(msg, ptr, &ctx, table);
   // ctx has no explicit limit (hence we end on end of stream)
   if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtEndOfStream())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
@@ -193,11 +204,12 @@ bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
 
 template <bool aliasing>
 bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags) {
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input.zcis, input.limit);
-  ptr = msg->_InternalParse(ptr, &ctx);
+  ptr = TcParser::ParseLoopInlined(msg, ptr, &ctx, table);
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (PROTOBUF_PREDICT_TRUE(ctx.EndedAtLimit())) {
@@ -207,19 +219,25 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
 }
 
 template bool MergeFromImpl<false>(absl::string_view input, MessageLite* msg,
-                                   MessageLite::ParseFlags parse_flags);
+                                   MessageLite::ParseFlags parse_flags,
+                                   const TcParseTableBase* table);
 template bool MergeFromImpl<true>(absl::string_view input, MessageLite* msg,
-                                  MessageLite::ParseFlags parse_flags);
+                                  MessageLite::ParseFlags parse_flags,
+                                  const TcParseTableBase* table);
 template bool MergeFromImpl<false>(io::ZeroCopyInputStream* input,
                                    MessageLite* msg,
-                                   MessageLite::ParseFlags parse_flags);
+                                   MessageLite::ParseFlags parse_flags,
+                                   const TcParseTableBase* table);
 template bool MergeFromImpl<true>(io::ZeroCopyInputStream* input,
                                   MessageLite* msg,
-                                  MessageLite::ParseFlags parse_flags);
+                                  MessageLite::ParseFlags parse_flags,
+                                  const TcParseTableBase* table);
 template bool MergeFromImpl<false>(BoundedZCIS input, MessageLite* msg,
-                                   MessageLite::ParseFlags parse_flags);
+                                   MessageLite::ParseFlags parse_flags,
+                                   const TcParseTableBase* table);
 template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
-                                  MessageLite::ParseFlags parse_flags);
+                                  MessageLite::ParseFlags parse_flags,
+                                  const TcParseTableBase* table);
 
 }  // namespace internal
 
@@ -370,13 +388,14 @@ template <>
 struct SourceWrapper<absl::Cord> {
   explicit SourceWrapper(const absl::Cord* c) : cord(c) {}
   template <bool alias>
-  bool MergeInto(MessageLite* msg, MessageLite::ParseFlags parse_flags) const {
+  bool MergeInto(MessageLite* msg, MessageLite::ParseFlags parse_flags,
+                 const TcParseTableBase* table) const {
     absl::optional<absl::string_view> flat = cord->TryFlat();
     if (flat && flat->size() <= ParseContext::kMaxCordBytesToCopy) {
-      return MergeFromImpl<alias>(*flat, msg, parse_flags);
+      return MergeFromImpl<alias>(*flat, msg, parse_flags, table);
     } else {
       io::CordInputStream input(cord);
-      return MergeFromImpl<alias>(&input, msg, parse_flags);
+      return MergeFromImpl<alias>(&input, msg, parse_flags, table);
     }
   }
 

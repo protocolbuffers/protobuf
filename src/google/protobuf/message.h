@@ -335,8 +335,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  void Clear() override;
-
   // Returns whether all required fields have been set. Note that required
   // fields no longer exist starting in proto3.
   bool IsInitialized() const override;
@@ -361,6 +359,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
+  void PreParse(const internal::TcParseTableBase** ptr) override;
+
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;

@@ -195,6 +195,13 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   Version* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<Version>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const Version& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -206,7 +213,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -412,6 +419,13 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -423,7 +437,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -645,6 +659,13 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -656,7 +677,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
@@ -902,6 +923,13 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
+  private:
+  void PreParse(const ::google::protobuf::internal::TcParseTableBase** ptr) final {
+    *ptr = &_table_.header;
+    Clear();
+  }
+
+  public:
   using ::google::protobuf::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
   using ::google::protobuf::Message::MergeFrom;
@@ -913,7 +941,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear();
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;

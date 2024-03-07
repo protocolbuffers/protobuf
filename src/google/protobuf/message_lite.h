@@ -236,7 +236,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Clear() assumes that any memory allocated to hold parts of the message
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
-  virtual void Clear() = 0;
+  void Clear();
 
   // Quickly check if all required fields have values set.
   virtual bool IsInitialized() const = 0;
@@ -620,6 +620,12 @@ class PROTOBUF_EXPORT MessageLite {
   // This is a work in progress. There are still some types (eg MapEntry) that
   // return a default table instead of a unique one.
   virtual const ClassData* GetClassData() const = 0;
+  const internal::TcParseTableBase* GetTcParseTable() const;
+
+  // Clears the message and returns the tc table to parse the object.
+  // It uses an output parameter to allow the `PreParse` implementations to tail
+  // call into `Clear().
+  virtual void PreParse(const internal::TcParseTableBase** ptr) = 0;
 
   internal::InternalMetadata _internal_metadata_;
 
@@ -701,23 +707,25 @@ namespace internal {
 
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags);
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     absl::string_view input, MessageLite* msg,
-    MessageLite::ParseFlags parse_flags);
+    MessageLite::ParseFlags parse_flags, const TcParseTableBase* table);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     absl::string_view input, MessageLite* msg,
-    MessageLite::ParseFlags parse_flags);
+    MessageLite::ParseFlags parse_flags, const TcParseTableBase* table);
 
 template <bool alias>
 bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags);
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
-    MessageLite::ParseFlags parse_flags);
+    MessageLite::ParseFlags parse_flags, const TcParseTableBase* table);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
-    MessageLite::ParseFlags parse_flags);
+    MessageLite::ParseFlags parse_flags, const TcParseTableBase* table);
 
 struct BoundedZCIS {
   io::ZeroCopyInputStream* zcis;
@@ -726,28 +734,54 @@ struct BoundedZCIS {
 
 template <bool alias>
 bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags);
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
-    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags,
+    const TcParseTableBase* table);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
-    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags,
+    const TcParseTableBase* table);
 
 template <typename T>
 struct SourceWrapper;
 
 template <bool alias, typename T>
 bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
-                   MessageLite::ParseFlags parse_flags) {
-  return input.template MergeInto<alias>(msg, parse_flags);
+                   MessageLite::ParseFlags parse_flags,
+                   const TcParseTableBase* table) {
+  return input.template MergeInto<alias>(msg, parse_flags, table);
+}
+
+template <typename T>
+inline void PrefetchInput(const T& input) {
+  absl::PrefetchToLocalCache(&input);
+}
+
+template <typename T>
+inline void PrefetchInput(const T* input) {
+  absl::PrefetchToLocalCache(input);
+}
+
+inline void PrefetchInput(absl::string_view input) {
+  absl::PrefetchToLocalCache(input.data());
 }
 
 }  // namespace internal
 
 template <MessageLite::ParseFlags flags, typename T>
-bool MessageLite::ParseFrom(const T& input) {
-  if (flags & kParse) Clear();
+PROTOBUF_ALWAYS_INLINE inline bool MessageLite::ParseFrom(const T& input) {
+  internal::PrefetchInput(input);
+  const internal::TcParseTableBase* table;
+  if (flags & kParse) {
+    PreParse(&table);
+  } else {
+    table = GetTcParseTable();
+  }
+  absl::PrefetchToLocalCache(table);
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
-  return internal::MergeFromImpl<alias>(input, this, flags);
+  PROTOBUF_ALWAYS_INLINE_CALL return internal::MergeFromImpl<alias>(
+      input, this, flags, table);
 }
 
 // ===================================================================
