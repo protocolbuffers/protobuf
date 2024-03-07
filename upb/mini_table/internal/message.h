@@ -168,8 +168,8 @@ UPB_INLINE const char* upb_MiniTable_FullName(
 // Initializes tracing proto name from language runtimes that construct
 // mini tables dynamically at runtime. The runtime is responsible for passing
 // controlling lifetime of name such as storing in same arena as mini_table.
-UPB_INLINE const char* upb_MiniTable_SetFullName(
-    struct upb_MiniTable* mini_table, char* full_name) {
+UPB_INLINE void upb_MiniTable_SetFullName(struct upb_MiniTable* mini_table,
+                                          const char* full_name) {
   mini_table->UPB_PRIVATE(full_name) = full_name;
 }
 #endif
