@@ -2954,6 +2954,16 @@ std::string TypeCardToString(uint16_t type_card) {
   return out;
 }
 
+const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+  return UnknownFieldParse(tag, nullptr, ptr, ctx);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

@@ -724,6 +724,15 @@ uint16_t MakeTypeCardForField(
   return type_card;
 }
 
+bool HasWeakFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    if (descriptor->field(i)->options().weak()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 TailCallTableInfo::TailCallTableInfo(
@@ -733,6 +742,17 @@ TailCallTableInfo::TailCallTableInfo(
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
+  fallback_function =
+      // Map entries discard unknown data
+      descriptor->options().map_entry()
+          ? TcParseFunction::kDiscardEverythingFallback
+      // Reflection and weak messages have the reflection fallback
+      : !message_options.uses_codegen || HasWeakFields(descriptor)
+          ? TcParseFunction::kReflectionFallback
+      // Codegen messages have lite and non-lite version
+      : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
+                                : TcParseFunction::kGenericFallback;
+
   if (descriptor->options().message_set_wire_format()) {
     ABSL_DCHECK(ordered_fields.empty());
     ABSL_DCHECK(inlined_string_indices.empty());

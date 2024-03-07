@@ -3460,9 +3460,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       aux_offset,
       schema_.default_instance_,
       nullptr,
-      &internal::TcParser::ReflectionFallback
+      GetFastParseFunction(table_info.fallback_function)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ,
+          ,
       nullptr
 #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   };
