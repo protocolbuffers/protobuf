@@ -38,6 +38,13 @@ public final class TextFormat {
 
   private static final String DEBUG_STRING_SILENT_MARKER = "\t ";
 
+  private static final String REDACTED_MARKER = getRedactedMarker();
+
+  private static String getRedactedMarker() {
+    String redactedMarker = "[REDACTED]";
+    return redactedMarker;
+  }
+
   /**
    * Generates a human readable form of this message, useful for debugging and other purposes, with
    * no newline characters. This is just a trivial wrapper around {@link
@@ -58,11 +65,12 @@ public final class TextFormat {
    */
   public static void printUnknownFieldValue(
       final int tag, final Object value, final Appendable output) throws IOException {
-    printUnknownFieldValue(tag, value, multiLineOutput(output));
+    printUnknownFieldValue(tag, value, setLineOutput(output, false), false);
   }
 
   private static void printUnknownFieldValue(
-      final int tag, final Object value, final TextGenerator generator) throws IOException {
+      final int tag, final Object value, final TextGenerator generator, boolean redact)
+      throws IOException {
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:
         generator.print(unsignedToString((Long) value));
@@ -80,7 +88,7 @@ public final class TextFormat {
           generator.print("{");
           generator.eol();
           generator.indent();
-          Printer.printUnknownFields(message, generator);
+          Printer.printUnknownFields(message, generator, redact);
           generator.outdent();
           generator.print("}");
         } catch (InvalidProtocolBufferException e) {
@@ -91,7 +99,7 @@ public final class TextFormat {
         }
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        Printer.printUnknownFields((UnknownFieldSet) value, generator);
+        Printer.printUnknownFields((UnknownFieldSet) value, generator, redact);
         break;
       default:
         throw new IllegalArgumentException("Bad tag: " + tag);
@@ -109,21 +117,31 @@ public final class TextFormat {
     // Printer instance which escapes non-ASCII characters.
     private static final Printer DEFAULT =
         new Printer(
-            true, TypeRegistry.getEmptyTypeRegistry(), ExtensionRegistryLite.getEmptyRegistry());
+            true,
+            TypeRegistry.getEmptyTypeRegistry(),
+            ExtensionRegistryLite.getEmptyRegistry(),
+            false,
+            false);
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
     private final TypeRegistry typeRegistry;
     private final ExtensionRegistryLite extensionRegistry;
+    private final boolean redacting;
+    private final boolean singleLine;
 
     private Printer(
         boolean escapeNonAscii,
         TypeRegistry typeRegistry,
-        ExtensionRegistryLite extensionRegistry) {
+        ExtensionRegistryLite extensionRegistry,
+        boolean redacting,
+        boolean singleLine) {
       this.escapeNonAscii = escapeNonAscii;
       this.typeRegistry = typeRegistry;
       this.extensionRegistry = extensionRegistry;
+      this.redacting = redacting;
+      this.singleLine = singleLine;
     }
 
     /**
@@ -136,7 +154,7 @@ public final class TextFormat {
      *     with the escape mode set to the given parameter.
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
-      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
     }
 
     /**
@@ -149,7 +167,7 @@ public final class TextFormat {
       if (this.typeRegistry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one typeRegistry is allowed.");
       }
-      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
     }
 
     /**
@@ -162,7 +180,30 @@ public final class TextFormat {
       if (this.extensionRegistry != ExtensionRegistryLite.getEmptyRegistry()) {
         throw new IllegalArgumentException("Only one extensionRegistry is allowed.");
       }
-      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry);
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
+    }
+
+    /**
+     * Return a new Printer instance with the specified redaction status.
+     *
+     * @param redacting If true, the new Printer will redact all proto fields that are marked by a
+     *     debug_redact=true option.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the redact mode set to the given parameter.
+     */
+    Printer redacting(boolean redacting) {
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
+    }
+
+    /**
+     * Return a new Printer instance with the specified line formatting status.
+     *
+     * @param singleLine If true, the new Printer will output no newline characters.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the singleLine mode set to the given parameter.
+     */
+    Printer emittingSingleLine(boolean singleLine) {
+      return new Printer(escapeNonAscii, typeRegistry, extensionRegistry, redacting, singleLine);
     }
 
     /**
@@ -171,12 +212,12 @@ public final class TextFormat {
      * original Protocol Buffer system)
      */
     public void print(final MessageOrBuilder message, final Appendable output) throws IOException {
-      print(message, multiLineOutput(output));
+      print(message, setLineOutput(output, this.singleLine));
     }
 
     /** Outputs a textual representation of {@code fields} to {@code output}. */
     public void print(final UnknownFieldSet fields, final Appendable output) throws IOException {
-      printUnknownFields(fields, multiLineOutput(output));
+      printUnknownFields(fields, setLineOutput(output, this.singleLine), this.redacting);
     }
 
     private void print(final MessageOrBuilder message, final TextGenerator generator)
@@ -253,7 +294,7 @@ public final class TextFormat {
 
     public void printField(final FieldDescriptor field, final Object value, final Appendable output)
         throws IOException {
-      printField(field, value, multiLineOutput(output));
+      printField(field, value, setLineOutput(output, this.singleLine));
     }
 
     private void printField(
@@ -358,12 +399,16 @@ public final class TextFormat {
     public void printFieldValue(
         final FieldDescriptor field, final Object value, final Appendable output)
         throws IOException {
-      printFieldValue(field, value, multiLineOutput(output));
+      printFieldValue(field, value, setLineOutput(output, this.singleLine));
     }
 
     private void printFieldValue(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
+      if (shouldRedact(field)) {
+        generator.print(REDACTED_MARKER);
+        return;
+      }
       switch (field.getType()) {
         case INT32:
         case SINT32:
@@ -429,6 +474,42 @@ public final class TextFormat {
       }
     }
 
+    private boolean shouldRedactOptionValue(EnumValueDescriptor optionValue) {
+      if (optionValue.getOptions().hasDebugRedact()) {
+        return true;
+      }
+      return false;
+    }
+
+    private boolean shouldRedact(final FieldDescriptor field) {
+      if (!this.redacting) {
+        return false;
+      }
+      if (field.getOptions().hasDebugRedact()) {
+        return true;
+      }
+      for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
+          field.getOptions().getAllFields().entrySet()) {
+        Descriptors.FieldDescriptor option = entry.getKey();
+        if (option.getType() != Descriptors.FieldDescriptor.Type.ENUM) {
+          continue;
+        }
+        if (option.isRepeated()) {
+          for (EnumValueDescriptor value : (List<EnumValueDescriptor>) entry.getValue()) {
+            if (shouldRedactOptionValue(value)) {
+              return true;
+            }
+          }
+        } else {
+          EnumValueDescriptor optionValue = (EnumValueDescriptor) entry.getValue();
+          if (shouldRedactOptionValue(optionValue)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
     public String printToString(final MessageOrBuilder message) {
       try {
@@ -457,7 +538,7 @@ public final class TextFormat {
     public String shortDebugString(final MessageOrBuilder message) {
       try {
         final StringBuilder text = new StringBuilder();
-        print(message, singleLineOutput(text));
+        print(message, setLineOutput(text, true));
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -471,7 +552,7 @@ public final class TextFormat {
     public String shortDebugString(final FieldDescriptor field, final Object value) {
       try {
         final StringBuilder text = new StringBuilder();
-        printField(field, value, singleLineOutput(text));
+        printField(field, value, setLineOutput(text, true));
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -485,7 +566,7 @@ public final class TextFormat {
     public String shortDebugString(final UnknownFieldSet fields) {
       try {
         final StringBuilder text = new StringBuilder();
-        printUnknownFields(fields, singleLineOutput(text));
+        printUnknownFields(fields, setLineOutput(text, true), this.redacting);
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -493,16 +574,26 @@ public final class TextFormat {
     }
 
     private static void printUnknownFieldValue(
-        final int tag, final Object value, final TextGenerator generator) throws IOException {
+        final int tag, final Object value, final TextGenerator generator, boolean redact)
+        throws IOException {
       switch (WireFormat.getTagWireType(tag)) {
         case WireFormat.WIRETYPE_VARINT:
-          generator.print(unsignedToString((Long) value));
+          generator.print(
+              redact
+                  ? String.format("UNKNOWN_VARINT %s", REDACTED_MARKER)
+                  : unsignedToString((Long) value));
           break;
         case WireFormat.WIRETYPE_FIXED32:
-          generator.print(String.format((Locale) null, "0x%08x", (Integer) value));
+          generator.print(
+              redact
+                  ? String.format("UNKNOWN_FIXED32 %s", REDACTED_MARKER)
+                  : String.format((Locale) null, "0x%08x", (Integer) value));
           break;
         case WireFormat.WIRETYPE_FIXED64:
-          generator.print(String.format((Locale) null, "0x%016x", (Long) value));
+          generator.print(
+              redact
+                  ? String.format("UNKNOWN_FIXED64 %s", REDACTED_MARKER)
+                  : String.format((Locale) null, "0x%016x", (Long) value));
           break;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
           try {
@@ -511,18 +602,21 @@ public final class TextFormat {
             generator.print("{");
             generator.eol();
             generator.indent();
-            printUnknownFields(message, generator);
+            printUnknownFields(message, generator, redact);
             generator.outdent();
             generator.print("}");
           } catch (InvalidProtocolBufferException e) {
             // If not parseable as a message, print as a String
             generator.print("\"");
-            generator.print(escapeBytes((ByteString) value));
+            generator.print(
+                redact
+                    ? String.format("UNKNOWN_STRING %s", REDACTED_MARKER)
+                    : escapeBytes((ByteString) value));
             generator.print("\"");
           }
           break;
         case WireFormat.WIRETYPE_START_GROUP:
-          printUnknownFields((UnknownFieldSet) value, generator);
+          printUnknownFields((UnknownFieldSet) value, generator, redact);
           break;
         default:
           throw new IllegalArgumentException("Bad tag: " + tag);
@@ -534,7 +628,7 @@ public final class TextFormat {
       for (Map.Entry<FieldDescriptor, Object> field : message.getAllFields().entrySet()) {
         printField(field.getKey(), field.getValue(), generator);
       }
-      printUnknownFields(message.getUnknownFields(), generator);
+      printUnknownFields(message.getUnknownFields(), generator, this.redacting);
     }
 
     private void printSingleField(
@@ -580,24 +674,29 @@ public final class TextFormat {
     }
 
     private static void printUnknownFields(
-        final UnknownFieldSet unknownFields, final TextGenerator generator) throws IOException {
+        final UnknownFieldSet unknownFields, final TextGenerator generator, boolean redact)
+        throws IOException {
       for (Map.Entry<Integer, UnknownFieldSet.Field> entry : unknownFields.asMap().entrySet()) {
         final int number = entry.getKey();
         final UnknownFieldSet.Field field = entry.getValue();
-        printUnknownField(number, WireFormat.WIRETYPE_VARINT, field.getVarintList(), generator);
-        printUnknownField(number, WireFormat.WIRETYPE_FIXED32, field.getFixed32List(), generator);
-        printUnknownField(number, WireFormat.WIRETYPE_FIXED64, field.getFixed64List(), generator);
+        printUnknownField(
+            number, WireFormat.WIRETYPE_VARINT, field.getVarintList(), generator, redact);
+        printUnknownField(
+            number, WireFormat.WIRETYPE_FIXED32, field.getFixed32List(), generator, redact);
+        printUnknownField(
+            number, WireFormat.WIRETYPE_FIXED64, field.getFixed64List(), generator, redact);
         printUnknownField(
             number,
             WireFormat.WIRETYPE_LENGTH_DELIMITED,
             field.getLengthDelimitedList(),
-            generator);
+            generator,
+            redact);
         for (final UnknownFieldSet value : field.getGroupList()) {
           generator.print(entry.getKey().toString());
           generator.print(" {");
           generator.eol();
           generator.indent();
-          printUnknownFields(value, generator);
+          printUnknownFields(value, generator, redact);
           generator.outdent();
           generator.print("}");
           generator.eol();
@@ -606,12 +705,16 @@ public final class TextFormat {
     }
 
     private static void printUnknownField(
-        final int number, final int wireType, final List<?> values, final TextGenerator generator)
+        final int number,
+        final int wireType,
+        final List<?> values,
+        final TextGenerator generator,
+        boolean redact)
         throws IOException {
       for (final Object value : values) {
         generator.print(String.valueOf(number));
         generator.print(": ");
-        printUnknownFieldValue(wireType, value, generator);
+        printUnknownFieldValue(wireType, value, generator, redact);
         generator.eol();
       }
     }
@@ -637,12 +740,8 @@ public final class TextFormat {
     }
   }
 
-  private static TextGenerator multiLineOutput(Appendable output) {
-    return new TextGenerator(output, false);
-  }
-
-  private static TextGenerator singleLineOutput(Appendable output) {
-    return new TextGenerator(output, true);
+  private static TextGenerator setLineOutput(Appendable output, boolean singleLine) {
+    return new TextGenerator(output, singleLine);
   }
 
   /** An inner class for writing text to the output stream. */
