@@ -39,15 +39,6 @@ using internal::cpp::Utf8CheckMode;
 using google::protobuf::internal::WireFormat;
 using google::protobuf::internal::WireFormatLite;
 
-bool HasWeakFields(const Descriptor* descriptor) {
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    if (descriptor->field(i)->options().weak()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 std::vector<const FieldDescriptor*> GetOrderedFields(
     const Descriptor* descriptor, const Options& options) {
   std::vector<const FieldDescriptor*> ordered_fields;
@@ -280,20 +271,20 @@ static NumToEntryTable MakeNumToEntryTable(
   return num_to_entry_table;
 }
 
+static std::string TcParseFunctionName(internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
+  static constexpr absl::string_view kNames[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  const int func_index = static_cast<int>(func);
+  ABSL_CHECK_GE(func_index, 0);
+  ABSL_CHECK_LT(func_index, std::end(kNames) - std::begin(kNames));
+  static constexpr absl::string_view ns = "::_pbi::TcParser::";
+  return absl::StrCat(ns, kNames[func_index]);
+}
+
 void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   Formatter format(printer, variables_);
-  // All entries without a fast-path parsing function need a fallback.
-  std::string fallback = "::_pbi::TcParser::GenericFallback";
-  if (GetOptimizeFor(descriptor_->file(), options_) ==
-      FileOptions::LITE_RUNTIME) {
-    absl::StrAppend(&fallback, "Lite");
-  } else if (HasWeakFields(descriptor_)) {
-    // weak=true fields are handled with the reflection fallback, but we don't
-    // want to install that for normal messages because it has more overhead.
-    ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
-    fallback = "::_pbi::TcParser::ReflectionFallback";
-  }
-
   // For simplicity and speed, the table is not covering all proto
   // configurations. This model uses a fallback to cover all situations that
   // the table can't accommodate, together with unknown fields or extensions.
@@ -366,7 +357,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
           nullptr,  // post_loop_handler
         )cc");
       }
-      format("$1$,  // fallback\n", fallback);
+      format("$1$,  // fallback\n",
+             TcParseFunctionName(tc_table_info_->fallback_function));
       std::vector<const FieldDescriptor*> subtable_fields;
       for (const auto& aux : tc_table_info_->aux_entries) {
         if (aux.type == internal::TailCallTableInfo::kSubTable) {
@@ -553,18 +545,6 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
     format("}},\n");
   }
   format("};\n\n");  // _table_
-}
-
-static std::string TcParseFunctionName(internal::TcParseFunction func) {
-#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
-  static constexpr absl::string_view kNames[] = {
-      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
-#undef PROTOBUF_TC_PARSE_FUNCTION_X
-  const int func_index = static_cast<int>(func);
-  ABSL_CHECK_GE(func_index, 0);
-  ABSL_CHECK_LT(func_index, std::end(kNames) - std::begin(kNames));
-  static constexpr absl::string_view ns = "::_pbi::TcParser::";
-  return absl::StrCat(ns, kNames[func_index]);
 }
 
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {

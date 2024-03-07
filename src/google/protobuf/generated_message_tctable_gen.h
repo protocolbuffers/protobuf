@@ -66,6 +66,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
                     const std::vector<int>& has_bit_indices,
                     const std::vector<int>& inlined_string_indices);
 
+  TcParseFunction fallback_function;
+
   // Fields parsed by the table fast-path.
   struct FastFieldInfo {
     struct Empty {};
