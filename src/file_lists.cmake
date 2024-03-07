@@ -46,7 +46,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/gzip_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32.cc
@@ -137,7 +136,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_message_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/gzip_stream.h
