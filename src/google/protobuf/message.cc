@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>  // IWYU pragma: keep for operator new().
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -43,6 +44,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection_internal.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
 
@@ -501,8 +503,8 @@ template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
 }  // namespace internal
+
 
 }  // namespace protobuf
 }  // namespace google

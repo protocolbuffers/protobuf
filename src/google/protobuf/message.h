@@ -1664,6 +1664,8 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   return MutableRepeatedFieldRef<T>(message, field);
 }
+
+
 }  // namespace protobuf
 }  // namespace google
 
