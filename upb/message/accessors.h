@@ -351,6 +351,9 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
+// Sets the value of a message-typed field. The `mini_table` and `field`
+// parameters belong to `msg`, not `sub_message`. The mini_tables of `msg` and
+// `sub_message` must have been linked for this to work correctly.
 UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTable* mini_table,
                                            const upb_MiniTableField* field,
