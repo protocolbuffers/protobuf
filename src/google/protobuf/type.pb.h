@@ -364,6 +364,10 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
       1, 2, 1,
       35, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Option_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -719,6 +723,10 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
       4, 10, 1,
       72, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Field_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -929,6 +937,10 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
       2, 3, 1,
       38, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_EnumValue_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1212,6 +1224,10 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
       3, 7, 3,
       46, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Type_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1471,6 +1487,10 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
       3, 6, 3,
       40, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_Enum_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>

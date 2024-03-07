@@ -214,6 +214,10 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
       0, 1, 0,
       47, 2>
       _table_;
+
+  static constexpr const void* _raw_default_instance_ =
+      &_SourceContext_default_instance_;
+
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
