@@ -1454,6 +1454,7 @@ public final class Descriptors {
       return isProto3Optional
           || getType() == Type.MESSAGE
           || getType() == Type.GROUP
+          || isExtension()
           || getContainingOneof() != null
           || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
     }
