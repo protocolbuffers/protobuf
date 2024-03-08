@@ -50,7 +50,7 @@ def _generated_srcs_for_suffix(prefix, srcs, suffix):
 def _generated_srcs_for_generator(prefix, srcs, generator):
     ret = _generated_srcs_for_suffix(prefix, srcs, ".{}.h".format(generator))
 
-    if not (generator == "upb" and prefix.endswith("stage1")):
+    if generator != "upb" or prefix.endswith("stage0"):
         ret += _generated_srcs_for_suffix(prefix, srcs, ".{}.c".format(generator))
     return ret
 
@@ -72,7 +72,7 @@ def _stage0_proto_staleness_test(name, base_dir, src_files, src_rules, strip_pre
     )
 
     staleness_test(
-        name = name + "_staleness_test",
+        name = name + "_stage0_staleness_test",
         outs = _generated_srcs(base_dir + "stage0", src_files),
         generated_pattern = "bootstrap_generated_sources/%s",
         target_files = native.glob([base_dir + "stage0/**"]),
@@ -100,6 +100,26 @@ def _generate_stage1_proto(name, base_dir, src_files, src_rules, generator, kwar
         ],
         **kwargs
     )
+
+# begin:github_only
+def _cmake_staleness_test(name, base_dir, src_files):
+    # Copy the final gencode for staleness comparison
+    native.genrule(
+        name = name + "_copy_gencode",
+        outs = _generated_srcs("generated_sources/cmake" + base_dir, src_files),
+        srcs = [name],
+        cmd = "for src in $(SRCS); do cp -f $$src $(@D); done",
+    )
+
+    # Keep bazel gencode in sync with our checked-in sources needed for cmake builds.
+    staleness_test(
+        name = name + "_staleness_test",
+        outs = _generated_srcs("cmake" + base_dir, src_files),
+        generated_pattern = "generated_sources/%s",
+        tags = ["manual"],
+    )
+
+# end:github_only
 
 def bootstrap_upb_proto_library(
         name,
@@ -187,3 +207,8 @@ def bootstrap_upb_proto_library(
         visibility = visibility,
         **kwargs
     )
+
+    # begin:github_only
+    _cmake_staleness_test(name, base_dir, src_files)
+
+# end:github_only
