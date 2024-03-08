@@ -19,12 +19,12 @@ STALENESS_TESTS=(
   "php:test_amalgamation_staleness"
   "ruby/ext/google/protobuf_c:test_amalgamation_staleness"
   "upb/cmake:test_generated_files"
-  "upb/upb_generator:plugin_upb_proto_staleness_test"
   "upb/reflection:descriptor_upb_proto_staleness_test"
+  "upb_generator:plugin_upb_proto_staleness_test"
 )
 
 # Run and fix all staleness tests.
-for test in $STALENESS_TESTS; do
+for test in ${STALENESS_TESTS[@]}; do
   ${BazelBin} test $test "$@" || ./bazel-bin/${test%%:*}/${test#*:} --fix
 done
 
