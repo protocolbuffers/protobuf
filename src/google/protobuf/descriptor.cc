@@ -923,17 +923,52 @@ class PrefixRemover {
 // hash-maps for each object.
 //
 // The keys to these hash-maps are (parent, name) or (parent, number) pairs.
-struct FullNameQuery {
-  absl::string_view query;
-  absl::string_view full_name() const { return query; }
+template <typename Key>
+class WithMemoizedFullNameHash {
+ public:
+  explicit WithMemoizedFullNameHash(Key key)
+      : key_(key), hash_(absl::HashOf(key.full_name())) {}
+  size_t hash() const { return hash_; }
+  Key key() const { return key_; }
+  absl::string_view full_name() const { return key_.full_name(); }
+
+ private:
+  Key key_;
+  size_t hash_;
 };
-struct SymbolByFullNameHash {
+template <typename Key>
+WithMemoizedFullNameHash(Key) -> WithMemoizedFullNameHash<Key>;
+
+template <typename Key>
+class WithMemoizedParentNameKeyHash {
+ public:
+  explicit WithMemoizedParentNameKeyHash(Key key)
+      : key_(key), hash_(absl::HashOf(key.parent_name_key())) {}
+  size_t hash() const { return hash_; }
+  Key key() const { return key_; }
+  std::pair<const void*, absl::string_view> parent_name_key() const {
+    return key_.parent_name_key();
+  }
+
+ private:
+  Key key_;
+  size_t hash_;
+};
+template <typename Key>
+WithMemoizedParentNameKeyHash(Key) -> WithMemoizedParentNameKeyHash<Key>;
+
+struct WithMemoizedHashHasher {
   using is_transparent = void;
 
   template <typename T>
   size_t operator()(const T& s) const {
-    return absl::HashOf(s.full_name());
+    return s.hash();
   }
+};
+
+struct FullNameQuery {
+  absl::string_view query;
+  absl::string_view full_name() const { return query; }
 };
 struct SymbolByFullNameEq {
   using is_transparent = void;
@@ -944,20 +979,13 @@ struct SymbolByFullNameEq {
   }
 };
 using SymbolsByNameSet =
-    absl::flat_hash_set<Symbol, SymbolByFullNameHash, SymbolByFullNameEq>;
+    absl::flat_hash_set<WithMemoizedFullNameHash<Symbol>,
+                        WithMemoizedHashHasher, SymbolByFullNameEq>;
 
 struct ParentNameQuery {
   std::pair<const void*, absl::string_view> query;
   std::pair<const void*, absl::string_view> parent_name_key() const {
     return query;
-  }
-};
-struct SymbolByParentHash {
-  using is_transparent = void;
-
-  template <typename T>
-  size_t operator()(const T& s) const {
-    return absl::HashOf(s.parent_name_key());
   }
 };
 struct SymbolByParentEq {
@@ -969,7 +997,8 @@ struct SymbolByParentEq {
   }
 };
 using SymbolsByParentSet =
-    absl::flat_hash_set<Symbol, SymbolByParentHash, SymbolByParentEq>;
+    absl::flat_hash_set<WithMemoizedParentNameKeyHash<Symbol>,
+                        WithMemoizedHashHasher, SymbolByParentEq>;
 
 template <typename DescriptorT>
 struct DescriptorsByNameHash {
@@ -1544,7 +1573,8 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
 
   for (size_t i = checkpoint.pending_symbols_before_checkpoint;
        i < symbols_after_checkpoint_.size(); i++) {
-    symbols_by_name_.erase(symbols_after_checkpoint_[i]);
+    symbols_by_name_.erase(
+        WithMemoizedFullNameHash(symbols_after_checkpoint_[i]));
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
        i < files_after_checkpoint_.size(); i++) {
@@ -1569,14 +1599,15 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
 // -------------------------------------------------------------------
 
 inline Symbol DescriptorPool::Tables::FindSymbol(absl::string_view key) const {
-  auto it = symbols_by_name_.find(FullNameQuery{key});
-  return it == symbols_by_name_.end() ? Symbol() : *it;
+  auto it = symbols_by_name_.find(WithMemoizedFullNameHash(FullNameQuery{key}));
+  return it == symbols_by_name_.end() ? Symbol() : it->key();
 }
 
 inline Symbol FileDescriptorTables::FindNestedSymbol(
     const void* parent, absl::string_view name) const {
-  auto it = symbols_by_parent_.find(ParentNameQuery{{parent, name}});
-  return it == symbols_by_parent_.end() ? Symbol() : *it;
+  auto it = symbols_by_parent_.find(
+      WithMemoizedParentNameKeyHash(ParentNameQuery{{parent, name}}));
+  return it == symbols_by_parent_.end() ? Symbol() : it->key();
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -1651,7 +1682,8 @@ void FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic(
 
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
   auto* map = new FieldsByNameMap;
-  for (Symbol symbol : symbols_by_parent_) {
+  for (auto symbol_wrapper : symbols_by_parent_) {
+    Symbol symbol = symbol_wrapper.key();
     const FieldDescriptor* field = symbol.field_descriptor();
     if (!field) continue;
     (*map)[{FindParentForFieldsByMap(field), field->lowercase_name().c_str()}] =
@@ -1679,7 +1711,8 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
   auto* map = new FieldsByNameMap;
-  for (Symbol symbol : symbols_by_parent_) {
+  for (auto symbol_wrapper : symbols_by_parent_) {
+    Symbol symbol = symbol_wrapper.key();
     const FieldDescriptor* field = symbol.field_descriptor();
     if (!field) continue;
     const void* parent = FindParentForFieldsByMap(field);
@@ -1800,7 +1833,7 @@ inline void DescriptorPool::Tables::FindAllExtensions(
 bool DescriptorPool::Tables::AddSymbol(absl::string_view full_name,
                                        Symbol symbol) {
   ABSL_DCHECK_EQ(full_name, symbol.full_name());
-  if (symbols_by_name_.insert(symbol).second) {
+  if (symbols_by_name_.insert(WithMemoizedFullNameHash(symbol)).second) {
     symbols_after_checkpoint_.push_back(symbol);
     return true;
   } else {
@@ -1813,7 +1846,8 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
                                                Symbol symbol) {
   ABSL_DCHECK_EQ(name, symbol.parent_name_key().second);
   ABSL_DCHECK_EQ(parent, symbol.parent_name_key().first);
-  return symbols_by_parent_.insert(symbol).second;
+  return symbols_by_parent_.insert(WithMemoizedParentNameKeyHash(symbol))
+      .second;
 }
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
@@ -5752,10 +5786,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       alloc.AllocateArray<const FileDescriptor*>(proto.dependency_size());
   result->dependencies_once_ = nullptr;
   unused_dependency_.clear();
-  absl::flat_hash_set<int> weak_deps;
-  for (int i = 0; i < proto.weak_dependency_size(); ++i) {
-    weak_deps.insert(proto.weak_dependency(i));
-  }
+  absl::flat_hash_set<int> weak_deps(proto.weak_dependency().begin(),
+                                     proto.weak_dependency().end());
 
   bool need_lazy_deps = false;
   for (int i = 0; i < proto.dependency_size(); i++) {
