@@ -81,6 +81,8 @@ else()
     absl::node_hash_map
     absl::node_hash_set
     absl::optional
+    absl::random_distributions
+    absl::random_random
     absl::span
     absl::status
     absl::statusor
