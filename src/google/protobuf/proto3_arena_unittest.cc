@@ -100,7 +100,7 @@ TEST(Proto3ArenaTest, Parsing) {
   SetAllFields(&original);
 
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   ExpectAllFieldsSet(*arena_message);
 }
@@ -110,7 +110,7 @@ TEST(Proto3ArenaTest, UnknownFields) {
   SetAllFields(&original);
 
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   ExpectAllFieldsSet(*arena_message);
 
@@ -130,7 +130,7 @@ TEST(Proto3ArenaTest, GetArena) {
   Arena arena;
 
   // Tests arena-allocated message and submessages.
-  auto* arena_message1 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
   auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
   auto* arena_repeated_submessage1 =
       arena_message1->add_repeated_foreign_message();
@@ -139,7 +139,7 @@ TEST(Proto3ArenaTest, GetArena) {
   EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
 
   // Tests attached heap-allocated messages.
-  auto* arena_message2 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message2 = Arena::Create<TestAllTypes>(&arena);
   arena_message2->set_allocated_optional_foreign_message(new ForeignMessage());
   arena_message2->mutable_repeated_foreign_message()->AddAllocated(
       new ForeignMessage());
@@ -158,7 +158,7 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   Arena arena;
 
   // Tests arena-allocated message and submessages.
-  auto* arena_message1 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
   arena_message1->GetReflection()->MutableUnknownFields(arena_message1);
   auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
   arena_submessage1->GetReflection()->MutableUnknownFields(arena_submessage1);
@@ -171,7 +171,7 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
 
   // Tests attached heap-allocated messages.
-  auto* arena_message2 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message2 = Arena::Create<TestAllTypes>(&arena);
   arena_message2->set_allocated_optional_foreign_message(new ForeignMessage());
   arena_message2->mutable_repeated_foreign_message()->AddAllocated(
       new ForeignMessage());
@@ -190,8 +190,8 @@ TEST(Proto3ArenaTest, Swap) {
   Arena arena2;
 
   // Test Swap().
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
   arena1_message->Swap(arena2_message);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
@@ -199,7 +199,7 @@ TEST(Proto3ArenaTest, Swap) {
 
 TEST(Proto3ArenaTest, SetAllocatedMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
@@ -208,7 +208,7 @@ TEST(Proto3ArenaTest, SetAllocatedMessage) {
 
 TEST(Proto3ArenaTest, ReleaseMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
@@ -218,7 +218,7 @@ TEST(Proto3ArenaTest, ReleaseMessage) {
 TEST(Proto3ArenaTest, MessageFieldClear) {
   // GitHub issue #310: https://github.com/protocolbuffers/protobuf/issues/310
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   // This should not crash, but prior to the bugfix, it tried to use `operator
   // delete` the nested message (which is on the arena):
@@ -227,7 +227,7 @@ TEST(Proto3ArenaTest, MessageFieldClear) {
 
 TEST(Proto3ArenaTest, MessageFieldClearViaReflection) {
   Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
   const Reflection* r = message->GetReflection();
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* msg_field =

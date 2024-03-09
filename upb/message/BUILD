@@ -154,7 +154,6 @@ cc_library(
     name = "split64",
     hdrs = [
         "accessors_split64.h",
-        "array_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],

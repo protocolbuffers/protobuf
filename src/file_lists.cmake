@@ -46,7 +46,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/gzip_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32.cc
@@ -137,7 +136,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_message_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/gzip_stream.h
@@ -179,8 +177,11 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_field_info.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/runtime_version.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block.h
@@ -273,6 +274,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/runtime_version.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
@@ -287,7 +289,6 @@ set(libprotobuf_lite_hdrs
 
 # @//pkg:protoc
 set(libprotoc_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/open_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.cc
@@ -410,8 +411,6 @@ set(libprotoc_srcs
 
 # @//pkg:protoc
 set(libprotoc_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlists.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/enum.h
@@ -720,6 +719,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/redaction_metric_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/retention_test.cc
@@ -768,6 +768,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_bad_macros.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_extensions.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_retention.proto
@@ -796,7 +797,6 @@ set(fake_plugin_files
 
 # @//src/google/protobuf/compiler:test_srcs
 set(compiler_test_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/allowlists/allowlist_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/arena_ctor_visibility_test.cc

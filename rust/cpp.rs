@@ -151,6 +151,47 @@ impl SettableValue<[u8]> for SerializedData {
     }
 }
 
+/// A type to transfer an owned Rust string across the FFI boundary:
+///   * This struct is ABI-compatible with the equivalent C struct.
+///   * It owns its data but does not drop it. Immediately turn it into a
+///     `String` by calling `.into()` on it.
+///   * `.data` points to a valid UTF-8 string that has been allocated with the
+///     Rust allocator and is 1-byte aligned.
+///   * `.data` contains exactly `.len` bytes.
+///   * The empty string is represented as `.data.is_null() == true`.
+#[repr(C)]
+pub struct RustStringRawParts {
+    data: *const u8,
+    len: usize,
+}
+
+impl From<RustStringRawParts> for String {
+    fn from(value: RustStringRawParts) -> Self {
+        if value.data.is_null() {
+            // Handle the case where the string is empty.
+            return String::new();
+        }
+        // SAFETY:
+        //  - `value.data` contains valid UTF-8 bytes as promised by
+        //    `RustStringRawParts`.
+        //  - `value.data` has been allocated with the Rust allocator and is 1-byte
+        //    aligned as promised by `RustStringRawParts`.
+        //  - `value.data` contains and is allocated for exactly `value.len` bytes.
+        unsafe { String::from_raw_parts(value.data as *mut u8, value.len, value.len) }
+    }
+}
+
+extern "C" {
+    fn utf8_debug_string(msg: RawMessage) -> RustStringRawParts;
+}
+
+pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    // SAFETY:
+    // - `msg` is a valid protobuf message.
+    let dbg_str: String = unsafe { utf8_debug_string(msg) }.into();
+    write!(f, "{dbg_str}")
+}
+
 pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
 pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
@@ -675,5 +716,11 @@ mod tests {
         let (ptr, len) = allocate_byte_array(b"Hello world");
         let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len };
         assert_that!(&*serialized_data, eq(b"Hello world"));
+    }
+
+    #[test]
+    fn test_empty_string() {
+        let empty_str: String = RustStringRawParts { data: std::ptr::null(), len: 0 }.into();
+        assert_that!(empty_str, eq(""));
     }
 }

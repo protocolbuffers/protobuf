@@ -208,7 +208,7 @@ ExtensionSet::Extension* ExtensionSet::MaybeNewRepeatedExtension(
     ABSL_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        Arena::CreateMessage<RepeatedPtrField<MessageLite> >(arena_);
+        Arena::Create<RepeatedPtrField<MessageLite> >(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }

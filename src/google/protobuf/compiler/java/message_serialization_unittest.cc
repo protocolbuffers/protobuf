@@ -13,7 +13,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
@@ -41,7 +40,7 @@ int CompileJavaProto(std::string proto_file_name) {
   std::string proto_path = absl::StrCat(
       "--proto_path=",
       TestUtil::GetTestDataPath("google/protobuf/compiler/java"));
-  std::string java_out = absl::StrCat("--java_out=", TestTempDir());
+  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
 
   const char* argv[] = {
       "protoc",
@@ -61,7 +60,7 @@ TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {
   ABSL_CHECK_OK(File::GetContents(
       // Open-source codebase does not support file::JoinPath, so we manually
       // concatenate instead.
-      absl::StrCat(TestTempDir(),
+      absl::StrCat(::testing::TempDir(),
                    "/TestMessageWithManyExtensionRanges.java"),
       &java_source, true));
 

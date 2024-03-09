@@ -28,6 +28,7 @@ from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_pb2
+from google.protobuf import unittest_proto3_extensions_pb2
 
 
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
@@ -1350,6 +1351,21 @@ class FeaturesTest(_parameterized.TestCase):
         features.message_encoding, fs.MessageEncoding.LENGTH_PREFIXED
     )
     self.assertEqual(features.json_format, fs.JsonFormat.ALLOW)
+
+  def testProto3ExtensionPresence(self):
+    ext = unittest_proto3_extensions_pb2.Proto3FileExtensions.singular_int
+    file = descriptor_pb2.FileDescriptorProto()
+
+    self.assertFalse(file.options.HasExtension(ext))
+
+    file.options.Extensions[ext] = 1
+
+    self.assertTrue(file.options.HasExtension(ext))
+
+  def testProto3ExtensionHasPresence(self):
+    exts = unittest_proto3_extensions_pb2.Proto3FileExtensions
+    self.assertTrue(exts.singular_int.has_presence)
+    self.assertFalse(exts.repeated_int.has_presence)
 
 
 def GetTestFeature(desc):

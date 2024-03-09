@@ -227,8 +227,19 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   }
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
-    GenerateEnumDefinition(ctx, *file->enum_type(i));
+    auto& enum_ = *file->enum_type(i);
+    GenerateEnumDefinition(ctx, enum_);
     ctx.printer().PrintRaw("\n");
+
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
+
+      thunks_ctx.Emit({{"enum", enum_.full_name()}}, R"cc(
+        // $enum$
+      )cc");
+      GenerateEnumThunksCc(thunks_ctx, enum_);
+      thunks_ctx.printer().PrintRaw("\n");
+    }
   }
 
   return true;

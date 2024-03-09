@@ -32,6 +32,15 @@ namespace internal {
 
 namespace {
 
+bool TreatEnumAsInt(const FieldDescriptor* field) {
+  return cpp::HasPreservingUnknownEnumSemantics(field) ||
+         // For legacy reasons, MapEntry mapped_type enum fields are handled as
+         // open always. The validation happens elsewhere.
+         (field->enum_type() != nullptr &&
+          field->containing_type() != nullptr &&
+          field->containing_type()->map_value() == field);
+}
+
 bool GetEnumValidationRange(const EnumDescriptor* enum_type, int16_t& start,
                             uint16_t& size) {
   ABSL_CHECK_GT(enum_type->value_count(), 0) << enum_type->DebugString();
@@ -159,7 +168,7 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastF64);
       break;
     case FieldDescriptor::TYPE_ENUM:
-      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
+      if (TreatEnumAsInt(field)) {
         picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
       } else {
         switch (GetEnumRangeInfo(field, info.aux_idx)) {
@@ -283,12 +292,9 @@ bool IsFieldEligibleForFastParsing(
       break;
   }
 
-  if (cpp::HasHasbit(field)) {
-    // The tailcall parser can only update the first 32 hasbits. Fields with
-    // has-bits beyond the first 32 are handled by mini parsing/fallback.
-    ABSL_CHECK_GE(entry.hasbit_idx, 0) << field->DebugString();
-    if (entry.hasbit_idx >= 32) return false;
-  }
+  // The tailcall parser can only update the first 32 hasbits. Fields with
+  // has-bits beyond the first 32 are handled by mini parsing/fallback.
+  if (entry.hasbit_idx >= 32) return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
@@ -404,7 +410,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     fast_field.coded_tag = tag;
     // If this field does not have presence, then it can set an out-of-bounds
     // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
-    fast_field.hasbit_idx = cpp::HasHasbit(field) ? entry.hasbit_idx : 63;
+    fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
   }
   return result;
 }
@@ -537,12 +543,12 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
 }
 
 uint16_t MakeTypeCardForField(
-    const FieldDescriptor* field,
+    const FieldDescriptor* field, bool has_hasbit,
     const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::PerFieldOptions& options) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
-  if (internal::cpp::HasHasbit(field)) {
+  if (has_hasbit) {
     type_card = fl::kFcOptional;
   } else if (field->is_repeated()) {
     type_card = fl::kFcRepeated;
@@ -588,7 +594,7 @@ uint16_t MakeTypeCardForField(
                                                               : fl::kBool;
       break;
     case FieldDescriptor::TYPE_ENUM:
-      if (internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
+      if (TreatEnumAsInt(field)) {
         // No validation is required.
         type_card |= field->is_repeated() && field->is_packed()
                          ? fl::kPackedOpenEnum
@@ -718,6 +724,15 @@ uint16_t MakeTypeCardForField(
   return type_card;
 }
 
+bool HasWeakFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    if (descriptor->field(i)->options().weak()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 TailCallTableInfo::TailCallTableInfo(
@@ -727,6 +742,17 @@ TailCallTableInfo::TailCallTableInfo(
     const OptionProvider& option_provider,
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
+  fallback_function =
+      // Map entries discard unknown data
+      descriptor->options().map_entry()
+          ? TcParseFunction::kDiscardEverythingFallback
+      // Reflection and weak messages have the reflection fallback
+      : !message_options.uses_codegen || HasWeakFields(descriptor)
+          ? TcParseFunction::kReflectionFallback
+      // Codegen messages have lite and non-lite version
+      : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
+                                : TcParseFunction::kGenericFallback;
+
   if (descriptor->options().message_set_wire_format()) {
     ABSL_DCHECK(ordered_fields.empty());
     ABSL_DCHECK(inlined_string_indices.empty());
@@ -793,9 +819,9 @@ TailCallTableInfo::TailCallTableInfo(
       // the following typed fields are supported.
       return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
               field->type() == FieldDescriptor::TYPE_GROUP) &&
-             !field->is_map() && !HasLazyRep(field, options) &&
-             !options.is_implicitly_weak && options.use_direct_tcparser_table &&
-             is_non_cold(options);
+             !field->is_map() && !field->options().weak() &&
+             !HasLazyRep(field, options) && !options.is_implicitly_weak &&
+             options.use_direct_tcparser_table && is_non_cold(options);
     };
     for (const FieldDescriptor* field : ordered_fields) {
       if (is_non_cold_subtable(field)) {
@@ -812,11 +838,12 @@ TailCallTableInfo::TailCallTableInfo(
   for (const FieldDescriptor* field : ordered_fields) {
     auto options = option_provider.GetForField(field);
     field_entries.push_back(
-        {field, internal::cpp ::HasHasbit(field)
+        {field, static_cast<size_t>(field->index()) < has_bit_indices.size()
                     ? has_bit_indices[static_cast<size_t>(field->index())]
                     : -1});
     auto& entry = field_entries.back();
-    entry.type_card = MakeTypeCardForField(field, message_options, options);
+    entry.type_card = MakeTypeCardForField(field, entry.hasbit_idx >= 0,
+                                           message_options, options);
 
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->type() == FieldDescriptor::TYPE_GROUP) {
@@ -865,7 +892,7 @@ TailCallTableInfo::TailCallTableInfo(
         }
       }
     } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
-               !cpp::HasPreservingUnknownEnumSemantics(field)) {
+               !TreatEnumAsInt(field)) {
       // Enum fields which preserve unknown values (proto3 behavior) are
       // effectively int32 fields with respect to parsing -- i.e., the value
       // does not need to be validated at parse time.

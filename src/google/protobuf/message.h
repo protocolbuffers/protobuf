@@ -101,6 +101,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -601,6 +602,9 @@ class PROTOBUF_EXPORT Reflection final {
     friend class Reflection;
 
     absl::string_view CopyFromCord(const absl::Cord& cord) {
+      if (absl::optional<absl::string_view> flat = cord.TryFlat()) {
+        return *flat;
+      }
       if (!buffer_) {
         buffer_ = absl::make_unique<std::string>();
       }
@@ -1192,7 +1196,9 @@ class PROTOBUF_EXPORT Reflection final {
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
 
-  inline bool IsInlined(const FieldDescriptor* field) const;
+  inline bool IsInlined(const FieldDescriptor* field) const {
+    return schema_.IsFieldInlined(field);
+  }
 
   bool HasBit(const Message& message, const FieldDescriptor* field) const;
   void SetBit(Message* message, const FieldDescriptor* field) const;
@@ -1658,6 +1664,8 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   return MutableRepeatedFieldRef<T>(message, field);
 }
+
+
 }  // namespace protobuf
 }  // namespace google
 

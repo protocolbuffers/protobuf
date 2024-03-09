@@ -522,8 +522,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set($pb$::Arena::CreateMessage<$pb$::RepeatedField<$Type$>>(
-              GetArena()));
+          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<$Type$>>(GetArena()));
         }
         return $field_$.Get();
       }

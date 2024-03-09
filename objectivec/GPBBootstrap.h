@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+// For int32_t in GPB_ENUM/GPB_ENUM_FWD_DECLARE below.
+#import <stdint.h>
+
 /**
  * The Objective C runtime has complete enough info that most protos don’t end
  * up using this, so leaving it on is no cost or very little cost.  If you

@@ -14,7 +14,7 @@ extern "C" fn __pb_rust_alloc(size: usize, align: usize) -> *mut u8 {
         // it so return a dangling pointer instead.
         std::ptr::null_mut::<u8>().wrapping_add(align)
     } else {
-        let layout = Layout::from_size_align(size, 1).unwrap();
+        let layout = Layout::from_size_align(size, align).unwrap();
         unsafe { alloc(layout) }
     }
 }

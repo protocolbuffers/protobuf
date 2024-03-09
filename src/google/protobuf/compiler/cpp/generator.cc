@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -86,6 +87,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
 
 }  // namespace
 
@@ -222,6 +224,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     *error = std::string(validation_result.message());
     return false;
   }
+
 
   FileGenerator file_generator(file, file_options);
 

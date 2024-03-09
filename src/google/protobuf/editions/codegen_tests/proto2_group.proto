@@ -12,7 +12,7 @@ package protobuf_editions_test.proto2;
 // LINT: ALLOW_GROUPS
 
 message Proto2Group {
-  optional group GroupField = 2 {
+  optional group Groupfield = 2 {
     optional int32 int32_field = 1;
   }
 }

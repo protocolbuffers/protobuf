@@ -9,9 +9,11 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/editions/defaults_test_embedded.h"
+#include "google/protobuf/editions/defaults_test_embedded_base64.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -124,6 +126,30 @@ TEST(DefaultsTest, Embedded) {
   ASSERT_TRUE(defaults.ParseFromArray(DEFAULTS_TEST_EMBEDDED,
                                       sizeof(DEFAULTS_TEST_EMBEDDED) - 1))
       << "Could not parse embedded data";
+  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
+  ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
+
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults()[2].features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults.defaults()[2]
+                .features()
+                .GetExtension(pb::test)
+                .int_file_feature(),
+            1);
+}
+
+TEST(DefaultsTest, EmbeddedBase64) {
+  FeatureSetDefaults defaults;
+  std::string data;
+  ASSERT_TRUE(absl::Base64Unescape(
+      absl::string_view{DEFAULTS_TEST_EMBEDDED_BASE64,
+                        sizeof(DEFAULTS_TEST_EMBEDDED_BASE64) - 1},
+      &data));
+  ASSERT_TRUE(defaults.ParseFromString(data));
   ASSERT_EQ(defaults.defaults().size(), 3);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);

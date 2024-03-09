@@ -35,6 +35,8 @@ std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op);
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
                         absl::string_view key_t, absl::string_view op);
+std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
+                        absl::string_view key_t, absl::string_view op);
 
 // Returns the local constant that defines the vtable for mutating `field`.
 std::string VTableName(const FieldDescriptor& field);
@@ -74,6 +76,10 @@ std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
 std::string GetCrateRelativeQualifiedPath(Context& ctx,
                                           const EnumDescriptor& enum_);
+
+std::string GetUnderscoreDelimitedFullName(Context& ctx, const Descriptor& msg);
+std::string GetUnderscoreDelimitedFullName(Context& ctx,
+                                           const EnumDescriptor& enum_);
 
 // TODO: Unify these with other case-conversion functions.
 

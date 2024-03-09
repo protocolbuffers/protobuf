@@ -221,7 +221,10 @@ filegroup(
             "**/*.h",
             "**/*.hpp",
         ],
-        exclude = ["stage0/**"],
+        exclude = [
+            "stage0/**",
+            "cmake/**",
+        ],
     ),
     visibility = [
         "//python/dist:__pkg__",

@@ -724,13 +724,13 @@ TEST(MESSAGE_TEST_NAME, Swap) {
   {
     Arena arena;
     UNITTEST::NestedTestAllTypes* p1 =
-        Arena::CreateMessage<UNITTEST::NestedTestAllTypes>(&arena);
+        Arena::Create<UNITTEST::NestedTestAllTypes>(&arena);
 
     // Should parse correctly.
     EXPECT_TRUE(p1->ParseFromString(serialized));
 
     UNITTEST::NestedTestAllTypes* p2 =
-        Arena::CreateMessage<UNITTEST::NestedTestAllTypes>(&arena);
+        Arena::Create<UNITTEST::NestedTestAllTypes>(&arena);
 
     p1->Swap(p2);
 
@@ -1016,7 +1016,7 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
   {
     Arena arena;
     UNITTEST::TestAllTypes* arena_message =
-        Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena);
+        Arena::Create<UNITTEST::TestAllTypes>(&arena);
     EXPECT_FALSE(arena_message->ParseFromString(invalid_string_data));
     arena_message->Clear();
     EXPECT_EQ("", arena_message->optional_string());
@@ -1994,8 +1994,7 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
   // This call had a bug where the LazyField was not destroyed in any way
   // causing the Cord inside it to leak its contents.
   EXPECT_TRUE(
-      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena)->ParseFromString(
-          str));
+      Arena::Create<UNITTEST::TestAllTypes>(&arena)->ParseFromString(str));
 }
 
 }  // namespace protobuf

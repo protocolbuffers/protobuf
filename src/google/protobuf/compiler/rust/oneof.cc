@@ -181,7 +181,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
       // fields on it (e.g. if the oneof only has Messages inside).
       R"rs(
       #[non_exhaustive]
-      #[derive(Debug)]
+      #[derive(Debug, Clone, Copy)]
       #[allow(dead_code)]
       #[repr(isize)]
       pub enum $view_enum_name$<'msg> {

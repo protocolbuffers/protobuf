@@ -165,18 +165,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
-// Defines the Protobuf C++ Version for checking version compatibility at
-// compilation time.
-#ifdef PROTOBUF_VERSION
-#error PROTOBUF_VERSION was previously defined
-#endif
-#define PROTOBUF_VERSION 5027000
-
-#ifdef PROTOBUF_VERSION_SUFFIX
-#error PROTOBUF_VERSION_SUFFIX was previously defined
-#endif
-#define PROTOBUF_VERSION_SUFFIX "-dev"
-
 #ifdef PROTOBUF_MINIMUM_EDITION
 #error PROTOBUF_MINIMUM_EDITION was previously defined
 #endif
@@ -825,6 +813,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef REASON_UNKNOWN
 #pragma push_macro("SERVICE_DISABLED")
 #undef SERVICE_DISABLED
+#pragma push_macro("SERVICE_STOP")
+#undef SERVICE_STOP
 #pragma push_macro("SEVERITY_ERROR")
 #undef SEVERITY_ERROR
 #pragma push_macro("STATUS_PENDING")

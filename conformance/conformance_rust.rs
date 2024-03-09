@@ -62,13 +62,13 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
     let message_type = req.message_type();
 
     if req.requested_output_format() != WireFormat::Protobuf {
-        resp.skipped_mut().set("only wire format output implemented");
+        resp.set_skipped("only wire format output implemented");
         return resp;
     }
 
     let bytes = match req.protobuf_payload_opt() {
         Unset(_) => {
-            resp.skipped_mut().set("only wire format input implemented");
+            resp.set_skipped("only wire format input implemented");
             return resp;
         }
         Set(bytes) => bytes,
@@ -78,7 +78,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         b"protobuf_test_messages.proto2.TestAllTypesProto2" => {
             let mut proto = TestAllTypesProto2::new();
             if let Err(_) = proto.deserialize(bytes) {
-                resp.parse_error_mut().set("failed to parse bytes");
+                resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
             proto.serialize()
@@ -86,7 +86,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
             let mut proto = TestAllTypesProto3::new();
             if let Err(_) = proto.deserialize(bytes) {
-                resp.parse_error_mut().set("failed to parse bytes");
+                resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
             proto.serialize()
@@ -94,7 +94,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         b"protobuf_test_messages.editions.proto2.TestAllTypesProto2" => {
             let mut proto = EditionsTestAllTypesProto2::new();
             if let Err(_) = proto.deserialize(bytes) {
-                resp.parse_error_mut().set("failed to parse bytes");
+                resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
             proto.serialize()
@@ -102,7 +102,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         b"protobuf_test_messages.editions.proto3.TestAllTypesProto3" => {
             let mut proto = EditionsTestAllTypesProto3::new();
             if let Err(_) = proto.deserialize(bytes) {
-                resp.parse_error_mut().set("failed to parse bytes");
+                resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
             proto.serialize()
@@ -110,7 +110,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         _ => panic!("unexpected msg type {message_type}"),
     };
 
-    resp.protobuf_payload_mut().set(serialized);
+    resp.set_protobuf_payload(serialized);
     return resp;
 }
 

@@ -565,6 +565,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual LazyMessageExtension* New(Arena* arena) const = 0;
     virtual const MessageLite& GetMessage(const MessageLite& prototype,
                                           Arena* arena) const = 0;
+    virtual const MessageLite& GetMessageIgnoreUnparsed(
+        const MessageLite& prototype, Arena* arena) const = 0;
     virtual MessageLite* MutableMessage(const MessageLite& prototype,
                                         Arena* arena) = 0;
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;

@@ -357,10 +357,6 @@ bool Reflection::IsEagerlyVerifiedLazyField(
           schema_.IsEagerlyVerifiedLazyField(field));
 }
 
-bool Reflection::IsInlined(const FieldDescriptor* field) const {
-  return schema_.IsFieldInlined(field);
-}
-
 size_t Reflection::SpaceUsedLong(const Message& message) const {
   // object_size_ already includes the in-memory representation of each field
   // in the message, so we only need to account for additional memory used by
@@ -2729,11 +2725,10 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
     if (field->cpp_type() < FieldDescriptor::CPPTYPE_STRING ||
         (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD)) {
-      ptr = reinterpret_cast<Type*>(
-          Arena::CreateMessage<RepeatedField<int32_t>>(arena));
+      ptr =
+          reinterpret_cast<Type*>(Arena::Create<RepeatedField<int32_t>>(arena));
     } else {
-      ptr = reinterpret_cast<Type*>(
-          Arena::CreateMessage<RepeatedPtrFieldBase>(arena));
+      ptr = reinterpret_cast<Type*>(Arena::Create<RepeatedPtrFieldBase>(arena));
     }
   }
   return ptr;
@@ -3465,9 +3460,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       aux_offset,
       schema_.default_instance_,
       nullptr,
-      &internal::TcParser::ReflectionFallback
+      GetFastParseFunction(table_info.fallback_function)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ,
+          ,
       nullptr
 #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   };

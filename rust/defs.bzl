@@ -16,7 +16,7 @@ visibility([
     "//rust/...",
 ])
 
-def rust_proto_library(name, deps, visibility = [], **args):
+def rust_proto_library(name, deps, **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
@@ -29,13 +29,17 @@ def rust_proto_library(name, deps, visibility = [], **args):
     """
     if not name.endswith("_rust_proto"):
         fail("Name of each rust_proto_library target should end with `_rust_proto`")
+
+    alias_args = {}
+    if "visibility" in args:
+        alias_args["visibility"] = args.pop("visibility")
     native.alias(
         name = name,
         actual = select({
             "//rust:use_upb_kernel": name + "_upb_kernel",
             "//conditions:default": name + "_cpp_kernel",
         }),
-        visibility = visibility,
+        **alias_args
     )
 
     rust_upb_proto_library(
@@ -66,6 +70,7 @@ def _rust_proto_library_impl(ctx):
         dep_variant_info.crate_info,
         dep_variant_info.dep_info,
         dep_variant_info.cc_info,
+        DefaultInfo(files = dep_variant_info.crate_info.srcs),
     ]
 
 def _make_rust_proto_library(is_upb):

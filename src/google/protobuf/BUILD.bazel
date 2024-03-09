@@ -279,6 +279,36 @@ cc_test(
 )
 
 cc_test(
+    name = "reflection_visit_fields_test",
+    size = "small",
+    srcs = ["reflection_visit_fields_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":arena",
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "port_test",
     srcs = ["port_test.cc"],
     deps = [
@@ -464,6 +494,7 @@ cc_library(
         "raw_ptr.h",
         "repeated_field.h",
         "repeated_ptr_field.h",
+        "runtime_version.h",
         "serial_arena.h",
         "thread_safe_arena.h",
         "wire_format_lite.h",
@@ -530,7 +561,6 @@ PROTOBUF_HEADERS = [
     "generated_message_bases.h",
     "generated_message_reflection.h",
     "generated_message_tctable_gen.h",
-    "internal_message_util.h",
     "map_entry.h",
     "map_field.h",
     "map_field_inl.h",
@@ -540,6 +570,8 @@ PROTOBUF_HEADERS = [
     "reflection_internal.h",
     "reflection_mode.h",
     "reflection_ops.h",
+    "reflection_visit_fields.h",
+    "reflection_visit_field_info.h",
     "service.h",
     "text_format.h",
     "unknown_field_set.h",
@@ -561,7 +593,6 @@ cc_library(
         "generated_message_reflection.cc",
         "generated_message_tctable_full.cc",
         "generated_message_tctable_gen.cc",
-        "internal_message_util.cc",
         "map_field.cc",
         "message.cc",
         "reflection_mode.cc",
@@ -796,6 +827,7 @@ filegroup(
         "unittest_proto3_arena.proto",
         "unittest_proto3_arena_lite.proto",
         "unittest_proto3_bad_macros.proto",
+        "unittest_proto3_extensions.proto",
         "unittest_proto3_lite.proto",
         "unittest_proto3_optional.proto",
         "unittest_retention.proto",

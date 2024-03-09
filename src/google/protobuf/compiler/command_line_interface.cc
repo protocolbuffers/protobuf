@@ -26,7 +26,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
-#include "google/protobuf/compiler/allowlists/allowlists.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"

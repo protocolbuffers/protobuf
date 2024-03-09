@@ -24,6 +24,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   ctx.Emit(
       {
           {"field", RsSafeName(field.name())},
+          {"raw_field_name", field.name()},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
@@ -55,12 +56,19 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            }},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"view_self", ViewReceiver(accessor_case)},
-          {"field_optional_getter",
+          {"getter",
            [&] {
-             if (!field.is_optional()) return;
+             ctx.Emit(R"rs(
+                pub fn $field$($view_self$) -> &$view_lifetime$ $proxied_type$ {
+                  let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
+                  $transform_view$
+                })rs");
+           }},
+          {"getter_opt",
+           [&] {
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
-            pub fn $field$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
+            pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
                 let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
                   $transform_view$,
@@ -68,6 +76,26 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 )
               }
           )rs");
+           }},
+          {"setter",
+           [&] {
+             if (accessor_case == AccessorCase::VIEW) return;
+             ctx.Emit(R"rs(
+                pub fn set_$raw_field_name$(&mut self, val: impl $pb$::SettableValue<$proxied_type$>) {
+                  //~ TODO: Optimize this to not go through the
+                  //~ FieldEntry.
+                  self.$raw_field_name$_mut().set(val);
+                }
+              )rs");
+           }},
+          {"clearer",
+           [&] {
+             if (accessor_case == AccessorCase::VIEW) return;
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                pub fn clear_$raw_field_name$(&mut self) {
+                  unsafe { $clearer_thunk$(self.raw_msg()) }
+                })rs");
            }},
           {"vtable_name", VTableName(field)},
           {"vtable",
@@ -107,7 +135,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              }
              if (field.has_presence()) {
                ctx.Emit(R"rs(
-            pub fn $field$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
+            pub fn $raw_field_name$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
               let out = unsafe {
                 let has = $hazzer_thunk$(self.raw_msg());
                 $pbi$::new_vtable_field_entry(
@@ -122,7 +150,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           )rs");
              } else {
                ctx.Emit(R"rs(
-              pub fn $field$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
+              pub fn $raw_field_name$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
                 unsafe {
                   <$pb$::Mut<$proxied_type$>>::from_inner(
                     $pbi$::Private,
@@ -139,12 +167,10 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            }},
       },
       R"rs(
-        pub fn $field$($view_self$) -> &$view_lifetime$ $proxied_type$ {
-          let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
-          $transform_view$
-        }
-
-        $field_optional_getter$
+        $getter$
+        $getter_opt$
+        $setter$
+        $clearer$
         $vtable$
         $field_mutator_getter$
       )rs");

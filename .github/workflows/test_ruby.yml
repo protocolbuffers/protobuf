@@ -19,10 +19,9 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
-          - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: NATIVE }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
           # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2 }
+          #- { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
           - { name: Ruby 3.2, ruby: ruby-3.2.0 }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
@@ -66,12 +65,11 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: i386/ruby:2.7.3-buster
+          image: i386/ruby:3.0.2-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          # Pin to Ruby 2.7 compatible bundler version.
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.4.22;
+            gem install bundler -v 2.5.6;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -98,12 +96,11 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
-          image: arm64v8/ruby:2.7.3-buster
+          image: arm64v8/ruby:3.0.2-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          # Pin to Ruby 2.7 compatible bundler version.
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.4.22;
+            gem install bundler -v 2.5.6;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -118,10 +115,9 @@ jobs:
         # Test both FFI and Native implementations on the highest and lowest
         # Ruby versions for CRuby, but only on Bazel 5.x.
         # Quote versions numbers otherwise 3.0 will render as 3
-        - { version: "2.7", ffi: NATIVE }
+        - { version: "3.0", ffi: NATIVE }
         # TODO Re-enable these once flakes are fixed
-        #- { version: "2.7", ffi: FFI }
-        - { version: "3.0" }
+        #- { version: "3.0", ffi: FFI }
         - { version: "3.1" }
         - { version: "3.2" }
         - { version: "3.3", ffi: NATIVE }
@@ -158,9 +154,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
-          - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: NATIVE }
-          - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI}
           - { name: Ruby 3.1, ruby: ruby-3.1.0}
           - { name: Ruby 3.2, ruby: ruby-3.2.0}
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }

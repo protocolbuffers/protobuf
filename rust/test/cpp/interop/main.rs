@@ -40,9 +40,9 @@ fn mutate_message_in_cpp() {
     }
 
     let mut msg2 = TestAllTypes::new();
-    msg2.optional_int64_mut().set(42);
-    msg2.optional_bytes_mut().set(b"something mysterious");
-    msg2.optional_bool_mut().set(false);
+    msg2.set_optional_int64(42);
+    msg2.set_optional_bytes(b"something mysterious");
+    msg2.set_optional_bool(false);
 
     proto_assert_eq!(msg1, msg2);
 }
@@ -56,9 +56,9 @@ fn mutate_message_mut_in_cpp() {
     }
 
     let mut msg2 = TestAllTypes::new();
-    msg2.optional_int64_mut().set(42);
-    msg2.optional_bytes_mut().set(b"something mysterious");
-    msg2.optional_bool_mut().set(false);
+    msg2.set_optional_int64(42);
+    msg2.set_optional_bytes(b"something mysterious");
+    msg2.set_optional_bool(false);
 
     proto_assert_eq!(msg1, msg2);
 }
@@ -66,8 +66,8 @@ fn mutate_message_mut_in_cpp() {
 #[test]
 fn deserialize_in_rust() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_mut().set(-1);
-    msg1.optional_bytes_mut().set(b"some cool data I guess");
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
     let serialized = unsafe {
         SerializeTestAllTypes(msg1.as_view().__unstable_cpp_repr_grant_permission_to_break())
     };
@@ -80,8 +80,8 @@ fn deserialize_in_rust() {
 #[test]
 fn deserialize_in_cpp() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_mut().set(-1);
-    msg1.optional_bytes_mut().set(b"some cool data I guess");
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
     let data = msg1.serialize();
 
     let msg2 = unsafe {
@@ -97,8 +97,8 @@ fn deserialize_in_cpp() {
 #[test]
 fn deserialize_in_cpp_into_mut() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_mut().set(-1);
-    msg1.optional_bytes_mut().set(b"some cool data I guess");
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
     let data = msg1.serialize();
 
     let mut raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
@@ -115,8 +115,8 @@ fn deserialize_in_cpp_into_mut() {
 #[test]
 fn deserialize_in_cpp_into_view() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_mut().set(-1);
-    msg1.optional_bytes_mut().set(b"some cool data I guess");
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
     let data = msg1.serialize();
 
     let raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };

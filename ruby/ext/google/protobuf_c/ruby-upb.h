@@ -342,6 +342,12 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
+#ifdef UPB_TRACING_ENABLED
+#ifdef NDEBUG
+error UPB_TRACING_ENABLED Tracing should be disabled in production builds
+#endif
+#endif
+
 #ifndef UPB_BASE_STATUS_H_
 #define UPB_BASE_STATUS_H_
 
@@ -1207,7 +1213,7 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
   return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Enum;
 }
 
-UPB_INLINE bool upb_MiniTableField_IsInOneof(
+UPB_API_INLINE bool upb_MiniTableField_IsInOneof(
     const struct upb_MiniTableField* f) {
   return f->presence < 0;
 }
@@ -1489,10 +1495,16 @@ struct upb_MiniTable {
   uint8_t UPB_PRIVATE(table_mask);
   uint8_t UPB_PRIVATE(required_count);  // Required fields have the low hasbits.
 
+#ifdef UPB_TRACING_ENABLED
+  const char* UPB_PRIVATE(full_name);
+#endif
+
+#ifdef UPB_FASTTABLE_ENABLED
   // To statically initialize the tables of variable length, we need a flexible
   // array member, and we need to compile in gnu99 mode (constant initialization
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
+#endif
 };
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table.ts)
 
@@ -1584,6 +1596,20 @@ UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const struct upb_MiniTable* m) {
   UPB_ASSERT(0 < n && n <= 64);
   return (1ULL << n) - 1;
 }
+
+#ifdef UPB_TRACING_ENABLED
+UPB_INLINE const char* upb_MiniTable_FullName(
+    const struct upb_MiniTable* mini_table) {
+  return mini_table->UPB_PRIVATE(full_name);
+}
+// Initializes tracing proto name from language runtimes that construct
+// mini tables dynamically at runtime. The runtime is responsible for passing
+// controlling lifetime of name such as storing in same arena as mini_table.
+UPB_INLINE void upb_MiniTable_SetFullName(struct upb_MiniTable* mini_table,
+                                          const char* full_name) {
+  mini_table->UPB_PRIVATE(full_name) = full_name;
+}
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -2417,9 +2443,19 @@ typedef struct upb_Message_Internal {
   //   char data[size - sizeof(upb_Message_Internal)];
 } upb_Message_Internal;
 
+#ifdef UPB_TRACING_ENABLED
+void upb_Message_SetNewMessageTraceHandler(
+    void (*newMessageTraceHandler)(const upb_MiniTable*, const upb_Arena*));
+void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
+                               const upb_Arena* arena);
+#endif
+
 // Inline version upb_Message_New(), for internal use.
 UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
                                                 upb_Arena* a) {
+#ifdef UPB_TRACING_ENABLED
+  upb_Message_LogNewMessage(m, a);
+#endif
   const int size = m->UPB_PRIVATE(size);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!msg)) return NULL;
@@ -3165,6 +3201,9 @@ upb_Message_GetField(const upb_Message* msg, const upb_MiniTableField* field,
   return ret;
 }
 
+// Sets the value of the given field in the given msg. The return value is true
+// if the operation completed successfully, or false if memory allocation
+// failed.
 UPB_INLINE bool upb_Message_SetField(upb_Message* msg,
                                      const upb_MiniTableField* field,
                                      upb_MessageValue val, upb_Arena* a) {
@@ -3379,6 +3418,10 @@ upb_Message_GetString(const upb_Message* msg, const upb_MiniTableField* field,
   return upb_Message_GetField(msg, field, def).str_val;
 }
 
+// Sets the value of a `string` or `bytes` field. The bytes of the value are not
+// copied, so it is the caller's responsibility to ensure that they remain valid
+// for the lifetime of `msg`. That might be done by copying them into the given
+// arena, or by fusing that arena with the arena the bytes live in, for example.
 UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           upb_StringView value, upb_Arena* a) {
@@ -3431,6 +3474,9 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
+// Sets the value of a message-typed field. The `mini_table` and `field`
+// parameters belong to `msg`, not `sub_message`. The mini_tables of `msg` and
+// `sub_message` must have been linked for this to work correctly.
 UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTable* mini_table,
                                            const upb_MiniTableField* field,

@@ -1868,6 +1868,9 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(TypeError):
       123 in msg.map_string_string
 
+    with self.assertRaises(TypeError):
+      msg.map_string_string.__contains__(123)
+
   def testScalarMapComparison(self):
     msg1 = map_unittest_pb2.TestMap()
     msg2 = map_unittest_pb2.TestMap()
@@ -2006,6 +2009,12 @@ class Proto3Test(unittest.TestCase):
     # Bad key.
     with self.assertRaises(TypeError):
       msg.map_int32_foreign_message['123']
+
+    with self.assertRaises(TypeError):
+      '123' in msg.map_int32_foreign_message
+
+    with self.assertRaises(TypeError):
+      msg.map_int32_foreign_message.__contains__('123')
 
     # Can't assign directly to submessage.
     with self.assertRaises(ValueError):

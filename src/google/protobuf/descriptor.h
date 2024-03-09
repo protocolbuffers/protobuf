@@ -494,11 +494,11 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
       return containing_type_->full_name();
     }
 
-    // Returns the .proto file in which this oneof was defined.
+    // Returns the .proto file in which this range was defined.
     // Never nullptr.
     const FileDescriptor* file() const { return containing_type_->file(); }
 
-    // Returns the Descriptor for the message containing this oneof.
+    // Returns the Descriptor for the message containing this range.
     // Never nullptr.
     const Descriptor* containing_type() const { return containing_type_; }
 
@@ -2845,6 +2845,11 @@ bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to
 // In particular, questions like "does this field have a has bit?" have a
 // different answer depending on the language.
 namespace cpp {
+
+// The maximum allowed nesting for message declarations.
+// Going over this limit will make the proto definition invalid.
+constexpr int MaxMessageDeclarationNestingDepth() { return 32; }
+
 // Returns true if 'enum' semantics are such that unknown values are preserved
 // in the enum field itself, rather than going to the UnknownFieldSet.
 PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
