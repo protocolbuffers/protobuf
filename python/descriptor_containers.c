@@ -29,8 +29,7 @@ err:
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
-  const PyUpb_ByNameMap_Funcs* funcs;
+  PyObject_HEAD const PyUpb_ByNameMap_Funcs* funcs;
   const void* parent;    // upb_MessageDef*, upb_DefPool*, etc.
   PyObject* parent_obj;  // Python object that keeps parent alive, we own a ref.
   int index;             // Current iterator index.

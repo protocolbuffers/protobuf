@@ -1,0 +1,128 @@
+cc_library(
+    name = "field_generator",
+    hdrs = ["field_generator.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/io:printer",
+    ],
+)
+
+# We have to expose the field generators individually (instead of just through the factory) because
+# the mutable generators delegate to them directly.
+cc_library(
+    name = "field_generators",
+    srcs = [
+        "enum_field.cc",
+        "map_field.cc",
+        "message_field.cc",
+        "primitive_field.cc",
+        "string_field.cc",
+    ],
+    hdrs = [
+        "enum_field.h",
+        "map_field.h",
+        "message_field.h",
+        "primitive_field.h",
+        "string_field.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/java/mutable:__pkg__"],
+    deps = [
+        ":field_generator",
+        "//:protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "make_field_generators",
+    srcs = ["make_field_generators.cc"],
+    hdrs = ["make_field_generators.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":field_generator",
+        ":field_generators",
+        "//:protobuf",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+    ],
+)
+
+cc_library(
+    name = "service_generator",
+    srcs = ["service.cc"],
+    hdrs = ["service.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/java/lite:__pkg__"],
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "enum_generator",
+    srcs = ["enum.cc"],
+    hdrs = ["enum.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/java/mutable:__pkg__"],
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf:descriptor_bootstrap",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "immutable",
+    srcs = [
+        "extension.cc",
+        "extension.h",
+        "generator_factory.cc",
+        "message.cc",
+        "message.h",
+        "message_builder.cc",
+        "message_builder.h",
+    ],
+    hdrs = ["generator_factory.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/java:__pkg__"],
+    deps = [
+        ":enum_generator",
+        ":field_generator",
+        ":make_field_generators",
+        ":service_generator",
+        "//:protobuf",
+        "//src/google/protobuf:descriptor_bootstrap",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:message_serialization",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+    ],
+)

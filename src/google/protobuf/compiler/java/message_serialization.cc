@@ -7,7 +7,14 @@
 
 #include "google/protobuf/compiler/java/message_serialization.h"
 
+#include <algorithm>
+#include <cstddef>
+#include <vector>
+
 #include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
+#include "google/protobuf/compiler/java/generator_common.h"
+#include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
