@@ -1808,7 +1808,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
       "google/protobuf/descriptor.proto");
   ExpectNoErrors();
 
@@ -1856,8 +1856,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
-      "--experimental_edition_defaults_maximum=99997_TEST_ONLY "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_maximum=99997_TEST_ONLY "
       "google/protobuf/descriptor.proto");
   ExpectNoErrors();
 
@@ -1905,9 +1905,9 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
-      "--experimental_edition_defaults_minimum=99997_TEST_ONLY "
-      "--experimental_edition_defaults_maximum=99999_TEST_ONLY "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_minimum=99997_TEST_ONLY "
+      "--edition_defaults_maximum=99999_TEST_ONLY "
       "google/protobuf/descriptor.proto");
   ExpectNoErrors();
 
@@ -1957,8 +1957,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   CreateTempFile("features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
-      "--experimental_edition_defaults_maximum=99999_TEST_ONLY "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_maximum=99999_TEST_ONLY "
       "features.proto google/protobuf/descriptor.proto");
   ExpectNoErrors();
 
@@ -1996,7 +1996,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsDependencyManifest) {
                  pb::TestFeatures::descriptor()->file()->DebugString());
 
   Run("protocol_compiler --dependency_out=$tmpdir/manifest "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
       "--proto_path=$tmpdir features.proto");
 
   ExpectNoErrors();
@@ -2014,7 +2014,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMissingDescriptor) {
     message Foo {}
   )schema");
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
       "features.proto");
   ExpectErrorSubstring("Could not find FeatureSet in descriptor pool");
 }
@@ -2023,21 +2023,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidTwice) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
       "google/protobuf/descriptor.proto");
-  ExpectErrorSubstring(
-      "experimental_edition_defaults_out may only be passed once");
+  ExpectErrorSubstring("edition_defaults_out may only be passed once");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidEmpty) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_out= "
+      "--edition_defaults_out= "
       "google/protobuf/descriptor.proto");
-  ExpectErrorSubstring(
-      "experimental_edition_defaults_out requires a non-empty value");
+  ExpectErrorSubstring("edition_defaults_out requires a non-empty value");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidCompile) {
@@ -2045,7 +2043,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidCompile) {
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
       "--encode=pb.CppFeatures "
-      "--experimental_edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
       "google/protobuf/descriptor.proto");
   ExpectErrorSubstring("Cannot use --encode or --decode and generate defaults");
 }
@@ -2054,18 +2052,17 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMinimumTwice) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_minimum=2023 "
-      "--experimental_edition_defaults_minimum=2023 "
+      "--edition_defaults_minimum=2023 "
+      "--edition_defaults_minimum=2023 "
       "google/protobuf/descriptor.proto");
-  ExpectErrorSubstring(
-      "experimental_edition_defaults_minimum may only be passed once");
+  ExpectErrorSubstring("edition_defaults_minimum may only be passed once");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMinimumEmpty) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_minimum= "
+      "--edition_defaults_minimum= "
       "google/protobuf/descriptor.proto");
   ExpectErrorSubstring("unknown edition \"\"");
 }
@@ -2074,7 +2071,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMinimumUnknown) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_minimum=2022 "
+      "--edition_defaults_minimum=2022 "
       "google/protobuf/descriptor.proto");
   ExpectErrorSubstring("unknown edition \"2022\"");
 }
@@ -2083,18 +2080,17 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumTwice) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_maximum=2023 "
-      "--experimental_edition_defaults_maximum=2023 "
+      "--edition_defaults_maximum=2023 "
+      "--edition_defaults_maximum=2023 "
       "google/protobuf/descriptor.proto");
-  ExpectErrorSubstring(
-      "experimental_edition_defaults_maximum may only be passed once");
+  ExpectErrorSubstring("edition_defaults_maximum may only be passed once");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumEmpty) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_maximum= "
+      "--edition_defaults_maximum= "
       "google/protobuf/descriptor.proto");
   ExpectErrorSubstring("unknown edition \"\"");
 }
@@ -2103,7 +2099,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumUnknown) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
-      "--experimental_edition_defaults_maximum=2022 "
+      "--edition_defaults_maximum=2022 "
       "google/protobuf/descriptor.proto");
   ExpectErrorSubstring("unknown edition \"2022\"");
 }
