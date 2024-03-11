@@ -272,7 +272,7 @@ extend TestAllExtensionsLite {
   repeated string repeated_cord_extension_lite = 55;
 
   repeated TestAllTypesLite.NestedMessage repeated_lazy_message_extension_lite =
-      57 [lazy = true];
+      57;
 
   // Singular with defaults
   optional int32 default_int32_extension_lite = 61 [default = 41];

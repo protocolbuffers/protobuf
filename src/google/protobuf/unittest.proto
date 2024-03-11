@@ -297,7 +297,7 @@ extend TestAllExtensions {
   repeated string repeated_cord_extension = 55;
 
   repeated TestAllTypes.NestedMessage
-    repeated_lazy_message_extension = 57 [lazy=true];
+    repeated_lazy_message_extension = 57;
 
   // Singular with defaults
   optional    int32 default_int32_extension    = 61 [default =  41    ];
