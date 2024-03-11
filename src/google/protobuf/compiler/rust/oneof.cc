@@ -235,6 +235,8 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
                             AccessorCase accessor_case) {
   ctx.Emit(
       {{"oneof_name", RsSafeName(oneof.name())},
+       {"view_lifetime", ViewLifetime(accessor_case)},
+       {"view_self", ViewReceiver(accessor_case)},
        {"view_enum_name", OneofViewEnumRsName(oneof)},
        {"mut_enum_name", OneofMutEnumRsName(oneof)},
        {"case_enum_name", OneofCaseEnumRsName(oneof)},
@@ -293,7 +295,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
        {"getter",
         [&] {
           ctx.Emit({}, R"rs(
-          pub fn $oneof_name$(&self) -> $Msg$_::$view_enum_name$ {
+          pub fn $oneof_name$($view_self$) -> $Msg$_::$view_enum_name$<$view_lifetime$> {
             match unsafe { $case_thunk$(self.raw_msg()) } {
               $view_cases$
               _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
