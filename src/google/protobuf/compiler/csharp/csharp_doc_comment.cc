@@ -12,6 +12,7 @@
 
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -79,26 +80,32 @@ static void WriteDocCommentBody(io::Printer* printer,
   }
 }
 
-void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
+void WriteMessageDocComment(io::Printer* printer, const Options* options,
+                            const Descriptor* message) {
+  if (options->strip_nonfunctional_codegen) return;
   WriteDocCommentBody(printer, message);
 }
 
-void WritePropertyDocComment(io::Printer* printer,
+void WritePropertyDocComment(io::Printer* printer, const Options* options,
                              const FieldDescriptor* field) {
+  if (options->strip_nonfunctional_codegen) return;
   WriteDocCommentBody(printer, field);
 }
 
-void WriteEnumDocComment(io::Printer* printer,
+void WriteEnumDocComment(io::Printer* printer, const Options* options,
                          const EnumDescriptor* enumDescriptor) {
+  if (options->strip_nonfunctional_codegen) return;
   WriteDocCommentBody(printer, enumDescriptor);
 }
-void WriteEnumValueDocComment(io::Printer* printer,
+void WriteEnumValueDocComment(io::Printer* printer, const Options* options,
                               const EnumValueDescriptor* value) {
+  if (options->strip_nonfunctional_codegen) return;
   WriteDocCommentBody(printer, value);
 }
 
-void WriteMethodDocComment(io::Printer* printer,
+void WriteMethodDocComment(io::Printer* printer, const Options* options,
                            const MethodDescriptor* method) {
+  if (options->strip_nonfunctional_codegen) return;
   WriteDocCommentBody(printer, method);
 }
 
