@@ -1,3 +1,4 @@
 BasedOnStyle: Google
 DerivePointerAlignment: false
 PointerAlignment: Left
+StatementMacros: [PyObject_HEAD]
