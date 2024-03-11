@@ -46,7 +46,7 @@ struct CMessageClass;
 // don't store any data, and always refer to their parent message.
 
 struct ContainerBase {
-  PyObject_HEAD;
+  PyObject_HEAD
 
   // Strong reference to a parent message object. For a CMessage there are three
   // cases:

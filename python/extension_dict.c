@@ -16,7 +16,7 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   PyObject* msg;  // Owning ref to our parent pessage.
 } PyUpb_ExtensionDict;
 
@@ -168,7 +168,7 @@ static PyType_Spec PyUpb_ExtensionDict_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   PyObject* msg;
   size_t iter;
 } PyUpb_ExtensionIterator;

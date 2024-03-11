@@ -23,7 +23,7 @@
 // This representation is used by all concrete descriptors.
 
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   PyObject* pool;          // We own a ref.
   const void* def;         // Type depends on the class. Kept alive by "pool".
   PyObject* options;       // NULL if not present or not cached.
