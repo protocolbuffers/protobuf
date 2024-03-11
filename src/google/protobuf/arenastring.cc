@@ -214,6 +214,23 @@ std::string* ArenaStringPtr::Release() {
   return released;
 }
 
+std::string* ArenaStringPtr::ReleaseProto3() {
+  ScopedCheckPtrInvariants check(&tagged_ptr_);
+  if (IsDefault()) return nullptr;
+  std::string* released = tagged_ptr_.Get();
+  if (released->empty()) {
+    Destroy();
+    InitDefault();
+    return nullptr;
+  }
+  if (tagged_ptr_.IsArena()) {
+    released = tagged_ptr_.IsMutable() ? new std::string(std::move(*released))
+                                       : new std::string(*released);
+  }
+  InitDefault();
+  return released;
+}
+
 void ArenaStringPtr::SetAllocated(std::string* value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   // Release what we have first.

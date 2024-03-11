@@ -346,6 +346,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // caller retains ownership. Clears this field back to the default state.
   // Used to implement release_<field>() methods on generated classes.
   PROTOBUF_NODISCARD std::string* Release();
+  PROTOBUF_NODISCARD std::string* ReleaseProto3();
 
   // Takes a std::string that is heap-allocated, and takes ownership. The
   // std::string's destructor is registered with the arena. Used to implement

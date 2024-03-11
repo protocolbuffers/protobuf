@@ -327,13 +327,15 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
     return;
   }
 
+  // Proto3
   if (!HasHasbit(field_)) {
     p->Emit(R"cc(
-      return $field_$.Release();
+      return $field_$.ReleaseProto3();
     )cc");
     return;
   }
 
+  // Proto2
   if (is_inlined()) {
     p->Emit(R"cc(
       if (($has_hasbit$) == 0) {

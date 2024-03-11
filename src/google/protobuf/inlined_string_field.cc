@@ -91,7 +91,10 @@ void InlinedStringField::Set(std::string&& value, Arena* arena, bool donated,
   SetNoArena(std::move(value));
 }
 
-std::string* InlinedStringField::Release() {
+std::string* InlinedStringField::ReleaseProto3() {
+  if (get_const()->empty()) {
+    return nullptr;
+  }
   auto* released = new std::string(std::move(*get_mutable()));
   get_mutable()->clear();
   return released;

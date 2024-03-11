@@ -188,7 +188,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   // caller retains ownership. Clears this field back to nullptr state. Used to
   // implement release_<field>() methods on generated classes.
   PROTOBUF_NODISCARD std::string* Release(Arena* arena, bool donated);
-  PROTOBUF_NODISCARD std::string* Release();
+  PROTOBUF_NODISCARD std::string* ReleaseProto3();
 
   // --------------------------------------------------------
   // Below functions will be removed in subsequent code change
