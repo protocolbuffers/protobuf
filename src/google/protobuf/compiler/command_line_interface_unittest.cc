@@ -1367,7 +1367,7 @@ TEST_F(CommandLineInterfaceTest, NonExperimentalEditions) {
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
 
-  ExpectErrorSubstring("--experimental_editions has not been enabled");
+  ExpectNoErrors();
 }
 
 TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
@@ -1375,8 +1375,7 @@ TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
                  "edition = \"2023\";\n"
                  "message FooRequest {}\n");
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectNoErrors();
 }
 
@@ -1390,8 +1389,7 @@ TEST_F(CommandLineInterfaceTest, FeaturesEditionZero) {
       int32 baz = 2;
     })schema");
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectNoErrors();
 }
 
@@ -1422,8 +1420,7 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
       int32 baz = 2 [features.(pb.test).int_feature = 5];
     })schema");
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectNoErrors();
 }
 
@@ -1437,8 +1434,7 @@ TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
       int32 baz = 2;
     })schema");
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "`field_presence` must resolve to a known value, found "
       "FIELD_PRESENCE_UNKNOWN");
@@ -1454,8 +1450,7 @@ TEST_F(CommandLineInterfaceTest, FeatureTargetError) {
       int32 baz = 2;
     })schema");
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "FeatureSet.field_presence cannot be set on an entity of type `message`");
 }
@@ -1477,8 +1472,7 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
   mock_generator_->set_feature_extensions(
       {GetExtensionReflection(pb::test_invalid)});
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "Feature field pb.TestInvalidFeatures.repeated_feature is an unsupported "
       "repeated field");
@@ -1511,8 +1505,7 @@ TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
 
   mock_generator_->set_feature_extensions({nullptr});
 
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir "
-      "--experimental_editions foo.proto");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies an unknown feature extension");
 }
@@ -1526,8 +1519,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
   )schema");
 
   SetMockGeneratorTestCase("invalid_features");
-  Run("protocol_compiler --experimental_editions "
-      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectErrorSubstring(
       "error generating feature defaults: Unknown extension of "
@@ -1547,8 +1539,9 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedEdition) {
       "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectErrorSubstring(
-      "foo.proto: This file uses editions, but --experimental_editions has not "
-      "been enabled. This syntax is experimental and should be avoided.");
+      "foo.proto: is a file using edition 2023, which isn't supported by code "
+      "generator prefix-gen-plug.  Please upgrade your file to at least "
+      "edition 99997_TEST_ONLY.");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_FutureEdition) {
@@ -1564,8 +1557,9 @@ TEST_F(CommandLineInterfaceTest, Plugin_FutureEdition) {
       "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectErrorSubstring(
-      "foo.proto: This file uses editions, but --experimental_editions has not "
-      "been enabled. This syntax is experimental and should be avoided.");
+      "foo.proto: is a file using edition 2023, which isn't supported by code "
+      "generator prefix-gen-plug.  Please ask the owner of this code generator "
+      "to add support or switch back to a maximum of edition PROTO2.");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
@@ -1611,8 +1605,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_MissingFeatureExtensionError) {
   )schema");
 
   SetMockGeneratorTestCase("no_feature_defaults");
-  Run("protocol_compiler --experimental_editions "
-      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectErrorSubstring("Test features were not resolved properly");
 }
@@ -1625,8 +1618,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_TestFeatures) {
     }
   )schema");
 
-  Run("protocol_compiler --experimental_editions "
-      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
   ExpectNoErrors();
 }
@@ -1687,11 +1679,10 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
 
   // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
   // sent by protoc.
-  Run(
-      absl::StrCat("protocol_compiler --experimental_editions "
-                   "--fake_plugin_out=$tmpdir --proto_path=$tmpdir "
-                   "foo.proto --plugin=prefix-gen-fake_plugin=",
-                   plugin_path));
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
   ExpectNoErrors();
   std::string base64_output = ReadFile("foo.proto.request");
   std::string binary_request;
@@ -1737,11 +1728,10 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
 
   // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
   // sent by protoc.
-  Run(
-      absl::StrCat("protocol_compiler --experimental_editions "
-                   "--fake_plugin_out=$tmpdir --proto_path=$tmpdir "
-                   "foo.proto --plugin=prefix-gen-fake_plugin=",
-                   plugin_path));
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
   ExpectNoErrors();
   std::string base64_output = ReadFile("foo.proto.request");
   std::string binary_request;
@@ -1786,7 +1776,9 @@ TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {
   Run("protocol_compiler "
       "--proto_path=$tmpdir foo.proto --no_editions_out=$tmpdir");
 
-  ExpectErrorSubstring("--experimental_editions has not been enabled");
+  ExpectErrorSubstring(
+      "code generator --no_editions_out hasn't been updated to support "
+      "editions");
 }
 
 TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
@@ -1801,7 +1793,8 @@ TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
   Run("protocol_compiler "
       "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
 
-  ExpectErrorSubstring("--experimental_editions has not been enabled");
+  ExpectErrorSubstring(
+      "code generator prefix-gen-plug hasn't been updated to support editions");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {

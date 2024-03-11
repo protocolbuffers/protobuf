@@ -1615,22 +1615,6 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
-    if (!experimental_editions_ &&
-        !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
-        !absl::StartsWith(parsed_file->name(), "upb/")) {
-      if (::google::protobuf::internal::InternalFeatureHelper::GetEdition(*parsed_file) >=
-          Edition::EDITION_2023) {
-        std::cerr
-            << parsed_file->name()
-            << ": This file uses editions, but --experimental_editions has not "
-               "been enabled. This syntax is experimental and should be "
-               "avoided."
-            << std::endl;
-        result = false;
-        break;
-      }
-    }
-
     // Enforce --disallow_services.
     if (disallow_services_ && parsed_file->service_count() > 0) {
       std::cerr << parsed_file->name()
