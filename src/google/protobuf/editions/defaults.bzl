@@ -20,10 +20,10 @@ def _compile_edition_defaults_impl(ctx):
         paths.extend(src[ProtoInfo].transitive_proto_path.to_list())
 
     args = ctx.actions.args()
-    args.add("--experimental_edition_defaults_out", out_file)
+    args.add("--edition_defaults_out", out_file)
 
-    args.add("--experimental_edition_defaults_minimum", ctx.attr.minimum_edition)
-    args.add("--experimental_edition_defaults_maximum", ctx.attr.maximum_edition)
+    args.add("--edition_defaults_minimum", ctx.attr.minimum_edition)
+    args.add("--edition_defaults_maximum", ctx.attr.maximum_edition)
     for p in paths:
         args.add("--proto_path", p)
     for source in sources:
