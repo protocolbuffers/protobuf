@@ -108,6 +108,10 @@ gen_file_lists(
         ":protobuf": "libprotobuf",
         ":protobuf_lite": "libprotobuf_lite",
         ":protoc": "libprotoc",
+        ":upb": "libupb",
+        ":protoc-gen-upb": "protoc-gen-upb",
+        ":protoc-gen-upbdefs": "protoc-gen-upbdefs",
+        ":protoc-gen-upb_minitable": "protoc-gen-upb_minitable",
         # Protos:
         "//src/google/protobuf:well_known_type_protos": "wkt_protos",
         "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
@@ -119,7 +123,10 @@ gen_file_lists(
         ":common_test": "common_test",
         ":lite_test_util": "lite_test_util",
         ":test_util": "test_util",
+        "//upb:test_util": "upb_test_util",
         # Tests and test-only protos:
+        "//upb:test_protos": "upb_test_protos",
+        "//upb:test_srcs": "upb_test",
         "//src/google/protobuf:full_test_srcs": "protobuf_test",
         "//src/google/protobuf:test_proto_all_srcs": "protobuf_test_protos",
         "//src/google/protobuf:lite_test_srcs": "protobuf_lite_test",
@@ -194,6 +201,55 @@ cc_dist_library(
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "//src/google/protobuf/compiler/rust",
+    ],
+)
+
+cc_dist_library(
+    name = "upb",
+    tags = ["manual"],
+    deps = [
+        "//upb/json",
+        "//upb/message:compare",
+        "//upb/message:copy",
+        "//upb/text",
+        "//upb/util:def_to_proto",
+        "//upb/util:required_fields",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc-gen-upb",
+    dist_deps = [
+        ":protobuf",
+        ":upb",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//upb_generator:protoc-gen-upb_lib",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc-gen-upbdefs",
+    dist_deps = [
+        ":protobuf",
+        ":upb",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//upb_generator:protoc-gen-upbdefs_lib",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc-gen-upb_minitable",
+    dist_deps = [
+        ":protobuf",
+        ":upb",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//upb_generator:protoc-gen-upb_minitable_lib_lib",
     ],
 )
 
