@@ -54,6 +54,7 @@ using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestRepeatedString;
+using ::testing::ElementsAreArray;
 
 namespace google {
 namespace protobuf {
@@ -156,6 +157,89 @@ TEST(ArenaTest, DestructorSkippable) {
   EXPECT_TRUE(Arena::is_destructor_skippable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_destructor_skippable<const TestAllTypes>::type::value);
   EXPECT_FALSE(Arena::is_destructor_skippable<Arena>::type::value);
+}
+
+template <int>
+struct EmptyBase {};
+struct ArenaCtorBase {
+  using InternalArenaConstructable_ = void;
+};
+struct ArenaDtorBase {
+  using DestructorSkippable_ = void;
+};
+
+template <bool arena_ctor, bool arena_dtor>
+void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
+                           std::vector<absl::string_view> copy,
+                           std::vector<absl::string_view> with_int) {
+  static auto& actions = *new std::vector<absl::string_view>;
+  struct TraitsProber
+      : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
+        std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
+        Message {
+    TraitsProber() { actions.push_back("()"); }
+    TraitsProber(const TraitsProber&) { actions.push_back("(const T&)"); }
+    explicit TraitsProber(int) { actions.push_back("(int)"); }
+    explicit TraitsProber(Arena* arena) { actions.push_back("(Arena)"); }
+    TraitsProber(Arena* arena, const TraitsProber&) {
+      actions.push_back("(Arena, const T&)");
+    }
+    TraitsProber(Arena* arena, int) { actions.push_back("(Arena, int)"); }
+    ~TraitsProber() override { actions.push_back("~()"); }
+
+    TraitsProber* New(Arena*) const final {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+    const ClassData* GetClassData() const final {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+  };
+
+  static_assert(
+      !arena_ctor || Arena::is_arena_constructable<TraitsProber>::value, "");
+  static_assert(
+      !arena_dtor || Arena::is_destructor_skippable<TraitsProber>::value, "");
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(def));
+
+  const TraitsProber p;
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, p);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(copy));
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, 17);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(with_int));
+}
+
+TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
+  TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
+                                      {"(int)", "~()"});
+  // If the object is not arena constructible, then the destructor is always
+  // called even if marked as skippable.
+  TestCtorAndDtorTraits<false, true>({"()", "~()"}, {"(const T&)", "~()"},
+                                     {"(int)", "~()"});
+
+  // Some types are arena constructible but we can't skip the destructor. Those
+  // are constructed with an arena but still destroyed.
+  TestCtorAndDtorTraits<true, false>({"(Arena)", "~()"},
+                                     {"(Arena, const T&)", "~()"},
+                                     {"(Arena, int)", "~()"});
+  TestCtorAndDtorTraits<true, true>({"(Arena)"}, {"(Arena, const T&)"},
+                                    {"(Arena, int)"});
 }
 
 TEST(ArenaTest, BasicCreate) {
@@ -420,6 +504,7 @@ TEST(ArenaTest, GetConstructTypeWorks) {
 class DispatcherTestProto : public Message {
  public:
   using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   // For the test below to construct.
   explicit DispatcherTestProto(absl::in_place_t) {}
   explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }

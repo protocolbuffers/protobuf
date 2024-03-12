@@ -86,7 +86,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                            self.arena().raw())
                       };
                       let inner = $pbr$::InnerMapMut::new($pbi$::Private,
-                        raw, self.arena().raw());
+                        raw, self.arena());
                       unsafe { $pb$::MapMut::from_inner($pbi$::Private, inner) }
                     })rs");
                } else {

@@ -312,20 +312,30 @@ filegroup(
     name = "test_srcs",
     srcs = glob(
         [
-            "**/*.cc",
-            "**/*.h",
+            "**/*test.cc",
+            "**/test_*.cc",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_util",
+    srcs = [
+        "fuzz_util.cc",
+        "fuzz_util.h",
+        "parse_text_proto.h",
+    ],
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
     srcs = glob(
         [
             "**/*.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

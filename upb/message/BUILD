@@ -247,7 +247,7 @@ cc_test(
         "//upb:port",
         "//upb:wire_reader",
         "//upb/base:internal",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:variant",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -411,17 +411,18 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["promote_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_protos",
     srcs = glob(
         [
-            "**/*test.proto",
+            "**/*.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

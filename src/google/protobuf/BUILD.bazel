@@ -952,6 +952,7 @@ exports_files(
         "//:__pkg__",
         "//python:__pkg__",
         "//ruby:__pkg__",
+        "//upb:__pkg__",
     ],
 )
 

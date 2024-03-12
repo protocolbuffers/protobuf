@@ -528,6 +528,230 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
 )
 
+# @//pkg:upb
+set(libupb_srcs
+  ${protobuf_SOURCE_DIR}/upb/base/status.c
+  ${protobuf_SOURCE_DIR}/upb/hash/common.c
+  ${protobuf_SOURCE_DIR}/upb/json/decode.c
+  ${protobuf_SOURCE_DIR}/upb/json/encode.c
+  ${protobuf_SOURCE_DIR}/upb/lex/atoi.c
+  ${protobuf_SOURCE_DIR}/upb/lex/round_trip.c
+  ${protobuf_SOURCE_DIR}/upb/lex/strtod.c
+  ${protobuf_SOURCE_DIR}/upb/lex/unicode.c
+  ${protobuf_SOURCE_DIR}/upb/mem/alloc.c
+  ${protobuf_SOURCE_DIR}/upb/mem/arena.c
+  ${protobuf_SOURCE_DIR}/upb/message/accessors.c
+  ${protobuf_SOURCE_DIR}/upb/message/array.c
+  ${protobuf_SOURCE_DIR}/upb/message/compare.c
+  ${protobuf_SOURCE_DIR}/upb/message/compat.c
+  ${protobuf_SOURCE_DIR}/upb/message/copy.c
+  ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.c
+  ${protobuf_SOURCE_DIR}/upb/message/internal/extension.c
+  ${protobuf_SOURCE_DIR}/upb/message/internal/message.c
+  ${protobuf_SOURCE_DIR}/upb/message/map.c
+  ${protobuf_SOURCE_DIR}/upb/message/map_sorter.c
+  ${protobuf_SOURCE_DIR}/upb/message/message.c
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.c
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.c
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/base92.c
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode.c
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/message.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/def_type.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/desc_state.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/enum_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/enum_reserved_range.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/enum_value_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/extension_range.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/field_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/file_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/def_builder.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/strdup2.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/message_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/message_reserved_range.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/method_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.c
+  ${protobuf_SOURCE_DIR}/upb/reflection/service_def.c
+  ${protobuf_SOURCE_DIR}/upb/text/encode.c
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.c
+  ${protobuf_SOURCE_DIR}/upb/util/required_fields.c
+  ${protobuf_SOURCE_DIR}/upb/wire/decode.c
+  ${protobuf_SOURCE_DIR}/upb/wire/encode.c
+  ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/decode_fast.c
+  ${protobuf_SOURCE_DIR}/upb/wire/reader.c
+)
+
+# @//pkg:upb
+set(libupb_hdrs
+  ${protobuf_SOURCE_DIR}/upb/base/descriptor_constants.h
+  ${protobuf_SOURCE_DIR}/upb/base/internal/endian.h
+  ${protobuf_SOURCE_DIR}/upb/base/internal/log2.h
+  ${protobuf_SOURCE_DIR}/upb/base/status.h
+  ${protobuf_SOURCE_DIR}/upb/base/status.hpp
+  ${protobuf_SOURCE_DIR}/upb/base/string_view.h
+  ${protobuf_SOURCE_DIR}/upb/base/upcast.h
+  ${protobuf_SOURCE_DIR}/upb/hash/common.h
+  ${protobuf_SOURCE_DIR}/upb/hash/int_table.h
+  ${protobuf_SOURCE_DIR}/upb/hash/str_table.h
+  ${protobuf_SOURCE_DIR}/upb/json/decode.h
+  ${protobuf_SOURCE_DIR}/upb/json/encode.h
+  ${protobuf_SOURCE_DIR}/upb/lex/atoi.h
+  ${protobuf_SOURCE_DIR}/upb/lex/round_trip.h
+  ${protobuf_SOURCE_DIR}/upb/lex/strtod.h
+  ${protobuf_SOURCE_DIR}/upb/lex/unicode.h
+  ${protobuf_SOURCE_DIR}/upb/mem/alloc.h
+  ${protobuf_SOURCE_DIR}/upb/mem/arena.h
+  ${protobuf_SOURCE_DIR}/upb/mem/arena.hpp
+  ${protobuf_SOURCE_DIR}/upb/mem/internal/arena.h
+  ${protobuf_SOURCE_DIR}/upb/message/accessors.h
+  ${protobuf_SOURCE_DIR}/upb/message/array.h
+  ${protobuf_SOURCE_DIR}/upb/message/compare.h
+  ${protobuf_SOURCE_DIR}/upb/message/compat.h
+  ${protobuf_SOURCE_DIR}/upb/message/copy.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/accessors.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/array.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/extension.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/map.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/map_entry.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/map_sorter.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/message.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/tagged_ptr.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/types.h
+  ${protobuf_SOURCE_DIR}/upb/message/map.h
+  ${protobuf_SOURCE_DIR}/upb/message/map_gencode_util.h
+  ${protobuf_SOURCE_DIR}/upb/message/message.h
+  ${protobuf_SOURCE_DIR}/upb/message/tagged_ptr.h
+  ${protobuf_SOURCE_DIR}/upb/message/value.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/base92.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/decoder.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode.hpp
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/modifiers.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/wire_constants.h
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/enum.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/extension.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/field.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/file.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/enum.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/extension.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/field.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/file.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/size_log2.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/sub.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/message.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/sub.h
+  ${protobuf_SOURCE_DIR}/upb/port/atomic.h
+  ${protobuf_SOURCE_DIR}/upb/port/def.inc
+  ${protobuf_SOURCE_DIR}/upb/port/undef.inc
+  ${protobuf_SOURCE_DIR}/upb/port/vsnprintf_compat.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/common.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def_type.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/enum_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/enum_reserved_range.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/enum_value_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/extension_range.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/field_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/file_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/def_pool.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/desc_state.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/enum_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/enum_reserved_range.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/enum_value_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/extension_range.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/field_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/file_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/message_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/message_reserved_range.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/method_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/oneof_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/service_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/internal/upb_edition_defaults.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/message_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/message_reserved_range.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/method_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/service_def.h
+  ${protobuf_SOURCE_DIR}/upb/text/encode.h
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.h
+  ${protobuf_SOURCE_DIR}/upb/util/required_fields.h
+  ${protobuf_SOURCE_DIR}/upb/wire/decode.h
+  ${protobuf_SOURCE_DIR}/upb/wire/encode.h
+  ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/decode_fast.h
+  ${protobuf_SOURCE_DIR}/upb/wire/reader.h
+  ${protobuf_SOURCE_DIR}/upb/wire/types.h
+)
+
+# @//pkg:protoc-gen-upb
+set(protoc-gen-upb_srcs
+  ${protobuf_SOURCE_DIR}/upb_generator/common.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/names.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb.cc
+)
+
+# @//pkg:protoc-gen-upb
+set(protoc-gen-upb_hdrs
+  ${protobuf_SOURCE_DIR}/upb_generator/common.h
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
+  ${protobuf_SOURCE_DIR}/upb_generator/names.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+)
+
+# @//pkg:protoc-gen-upbdefs
+set(protoc-gen-upbdefs_srcs
+  ${protobuf_SOURCE_DIR}/upb_generator/common.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upbdefs.cc
+)
+
+# @//pkg:protoc-gen-upbdefs
+set(protoc-gen-upbdefs_hdrs
+  ${protobuf_SOURCE_DIR}/upb_generator/common.h
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+)
+
+# @//pkg:protoc-gen-upb_minitable
+set(protoc-gen-upb_minitable_srcs
+  ${protobuf_SOURCE_DIR}/upb_generator/common.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/names.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable-main.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable.cc
+)
+
+# @//pkg:protoc-gen-upb_minitable
+set(protoc-gen-upb_minitable_hdrs
+  ${protobuf_SOURCE_DIR}/upb_generator/common.h
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
+  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
+  ${protobuf_SOURCE_DIR}/upb_generator/names.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable.h
+)
+
 # @//src/google/protobuf:well_known_type_protos
 set(wkt_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.proto
@@ -683,6 +907,70 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.inc
+)
+
+# @//upb:test_util
+set(upb_test_util_files
+  ${protobuf_SOURCE_DIR}/upb/test/fuzz_util.cc
+  ${protobuf_SOURCE_DIR}/upb/test/fuzz_util.h
+  ${protobuf_SOURCE_DIR}/upb/test/parse_text_proto.h
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.h
+)
+
+# @//upb:test_protos
+set(upb_test_protos_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.proto
+  ${protobuf_SOURCE_DIR}/upb/json/test.proto
+  ${protobuf_SOURCE_DIR}/upb/message/test.proto
+  ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
+  ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
+  ${protobuf_SOURCE_DIR}/upb/test/editions_test.proto
+  ${protobuf_SOURCE_DIR}/upb/test/empty.proto
+  ${protobuf_SOURCE_DIR}/upb/test/proto3_test.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test_cpp.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test_import_empty_srcs.proto
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_public_import_test.proto
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_regular_import_test.proto
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.proto
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_weak_import_test.proto
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_wweak_import_test.proto
+  ${protobuf_SOURCE_DIR}/upb/util/required_fields_editions_test.proto
+  ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.proto
+)
+
+# @//upb:test_srcs
+set(upb_test_files
+  ${protobuf_SOURCE_DIR}/upb/json/decode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/json/encode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mem/arena_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/accessors_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/array_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/copy_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/map_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
+  ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
+  ${protobuf_SOURCE_DIR}/upb/test/proto3_test.cc
+  ${protobuf_SOURCE_DIR}/upb/test/test_cpp.cc
+  ${protobuf_SOURCE_DIR}/upb/test/test_generated_code.cc
+  ${protobuf_SOURCE_DIR}/upb/test/test_import_empty_srcs.cc
+  ${protobuf_SOURCE_DIR}/upb/test/test_mini_table_oneof.cc
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.cc
+  ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.cc
+  ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream_test.cc
 )
 
 # @//src/google/protobuf:full_test_srcs

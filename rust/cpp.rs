@@ -274,6 +274,18 @@ pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
     val
 }
 
+/// The raw type-erased version of an owned `Repeated`.
+#[derive(Debug)]
+pub struct InnerRepeated {
+    raw: RawRepeatedField,
+}
+
+impl InnerRepeated {
+    pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
+        InnerRepeatedMut::new(Private, self.raw)
+    }
+}
+
 /// The raw type-erased pointer version of `RepeatedMut`.
 ///
 /// Contains a `proto2::RepeatedField*` or `proto2::RepeatedPtrField*`.
@@ -363,9 +375,9 @@ macro_rules! impl_repeated_primitives {
             unsafe impl ProxiedInRepeated for $t {
                 #[allow(dead_code)]
                 fn repeated_new(_: Private) -> Repeated<$t> {
-                    unsafe {
-                        Repeated::from_inner(InnerRepeatedMut::new(Private, $new_thunk()))
-                    }
+                    Repeated::from_inner(InnerRepeated {
+                        raw: unsafe { $new_thunk() }
+                    })
                 }
                 #[allow(dead_code)]
                 unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
@@ -438,6 +450,21 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
             private,
             InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
         )
+    }
+}
+
+#[derive(Debug)]
+pub struct InnerMap {
+    pub(crate) raw: RawMap,
+}
+
+impl InnerMap {
+    pub fn new(_private: Private, raw: RawMap) -> Self {
+        Self { raw }
+    }
+
+    pub fn as_mut(&mut self) -> InnerMapMut<'_> {
+        InnerMapMut { raw: self.raw, _phantom: PhantomData }
     }
 }
 
@@ -564,9 +591,8 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     unsafe {
                         Map::from_inner(
                             Private,
-                            InnerMapMut {
+                            InnerMap {
                                 raw: [< __rust_proto_thunk__Map_ $key_t _ $t _new >](),
-                                _phantom: PhantomData
                             }
                         )
                     }

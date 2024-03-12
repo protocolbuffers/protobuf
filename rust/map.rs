@@ -8,7 +8,7 @@
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::{Private, RawMap},
-    __runtime::{InnerMapMut, RawMapIter},
+    __runtime::{InnerMap, InnerMapMut, RawMapIter},
 };
 use std::marker::PhantomData;
 
@@ -60,7 +60,7 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
 }
 
 pub struct Map<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> {
-    inner: InnerMapMut<'static>,
+    inner: InnerMap,
     _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
 }
 
@@ -163,34 +163,35 @@ where
     K: Proxied + ?Sized,
     V: ProxiedInMapValue<K> + ?Sized,
 {
-    #[allow(dead_code)]
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         V::map_new(Private)
     }
 
     pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
-        MapMut { inner: self.inner, _phantom: PhantomData }
+        MapMut { inner: self.inner.as_mut(), _phantom: PhantomData }
     }
 
     pub fn as_view(&self) -> MapView<'_, K, V> {
         MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
 
-    /// # Safety
-    /// - `inner` must be valid to read and write from for `'static`.
-    /// - There must be no aliasing references or mutations on the same
-    ///   underlying object.
     #[doc(hidden)]
-    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'static>) -> Self {
+    pub fn from_inner(_private: Private, inner: InnerMap) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
     pub fn as_raw(&self, _private: Private) -> RawMap {
-        self.inner.as_raw(Private)
+        self.inner.raw
     }
+}
 
-    pub fn inner(&self, _private: Private) -> InnerMapMut<'static> {
-        self.inner
+impl<K, V> Default for Map<K, V>
+where
+    K: Proxied + ?Sized,
+    V: ProxiedInMapValue<K> + ?Sized,
+{
+    fn default() -> Self {
+        Map::new()
     }
 }
 

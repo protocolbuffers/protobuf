@@ -30,13 +30,14 @@ UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
 
 UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
                                  const upb_Message* msg2,
-                                 const upb_MiniTable* m);
+                                 const upb_MiniTable* m, int options);
 
 // If |ctype| is a message then |m| must point to its minitable.
 UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
                                              upb_MessageValue val2,
                                              upb_CType ctype,
-                                             const upb_MiniTable* m) {
+                                             const upb_MiniTable* m,
+                                             int options) {
   switch (ctype) {
     case kUpb_CType_Bool:
       return val1.bool_val == val2.bool_val;
@@ -57,7 +58,7 @@ UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
       return upb_StringView_IsEqual(val1.str_val, val2.str_val);
 
     case kUpb_CType_Message:
-      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m);
+      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m, options);
 
     default:
       UPB_UNREACHABLE();

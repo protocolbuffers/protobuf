@@ -164,17 +164,28 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["def_to_proto_fuzz_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_util",
+    srcs = glob(
+        [
+            "**/*test.h",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
     srcs = glob(
         [
             "**/*test.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

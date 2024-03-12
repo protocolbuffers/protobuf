@@ -470,7 +470,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         $pb$::Map::from_inner(
                             $pbi$::Private,
-                            $pbr$::InnerMapMut::new($pbi$::Private, $map_new_thunk$())
+                            $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
                         )
                     }
                 }
@@ -585,29 +585,20 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
                     let arena = $pbr$::Arena::new();
-                    let raw_arena = arena.raw();
-                    std::mem::forget(arena);
+                    let raw = unsafe {
+                      $pbr$::upb_Map_New(
+                        arena.raw(),
+                        <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
+                        <Self as $pbr$::UpbTypeConversions>::upb_type())
+                    };
 
-                    unsafe {
-                        $pb$::Map::from_inner(
-                            $pbi$::Private,
-                            $pbr$::InnerMapMut::new(
-                                $pbi$::Private,
-                                $pbr$::upb_Map_New(
-                                    raw_arena,
-                                    <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                                    <Self as $pbr$::UpbTypeConversions>::upb_type()),
-                                raw_arena))
-                    }
+                    $pb$::Map::from_inner(
+                        $pbi$::Private,
+                        $pbr$::InnerMap::new($pbi$::Private, raw, arena))
                 }
 
                 unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    // SAFETY:
-                    // - `map.raw_arena($pbi$::Private)` is a live `upb_Arena*`
-                    // - This function is only called once for `map` in `Drop`.
-                    unsafe {
-                        $pbr$::upb_Arena_Free(map.inner($pbi$::Private).raw_arena($pbi$::Private));
-                    }
+                    // No-op: the memory will be dropped by the arena.
                 }
 
                 fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {

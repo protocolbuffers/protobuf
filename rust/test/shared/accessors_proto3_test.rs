@@ -273,15 +273,10 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    // TODO: the submessage api is still in progress so we can't yet
-    // cause a submsg to be set here.
+    msg.oneof_nested_message_mut().or_default(); // Cause the nested_message field to become set.
 
-    // msg.oneof_nested_message_mut().or_default(); // Cause the nested_message
-    // field to become set.
-
-    // assert_that!(msg.oneof_bytes_opt(),
-    // eq(Optional::Unset(_))); assert_that!(msg.oneof_field(),
-    // matches_pattern!(OneofNestedMessage(_)));
+    assert_that!(msg.oneof_bytes_opt(), matches_pattern!(Optional::Unset(_)));
+    assert_that!(msg.oneof_field(), matches_pattern!(OneofNestedMessage(_)));
 
     msg.set_oneof_uint32(7);
     msg.set_oneof_bytes(b"123");
@@ -290,6 +285,22 @@ fn test_oneof_accessors() {
 
     msg.oneof_bytes_mut().clear();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
+}
+
+#[test]
+fn test_oneof_accessors_view_long_lifetime() {
+    use TestAllTypes_::OneofField::*;
+
+    let mut msg = TestAllTypes::new();
+    msg.set_oneof_uint32(7);
+
+    // The oneof-view accessor on MsgViews should maintain the longest lifetime (can
+    // outlive the message view).
+    let oneof = {
+        let view = msg.as_view();
+        view.oneof_field()
+    };
+    assert_that!(oneof, matches_pattern!(OneofUint32(eq(7))));
 }
 
 #[test]

@@ -142,13 +142,13 @@ void WriteModelPublicDeclaration(
           $0& operator=(const CProxy& from);
 
           $0($0&& m)
-              : Access(absl::exchange(m.msg_, nullptr),
-                       absl::exchange(m.arena_, nullptr)),
+              : Access(std::exchange(m.msg_, nullptr),
+                       std::exchange(m.arena_, nullptr)),
                 owned_arena_(std::move(m.owned_arena_)) {}
 
           $0& operator=($0&& m) {
-            msg_ = absl::exchange(m.msg_, nullptr);
-            arena_ = absl::exchange(m.arena_, nullptr);
+            msg_ = std::exchange(m.msg_, nullptr);
+            arena_ = std::exchange(m.arena_, nullptr);
             owned_arena_ = std::move(m.owned_arena_);
             return *this;
           }

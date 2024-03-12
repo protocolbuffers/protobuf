@@ -294,8 +294,8 @@ class PROTOC_EXPORT CommandLineInterface {
   bool WriteDescriptorSet(
       const std::vector<const FileDescriptor*>& parsed_files);
 
-  // Implements the --experimental_edition_defaults_out option.
-  bool WriteExperimentalEditionDefaults(const DescriptorPool& pool);
+  // Implements the --edition_defaults_out option.
+  bool WriteEditionDefaults(const DescriptorPool& pool);
 
   // Implements the --dependency_out option
   bool GenerateDependencyManifestFile(
@@ -434,9 +434,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // FileDescriptorSet should be written.  Otherwise, empty.
   std::string descriptor_set_out_name_;
 
-  std::string experimental_edition_defaults_out_name_;
-  Edition experimental_edition_defaults_minimum_;
-  Edition experimental_edition_defaults_maximum_;
+  std::string edition_defaults_out_name_;
+  Edition edition_defaults_minimum_;
+  Edition edition_defaults_maximum_;
 
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.

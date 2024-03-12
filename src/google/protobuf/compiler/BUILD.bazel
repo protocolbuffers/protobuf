@@ -346,6 +346,7 @@ cc_binary(
     srcs = ["fake_plugin.cc"],
     deps = [
         ":plugin_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf/io:io_win32",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",

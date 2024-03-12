@@ -5218,7 +5218,8 @@ bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
 }
 
 static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
-                               upb_CType ctype, const upb_MiniTable* m) {
+                               upb_CType ctype, const upb_MiniTable* m,
+                               int options) {
   // Check for trivial equality.
   if (arr1 == arr2) return true;
 
@@ -5231,14 +5232,14 @@ static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
     const upb_MessageValue val1 = upb_Array_Get(arr1, i);
     const upb_MessageValue val2 = upb_Array_Get(arr2, i);
 
-    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m)) return false;
+    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m, options)) return false;
   }
 
   return true;
 }
 
 static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
-                             const upb_MiniTable* m) {
+                             const upb_MiniTable* m, int options) {
   // Check for trivial equality.
   if (map1 == map2) return true;
 
@@ -5255,7 +5256,8 @@ static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
   size_t iter = kUpb_Map_Begin;
   while (upb_Map_Next(map1, &key, &val1, &iter)) {
     if (!upb_Map_Get(map2, key, &val2)) return false;
-    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m2_value)) return false;
+    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m2_value, options))
+      return false;
   }
 
   return true;
@@ -5263,7 +5265,8 @@ static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
 
 static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
-                                            const upb_MiniTable* m) {
+                                            const upb_MiniTable* m,
+                                            int options) {
   // Iterate over all base fields for each message.
   // The order will always match if the messages are equal.
   size_t iter1 = kUpb_BaseField_Begin;
@@ -5286,13 +5289,14 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
     bool eq;
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f1)) {
       case kUpb_FieldMode_Array:
-        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm);
+        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
+                                options);
         break;
       case kUpb_FieldMode_Map:
-        eq = _upb_Map_IsEqual(val1.map_val, val2.map_val, subm);
+        eq = _upb_Map_IsEqual(val1.map_val, val2.map_val, subm, options);
         break;
       case kUpb_FieldMode_Scalar:
-        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm);
+        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
         break;
     }
     if (!eq) return false;
@@ -5301,7 +5305,8 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
 
 static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
-                                            const upb_MiniTable* m) {
+                                            const upb_MiniTable* m,
+                                            int options) {
   // Must have identical extension counts.
   if (upb_Message_ExtensionCount(msg1) != upb_Message_ExtensionCount(msg2)) {
     return false;
@@ -5326,13 +5331,14 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
     bool eq;
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array:
-        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm);
+        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
+                                options);
         break;
       case kUpb_FieldMode_Map:
         UPB_UNREACHABLE();  // Maps cannot be extensions.
         break;
       case kUpb_FieldMode_Scalar: {
-        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm);
+        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
         break;
       }
     }
@@ -5342,11 +5348,11 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 }
 
 bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
-                         const upb_MiniTable* m) {
+                         const upb_MiniTable* m, int options) {
   if (UPB_UNLIKELY(msg1 == msg2)) return true;
 
-  if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m)) return false;
-  if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m)) return false;
+  if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m, options)) return false;
+  if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m, options)) return false;
 
   // Check the unknown fields.
   size_t usize1, usize2;
