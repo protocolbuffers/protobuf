@@ -94,7 +94,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, options(), descriptor_);
   AddDeprecatedFlag(printer);
   AddSerializableAttribute(printer);
 
