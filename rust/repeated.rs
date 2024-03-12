@@ -280,8 +280,7 @@ pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
 }
 
 impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
-    #[allow(dead_code)]
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         T::repeated_new(Private)
     }
 
@@ -291,6 +290,12 @@ impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
 
     pub(crate) fn as_mut(&mut self) -> RepeatedMut<'_, T> {
         RepeatedMut { inner: self.inner.as_mut(), _phantom: PhantomData }
+    }
+}
+
+impl<T: ?Sized + ProxiedInRepeated> Default for Repeated<T> {
+    fn default() -> Self {
+        Repeated::new()
     }
 }
 

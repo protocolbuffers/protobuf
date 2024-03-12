@@ -163,8 +163,7 @@ where
     K: Proxied + ?Sized,
     V: ProxiedInMapValue<K> + ?Sized,
 {
-    #[allow(dead_code)]
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         V::map_new(Private)
     }
 
@@ -183,6 +182,16 @@ where
 
     pub fn as_raw(&self, _private: Private) -> RawMap {
         self.inner.raw
+    }
+}
+
+impl<K, V> Default for Map<K, V>
+where
+    K: Proxied + ?Sized,
+    V: ProxiedInMapValue<K> + ?Sized,
+{
+    fn default() -> Self {
+        Map::new()
     }
 }
 
