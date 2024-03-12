@@ -2971,12 +2971,6 @@ UPB_API_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
 UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
                             upb_MessageValue* val);
 
-// (DEPRECATED and going away soon. Do not use.)
-UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
-                                upb_MessageValue* val) {
-  return upb_Map_Delete(map, key, val);
-}
-
 // Map iteration:
 //
 // size_t iter = kUpb_Map_Begin;
