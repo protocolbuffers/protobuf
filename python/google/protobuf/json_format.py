@@ -123,6 +123,7 @@ def MessageToDict(
     use_integers_for_enums=False,
     descriptor_pool=None,
     float_precision=None,
+    use_integers_for_int64=False,
 ):
   """Converts protobuf message to a dictionary.
 
@@ -141,6 +142,8 @@ def MessageToDict(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
     float_precision: If set, use this to specify float field valid digits.
+    use_integers_for_int64: If set, use integers for int64. The default is to
+      turn them into strings.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -151,6 +154,7 @@ def MessageToDict(
       descriptor_pool,
       float_precision,
       always_print_fields_with_no_presence,
+      use_integers_for_int64,
   )
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
@@ -174,12 +178,14 @@ class _Printer(object):
       descriptor_pool=None,
       float_precision=None,
       always_print_fields_with_no_presence=False,
+      use_integers_for_int64=False,
   ):
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
     )
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
+    self.use_integers_for_int64 = use_integers_for_int64
     self.descriptor_pool = descriptor_pool
     if float_precision:
       self.float_format = '.{}g'.format(float_precision)
@@ -300,7 +306,7 @@ class _Printer(object):
         return value
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
-    elif field.cpp_type in _INT64_TYPES:
+    elif not self.use_integers_for_int64 and field.cpp_type in _INT64_TYPES:
       return str(value)
     elif field.cpp_type in _FLOAT_TYPES:
       if math.isinf(value):
