@@ -312,18 +312,8 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
   return RsSafeName(name);
 }
 
-std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
+std::string OneofEnumRsName(const OneofDescriptor& oneof) {
   return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
-}
-
-std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
-  return SnakeToUpperCamelCase(oneof.name()) + "Mut";
-}
-
-std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
-  // Note: This is the name used for the cpp Case enum, we use it for both
-  // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
-  return SnakeToUpperCamelCase(oneof.name()) + "Case";
 }
 
 std::string OneofCaseRsName(const FieldDescriptor& oneof_field) {

@@ -49,9 +49,7 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field);
 std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
-std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
-std::string OneofMutEnumRsName(const OneofDescriptor& oneof);
-std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
+std::string OneofEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseRsName(const FieldDescriptor& oneof_field);
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);
