@@ -597,7 +597,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                         $pbr$::InnerMap::new($pbi$::Private, raw, arena))
                 }
 
-                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
+                unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
                     // No-op: the memory will be dropped by the arena.
                 }
 
