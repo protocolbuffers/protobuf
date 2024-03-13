@@ -1330,6 +1330,14 @@ public final class Descriptors {
     // make a static copy here.
     private static final WireFormat.FieldType[] table = WireFormat.FieldType.values();
 
+    private FieldDescriptorProto.Label getLabel() {
+      if (this.features.getFieldPresence()
+          == DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED) {
+        return FieldDescriptorProto.Label.LABEL_REQUIRED;
+      }
+      return proto.getLabel();
+    }
+
     /** Is this field declared required? */
     public boolean isRequired() {
       return this.features.getFieldPresence()
@@ -1338,13 +1346,13 @@ public final class Descriptors {
 
     /** Is this field declared optional? */
     public boolean isOptional() {
-      return proto.getLabel() == FieldDescriptorProto.Label.LABEL_OPTIONAL;
+      return getLabel() == FieldDescriptorProto.Label.LABEL_OPTIONAL;
     }
 
     /** Is this field declared repeated? */
     @Override
     public boolean isRepeated() {
-      return proto.getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
+      return getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
     }
 
     /**
