@@ -8,3 +8,4 @@ public final class JavaEditionDefaults {
 
   private JavaEditionDefaults() {}
 }
+
