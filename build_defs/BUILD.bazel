@@ -35,10 +35,20 @@ config_setting(
 # For more info on the various crosstool_tops used by NDK Bazel builds, see:
 # https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
 
+# When using https://bazel.build/concepts/platforms
 config_setting(
     name = "config_android",
     values = {
         "crosstool_top": "@platforms//os:android",
+    },
+)
+
+# When using legacy flags like --android_crosstool_top, --android_cpu, and --fat_apk_cpu
+config_setting(
+    name = "config_android-legacy-default-crosstool",
+    values = {
+        # Default of `--android_crosstool_top`
+        "crosstool_top": "//external:android/crosstool",
     },
 )
 
