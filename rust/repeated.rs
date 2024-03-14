@@ -15,7 +15,7 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
+    Mut, MutProxy, Proxied, SettableValue, View, ViewProxy, Viewable,
     __internal::{Private, RawRepeatedField},
     __runtime::{InnerRepeated, InnerRepeatedMut},
 };
@@ -218,7 +218,7 @@ where
 /// # Safety
 /// - It must be sound to call `*_unchecked*(x)` with an `index` less than
 ///   `repeated_len(x)`.
-pub unsafe trait ProxiedInRepeated: Proxied {
+pub unsafe trait ProxiedInRepeated: Viewable {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
     fn repeated_new(_private: Private) -> Repeated<Self> {

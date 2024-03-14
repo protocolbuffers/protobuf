@@ -391,48 +391,8 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         }
       }
 
-      impl $pb$::Proxied for $name$ {
+      impl $pb$::Viewable for $name$ {
         type View<'a> = $name$;
-        type Mut<'a> = $pb$::PrimitiveMut<'a, $name$>;
-      }
-
-      impl $pb$::ViewProxy<'_> for $name$ {
-        type Proxied = $name$;
-
-        fn as_view(&self) -> $name$ {
-          *self
-        }
-
-        fn into_view<'shorter>(self) -> $pb$::View<'shorter, $name$> {
-          self
-        }
-      }
-
-      impl $pb$::SettableValue<$name$> for $name$ {
-        fn set_on<'msg>(
-            self,
-            private: $pbi$::Private,
-            mut mutator: $pb$::Mut<'msg, $name$>
-        ) where $name$: 'msg {
-          mutator.set_primitive(private, self)
-        }
-      }
-
-      impl $pb$::ProxiedWithPresence for $name$ {
-        type PresentMutData<'a> = $pbi$::RawVTableOptionalMutatorData<'a, $name$>;
-        type AbsentMutData<'a> = $pbi$::RawVTableOptionalMutatorData<'a, $name$>;
-
-        fn clear_present_field(
-          present_mutator: Self::PresentMutData<'_>,
-        ) -> Self::AbsentMutData<'_> {
-          present_mutator.clear($pbi$::Private)
-        }
-
-        fn set_absent_to_default(
-          absent_mutator: Self::AbsentMutData<'_>,
-        ) -> Self::PresentMutData<'_> {
-          absent_mutator.set_absent_to_default($pbi$::Private)
-        }
       }
 
       unsafe impl $pb$::ProxiedInRepeated for $name$ {
@@ -481,9 +441,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
             .copy_from($pbr$::cast_enum_repeated_view($pbi$::Private, src))
         }
       }
-
-      impl $pbi$::PrimitiveWithRawVTable for $name$ {}
-
       // SAFETY: this is an enum type
       unsafe impl $pbi$::Enum for $name$ {
         const NAME: &'static str = "$name$";

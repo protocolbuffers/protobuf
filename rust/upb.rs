@@ -10,7 +10,7 @@
 use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
     Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
-    Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
+    Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy, Viewable,
 };
 use core::fmt::Debug;
 use std::alloc;
@@ -228,7 +228,6 @@ pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutator
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 
 #[derive(Debug)]
 pub struct MessageVTable {
@@ -661,7 +660,7 @@ pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> 
 /// Returns a static empty MapView.
 pub fn empty_map<K, V>() -> MapView<'static, K, V>
 where
-    K: Proxied + ?Sized,
+    K: Viewable + ?Sized,
     V: ProxiedInMapValue<K> + ?Sized,
 {
     // TODO: Consider creating a static empty map in C.
@@ -744,7 +743,7 @@ impl<'msg> InnerMapMut<'msg> {
     }
 }
 
-pub trait UpbTypeConversions: Proxied {
+pub trait UpbTypeConversions: Viewable {
     fn upb_type() -> UpbCType;
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
 

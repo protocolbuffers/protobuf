@@ -72,11 +72,24 @@ pub trait Proxied {
         Self: 'msg;
 }
 
+pub trait Viewable {
+    /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
+    ///
+    /// Most code should use the type alias [`View`].
+    type View<'msg>: Copy + Send
+    where
+        Self: 'msg;
+}
+
+impl<T: Proxied + ?Sized> Viewable for T {
+    type View<'msg> = <T as Proxied>::View<'msg> where T: 'msg;
+}
+
 /// A proxy type that provides shared access to a `T`, like a `&'msg T`.
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
-pub type View<'msg, T> = <T as Proxied>::View<'msg>;
+pub type View<'msg, T> = <T as Viewable>::View<'msg>;
 
 /// A proxy type that provides exclusive mutable access to a `T`, like a
 /// `&'msg mut T`.

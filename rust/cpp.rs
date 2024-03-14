@@ -10,7 +10,7 @@
 use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
 use crate::{
     Map, MapIter, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, SettableValue, View,
+    RepeatedMut, RepeatedView, SettableValue, View, Viewable,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -197,7 +197,6 @@ pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutator
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 pub type RawMapIter = UntypedMapIterator;
 
 #[derive(Debug)]
@@ -302,7 +301,7 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
-trait CppTypeConversions: Proxied {
+trait CppTypeConversions: Viewable {
     type ElemType;
 
     fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self>;
@@ -531,7 +530,7 @@ impl UntypedMapIterator {
         from_ffi_value: impl FnOnce(FfiValue) -> View<'a, V>,
     ) -> Option<(View<'a, K>, View<'a, V>)>
     where
-        K: Proxied + ?Sized + 'a,
+        K: Viewable + ?Sized + 'a,
         V: ProxiedInMapValue<K> + ?Sized + 'a,
     {
         if self.at_end() {
