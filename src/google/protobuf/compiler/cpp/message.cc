@@ -1473,7 +1473,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           inline explicit Impl_($pbi$::InternalVisibility visibility,
                                 ::$proto_ns$::Arena* arena);
           inline explicit Impl_($pbi$::InternalVisibility visibility,
-                                ::$proto_ns$::Arena* arena, const Impl_& from);
+                                ::$proto_ns$::Arena* arena, const Impl_& from,
+                                const $classname$& from_msg);
           //~ Members assumed to align to 8 bytes:
           $extension_set$;
           $tracker$;
@@ -2993,7 +2994,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
         R"cc(
           inline PROTOBUF_NDEBUG_INLINE $classname$::Impl_::Impl_(
               $pbi$::InternalVisibility visibility, ::$proto_ns$::Arena* arena,
-              const Impl_& from)
+              const Impl_& from, const $classtype$& from_msg)
               //~
               $init$ {}
         )cc");
@@ -3003,7 +3004,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   auto copy_construct_impl = [&] {
     if (!HasSimpleBaseClass(descriptor_, options_)) {
       p->Emit(R"cc(
-        new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+        new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
       )cc");
     }
   };

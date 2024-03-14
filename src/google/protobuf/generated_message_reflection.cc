@@ -3049,7 +3049,6 @@ void Reflection::ClearOneof(Message* message,
         default:
           break;
       }
-    } else {
     }
 
     *MutableOneofCase(message, oneof_descriptor) = 0;
