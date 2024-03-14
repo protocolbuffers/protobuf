@@ -1,0 +1,46 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf.rb
+
+module Google
+  module Protobuf
+    class Error < StandardError
+    end
+    class ParseError < Error
+    end
+    class TypeError < ::TypeError
+    end
+
+    PREFER_FFI: bool
+
+    def self.encode: (AbstractMessage msg, ?encode_options options) -> String
+
+    def self.encode_json: (AbstractMessage msg, ?encode_json_options options) -> String
+
+    def self.decode: [T < AbstractMessage](singleton(AbstractMessage) & _MessageClass[T] klass, String proto, ?decode_options options) -> T
+
+    def self.decode_json: [T < AbstractMessage](singleton(AbstractMessage) & _MessageClass[T] klass, String json, ?decode_json_options options) -> T
+
+    IMPLEMENTATION: :FFI | :NATIVE
+  end
+end
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/protobuf.c
+# - protobuf_ffi: lib/google/protobuf_ffi.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyProtobuf.java
+
+module Google
+  module Protobuf
+    def self.deep_copy: [Elem, ElemWrite] (RepeatedField[Elem, ElemWrite] object) -> RepeatedField[Elem, ElemWrite]
+                      | [K, KWrite, V, VWrite] (Map[K, KWrite, V, VWrite] object) -> Map[K, KWrite, V, VWrite]
+                      | [T < AbstractMessage] (T object) -> T
+
+    def self.discard_unknown: (AbstractMessage message) -> nil
+  end
+end

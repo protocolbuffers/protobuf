@@ -1,0 +1,66 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/map.rb
+
+module Google
+  module Protobuf
+    class FFI
+      # Map
+      def self.map_clear: (ffi_map) -> void
+      def self.map_delete: (ffi_map, MessageValue, MessageValue) -> bool
+      def self.map_get: (ffi_map, MessageValue, MessageValue?) -> bool
+      def self.create_map: (Internal::Arena, ffi_c_type, ffi_c_type) -> ffi_map
+      def self.map_size: (ffi_map) -> Integer
+      def self.map_set: (ffi_map, MessageValue, MessageValue, Internal::Arena) -> bool
+
+      # MapIterator
+      def self.map_next: (ffi_map, ::FFI::Pointer) -> bool
+      def self.map_done: (ffi_map, Integer) -> bool
+      def self.map_key: (ffi_map, Integer) -> MessageValue
+      def self.map_value: (ffi_map, Integer) -> MessageValue
+    end
+    class Map[K, V, KWrite, VWrite]
+      def self.new: [K, V] (key_types key_type, simple_value_types value_type, ?Hash[K, V] init_hashmap) -> instance
+                  | [K, V] (key_types key_type, :enum value_type, _EnumModule value_typeclass, ?Hash[K, V] init_hashmap) -> instance
+                  | [K, V] (key_types key_type, :message value_type, singleton(AbstractMessage) value_typeclass, ?Hash[K, V] init_hashmap) -> instance
+      def initialize: (key_types key_type, FFI::ffi_c_type value_type, ?value_type_class: (_EnumModule | singleton(AbstractMessage))?, ?initial_values: Hash[KWrite, untyped]?, ?arena: Internal::Arena?, ?map: FFI::ffi_map?, ?descriptor: (Descriptor | EnumDescriptor)?, ?name: String?) -> void
+                    | ...
+
+      private
+      attr_reader arena: Internal::Arena
+      attr_reader map_ptr: FFI::ffi_map
+      attr_reader key_type: FFI::ffi_c_type
+      attr_reader value_type: FFI::ffi_c_type
+      attr_reader descriptor: (Descriptor | EnumDescriptor)?
+      attr_reader name: String
+
+      include Google::Protobuf::Internal::Convert
+
+      def internal_iterator: () { (Integer) -> void } -> void
+
+      def each_msg_val: () { (FFI::MessageValue, FFI::MessageValue) -> void } -> void
+
+      def internal_dup: () -> self
+
+      def internal_merge_into_self: (Hash[KWrite, VWrite] | Map[K, V, KWrite, VWrite] other) -> self
+
+      def internal_merge: (Hash[KWrite, VWrite] | Map[K, V, KWrite, VWrite] other) -> Map[K, V, KWrite, VWrite]
+
+      # @param field [FieldDescriptor] Descriptor of the field where the RepeatedField will be assigned
+      # @param values [Hash|Map] Initial value; may be nil or empty
+      # @param arena [Arena] Owning message's arena
+      def self.construct_for_field: [K, V, KWrite, VWrite] (FieldDescriptor field, Internal::Arena arena, ?value: Hash[KWrite, untyped]?, ?map: FFI::ffi_map?) -> Map[K, V, KWrite, VWrite]
+
+      def self.private_constructor: [K, V, KWrite, VWrite] (Symbol key_type, Symbol value_type, (Descriptor | EnumDescriptor)? descriptor, ?initial_values: Hash[KWrite, untyped]?, ?arena: Internal::Arena?) -> Map[K, V, KWrite, VWrite]
+
+      extend Google::Protobuf::Internal::Convert
+
+      def self.deep_copy: [K, V, KWrite, VWrite] (Map[K, V, KWrite, VWrite] map) -> Map[K, V, KWrite, VWrite]
+    end
+  end
+end

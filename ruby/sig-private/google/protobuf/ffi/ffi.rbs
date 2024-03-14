@@ -1,0 +1,224 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/ffi.rb
+
+module Google
+  module Protobuf
+    class FFI
+      extend ::FFI::Library
+
+      ## Map
+      Upb_Map_Begin: Integer
+
+      ## Encoding Status
+      Upb_Status_MaxMessage: Integer
+      Upb_Encode_Deterministic: Integer
+      Upb_Encode_SkipUnknown: Integer
+
+      ## JSON Encoding options
+      # When set, emits 0/default values.  TODO: proto3 only?
+      Upb_JsonEncode_EmitDefaults: Integer
+      # When set, use normal (snake_case) field names instead of JSON (camelCase) names.
+      Upb_JsonEncode_UseProtoNames: Integer
+      # When set, emits enums as their integer values instead of as their names.
+      Upb_JsonEncode_FormatEnumsAsIntegers: Integer
+
+      ## JSON Decoding options
+      Upb_JsonDecode_IgnoreUnknown: Integer
+
+      type ffi_array = ::FFI::Pointer
+      type ffi_def_pool = ::FFI::Pointer
+      type ffi_enum_value_def = ::FFI::Pointer
+      type ffi_extension_registry = ::FFI::Pointer
+      type ffi_field_def_pointer = ::FFI::Pointer
+      type ffi_file_def = ::FFI::Pointer
+      type ffi_file_descriptor_proto = ::FFI::Pointer
+      type ffi_map = ::FFI::Pointer
+      type ffi_message = ::FFI::Pointer    # Instances of a message
+      type ffi_oneof_def_pointer = ::FFI::Pointer
+      type ffi_binary_string = ::FFI::Pointer
+
+      FieldType: ::FFI::Enum
+      type ffi_field_type =
+          :double
+        | :float
+        | :int64
+        | :uint64
+        | :int32
+        | :fixed64
+        | :fixed32
+        | :bool
+        | :string
+        | :group
+        | :message
+        | :bytes
+        | :uint32
+        | :enum
+        | :sfixed32
+        | :sfixed64
+        | :sint32
+        | :sint64
+
+      CType: ::FFI::Enum
+      type ffi_c_type =
+          :bool
+        | :float
+        | :int32
+        | :uint32
+        | :enum
+        | :message
+        | :double
+        | :int64
+        | :uint64
+        | :string
+        | :bytes
+
+      Label: ::FFI::Enum
+      type ffi_label =
+          :optional
+        | :required
+        | :repeated
+
+      Syntax: ::FFI::Enum
+      type ffi_syntax =
+          :Proto2
+        | :Proto3
+
+      # All the different kind of well known type messages. For simplicity of check,
+      # number wrappers and string wrappers are grouped together. Make sure the
+      # order and merber of these groups are not changed.
+
+      WellKnown: ::FFI::Enum
+      type ffi_well_known =
+          :Unspecified
+        | :Any
+        | :FieldMask
+        | :Duration
+        | :Timestamp
+        # number wrappers
+        | :DoubleValue
+        | :FloatValue
+        | :Int64Value
+        | :UInt64Value
+        | :Int32Value
+        | :UInt32Value
+        # string wrappers
+        | :StringValue
+        | :BytesValue
+        | :BoolValue
+        | :Value
+        | :ListValue
+        | :Struct
+
+      DecodeStatus: ::FFI::Enum
+      type ffi_decode_status =
+          :Ok
+        | :Malformed         # Wire format was corrupt
+        | :OutOfMemory       # Arena alloc failed
+        | :BadUtf8           # String field had bad UTF-8
+        | :MaxDepthExceeded  # Exceeded UPB_DECODE_MAXDEPTH
+        # CheckRequired failed, but the parse otherwise succeeded.
+        | :MissingRequired
+
+      EncodeStatus: ::FFI::Enum
+      type ffi_encode_status =
+          :Ok
+        | :OutOfMemory       # Arena alloc failed
+        | :MaxDepthExceeded  # Exceeded UPB_ENCODE_MAXDEPTH
+        # CheckRequired failed, but the parse otherwise succeeded.
+        | :MissingRequired
+
+      class StringView < ::FFI::Struct
+        def []: (:data) -> ::FFI::Pointer
+              | (:size) -> Integer
+
+        def []=: (:data, ::FFI::Pointer) -> void
+               | (:size, Integer) -> void
+      end
+
+      class MiniTable < ::FFI::Struct
+        def []: (:subs) -> ::FFI::Pointer
+              | (:fields) -> ::FFI::Pointer
+              | (:size) -> Integer
+              | (:field_count) -> Integer
+              | (:ext) -> Integer  # upb_ExtMode, declared as uint8_t so sizeof(ext) == 1
+              | (:dense_below) -> Integer
+              | (:table_mask) -> Integer
+              | (:required_count) -> Integer  # Required fields have the lowest hasbits.
+
+        def []=: (:subs, ::FFI::Pointer) -> void
+               | (:fields, ::FFI::Pointer) -> void
+               | (:size, Integer) -> void
+               | (:field_count, Integer) -> void
+               | (:ext, Integer) -> void  # upb_ExtMode, declared as uint8_t so sizeof(ext) == 1
+               | (:dense_below, Integer) -> void
+               | (:table_mask, Integer) -> void
+               | (:required_count, Integer) -> void  # Required fields have the lowest hasbits.
+      end
+
+      class Status < ::FFI::Struct
+        def []: (:ok) -> bool
+              | (:msg) -> String
+
+        def []=: (:ok, bool) -> void
+               | (:msg, String) -> void
+
+        def initialize: () -> void
+      end
+
+      class MessageValue < ::FFI::Union
+        def []: (:bool_val) -> bool
+          | (:float_val) -> Float
+          | (:double_val) -> Float
+          | (:int32_val) -> Integer
+          | (:int64_val) -> Integer
+          | (:uint32_val) -> Integer
+          | (:uint64_val) -> Integer
+          | (:map_val) -> ::FFI::Pointer
+          | (:msg_val) -> ::FFI::Pointer
+          | (:array_val) -> ::FFI::Pointer
+          | (:str_val) -> StringView
+
+        def []=: (:bool_val, bool) -> void
+          | (:float_val, Float) -> void
+          | (:double_val, Float) -> void
+          | (:int32_val, Integer) -> void
+          | (:int64_val, Integer) -> void
+          | (:uint32_val, Integer) -> void
+          | (:uint64_val, Integer) -> void
+          | (:map_val, ::FFI::Pointer) -> void
+          | (:msg_val, ::FFI::Pointer) -> void
+          | (:array_val, ::FFI::Pointer) -> void
+          | (:str_val, StringView) -> void
+      end
+
+      Upb_Message_Begin: Integer
+
+      class MutableMessageValue < ::FFI::Union
+        def []: (:map) -> ffi_map
+              | (:msg) -> ffi_message
+              | (:array) -> ffi_array
+
+        def []=: (:map, ffi_map) -> void
+               | (:msg, ffi_message) -> void
+               | (:array, ffi_array) -> void
+      end
+
+      # Status
+      def self.clear: (Status) -> void
+      def self.error_message: (Status) -> String
+
+      # Generic
+      def self.memcmp: (FFI::Pointer, FFI::Pointer, Integer) -> Integer
+      def self.memcpy: (FFI::Pointer, FFI::Pointer, Integer) -> Integer
+
+      # Alternatives to pre-processor macros
+      def self.decode_max_depth: (Integer i) -> Integer
+    end
+  end
+end

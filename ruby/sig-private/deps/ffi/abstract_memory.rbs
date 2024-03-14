@@ -1,0 +1,7 @@
+module FFI
+  class AbstractMemory
+    def size: () -> Integer
+    def get_pointer: (Numeric offset) -> Pointer
+    def put_bytes: (Numeric offset, String str, ?Numeric? index, ?Numeric? length) -> self
+  end
+end

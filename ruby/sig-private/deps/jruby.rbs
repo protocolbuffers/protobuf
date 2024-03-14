@@ -1,0 +1,53 @@
+JRUBY_REVISION: String
+JRUBY_VERSION: String
+PLATFORM: String
+RELEASE_DATE: String
+
+class JavaProxy
+  include JavaProxyMethods
+end
+
+module JavaProxyMethods
+end
+
+class ConcreteJavaProxy < JavaProxy
+end
+
+module Kernel
+  attr_reader java: singleton(Java::Java)
+end
+
+module Java
+  module Java
+    attr_reader self.io(): singleton(JavaIo)
+    attr_reader self.lang(): singleton(JavaLang)
+  end
+
+  module JavaIo
+    attr_reader self.Serializable(): singleton(Serializable)
+    module Serializable
+    end
+  end
+
+  module JavaLang
+    attr_reader self.Exception(): singleton(Exception)
+    class Exception < Throwable
+    end
+
+    attr_reader self.NullPointerException(): singleton(NullPointerException)
+    class NullPointerException < RuntimeException
+    end
+
+    attr_reader self.Object(): singleton(Object)
+    class Object < ConcreteJavaProxy
+    end
+
+    attr_reader self.RuntimeException(): singleton(RuntimeException)
+    class RuntimeException < Exception
+    end
+
+    attr_reader self.Throwable(): singleton(Throwable)
+    class Throwable < Object
+    end
+  end
+end

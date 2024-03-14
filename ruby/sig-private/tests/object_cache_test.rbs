@@ -1,0 +1,24 @@
+class PlatformTest < Test::Unit::TestCase
+  def test_correct_implementation_for_platform: () -> void
+end
+
+
+module ObjectCacheTestModule: Test::Unit::TestCase, _Creatable
+  interface _Creatable
+    def create: () -> (Google::Protobuf::ObjectCache | Google::Protobuf::LegacyObjectCache)
+  end
+  def test_try_add_returns_existing_value: () -> void
+  def test_multithreaded_access: () -> void
+end
+
+class ObjectCacheTest < Test::Unit::TestCase
+  def create: () -> Google::Protobuf::ObjectCache
+
+  include ObjectCacheTestModule
+end
+
+class LegacyObjectCacheTest < Test::Unit::TestCase
+  def create: () -> Google::Protobuf::LegacyObjectCache
+
+  include ObjectCacheTestModule
+end

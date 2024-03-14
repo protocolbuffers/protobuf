@@ -1,0 +1,51 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/oneof_descriptor.rb
+
+module Google
+  module Protobuf
+    class OneofDescriptor
+      attr_reader descriptor_pool: DescriptorPool
+      attr_reader oneof_def: FFI::ffi_oneof_def_pointer
+
+      # FFI Interface methods and setup
+      extend ::FFI::DataConverter[OneofDescriptor?, native_type]
+      type native_type = ::FFI::Pointer
+
+      extend Google::Protobuf::Internal::TypeSafety[OneofDescriptor?, native_type]
+      extend Google::Protobuf::Internal::PointerHelper[OneofDescriptor?]
+
+      def self.new: (*untyped arguments) ?{ (*untyped, **untyped) -> untyped } -> instance
+                  | ...
+
+      @options: OneofOptions
+
+      private
+
+      def initialize: (FFI::ffi_oneof_def_pointer oneof_def, DescriptorPool descriptor_pool) -> void
+
+      def self.private_constructor: (FFI::ffi_oneof_def_pointer oneof_def, DescriptorPool descriptor_pool) -> instance
+    end
+
+    class FFI
+      # MessageDef
+      def self.get_oneof_by_name: (Descriptor, String, Integer) -> OneofDescriptor
+      def self.get_oneof_by_index: (Descriptor, Integer) -> OneofDescriptor
+
+      # OneofDescriptor
+      def self.get_oneof_name: (OneofDescriptor) -> String
+      def self.get_oneof_field_count: (OneofDescriptor) -> Integer
+      def self.get_oneof_field_by_index: (OneofDescriptor, Integer) -> FieldDescriptor
+      def self.get_oneof_containing_type: (::FFI::Pointer) -> Descriptor
+      def self.oneof_options: (OneofDescriptor, ::FFI::Pointer, Internal::Arena) -> ::FFI::Pointer
+
+      # FieldDescriptor
+      def self.real_containing_oneof: (FieldDescriptor) -> OneofDescriptor
+    end
+  end
+end

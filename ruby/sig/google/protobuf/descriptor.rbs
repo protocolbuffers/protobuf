@@ -1,0 +1,85 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/defs.c
+# - protobuf_ffi: lib/google/protobuf/ffi/descriptor.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyDescriptor.java
+
+module Google
+  module Protobuf
+    ##
+    # Message Descriptor - Descriptor for short.
+    class Descriptor
+      include Enumerable[FieldDescriptor]
+
+      def self.new: (bot not_callable_from_ruby) -> top
+
+      ##
+      # call-seq:
+      #     Descriptor.file_descriptor
+      # Returns the FileDescriptor object this message belongs to.
+      def file_descriptor: () -> FileDescriptor
+
+      ##
+      # call-seq:
+      #     Descriptor.name => name
+      # Returns the name of this message type as a fully-qualified string (e.g.,
+      # My.Package.MessageType).
+      attr_reader name(): String
+
+      ##
+      # call-seq:
+      #     Descriptor.each_oneof(&block) => nil
+      # Invokes the given block for each oneof in this message type, passing the
+      # corresponding OneofDescriptor.
+      def each_oneof: () { (OneofDescriptor oneof) -> void } -> nil
+
+      ##
+      # call-seq:
+      #     Descriptor.each(&block)
+      # Iterates over fields in this message type, yielding to the block on each one.
+      def each: () { (FieldDescriptor field) -> void } -> nil
+
+      ##
+      # call-seq:
+      #     Descriptor.lookup(name) => FieldDescriptor
+      # Returns the field descriptor for the field with the given name, if present,
+      # or nil if none.
+      def lookup: (String name) -> FieldDescriptor?
+
+      ##
+      # call-seq:
+      #     Descriptor.lookup_oneof(name) => OneofDescriptor
+      # Returns the oneof descriptor for the oneof with the given name, if present,
+      # or nil if none.
+      def lookup_oneof: (String name) -> OneofDescriptor?
+
+      ##
+      # call-seq:
+      #     Descriptor.msgclass => message_klass
+      # Returns the Ruby class created for this message type.
+      def msgclass: () -> singleton(AbstractMessage)
+
+      ##
+      # call-seq:
+      #     Descriptor.options => options
+      # Returns the `MessageOptions` for this `Descriptor`.
+      def options: () -> MessageOptions
+    end
+
+    ##
+    # This interface allows narrowing Descriptor to a specific message type.
+    interface _SpecificDescriptor[M < singleton(AbstractMessage)]
+      ##
+      # call-seq:
+      #     Descriptor.msgclass => message_klass
+      # Returns the Ruby class created for this message type.
+      def msgclass: () -> M
+    end
+  end
+end

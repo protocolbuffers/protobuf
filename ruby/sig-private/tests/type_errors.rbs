@@ -1,0 +1,11 @@
+class TestTypeErrors < Test::Unit::TestCase
+  def test_bad_string: () -> void
+  def test_bad_float: () -> void
+  def test_bad_double: () -> void
+  def test_bad_bool: () -> void
+  def test_bad_int: () -> void
+  def test_bad_enum: () -> void
+  def test_bad_bytes: () -> void
+  def test_bad_msg: () -> void
+  def check_error: (singleton(Exception) type, String message) { () -> void } -> void
+end

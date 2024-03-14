@@ -1,0 +1,4 @@
+module FFI
+  class Union < Struct
+  end
+end

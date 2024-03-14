@@ -1,0 +1,9 @@
+module FFI
+  class Enum
+    include DataConverter[Symbol, Integer]
+
+    def []: (Symbol query) -> Integer
+          | (Integer query) -> Symbol
+    alias find []
+  end
+end

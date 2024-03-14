@@ -1,0 +1,7 @@
+# Currently missing definitions for WeakMap
+class ObjectSpace::WeakMap
+  def []: (Object key) -> Object?
+  def []=: (Object key, Object value) -> void
+  def size: () -> Integer
+  def key?: (Object key) -> bool
+end

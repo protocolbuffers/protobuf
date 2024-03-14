@@ -1,0 +1,16 @@
+module FFI
+  class Pointer < AbstractMemory
+    NULL: Pointer
+    SIZE: Integer
+
+    def initialize: (Pointer pointer) -> void
+                  | (Integer | Symbol | Type type, Integer address) -> void
+    def address: () -> Integer
+    def null?: () -> bool
+    def read: (Symbol | Type type) -> untyped
+    def read_string_length: (int len) -> String
+    def to_ptr: () -> Pointer
+    def write: (Symbol | Type type, untyped value) -> nil
+    def write_string: (String str, ?Numeric? len) -> self
+  end
+end

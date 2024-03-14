@@ -1,0 +1,57 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/enum_descriptor.rb
+
+module Google
+  module Protobuf
+    class EnumDescriptor
+      attr_reader descriptor_pool: DescriptorPool
+      attr_reader enum_def: native_type
+
+      # FFI Interface methods and setup
+      extend ::FFI::DataConverter[EnumDescriptor?, native_type]
+      type native_type = ::FFI::Pointer
+
+      extend Google::Protobuf::Internal::TypeSafety[EnumDescriptor?, native_type]
+      extend Google::Protobuf::Internal::PointerHelper[EnumDescriptor?]
+
+      def to_s: () -> String
+
+      def inspect: () -> String
+
+      @options: EnumOptions
+
+      private
+
+      @module: (Module & _EnumModule)?
+
+      def initialize: (native_type enum_def, DescriptorPool descriptor_pool) -> void
+
+      def self.private_constructor: (native_type enum_def, DescriptorPool descriptor_pool) -> instance
+
+      def self.lookup_value: (EnumDescriptor enum_def, int number) -> Symbol?
+
+      def self.lookup_name: (EnumDescriptor enum_def, Symbol name) -> Integer?
+
+      def build_enum_module: () -> (Module & _EnumModule)
+    end
+
+    class FFI
+      # EnumDescriptor
+      def self.get_enum_file_descriptor: (EnumDescriptor) -> ffi_file_def
+      def self.enum_value_by_name: (EnumDescriptor, String, Integer) -> ffi_enum_value_def
+      def self.enum_value_by_number: (EnumDescriptor, int) -> ffi_enum_value_def
+      def self.get_enum_fullname: (EnumDescriptor) -> String
+      def self.enum_options: (EnumDescriptor, ::FFI::Pointer, Internal::Arena) -> ::FFI::Pointer
+      def self.enum_value_by_index: (EnumDescriptor, Integer) -> ffi_enum_value_def
+      def self.enum_value_count: (EnumDescriptor) -> Integer
+      def self.enum_name: (ffi_enum_value_def) -> String
+      def self.enum_number: (ffi_enum_value_def) -> Integer
+    end
+  end
+end

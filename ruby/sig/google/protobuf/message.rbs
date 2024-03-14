@@ -1,0 +1,140 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/message.c
+# - protobuf_ffi: lib/google/protobuf/ffi/message.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyMessage.java
+#
+# Note that protobuf_java implementation currently lacks AbstractMessage and
+# directly defines the methods on the generated classes.
+# Nonetheless we expose AbstractMessage here as a convenient namespace for
+# the methods.
+
+module Google
+  module Protobuf
+    type decode_options = {
+      # Set to maximum decoding depth for message (default is 64)
+      recursion_limit: Numeric?
+    }
+
+    type encode_options = {
+      # Set to maximum encoding depth for message (default is 64)
+      recursion_limit: Numeric?
+    }
+
+    type decode_json_options = {
+      # Set true to ignore unknown fields (default is to raise an error)
+      ignore_unknown_fields: boolish?
+    }
+
+    type encode_json_options = {
+      # Set true to use original fieldnames (default is to camelCase)
+      preserve_proto_fieldnames: boolish?,
+      # Set true to emit 0/false values (default is to omit them)
+      emit_defaults: boolish?,
+      format_enums_as_integers: boolish?
+    }
+
+    class AbstractMessage
+      attr_reader self.descriptor: Descriptor
+
+      ##
+      # Public constructor. Automatically allocates from a new Arena.
+      def initialize: (?Hash[String | Symbol, untyped]? initial_value) -> void
+
+      def freeze: () -> self
+
+      def dup: () -> self
+
+      def eql?: (untyped other) -> bool
+
+      def hash: () -> Integer
+
+      def to_h: () -> Hash[Symbol, untyped]
+
+      ##
+      # call-seq:
+      #     Message.inspect => string
+      #
+      # Returns a human-readable string representing this message. It will be
+      # formatted as "<MessageType: field1: value1, field2: value2, ...>". Each
+      # field's value is represented according to its own #inspect method.
+      def inspect: () -> String
+
+      def to_s: () -> String
+
+      ##
+      # call-seq:
+      #     Message.[](index) => value
+      # Accesses a field's value by field name. The provided field name
+      # should be a string.
+      def []: (String name) -> untyped
+
+      ##
+      # call-seq:
+      #     Message.[]=(index, value)
+      # Sets a field's value by field name. The provided field name should
+      # be a string.
+      # @param name [String] Name of the field to be set
+      # @param value [Object] Value to set the field to
+      def []=: (String name, untyped value) -> void
+
+      ##
+      # call-seq:
+      #    MessageClass.decode(data, options) => message
+      #
+      # Decodes the given data (as a string containing bytes in protocol buffers wire
+      # format) under the interpretation given by this message class's definition
+      # and returns a message object with the corresponding field values.
+      # @param data [String] Binary string in Protobuf wire format to decode
+      # @param options [Hash] options for the decoder
+      # @option options [Integer] :recursion_limit Set to maximum decoding depth for message (default is 64)
+      def self.decode: (String data, ?decode_options options) -> instance
+
+      ##
+      # call-seq:
+      #    MessageClass.encode(msg, options) => bytes
+      #
+      # Encodes the given message object to its serialized form in protocol buffers
+      # wire format.
+      # @param options [Hash] options for the encoder
+      # @option options [Integer] :recursion_limit Set to maximum encoding depth for message (default is 64)
+      def self.encode: (instance message, ?encode_options options) -> String
+
+      ##
+      # call-seq:
+      #    MessageClass.decode_json(data, options = {}) => message
+      #
+      # Decodes the given data (as a string containing bytes in protocol buffers wire
+      # format) under the interpretation given by this message class's definition
+      # and returns a message object with the corresponding field values.
+      #
+      # @param options [Hash] options for the decoder
+      # @option options [Boolean] :ignore_unknown_fields Set true to ignore unknown fields (default is to raise an error)
+      # @return [Message]
+      def self.decode_json: (String data, ?decode_json_options options) -> instance
+
+      ##
+      # call-seq:
+      #     MessageClass.encode_json(msg, options = {}) => json_string
+      #
+      # Encodes the given message object into its serialized JSON representation.
+      # @param options [Hash] options for the decoder
+      # @option options [Boolean] :preserve_proto_fieldnames Set true to use original fieldnames (default is to camelCase)
+      # @option options [Boolean] :emit_defaults Set true to emit 0/false values (default is to omit them)
+      def self.encode_json: (instance message, ?encode_json_options options) -> String
+    end
+
+    interface _MessageClass[T < AbstractMessage]
+      def decode: (String data, ?decode_options options) -> T
+      def encode: (T message, ?encode_options options) -> String
+      def decode_json: (String data, ?decode_json_options options) -> T
+      def encode_json: (T message, ?encode_json_options options) -> String
+    end
+  end
+end

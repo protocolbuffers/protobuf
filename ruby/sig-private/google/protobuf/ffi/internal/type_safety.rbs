@@ -1,0 +1,21 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/internal/type_safety.rb
+
+# A to_native DataConverter method that raises an error if the value is not of the same type.
+# Adapted from to https://www.varvet.com/blog/advanced-topics-in-ruby-ffi/
+module Google
+  module Protobuf
+    module Internal
+      module TypeSafety[T, N]: FFI::DataConverter[T, N]
+        def to_native: (T value, ?untyped context) -> N
+      end
+    end
+  end
+end
+

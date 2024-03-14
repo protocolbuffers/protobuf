@@ -156,7 +156,7 @@ module Google
       # propagates changes made by user of enumerator back to the original repeated field.
       # This only applies in cases where the calling function which created the enumerator,
       # such as #sort!, modifies itself rather than a new array, such as #sort
-      class ProxyingEnumerator < Struct.new(:repeated_field, :external_enumerator)
+      class ProxyingEnumerator < ::Struct.new(:repeated_field, :external_enumerator)
         def each(*args, &block)
           results = []
           external_enumerator.each_with_index do |val, i|

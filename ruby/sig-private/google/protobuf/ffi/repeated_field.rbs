@@ -1,0 +1,60 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/repeated_field.rb
+
+module Google
+  module Protobuf
+    class FFI
+      # Array
+      def self.append_array: (ffi_array, MessageValue, Internal::Arena) -> bool
+      def self.get_msgval_at: (ffi_array, Integer) -> MessageValue
+      def self.create_array: (Internal::Arena, ffi_c_type) -> ffi_array
+      def self.array_resize: (ffi_array, Integer, Internal::Arena) -> bool
+      def self.array_set: (ffi_array, Integer, MessageValue) -> void
+      def self.array_size: (ffi_array) -> Integer
+    end
+
+    class RepeatedField[T, TWrite]
+      private
+      include Google::Protobuf::Internal::Convert
+
+      attr_reader name: String
+      attr_reader arena: Internal::Arena
+      attr_reader array: FFI::ffi_array
+      attr_reader type: FFI::ffi_c_type
+      attr_reader descriptor: (Descriptor | EnumDescriptor)?
+
+      def internal_push: (*T | TWrite elements) -> self
+
+      def subarray: (Integer start, Integer length) -> Array[T]
+
+      def each_msg_val_with_index: () { (FFI::MessageValue, Integer) -> void } -> void
+
+      def each_msg_val: () { (FFI::MessageValue) -> void } -> void
+
+      # @param msg_val [Google::Protobuf::FFI::MessageValue] Value to append
+      def append_msg_val: (FFI::MessageValue msg_val) -> void
+
+      # @param new_size [Integer] New size of the array
+      def resize: (Integer new_size) -> void
+
+      def initialize: (FFI::ffi_c_type type, ?type_class: (_EnumModule | singleton(AbstractMessage))?, ?initial_values: Array[T | TWrite]?, ?name: String?, ?arena: Internal::Arena?, ?array: FFI::ffi_array?, ?descriptor: (Descriptor | EnumDescriptor)?) -> void
+
+      # @param field [FieldDescriptor] Descriptor of the field where the RepeatedField will be assigned
+      # @param values [Enumerable] Initial values; may be nil or empty
+      # @param arena [Arena] Owning message's arena
+      def self.construct_for_field: [T, TWrite] (FieldDescriptor field, Internal::Arena arena, ?values: Enumerable[T | TWrite]?, ?array: FFI::ffi_array?) -> RepeatedField[T, TWrite]
+
+      def fuse_arena: (Internal::Arena arena) -> void
+
+      extend Google::Protobuf::Internal::Convert
+
+      def self.deep_copy: [T, TWrite](RepeatedField[T, TWrite] repeated_field) -> RepeatedField[T, TWrite]
+    end
+  end
+end

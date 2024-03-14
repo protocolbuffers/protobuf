@@ -1,0 +1,9 @@
+module StressTest
+  class TestMessage = StressTestProtos::TestMessage
+  class M = StressTestProtos::M
+
+  class StressTest < Test::Unit::TestCase
+    def get_msg: () -> TestMessage
+    def test_stress: () -> void
+  end
+end

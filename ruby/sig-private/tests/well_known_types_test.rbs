@@ -1,0 +1,10 @@
+class TestWellKnownTypes < Test::Unit::TestCase
+  def test_timestamp: () -> void
+  def test_duration: () -> void
+  def test_struct: () -> void
+  def test_any: () -> void
+  def test_struct_init: () -> void
+  def test_struct_nested_init: () -> void
+  def test_b8325: () -> void
+  def test_from_ruby: () -> void
+end

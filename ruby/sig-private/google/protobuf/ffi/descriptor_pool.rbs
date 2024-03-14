@@ -1,0 +1,35 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/descriptor_pool.rb
+
+module Google
+  module Protobuf
+    class FFI
+      # DefPool
+      def self.add_serialized_file: (ffi_def_pool, ffi_file_descriptor_proto, Status) -> ffi_file_def
+      def self.free_descriptor_pool: (ffi_def_pool) -> void
+      def self.create_descriptor_pool: () -> ffi_def_pool
+      def self.get_extension_registry: (ffi_def_pool) -> ffi_extension_registry
+      def self.lookup_enum: (ffi_def_pool, String) -> EnumDescriptor
+      def self.lookup_extension: (ffi_def_pool, String) -> FieldDescriptor
+      def self.lookup_msg: (ffi_def_pool, String) -> Descriptor
+
+      # FileDescriptorProto
+      def self.parse: (ffi_binary_string | String, Integer, Internal::Arena) -> ffi_file_descriptor_proto
+    end
+    class DescriptorPool
+      @@generated_pool: DescriptorPool
+      attr_reader descriptor_pool: FFI::ffi_def_pool
+      attr_accessor descriptor_class_by_def: Hash[Integer, FileDescriptor | Descriptor | EnumDescriptor | FieldDescriptor]
+
+      private
+
+      def get_file_descriptor: (FFI::ffi_file_def file_def) -> FileDescriptor?
+    end
+  end
+end

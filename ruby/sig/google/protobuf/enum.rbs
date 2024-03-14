@@ -1,0 +1,44 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/message.c
+# - protobuf_ffi: lib/google/protobuf/ffi/enum_descriptor.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyEnum.java
+
+module Google
+  module Protobuf
+    ##
+    # General interface that enum modules implement.
+    interface _EnumModule
+      # @descriptor: EnumDescriptor
+
+      # protobuf_c defines only the reader, protobuf_ffi defines both
+
+      ##
+      # call-seq:
+      #     Enum.descriptor
+      # This module method, provided on each generated enum module, returns the
+      # EnumDescriptor corresponding to this enum type.
+      def descriptor: () -> EnumDescriptor
+
+      ##
+      # call-seq:
+      #     Enum.lookup(number) => name
+      # This module method, provided on each generated enum module, looks up an enum
+      # value by number and returns its name as a Ruby symbol, or nil if not found.
+      def lookup: (::int number) -> Symbol?
+
+      ##
+      # call-seq:
+      #     Enum.resolve(name) => number
+      # This module method, provided on each generated enum module, looks up an enum
+      # value by name (as a Ruby symbol) and returns its name, or nil if not found.
+      def resolve: (Symbol name) -> Integer?
+    end
+  end
+end

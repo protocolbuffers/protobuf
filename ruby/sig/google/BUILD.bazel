@@ -1,0 +1,20 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+
+ruby_library(
+    name = "protobuf_lib",
+    srcs = glob([
+        "**/*.rbs",
+    ]),
+    visibility = ["//ruby:__pkg__"],
+    deps = ["//ruby:well_known_rbs_protos"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "**/*.rbs",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)

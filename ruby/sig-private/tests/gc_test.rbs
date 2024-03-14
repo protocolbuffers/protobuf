@@ -1,0 +1,5 @@
+class GCTest < Test::Unit::TestCase
+  def get_msg_proto3: () -> A::B::C::TestMessage
+  def get_msg_proto2: () -> A::B::Proto2::TestMessage
+  def test_generated_msg: () -> void
+end

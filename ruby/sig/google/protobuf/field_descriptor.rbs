@@ -1,0 +1,137 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source:
+# - protobuf_c: ext/google/protobuf_c/defs.c
+# - protobuf_ffi: lib/google/protobuf/ffi/field_descriptor.rb
+# - protobuf_java: src/main/java/com/google/protobuf/jruby/RubyFieldDescriptor.java
+
+module Google
+  module Protobuf
+    class FieldDescriptor
+      def self.new: (bot not_callable_from_ruby) -> top
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.name => name
+      # Returns the name of this field.
+      attr_reader name(): String
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.json_name => json_name
+      # Returns this field's json_name, as a Ruby string, or nil if not yet set.
+      attr_reader json_name(): String
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.number => number
+      # Returns the tag number for this field.
+      attr_reader number(): Integer
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.type => type
+      #
+      # Returns this field's type, as a Ruby symbol, or nil if not yet set.
+      #
+      # Valid field types are:
+      #     :int32, :int64, :uint32, :uint64, :float, :double, :bool, :string,
+      #     :bytes, :message.
+      attr_reader type(): Symbol?
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.label => label
+      #
+      # Returns this field's label (i.e., plurality), as a Ruby symbol.
+      #
+      # Valid field labels are:
+      #     :optional, :repeated
+      attr_reader label(): Symbol?
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.default => default
+      # Returns this field's default, as a Ruby object, or nil if not yet set.
+      attr_reader default(): untyped?
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.submsg_name => submsg_name
+      # Returns the name of the message or enum type corresponding to this field, if
+      # it is a message or enum field (respectively), or nil otherwise. This type
+      # name will be resolved within the context of the pool to which the containing
+      # message type is added.
+      attr_reader submsg_name(): String?
+
+      ##
+      # Tests if this field has been set on the argument message.
+      #
+      # @param msg [Google::Protobuf::Message]
+      # @return [Object] Value of the field on this message.
+      # @raise [TypeError] If the field is not defined on this message.
+      def get: (AbstractMessage msg) -> untyped
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.subtype => message_or_enum_descriptor
+      # Returns the message or enum descriptor corresponding to this field's type if
+      # it is a message or enum field, respectively, or nil otherwise. Cannot be
+      # called *until* the containing message type is added to a pool (and thus
+      # resolved).
+      attr_reader subtype(): (EnumDescriptor | Descriptor)?
+
+      ##
+      # Tests if this field has been set on the argument message.
+      #
+      # @param msg [Google::Protobuf::Message]
+      # @return [Boolean] True iff message has this field set
+      # @raise [TypeError] If this field does not exist on the message
+      # @raise [ArgumentError] If this field does not track presence
+      def has?: (AbstractMessage msg) -> bool
+
+      ##
+      # Tests if this field tracks presence.
+      #
+      # @return [Boolean] True iff this field tracks presence
+      def has_presence?: () -> bool
+
+      ##
+      # Tests if this is a repeated field that uses packed encoding.
+      #
+      # @return [Boolean] True iff this field is packed
+      def is_packed?: () -> bool
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.clear(message)
+      # Clears the field from the message if it's set.
+      #
+      # @param msg [Google::Protobuf::Message]
+      def clear: (AbstractMessage msg) -> nil
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.set(message, value)
+      #
+      # Sets the value corresponding to this field to the given value on the given
+      # message. Raises an exception if message is of the wrong type. Performs the
+      # ordinary type-checks for field setting.
+      #
+      # @param msg [Google::Protobuf::Message]
+      # @param value [Object]
+      def set: (AbstractMessage msg, untyped value) -> nil
+
+      ##
+      # call-seq:
+      #     FieldDescriptor.options => options
+      # Returns the `FieldOptions` for this `FieldDescriptor`.
+      attr_reader options(): FieldOptions
+    end
+  end
+end

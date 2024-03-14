@@ -1,0 +1,8 @@
+class EncodeDecodeTest < Test::Unit::TestCase
+  def test_discard_unknown: () -> void
+  def test_encode_json: () -> void
+  def test_encode_wrong_msg: () -> void
+  def test_json_name: () -> void
+  def test_decode_depth_limit: () -> void
+  def test_encode_depth_limit: () -> void
+end

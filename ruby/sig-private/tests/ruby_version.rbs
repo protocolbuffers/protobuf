@@ -1,0 +1,4 @@
+class RubyVersionTest < Test::Unit::TestCase
+  def test_ruby_version: () -> void
+  def test_jruby_version: () -> void
+end

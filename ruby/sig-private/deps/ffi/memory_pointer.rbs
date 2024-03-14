@@ -1,0 +1,5 @@
+module FFI
+  class MemoryPointer < Pointer
+    def initialize: (Integer | Symbol | Type type, ?Integer count, ?bool? clear) -> void
+  end
+end

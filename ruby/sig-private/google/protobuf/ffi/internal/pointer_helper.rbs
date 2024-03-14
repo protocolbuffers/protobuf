@@ -1,0 +1,26 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Source: lib/google/protobuf/ffi/internal/pointer_helper.rb
+
+module Google
+  module Protobuf
+    module Internal
+      interface _PrivateConstructible[T]
+        def private_constructor: (::FFI::Pointer pointer, DescriptorPool pool) -> T
+      end
+      module PointerHelper[T]: _PrivateConstructible[T]
+        # Utility code to defensively walk the object graph from a file_def to
+        # the pool, and either retrieve the wrapper object for the given pointer
+        # or create one. Assumes that the caller is the wrapper class for the
+        # given pointer and that it implements `private_constructor`.
+        def descriptor_from_file_def: (FFI::ffi_file_def? file_def, ::FFI::Pointer pointer) -> T
+      end
+    end
+  end
+end
+

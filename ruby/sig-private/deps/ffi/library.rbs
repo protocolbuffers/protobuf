@@ -1,0 +1,38 @@
+module FFI
+  module Library
+    type attach_function_options = {
+      blocking: bool,
+      convention: Symbol,
+      enums: Enums,
+      type_map: Hash[Symbol, Type],
+    }
+    type type_like = DataConverter[untyped, untyped] | Type | Struct | Symbol
+    def attach_function: (_ToS func, Array[type_like] args, ?type_like? returns, ?attach_function_options? options) -> VariadicInvoker
+                       | (_ToS name, _ToS func, Array[type_like] args, ?type_like? returns, ?attach_function_options? options) -> VariadicInvoker
+    def ffi_lib: (_ToS | Array[_ToS] name) -> Array[DynamicLibrary]
+    def typedef: (DataConverter[untyped, untyped] | Symbol | Type type, Symbol add, ?Symbol? info) -> (Enum | Type)
+    def enum: (Symbol name, Array[Symbol | Integer] values) -> Enum
+            | (*Symbol | Integer values) -> Enum
+            | (Array[Symbol | Integer] values) -> Enum
+            | (Type native_type, Symbol name, Array[Symbol | Integer] values) -> Enum
+            | (Type native_type, *Symbol | Integer values) -> Enum
+            | (Type native_type, Array[Symbol | Integer] values) -> Enum
+  end
+
+  module DataConverter[T, N]
+    @native_type: Type?
+    def native_type: (Type) -> void
+                   | () -> Type
+    def from_native: (N value, untyped context) -> T
+    def to_native: (T value, untyped context) -> N
+  end
+
+  class DynamicLibrary
+  end
+
+  class Enums
+  end
+
+  class VariadicInvoker
+  end
+end
