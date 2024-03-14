@@ -307,74 +307,18 @@ fn test_oneof_accessors_view_long_lifetime() {
 fn test_oneof_enum_accessors() {
     use unittest_proto3::{
         TestOneof2,
-        TestOneof2_::{Foo, NestedEnum},
+        TestOneof2_::{Foo, FooCase, NestedEnum},
     };
 
     let mut msg = TestOneof2::new();
     assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
     assert_that!(msg.foo(), matches_pattern!(Foo::not_set(_)));
+    assert_that!(msg.foo_case(), matches_pattern!(FooCase::not_set));
 
     msg.set_foo_enum(NestedEnum::Bar);
     assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
     assert_that!(msg.foo(), matches_pattern!(Foo::FooEnum(eq(NestedEnum::Bar))));
-}
-
-#[test]
-fn test_oneof_mut_accessors() {
-    use TestAllTypes_::OneofFieldMut::*;
-
-    let mut msg = TestAllTypes::new();
-    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
-
-    msg.set_oneof_uint32(7);
-
-    match msg.oneof_field_mut() {
-        OneofUint32(mut v) => {
-            assert_that!(v.get(), eq(7));
-            v.set(8);
-            assert_that!(v.get(), eq(8));
-        }
-        f => panic!("unexpected field_mut type! {:?}", f),
-    }
-
-    // Confirm that the mut write above applies to both the field accessor and the
-    // oneof view accessor.
-    assert_that!(msg.oneof_uint32_opt(), eq(Optional::Set(8)));
-    assert_that!(
-        msg.oneof_field(),
-        matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
-    );
-
-    // Clearing a different field in the same oneof doesn't affect the other, set
-    // field.
-    msg.clear_oneof_bytes();
-    assert_that!(
-        msg.oneof_field(),
-        matches_pattern!(TestAllTypes_::OneofField::OneofUint32(eq(8)))
-    );
-
-    msg.clear_oneof_uint32();
-    assert_that!(msg.oneof_field_mut(), matches_pattern!(not_set(_)));
-
-    msg.set_oneof_uint32(7);
-    msg.set_oneof_bytes(b"123");
-    assert_that!(msg.oneof_field_mut(), matches_pattern!(OneofBytes(_)));
-}
-
-#[test]
-fn test_oneof_mut_enum_accessors() {
-    use unittest_proto3::{
-        TestOneof2,
-        TestOneof2_::{FooMut, NestedEnum},
-    };
-
-    let mut msg = TestOneof2::new();
-    assert_that!(msg.foo_enum_opt(), eq(Optional::Unset(NestedEnum::Unknown)));
-    assert_that!(msg.foo_mut(), matches_pattern!(FooMut::not_set(_)));
-
-    msg.set_foo_enum(NestedEnum::Bar);
-    assert_that!(msg.foo_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
-    assert_that!(msg.foo_mut(), matches_pattern!(FooMut::FooEnum(_)));
+    assert_that!(msg.foo_case(), matches_pattern!(FooCase::FooEnum));
 }
 
 #[test]
