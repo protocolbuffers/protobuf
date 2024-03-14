@@ -1,5 +1,5 @@
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_java//java:defs.bzl", "java_proto_library", "java_import")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
@@ -50,10 +50,23 @@ kt_jvm_library(
     deps = ["//java/core"],
 )
 
+java_import(
+    name = "kotlin-stdlib-jvm",
+    jars = [
+        "@com_github_jetbrains_kotlin//:lib/kotlin-stdlib.jar",
+    ],
+)
+
+alias(
+    name = "kotlin-stdlib",
+    actual = ":kotlin-stdlib-jvm",
+    visibility = ["//visibility:public"],
+)
+
 kt_jvm_export(
     name = "kotlin_mvn",
     deploy_env = [
-        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+        ":kotlin-stdlib",
         "//java/core",
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_JAVA_VERSION,

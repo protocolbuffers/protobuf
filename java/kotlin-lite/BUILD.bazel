@@ -1,4 +1,4 @@
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
@@ -48,7 +48,7 @@ kt_jvm_library(
 kt_jvm_export(
     name = "kotlin-lite_mvn",
     deploy_env = [
-        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+        "//java/kotlin:kotlin-stdlib",
         "//java/lite",
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
