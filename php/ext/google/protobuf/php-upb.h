@@ -806,6 +806,14 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size);
 
+#ifdef UPB_TRACING_ENABLED
+void upb_Arena_SetTraceHandler(void (*initArenaTraceHandler)(const upb_Arena*,
+                                                             size_t size),
+                               void (*fuseArenaTraceHandler)(const upb_Arena*,
+                                                             const upb_Arena*),
+                               void (*freeArenaTraceHandler)(const upb_Arena*));
+#endif
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -2442,17 +2450,17 @@ typedef struct upb_Message_Internal {
 } upb_Message_Internal;
 
 #ifdef UPB_TRACING_ENABLED
-void upb_Message_SetNewMessageTraceHandler(
+void UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(
     void (*newMessageTraceHandler)(const upb_MiniTable*, const upb_Arena*));
-void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
-                               const upb_Arena* arena);
+void UPB_PRIVATE(upb_Message_LogNewMessage)(const upb_MiniTable* mini_table,
+                                            const upb_Arena* arena);
 #endif
 
 // Inline version upb_Message_New(), for internal use.
 UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
                                                 upb_Arena* a) {
 #ifdef UPB_TRACING_ENABLED
-  upb_Message_LogNewMessage(m, a);
+  UPB_PRIVATE(upb_Message_LogNewMessage)(m, a);
 #endif
   const int size = m->UPB_PRIVATE(size);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
@@ -3068,6 +3076,18 @@ UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
 
 // Returns whether a message has been frozen.
 UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
+
+#ifdef UPB_TRACING_ENABLED
+UPB_INLINE void upb_Message_SetNewMessageTraceHandler(
+    void (*newMessageTraceHandler)(const upb_MiniTable* mini_table,
+                                   const upb_Arena* arena)) {
+  UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(newMessageTraceHandler);
+}
+UPB_INLINE void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
+                                          const upb_Arena* arena) {
+  UPB_PRIVATE(upb_Message_LogNewMessage)(mini_table, arena);
+}
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
