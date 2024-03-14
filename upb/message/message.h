@@ -15,6 +15,7 @@
 #include <stddef.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/message.h"
 
@@ -44,6 +45,18 @@ UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
 
 // Returns whether a message has been frozen.
 UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
+
+#ifdef UPB_TRACING_ENABLED
+UPB_INLINE void upb_Message_SetNewMessageTraceHandler(
+    void (*newMessageTraceHandler)(const upb_MiniTable* mini_table,
+                                   const upb_Arena* arena)) {
+  UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(newMessageTraceHandler);
+}
+UPB_INLINE void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
+                                          const upb_Arena* arena) {
+  UPB_PRIVATE(upb_Message_LogNewMessage)(mini_table, arena);
+}
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

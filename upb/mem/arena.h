@@ -65,6 +65,14 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size);
 
+#ifdef UPB_TRACING_ENABLED
+void upb_Arena_SetTraceHandler(void (*initArenaTraceHandler)(const upb_Arena*,
+                                                             size_t size),
+                               void (*fuseArenaTraceHandler)(const upb_Arena*,
+                                                             const upb_Arena*),
+                               void (*freeArenaTraceHandler)(const upb_Arena*));
+#endif
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
