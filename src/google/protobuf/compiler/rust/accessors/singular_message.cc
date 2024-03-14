@@ -73,7 +73,18 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  return;
                }
                ctx.Emit({}, R"rs(
-                pub fn $raw_field_name$_mut(&mut self)
+                  pub fn $raw_field_name$_mut(&mut self) -> $msg_type$Mut<'_> {
+                    self.$raw_field_name$_entry().or_default()
+                  }
+                )rs");
+             }},
+            {"private_getter_entry",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) {
+                 return;
+               }
+               ctx.Emit({}, R"rs(
+                fn $raw_field_name$_entry(&mut self)
                     -> $pb$::FieldEntry<'_, $msg_type$> {
                   static VTABLE: $pbr$::MessageVTable =
                     $pbr$::MessageVTable::new($pbi$::Private,
@@ -109,7 +120,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 pub fn set_$raw_field_name$(&mut self, val: impl $pb$::SettableValue<$msg_type$>) {
                   //~ TODO: Optimize this to not go through the
                   //~ FieldEntry.
-                  self.$raw_field_name$_mut().set(val);
+                  self.$raw_field_name$_entry().set(val);
                 }
               )rs");
              }},
@@ -124,6 +135,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            R"rs(
             $getter$
             $getter_mut$
+            $private_getter_entry$
             $getter_opt$
             $setter$
             $clearer$
