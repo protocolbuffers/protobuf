@@ -8,7 +8,6 @@
 /// Tests covering accessors for singular bool, int32, int64, and bytes fields
 /// on proto3.
 use googletest::prelude::*;
-use matchers::{is_set, is_unset};
 use protobuf::Optional;
 use unittest_proto3::{TestAllTypes, TestAllTypes_};
 use unittest_proto3_optional::{TestProto3Optional, TestProto3Optional_};
@@ -17,38 +16,27 @@ use unittest_proto3_optional::{TestProto3Optional, TestProto3Optional_};
 fn test_fixed32_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_fixed32(), eq(0));
-    assert_that!(msg.optional_fixed32_mut().get(), eq(0));
 
     msg.set_optional_fixed32(42);
-    assert_that!(msg.optional_fixed32_mut().get(), eq(42));
     assert_that!(msg.optional_fixed32(), eq(42));
 
     msg.set_optional_fixed32(u32::default());
     assert_that!(msg.optional_fixed32(), eq(0));
-    assert_that!(msg.optional_fixed32_mut().get(), eq(0));
 
-    msg.optional_fixed32_mut().set(43);
+    msg.set_optional_fixed32(43);
     assert_that!(msg.optional_fixed32(), eq(43));
-    assert_that!(msg.optional_fixed32_mut().get(), eq(43));
 }
 
 #[test]
 fn test_bool_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_bool(), eq(false));
-    assert_that!(msg.optional_bool_mut().get(), eq(false));
 
     msg.set_optional_bool(true);
     assert_that!(msg.optional_bool(), eq(true));
-    assert_that!(msg.optional_bool_mut().get(), eq(true));
 
     msg.set_optional_bool(bool::default());
     assert_that!(msg.optional_bool(), eq(false));
-    assert_that!(msg.optional_bool_mut().get(), eq(false));
-
-    msg.optional_bool_mut().set(true);
-    assert_that!(msg.optional_bool(), eq(true));
-    assert_that!(msg.optional_bool_mut().get(), eq(true));
 }
 
 #[test]
@@ -57,26 +45,18 @@ fn test_bytes_accessors() {
     // Note: even though it's named 'optional_bytes', the field is actually not
     // proto3 optional, so it does not support presence.
     assert_that!(*msg.optional_bytes(), empty());
-    assert_that!(*msg.optional_bytes_mut().get(), empty());
 
     msg.set_optional_bytes(b"accessors_test");
     assert_that!(msg.optional_bytes(), eq(b"accessors_test"));
-    assert_that!(msg.optional_bytes_mut().get(), eq(b"accessors_test"));
 
     {
         let s = Vec::from(&b"hello world"[..]);
         msg.set_optional_bytes(&s[..]);
     }
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
-    assert_that!(msg.optional_bytes_mut().get(), eq(b"hello world"));
-
-    msg.optional_bytes_mut().clear();
-    assert_that!(*msg.optional_bytes(), empty());
-    assert_that!(*msg.optional_bytes_mut().get(), empty());
 
     msg.set_optional_bytes(b"");
     assert_that!(*msg.optional_bytes(), empty());
-    assert_that!(*msg.optional_bytes_mut().get(), empty());
 }
 
 #[test]
@@ -84,8 +64,6 @@ fn test_optional_bytes_accessors() {
     let mut msg = TestProto3Optional::new();
     assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
-    assert_that!(*msg.optional_bytes_mut().get(), empty());
-    assert_that!(msg.optional_bytes_mut(), is_unset());
 
     {
         let s = Vec::from(&b"hello world"[..]);
@@ -93,36 +71,14 @@ fn test_optional_bytes_accessors() {
     }
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
-    assert_that!(msg.optional_bytes_mut(), is_set());
-    assert_that!(msg.optional_bytes_mut().get(), eq(b"hello world"));
-
-    msg.optional_bytes_mut().or_default().set(b"accessors_test");
-    assert_that!(msg.optional_bytes(), eq(b"accessors_test"));
-    assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"accessors_test"[..])));
-    assert_that!(msg.optional_bytes_mut(), is_set());
-    assert_that!(msg.optional_bytes_mut().get(), eq(b"accessors_test"));
-    assert_that!(msg.optional_bytes_mut().or_default().get(), eq(b"accessors_test"));
-
-    msg.optional_bytes_mut().clear();
-    assert_that!(*msg.optional_bytes(), empty());
-    assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
-    assert_that!(msg.optional_bytes_mut(), is_unset());
 
     msg.set_optional_bytes(b"");
     assert_that!(*msg.optional_bytes(), empty());
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 
-    msg.optional_bytes_mut().clear();
-    msg.optional_bytes_mut().or_default();
-    assert_that!(*msg.optional_bytes(), empty());
-    assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
-
-    msg.optional_bytes_mut().or_default().set(b"\xffbinary\x85non-utf8");
+    msg.set_optional_bytes(b"\xffbinary\x85non-utf8");
     assert_that!(msg.optional_bytes(), eq(b"\xffbinary\x85non-utf8"));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"\xffbinary\x85non-utf8"[..])));
-    assert_that!(msg.optional_bytes_mut(), is_set());
-    assert_that!(msg.optional_bytes_mut().get(), eq(b"\xffbinary\x85non-utf8"));
-    assert_that!(msg.optional_bytes_mut().or_default().get(), eq(b"\xffbinary\x85non-utf8"));
 }
 
 #[test]
@@ -131,26 +87,18 @@ fn test_string_accessors() {
     // Note: even though it's named 'optional_string', the field is actually not
     // proto3 optional, so it does not support presence.
     assert_that!(*msg.optional_string().as_bytes(), empty());
-    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
     msg.set_optional_string("accessors_test");
     assert_that!(msg.optional_string(), eq("accessors_test"));
-    assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
 
     {
         let s = String::from("hello world");
         msg.set_optional_string(&s[..]);
     }
     assert_that!(msg.optional_string(), eq("hello world"));
-    assert_that!(msg.optional_string_mut().get(), eq("hello world"));
-
-    msg.optional_string_mut().clear();
-    assert_that!(*msg.optional_string().as_bytes(), empty());
-    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 
     msg.set_optional_string("");
     assert_that!(*msg.optional_string().as_bytes(), empty());
-    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
 }
 
 #[test]
@@ -158,8 +106,6 @@ fn test_optional_string_accessors() {
     let mut msg = TestProto3Optional::new();
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
-    assert_that!(*msg.optional_string_mut().get().as_bytes(), empty());
-    assert_that!(msg.optional_string_mut(), is_unset());
 
     {
         let s = String::from("hello world");
@@ -167,27 +113,12 @@ fn test_optional_string_accessors() {
     }
     assert_that!(msg.optional_string(), eq("hello world"));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("hello world".into())));
-    assert_that!(msg.optional_string_mut(), is_set());
-    assert_that!(msg.optional_string_mut().get(), eq("hello world"));
 
-    msg.optional_string_mut().or_default().set("accessors_test");
+    msg.set_optional_string("accessors_test");
     assert_that!(msg.optional_string(), eq("accessors_test"));
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("accessors_test".into())));
-    assert_that!(msg.optional_string_mut(), is_set());
-    assert_that!(msg.optional_string_mut().get(), eq("accessors_test"));
-    assert_that!(msg.optional_string_mut().or_default().get(), eq("accessors_test"));
-
-    msg.optional_string_mut().clear();
-    assert_that!(*msg.optional_string().as_bytes(), empty());
-    assert_that!(msg.optional_string_opt(), eq(Optional::Unset("".into())));
-    assert_that!(msg.optional_string_mut(), is_unset());
 
     msg.set_optional_string("");
-    assert_that!(*msg.optional_string().as_bytes(), empty());
-    assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
-
-    msg.optional_string_mut().clear();
-    msg.optional_string_mut().or_default();
     assert_that!(*msg.optional_string().as_bytes(), empty());
     assert_that!(msg.optional_string_opt(), eq(Optional::Set("".into())));
 }
@@ -198,15 +129,12 @@ fn test_nested_enum_accessors() {
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Zero));
 
     msg.set_optional_nested_enum(NestedEnum::Baz);
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Baz));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
 
     msg.set_optional_nested_enum(NestedEnum::default());
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Zero));
 }
 
 #[test]
@@ -216,29 +144,14 @@ fn test_optional_nested_enum_accessors() {
     let mut msg = TestProto3Optional::new();
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Unspecified)));
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
 
     msg.set_optional_nested_enum(NestedEnum::Baz);
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Baz));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Baz)));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
 
     msg.set_optional_nested_enum(NestedEnum::default());
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Unspecified)));
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
-
-    msg.optional_nested_enum_mut().clear();
-    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
-    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Unspecified)));
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Unspecified));
-
-    let mut field_mut = msg.optional_nested_enum_mut().or_default();
-    assert_that!(field_mut.get(), eq(NestedEnum::Unspecified));
-    field_mut.set(NestedEnum::Bar);
-    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Bar));
-    assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Bar)));
-    assert_that!(msg.optional_nested_enum_mut().get(), eq(NestedEnum::Bar));
 }
 
 #[test]
@@ -247,15 +160,12 @@ fn test_foreign_enum_accessors() {
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
-    assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignZero));
 
     msg.set_optional_foreign_enum(ForeignEnum::ForeignBaz);
-    assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignBaz));
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignBaz));
 
     msg.set_optional_foreign_enum(ForeignEnum::default());
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
-    assert_that!(msg.optional_foreign_enum_mut().get(), eq(ForeignEnum::ForeignZero));
 }
 
 #[test]
@@ -283,7 +193,7 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofBytes(eq(b"123"))));
 
-    msg.oneof_bytes_mut().clear();
+    msg.clear_oneof_bytes();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 }
 

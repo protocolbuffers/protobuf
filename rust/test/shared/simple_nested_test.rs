@@ -6,7 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use nested_proto::Outer_::InnerMut;
 use nested_proto::Outer_::InnerView;
 use nested_proto::Outer_::Inner_::InnerEnum;
 use nested_proto::*;
@@ -81,66 +80,6 @@ fn test_nested_view_lifetimes() {
 }
 
 #[test]
-fn test_nested_muts() {
-    // Covers the setting of a mut and the following assertion
-    // confirming the new value. Replacement example:
-    // old:
-    //   inner_msg.double_mut().set(543.21);
-    //   assert_that!(inner_msg.double_mut().get(), eq(543.21));
-    // new:
-    //   set_and_test_mut!(inner_msg => double_mut, 543.21);
-    macro_rules! set_and_test_mut {
-        ( $a:expr => $($target_mut:ident, $val:expr;)* ) => {
-            $(
-            $a.$target_mut().set($val);
-            assert_that!($a.$target_mut().get(), eq($val));
-            )*
-        };
-    }
-
-    let mut outer_msg = Outer::new();
-    let mut inner_msg: InnerMut<'_> = outer_msg.inner_mut().or_default();
-    assert_that!(
-        inner_msg,
-        matches_pattern!(InnerMut{
-            float(): eq(0.0),
-            double(): eq(0.0),
-            int32(): eq(0),
-            int64(): eq(0),
-            uint32(): eq(0),
-            uint64(): eq(0),
-            sint32(): eq(0),
-            sint64(): eq(0),
-            fixed32(): eq(0),
-            fixed64(): eq(0),
-            sfixed32(): eq(0),
-            sfixed64(): eq(0),
-            bool(): eq(false),
-            inner_enum(): eq(InnerEnum::Unspecified)
-        })
-    );
-    assert_that!(inner_msg.string_mut().get(), eq(""));
-    assert_that!(inner_msg.bytes_mut().get(), eq(b""));
-
-    set_and_test_mut!(inner_msg =>
-        double_mut, 543.21;
-        float_mut, 1.23;
-        int32_mut, 12;
-        int64_mut, 42;
-        uint32_mut, 13;
-        uint64_mut, 5000;
-        sint32_mut, -2;
-        sint64_mut, 322;
-        fixed32_mut, 77;
-        fixed64_mut, 999;
-        bool_mut, true;
-        string_mut, "hi";
-        bytes_mut, b"bye";
-        inner_enum_mut, InnerEnum::Foo;
-    );
-}
-
-#[test]
 fn test_msg_from_outside() {
     // let's make sure that we're not just working for messages nested inside
     // messages, messages from without and within should work
@@ -169,7 +108,7 @@ fn test_recursive_mut() {
     let mut three = two.rec_mut().or_default();
     let mut four = three.rec_mut().or_default();
 
-    four.num_mut().set(1);
+    four.set_num(1);
     assert_that!(four.num(), eq(1));
 
     assert_that!(rec.num(), eq(0));
