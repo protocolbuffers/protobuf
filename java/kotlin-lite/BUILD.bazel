@@ -1,4 +1,4 @@
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:kt_opts.bzl", "kt_jvm_export")

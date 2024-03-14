@@ -133,9 +133,9 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/apple_support/releases/download/1.12.0/apple_support.1.12.0.tar.gz",
         )
 
-    if not native.existing_rule("io_bazel_rules_kotlin"):
+    if not native.existing_rule("rules_kotlin"):
         http_archive(
-            name = "io_bazel_rules_kotlin",
+            name = "rules_kotlin",
             urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.8.1/rules_kotlin_release.tgz"],
             sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
         )
