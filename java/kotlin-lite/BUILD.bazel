@@ -1,9 +1,14 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
-load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:kt_opts.bzl", "kt_jvm_export")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+
+alias(
+    name = "javamodule",
+    actual = "//java/kotlin:javamodule",
+)
 
 java_lite_proto_library(
     name = "example_extensible_message_java_proto_lite",
@@ -53,7 +58,10 @@ kt_jvm_export(
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin-lite:pom_template.xml",
-    resources = ["//:well_known_type_protos"],
+    resources = [
+        ":javamodule",
+        "//:well_known_type_protos"
+    ],
     tags = ["manual"],
     runtime_deps = [
         ":lite_extensions",

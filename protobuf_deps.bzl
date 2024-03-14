@@ -7,10 +7,10 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
-    "com.google.errorprone:error_prone_annotations:2.5.1",
-    "com.google.j2objc:j2objc-annotations:2.8",
-    "com.google.guava:guava:32.0.1-jre",
-    "com.google.guava:guava-testlib:32.0.1-jre",
+    "com.google.errorprone:error_prone_annotations:2.26.1",
+    "com.google.j2objc:j2objc-annotations:3.0.0",
+    "com.google.guava:guava:33.0.0-jre-jpms",
+    "com.google.guava:guava-testlib:33.0.0-jre",
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
@@ -105,8 +105,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_jvm_external",
             repo = "https://github.com/bazelbuild/rules_jvm_external",
-            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            commit = "7ba59df6afa05c9e2d9356e1adb99f016a7c01eb",
+            sha256 = "eb794f26e0f2d5c149ddcff1d61bda449bc9f68c4bcce8dec1c4d7387907f63c",
         )
 
     if not native.existing_rule("rules_pkg"):

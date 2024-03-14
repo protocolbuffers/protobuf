@@ -11,6 +11,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Jar;
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -21,6 +22,10 @@ import picocli.CommandLine.Option;
 /** Java binary that runs bndlib to analyze a jar file to generate OSGi bundle manifest. */
 @Command(name = "osgi_wrapper")
 public final class OsgiWrapper implements Callable<Integer> {
+  private static final String MULTI_RELEASE_MANIFEST_PROPERTY = "Multi-Release";
+  private static final String FIXUP_MESSAGES_PROPERTY = "-fixupmessages";
+  private static final String FIXUP_MESSAGES_IGNORE_MRJAR = "^Classes found in the wrong directory: .*";
+
   private static final String REMOVEHEADERS =
       Arrays.stream(
               new String[] {
@@ -56,9 +61,9 @@ public final class OsgiWrapper implements Callable<Integer> {
   private String classpath;
 
   @Option(
-      names = {"--automatic_module_name"},
-      description = "The automatic module name of the bundle")
-  private String automaticModuleName;
+      names = {"--module_name"},
+      description = "The JPMS module name of the bundle")
+  private String moduleName;
 
   @Option(
       names = {"--bundle_copyright"},
@@ -111,7 +116,6 @@ public final class OsgiWrapper implements Callable<Integer> {
 
     Analyzer analyzer = new Analyzer();
     analyzer.setJar(bin);
-    analyzer.setProperty(Analyzer.AUTOMATIC_MODULE_NAME, automaticModuleName);
     analyzer.setProperty(Analyzer.BUNDLE_NAME, bundleName);
     analyzer.setProperty(Analyzer.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
     analyzer.setProperty(Analyzer.BUNDLE_VERSION, bundleVersion);
@@ -122,6 +126,8 @@ public final class OsgiWrapper implements Callable<Integer> {
     analyzer.setProperty(Analyzer.BUNDLE_DOCURL, bundleDocUrl);
     analyzer.setProperty(Analyzer.BUNDLE_LICENSE, bundleLicense);
     analyzer.setProperty(Analyzer.REMOVEHEADERS, REMOVEHEADERS);
+    analyzer.setProperty(MULTI_RELEASE_MANIFEST_PROPERTY, "true");
+    analyzer.setProperty(FIXUP_MESSAGES_PROPERTY, FIXUP_MESSAGES_IGNORE_MRJAR);
 
     if (classpath != null) {
       for (String dep : Arrays.asList(classpath.split(":"))) {
@@ -138,6 +144,9 @@ public final class OsgiWrapper implements Callable<Integer> {
       if (analyzer.save(outputJar, true)) {
         return 0;
       }
+    } else {
+      List<String> err = analyzer.getErrors();
+      System.out.println("BND analyzer failed: " + err.toString());
     }
     return 1;
   }

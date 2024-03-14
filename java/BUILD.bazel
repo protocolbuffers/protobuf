@@ -51,6 +51,20 @@ filegroup(
     ],
 )
 
+package_group(
+    name = "pkgs",
+    packages = [
+        "//java/%s" % x for x in [
+            "core",
+            "kotlin",
+            "kotlin-jmod",
+            "kotlin-lite",
+            "lite",
+            "util",
+        ]
+    ],
+)
+
 ################################################################################
 # Packaging rules
 ################################################################################
