@@ -267,7 +267,6 @@ _proto_gen = rule(
             default = "all",
         ),
     },
-    output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
 
