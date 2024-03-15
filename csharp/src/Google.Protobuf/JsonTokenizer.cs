@@ -59,7 +59,7 @@ namespace Google.Protobuf
 
         // TODO: Why do we allow a different token to be pushed back? It might be better to always remember the previous
         // token returned, and allow a parameterless Rewind() method (which could only be called once, just like the current PushBack).
-        internal void PushBack(JsonToken token)
+        internal void PushBack(in JsonToken token)
         {
             if (bufferedToken != null)
             {
