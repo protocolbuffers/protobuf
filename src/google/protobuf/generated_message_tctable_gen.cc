@@ -59,32 +59,6 @@ bool GetEnumValidationRange(const EnumDescriptor* enum_type, int16_t& start,
   }
 }
 
-enum class EnumRangeInfo {
-  kNone,         // No contiguous range
-  kContiguous,   // Has a contiguous range
-  kContiguous0,  // Has a small contiguous range starting at 0
-  kContiguous1,  // Has a small contiguous range starting at 1
-};
-
-// Returns enum validation range info, and sets `rmax_value` iff
-// the returned range is a small range. `rmax_value` is guaranteed
-// to remain unchanged if the enum range is not small.
-EnumRangeInfo GetEnumRangeInfo(const FieldDescriptor* field,
-                               uint8_t& rmax_value) {
-  int16_t start;
-  uint16_t size;
-  if (!GetEnumValidationRange(field->enum_type(), start, size)) {
-    return EnumRangeInfo::kNone;
-  }
-  int max_value = start + size - 1;
-  if (max_value <= 127 && (start == 0 || start == 1)) {
-    rmax_value = static_cast<uint8_t>(max_value);
-    return start == 0 ? EnumRangeInfo::kContiguous0
-                      : EnumRangeInfo::kContiguous1;
-  }
-  return EnumRangeInfo::kContiguous;
-}
-
 // options.lazy_opt might be on for fields that don't really support lazy, so we
 // make sure we only use lazy rep for singular TYPE_MESSAGE fields.
 // We can't trust the `lazy=true` annotation.
@@ -92,131 +66,6 @@ bool HasLazyRep(const FieldDescriptor* field,
                 const TailCallTableInfo::PerFieldOptions options) {
   return field->type() == field->TYPE_MESSAGE && !field->is_repeated() &&
          options.lazy_opt != 0;
-}
-
-TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
-    const TailCallTableInfo::FieldEntryInfo& entry,
-    const TailCallTableInfo::MessageOptions& message_options,
-    const TailCallTableInfo::PerFieldOptions& options) {
-  TailCallTableInfo::FastFieldInfo::Field info{};
-#define PROTOBUF_PICK_FUNCTION(fn) \
-  (field->number() < 16 ? TcParseFunction::fn##1 : TcParseFunction::fn##2)
-
-#define PROTOBUF_PICK_SINGLE_FUNCTION(fn) PROTOBUF_PICK_FUNCTION(fn##S)
-
-#define PROTOBUF_PICK_REPEATABLE_FUNCTION(fn)           \
-  (field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
-                        : PROTOBUF_PICK_FUNCTION(fn##S))
-
-#define PROTOBUF_PICK_PACKABLE_FUNCTION(fn)               \
-  (field->is_packed()     ? PROTOBUF_PICK_FUNCTION(fn##P) \
-   : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
-                          : PROTOBUF_PICK_FUNCTION(fn##S))
-
-#define PROTOBUF_PICK_STRING_FUNCTION(fn)                       \
-  (field->options().ctype() == FieldOptions::CORD               \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                         \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS) \
-                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
-
-  const FieldDescriptor* field = entry.field;
-  info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
-  if (field->type() == FieldDescriptor::TYPE_BYTES ||
-      field->type() == FieldDescriptor::TYPE_STRING) {
-    if (options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
-    }
-  }
-
-  TcParseFunction picked = TcParseFunction::kNone;
-  switch (field->type()) {
-    case FieldDescriptor::TYPE_BOOL:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV8);
-      break;
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_UINT32:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
-      break;
-    case FieldDescriptor::TYPE_SINT32:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastZ32);
-      break;
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_UINT64:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV64);
-      break;
-    case FieldDescriptor::TYPE_SINT64:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastZ64);
-      break;
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_SFIXED32:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastF32);
-      break;
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED64:
-      picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastF64);
-      break;
-    case FieldDescriptor::TYPE_ENUM:
-      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
-        picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
-      } else {
-        switch (GetEnumRangeInfo(field, info.aux_idx)) {
-          case EnumRangeInfo::kNone:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEv);
-            break;
-          case EnumRangeInfo::kContiguous:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr);
-            break;
-          case EnumRangeInfo::kContiguous0:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr0);
-            break;
-          case EnumRangeInfo::kContiguous1:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr1);
-            break;
-        }
-      }
-      break;
-    case FieldDescriptor::TYPE_BYTES:
-      picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
-      break;
-    case FieldDescriptor::TYPE_STRING:
-      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
-        case internal::cpp::Utf8CheckMode::kStrict:
-          picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
-          break;
-        case internal::cpp::Utf8CheckMode::kVerify:
-          picked = PROTOBUF_PICK_STRING_FUNCTION(kFastS);
-          break;
-        case internal::cpp::Utf8CheckMode::kNone:
-          picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
-          break;
-      }
-      break;
-    case FieldDescriptor::TYPE_MESSAGE:
-      picked =
-          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
-           : options.use_direct_tcparser_table
-               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
-               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
-      break;
-    case FieldDescriptor::TYPE_GROUP:
-      picked = (options.use_direct_tcparser_table
-                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt)
-                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGd));
-      break;
-  }
-
-  ABSL_CHECK(picked != TcParseFunction::kNone);
-  info.func = picked;
-  return info;
-
-#undef PROTOBUF_PICK_FUNCTION
-#undef PROTOBUF_PICK_SINGLE_FUNCTION
-#undef PROTOBUF_PICK_REPEATABLE_FUNCTION
-#undef PROTOBUF_PICK_PACKABLE_FUNCTION
-#undef PROTOBUF_PICK_STRING_FUNCTION
 }
 
 bool IsFieldEligibleForFastParsing(
@@ -227,7 +76,7 @@ bool IsFieldEligibleForFastParsing(
   const auto options = option_provider.GetForField(field);
   ABSL_CHECK(!field->options().weak());
   // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
+  if (field->is_map() || field->real_containing_oneof() || field->is_packed() ||
       options.is_implicitly_weak || options.should_split) {
     return false;
   }
@@ -242,43 +91,21 @@ bool IsFieldEligibleForFastParsing(
     return false;
   }
 
-  // We will check for a valid auxiliary index range later. However, we might
-  // want to change the value we check for inlined string fields.
-  int aux_idx = entry.aux_idx;
-
   switch (field->type()) {
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      if (field->options().ctype() == FieldOptions::STRING) {
-        // strings are fine...
-      } else if (field->options().ctype() == FieldOptions::CORD) {
-        // Cords are worth putting into the fast table, if they're not repeated
-        if (field->is_repeated()) return false;
-      } else {
-        return false;
-      }
-      if (options.is_string_inlined) {
-        ABSL_CHECK(!field->is_repeated());
-        // For inlined strings, the donation state index is stored in the
-        // `aux_idx` field of the fast parsing info. We need to check the range
-        // of that value instead of the auxiliary index.
-        aux_idx = entry.inlined_string_idx;
-      }
-      break;
-
-    case FieldDescriptor::TYPE_ENUM: {
-      uint8_t rmax_value;
-      if (!message_options.uses_codegen &&
-          GetEnumRangeInfo(field, rmax_value) == EnumRangeInfo::kNone) {
-        // We can't use fast parsing for these entries because we can't specify
-        // the validator.
-        // TODO: Implement a fast parser for these enums.
+      if (field->options().ctype() != FieldOptions::STRING) {
         return false;
       }
       break;
-    }
-
+    case FieldDescriptor::TYPE_ENUM:
+      if (!cpp::HasPreservingUnknownEnumSemantics(field)) return false;
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      if (!options.use_direct_tcparser_table) return false;
+      if (field->message_type()->options().message_set_wire_format()) return false;
     default:
       break;
   }
@@ -287,126 +114,10 @@ bool IsFieldEligibleForFastParsing(
     // The tailcall parser can only update the first 32 hasbits. Fields with
     // has-bits beyond the first 32 are handled by mini parsing/fallback.
     ABSL_CHECK_GE(entry.hasbit_idx, 0) << field->DebugString();
-    if (entry.hasbit_idx >= 32) return false;
+    using FFE = TcParseTableBase::FastFieldEntry;
+    if (entry.hasbit_idx >= (1 << FFE::kHasBitBits)) return false;
   }
-
-  // If the field needs auxiliary data, then the aux index is needed. This
-  // must fit in a uint8_t.
-  if (aux_idx > std::numeric_limits<uint8_t>::max()) {
-    return false;
-  }
-
-  // The largest tag that can be read by the tailcall parser is two bytes
-  // when varint-coded. This allows 14 bits for the numeric tag value:
-  //   byte 0   byte 1
-  //   1nnnnttt 0nnnnnnn
-  //    ^^^^^^^  ^^^^^^^
-  if (field->number() >= 1 << 11) return false;
-
   return true;
-}
-
-absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
-  auto* parent = descriptor->containing_type();
-  if (parent == nullptr) return absl::nullopt;
-  for (int i = 0; i < parent->field_count(); ++i) {
-    auto* field = parent->field(i);
-    if (field->type() == field->TYPE_GROUP &&
-        field->message_type() == descriptor) {
-      return WireFormatLite::MakeTag(field->number(),
-                                     WireFormatLite::WIRETYPE_END_GROUP);
-    }
-  }
-  return absl::nullopt;
-}
-
-uint32_t RecodeTagForFastParsing(uint32_t tag) {
-  ABSL_DCHECK_LE(tag, 0x3FFF);
-  // Construct the varint-coded tag. If it is more than 7 bits, we need to
-  // shift the high bits and add a continue bit.
-  if (uint32_t hibits = tag & 0xFFFFFF80) {
-    // hi = tag & ~0x7F
-    // lo = tag & 0x7F
-    // This shifts hi to the left by 1 to the next byte and sets the
-    // continuation bit.
-    tag = tag + hibits + 128;
-  }
-  return tag;
-}
-
-std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
-    absl::optional<uint32_t> end_group_tag,
-    const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
-    int table_size_log2,
-    const TailCallTableInfo::MessageOptions& message_options,
-    const TailCallTableInfo::OptionProvider& option_provider) {
-  std::vector<TailCallTableInfo::FastFieldInfo> result(1 << table_size_log2);
-  const uint32_t idx_mask = static_cast<uint32_t>(result.size() - 1);
-  const auto tag_to_idx = [&](uint32_t tag) {
-    // The field index is determined by the low bits of the field number, where
-    // the table size determines the width of the mask. The largest table
-    // supported is 32 entries. The parse loop uses these bits directly, so that
-    // the dispatch does not require arithmetic:
-    //        byte 0   byte 1
-    //   tag: 1nnnnttt 0nnnnnnn
-    //        ^^^^^
-    //         idx (table_size_log2=5)
-    // This means that any field number that does not fit in the lower 4 bits
-    // will always have the top bit of its table index asserted.
-    return (tag >> 3) & idx_mask;
-  };
-
-  if (end_group_tag.has_value() && (*end_group_tag >> 14) == 0) {
-    // Fits in 1 or 2 varint bytes.
-    const uint32_t tag = RecodeTagForFastParsing(*end_group_tag);
-    const uint32_t fast_idx = tag_to_idx(tag);
-
-    TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    info.data = TailCallTableInfo::FastFieldInfo::NonField{
-        *end_group_tag < 128 ? TcParseFunction::kFastEndG1
-                             : TcParseFunction::kFastEndG2,
-        static_cast<uint16_t>(tag),
-        static_cast<uint16_t>(*end_group_tag),
-    };
-  }
-
-  for (const auto& entry : field_entries) {
-    if (!IsFieldEligibleForFastParsing(entry, message_options,
-                                       option_provider)) {
-      continue;
-    }
-
-    const auto* field = entry.field;
-    const auto options = option_provider.GetForField(field);
-    const uint32_t tag = RecodeTagForFastParsing(WireFormat::MakeTag(field));
-    const uint32_t fast_idx = tag_to_idx(tag);
-
-    TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    if (info.AsNonField() != nullptr) {
-      // Null field means END_GROUP which is guaranteed to be present.
-      continue;
-    }
-    if (auto* as_field = info.AsField()) {
-      // This field entry is already filled. Skip if previous entry is more
-      // likely present.
-      const auto prev_options = option_provider.GetForField(as_field->field);
-      if (prev_options.presence_probability >= options.presence_probability) {
-        continue;
-      }
-    }
-
-    // We reset the entry even if it had a field already.
-    // Fill in this field's entry:
-    auto& fast_field =
-        info.data.emplace<TailCallTableInfo::FastFieldInfo::Field>(
-            MakeFastFieldEntry(entry, message_options, options));
-    fast_field.field = field;
-    fast_field.coded_tag = tag;
-    // If this field does not have presence, then it can set an out-of-bounds
-    // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
-    fast_field.hasbit_idx = cpp::HasHasbit(field) ? entry.hasbit_idx : 63;
-  }
-  return result;
 }
 
 // We only need field names for reporting UTF-8 parsing errors, so we only
@@ -878,58 +589,60 @@ TailCallTableInfo::TailCallTableInfo(
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
                 num_non_cold_subtables);
 
-  table_size_log2 = 0;  // fallback value
-  int num_fast_fields = -1;
-  auto end_group_tag = GetEndGroupTag(descriptor);
-  for (int try_size_log2 : {0, 1, 2, 3, 4, 5}) {
-    size_t try_size = 1 << try_size_log2;
-    auto split_fields =
-        SplitFastFieldsForSize(end_group_tag, field_entries, try_size_log2,
-                               message_options, option_provider);
-    ABSL_CHECK_EQ(split_fields.size(), try_size);
-    int try_num_fast_fields = 0;
-    for (const auto& info : split_fields) {
-      if (info.is_empty()) continue;
-
-      if (info.AsNonField() != nullptr) {
-        ++try_num_fast_fields;
-        continue;
+  int num_fields = 0;  // fallback value
+  // MiniParse is very slow both the parsing as the field number lookup. Our case we accept sparse tables.
+  constexpr double kDensityCutoff = 0;
+  constexpr int kFastFieldCutoff = 100000;  // Cutoff ridiculous field numbers (exercised in unittests)
+  for (auto entry : field_entries) {
+    if (entry.field->number() > kFastFieldCutoff) break;
+    if (entry.field->number() >= 32 && (double)(num_fields + 1) / entry.field->number() < kDensityCutoff) break;
+    num_fields++;
+  }
+  
+  using FFE = TcParseTableBase::FastFieldEntry;
+  for (int i = 0; i < num_fields; i++) {
+    auto entry = field_entries[i];
+    // Fill gaps with empty slots
+    while (fast_path_fields.size() < entry.field->number() - 1) fast_path_fields.push_back({FastFieldInfo::Empty()});
+    auto wt = WireFormat::WireTypeForField(entry.field);
+    if (IsFieldEligibleForFastParsing(entry, message_options, option_provider)) {
+      using namespace field_layout;
+      uint32_t card = ((entry.type_card & kFcMask) >> kFcShift) << FFE::kCardShift;
+      ABSL_DCHECK(card != FFE::kFallback);
+      uint32_t rep;
+      uint32_t transform = 0;
+      int hasbit = entry.hasbit_idx;
+      ABSL_DCHECK(card != FFE::kSingular || hasbit == -1) << entry.field->name() << " " << entry.field->containing_type()->name();
+      absl::optional<uint32> offset;
+      if (wt == WireFormatLite::WireType::WIRETYPE_LENGTH_DELIMITED) {
+        switch (static_cast<FieldKind>((entry.type_card & kFkMask))) {
+          case FieldKind::kFkString:
+            rep = FFE::kRepBytes;
+            // TODO do not rely on numeric equality
+            transform = ((entry.type_card & kTvMask) >> kTvShift) << FFE::kTransformShift;
+            break;
+          case FieldKind::kFkMessage:
+            rep = FFE::kRepMessage;
+            offset = i;
+            break;
+          default:
+            ABSL_CHECK(false) << "Invalid configuration";
+        }
+      } else if (wt == WireFormatLite::WireType::WIRETYPE_START_GROUP) {
+        rep = FFE::kRepMessage;
+        offset = i;
+      } else {
+        ABSL_DCHECK(wt != WireFormatLite::WireType::WIRETYPE_END_GROUP);
+        // TODO do not rely on numeric equality
+        rep = ((((entry.type_card & kRepMask) >> kRepShift) + 1) / 2) << FFE::kRepShift;
+        transform = (entry.type_card & kTvMask) == kTvZigZag ? FFE::kZigZag : 0;
       }
-
-      auto* as_field = info.AsField();
-      const auto option = option_provider.GetForField(as_field->field);
-      // 0.05 was selected based on load tests where 0.1 and 0.01 were also
-      // evaluated and worse.
-      constexpr float kMinPresence = 0.05f;
-      if (option.presence_probability >= kMinPresence) {
-        ++try_num_fast_fields;
-      }
-    }
-    // Use this size if (and only if) it covers more fields.
-    if (try_num_fast_fields > num_fast_fields) {
-      fast_path_fields = std::move(split_fields);
-      table_size_log2 = try_size_log2;
-      num_fast_fields = try_num_fast_fields;
-    }
-    // The largest table we allow has the same number of entries as the
-    // message has fields, rounded up to the next power of 2 (e.g., a message
-    // with 5 fields can have a fast table of size 8). A larger table *might*
-    // cover more fields in certain cases, but a larger table in that case
-    // would have mostly empty entries; so, we cap the size to avoid
-    // pathologically sparse tables.
-    if (end_group_tag.has_value()) {
-      // If this message uses group encoding, the tables are sometimes very
-      // sparse because the fields in the group avoid using the same field
-      // numbering as the parent message (even though currently, the proto
-      // compiler allows the overlap, and there is no possible conflict.)
-      // As such, this test produces a false negative as far as whether the
-      // large table will be worth it.  So we disable the test in this case.
+      fast_path_fields.push_back({FastFieldInfo::Field{entry.field, wt, card, rep, transform, hasbit, offset}});
     } else {
-      if (try_size > ordered_fields.size()) {
-        break;
-      }
+      fast_path_fields.push_back({FastFieldInfo::Fallback{entry.field, wt, uint32_t(i)}});
     }
   }
+  table_size = fast_path_fields.size();
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());

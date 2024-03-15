@@ -317,11 +317,11 @@ const char* Struct::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
+const ::_pbi::TcParseTable<1, 1, 2, 37, 2> Struct::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
+    1, 1,  // max_field_number, num_fast_fields
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -334,7 +334,8 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::Struct>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
+    // map<string, .google.protobuf.Value> fields = 1;
+    {26},  // Fallback
   }}, {{
     65535, 65535
   }}, {{
@@ -626,11 +627,11 @@ const char* Value::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
+const ::_pbi::TcParseTable<6, 6, 2, 42, 2> Value::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    6, 0,  // max_field_number, fast_idx_mask
+    6, 6,  // max_field_number, num_fast_fields
     offsetof(decltype(_table_), field_lookup_table),
     4294967232,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -643,7 +644,18 @@ const ::_pbi::TcParseTable<0, 6, 2, 42, 2> Value::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::Value>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
+    // .google.protobuf.NullValue null_value = 1;
+    {24},  // Fallback
+    // double number_value = 2;
+    {57},  // Fallback
+    // string string_value = 3;
+    {90},  // Fallback
+    // bool bool_value = 4;
+    {120},  // Fallback
+    // .google.protobuf.Struct struct_value = 5;
+    {154},  // Fallback
+    // .google.protobuf.ListValue list_value = 6;
+    {186},  // Fallback
   }}, {{
     65535, 65535
   }}, {{
@@ -949,11 +961,11 @@ const char* ListValue::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
+const ::_pbi::TcParseTable<1, 1, 1, 0, 2> ListValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
+    1, 1,  // max_field_number, num_fast_fields
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -967,8 +979,7 @@ const ::_pbi::TcParseTable<0, 1, 1, 0, 2> ListValue::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // repeated .google.protobuf.Value values = 1;
-    {::_pbi::TcParser::FastMtR1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_)}},
+    {50, 0, 0},
   }}, {{
     65535, 65535
   }}, {{

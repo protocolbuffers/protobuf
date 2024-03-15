@@ -115,7 +115,7 @@ inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGene
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT Version final : public ::google::protobuf::Message
+class PROTOC_EXPORT Version final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   inline Version() : Version(nullptr) {}
@@ -300,7 +300,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 4, 0,
+      4, 4, 0,
       47, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -329,7 +329,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse_File final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
@@ -530,7 +530,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 4, 1,
+      16, 4, 1,
       86, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -559,7 +559,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
@@ -783,7 +783,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 1,
+      15, 5, 1,
       60, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
@@ -813,7 +813,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorRequest final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
@@ -1043,7 +1043,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 5, 3,
+      17, 5, 3,
       79, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;

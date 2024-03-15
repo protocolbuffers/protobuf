@@ -227,11 +227,11 @@ const char* Any::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
+const ::_pbi::TcParseTable<2, 2, 0, 36, 2> Any::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
+    2, 2,  // max_field_number, num_fast_fields
     offsetof(decltype(_table_), field_lookup_table),
     4294967292,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -244,12 +244,10 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::Any>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // bytes value = 2;
-    {::_pbi::TcParser::FastBS1,
-     {18, 63, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)}},
     // string type_url = 1;
-    {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)}},
+    {258, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)},
+    // bytes value = 2;
+    {2, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)},
   }}, {{
     65535, 65535
   }}, {{

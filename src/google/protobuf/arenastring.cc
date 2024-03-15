@@ -264,13 +264,11 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
 }
 
 const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
+                                                int size,
                                                 ArenaStringPtr* s,
                                                 Arena* arena) {
   ScopedCheckPtrInvariants check(&s->tagged_ptr_);
   ABSL_DCHECK(arena != nullptr);
-
-  int size = ReadSize(&ptr);
-  if (!ptr) return nullptr;
 
   auto* str = s->NewString(arena);
   ptr = ReadString(ptr, size, str);

@@ -65,7 +65,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Any final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   inline Any() : Any(nullptr) {}
@@ -278,7 +278,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
+      2, 2, 0,
       36, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;

@@ -200,6 +200,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
   // Implemented in arenastring.cc
   PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
+                                                 int size,
                                                  ArenaStringPtr* s,
                                                  Arena* arena);
 
@@ -430,6 +431,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
         ptr, [str](const char* p, ptrdiff_t s) { str->append(p, s); });
   }
   friend class ImplicitWeakMessage;
+  friend class TcParser;
 
   // Needs access to kSlopBytes.
   friend PROTOBUF_EXPORT std::pair<const char*, int32_t> ReadSizeFallback(
@@ -491,6 +493,11 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   Data& data() { return data_; }
   const Data& data() const { return data_; }
+
+  bool IncDepth() { return --depth_ >= 0; }
+  void DecDepth() { depth_++; }
+  void IncGroupDepth() { group_depth_++; }
+  void DecGroupDepth() { group_depth_--; }
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
 

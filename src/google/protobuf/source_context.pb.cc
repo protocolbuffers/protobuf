@@ -199,11 +199,11 @@ const char* SourceContext::_InternalParse(
 
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
+const ::_pbi::TcParseTable<1, 1, 0, 47, 2> SourceContext::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 0,  // max_field_number, fast_idx_mask
+    1, 1,  // max_field_number, num_fast_fields
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -217,8 +217,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string file_name = 1;
-    {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
+    {258, 0, PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)},
   }}, {{
     65535, 65535
   }}, {{

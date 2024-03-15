@@ -93,6 +93,8 @@ class PROTOBUF_EXPORT WireFormat {
   // This is the reflective implementation of the _InternalParse functionality.
   static const char* _InternalParse(Message* msg, const char* ptr,
                                     internal::ParseContext* ctx);
+  static const char* _InternalParseMessageSet(Message *msg, const char *ptr,
+                                              ParseContext *ctx, uint32_t tag, const Descriptor* descriptor, const Reflection* reflection);
 
   // Serialize a message in protocol buffer wire format.
   //
