@@ -722,31 +722,31 @@ module BasicTest
         message.repeated_msg[0].foo = "bar"
       end
     end
-  end
 
-  def test_oneof_fields_respond_to? # regression test for issue 9202
-    msg = proto_module::OneofMessage.new
-    # `has_` prefix + "?" suffix actions should work for oneofs fields and members.
-    assert msg.has_my_oneof?
-    assert msg.respond_to? :has_my_oneof?
-    assert_respond_to msg, :has_a?
-    refute msg.has_a?
-    assert_respond_to msg, :has_b?
-    refute msg.has_b?
-    assert_respond_to msg, :has_c?
-    refute msg.has_c?
-    assert_respond_to msg, :has_d?
-    refute msg.has_d?
-  end
+    def test_oneof_fields_respond_to? # regression test for issue 9202
+      msg = proto_module::OneofMessage.new
+      # `has_` prefix + "?" suffix actions should work for oneofs fields and members.
+      assert_false msg.has_my_oneof?
+      assert msg.respond_to? :has_my_oneof?
+      assert_respond_to msg, :has_a?
+      refute msg.has_a?
+      assert_respond_to msg, :has_b?
+      refute msg.has_b?
+      assert_respond_to msg, :has_c?
+      refute msg.has_c?
+      assert_respond_to msg, :has_d?
+      refute msg.has_d?
+    end
 
-  def test_string_subclass
-    str = "hello"
-    myString = Class.new(String)
+    def test_string_subclass
+      str = "hello"
+      myString = Class.new(String)
 
-    m = proto_module::TestMessage.new(
-      optional_string: myString.new(str),
-    )
+      m = proto_module::TestMessage.new(
+        optional_string: myString.new(str),
+      )
 
-    assert_equal str, m.optional_string
+      assert_equal str, m.optional_string
+    end
   end
 end
