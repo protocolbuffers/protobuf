@@ -21,7 +21,8 @@ jobs:
           - { name: Debug, flags: --config=dbg }
           - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
           - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
-          - { name: TSAN, flags: --config=tsan }
+          # TODO Disable until TSAN bug is resolved
+          # - { name: TSAN, flags: --config=tsan }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
