@@ -7,10 +7,11 @@
 
 #include "google/protobuf/compiler/php/names.h"
 
+#include <algorithm>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/plugin.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -40,7 +41,8 @@ namespace php {
 
 bool IsReservedName(absl::string_view name) {
   std::string lower(name);
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::transform(lower.begin(), lower.end(), lower.begin(),
+                 absl::ascii_tolower);
   for (int i = 0; i < kReservedNamesSize; i++) {
     if (lower == kReservedNames[i]) {
       return true;
