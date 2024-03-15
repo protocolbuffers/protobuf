@@ -3,6 +3,7 @@
 # basic_test_pb.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
+require 'basic_test_features_pb'
 require 'basic_test_pb'
 require 'common_tests'
 require 'google/protobuf'
@@ -748,5 +749,84 @@ module BasicTest
 
       assert_equal str, m.optional_string
     end
+
+    def test_proto3_explicit_presence
+      descriptor = TestMessage.descriptor.lookup("optional_int32")
+      assert_true descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_implicit_presence
+      descriptor = TestSingularFields.descriptor.lookup("singular_int32")
+      assert_false descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_packed_encoding
+      descriptor = TestMessage.descriptor.lookup("repeated_int32")
+      assert_true descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_expanded_encoding
+      descriptor = TestUnpackedMessage.descriptor.lookup("repeated_int32")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_expanded_encoding_unpackable
+      descriptor = TestMessage.descriptor.lookup("optional_msg")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_explicit_presence
+      descriptor = TestFeaturesMessage.descriptor.lookup("explicit")
+      assert_true descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_implicit_presence
+      descriptor = TestFeaturesMessage.descriptor.lookup("implicit")
+      assert_false descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_required_presence
+      descriptor = TestFeaturesMessage.descriptor.lookup("legacy_required")
+      assert_equal :required, descriptor.label
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_packed_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("packed")
+      assert_true descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_expanded_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("expanded")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_expanded_encoding_unpackable
+      descriptor = TestFeaturesMessage.descriptor.lookup("unpackable")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_delimited_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("delimited")
+      assert_equal :group, descriptor.type
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_length_prefixed_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("length_prefixed")
+      assert_equal :message, descriptor.type
+      assert_false descriptor.options.has_features?
+    end
+
   end
 end

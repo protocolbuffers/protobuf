@@ -113,6 +113,8 @@ internal_copy_files(
     srcs = [
         "//src/google/protobuf:test_messages_proto2.proto",
         "//src/google/protobuf:test_messages_proto3.proto",
+        "//src/google/protobuf/editions:golden/test_messages_proto2_editions.proto",
+        "//src/google/protobuf/editions:golden/test_messages_proto3_editions.proto",
     ],
     strip_prefix = "src",
 )
@@ -232,12 +234,12 @@ filegroup(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":ruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
@@ -246,23 +248,23 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_ruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
     name = "conformance_test_jruby",
     failure_list = "//conformance:failure_list_jruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 conformance_test(
@@ -271,12 +273,12 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_jruby_ffi.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 ################################################################################

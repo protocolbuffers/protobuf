@@ -221,6 +221,7 @@ exports_files(
     ],
     visibility = [
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 
