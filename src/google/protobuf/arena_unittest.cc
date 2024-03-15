@@ -7,13 +7,17 @@
 
 #include "google/protobuf/arena.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <new>  // IWYU pragma: keep for operator new
 #include <string>
 #include <thread>
 #include <type_traits>
@@ -874,7 +878,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
     const Reflection* r = arena_message->GetReflection();
     const FieldDescriptor* f = arena_message->GetDescriptor()->FindFieldByName(
         "optional_nested_message");
-    nested_msg = static_cast<TestAllTypes::NestedMessage*>(
+    nested_msg = DownCastToGenerated<TestAllTypes::NestedMessage>(
         r->ReleaseMessage(arena_message, f));
   }
   EXPECT_EQ(42, nested_msg->bb());
@@ -1482,7 +1486,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* submessage =
-      static_cast<TestAllTypes::NestedMessage*>(
+      DownCastToGenerated<TestAllTypes::NestedMessage>(
           r->MutableMessage(message, field));
   TestAllTypes::NestedMessage* submessage_expected =
       message->mutable_optional_nested_message();
@@ -1492,7 +1496,7 @@ TEST(ArenaTest, MutableMessageReflection) {
 
   const FieldDescriptor* oneof_field =
       d->FindFieldByName("oneof_nested_message");
-  submessage = static_cast<TestAllTypes::NestedMessage*>(
+  submessage = DownCastToGenerated<TestAllTypes::NestedMessage>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
 
@@ -1655,7 +1659,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0u) << i << ": " << p;
   }
 }
 

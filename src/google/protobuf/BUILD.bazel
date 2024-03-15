@@ -1669,6 +1669,7 @@ cc_test(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

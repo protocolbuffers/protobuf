@@ -10,9 +10,10 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/test_util.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
