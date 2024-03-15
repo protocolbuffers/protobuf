@@ -2503,8 +2503,8 @@ const FieldDescriptor* FileDescriptor::FindExtensionByCamelcaseName(
 
 void Descriptor::ExtensionRange::CopyTo(
     DescriptorProto_ExtensionRange* proto) const {
-  proto->set_start(start_);
-  proto->set_end(end_);
+  proto->set_start(start_number());
+  proto->set_end(end_number());
   if (options_ != &ExtensionRangeOptions::default_instance()) {
     *proto->mutable_options() = *options_;
   }
@@ -5017,9 +5017,9 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       placeholder_message->extension_range_count_ = 1;
       placeholder_message->extension_ranges_ =
           alloc.AllocateArray<Descriptor::ExtensionRange>(1);
-      placeholder_message->extension_ranges_[0].start_ = 1;
+      placeholder_message->extension_ranges_[0].start = 1;
       // kMaxNumber + 1 because ExtensionRange::end is exclusive.
-      placeholder_message->extension_ranges_[0].end_ =
+      placeholder_message->extension_ranges_[0].end =
           FieldDescriptor::kMaxNumber + 1;
       placeholder_message->extension_ranges_[0].options_ = nullptr;
       placeholder_message->extension_ranges_[0].proto_features_ =
@@ -6582,8 +6582,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 void DescriptorBuilder::BuildExtensionRange(
     const DescriptorProto::ExtensionRange& proto, const Descriptor* parent,
     Descriptor::ExtensionRange* result, internal::FlatAllocator& alloc) {
-  result->start_ = proto.start();
-  result->end_ = proto.end();
+  result->start = proto.start();
+  result->end = proto.end();
   result->containing_type_ = parent;
 
   if (result->start_number() <= 0) {

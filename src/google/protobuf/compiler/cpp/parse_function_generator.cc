@@ -241,7 +241,7 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
                    "lukewarm)");
              }
            }},
-          {"table_size_log2", tc_table_info_->table_size_log2},
+          {"table_size", tc_table_info_->table_size},
           {"num_field_entries", ordered_fields_.size()},
           {"num_field_aux", tc_table_info_->aux_entries.size()},
           {"name_table_size",
@@ -252,7 +252,7 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
         friend class ::$proto_ns$::internal::TcParser;
         $SECTION$
         static const ::$proto_ns$::internal::TcParseTable<
-            $table_size_log2$, $num_field_entries$, $num_field_aux$,
+            $table_size$, $num_field_entries$, $num_field_aux$,
             $name_table_size$, $field_lookup_size$>
             _table_;
       )cc");
@@ -356,7 +356,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       IsFileDescriptorProto(descriptor_->file(), options_)
           ? "constexpr"
           : "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\nconst",
-      tc_table_info_->table_size_log2, ordered_fields_.size(),
+      tc_table_info_->table_size, ordered_fields_.size(),
       tc_table_info_->aux_entries.size(),
       FieldNameDataSize(tc_table_info_->field_name_data),
       field_num_to_entry_table.size16());
@@ -375,9 +375,9 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       } else {
         format("0, // no _extensions_\n");
       }
-      format("$1$, $2$,  // max_field_number, fast_idx_mask\n",
+      format("$1$, $2$,  // max_field_number, num_fast_fields\n",
              (ordered_fields_.empty() ? 0 : ordered_fields_.back()->number()),
-             (((1 << tc_table_info_->table_size_log2) - 1) << 3));
+             tc_table_info_->table_size);
       format(
           "offsetof(decltype(_table_), field_lookup_table),\n"
           "$1$,  // skipmap\n",
@@ -583,60 +583,36 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
   format("};\n\n");  // _table_
 }
 
-static std::string TcParseFunctionName(internal::TcParseFunction func) {
-#define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
-  static constexpr absl::string_view kNames[] = {
-      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
-#undef PROTOBUF_TC_PARSE_FUNCTION_X
-  const int func_index = static_cast<int>(func);
-  ABSL_CHECK_GE(func_index, 0);
-  ABSL_CHECK_LT(func_index, std::end(kNames) - std::begin(kNames));
-  static constexpr absl::string_view ns = "::_pbi::TcParser::";
-  return absl::StrCat(ns, kNames[func_index]);
-}
-
 void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
-    if (auto* nonfield = info.AsNonField()) {
-      // Fast slot that is not associated with a field. Eg end group tags.
-      format("{$1$, {$2$, $3$}},\n", TcParseFunctionName(nonfield->func),
-             nonfield->coded_tag, nonfield->nonfield_info);
+    if (auto* fallback = info.AsFallback()) {
+      // Fast slot that is not processed in the fast loop
+      PrintFieldComment(format, fallback->field, options_);
+      format("{$1$},  // Fallback\n", fallback->wt | 0x18 | (fallback->entry << 5));
     } else if (auto* as_field = info.AsField()) {
       PrintFieldComment(format, as_field->field, options_);
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
-      std::string func_name = TcParseFunctionName(as_field->func);
-      if (GetOptimizeFor(as_field->field->file(), options_) ==
-          FileOptions::SPEED) {
-        // For 1-byte tags we have a more optimized version of the varint parser
-        // that can hardcode the offset and has bit.
-        if (absl::EndsWith(func_name, "V8S1") ||
-            absl::EndsWith(func_name, "V32S1") ||
-            absl::EndsWith(func_name, "V64S1")) {
-          std::string field_type = absl::EndsWith(func_name, "V8S1") ? "bool"
-                                   : absl::EndsWith(func_name, "V32S1")
-                                       ? "::uint32_t"
-                                       : "::uint64_t";
-          func_name = absl::StrCat(
-              "::_pbi::TcParser::SingularVarintNoZag1<", field_type,
-              ", offsetof(",                                      //
-              ClassName(as_field->field->containing_type()),      //
-              ", ",                                               //
-              FieldMemberName(as_field->field, /*split=*/false),  //
-              "), ",                                              //
-              as_field->hasbit_idx,                               //
-              ">()");
-        }
-      }
+      uint32_t data = as_field->wt | as_field->card | as_field->rep | as_field->transform;
 
-      format(
-          "{$1$,\n"
-          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$)}},\n",
-          func_name, as_field->coded_tag, as_field->hasbit_idx,
-          as_field->aux_idx, FieldMemberName(as_field->field, /*split=*/false));
+      format("{$1$", data);
+      if (as_field->card == 8) {
+        if (as_field->hasbit_idx >= 0) {
+          format(", $1$ + _Internal::kHasBitsOffset, ", as_field->hasbit_idx);
+        } else {
+          format(", 0, ");
+        }
+      } else {
+        format(", 0, ");
+      }
+      if (as_field->offset.has_value()) {
+        format("$1$},\n", as_field->offset.value());
+      } else {
+        format("PROTOBUF_FIELD_OFFSET($classname$, $1$)},\n", FieldMemberName(as_field->field, /*split=*/false));
+      }
     } else {
       ABSL_DCHECK(info.is_empty());
-      format("{::_pbi::TcParser::MiniParse, {}},\n");
+      format("{0x1F},\n");  // wt = 7 + fallback 
     }
   }
 }

@@ -363,6 +363,9 @@ enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
 // TcParser implements most of the parsing logic for tailcall tables.
 class PROTOBUF_EXPORT TcParser final {
  public:
+  static const char* FastParseLoop(MessageLite* msg, const char* ptr, ParseContext* ctx, const TcParseTableBase* table, int64_t delta_or_group = -1);
+  static const char* MiniParseFallback(MessageLite* msg, const char* ptr, ParseContext* ctx, const TcParseTableBase* table, const void* entry, uint32_t tag);
+
   template <typename T>
   static constexpr auto GetTable() -> decltype(&T::_table_.header) {
     return &T::_table_.header;
@@ -774,10 +777,20 @@ class PROTOBUF_EXPORT TcParser final {
                       &msg->_internal_metadata_, ctx);
     } else {
       // Otherwise, we directly put it on the unknown field set.
-      return UnknownFieldParse(
-          tag,
-          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
-          ptr, ctx);
+#ifdef BYTEDANCE_PROTOBUF_SKIP_PARSING_UNKNOWN_FIELD
+      bool skip_unknown = true;
+#else
+      bool skip_unknown = false;
+#endif
+      if (skip_unknown) {
+        // nullptr is special cased to indicate skipping
+        return UnknownFieldParse(tag, static_cast<std::string*>(nullptr), ptr, ctx);
+      } else {
+        return UnknownFieldParse(
+            tag,
+            msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
+            ptr, ctx);
+      }
     }
   }
 
@@ -916,6 +929,9 @@ class PROTOBUF_EXPORT TcParser final {
 // Dispatch to the designated parse function
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+#if 1
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+#else
   const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
   const size_t idx = coded_tag & table->fast_idx_mask;
   PROTOBUF_ASSUME((idx & 7) == 0);
@@ -923,6 +939,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
   TcFieldData data = fast_entry->bits;
   data.data ^= coded_tag;
   PROTOBUF_MUSTTAIL return fast_entry->target()(PROTOBUF_TC_PARAM_PASS);
+#endif
 }
 
 // We can only safely call from field to next field if the call is optimized
@@ -932,7 +949,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
 // possible to just return and use the enclosing parse loop as a trampoline.
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
-  constexpr bool always_return = !PROTOBUF_TAILCALL;
+  constexpr bool always_return = true;
   if (always_return || !ctx->DataAvailable(ptr)) {
     PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }

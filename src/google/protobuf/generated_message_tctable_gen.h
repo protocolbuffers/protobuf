@@ -27,7 +27,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-enum class TcParseFunction : uint8_t;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -70,22 +69,24 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   struct FastFieldInfo {
     struct Empty {};
     struct Field {
-      TcParseFunction func;
-      uint16_t coded_tag;
       const FieldDescriptor* field;
-      uint8_t hasbit_idx;
-      uint8_t aux_idx;
+      WireFormatLite::WireType wt;
+      uint32_t card;
+      uint32_t rep;
+      uint32_t transform;
+      int hasbit_idx;
+      absl::optional<uint32_t> offset;
     };
-    struct NonField {
-      TcParseFunction func;
-      uint16_t coded_tag;
-      uint16_t nonfield_info;
+    struct Fallback {
+      const FieldDescriptor* field;
+      WireFormatLite::WireType wt;
+      uint32_t entry;
     };
-    absl::variant<Empty, Field, NonField> data;
+    absl::variant<Empty, Field, Fallback> data;
 
     bool is_empty() const { return absl::holds_alternative<Empty>(data); }
     const Field* AsField() const { return absl::get_if<Field>(&data); }
-    const NonField* AsNonField() const { return absl::get_if<NonField>(&data); }
+    const Fallback* AsFallback() const { return absl::get_if<Fallback>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
@@ -154,8 +155,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 
   std::vector<uint8_t> field_name_data;
 
-  // Table size.
-  int table_size_log2;
+  // Fast table size.
+  int table_size;
 };
 
 }  // namespace internal

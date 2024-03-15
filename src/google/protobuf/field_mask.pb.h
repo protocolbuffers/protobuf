@@ -65,7 +65,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FieldMask final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
  public:
   inline FieldMask() : FieldMask(nullptr) {}
@@ -225,7 +225,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 0,
+      1, 1, 0,
       39, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;

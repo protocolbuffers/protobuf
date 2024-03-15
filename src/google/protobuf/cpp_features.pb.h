@@ -67,7 +67,7 @@ namespace pb {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT CppFeatures final  : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
  public:
   inline CppFeatures() : CppFeatures(nullptr) {}
@@ -210,7 +210,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 1, 0,
+      1, 1, 0,
       0, 2>
       _table_;
   friend class ::google::protobuf::MessageLite;
