@@ -68,7 +68,7 @@ module Google
       end
 
       def label
-        @label ||= Google::Protobuf::FFI::Label[Google::Protobuf::FFI.get_label(self)]
+        @label ||= Google::Protobuf::FFI.get_label(self)
       end
 
       def default
