@@ -203,15 +203,13 @@ namespace Google.Protobuf
                 }
                 while (true)
                 {
-                    var next = reader.Read();
-                    if (next == -1)
+                    if (!reader.TryRead(out var next))
                     {
                         ValidateState(State.ExpectedEndOfDocument, "Unexpected end of document in state: ");
                         state = State.ReaderExhausted;
                         return JsonToken.EndDocument;
                     }
-                    char nextChar = (char)next;
-                    switch (nextChar)
+                    switch (next)
                     {
                         // Skip whitespace between tokens
                         case ' ':
@@ -280,11 +278,11 @@ namespace Google.Protobuf
                         case '7':
                         case '8':
                         case '9':
-                            double number = ReadNumber(nextChar);
+                            double number = ReadNumber(next);
                             ValidateAndModifyStateForValue("Invalid state to read a number token: ");
                             return JsonToken.Value(number);
                         default:
-                            throw new InvalidJsonException("Invalid first character of token: " + nextChar);
+                            throw new InvalidJsonException("Invalid first character of token: " + next);
                     }
                 }
             }
@@ -395,12 +393,11 @@ namespace Google.Protobuf
             {
                 for (int i = 1; i < text.Length; i++)
                 {
-                    int next = reader.Read();
-                    if (next == -1)
+                    if (!reader.TryRead(out var next))
                     {
                         throw reader.CreateException("Unexpected end of text while reading literal token " + text);
                     }
-                    if ((char)next != text[i])
+                    if (next != text[i])
                     {
                         throw reader.CreateException("Unexpected character while reading literal token " + text);
                     }
@@ -421,7 +418,7 @@ namespace Google.Protobuf
                 // Each method returns the character it read that doesn't belong in that part,
                 // so we know what to do next, including pushing the character back at the end.
                 // null is returned for "end of text".
-                int next = ReadInt(builder);
+                char? next = ReadInt(builder);
                 if (next == '.')
                 {
                     next = ReadFrac(builder);
@@ -432,9 +429,9 @@ namespace Google.Protobuf
                 }
                 // If we read a character which wasn't part of the number, push it back so we can read it again
                 // to parse the next token.
-                if (next != -1)
+                if (next != null)
                 {
-                    reader.PushBack((char)next);
+                    reader.PushBack(next.Value);
                 }
 
                 // TODO: What exception should we throw if the value can't be represented as a double?
@@ -459,7 +456,7 @@ namespace Google.Protobuf
                 }
             }
 
-            private int ReadInt(StringBuilder builder)
+            private char? ReadInt(StringBuilder builder)
             {
                 char first = reader.ReadOrFail("Invalid numeric literal");
                 if (first < '0' || first > '9')
@@ -467,7 +464,7 @@ namespace Google.Protobuf
                     throw reader.CreateException("Invalid numeric literal");
                 }
                 builder.Append(first);
-                int next = ConsumeDigits(builder, out int digitCount);
+                char? next = ConsumeDigits(builder, out int digitCount);
                 if (first == '0' && digitCount != 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: leading 0 for non-zero value.");
@@ -475,10 +472,10 @@ namespace Google.Protobuf
                 return next;
             }
 
-            private int ReadFrac(StringBuilder builder)
+            private char? ReadFrac(StringBuilder builder)
             {
                 builder.Append('.'); // Already consumed this
-                int next = ConsumeDigits(builder, out int digitCount);
+                char? next = ConsumeDigits(builder, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: fraction with no trailing digits");
@@ -486,48 +483,41 @@ namespace Google.Protobuf
                 return next;
             }
 
-            private int ReadExp(StringBuilder builder)
+            private char? ReadExp(StringBuilder builder)
             {
                 builder.Append('E'); // Already consumed this (or 'e')
-                int next = reader.Read();
-                if (next == 1)
+                char next = reader.ReadOrFail("Invalid numeric literal: exponent with no trailing digits");
+                if (next == '-' || next == '+')
                 {
-                    throw reader.CreateException("Invalid numeric literal: exponent with no trailing digits");
-                }
-                char nextChar = (char) next;
-                if (nextChar == '-' || nextChar == '+')
-                {
-                    builder.Append(nextChar);
+                    builder.Append(next);
                 }
                 else
                 {
-                    reader.PushBack(nextChar);
+                    reader.PushBack(next);
                 }
-                next = ConsumeDigits(builder, out int digitCount);
+                char? nextChar = ConsumeDigits(builder, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: exponent without value");
                 }
-                return next;
+                return nextChar;
             }
 
-            private int ConsumeDigits(StringBuilder builder, out int count)
+            private char? ConsumeDigits(StringBuilder builder, out int count)
             {
                 count = 0;
                 while (true)
                 {
-                    int next = reader.Read();
-                    if (next == -1)
+                    if (!reader.TryRead(out var next))
                     {
-                        return -1;
+                        return null;
                     }
-                    char nextChar = (char)next;
-                    if (nextChar < '0' || nextChar > '9')
+                    if (next < '0' || next > '9')
                     {
                         return next;
                     }
                     count++;
-                    builder.Append(nextChar);
+                    builder.Append(next);
                 }
             }
 
@@ -695,25 +685,34 @@ namespace Google.Protobuf
                 /// Returns the next character in the stream, or null if we have reached the end.
                 /// </summary>
                 /// <returns></returns>
-                internal int Read()
+                internal bool TryRead(out char c)
                 {
+                    int tmp;
+                    c = default(char);
                     if (nextChar != -1)
                     {
-                        int tmp = nextChar;
+                        tmp = nextChar;
                         nextChar = -1;
-                        return tmp;
+                        c = (char)tmp;
+                        return true;
                     }
-                    return reader.Read();
+
+                    tmp = reader.Read();
+                    if (tmp != -1)
+                    {
+                        c = (char) tmp;
+                        return true;
+                    }
+                    return false;
                 }
 
                 internal char ReadOrFail(string messageOnFailure)
                 {
-                    int next = Read();
-                    if (next == -1)
+                    if (!TryRead(out var next))
                     {
                         throw CreateException(messageOnFailure);
                     }
-                    return (char)next;
+                    return next;
                 }
 
                 internal void PushBack(char c)
