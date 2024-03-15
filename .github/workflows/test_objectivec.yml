@@ -68,8 +68,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        # Add back 'watchos'. See CocoaPods/CocoaPods#11558
-        PLATFORM: ["ios", "macos", "tvos"]
+        PLATFORM: ["ios", "macos", "tvos", "watchos"]
         CONFIGURATION: ["Debug", "Release"]
     name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
     runs-on: macos-12

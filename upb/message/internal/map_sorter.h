@@ -12,6 +12,8 @@
 
 #include <stdlib.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
@@ -50,14 +52,15 @@ UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
   if (s->entries) upb_gfree(s->entries);
 }
 
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
+                                    const struct upb_Map* map,
                                     _upb_sortedmap* sorted, upb_MapEntry* ent) {
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
   upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->data.k, map->key_size);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
   upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->data.v, map->val_size);
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
   return true;
 }
 
@@ -75,7 +78,7 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 }
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
+                            const struct upb_Map* map, _upb_sortedmap* sorted);
 
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
                              size_t count, _upb_sortedmap* sorted);

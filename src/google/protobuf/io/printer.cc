@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2024 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -547,6 +547,9 @@ void Printer::PrintImpl(absl::string_view format,
       // If we get this far, we can conclude the chunk is a substitution
       // variable; we rename the `chunk` variable to make this clear below.
       absl::string_view var = chunk.text;
+      if (substitution_listener_ != nullptr) {
+        substitution_listener_(var, opts.loc.value_or(SourceLocation()));
+      }
       if (opts.use_curly_brace_substitutions &&
           absl::ConsumePrefix(&var, "{")) {
         if (!Validate(var.size() == 1u, opts,

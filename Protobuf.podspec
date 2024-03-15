@@ -5,12 +5,15 @@
 # dependent projects use the :git notation to refer to the library.
 Pod::Spec.new do |s|
   s.name     = 'Protobuf'
-  s.version  = '3.25.0'
+  s.version  = '3.27.0'
   s.summary  = 'Protocol Buffers v.3 runtime library for Objective-C.'
   s.homepage = 'https://github.com/protocolbuffers/protobuf'
   s.license  = 'BSD-3-Clause'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
-  s.cocoapods_version = '>= 1.0'
+
+  # Ensure developers won't hit CocoaPods/CocoaPods#11402 with the resource
+  # bundle for the privacy manifest.
+  s.cocoapods_version = '>= 1.12.0'
 
   s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
                :tag => "v#{s.version}" }
@@ -30,6 +33,10 @@ Pod::Spec.new do |s|
   # left out, as it's an umbrella implementation file.
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
 
+  s.resource_bundle = {
+    "Protobuf_Privacy" => "PrivacyInfo.xcprivacy"
+  }
+
   # Set a CPP symbol so the code knows to use framework imports.
   s.user_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1' }
   s.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1' }
@@ -38,6 +45,7 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.12'
   s.tvos.deployment_target = '12.0'
   s.watchos.deployment_target = '6.0'
+  s.visionos.deployment_target = '1.0'
   s.requires_arc = false
 
   # The unittest need the generate sources from the testing related .proto

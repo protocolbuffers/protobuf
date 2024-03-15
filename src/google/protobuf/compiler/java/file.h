@@ -78,7 +78,6 @@ class FileGenerator {
 
  private:
   void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
-  void GenerateDescriptorInitializationCodeForMutable(io::Printer* printer);
 
   bool ShouldIncludeDependency(const FileDescriptor* descriptor,
                                bool immutable_api_);

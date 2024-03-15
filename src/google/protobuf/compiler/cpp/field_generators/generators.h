@@ -12,6 +12,8 @@
 
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 
 // The functions in this file construct FieldGeneratorBase objects for
 // generating different "codegen types" of fields. The logic for selecting the
@@ -49,6 +51,14 @@ std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     MessageSCCAnalyzer* scc);
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc);
+
+std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringViewGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc);
 

@@ -11,12 +11,17 @@
 
 #include "google/protobuf/message.h"
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <new>
+#include <new>  // IWYU pragma: keep for operator new().
+#include <queue>
 #include <string>
+#include <vector>
 
+#include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
@@ -39,9 +44,9 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection_internal.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -61,7 +66,6 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
-using internal::WireFormatLite;
 
 void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
   ReflectionOps::Merge(DownCast<const Message&>(from), DownCast<Message*>(&to));
@@ -132,17 +136,23 @@ void Message::DiscardUnknownFields() {
   return ReflectionOps::DiscardUnknownFields(this);
 }
 
-const char* Message::_InternalParse(const char* ptr,
-                                    internal::ParseContext* ctx) {
-#if defined(PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION)
-  auto meta = GetMetadata();
-  ptr = internal::TcParser::ParseLoop(this, ptr, ctx,
-                                      meta.reflection->GetTcParseTable());
+Metadata Message::GetMetadata() const {
+  return GetMetadataImpl(GetClassData()->full());
+}
 
-  return ptr;
-#else
-  return WireFormat::_InternalParse(this, ptr, ctx);
-#endif
+Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
+  auto* table = data.descriptor_table;
+  // Only codegen types provide a table. DynamicMessage does not provide a table
+  // and instead eagerly initializes the descriptor/reflection members.
+  if (ABSL_PREDICT_TRUE(table != nullptr)) {
+    if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
+      data.get_metadata_tracker();
+    }
+    absl::call_once(*table->once, [table] {
+      internal::AssignDescriptorsOnceInnerCall(table);
+    });
+  }
+  return {data.descriptor, data.reflection};
 }
 
 uint8_t* Message::_InternalSerialize(uint8_t* target,
@@ -192,9 +202,16 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).InitializationErrorString();
 }
 
-constexpr MessageLite::DescriptorMethods Message::kDescriptorMethods = {
-    GetTypeNameImpl,
-    InitializationErrorStringImpl,
+const internal::TcParseTableBase* Message::GetTcParseTableImpl(
+    const MessageLite& msg) {
+  return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
+}
+
+PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
+    Message::kDescriptorMethods = {
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
+        GetTcParseTableImpl,
 };
 
 namespace internal {
@@ -238,7 +255,7 @@ class GeneratedMessageFactory final : public MessageFactory {
   {
     auto it = type_map_.find(type);
     if (it == type_map_.end()) return absl::nullopt;
-    return it->second;
+    return it->second.get();
   }
 
   const google::protobuf::internal::DescriptorTable* FindInFileMap(
@@ -284,7 +301,17 @@ class GeneratedMessageFactory final : public MessageFactory {
   DynamicMessageFactory dropped_defaults_factory_;
 
   absl::Mutex mutex_;
-  absl::flat_hash_map<const Descriptor*, const Message*> type_map_
+  class MessagePtr {
+   public:
+    MessagePtr() : value_() {}
+    explicit MessagePtr(const Message* msg) : value_(msg) {}
+    const Message* get() const { return value_; }
+    void set(const Message* msg) { value_ = msg; }
+
+   private:
+    const Message* value_;
+  };
+  absl::flat_hash_map<const Descriptor*, MessagePtr> type_map_
       ABSL_GUARDED_BY(mutex_);
 };
 
@@ -333,7 +360,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
       // And update the main map to make the next lookup faster.
       // We don't need to recheck here. Even if someone raced us here the result
       // is the same, so we can just write it.
-      type_map_[type] = result;
+      type_map_[type].set(result);
     }
   }
 
@@ -476,8 +503,8 @@ template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
 }  // namespace internal
+
 
 }  // namespace protobuf
 }  // namespace google

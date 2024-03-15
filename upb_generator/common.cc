@@ -19,7 +19,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.hpp"
 #include "upb_generator/mangle.h"
 

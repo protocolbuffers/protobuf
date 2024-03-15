@@ -514,9 +514,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
                                                    uint32_t start_tag,
                                                    const Func& func);
 
-  template <typename T>
   PROTOBUF_NODISCARD PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
-      T* msg, const char* ptr, uint32_t tag) {
+      MessageLite* msg, const char* ptr, uint32_t tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
     auto old_depth = depth_;
@@ -854,6 +853,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 }
 #endif
 
+// The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
 #if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
@@ -1079,7 +1079,7 @@ inline int32_t ReadVarintZigZag32(const char** p) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
   LimitToken old;
   ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
@@ -1093,7 +1093,7 @@ ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
                                 const Func& func) {
   if (--depth_ < 0) return nullptr;

@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +83,7 @@ public class GeneratedMessageTest {
 
   @After
   public void tearDown() {
-    GeneratedMessageV3.setAlwaysUseFieldBuildersForTesting(false);
+    GeneratedMessage.setAlwaysUseFieldBuildersForTesting(false);
   }
 
   @Test
@@ -1102,7 +1103,7 @@ public class GeneratedMessageTest {
 
   @Test
   public void testInvalidations() throws Exception {
-    GeneratedMessageV3.setAlwaysUseFieldBuildersForTesting(true);
+    GeneratedMessage.setAlwaysUseFieldBuildersForTesting(true);
     TestAllTypes.NestedMessage nestedMessage1 = TestAllTypes.NestedMessage.newBuilder().build();
     TestAllTypes.NestedMessage nestedMessage2 = TestAllTypes.NestedMessage.newBuilder().build();
 
@@ -1845,10 +1846,10 @@ public class GeneratedMessageTest {
       UnittestProto.getDescriptor().findExtensionByName("repeated_nested_message_extension");
 
   // A compile-time check that TestAllExtensions.Builder does in fact extend
-  // GeneratedMessageV3.ExtendableBuilder. The tests below assume that it does.
+  // GeneratedMessage.ExtendableBuilder. The tests below assume that it does.
   static {
     @SuppressWarnings("unused")
-    Class<? extends GeneratedMessageV3.ExtendableBuilder<?, ?>> ignored =
+    Class<? extends GeneratedMessage.ExtendableBuilder<?, ?>> ignored =
         TestAllExtensions.Builder.class;
   }
 
@@ -1933,5 +1934,41 @@ public class GeneratedMessageTest {
 
     assertThat(builder.getRepeatedField(REPEATED_NESTED_MESSAGE_EXTENSION, 0))
         .isEqualTo(NestedMessage.newBuilder().setBb(100).build());
+  }
+
+  @Test
+  public void getAllFields_repeatedFieldsAreNotMutable() {
+    TestAllTypes testMsg =
+        TestAllTypes.newBuilder()
+            .addRepeatedInt32(1)
+            .addRepeatedInt32(2)
+            .addRepeatedNestedMessage(NestedMessage.newBuilder().setBb(111).build())
+            .build();
+
+    FieldDescriptor repeatedInt32Field =
+        TestAllTypes.getDescriptor().findFieldByNumber(TestAllTypes.REPEATED_INT32_FIELD_NUMBER);
+    FieldDescriptor repeatedMsgField =
+        TestAllTypes.getDescriptor()
+            .findFieldByNumber(TestAllTypes.REPEATED_NESTED_MESSAGE_FIELD_NUMBER);
+    Map<FieldDescriptor, Object> allFields = testMsg.getAllFields();
+    List<?> list = (List<?>) allFields.get(repeatedInt32Field);
+    assertThat(list).hasSize(2);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+    list = (List<?>) allFields.get(repeatedMsgField);
+    assertThat(list).hasSize(1);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+
+    TestAllTypes.Builder builder = testMsg.toBuilder();
+    allFields = builder.getAllFields();
+    list = (List<?>) allFields.get(repeatedInt32Field);
+    assertThat(list).hasSize(2);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+    builder.clearField(repeatedInt32Field);
+    assertThat(list).hasSize(2);
+    list = (List<?>) allFields.get(repeatedMsgField);
+    assertThat(list).hasSize(1);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+    builder.clearField(repeatedMsgField);
+    assertThat(list).hasSize(1);
   }
 }

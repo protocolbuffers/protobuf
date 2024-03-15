@@ -63,6 +63,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void RunBinaryPerformanceTests();
   void RunJsonPerformanceTests();
   void RunJsonTests();
+  void RunJsonTestsForStoresDefaultPrimitive();
   void RunJsonTestsForFieldNameConvention();
   void RunJsonTestsForNonRepeatedTypes();
   void RunJsonTestsForRepeatedTypes();

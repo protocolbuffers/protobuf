@@ -101,6 +101,10 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
+  table -= 1;
+  if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+    return table->post_loop_handler(msg, ptr, ctx);
+  }
   return ptr;
 }
 
@@ -3262,6 +3266,14 @@ parse_submessage:
   } 
 }
 
+#if 0
+const char* TcParser::MessageSetWireFormatParseLoopLite(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<MessageLite>(
+      PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+#endif
+
 std::string TypeCardToString(uint16_t type_card) {
   // In here we convert the runtime value of entry.type_card back into a
   // sequence of literal enum labels. We use the mnenonic labels for nicer
@@ -3392,6 +3404,16 @@ std::string TypeCardToString(uint16_t type_card) {
 #undef PROTOBUF_INTERNAL_TYPE_CARD_CASE
 
   return out;
+}
+
+const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+  return UnknownFieldParse(tag, nullptr, ptr, ctx);
 }
 
 }  // namespace internal

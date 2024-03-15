@@ -9,8 +9,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
@@ -43,6 +45,7 @@ inline absl::string_view KernelRsName(Kernel kernel) {
 // Global options for a codegen invocation.
 struct Options {
   Kernel kernel;
+  std::string mapping_file_path;
 
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
@@ -50,8 +53,11 @@ struct Options {
 class RustGeneratorContext {
  public:
   explicit RustGeneratorContext(
-      const std::vector<const FileDescriptor*>* files_in_current_crate)
-      : files_in_current_crate_(*files_in_current_crate) {}
+      const std::vector<const FileDescriptor*>* files_in_current_crate,
+      const absl::flat_hash_map<std::string, std::string>*
+          import_path_to_crate_name)
+      : files_in_current_crate_(*files_in_current_crate),
+        import_path_to_crate_name_(*import_path_to_crate_name) {}
 
   const FileDescriptor& primary_file() const {
     return *files_in_current_crate_.front();
@@ -63,8 +69,20 @@ class RustGeneratorContext {
                      &f) != files_in_current_crate_.end();
   }
 
+  absl::string_view ImportPathToCrateName(absl::string_view import_path) const {
+    auto it = import_path_to_crate_name_.find(import_path);
+    if (it == import_path_to_crate_name_.end()) {
+      ABSL_LOG(FATAL) << "Path " << import_path
+                      << " not found in crate mapping. Crate mapping has "
+                      << import_path_to_crate_name_.size() << " entries";
+    }
+    return it->second;
+  }
+
  private:
   const std::vector<const FileDescriptor*>& files_in_current_crate_;
+  const absl::flat_hash_map<std::string, std::string>&
+      import_path_to_crate_name_;
 };
 
 // A context for generating a particular kind of definition.
@@ -117,6 +135,7 @@ class Context {
 
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message);
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_);
 
 }  // namespace rust
 }  // namespace compiler

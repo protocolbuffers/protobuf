@@ -7,37 +7,37 @@
 
 #include "google/protobuf/compiler/rust/naming.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/rust_field_type.h"
+#include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
-namespace {
-std::string GetUnderscoreDelimitedFullName(Context& ctx,
-                                           const Descriptor& msg) {
-  std::string result = msg.full_name();
-  absl::StrReplaceAll({{".", "_"}}, &result);
-  return result;
-}
-}  // namespace
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  absl::string_view path = dep.name();
-  auto basename = path.substr(path.rfind('/') + 1);
-  return absl::StrReplaceAll(basename, {{".", "_"}, {"-", "_"}});
+  return RsSafeName(ctx.generator_context().ImportPathToCrateName(dep.name()));
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
@@ -63,6 +63,18 @@ std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
   return absl::StrCat(basename, ".proto.h");
 }
 
+std::string RawMapThunk(Context& ctx, const Descriptor& msg,
+                        absl::string_view key_t, absl::string_view op) {
+  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+                      GetUnderscoreDelimitedFullName(ctx, *&msg), "_", op);
+}
+
+std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
+                        absl::string_view key_t, absl::string_view op) {
+  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+                      GetUnderscoreDelimitedFullName(ctx, *&desc), "_", op);
+}
+
 namespace {
 
 template <typename T>
@@ -77,8 +89,8 @@ std::string FieldPrefix(Context& ctx, const T& field) {
 }
 
 template <typename T>
-std::string Thunk(Context& ctx, const T& field, absl::string_view op) {
-  std::string thunk = FieldPrefix(ctx, field);
+std::string ThunkName(Context& ctx, const T& field, absl::string_view op) {
+  std::string thunkName = FieldPrefix(ctx, field);
 
   absl::string_view format;
   if (ctx.is_upb() && op == "get") {
@@ -95,116 +107,44 @@ std::string Thunk(Context& ctx, const T& field, absl::string_view op) {
     format = "_$0_$1";
   }
 
-  absl::SubstituteAndAppend(&thunk, format, op, field.name());
-  return thunk;
+  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
+  return thunkName;
 }
 
 std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
                                absl::string_view op) {
   if (!ctx.is_upb()) {
-    return Thunk<FieldDescriptor>(ctx, field, op);
+    return ThunkName<FieldDescriptor>(ctx, field, op);
   }
 
-  std::string thunk = absl::StrCat("_", FieldPrefix(ctx, field));
+  std::string thunkName = absl::StrCat("_", FieldPrefix(ctx, field));
   absl::string_view format;
   if (op == "get") {
     format = field.is_map() ? "_$1_upb_map" : "_$1_upb_array";
   } else if (op == "get_mut") {
     format = field.is_map() ? "_$1_mutable_upb_map" : "_$1_mutable_upb_array";
   } else {
-    return Thunk<FieldDescriptor>(ctx, field, op);
+    return ThunkName<FieldDescriptor>(ctx, field, op);
   }
 
-  absl::SubstituteAndAppend(&thunk, format, op, field.name());
-  return thunk;
+  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
+  return thunkName;
 }
 
-}  // namespace
-
-std::string Thunk(Context& ctx, const FieldDescriptor& field,
-                  absl::string_view op) {
-  if (field.is_map() || field.is_repeated()) {
-    return ThunkMapOrRepeated(ctx, field, op);
-  }
-  return Thunk<FieldDescriptor>(ctx, field, op);
-}
-
-std::string Thunk(Context& ctx, const OneofDescriptor& field,
-                  absl::string_view op) {
-  return Thunk<OneofDescriptor>(ctx, field, op);
-}
-
-std::string Thunk(Context& ctx, const Descriptor& msg, absl::string_view op) {
-  absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
-  return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
-                      op);
-}
-
-std::string PrimitiveRsTypeName(const FieldDescriptor& field) {
-  switch (field.type()) {
-    case FieldDescriptor::TYPE_BOOL:
-      return "bool";
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SFIXED32:
-      return "i32";
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_SFIXED64:
-      return "i64";
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_UINT32:
-      return "u32";
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_UINT64:
-      return "u64";
-    case FieldDescriptor::TYPE_FLOAT:
-      return "f32";
-    case FieldDescriptor::TYPE_DOUBLE:
-      return "f64";
-    case FieldDescriptor::TYPE_BYTES:
-      return "[u8]";
-    case FieldDescriptor::TYPE_STRING:
-      return "::__pb::ProtoStr";
-    default:
-      break;
-  }
-  ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
-  return "";
-}
-
-// Constructs a string of the Rust modules which will contain the message.
-//
-// Example: Given a message 'NestedMessage' which is defined in package 'x.y'
-// which is inside 'ParentMessage', the message will be placed in the
-// x::y::ParentMessage_ Rust module, so this function will return the string
-// "x::y::ParentMessage_::".
-//
-// If the message has no package and no containing messages then this returns
-// empty string.
-std::string RustModule(Context& ctx, const Descriptor& msg) {
+std::string RustModule(Context& ctx, const Descriptor* containing_type) {
   std::vector<std::string> modules;
 
-  std::vector<std::string> package_modules =
-      absl::StrSplit(msg.file()->package(), '.', absl::SkipEmpty());
-
-  modules.insert(modules.begin(), package_modules.begin(),
-                 package_modules.end());
-
   // Innermost to outermost order.
-  std::vector<std::string> modules_from_containing_types;
-  const Descriptor* parent = msg.containing_type();
+  const Descriptor* parent = containing_type;
   while (parent != nullptr) {
-    modules_from_containing_types.push_back(absl::StrCat(parent->name(), "_"));
+    modules.push_back(absl::StrCat(parent->name(), "_"));
     parent = parent->containing_type();
   }
 
-  // Add the modules from containing messages (rbegin/rend to get them in outer
-  // to inner order).
-  modules.insert(modules.end(), modules_from_containing_types.rbegin(),
-                 modules_from_containing_types.rend());
+  // Reverse the vector to get submodules in outer-to-inner order).
+  std::reverse(modules.begin(), modules.end());
 
-  // If there is any modules at all, push an empty string on the end so that
+  // If there are any modules at all, push an empty string on the end so that
   // we get the trailing ::
   if (!modules.empty()) {
     modules.push_back("");
@@ -213,14 +153,110 @@ std::string RustModule(Context& ctx, const Descriptor& msg) {
   return absl::StrJoin(modules, "::");
 }
 
+}  // namespace
+
+std::string ThunkName(Context& ctx, const FieldDescriptor& field,
+                      absl::string_view op) {
+  if (field.is_map() || field.is_repeated()) {
+    return ThunkMapOrRepeated(ctx, field, op);
+  }
+  return ThunkName<FieldDescriptor>(ctx, field, op);
+}
+
+std::string ThunkName(Context& ctx, const OneofDescriptor& field,
+                      absl::string_view op) {
+  return ThunkName<OneofDescriptor>(ctx, field, op);
+}
+
+std::string ThunkName(Context& ctx, const Descriptor& msg,
+                      absl::string_view op) {
+  absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
+  return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
+                      op);
+}
+
+std::string VTableName(const FieldDescriptor& field) {
+  return absl::StrCat("__", absl::AsciiStrToUpper(field.name()), "_VTABLE");
+}
+
+std::string GetFullyQualifiedPath(Context& ctx, const Descriptor& msg) {
+  auto rel_path = GetCrateRelativeQualifiedPath(ctx, msg);
+  if (IsInCurrentlyGeneratingCrate(ctx, msg)) {
+    return absl::StrCat("crate::", rel_path);
+  }
+  return absl::StrCat(GetCrateName(ctx, *msg.file()), "::", rel_path);
+}
+
+std::string GetFullyQualifiedPath(Context& ctx, const EnumDescriptor& enum_) {
+  auto rel_path = GetCrateRelativeQualifiedPath(ctx, enum_);
+  if (IsInCurrentlyGeneratingCrate(ctx, enum_)) {
+    return absl::StrCat("crate::", rel_path);
+  }
+  return absl::StrCat(GetCrateName(ctx, *enum_.file()), "::", rel_path);
+}
+
+std::string GetUnderscoreDelimitedFullName(Context& ctx,
+                                           const Descriptor& msg) {
+  std::string result = msg.full_name();
+  absl::StrReplaceAll({{".", "_"}}, &result);
+  return result;
+}
+
+std::string GetUnderscoreDelimitedFullName(Context& ctx,
+                                           const EnumDescriptor& enum_) {
+  std::string result = enum_.full_name();
+  absl::StrReplaceAll({{".", "_"}}, &result);
+  return result;
+}
+
+std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::BOOL:
+      return "bool";
+    case RustFieldType::INT32:
+      return "i32";
+    case RustFieldType::INT64:
+      return "i64";
+    case RustFieldType::UINT32:
+      return "u32";
+    case RustFieldType::UINT64:
+      return "u64";
+    case RustFieldType::FLOAT:
+      return "f32";
+    case RustFieldType::DOUBLE:
+      return "f64";
+    case RustFieldType::BYTES:
+      return "[u8]";
+    case RustFieldType::STRING:
+      return "::__pb::ProtoStr";
+    case RustFieldType::MESSAGE:
+      return GetFullyQualifiedPath(ctx, *field.message_type());
+    case RustFieldType::ENUM:
+      return GetFullyQualifiedPath(ctx, *field.enum_type());
+  }
+  ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
+}
+
+std::string RustModule(Context& ctx, const Descriptor& msg) {
+  return RustModule(ctx, msg.containing_type());
+}
+
+std::string RustModule(Context& ctx, const EnumDescriptor& enum_) {
+  return RustModule(ctx, enum_.containing_type());
+}
+
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
-  // TODO: Introduce a more robust mangling here to avoid conflicts
-  // between `foo/bar/baz.proto` and `foo_bar/baz.proto`.
-  return absl::StrReplaceAll(StripProto(file.name()), {{"/", "_"}});
+  return RsSafeName(
+      absl::StrReplaceAll(StripProto(file.name()), {{"_", "__"}, {"/", "_s"}}));
 }
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg) {
-  return absl::StrCat(RustModule(ctx, msg), msg.name());
+  return absl::StrCat(RustModule(ctx, msg), RsSafeName(msg.name()));
+}
+
+std::string GetCrateRelativeQualifiedPath(Context& ctx,
+                                          const EnumDescriptor& enum_) {
+  return absl::StrCat(RustModule(ctx, enum_), EnumRsName(enum_));
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
@@ -237,6 +273,181 @@ std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
 
   return comment;
 }
+
+std::string RsSafeName(absl::string_view name) {
+  if (!IsLegalRawIdentifierName(name)) {
+    return absl::StrCat(name,
+                        "__mangled_because_ident_isnt_a_legal_raw_identifier");
+  }
+  if (IsRustKeyword(name)) {
+    return absl::StrCat("r#", name);
+  }
+  return std::string(name);
+}
+
+std::string EnumRsName(const EnumDescriptor& desc) {
+  return RsSafeName(SnakeToUpperCamelCase(desc.name()));
+}
+
+std::string EnumValueRsName(const EnumValueDescriptor& value) {
+  MultiCasePrefixStripper stripper(value.type()->name());
+  return EnumValueRsName(stripper, value.name());
+}
+
+std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
+                            absl::string_view value_name) {
+  // Enum values may have a prefix of the name of the enum stripped from the
+  // value names in the gencode. This prefix is flexible:
+  // - It can be the original enum name, the name as UpperCamel, or snake_case.
+  // - The stripped prefix may also end in an underscore.
+  auto stripped = stripper.StripPrefix(value_name);
+
+  auto name = ScreamingSnakeToUpperCamelCase(stripped);
+  ABSL_CHECK(!name.empty());
+
+  // Invalid identifiers are prefixed with `_`.
+  if (absl::ascii_isdigit(name[0])) {
+    name = absl::StrCat("_", name);
+  }
+  return RsSafeName(name);
+}
+
+std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
+  return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
+}
+
+std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
+  return SnakeToUpperCamelCase(oneof.name()) + "Mut";
+}
+
+std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
+  // Note: This is the name used for the cpp Case enum, we use it for both
+  // the Rust Case enum as well as for the cpp case enum in the cpp thunk.
+  return SnakeToUpperCamelCase(oneof.name()) + "Case";
+}
+
+std::string OneofCaseRsName(const FieldDescriptor& oneof_field) {
+  return RsSafeName(SnakeToUpperCamelCase(oneof_field.name()));
+}
+
+std::string CamelToSnakeCase(absl::string_view input) {
+  std::string result;
+  result.reserve(input.size() + 4);  // No reallocation for 4 _
+  bool is_first_character = true;
+  bool last_char_was_underscore = false;
+  for (const char c : input) {
+    if (!is_first_character && absl::ascii_isupper(c) &&
+        !last_char_was_underscore) {
+      result += '_';
+    }
+    last_char_was_underscore = c == '_';
+    result += absl::ascii_tolower(c);
+    is_first_character = false;
+  }
+  return result;
+}
+
+std::string SnakeToUpperCamelCase(absl::string_view input) {
+  return cpp::UnderscoresToCamelCase(input, /*cap first letter=*/true);
+}
+
+std::string ScreamingSnakeToUpperCamelCase(absl::string_view input) {
+  std::string result;
+  result.reserve(input.size());
+  bool cap_next_letter = true;
+  for (const char c : input) {
+    if (absl::ascii_isalpha(c)) {
+      if (cap_next_letter) {
+        result += absl::ascii_toupper(c);
+      } else {
+        result += absl::ascii_tolower(c);
+      }
+      cap_next_letter = false;
+    } else if (absl::ascii_isdigit(c)) {
+      result += c;
+      cap_next_letter = true;
+    } else {
+      cap_next_letter = true;
+    }
+  }
+  return result;
+}
+
+MultiCasePrefixStripper::MultiCasePrefixStripper(absl::string_view prefix)
+    : prefixes_{
+          std::string(prefix),
+          ScreamingSnakeToUpperCamelCase(prefix),
+          CamelToSnakeCase(prefix),
+      } {}
+
+absl::string_view MultiCasePrefixStripper::StripPrefix(
+    absl::string_view name) const {
+  absl::string_view start_name = name;
+  for (absl::string_view prefix : prefixes_) {
+    if (absl::StartsWithIgnoreCase(name, prefix)) {
+      name.remove_prefix(prefix.size());
+
+      // Also strip a joining underscore, if present.
+      absl::ConsumePrefix(&name, "_");
+
+      // Only strip one prefix.
+      break;
+    }
+  }
+
+  if (name.empty()) {
+    return start_name;
+  }
+  return name;
+}
+
+PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
+    {/*thunk_ident=*/"i32", /*rs_key_t=*/"i32", /*rs_ffi_key_t=*/"i32",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"int32_t", /*cc_ffi_key_t=*/"int32_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"u32", /*rs_key_t=*/"u32", /*rs_ffi_key_t=*/"u32",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"uint32_t", /*cc_ffi_key_t=*/"uint32_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"i64", /*rs_key_t=*/"i64", /*rs_ffi_key_t=*/"i64",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"int64_t", /*cc_ffi_key_t=*/"int64_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"u64", /*rs_key_t=*/"u64", /*rs_ffi_key_t=*/"u64",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"uint64_t", /*cc_ffi_key_t=*/"uint64_t",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"bool", /*rs_key_t=*/"bool", /*rs_ffi_key_t=*/"bool",
+     /*rs_to_ffi_key_expr=*/"key", /*rs_from_ffi_key_expr=*/"ffi_key",
+     /*cc_key_t=*/"bool", /*cc_ffi_key_t=*/"bool",
+     /*cc_from_ffi_key_expr=*/"key",
+     /*cc_to_ffi_key_expr=*/"cpp_key"},
+    {/*thunk_ident=*/"string",
+     /*rs_key_t=*/"$pb$::ProtoStr",
+     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
+     /*rs_to_ffi_key_expr=*/"key.as_bytes().into()",
+     /*rs_from_ffi_key_expr=*/
+     "$pb$::ProtoStr::from_utf8_unchecked(ffi_key.as_ref())",
+     /*cc_key_t=*/"std::string",
+     /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
+     /*cc_from_ffi_key_expr=*/
+     "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
+     "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"},
+    {/*thunk_ident=*/"bytes",
+     /*rs_key_t=*/"[u8]",
+     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
+     /*rs_to_ffi_key_expr=*/"key.into()",
+     /*rs_from_ffi_key_expr=*/"ffi_key.as_ref()",
+     /*cc_key_t=*/"std::string",
+     /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
+     /*cc_from_ffi_key_expr=*/
+     "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
+     "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
 
 }  // namespace rust
 }  // namespace compiler

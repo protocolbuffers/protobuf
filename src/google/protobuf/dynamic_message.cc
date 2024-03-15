@@ -202,20 +202,7 @@ class DynamicMessage final : public Message {
 
   Message* New(Arena* arena) const override;
 
-  const ClassData* GetClassData() const final {
-    ABSL_CONST_INIT static const ClassDataFull data = {
-        {
-            nullptr,  // on_demand_register_arena_dtor
-            PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
-            false,
-        },
-        &MergeImpl,
-        &kDescriptorMethods,
-    };
-    return &data;
-  }
-
-  Metadata GetMetadata() const override;
+  const ClassData* GetClassData() const final;
 
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
   static void operator delete(DynamicMessage* msg, std::destroying_delete_t);
@@ -267,13 +254,11 @@ struct DynamicMessageFactory::TypeInfo {
   // Not owned by the TypeInfo.
   DynamicMessageFactory* factory;  // The factory that created this object.
   const DescriptorPool* pool;      // The factory's DescriptorPool.
-  const Descriptor* type;          // Type of this DynamicMessage.
 
   // Warning:  The order in which the following pointers are defined is
   //   important (the prototype must be deleted *before* the offsets).
   std::unique_ptr<uint32_t[]> offsets;
   std::unique_ptr<uint32_t[]> has_bits_indices;
-  std::unique_ptr<const Reflection> reflection;
   // Don't use a unique_ptr to hold the prototype: the destructor for
   // DynamicMessage needs to know whether it is the prototype, and does so by
   // looking back at this field. This would assume details about the
@@ -281,10 +266,25 @@ struct DynamicMessageFactory::TypeInfo {
   const DynamicMessage* prototype;
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
+  DynamicMessage::ClassDataFull class_data = {
+      {
+          nullptr,  // on_demand_register_arena_dtor
+          PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
+          false,
+      },
+      &DynamicMessage::MergeImpl,
+      &DynamicMessage::kDescriptorMethods,
+      nullptr,  // descriptor_table
+      nullptr,  // get_metadata_tracker
+  };
+
   TypeInfo() : prototype(nullptr) {}
 
   ~TypeInfo() {
     delete prototype;
+    delete class_data.reflection;
+
+    auto* type = class_data.descriptor;
 
     // Scribble the payload to prevent unsanitized opt builds from silently
     // allowing use-after-free bugs where the factory is destroyed but the
@@ -337,8 +337,9 @@ inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
   return OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32_t) * i);
 }
 inline void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
-  return OffsetToPointer(type_info_->offsets[type_info_->type->field_count() +
-                                             f->containing_oneof()->index()]);
+  return OffsetToPointer(
+      type_info_->offsets[type_info_->class_data.descriptor->field_count() +
+                          f->containing_oneof()->index()]);
 }
 
 void DynamicMessage::SharedCtor(bool lock_factory) {
@@ -351,7 +352,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   // in practice that's not strictly necessary for types that don't have a
   // constructor.)
 
-  const Descriptor* descriptor = type_info_->type;
+  const Descriptor* descriptor = type_info_->class_data.descriptor;
   Arena* arena = GetArena();
   // Initialize oneof cases.
   int oneof_count = 0;
@@ -465,7 +466,7 @@ void DynamicMessage::operator delete(DynamicMessage* msg,
 #endif
 
 DynamicMessage::~DynamicMessage() {
-  const Descriptor* descriptor = type_info_->type;
+  const Descriptor* descriptor = type_info_->class_data.descriptor;
 
   _internal_metadata_.Delete<UnknownFieldSet>();
 
@@ -565,7 +566,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   ABSL_CHECK(is_prototype());
 
   DynamicMessageFactory* factory = type_info_->factory;
-  const Descriptor* descriptor = type_info_->type;
+  const Descriptor* descriptor = type_info_->class_data.descriptor;
 
   // Cross-link default messages.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -596,11 +597,8 @@ Message* DynamicMessage::New(Arena* arena) const {
   }
 }
 
-Metadata DynamicMessage::GetMetadata() const {
-  Metadata metadata;
-  metadata.descriptor = type_info_->type;
-  metadata.reflection = type_info_->reflection.get();
-  return metadata;
+const MessageLite::ClassData* DynamicMessage::GetClassData() const {
+  return type_info_->class_data.base();
 }
 
 // ===================================================================
@@ -640,7 +638,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   TypeInfo* type_info = new TypeInfo;
   *target = type_info;
 
-  type_info->type = type;
+  type_info->class_data.descriptor = type;
   type_info->pool = (pool_ == nullptr) ? type->file()->pool() : pool_;
   type_info->factory = this;
 
@@ -773,8 +771,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       -1,       // sizeof_split_
   };
 
-  type_info->reflection.reset(
-      new Reflection(type_info->type, schema, type_info->pool, this));
+  type_info->class_data.reflection = new Reflection(
+      type_info->class_data.descriptor, schema, type_info->pool, this);
 
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

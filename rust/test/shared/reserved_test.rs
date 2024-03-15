@@ -5,19 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use googletest::prelude::*;
 /// Test covering proto compilation with reserved words.
-use reserved_proto::naming::Reserved;
+use googletest::prelude::*;
+use reserved_proto::r#enum;
+use reserved_proto::Self__mangled_because_ident_isnt_a_legal_raw_identifier;
 
 #[test]
 fn test_reserved_keyword_in_accessors() {
-    let msg = Reserved::new();
-    let res = msg.r#for();
+    let msg = Self__mangled_because_ident_isnt_a_legal_raw_identifier::new();
+    let res = msg.self__mangled_because_ident_isnt_a_legal_raw_identifier().r#for();
     assert_that!(res, eq(0));
 }
 
 #[test]
 fn test_reserved_keyword_in_messages() {
-    let msg = Reserved::new();
-    let _ = msg.r#pub();
+    let msg = r#enum::new();
+    let _ = msg.r#const();
 }

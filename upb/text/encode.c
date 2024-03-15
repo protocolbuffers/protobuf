@@ -11,16 +11,25 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/lex/round_trip.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/message/value.h"
 #include "upb/port/vsnprintf_compat.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
+#include "utf8_range.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -100,42 +109,121 @@ static void txtenc_enum(int32_t val, const upb_FieldDef* f, txtenc* e) {
   }
 }
 
-static void txtenc_string(txtenc* e, upb_StringView str, bool bytes) {
-  const char* ptr = str.data;
-  const char* end = ptr + str.size;
-  txtenc_putstr(e, "\"");
+static void txtenc_escaped(txtenc* e, unsigned char ch) {
+  switch (ch) {
+    case '\n':
+      txtenc_putstr(e, "\\n");
+      break;
+    case '\r':
+      txtenc_putstr(e, "\\r");
+      break;
+    case '\t':
+      txtenc_putstr(e, "\\t");
+      break;
+    case '\"':
+      txtenc_putstr(e, "\\\"");
+      break;
+    case '\'':
+      txtenc_putstr(e, "\\'");
+      break;
+    case '\\':
+      txtenc_putstr(e, "\\\\");
+      break;
+    default:
+      txtenc_printf(e, "\\%03o", ch);
+      break;
+  }
+}
 
-  while (ptr < end) {
-    switch (*ptr) {
-      case '\n':
-        txtenc_putstr(e, "\\n");
-        break;
-      case '\r':
-        txtenc_putstr(e, "\\r");
-        break;
-      case '\t':
-        txtenc_putstr(e, "\\t");
-        break;
-      case '\"':
-        txtenc_putstr(e, "\\\"");
-        break;
-      case '\'':
-        txtenc_putstr(e, "\\'");
-        break;
-      case '\\':
-        txtenc_putstr(e, "\\\\");
-        break;
-      default:
-        if ((bytes || (uint8_t)*ptr < 0x80) && !isprint(*ptr)) {
-          txtenc_printf(e, "\\%03o", (int)(uint8_t)*ptr);
-        } else {
-          txtenc_putbytes(e, ptr, 1);
-        }
-        break;
+// Returns true if `ch` needs to be escaped in TextFormat, independent of any
+// UTF-8 validity issues.
+static bool upb_DefinitelyNeedsEscape(unsigned char ch) {
+  if (ch < 32) return true;
+  switch (ch) {
+    case '\"':
+    case '\'':
+    case '\\':
+    case 127:
+      return true;
+  }
+  return false;
+}
+
+static bool upb_AsciiIsPrint(unsigned char ch) { return ch >= 32 && ch < 127; }
+
+// Returns true if this is a high byte that requires UTF-8 validation.  If the
+// UTF-8 validation fails, we must escape the byte.
+static bool upb_NeedsUtf8Validation(unsigned char ch) { return ch > 127; }
+
+// Returns the number of bytes in the prefix of `val` that do not need escaping.
+// This is like utf8_range::SpanStructurallyValid(), except that it also
+// terminates at any ASCII char that needs to be escaped in TextFormat (any char
+// that has `DefinitelyNeedsEscape(ch) == true`).
+//
+// If we could get a variant of utf8_range::SpanStructurallyValid() that could
+// terminate on any of these chars, that might be more efficient, but it would
+// be much more complicated to modify that heavily SIMD code.
+static size_t SkipPassthroughBytes(const char* ptr, size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    unsigned char uc = ptr[i];
+    if (upb_DefinitelyNeedsEscape(uc)) return i;
+    if (upb_NeedsUtf8Validation(uc)) {
+      // Find the end of this region of consecutive high bytes, so that we only
+      // give high bytes to the UTF-8 checker.  This avoids needing to perform
+      // a second scan of the ASCII characters looking for characters that
+      // need escaping.
+      //
+      // We assume that high bytes are less frequent than plain, printable ASCII
+      // bytes, so we accept the double-scan of high bytes.
+      size_t end = i + 1;
+      for (; end < size; end++) {
+        if (!upb_NeedsUtf8Validation(ptr[end])) break;
+      }
+      size_t n = end - i;
+      size_t ok = utf8_range_ValidPrefix(ptr + i, n);
+      if (ok != n) return i + ok;
+      i += ok - 1;
     }
+  }
+  return size;
+}
+
+static void upb_HardenedPrintString(txtenc* e, const char* ptr, size_t len) {
+  // Print as UTF-8, while guarding against any invalid UTF-8 in the string
+  // field.
+  //
+  // If in the future we have a guaranteed invariant that invalid UTF-8 will
+  // never be present, we could avoid the UTF-8 check here.
+  txtenc_putstr(e, "\"");
+  const char* end = ptr + len;
+  while (ptr < end) {
+    size_t n = SkipPassthroughBytes(ptr, end - ptr);
+    if (n != 0) {
+      txtenc_putbytes(e, ptr, n);
+      ptr += n;
+      if (ptr == end) break;
+    }
+
+    // If repeated calls to CEscape() and PrintString() are expensive, we could
+    // consider batching them, at the cost of some complexity.
+    txtenc_escaped(e, *ptr);
     ptr++;
   }
+  txtenc_putstr(e, "\"");
+}
 
+static void txtenc_bytes(txtenc* e, upb_StringView data) {
+  const char* ptr = data.data;
+  const char* end = ptr + data.size;
+  txtenc_putstr(e, "\"");
+  for (; ptr < end; ptr++) {
+    unsigned char uc = *ptr;
+    if (upb_AsciiIsPrint(uc)) {
+      txtenc_putbytes(e, ptr, 1);
+    } else {
+      txtenc_escaped(e, uc);
+    }
+  }
   txtenc_putstr(e, "\"");
 }
 
@@ -198,10 +286,10 @@ static void txtenc_field(txtenc* e, upb_MessageValue val,
       txtenc_printf(e, "%" PRIu64, val.uint64_val);
       break;
     case kUpb_CType_String:
-      txtenc_string(e, val.str_val, false);
+      upb_HardenedPrintString(e, val.str_val.data, val.str_val.size);
       break;
     case kUpb_CType_Bytes:
-      txtenc_string(e, val.str_val, true);
+      txtenc_bytes(e, val.str_val);
       break;
     case kUpb_CType_Enum:
       txtenc_enum(val.int32_val, f, e);
@@ -269,6 +357,8 @@ static void txtenc_map(txtenc* e, const upb_Map* map, const upb_FieldDef* f) {
       txtenc_mapentry(e, key, val, f);
     }
   } else {
+    if (upb_Map_Size(map) == 0) return;
+
     const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
     const upb_FieldDef* key_f = upb_MessageDef_Field(entry, 0);
     _upb_sortedmap sorted;
@@ -277,8 +367,8 @@ static void txtenc_map(txtenc* e, const upb_Map* map, const upb_FieldDef* f) {
     _upb_mapsorter_pushmap(&e->sorter, upb_FieldDef_Type(key_f), map, &sorted);
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       upb_MessageValue key, val;
-      memcpy(&key, &ent.data.k, sizeof(key));
-      memcpy(&val, &ent.data.v, sizeof(val));
+      memcpy(&key, &ent.k, sizeof(key));
+      memcpy(&val, &ent.v, sizeof(val));
       txtenc_mapentry(e, key, val, f);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
@@ -369,8 +459,8 @@ static const char* txtenc_unknown(txtenc* e, const char* ptr,
           e->overflow = start_overflow;
           const char* str = ptr;
           ptr = upb_EpsCopyInputStream_ReadString(stream, &str, size, NULL);
-          assert(ptr);
-          txtenc_string(e, (upb_StringView){.data = str, .size = size}, true);
+          UPB_ASSERT(ptr);
+          txtenc_bytes(e, (upb_StringView){.data = str, .size = size});
         }
         break;
       }

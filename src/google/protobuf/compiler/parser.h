@@ -47,7 +47,7 @@ class SourceLocationTable;
 // to a FileDescriptorProto.  It does not resolve import directives or perform
 // many other kinds of validation needed to construct a complete
 // FileDescriptor.
-class PROTOBUF_EXPORT Parser {
+class PROTOBUF_EXPORT Parser final {
  public:
   Parser();
   Parser(const Parser&) = delete;
@@ -563,6 +563,7 @@ class PROTOBUF_EXPORT Parser {
   bool stop_after_syntax_identifier_;
   std::string syntax_identifier_;
   Edition edition_ = Edition::EDITION_UNKNOWN;
+  int recursion_depth_;
 
   // Leading doc comments for the next declaration.  These are not complete
   // yet; use ConsumeEndOfDeclaration() to get the complete comments.

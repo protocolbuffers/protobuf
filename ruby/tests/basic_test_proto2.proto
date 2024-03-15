@@ -231,3 +231,8 @@ message TestMessageSetExtension3 {
 extend TestMessageSet {
   optional TestMessageSetExtension3 message_set_extension3 = 98418655;
 }
+
+message BadFieldNames {
+  optional int32 dup = 1;
+  optional int32 class = 2;
+}

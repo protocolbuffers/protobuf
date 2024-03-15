@@ -4,7 +4,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use conformance_proto::conformance::{ConformanceRequest, ConformanceResponse};
+use conformance_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;
@@ -15,7 +15,10 @@ use protobuf_upb as kernel;
 use kernel::Optional::{Set, Unset};
 
 use std::io::{self, ErrorKind, Read, Write};
-use test_messages_proto2::protobuf_test_messages::proto2::TestAllTypesProto2;
+use test_messages_proto2::TestAllTypesProto2;
+use test_messages_proto2_editions_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
+use test_messages_proto3::TestAllTypesProto3;
+use test_messages_proto3_editions_proto::TestAllTypesProto3 as EditionsTestAllTypesProto3;
 
 /// Returns Some(i32) if a binary read can succeed from stdin.
 /// Returns None if we have reached an EOF.
@@ -57,40 +60,58 @@ fn write_response_to_stdout(resp: &ConformanceResponse) {
 fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
     let mut resp = ConformanceResponse::new();
     let message_type = req.message_type();
-    let is_proto2 = match message_type.as_bytes() {
-        b"protobuf_test_messages.proto2.TestAllTypesProto2" => true,
-        b"protobuf_test_messages.proto3.TestAllTypesProto3" => false,
-        _ => panic!("unexpected msg type {message_type}"),
-    };
 
-    // Enums aren't supported yet (and not in scope for v0.6) so we can't perform
-    // this check yet.
-
-    // if req.requested_output_format() != WireFormat.PROTOBUF {
-    //     resp.skipped_mut().set("only wire format output implemented")
-    // }
+    if req.requested_output_format() != WireFormat::Protobuf {
+        resp.set_skipped("only wire format output implemented");
+        return resp;
+    }
 
     let bytes = match req.protobuf_payload_opt() {
         Unset(_) => {
-            resp.skipped_mut().set("only wire format input implemented");
+            resp.set_skipped("only wire format input implemented");
             return resp;
         }
         Set(bytes) => bytes,
     };
 
-    if is_proto2 {
-        let mut proto = TestAllTypesProto2::new();
-        if let Err(_) = proto.deserialize(bytes) {
-            resp.parse_error_mut().set("failed to parse bytes");
-            return resp;
+    let serialized = match message_type.as_bytes() {
+        b"protobuf_test_messages.proto2.TestAllTypesProto2" => {
+            let mut proto = TestAllTypesProto2::new();
+            if let Err(_) = proto.deserialize(bytes) {
+                resp.set_parse_error("failed to parse bytes");
+                return resp;
+            }
+            proto.serialize()
         }
-        let serialized = proto.serialize(); // Note: serialize() is infallible in Rust api.
-        resp.protobuf_payload_mut().set(serialized.as_ref());
-        return resp;
-    } else {
-        resp.skipped_mut().set("only proto2 supported");
-        return resp;
-    }
+        b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
+            let mut proto = TestAllTypesProto3::new();
+            if let Err(_) = proto.deserialize(bytes) {
+                resp.set_parse_error("failed to parse bytes");
+                return resp;
+            }
+            proto.serialize()
+        }
+        b"protobuf_test_messages.editions.proto2.TestAllTypesProto2" => {
+            let mut proto = EditionsTestAllTypesProto2::new();
+            if let Err(_) = proto.deserialize(bytes) {
+                resp.set_parse_error("failed to parse bytes");
+                return resp;
+            }
+            proto.serialize()
+        }
+        b"protobuf_test_messages.editions.proto3.TestAllTypesProto3" => {
+            let mut proto = EditionsTestAllTypesProto3::new();
+            if let Err(_) = proto.deserialize(bytes) {
+                resp.set_parse_error("failed to parse bytes");
+                return resp;
+            }
+            proto.serialize()
+        }
+        _ => panic!("unexpected msg type {message_type}"),
+    };
+
+    resp.set_protobuf_payload(serialized);
+    return resp;
 }
 
 fn main() {

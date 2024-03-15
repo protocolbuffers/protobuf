@@ -25,8 +25,6 @@
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
-#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
@@ -158,7 +156,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].UPB_PRIVATE(offset),
               f->UPB_PRIVATE(offset));
     // All presence fields should point to the same oneof case offset.
-    size_t case_ofs = _upb_MiniTableField_OneofOffset(f);
+    size_t case_ofs = UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(f);
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
     EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
     EXPECT_TRUE(case_ofs < table->UPB_PRIVATE(size));

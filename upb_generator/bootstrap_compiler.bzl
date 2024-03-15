@@ -9,6 +9,13 @@ load(
     "upb_proto_library",
 )
 
+# begin:github_only
+load(
+    "//bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+# end:github_only
+
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc"
 _upbc_base = "//upb_generator:protoc-gen-"
@@ -26,7 +33,7 @@ _extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_p
 def _upbc(generator, stage):
     return _upbc_base + generator + _stages[stage]
 
-def bootstrap_cc_library(name, visibility, deps, bootstrap_deps, **kwargs):
+def bootstrap_cc_library(name, visibility, deps = [], bootstrap_deps = [], **kwargs):
     for stage in _stages:
         stage_visibility = visibility if stage == "" else ["//upb_generator:__pkg__"]
         native.cc_library(
@@ -36,7 +43,7 @@ def bootstrap_cc_library(name, visibility, deps, bootstrap_deps, **kwargs):
             **kwargs
         )
 
-def bootstrap_cc_binary(name, deps, bootstrap_deps, **kwargs):
+def bootstrap_cc_binary(name, deps = [], bootstrap_deps = [], **kwargs):
     for stage in _stages:
         native.cc_binary(
             name = name + stage,
@@ -50,7 +57,7 @@ def _generated_srcs_for_suffix(prefix, srcs, suffix):
 def _generated_srcs_for_generator(prefix, srcs, generator):
     ret = _generated_srcs_for_suffix(prefix, srcs, ".{}.h".format(generator))
 
-    if not (generator == "upb" and prefix.endswith("stage1")):
+    if generator != "upb" or prefix.endswith("stage0"):
         ret += _generated_srcs_for_suffix(prefix, srcs, ".{}.c".format(generator))
     return ret
 
@@ -72,7 +79,7 @@ def _stage0_proto_staleness_test(name, base_dir, src_files, src_rules, strip_pre
     )
 
     staleness_test(
-        name = name + "_staleness_test",
+        name = name + "_stage0_staleness_test",
         outs = _generated_srcs(base_dir + "stage0", src_files),
         generated_pattern = "bootstrap_generated_sources/%s",
         target_files = native.glob([base_dir + "stage0/**"]),
@@ -100,6 +107,37 @@ def _generate_stage1_proto(name, base_dir, src_files, src_rules, generator, kwar
         ],
         **kwargs
     )
+
+# begin:github_only
+def _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs):
+    upb_minitable_proto_library(
+        name = name + "_minitable",
+        deps = proto_lib_deps,
+        **kwargs
+    )
+
+    # Copy the final gencode for staleness comparison
+    files = _generated_srcs("cmake" + base_dir, src_files) + \
+            _generated_srcs_for_generator("cmake" + base_dir, src_files, "upb_minitable")
+    genrule = 0
+    for src in files:
+        genrule += 1
+        native.genrule(
+            name = name + "_copy_gencode_%d" % genrule,
+            outs = ["generated_sources/" + src],
+            srcs = [name, name + "_minitable"],
+            cmd = "for src in $(SRCS); do cp -f $$src $(@D) || echo 'copy failed!'; done",
+        )
+
+    # Keep bazel gencode in sync with our checked-in sources needed for cmake builds.
+    staleness_test(
+        name = name + "_staleness_test",
+        outs = files,
+        generated_pattern = "generated_sources/%s",
+        tags = ["manual"],
+    )
+
+# end:github_only
 
 def bootstrap_upb_proto_library(
         name,
@@ -187,3 +225,8 @@ def bootstrap_upb_proto_library(
         visibility = visibility,
         **kwargs
     )
+
+    # begin:github_only
+    _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs)
+
+# end:github_only

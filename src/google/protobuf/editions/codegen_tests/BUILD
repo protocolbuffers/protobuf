@@ -1,10 +1,22 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 exports_files(
-    glob(["*.proto"]),
+    glob(["*.proto"]) + ["rust_bazel_crate_mapping.txt"],
     visibility = [
         "//src/google/protobuf/editions:__pkg__",
     ],
+)
+
+proto_library(
+    name = "proto2_inline_comments_proto",
+    srcs = ["proto2_inline_comments.proto"],
+    strip_import_prefix = "/src",
+)
+
+proto_library(
+    name = "proto2_multiline_comments_proto",
+    srcs = ["proto2_multiline_comments.proto"],
+    strip_import_prefix = "/src",
 )
 
 proto_library(

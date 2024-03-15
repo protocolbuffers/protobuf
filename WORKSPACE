@@ -82,6 +82,14 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 
 apple_rules_dependencies()
 
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+
+apple_support_dependencies()
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+
+rules_cc_dependencies()
+
 # For `kt_jvm_library`
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
@@ -190,11 +198,6 @@ rules_fuzzing_init()
 load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
 
 fuzzing_py_deps_install_deps()
-
-bind(
-    name = "python_headers",
-    actual = "@system_python//:python_headers",
-)
 
 http_archive(
     name = "rules_rust",

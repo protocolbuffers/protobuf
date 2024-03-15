@@ -15,31 +15,27 @@
 #include "upb/message/internal/types.h"
 
 // Map entries aren't actually stored for map fields, they are only used during
-// parsing. For parsing, it helps a lot if all map entry messages have the same
-// layout. The layout code in mini_table/decode.c will ensure that all map
-// entries have this layout.
+// parsing. (It helps a lot if all map entry messages have the same layout.)
+// The mini_table layout code will ensure that all map entries have this layout.
 //
 // Note that users can and do create map entries directly, which will also use
 // this layout.
-//
-// NOTE: sync with wire/decode.c.
+
 typedef struct {
+  struct upb_Message message;
   // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
   // and the uint64_t helps make this clear.
   uint64_t hasbits;
   union {
     upb_StringView str;  // For str/bytes.
     upb_value val;       // For all other types.
+    double d[2];         // Padding for 32-bit builds.
   } k;
   union {
     upb_StringView str;  // For str/bytes.
     upb_value val;       // For all other types.
+    double d[2];         // Padding for 32-bit builds.
   } v;
-} upb_MapEntryData;
-
-typedef struct {
-  upb_Message_Internal internal;
-  upb_MapEntryData data;
 } upb_MapEntry;
 
 #endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_

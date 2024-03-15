@@ -205,7 +205,10 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
            {"lazy", descriptor_->options().has_lazy()
                         ? descriptor_->options().lazy() ? "kLazy" : "kEager"
                         : "kUndefined"}});
-      if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+      // Temporarily disable weak descriptor message for extensions.
+      // It is currently incorrect for custom descriptor options. We end up
+      // parsing the descriptors before the custom options are registered.
+      if (false && UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
         const auto find_index = [](auto* desc) {
           const std::vector<const Descriptor*> msgs =
               FlattenMessagesInFile(desc->file());

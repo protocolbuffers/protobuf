@@ -277,6 +277,11 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
           FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
     return descriptor.proto_features_->GetExtension(extension);
   }
+
+  // Provides a restricted view exclusively to code generators to query the
+  // edition of files being processed.  While most people should never write
+  // edition-dependent code, generators frequently will need to.
+  static Edition GetEdition(const FileDescriptor& desc);
 };
 
 PROTOBUF_EXPORT absl::string_view ShortEditionName(Edition edition);
@@ -489,11 +494,11 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
       return containing_type_->full_name();
     }
 
-    // Returns the .proto file in which this oneof was defined.
+    // Returns the .proto file in which this range was defined.
     // Never nullptr.
     const FileDescriptor* file() const { return containing_type_->file(); }
 
-    // Returns the Descriptor for the message containing this oneof.
+    // Returns the Descriptor for the message containing this range.
     // Never nullptr.
     const Descriptor* containing_type() const { return containing_type_; }
 
@@ -1853,11 +1858,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.proto, and any available extensions of that message.
   const FileOptions& options() const;
 
- public:
-  // Returns edition of this file.  For legacy proto2/proto3 files, special
-  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
-  Edition edition() const;
-
   // Find a top-level message type by name (not full_name).  Returns nullptr if
   // not found.
   const Descriptor* FindMessageTypeByName(absl::string_view name) const;
@@ -1926,6 +1926,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
+  friend class FileDescriptorLegacy;
   typedef FileOptions OptionsType;
 
   bool is_placeholder_;
@@ -1940,6 +1941,10 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   const std::string* package_;
   const DescriptorPool* pool_;
   Edition edition_;
+
+  // Returns edition of this file.  For legacy proto2/proto3 files, special
+  // EDITION_PROTO2 and EDITION_PROTO3 values are used.
+  Edition edition() const;
 
   // Get the merged features that apply to this file.  These are specified in
   // the .proto file through the feature options in the message definition.
@@ -2232,9 +2237,13 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Asynchronous execution is undefined behavior.
   void SetRecursiveBuildDispatcher(
       absl::AnyInvocable<void(absl::FunctionRef<void()>) const> dispatcher) {
-    dispatcher_ = std::make_unique<
-        absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>(
-        std::move(dispatcher));
+    if (dispatcher != nullptr) {
+      dispatcher_ = std::make_unique<
+          absl::AnyInvocable<void(absl::FunctionRef<void()>) const>>(
+          std::move(dispatcher));
+    } else {
+      dispatcher_.reset(nullptr);
+    }
   }
 #endif  // SWIG
 
@@ -2836,6 +2845,11 @@ bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to
 // In particular, questions like "does this field have a has bit?" have a
 // different answer depending on the language.
 namespace cpp {
+
+// The maximum allowed nesting for message declarations.
+// Going over this limit will make the proto definition invalid.
+constexpr int MaxMessageDeclarationNestingDepth() { return 32; }
+
 // Returns true if 'enum' semantics are such that unknown values are preserved
 // in the enum field itself, rather than going to the UnknownFieldSet.
 PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
@@ -2866,12 +2880,40 @@ enum class Utf8CheckMode {
 };
 PROTOBUF_EXPORT Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
                                                bool is_lite);
-#endif  // !SWIG
 
 // Returns whether or not this file is lazily initialized rather than
 // pre-main via static initialization.  This has to be done for our bootstrapped
 // protos to avoid linker bloat in lite runtimes.
 PROTOBUF_EXPORT bool IsLazilyInitializedFile(absl::string_view filename);
+
+template <typename F>
+auto VisitDescriptorsInFileOrder(const Descriptor* desc,
+                                 F& f) -> decltype(f(desc)) {
+  for (int i = 0; i < desc->nested_type_count(); i++) {
+    if (auto res = VisitDescriptorsInFileOrder(desc->nested_type(i), f)) {
+      return res;
+    }
+  }
+  if (auto res = f(desc)) return res;
+  return {};
+}
+
+// Visit the messages in post-order traversal.
+// We need several pieces of code to follow the same order because we use the
+// index of types during array lookups.
+// If any call returns a "truthy" value, it stops visitation and returns that
+// value right away. Otherwise returns `{}` after visiting all types.
+template <typename F>
+auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
+                                 F f) -> decltype(f(file->message_type(0))) {
+  for (int i = 0; i < file->message_type_count(); i++) {
+    if (auto res = VisitDescriptorsInFileOrder(file->message_type(i), f)) {
+      return res;
+    }
+  }
+  return {};
+}
+#endif  // !SWIG
 
 }  // namespace cpp
 }  // namespace internal

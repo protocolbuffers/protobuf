@@ -44,9 +44,11 @@ static void Message_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+static size_t Message_memsize(const void* _self) { return sizeof(Message); }
+
 static rb_data_type_t Message_type = {
     "Google::Protobuf::Message",
-    {Message_mark, RUBY_DEFAULT_FREE, NULL},
+    {Message_mark, RUBY_DEFAULT_FREE, Message_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
@@ -488,7 +490,8 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   k = Convert_RubyToUpb(key, "", map_init->key_type, NULL);
 
   if (map_init->val_type.type == kUpb_CType_Message && TYPE(val) == T_HASH) {
-    upb_MiniTable* t = upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
+    const upb_MiniTable* t =
+        upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
     upb_Message* msg = upb_Message_New(t, map_init->arena);
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
                           map_init->arena);
@@ -519,7 +522,7 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
                                                upb_Arena* arena) {
   if (info.type == kUpb_CType_Message) {
     upb_MessageValue msgval;
-    upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
+    const upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
     upb_Message* msg = upb_Message_New(t, arena);
     Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
@@ -635,7 +638,7 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE arena_rb = Arena_new();
   upb_Arena* arena = Arena_get(arena_rb);
-  upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
   upb_Message* msg = upb_Message_New(t, arena);
 
   Message_InitPtr(_self, msg, arena_rb);
@@ -675,7 +678,8 @@ bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
+    rb_raise(cParseError, "Message_Equal(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -706,7 +710,8 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(cParseError, upb_Status_ErrorMessage(&status));
+    rb_raise(cParseError, "Message_Hash(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -763,58 +768,34 @@ static VALUE Message_CreateHash(const upb_Message* msg,
   if (!msg) return Qnil;
 
   VALUE hash = rb_hash_new();
-  int n = upb_MessageDef_FieldCount(m);
-  bool is_proto2;
+  size_t iter = kUpb_Message_Begin;
+  const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(m));
+  const upb_FieldDef* field;
+  upb_MessageValue val;
 
-  // We currently have a few behaviors that are specific to proto2.
-  // This is unfortunate, we should key behaviors off field attributes (like
-  // whether a field has presence), not proto2 vs. proto3. We should see if we
-  // can change this without breaking users.
-  is_proto2 = upb_MessageDef_Syntax(m) == kUpb_Syntax_Proto2;
+  while (upb_Message_Next(msg, m, pool, &field, &val, &iter)) {
+    if (upb_FieldDef_IsExtension(field)) {
+      // TODO: allow extensions once we have decided what naming scheme the
+      // symbol should use.  eg. :"[pkg.ext]"
+      continue;
+    }
 
-  for (int i = 0; i < n; i++) {
-    const upb_FieldDef* field = upb_MessageDef_Field(m, i);
     TypeInfo type_info = TypeInfo_get(field);
-    upb_MessageValue msgval;
     VALUE msg_value;
-    VALUE msg_key;
-
-    if (!is_proto2 && upb_FieldDef_IsSubMessage(field) &&
-        !upb_FieldDef_IsRepeated(field) &&
-        !upb_Message_HasFieldByDef(msg, field)) {
-      // TODO: Legacy behavior, remove when we fix the is_proto2 differences.
-      msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
-      rb_hash_aset(hash, msg_key, Qnil);
-      continue;
-    }
-
-    // Do not include fields that are not present (oneof or optional fields).
-    if (is_proto2 && upb_FieldDef_HasPresence(field) &&
-        !upb_Message_HasFieldByDef(msg, field)) {
-      continue;
-    }
-
-    msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
-    msgval = upb_Message_GetFieldByDef(msg, field);
-
-    // Proto2 omits empty map/repeated filds also.
 
     if (upb_FieldDef_IsMap(field)) {
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
       const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
       const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       upb_CType key_type = upb_FieldDef_CType(key_f);
-      msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
+      msg_value = Map_CreateHash(val.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_FieldDef_IsRepeated(field)) {
-      if (is_proto2 &&
-          (!msgval.array_val || upb_Array_Size(msgval.array_val) == 0)) {
-        continue;
-      }
-      msg_value = RepeatedField_CreateArray(msgval.array_val, type_info);
+      msg_value = RepeatedField_CreateArray(val.array_val, type_info);
     } else {
-      msg_value = Scalar_CreateHash(msgval, type_info);
+      msg_value = Scalar_CreateHash(val, type_info);
     }
 
+    VALUE msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
     rb_hash_aset(hash, msg_key, msg_value);
   }
 
@@ -847,22 +828,12 @@ static VALUE Message_to_h(VALUE _self) {
  * Freezes the message object. We have to intercept this so we can pin the
  * Ruby object into memory so we don't forget it's frozen.
  */
-static VALUE Message_freeze(VALUE _self) {
+VALUE Message_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  if (!RB_OBJ_FROZEN(_self)) {
-    Arena_Pin(self->arena, _self);
-    RB_OBJ_FREEZE(_self);
-  }
-  return _self;
-}
 
-/*
- * Deep freezes the message object recursively.
- * Internal use only.
- */
-VALUE Message_internal_deep_freeze(VALUE _self) {
-  Message* self = ruby_to_Message(_self);
-  Message_freeze(_self);
+  if (RB_OBJ_FROZEN(_self)) return _self;
+  Arena_Pin(self->arena, _self);
+  RB_OBJ_FREEZE(_self);
 
   int n = upb_MessageDef_FieldCount(self->msgdef);
   for (int i = 0; i < n; i++) {
@@ -871,11 +842,11 @@ VALUE Message_internal_deep_freeze(VALUE _self) {
 
     if (field != Qnil) {
       if (upb_FieldDef_IsMap(f)) {
-        Map_internal_deep_freeze(field);
+        Map_freeze(field);
       } else if (upb_FieldDef_IsRepeated(f)) {
-        RepeatedField_internal_deep_freeze(field);
+        RepeatedField_freeze(field);
       } else if (upb_FieldDef_IsSubMessage(f)) {
-        Message_internal_deep_freeze(field);
+        Message_freeze(field);
       }
     }
   }
@@ -984,7 +955,7 @@ VALUE Message_decode_bytes(int size, const char* bytes, int options,
     rb_raise(cParseError, "Error occurred during parsing");
   }
   if (freeze) {
-    Message_internal_deep_freeze(msg_rb);
+    Message_freeze(msg_rb);
   }
   return msg_rb;
 }
@@ -1005,9 +976,6 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE data = argv[0];
   int options = 0;
   upb_Status status;
-
-  // TODO: use this message's pool instead.
-  const upb_DefPool* symtab = DescriptorPool_GetSymtab(generated_pool);
 
   if (argc < 1 || argc > 2) {
     rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
@@ -1042,8 +1010,9 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   }
 
   upb_Status_Clear(&status);
+  const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
   if (!upb_JsonDecode(RSTRING_PTR(data), RSTRING_LEN(data),
-                      (upb_Message*)msg->msg, msg->msgdef, symtab, options,
+                      (upb_Message*)msg->msg, msg->msgdef, pool, options,
                       Arena_get(msg->arena), &status)) {
     rb_raise(cParseError, "Error occurred during parsing: %s",
              upb_Status_ErrorMessage(&status));
@@ -1122,9 +1091,6 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   size_t size;
   upb_Status status;
 
-  // TODO: use this message's pool instead.
-  const upb_DefPool* symtab = DescriptorPool_GetSymtab(generated_pool);
-
   if (argc < 1 || argc > 2) {
     rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
   }
@@ -1159,8 +1125,9 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   }
 
   upb_Status_Clear(&status);
-  size = upb_JsonEncode(msg->msg, msg->msgdef, symtab, options, buf,
-                        sizeof(buf), &status);
+  const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
+  size = upb_JsonEncode(msg->msg, msg->msgdef, pool, options, buf, sizeof(buf),
+                        &status);
 
   if (!upb_Status_IsOk(&status)) {
     rb_raise(cParseError, "Error occurred during encoding: %s",
@@ -1170,7 +1137,7 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE ret;
   if (size >= sizeof(buf)) {
     char* buf2 = malloc(size + 1);
-    upb_JsonEncode(msg->msg, msg->msgdef, symtab, options, buf2, size + 1,
+    upb_JsonEncode(msg->msg, msg->msgdef, pool, options, buf2, size + 1,
                    &status);
     ret = rb_str_new(buf2, size);
     free(buf2);

@@ -9,6 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include "google/protobuf/repeated_ptr_field.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -59,11 +61,8 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     new_rep->elements[0] = tagged_rep_or_elem_;
   } else {
     Rep* old_rep = rep();
-    if (old_rep->allocated_size > 0) {
-      memcpy(new_rep->elements, old_rep->elements,
-             old_rep->allocated_size * ptr_size);
-    }
-    new_rep->allocated_size = old_rep->allocated_size;
+    memcpy(new_rep, old_rep,
+           old_rep->allocated_size * ptr_size + kRepHeaderSize);
 
     size_t old_size = capacity * ptr_size + kRepHeaderSize;
     if (arena == nullptr) {

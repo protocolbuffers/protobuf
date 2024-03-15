@@ -5,13 +5,32 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+// LINT: LEGACY_NAMES
+// The purpose of this file is to be as hostile as possible to reserved words
+// to the Rust language and ensure it still works.
+
 syntax = "proto2";
 
-package naming;
+// Note: Ideally this test could be 'package type.if.else.true.false'
+// which would work in Rust but would break the C++ codegen.
 
-message Reserved {
-  optional int32 for = 1; // for is a reserved word in rust, let's make sure we can compile it
+package type.type;
 
-  message Inner {}
-  optional Inner pub = 2;  // pub is reserved too!
+message Self {
+  optional int32 for = 1;
+  optional Self self = 2;
+  optional bool true = 3;
+  optional string false = 4;
+}
+
+message pub {
+  enum Self {
+    enum = 0;
+  }
+}
+
+message enum {
+  oneof self {
+    .type.type.pub.Self const = 3;
+  }
 }

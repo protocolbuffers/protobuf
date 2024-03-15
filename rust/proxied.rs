@@ -48,7 +48,6 @@ use crate::RepeatedMut;
 use crate::__internal::Private;
 use crate::repeated::ProxiedInRepeated;
 use std::fmt::Debug;
-use std::marker::{Send, Sync};
 
 /// A type that can be accessed through a reference-like proxy.
 ///

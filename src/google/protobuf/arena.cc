@@ -13,16 +13,21 @@
 #include <cstdint>
 #include <limits>
 #include <string>
-#include <typeinfo>
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/internal/layout.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/string_block.h"
 #include "google/protobuf/thread_safe_arena.h"
 
 
@@ -136,9 +141,9 @@ std::vector<void*> SerialArena::PeekCleanupListForTesting() {
   ArenaBlock* b = head();
   if (b->IsSentry()) return res;
 
-  const auto peek_list = [&](const char* pos, const char* end) {
-    while (pos != end) {
-      pos += cleanup::PeekNode(pos, res);
+  const auto peek_list = [&](char* pos, char* end) {
+    for (; pos != end; pos += cleanup::Size()) {
+      cleanup::PeekNode(pos, res);
     }
   };
 
@@ -188,7 +193,7 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n) {
   AllocateNewBlock(n);
-  void* ret;
+  void* ret = nullptr;
   bool res = MaybeAllocateAligned(n, &ret);
   ABSL_DCHECK(res);
   return ret;
@@ -222,15 +227,14 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
+  size_t required = AlignUpTo(n, align) + cleanup::Size();
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  size_t required = cleanup::Size(destructor);
-  AllocateNewBlock(required);
+  AllocateNewBlock(cleanup::Size());
   AddCleanupFromExisting(elem, destructor);
 }
 
@@ -299,6 +303,7 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
                                      size_t unused_bytes) {
   ABSL_DCHECK(string_block != nullptr);
   StringBlock* next = string_block->next();
+  absl::PrefetchToLocalCacheNta(next);
   std::string* end = string_block->end();
   for (std::string* s = string_block->AtOffset(unused_bytes); s != end; ++s) {
     s->~basic_string();
@@ -307,6 +312,7 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
 
   while ((string_block = next) != nullptr) {
     next = string_block->next();
+    absl::PrefetchToLocalCacheNta(next);
     for (std::string& s : *string_block) {
       s.~basic_string();
     }
@@ -324,8 +330,20 @@ void SerialArena::CleanupList() {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
     ABSL_DCHECK(!b->IsSentry() || it == limit);
-    while (it < limit) {
-      it += cleanup::DestroyNode(it);
+    // A prefetch distance of 8 here was chosen arbitrarily.
+    char* prefetch = it;
+    int prefetch_dist = 8;
+    for (; prefetch < limit && --prefetch_dist; prefetch += cleanup::Size()) {
+      cleanup::PrefetchNode(prefetch);
+    }
+    for (; prefetch < limit;
+         it += cleanup::Size(), prefetch += cleanup::Size()) {
+      cleanup::DestroyNode(it);
+      cleanup::PrefetchNode(prefetch);
+    }
+    absl::PrefetchToLocalCacheNta(b->next);
+    for (; it < limit; it += cleanup::Size()) {
+      cleanup::DestroyNode(it);
     }
     b = b->next;
   } while (b);
@@ -780,6 +798,8 @@ void ThreadSafeArena::WalkConstSerialArenaChunk(Functor fn) const {
   const SerialArenaChunk* chunk = head_.load(std::memory_order_acquire);
 
   for (; !chunk->IsSentry(); chunk = chunk->next_chunk()) {
+    // Prefetch the next chunk.
+    absl::PrefetchToLocalCache(chunk->next_chunk());
     fn(chunk);
   }
 }
@@ -794,6 +814,8 @@ void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
   while (!chunk->IsSentry()) {
     // Cache next chunk in case this chunk is destroyed.
     SerialArenaChunk* next_chunk = chunk->next_chunk();
+    // Prefetch the next chunk.
+    absl::PrefetchToLocalCache(next_chunk);
     fn(chunk);
     chunk = next_chunk;
   }

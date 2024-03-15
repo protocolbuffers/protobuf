@@ -1,5 +1,5 @@
 load("@build_bazel_rules_apple//apple:apple_binary.bzl", "apple_binary")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 package(default_visibility = ["//ruby:__subpackages__"])

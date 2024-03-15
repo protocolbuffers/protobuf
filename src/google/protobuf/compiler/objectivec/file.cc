@@ -155,7 +155,7 @@ void EmitLinkWKTs(absl::string_view name, io::Printer* p) {
             // This is to help make sure that the GPBWellKnownTypes.* categories get linked and
             // developers do not have to use the `-ObjC` linker flag. More information
             // here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
-            __attribute__((used)) static NSString* $basename$_importCategories () {
+            __attribute__((used)) static NSString* $basename$_importCategories(void) {
               return GPBWellKnownTypesErrorDomain;
             }
           )objc");
@@ -264,10 +264,11 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
   return result;
 }
 
-FileGenerator::FileGenerator(const FileDescriptor* file,
+FileGenerator::FileGenerator(Edition edition, const FileDescriptor* file,
                              const GenerationOptions& generation_options,
                              CommonState& common_state)
-    : file_(file),
+    : edition_(edition),
+      file_(file),
       generation_options_(generation_options),
       common_state_(&common_state),
       root_class_name_(FileClassName(file)),
@@ -777,7 +778,7 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
     // mode.
     syntax = "GPBFileSyntaxUnknown";
   } else {
-    switch (file_->edition()) {
+    switch (edition_) {
       case Edition::EDITION_UNKNOWN:
         syntax = "GPBFileSyntaxUnknown";
         break;

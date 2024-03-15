@@ -44,6 +44,16 @@ embed_edition_defaults(
     template = "defaults_test_embedded.h.template",
 )
 
+embed_edition_defaults(
+    name = "embed_test_defaults_base64",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "base64",
+    output = "defaults_test_embedded_base64.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_base64.h.template",
+)
+
 cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
@@ -51,6 +61,9 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -59,6 +72,7 @@ cc_library(
     name = "defaults_test_embedded",
     hdrs = [
         "defaults_test_embedded.h",
+        "defaults_test_embedded_base64.h",
     ],
     strip_include_prefix = "/src",
 )
@@ -74,15 +88,18 @@ cc_test(
     deps = [
         ":defaults_test_embedded",
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@bazel_tools//tools/cpp/runfiles",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -105,8 +122,14 @@ internal_objc_proto_library(
     name = "test_messages_proto2_editions_objc_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto2_editions.proto"],
-    enable_editions = True,
     visibility = ["//conformance:__pkg__"],
+)
+
+java_proto_library(
+    name = "test_messages_proto2_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
 )
 
 py_proto_library(
@@ -155,13 +178,19 @@ internal_objc_proto_library(
     name = "test_messages_proto3_editions_objc_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto3_editions.proto"],
-    enable_editions = True,
     includes = [
         ".",
         "src",
     ],
     proto_deps = ["//:well_known_type_protos"],
     visibility = ["//conformance:__pkg__"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
 )
 
 py_proto_library(
@@ -217,6 +246,7 @@ cc_test(
         ":test_messages_proto3_editions_cc_proto",
         "//:protobuf",
         "//src/google/protobuf:test_textproto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -226,6 +256,7 @@ cc_test(
     srcs = ["generated_reflection_test.cc"],
     deps = [
         ":test_messages_proto2_editions_cc_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )

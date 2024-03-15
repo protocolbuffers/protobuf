@@ -2378,7 +2378,7 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(GPBMessage *self,
         break;
       }
     }  // switch
-  }    // while(BytesUntilLimit() > 0)
+  }  // while(BytesUntilLimit() > 0)
   GPBCodedInputStreamPopLimit(state, limit);
 }
 
@@ -2657,7 +2657,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         }
       }
     }  // if (fieldType)..else if...else
-  }    // for(fields)
+  }  // for(fields)
 
   // Unknown fields.
   if (!unknownFields_) {
@@ -2825,8 +2825,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
           break;
         }
       }  // switch()
-    }    // if(mapOrArray)...else
-  }      // for(fields)
+    }  // if(mapOrArray)...else
+  }  // for(fields)
 
   // nil and empty are equal
   if (extensionMap_.count != 0 || otherMsg->extensionMap_.count != 0) {

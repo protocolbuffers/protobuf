@@ -10,7 +10,12 @@
 #ifndef UPB_REFLECTION_FIELD_DEF_H_
 #define UPB_REFLECTION_FIELD_DEF_H_
 
+#include <stdint.h>
+
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/reflection/common.h"
 
 // Must be last.
@@ -42,7 +47,7 @@ uint32_t upb_FieldDef_Index(const upb_FieldDef* f);
 bool upb_FieldDef_IsExtension(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsMap(const upb_FieldDef* f);
 bool upb_FieldDef_IsOptional(const upb_FieldDef* f);
-bool upb_FieldDef_IsPacked(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_IsPacked(const upb_FieldDef* f);
 bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
 bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
@@ -58,6 +63,8 @@ bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
                                        upb_StringView* out);
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f);
+const upb_MiniTableExtension* upb_FieldDef_MiniTableExtension(
+    const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_Name(const upb_FieldDef* f);
 UPB_API uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
 const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f);

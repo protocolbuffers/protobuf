@@ -491,3 +491,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/ipfs/protons
     *   Extensions: 1186
+
+1.  gRPC Federation
+
+    *   Website: https://github.com/mercari/grpc-federation
+    *   Extensions: 1187

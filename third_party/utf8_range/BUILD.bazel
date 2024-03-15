@@ -59,6 +59,7 @@ cc_test(
         ":utf8_range",
         ":utf8_validity",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -20,7 +20,7 @@ cc_library(
     deps = [
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/reflection:internal",
     ],
 )
 
@@ -50,10 +50,11 @@ cc_library(
     deps = [
         ":def_to_proto",
         "//:protobuf",
+        "//src/google/protobuf/util:differencer",
         "//upb:base",
         "//upb:descriptor_upb_proto",
         "//upb:mem",
-        "//upb:reflection_internal",
+        "//upb/reflection:internal",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -67,12 +68,14 @@ cc_test(
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:protobuf",
-        "@com_google_googletest//:gtest_main",
+        "//src/google/protobuf/util:differencer",
         "//upb:descriptor_upb_proto_reflection",
         "//upb:mem",
         "//upb:reflection",
         "//upb/test:parse_text_proto",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -83,7 +86,7 @@ cc_test(
 #     tags = ["clang_only"],
 #     deps = [
 #         ":def_to_proto_test_lib",
-#         "@com_google_googletest//:gtest_main",
+#         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
 #         "//testing/fuzzing:fuzztest",
 #     ],
 # )
@@ -130,42 +133,14 @@ cc_test(
         ":required_fields",
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/reflection:internal",
         "@com_google_absl//absl/strings",
-    ],
-)
-
-# Compare
-
-cc_library(
-    name = "compare",
-    srcs = ["compare.c"],
-    hdrs = ["compare.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//upb:base",
-        "//upb:eps_copy_input_stream",
-        "//upb:mem",
-        "//upb:port",
-        "//upb:wire_reader",
-        "//upb:wire_types",
-    ],
-)
-
-cc_test(
-    name = "compare_test",
-    srcs = ["compare_test.cc"],
-    deps = [
-        ":compare",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "//upb:wire_internal",
-        "//upb:wire_types",
-        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -173,13 +148,44 @@ cc_test(
 filegroup(
     name = "source_files",
     srcs = [
-        "compare.c",
-        "compare.h",
         "def_to_proto.c",
         "def_to_proto.h",
         "required_fields.c",
         "required_fields.h",
     ],
     visibility = ["//python/dist:__pkg__"],
+)
+# end:github_only
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+        exclude = ["def_to_proto_fuzz_test.cc"],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_util",
+    srcs = glob(
+        [
+            "**/*test.h",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = glob(
+        [
+            "**/*test.proto",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

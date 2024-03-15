@@ -72,7 +72,13 @@ static constexpr absl::string_view kSecondInsertionPoint =
     "  # @@protoc_insertion_point(second_mock_insertion_point) is here\n";
 
 MockCodeGenerator::MockCodeGenerator(absl::string_view name) : name_(name) {
-  absl::string_view key = getenv("TEST_CASE");
+  const char* c_key = getenv("TEST_CASE");
+  if (c_key == nullptr) {
+    // In Windows, setting 'TEST_CASE=' is equivalent to unsetting
+    // and therefore c_key can be nullptr
+    c_key = "";
+  }
+  absl::string_view key(c_key);
   if (key == "no_editions") {
     suppressed_features_ |= CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
   } else if (key == "invalid_features") {
@@ -215,7 +221,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     maximum_edition_ = Edition::EDITION_PROTO2;
   }
 
-  if (file->edition() >= Edition::EDITION_2023 &&
+  if (GetEdition(*file) >= Edition::EDITION_2023 &&
       (suppressed_features_ & CodeGenerator::FEATURE_SUPPORTS_EDITIONS) == 0) {
     internal::VisitDescriptors(*file, [&](const auto& descriptor) {
       const FeatureSet& features = GetResolvedSourceFeatures(descriptor);

@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -27,7 +27,7 @@ namespace Google.Protobuf.Reflection
         private readonly OneofAccessor accessor;
 
         internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, string clrName)
-            : base(file, file.ComputeFullName(parent, proto.Name), index)
+            : base(file, file.ComputeFullName(parent, proto.Name), index, parent.Features.MergedWith(proto.Options?.Features))
         {
             this.Proto = proto;
             containingType = parent;
@@ -113,7 +113,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public OneofOptions GetOptions() => Proto.Options?.Clone();
+        public OneofOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value oneof option for this descriptor

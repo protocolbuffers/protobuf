@@ -26,8 +26,8 @@ TEST(CppGeneratedCode, InternalMoveMessage) {
   protos_generator_test_TestModel_set_int_value_with_default(message, 123);
 
   // Move ownership.
-  TestModel model =
-      protos::internal::MoveMessage<TestModel>(message, source_arena);
+  TestModel model = protos::internal::MoveMessage<TestModel>(
+      (upb_Message*)message, source_arena);
   // Now that we have moved ownership, free original arena.
   upb_Arena_Free(source_arena);
   EXPECT_EQ(model.int_value_with_default(), 123);

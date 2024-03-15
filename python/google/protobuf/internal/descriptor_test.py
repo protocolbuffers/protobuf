@@ -18,16 +18,17 @@ from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
-from google.protobuf.internal import legacy_features_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
 from google.protobuf.internal import _parameterized
+from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_pb2
+from google.protobuf import unittest_proto3_extensions_pb2
 
 
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
@@ -539,9 +540,6 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
     self.assertEqual(self.my_file.pool, self.pool)
     self.assertFalse(self.my_file.has_options)
-    self.assertEqual(
-        self.my_file.edition, descriptor_pb2.Edition.EDITION_PROTO2
-    )
     file_proto = descriptor_pb2.FileDescriptorProto()
     self.my_file.CopyToProto(file_proto)
     self.assertEqual(self.my_file.serialized_pb,
@@ -1271,20 +1269,20 @@ class FeaturesTest(_parameterized.TestCase):
     )
 
   def testFeaturesStripped(self):
-    desc = legacy_features_pb2.TestEditionsMessage.DESCRIPTOR.fields_by_name[
+    desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR.fields_by_name[
         'required_field'
     ]
     self.assertFalse(desc.GetOptions().HasField('features'))
 
   def testLegacyRequiredTransform(self):
-    desc = legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
+    desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
     self.assertEqual(
         desc.fields_by_name['required_field'].label,
         descriptor.FieldDescriptor.LABEL_REQUIRED,
     )
 
   def testLegacyGroupTransform(self):
-    desc = legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
+    desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
     self.assertEqual(
         desc.fields_by_name['delimited_field'].type,
         descriptor.FieldDescriptor.TYPE_GROUP,
@@ -1353,6 +1351,21 @@ class FeaturesTest(_parameterized.TestCase):
         features.message_encoding, fs.MessageEncoding.LENGTH_PREFIXED
     )
     self.assertEqual(features.json_format, fs.JsonFormat.ALLOW)
+
+  def testProto3ExtensionPresence(self):
+    ext = unittest_proto3_extensions_pb2.Proto3FileExtensions.singular_int
+    file = descriptor_pb2.FileDescriptorProto()
+
+    self.assertFalse(file.options.HasExtension(ext))
+
+    file.options.Extensions[ext] = 1
+
+    self.assertTrue(file.options.HasExtension(ext))
+
+  def testProto3ExtensionHasPresence(self):
+    exts = unittest_proto3_extensions_pb2.Proto3FileExtensions
+    self.assertTrue(exts.singular_int.has_presence)
+    self.assertFalse(exts.repeated_int.has_presence)
 
 
 def GetTestFeature(desc):

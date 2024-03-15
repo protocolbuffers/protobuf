@@ -4,7 +4,7 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//python:internal.bzl", "internal_copy_files")
 load("//ruby:defs.bzl", "internal_ruby_proto_library")
@@ -228,21 +228,6 @@ filegroup(
 ################################################################################
 # Tests
 ################################################################################
-
-# Define this here so the descriptor paths match what we get in Rake tests.
-internal_ruby_proto_library(
-    name = "test_ruby_protos",
-    srcs = ["//ruby/tests:test_protos"],
-    includes = [
-        ".",
-        "ruby/tests",
-        "src",
-    ],
-    visibility = [
-        "//ruby:__subpackages__",
-    ],
-    deps = [":well_known_ruby_protos"],
-)
 
 conformance_test(
     name = "conformance_test",

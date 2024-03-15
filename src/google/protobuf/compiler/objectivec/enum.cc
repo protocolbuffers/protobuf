@@ -39,7 +39,9 @@ std::string SafelyPrintIntToCode(int v) {
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
                              const GenerationOptions& generation_options)
-    : descriptor_(descriptor), name_(EnumName(descriptor_)) {
+    : descriptor_(descriptor),
+      generation_options_(generation_options),
+      name_(EnumName(descriptor_)) {
   // Track the names for the enum values, and if an alias overlaps a base
   // value, skip making a name for it. Likewise if two alias overlap, the
   // first one wins.
@@ -86,7 +88,10 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
   printer->Emit(
       {
           {"enum_name", name_},
-          {"enum_comments", [&] { EmitCommentsString(printer, descriptor_); }},
+          {"enum_comments",
+           [&] {
+             EmitCommentsString(printer, generation_options_, descriptor_);
+           }},
           {"enum_deprecated_attribute",
            GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())},
           {"maybe_unknown_value",
@@ -112,7 +117,10 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
                    {
                        {"name", EnumValueName(v)},
                        {"comments",
-                        [&] { EmitCommentsString(printer, v, comment_flags); }},
+                        [&] {
+                          EmitCommentsString(printer, generation_options_, v,
+                                             comment_flags);
+                        }},
                        {"deprecated_attribute",
                         GetOptionalDeprecatedAttribute(v)},
                        {"value", SafelyPrintIntToCode(v->number())},

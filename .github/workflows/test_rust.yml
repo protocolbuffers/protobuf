@@ -23,7 +23,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.0.0-a04396cc76704d4b7c722789e9c08df18f47df53"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: >-

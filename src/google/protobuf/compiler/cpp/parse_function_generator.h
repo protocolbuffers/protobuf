@@ -33,7 +33,8 @@ class ParseFunctionGenerator {
       const std::vector<int>& has_bit_indices,
       const std::vector<int>& inlined_string_indices, const Options& options,
       MessageSCCAnalyzer* scc_analyzer,
-      const absl::flat_hash_map<absl::string_view, std::string>& vars);
+      const absl::flat_hash_map<absl::string_view, std::string>& vars,
+      int index_in_file_messages);
 
   // Emits class-level method declarations to `printer`:
   void GenerateMethodDecls(io::Printer* printer);
@@ -50,12 +51,6 @@ class ParseFunctionGenerator {
  private:
   class GeneratedOptionProvider;
 
-  // Returns true if tailcall table code should be generated.
-  bool should_generate_tctable() const;
-
-  // Generates a tail-calling `_InternalParse` function.
-  void GenerateTailcallParseFunction(Formatter& format);
-
   // Generates the tail-call table definition.
   void GenerateTailCallTable(io::Printer* printer);
   void GenerateFastFieldEntries(Formatter& format);
@@ -70,6 +65,7 @@ class ParseFunctionGenerator {
   std::vector<int> inlined_string_indices_;
   const std::vector<const FieldDescriptor*> ordered_fields_;
   int num_hasbits_;
+  int index_in_file_messages_;
 };
 
 }  // namespace cpp

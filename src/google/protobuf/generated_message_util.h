@@ -316,11 +316,9 @@ class MapSorterPtr {
   std::unique_ptr<storage_type[]> items_;
 };
 
-// Single message link for implicit weak descriptor messages.
-// The runtime will register all the instances that are linked in.
-struct WeakDefaultWriter {
-  const Message** destination;
-  const Message* source;
+struct WeakDescriptorDefaultTail {
+  const Message** target;
+  size_t size;
 };
 
 }  // namespace internal

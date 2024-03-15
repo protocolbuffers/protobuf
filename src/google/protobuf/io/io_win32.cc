@@ -28,14 +28,14 @@
 
 #include "google/protobuf/io/io_win32.h"
 
-#include <ctype.h>
 #include <direct.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <wctype.h>
+
+#include "absl/strings/ascii.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
@@ -64,12 +64,14 @@ struct CharTraits {
 
 template <>
 struct CharTraits<char> {
-  static bool is_alpha(char ch) { return isalpha(ch); }
+  static bool is_alpha(char ch) { return absl::ascii_isalpha(ch); }
 };
 
 template <>
 struct CharTraits<wchar_t> {
-  static bool is_alpha(wchar_t ch) { return iswalpha(ch); }
+  static bool is_alpha(wchar_t ch) {
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+  }
 };
 
 template <typename char_type>

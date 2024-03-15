@@ -113,6 +113,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
   int map_size = _upb_Map_Size(map);
+  UPB_ASSERT(map_size);
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 

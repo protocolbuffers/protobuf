@@ -27,4 +27,19 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_PROTO2, value: "true" },
     edition_defaults = { edition: EDITION_PROTO3, value: "false" }
   ];
+
+  enum StringType {
+    STRING_TYPE_UNKNOWN = 0;
+    VIEW = 1;
+    CORD = 2;
+    STRING = 3;
+  }
+
+  optional StringType string_type = 2 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: EDITION_PROTO2, value: "STRING" },
+    edition_defaults = { edition: EDITION_2024, value: "VIEW" }
+  ];
 }

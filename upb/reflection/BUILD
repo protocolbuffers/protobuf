@@ -64,10 +64,10 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_value",
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/message:internal",
     ],
 )
 
@@ -133,20 +133,18 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_accessors",
-        "//upb:message_accessors_internal",
         "//upb:message_copy",
-        "//upb:message_internal",
-        "//upb:message_value",
         "//upb:mini_descriptor",
-        "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
+        "//upb:wire",
         "//upb/base:internal",
+        "//upb/hash",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -162,9 +160,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
         "//upb:mem",
         "//upb:mini_descriptor",
-        "//upb:reflection_internal",
     ],
 )
 
@@ -178,13 +176,15 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
-        "@com_google_googletest//:gtest_main",
-        "//upb:hash",
+        ":internal",
+        "//upb:base",
         "//upb:mem",
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/hash",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -221,11 +221,14 @@ filegroup(
             "**/*.h",
             "**/*.hpp",
         ],
-        exclude = ["stage0/**"],
+        exclude = [
+            "stage0/**",
+            "cmake/**",
+        ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only
