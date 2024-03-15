@@ -305,10 +305,10 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
 
-#ifdef UPB_DISABLE_PROTO2_ENUM_CHECKING
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 1
+#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
 #else
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 0
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
 #endif
 
 #if defined(__cplusplus)
@@ -12496,7 +12496,11 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
 }
 
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
-  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
+  if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
+  return upb_EnumDef_IsSpecifiedAsClosed(e);
+}
+
+bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
   return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
          UPB_DESC(FeatureSet_CLOSED);
 }
@@ -12802,15 +12806,10 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
 static void _upb_EnumValueDef_CheckZeroValue(upb_DefBuilder* ctx,
                                              const upb_EnumDef* e,
                                              const upb_EnumValueDef* v, int n) {
-  if (upb_EnumDef_IsClosed(e) || n == 0 || v[0].number == 0) return;
-
-  // When the special UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 is enabled, we have to
-  // exempt proto2 enums from this check, even when we are treating them as
+  // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
+  // exempt closed enums from this check, even when we are treating them as
   // open.
-  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 &&
-      upb_FileDef_Syntax(upb_EnumDef_File(e)) == kUpb_Syntax_Proto2) {
-    return;
-  }
+  if (upb_EnumDef_IsSpecifiedAsClosed(e) || n == 0 || v[0].number == 0) return;
 
   _upb_DefBuilder_Errf(ctx, "for open enums, the first value must be zero (%s)",
                        upb_EnumDef_FullName(e));
@@ -16167,7 +16166,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ASAN
 #undef UPB_ASAN_GUARD_SIZE
 #undef UPB_CLANG_ASAN
-#undef UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3
+#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME

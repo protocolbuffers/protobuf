@@ -304,10 +304,10 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
 
-#ifdef UPB_DISABLE_PROTO2_ENUM_CHECKING
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 1
+#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
 #else
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 0
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
 #endif
 
 #if defined(__cplusplus)
@@ -11130,6 +11130,7 @@ UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(
 UPB_API const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
+bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e);
 
 // Creates a mini descriptor string for an enum, returns true on success.
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
@@ -14268,7 +14269,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ASAN
 #undef UPB_ASAN_GUARD_SIZE
 #undef UPB_CLANG_ASAN
-#undef UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3
+#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
