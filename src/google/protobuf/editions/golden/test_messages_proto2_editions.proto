@@ -620,3 +620,7 @@ message TestAllRequiredTypesProto2 {
     ];
   }
 }
+
+// This message has a twin in test_messages_proto3.proto
+message SameNameDifferentPackage {
+}
