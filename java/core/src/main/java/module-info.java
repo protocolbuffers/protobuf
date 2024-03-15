@@ -6,5 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 open module com.google.protobuf {
+    requires java.logging;
     exports com.google.protobuf;
 }
