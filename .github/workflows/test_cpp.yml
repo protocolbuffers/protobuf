@@ -19,10 +19,9 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
-          # TODO Disable until TSAN bug is resolved
-          # - { name: TSAN, flags: --config=tsan }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
