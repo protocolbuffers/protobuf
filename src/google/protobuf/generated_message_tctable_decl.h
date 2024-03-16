@@ -33,7 +33,67 @@ namespace internal {
 struct TcFieldData {
   constexpr TcFieldData() : data(0) {}
   explicit constexpr TcFieldData(uint64_t data) : data(data) {}
-  static TcFieldData DefaultInit() { return TcFieldData(); }
+  
+  // Fast table entry constructor:
+  constexpr TcFieldData(uint16_t coded_tag, uint8_t hasbit_idx, uint8_t aux_idx,
+                        uint16_t offset)
+      : data(uint64_t{offset} << 48 |      //
+             uint64_t{aux_idx} << 24 |     //
+             uint64_t{hasbit_idx} << 16 |  //
+             uint64_t{coded_tag}) {}
+
+  // Constructor to create an explicit 'uninitialized' instance.
+  // This constructor can be used to pass an uninitialized `data` value to a
+  // table driven parser function that does not use `data`. The purpose of this
+  // is that it allows the compiler to reallocate and re-purpose the register
+  // that is currently holding its value for other data. This reduces register
+  // allocations inside the highly optimized varint parsing functions.
+  //
+  // Applications not using `data` use the `PROTOBUF_TC_PARAM_NO_DATA_DECL`
+  // macro to declare the standard input arguments with no name for the `data`
+  // argument. Callers then use the `PROTOBUF_TC_PARAM_NO_DATA_PASS` macro.
+  //
+  // Example:
+  //   if (ptr == nullptr) {
+  //      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  //   }
+  struct DefaultInit {};
+  TcFieldData(DefaultInit) {}  // NOLINT(google-explicit-constructor)
+
+  // Fields used in mini table parsing:
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   |===============| [32] tag() (decoded)
+  //     |===============|   .   :   .   : [32] entry_offset()
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+
+  template <typename TagType = uint16_t>
+  TagType coded_tag() const {
+    return static_cast<TagType>(data);
+  }
+  uint8_t hasbit_idx() const { return static_cast<uint8_t>(data >> 16); }
+  uint8_t aux_idx() const { return static_cast<uint8_t>(data >> 24); }
+  uint16_t offset() const { return static_cast<uint16_t>(data >> 48); }
+
+// Fields used in non-field entries
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   :   . 16|=======| [16] coded_tag()
+  //     :   .   :   . 32|=======|   .   : [16] decoded_tag()
+  //     :---.---:---.---:   .   :   .   : [32] (unused)
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+
+  uint16_t decoded_tag() const { return static_cast<uint16_t>(data >> 16); }
 
   // Fields used in mini table parsing:
   //
@@ -235,7 +295,7 @@ struct alignas(uint64_t) TcParseTableBase {
       uint32_t lookup_table_offset, uint32_t skipmap32,
       uint32_t field_entries_offset, uint16_t num_field_entries,
       uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, TailCallParseFunc fallback
+      const MessageLite* default_instance, void*, TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
                             ,
                             const TcParseTableBase* to_prefetch
@@ -252,7 +312,7 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
-        post_loop_handler(post_loop_handler),
+        post_loop_handler(nullptr /*post_loop_handler*/),
         fallback(fallback)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
         ,
@@ -310,6 +370,9 @@ struct alignas(uint64_t) TcParseTableBase {
 
     // Default initializes this instance with undefined values.
     constexpr FastFieldEntry() = default;
+
+    constexpr FastFieldEntry(TailCallParseFunc func, TcFieldData bits) {}
+
 
     // Constant initializes this instance
     constexpr FastFieldEntry(uint64_t bits)

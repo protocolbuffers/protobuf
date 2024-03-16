@@ -198,6 +198,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return AppendStringFallback(ptr, size, s);
   }
+  PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
+                                                 ArenaStringPtr* s,
+                                                 Arena* arena);
   // Implemented in arenastring.cc
   PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
                                                  int size,
@@ -1395,6 +1398,14 @@ PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* UnknownGroupLiteParse(
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
+
+   inline const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
+                                                 ArenaStringPtr* s,
+                                                 Arena* arena) {
+    int size = ReadSize(&ptr);
+    if (ptr == nullptr) return nullptr;
+    return ReadArenaString(ptr, size, s, arena);
+  }
 
 }  // namespace internal
 }  // namespace protobuf

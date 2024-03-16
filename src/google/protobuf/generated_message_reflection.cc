@@ -3227,6 +3227,24 @@ static uint32_t AlignTo(uint32_t v) {
   return (v + alignof(T) - 1) & ~(alignof(T) - 1);
 }
 
+static internal::TailCallParseFunc GetFastParseFunction(
+    internal::TcParseFunction func) {
+#define PROTOBUF_TC_PARSE_FUNCTION_X(value) internal::TcParser::value,
+  static constexpr internal::TailCallParseFunc kFuncs[] = {
+      {}, PROTOBUF_TC_PARSE_FUNCTION_LIST};
+#undef PROTOBUF_TC_PARSE_FUNCTION_X
+  const int index = static_cast<int>(func);
+  if (index < 0 || index >= std::end(kFuncs) - std::begin(kFuncs) ||
+      kFuncs[index] == nullptr) {
+    ABSL_DLOG(FATAL) << "Failed to find function: " << static_cast<int>(func);
+    // Let's not crash in opt, just in case.
+    // MiniParse is always a valid parser.
+    return &internal::TcParser::MiniParse;
+  }
+  return kFuncs[index];
+}
+
+/*
 const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
     const {
   // ParseLoop can't parse message set wire format.
@@ -3255,7 +3273,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
                  static_cast<void*>(full_table));
   return &full_table->header;
 }
-
+*/
 void Reflection::PopulateTcParseFastEntries(
     const internal::TailCallTableInfo& table_info,
     TcParseTableBase::FastFieldEntry* fast_entries) const {

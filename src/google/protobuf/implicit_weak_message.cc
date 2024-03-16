@@ -47,7 +47,7 @@ const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
     ClassData header;
     char name[1];
   };
-  static const auto table =
+  /*static const auto table =
       internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
           &implicit_weak_message_default_instance.instance);
   static constexpr Data data = {
@@ -57,8 +57,8 @@ const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
           PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
           true,
       },
-      ""};
-  return &data.header;
+      ""};*/
+  return nullptr; // &data.header;
 }
 
 }  // namespace internal

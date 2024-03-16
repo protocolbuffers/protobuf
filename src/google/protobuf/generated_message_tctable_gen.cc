@@ -465,7 +465,7 @@ TailCallTableInfo::TailCallTableInfo(
                                 : TcParseFunction::kGenericFallback;
 
   if (descriptor->options().message_set_wire_format()) {
-    ABSL_DCHECK(ordered_fields.empty());
+    /*ABSL_DCHECK(ordered_fields.empty());
     ABSL_DCHECK(inlined_string_indices.empty());
     if (message_options.uses_codegen) {
       fast_path_fields = {{TailCallTableInfo::FastFieldInfo::NonField{
@@ -487,7 +487,7 @@ TailCallTableInfo::TailCallTableInfo(
     table_size_log2 = 0;
     num_to_entry_table = MakeNumToEntryTable(ordered_fields);
     field_name_data = GenerateFieldNames(descriptor, field_entries,
-                                         message_options, option_provider);
+                                         message_options, option_provider);*/
 
     return;
   }

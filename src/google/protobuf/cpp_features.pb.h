@@ -99,7 +99,7 @@ inline bool CppFeatures_StringType_Parse(absl::string_view name, CppFeatures_Str
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT CppFeatures final  : public ::google::protobuf::Message
+class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
  public:
   inline CppFeatures() : CppFeatures(nullptr) {}
@@ -274,11 +274,7 @@ class PROTOBUF_EXPORT CppFeatures final  : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-<<<<<<< HEAD
-      1, 1, 0,
-=======
-      1, 2, 1,
->>>>>>> main
+      2, 2, 1,
       0, 2>
       _table_;
 

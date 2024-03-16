@@ -188,19 +188,11 @@ CppFeatures::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-<<<<<<< HEAD
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> CppFeatures::_table_ = {
+const ::_pbi::TcParseTable<2, 2, 1, 0, 2> CppFeatures::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
-=======
-const ::_pbi::TcParseTable<1, 2, 1, 0, 2> CppFeatures::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
-    0, // no _extensions_
-    2, 8,  // max_field_number, fast_idx_mask
->>>>>>> main
+    2, 2,  // max_field_number, num_fast_fields
     offsetof(decltype(_table_), field_lookup_table),
     4294967292,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -214,11 +206,10 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> CppFeatures::_table_ = {
     ::_pbi::TcParser::GetTable<::pb::CppFeatures>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {::_pbi::TcParser::FastEr0S1,
-     {16, 1, 3, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)}},
     // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {8, 0 + _Internal::kHasBitsOffset, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_)},
+    // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    {56},  // Fallback
   }}, {{
     65535, 65535
   }}, {{

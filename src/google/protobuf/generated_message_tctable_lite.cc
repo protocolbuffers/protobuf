@@ -79,7 +79,7 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
-  constexpr bool kEnableFastParse = true;
+  constexpr bool kEnableFastParse = false;
   if (kEnableFastParse) return FastParseLoop(msg, ptr, ctx, table, -1);
 
   // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
@@ -102,9 +102,9 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
   table -= 1;
-  if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+  /*if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
     return table->post_loop_handler(msg, ptr, ctx);
-  }
+  }*/
   return ptr;
 }
 
@@ -366,7 +366,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFallback(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
 }
 
-#if 0
+#if 1
 
 template <typename TagType>
 const char* TcParser::FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL) {
@@ -787,7 +787,7 @@ PROTOBUF_ALWAYS_INLINE bool EnumIsValidAux(int32_t val, uint16_t xform_val,
 
 }  // namespace
 
-#if 0
+#if 1
 
 template <typename FieldType, typename TagType, bool zigzag>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
@@ -1102,7 +1102,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpUnknownEnumFallback(
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-#if 0
+#if 1
 
 template <typename TagType, uint16_t xform_val>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
@@ -1200,7 +1200,7 @@ PROTOBUF_NOINLINE void TcParser::AddUnknownEnum(MessageLite* msg,
   GetUnknownFieldOps(table).write_varint(msg, tag >> 3, enum_value);
 }
 
-#if 0
+#if 1
 
 template <typename TagType, uint16_t xform_val>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
@@ -1428,7 +1428,7 @@ void TcParser::ReportFastUtf8Error(uint32_t decoded_tag,
                     false);
 }
 
-#if 0
+#if 1
 
 namespace {
 
@@ -3266,13 +3266,11 @@ parse_submessage:
   } 
 }
 
-#if 0
 const char* TcParser::MessageSetWireFormatParseLoopLite(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<MessageLite>(
       PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
-#endif
 
 std::string TypeCardToString(uint16_t type_card) {
   // In here we convert the runtime value of entry.type_card back into a
