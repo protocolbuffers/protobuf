@@ -88,6 +88,7 @@
                   <arg value="--proto_path=${protobuf.source.dir}"/>
                   <arg value="--proto_path=src/test/proto"/>
                   <arg value="src/test/proto/com/google/protobuf/util/json_test.proto"/>
+                  <arg value="src/test/proto/com/google/protobuf/util/json_test_proto2.proto"/>
                 </exec>
               </target>
             </configuration>
