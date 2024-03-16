@@ -570,12 +570,20 @@ void Value::clear_kind() {
     case kStructValue: {
       if (GetArena() == nullptr) {
         delete _impl_.kind_.struct_value_;
+      } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
+        if (_impl_.kind_.struct_value_ != nullptr) {
+          _impl_.kind_.struct_value_->Clear();
+        }
       }
       break;
     }
     case kListValue: {
       if (GetArena() == nullptr) {
         delete _impl_.kind_.list_value_;
+      } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
+        if (_impl_.kind_.list_value_ != nullptr) {
+          _impl_.kind_.list_value_->Clear();
+        }
       }
       break;
     }

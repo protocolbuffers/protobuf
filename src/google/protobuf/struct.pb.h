@@ -1019,6 +1019,10 @@ inline void Value::clear_struct_value() {
   if (kind_case() == kStructValue) {
     if (GetArena() == nullptr) {
       delete _impl_.kind_.struct_value_;
+    } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
+      if (_impl_.kind_.struct_value_ != nullptr) {
+        _impl_.kind_.struct_value_->Clear();
+      }
     }
     clear_has_kind();
   }
@@ -1096,6 +1100,10 @@ inline void Value::clear_list_value() {
   if (kind_case() == kListValue) {
     if (GetArena() == nullptr) {
       delete _impl_.kind_.list_value_;
+    } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
+      if (_impl_.kind_.list_value_ != nullptr) {
+        _impl_.kind_.list_value_->Clear();
+      }
     }
     clear_has_kind();
   }
