@@ -15,7 +15,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -596,12 +595,7 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
   p->Emit(R"cc(
     if (GetArena() == nullptr) {
       delete $field_$;
-    } else if ($pbi$::DebugHardenClearOneofMessageOnArena()) {
-      if ($field_$ != nullptr) {
-        $field_$->Clear();
-      }
-    }
-  )cc");
+    })cc");
 }
 
 void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {

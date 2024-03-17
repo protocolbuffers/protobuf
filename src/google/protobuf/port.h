@@ -238,15 +238,6 @@ inline constexpr bool DebugHardenStringValues() {
 #endif
 }
 
-// Returns true if force clearing oneof message on arena is enabled.
-inline constexpr bool DebugHardenClearOneofMessageOnArena() {
-#ifdef NDEBUG
-  return false;
-#else
-  return true;
-#endif
-}
-
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
 // chosen to give a better benchmark results. E.g. this is ~20%
