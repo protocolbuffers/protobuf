@@ -492,7 +492,7 @@ fn test_singular_msg_field() {
     // testing reading an int inside a view
     assert_that!(msg_view.bb(), eq(0));
 
-    let mut nested_msg_mut: NestedMessageMut = msg.optional_nested_message_mut().or_default();
+    let mut nested_msg_mut: NestedMessageMut = msg.optional_nested_message_mut();
     // test reading an int inside a mut
     assert_that!(nested_msg_mut.bb(), eq(0));
 
@@ -543,12 +543,12 @@ fn test_setting_submsg() {
 }
 
 #[test]
-fn test_msg_or_default() {
+fn test_msg_mut_initializes() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 
-    let _ = msg.optional_nested_message_mut().or_default();
-    // confirm that that or_default makes the field Present
+    let _ = msg.optional_nested_message_mut();
+    // confirm that that optional_nested_message_mut makes the field Present
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(true));
 
     msg.clear_optional_nested_message();
@@ -757,7 +757,7 @@ fn test_group() {
     assert_that!(m.optionalgroup_opt().is_set(), eq(false));
     assert_that!(m.optionalgroup().a(), eq(0));
 
-    m.optionalgroup_mut().or_default().set_a(7);
+    m.optionalgroup_mut().set_a(7);
     assert_that!(m.optionalgroup_opt().is_set(), eq(true));
     assert_that!(m.optionalgroup().a(), eq(7));
 }

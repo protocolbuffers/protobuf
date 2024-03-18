@@ -170,7 +170,7 @@ pub trait MutProxy<'msg>: ViewProxy<'msg> {
     /// example:
     ///
     /// ```ignore
-    ///   let mut sub: Mut<SubMsg> = msg.submsg_mut().or_default();
+    ///   let mut sub: Mut<SubMsg> = msg.submsg_mut();
     ///   sub.as_mut().field_x_mut().set(10);  // field_x_mut is fn(self)
     ///   sub.field_y_mut().set(20);  // `sub` is now consumed
     /// ```

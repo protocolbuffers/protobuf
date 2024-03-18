@@ -103,10 +103,10 @@ fn test_recursive_view() {
 #[test]
 fn test_recursive_mut() {
     let mut rec = nested_proto::Recursive::new();
-    let mut one = rec.rec_mut().or_default();
-    let mut two = one.rec_mut().or_default();
-    let mut three = two.rec_mut().or_default();
-    let mut four = three.rec_mut().or_default();
+    let mut one = rec.rec_mut();
+    let mut two = one.rec_mut();
+    let mut three = two.rec_mut();
+    let mut four = three.rec_mut();
 
     four.set_num(1);
     assert_that!(four.num(), eq(1));

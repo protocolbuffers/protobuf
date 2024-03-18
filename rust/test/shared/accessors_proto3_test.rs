@@ -183,7 +183,7 @@ fn test_oneof_accessors() {
     assert_that!(msg.oneof_uint32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
 
-    msg.oneof_nested_message_mut().or_default(); // Cause the nested_message field to become set.
+    msg.oneof_nested_message_mut(); // Cause the nested_message field to become set.
 
     assert_that!(msg.oneof_bytes_opt(), matches_pattern!(Optional::Unset(_)));
     assert_that!(msg.oneof_field(), matches_pattern!(OneofNestedMessage(_)));
