@@ -92,8 +92,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   typedef void InternalArenaConstructable_;
 
  private:
-  static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
-                               ParseContext* ctx);
+  static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
+                                           const char* ptr, ParseContext* ctx);
 
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we
