@@ -25,7 +25,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
 
-set(_protobuf_libraries libprotobuf-lite libprotobuf)
+set(_protobuf_libraries libprotobuf_lite libprotobuf)
 if (protobuf_BUILD_LIBPROTOC)
     list(APPEND _protobuf_libraries libprotoc)
 endif (protobuf_BUILD_LIBPROTOC)
@@ -92,7 +92,7 @@ foreach(_header ${protobuf_HEADERS})
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
   install(FILES "${_extract_from}"
     DESTINATION "${_extract_to}"
-    COMPONENT protobuf-headers
+    COMPONENT protobuf_headers
     RENAME "${_extract_name}")
 endforeach()
 
@@ -132,12 +132,12 @@ configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake
 install(EXPORT protobuf-targets
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   NAMESPACE protobuf::
-  COMPONENT protobuf-export
+  COMPONENT protobuf_export
 )
 
 install(DIRECTORY ${CMAKE_BUILD_CMAKEDIR}/
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  COMPONENT protobuf-export
+  COMPONENT protobuf_export
   PATTERN protobuf-targets.cmake EXCLUDE
 )
 
