@@ -23,6 +23,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -420,6 +421,43 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
 }
+
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+// First, register all the extensions that have both messages linked in.
+// This will include all messages used as extensions in .proto options.
+// In the second phase, we generate the missing prototypes, but that requires
+// parsing descriptors, which in turn require the extensions from the first
+// phase.
+void ExtensionSet::RegisterWeakMessageExtension(
+    internal::WeakPrototypeRef extendee, int number, FieldType type,
+    bool is_repeated, internal::WeakPrototypeRef prototype,
+    LazyEagerVerifyFnType verify_func, LazyAnnotation is_lazy,
+    bool is_preregistration) {
+  auto* extendee_msg =
+      GetPrototypeForWeakDescriptor(extendee.table, extendee.index, false);
+  auto* prototype_msg =
+      GetPrototypeForWeakDescriptor(prototype.table, prototype.index, false);
+
+  const bool have_both = extendee_msg != nullptr && prototype_msg != nullptr;
+  if (is_preregistration != have_both) {
+    // This is done on the other phase.
+    return;
+  }
+
+  if (extendee_msg == nullptr) {
+    extendee_msg =
+        GetPrototypeForWeakDescriptor(extendee.table, extendee.index, true);
+  }
+  if (prototype_msg == nullptr) {
+    prototype_msg =
+        GetPrototypeForWeakDescriptor(prototype.table, prototype.index, true);
+  }
+
+  ExtensionSet::RegisterMessageExtension(
+      extendee_msg, number, type, is_repeated,
+      /*is_packed=*/false, prototype_msg, verify_func, is_lazy);
+}
+#endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
 }  // namespace internal
 }  // namespace protobuf

@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -178,7 +179,16 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
       )cc");
 }
 
-void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
+bool ExtensionGenerator::WillGenerateRegistration(InitPriority priority) {
+  // We only use priority 101 for weak descriptors.
+  return priority != kInitPriority101 ||
+         (descriptor_->cpp_type() == descriptor_->CPPTYPE_MESSAGE &&
+          UsingImplicitWeakDescriptor(descriptor_->file(), options_));
+}
+
+void ExtensionGenerator::GenerateRegistration(io::Printer* p,
+                                              InitPriority priority) {
+  ABSL_CHECK(WillGenerateRegistration(priority));
   auto vars = p->WithVars(variables_);
   switch (descriptor_->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -205,10 +215,15 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
            {"lazy", descriptor_->options().has_lazy()
                         ? descriptor_->options().lazy() ? "kLazy" : "kEager"
                         : "kUndefined"}});
-      // Temporarily disable weak descriptor message for extensions.
-      // It is currently incorrect for custom descriptor options. We end up
-      // parsing the descriptors before the custom options are registered.
-      if (false && UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+      const auto register_message = [&] {
+        p->Emit(R"cc(
+          ::_pbi::ExtensionSet::RegisterMessageExtension(
+              &$extendee$::default_instance(), $number$, $field_type$,
+              $repeated$, $packed$, &$message_type$::default_instance(),
+              $verify$, ::_pbi::LazyAnnotation::$lazy$),
+        )cc");
+      };
+      if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
         const auto find_index = [](auto* desc) {
           const std::vector<const Descriptor*> msgs =
               FlattenMessagesInFile(desc->file());
@@ -224,23 +239,30 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p) {
                  DescriptorTableName(descriptor_->message_type()->file(),
                                      options_)},
                 {"extension_index", find_index(descriptor_->message_type())},
+                {"preregister", priority == kInitPriority101},
+                {"fallback_for_opt_out",
+                 // For now we have a fallback to use normal registration,
+                 // which should only happen at priority 102.
+                 // Once we turn this on by default we can remove the opt-in
+                 // and the fallback.
+                 [&] {
+                   if (priority != kInitPriority102) return;
+                   register_message();
+                 }},
             },
             R"cc(
-              ::_pbi::ExtensionSet::RegisterMessageExtension(
-                  ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
-                                                        $extendee_index$),
-                  $number$, $field_type$, $repeated$, $packed$,
-                  ::_pbi::GetPrototypeForWeakDescriptor(&$extension_table$,
-                                                        $extension_index$),
-                  $verify$, ::_pbi::LazyAnnotation::$lazy$),
+              //
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
+              ::_pbi::ExtensionSet::RegisterWeakMessageExtension(
+                  {&$extendee_table$, $extendee_index$}, $number$, $field_type$,
+                  $repeated$, {&$extension_table$, $extension_index$}, $verify$,
+                  ::_pbi::LazyAnnotation::$lazy$, $preregister$),
+#else
+              $fallback_for_opt_out$,
+#endif
             )cc");
       } else {
-        p->Emit(R"cc(
-          ::_pbi::ExtensionSet::RegisterMessageExtension(
-              &$extendee$::default_instance(), $number$, $field_type$,
-              $repeated$, $packed$, &$message_type$::default_instance(),
-              $verify$, ::_pbi::LazyAnnotation::$lazy$),
-        )cc");
+        register_message();
       }
       break;
     }

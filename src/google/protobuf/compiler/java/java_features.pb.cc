@@ -6,6 +6,7 @@
 #include "google/protobuf/compiler/java/java_features.pb.h"
 
 #include <algorithm>
+#include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
@@ -366,12 +367,12 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::std::false_type _static_init_ PROTOBUF_UNUSED =
-    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto),
-    ::_pbi::ExtensionSet::RegisterMessageExtension(
-        &::google::protobuf::FeatureSet::default_instance(), 1001, 11,
-        false, false, &::pb::JavaFeatures::default_instance(),
-        nullptr, ::_pbi::LazyAnnotation::kUndefined),
-     ::std::false_type{});
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
+    _static_init2_ PROTOBUF_UNUSED =
+        (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto),
+        ::_pbi::ExtensionSet::RegisterMessageExtension(
+            &::google::protobuf::FeatureSet::default_instance(), 1001, 11,
+            false, false, &::pb::JavaFeatures::default_instance(),
+            nullptr, ::_pbi::LazyAnnotation::kUndefined),
+         ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

@@ -60,6 +60,7 @@ class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 class FeatureSet;
 namespace internal {
+struct DescriptorTable;
 class FieldSkipper;     // wire_format_lite.h
 class ReflectionVisit;  // message_reflection_util.h
 class WireFormat;
@@ -157,6 +158,14 @@ struct ExtensionInfo {
 };
 
 
+// Reference to a prototype via its DescriptorTable.
+// This way we can generate them on the fly if they are missing when Weak
+// Descriptor messages are enabled.
+struct WeakPrototypeRef {
+  const internal::DescriptorTable* table;
+  int index;
+};
+
 // An ExtensionFinder is an object which looks up extension definitions.  It
 // must implement this method:
 //
@@ -224,6 +233,17 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        const MessageLite* prototype,
                                        LazyEagerVerifyFnType verify_func,
                                        LazyAnnotation is_lazy);
+
+  // As RegisterMessageExtension, but for the weak descriptor message mode.
+  // It will perform the registration in two phases to guarantee we can parse
+  // descriptors properly.
+  static void RegisterWeakMessageExtension(internal::WeakPrototypeRef extendee,
+                                           int number, FieldType type,
+                                           bool is_repeated,
+                                           internal::WeakPrototypeRef prototype,
+                                           LazyEagerVerifyFnType verify_func,
+                                           LazyAnnotation is_lazy,
+                                           bool is_preregistration);
 
   // =================================================================
 

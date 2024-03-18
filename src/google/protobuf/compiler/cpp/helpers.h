@@ -1176,6 +1176,12 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
 
+// Priority used for static initializers.
+enum InitPriority {
+  kInitPriority101,
+  kInitPriority102,
+};
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
