@@ -70,6 +70,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   static final int MAX_READ_FROM_CHUNK_SIZE = 0x2000; // 8k
 
   /** Empty {@code ByteString}. */
+  // There is a class initialization cycle via LiteralByteString -> LeafByteString -> ByteString.
+  // In practice the only implementation of LeafByteString outside this file is NioByteString,
+  // and the only public API that creates LeafByteStrings is in ByteString, so ByteString will
+  // always be initialized first.
+  @SuppressWarnings("ClassInitializationDeadlock")
   public static final ByteString EMPTY = new LiteralByteString(Internal.EMPTY_BYTE_ARRAY);
 
   /**
