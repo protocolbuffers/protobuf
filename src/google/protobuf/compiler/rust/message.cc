@@ -124,6 +124,28 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
+void MessageDebug(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({},
+               R"rs(
+        $pbr$::debug_string($pbi$::Private, self.raw_msg(), f)
+      )rs");
+      return;
+
+    case Kernel::kUpb:
+      ctx.Emit({},
+               R"rs(
+        f.debug_struct(std::any::type_name::<Self>())
+          .field("raw_msg", &self.raw_msg())
+          .finish()
+      )rs");
+      return;
+  }
+
+  ABSL_LOG(FATAL) << "unreachable";
+}
+
 void MessageExterns(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -448,7 +470,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         $pb$::Map::from_inner(
                             $pbi$::Private,
-                            $pbr$::InnerMapMut::new($pbi$::Private, $map_new_thunk$())
+                            $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
                         )
                     }
                 }
@@ -563,29 +585,20 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
                     let arena = $pbr$::Arena::new();
-                    let raw_arena = arena.raw();
-                    std::mem::forget(arena);
+                    let raw = unsafe {
+                      $pbr$::upb_Map_New(
+                        arena.raw(),
+                        <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
+                        <Self as $pbr$::UpbTypeConversions>::upb_type())
+                    };
 
-                    unsafe {
-                        $pb$::Map::from_inner(
-                            $pbi$::Private,
-                            $pbr$::InnerMapMut::new(
-                                $pbi$::Private,
-                                $pbr$::upb_Map_New(
-                                    raw_arena,
-                                    <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                                    <Self as $pbr$::UpbTypeConversions>::upb_type()),
-                                raw_arena))
-                    }
+                    $pb$::Map::from_inner(
+                        $pbi$::Private,
+                        $pbr$::InnerMap::new($pbi$::Private, raw, arena))
                 }
 
-                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    // SAFETY:
-                    // - `map.raw_arena($pbi$::Private)` is a live `upb_Arena*`
-                    // - This function is only called once for `map` in `Drop`.
-                    unsafe {
-                        $pbr$::upb_Arena_Free(map.inner($pbi$::Private).raw_arena($pbi$::Private));
-                    }
+                unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
+                    // No-op: the memory will be dropped by the arena.
                 }
 
                 fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
@@ -672,6 +685,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
        {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
+       {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
        {"accessor_fns",
         [&] {
@@ -792,10 +806,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }}},
       R"rs(
         #[allow(non_camel_case_types)]
-        //~ TODO: Implement support for debug redaction
-        #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner
+        }
+
+        impl std::fmt::Debug for $Msg$ {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         // SAFETY:
@@ -813,11 +831,17 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type Mut<'msg> = $Msg$Mut<'msg>;
         }
 
-        #[derive(Debug, Copy, Clone)]
+        #[derive(Copy, Clone)]
         #[allow(dead_code)]
         pub struct $Msg$View<'msg> {
           msg: $pbi$::RawMessage,
           _phantom: $Phantom$<&'msg ()>,
+        }
+
+        impl std::fmt::Debug for $Msg$View<'_> {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         #[allow(dead_code)]
@@ -931,11 +955,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         $repeated_impl$
         $map_value_impl$
 
-        #[derive(Debug)]
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
         pub struct $Msg$Mut<'msg> {
           inner: $pbr$::MutatorMessageRef<'msg>,
+        }
+
+        impl std::fmt::Debug for $Msg$Mut<'_> {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         #[allow(dead_code)]
@@ -956,6 +985,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn new(_private: $pbi$::Private, msg: &'msg mut $pbr$::MessageInner) -> Self {
             Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
+
+          #[deprecated = "This .or_default() is a no-op, usages can be safely removed"]
+          pub fn or_default(self) -> Self { self }
 
           fn raw_msg(&self) -> $pbi$::RawMessage {
             self.inner.msg()

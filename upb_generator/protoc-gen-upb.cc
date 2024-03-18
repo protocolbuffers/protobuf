@@ -20,11 +20,13 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
@@ -259,7 +261,7 @@ std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
 }
 
 void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
-                               Output& output) {
+                               const Options& options, Output& output) {
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
@@ -311,6 +313,26 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
         CTypeConst(ext), ExtensionIdentBase(ext), ext.name(),
         MessageName(ext.containing_type()), ExtensionLayout(ext),
         GetFieldRep(pools, ext));
+
+    // Message extensions also have a Msg_mutable_foo() accessor that will
+    // create the sub-message if it doesn't already exist.
+    if (ext.IsSubMessage()) {
+      output(
+          R"cc(
+            UPB_INLINE struct $0* $1_mutable_$2(struct $3* msg,
+                                                upb_Arena* arena) {
+              struct $0* sub = (struct $0*)$1_$2(msg);
+              if (sub == NULL) {
+                sub = (struct $0*)_upb_Message_New($4, arena);
+                if (sub) $1_set_$2(msg, sub, arena);
+              }
+              return sub;
+            }
+          )cc",
+          MessageName(ext.message_type()), ExtensionIdentBase(ext), ext.name(),
+          MessageName(ext.containing_type()),
+          MessageMiniTableRef(ext.message_type(), options));
+    }
   }
 }
 
@@ -582,8 +604,7 @@ void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
     GenerateMapGetters(field, pools, msg_name, field_names, options, output);
-  } else if (UPB_DESC(MessageOptions_map_entry)(
-                 field.containing_type().options())) {
+  } else if (field.containing_type().mapentry()) {
     GenerateMapEntryGetters(field, msg_name, output);
   } else if (field.IsSequence()) {
     GenerateRepeatedGetters(field, pools, msg_name, field_names, options,
@@ -752,8 +773,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
 
   // Message fields also have a Msg_mutable_foo() accessor that will create
   // the sub-message if it doesn't already exist.
-  if (field.ctype() == kUpb_CType_Message &&
-      !UPB_DESC(MessageOptions_map_entry)(field.containing_type().options())) {
+  if (field.IsSubMessage() && !field.containing_type().mapentry()) {
     output(
         R"cc(
           UPB_INLINE struct $0* $1_mutable_$2($1* msg, upb_Arena* arena) {
@@ -790,7 +810,7 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
                              Output& output) {
   output("/* $0 */\n\n", message.full_name());
   std::string msg_name = ToCIdent(message.full_name());
-  if (!UPB_DESC(MessageOptions_map_entry)(message.options())) {
+  if (!message.mapentry()) {
     GenerateMessageFunctionsInHeader(message, options, output);
   }
 
@@ -930,7 +950,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 
   for (auto ext : this_file_exts) {
-    GenerateExtensionInHeader(pools, ext, output);
+    GenerateExtensionInHeader(pools, ext, options, output);
   }
 
   if (absl::string_view(file.name()) == "google/protobuf/descriptor.proto" ||

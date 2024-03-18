@@ -1308,6 +1308,14 @@ class PROTOBUF_EXPORT Reflection final {
                                              internal::ParseContext* ctx);
 };
 
+extern template void Reflection::SwapFieldsImpl<true>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
+extern template void Reflection::SwapFieldsImpl<false>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
 // Abstract interface for a factory for message objects.
 //
 // The thread safety for this class is implementation dependent, see comments
@@ -1418,7 +1426,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   (void)unused;
 
 #if PROTOBUF_RTTI
-  internal::StrongReference(T::default_instance());
+  internal::StrongReferenceToType<T>();
   return dynamic_cast<const T*>(from);
 #else
   bool ok = from != nullptr &&
@@ -1457,7 +1465,7 @@ T& DynamicCastToGenerated(Message& from) {
 // instance T and T is a type derived from base Message class.
 template <typename T>
 const T* DownCastToGenerated(const Message* from) {
-  internal::StrongReference(T::default_instance());
+  internal::StrongReferenceToType<T>();
   ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
       << T::default_instance().GetTypeName();
@@ -1505,7 +1513,7 @@ T& DownCastToGenerated(Message& from) {
 // of loops (on x86-64 it compiles into two "mov" instructions).
 template <typename T>
 void LinkMessageReflection() {
-  internal::StrongReference(T::default_instance);
+  internal::StrongReferenceToType<T>();
 }
 
 // =============================================================================
@@ -1664,6 +1672,8 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   return MutableRepeatedFieldRef<T>(message, field);
 }
+
+
 }  // namespace protobuf
 }  // namespace google
 

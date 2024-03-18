@@ -193,7 +193,7 @@ fn test_repeated_message() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_nested_message().len(), eq(0));
     let mut nested = NestedMessage::new();
-    nested.bb_mut().set(1);
+    nested.set_bb(1);
     msg.repeated_nested_message_mut().push(nested.as_view());
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 
@@ -202,7 +202,7 @@ fn test_repeated_message() {
     assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 
     let mut nested2 = NestedMessage::new();
-    nested2.bb_mut().set(2);
+    nested2.set_bb(2);
 
     // TODO: b/320936046 - Test SettableValue once available
     msg.repeated_nested_message_mut().set(0, nested2.as_view());

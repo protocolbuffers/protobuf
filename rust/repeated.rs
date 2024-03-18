@@ -17,7 +17,7 @@ use std::marker::PhantomData;
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::{Private, RawRepeatedField},
-    __runtime::InnerRepeatedMut,
+    __runtime::{InnerRepeated, InnerRepeatedMut},
 };
 
 /// Views the elements in a `repeated` field of `T`.
@@ -275,27 +275,27 @@ impl<'msg, T: ?Sized> Debug for RepeatedIter<'msg, T> {
 /// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
 /// [`Mut<Repeated<T>>`](RepeatedMut) to access the repeated elements
 pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
-    inner: InnerRepeatedMut<'static>,
+    inner: InnerRepeated,
     _phantom: PhantomData<T>,
 }
 
 impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
-    #[allow(dead_code)]
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         T::repeated_new(Private)
     }
 
-    pub(crate) unsafe fn from_inner(inner: InnerRepeatedMut<'static>) -> Self {
+    pub(crate) fn from_inner(inner: InnerRepeated) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn inner(&mut self) -> InnerRepeatedMut<'static> {
-        self.inner
-    }
-
     pub(crate) fn as_mut(&mut self) -> RepeatedMut<'_, T> {
-        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+        RepeatedMut { inner: self.inner.as_mut(), _phantom: PhantomData }
+    }
+}
+
+impl<T: ?Sized + ProxiedInRepeated> Default for Repeated<T> {
+    fn default() -> Self {
+        Repeated::new()
     }
 }
 

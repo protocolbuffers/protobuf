@@ -8,8 +8,11 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 require 'conformance/conformance_pb'
+require 'google/protobuf'
 require 'google/protobuf/test_messages_proto3_pb'
 require 'google/protobuf/test_messages_proto2_pb'
+require 'google/protobuf/editions/golden/test_messages_proto2_editions_pb'
+require 'google/protobuf/editions/golden/test_messages_proto3_editions_pb'
 
 $test_count = 0
 $verbose = false
@@ -20,7 +23,12 @@ def do_test(request)
   descriptor = Google::Protobuf::DescriptorPool.generated_pool.lookup(request.message_type)
 
   unless descriptor
-    response.skipped = "Unknown message type: " + request.message_type
+    response.runtime_error = "Unknown message type: " + request.message_type
+  end
+
+  if request.test_category == :TEXT_FORMAT_TEST
+    response.skipped = "Ruby doesn't support text format"
+    return response
   end
 
   begin
@@ -42,12 +50,6 @@ def do_test(request)
         test_message = descriptor.msgclass.decode_json(request.json_payload, options)
       rescue Google::Protobuf::ParseError => err
         response.parse_error = err.message.encode('utf-8')
-        return response
-      end
-
-    when :text_payload
-      begin
-        response.skipped = "Ruby doesn't support text format"
         return response
       end
 

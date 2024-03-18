@@ -15,8 +15,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <new>
+#include <new>  // IWYU pragma: keep for operator new().
+#include <queue>
 #include <string>
+#include <vector>
 
 #include "absl/base/call_once.h"
 #include "absl/base/optimization.h"
@@ -42,9 +44,9 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection_internal.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -64,7 +66,6 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
-using internal::WireFormatLite;
 
 void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
   ReflectionOps::Merge(DownCast<const Message&>(from), DownCast<Message*>(&to));
@@ -502,8 +503,8 @@ template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
 }  // namespace internal
+
 
 }  // namespace protobuf
 }  // namespace google

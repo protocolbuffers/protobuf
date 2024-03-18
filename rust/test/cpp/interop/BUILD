@@ -15,10 +15,6 @@ cc_library(
 rust_test(
     name = "interop_test",
     srcs = ["main.rs"],
-    tags = [
-        # TODO: Enable testing on arm once we support sanitizers for Rust on Arm.
-        "not_build:arm",
-    ],
     deps = [
         ":test_utils",
         "//rust:protobuf_cpp",

@@ -416,6 +416,42 @@ filegroup(
         "//upb/cmake:__pkg__",
     ],
 )
+
+filegroup(
+    name = "test_protos",
+    srcs = [
+        "//src/google/protobuf:test_messages_proto2.proto",
+        "//src/google/protobuf:test_messages_proto3.proto",
+        "//src/google/protobuf:well_known_type_protos",
+        "//upb/json:test_protos",
+        "//upb/message:test_protos",
+        "//upb/test:test_protos",
+        "//upb/util:test_protos",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = [
+        "//upb/json:test_srcs",
+        "//upb/mem:test_srcs",
+        "//upb/message:test_srcs",
+        "//upb/test:test_srcs",
+        "//upb/util:test_srcs",
+        "//upb/wire:test_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_util",
+    srcs = [
+        "//upb/test:test_util",
+        "//upb/util:test_util",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
 # end:github_only
 
 # begin:google_only

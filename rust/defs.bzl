@@ -70,6 +70,7 @@ def _rust_proto_library_impl(ctx):
         dep_variant_info.crate_info,
         dep_variant_info.dep_info,
         dep_variant_info.cc_info,
+        DefaultInfo(files = dep_variant_info.crate_info.srcs),
     ]
 
 def _make_rust_proto_library(is_upb):

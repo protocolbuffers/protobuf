@@ -1267,7 +1267,7 @@ public final class Descriptors {
      * FieldDescriptorProto.Type} maps to exactly one Java type.
      */
     public JavaType getJavaType() {
-      return type.getJavaType();
+      return getType().getJavaType();
     }
 
     /** For internal use only. */
@@ -1298,12 +1298,12 @@ public final class Descriptors {
     /** For internal use only. */
     @Override
     public WireFormat.FieldType getLiteType() {
-      return table[type.ordinal()];
+      return table[getType().ordinal()];
     }
 
     /** For internal use only. */
     public boolean needsUtf8Check() {
-      if (type != Type.STRING) {
+      if (getType() != Type.STRING) {
         return false;
       }
       if (getContainingType().toProto().getOptions().getMapEntry()) {
@@ -1454,6 +1454,7 @@ public final class Descriptors {
       return isProto3Optional
           || getType() == Type.MESSAGE
           || getType() == Type.GROUP
+          || isExtension()
           || getContainingOneof() != null
           || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
     }

@@ -37,7 +37,6 @@ class RepeatedFieldTest < Test::Unit::TestCase
     repeated_field_names(TestMessage).each do |field_name|
       assert_nil m.send(field_name).first
       assert_empty m.send(field_name).first(0)
-      assert_empty m.send(field_name).first(1)
     end
 
     fill_test_msg(m)

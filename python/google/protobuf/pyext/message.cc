@@ -51,7 +51,6 @@
 #include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "google/protobuf/pyext/unknown_field_set.h"
-#include "google/protobuf/pyext/unknown_fields.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -1124,8 +1123,6 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->composite_fields = nullptr;
   self->child_submessages = nullptr;
 
-  self->unknown_field_set = nullptr;
-
   return self;
 }
 
@@ -1186,10 +1183,6 @@ static void Dealloc(CMessage* self) {
   ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
   delete self->child_submessages;
   delete self->composite_fields;
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-  }
 
   CMessage* parent = self->parent;
   if (!parent) {
@@ -1527,11 +1520,6 @@ PyObject* Clear(CMessage* self) {
   if (InternalReparentFields(self, messages_to_release, containers_to_release) <
       0) {
     return nullptr;
-  }
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-    self->unknown_field_set = nullptr;
   }
   self->message->Clear();
   Py_RETURN_NONE;
@@ -2858,20 +2846,12 @@ bool InitProto2MessageModule(PyObject *m) {
     }
   }
 
-  if (PyType_Ready(&PyUnknownFields_Type) < 0) {
-    return false;
-  }
-
   if (PyType_Ready(&PyUnknownFieldSet_Type) < 0) {
     return false;
   }
 
   PyModule_AddObject(m, "UnknownFieldSet",
                      reinterpret_cast<PyObject*>(&PyUnknownFieldSet_Type));
-
-  if (PyType_Ready(&PyUnknownFieldRef_Type) < 0) {
-    return false;
-  }
 
   if (PyType_Ready(&PyUnknownField_Type) < 0) {
     return false;

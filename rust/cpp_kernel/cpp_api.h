@@ -11,6 +11,8 @@
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 
 #include <cstddef>
+#include <cstring>
+#include <string>
 
 #include "google/protobuf/message.h"
 
@@ -144,6 +146,24 @@ struct PtrAndLen {
       google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size()),      \
       value_ty, rust_value_ty, ffi_value_ty, to_cpp_value, to_ffi_value);
 
+// Represents an owned string for FFI purposes.
+//
+// This must only be used to transfer a string from C++ to Rust. The
+// below invariants must hold:
+//   * Rust and C++ versions of this struct are ABI compatible.
+//   * The data were allocated using the Rust allocator and are 1 byte aligned.
+//   * The data is valid UTF-8.
+struct RustStringRawParts {
+  // Owns the memory.
+  const char* data;
+  size_t len;
+
+  RustStringRawParts() = delete;
+  // Copies src.
+  explicit RustStringRawParts(std::string src);
+};
+
+extern "C" RustStringRawParts utf8_debug_string(const google::protobuf::Message* msg);
 }  // namespace rust_internal
 }  // namespace protobuf
 }  // namespace google

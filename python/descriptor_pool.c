@@ -197,7 +197,8 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
       goto done;
     }
     const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
-    if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m)) {
+    if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
+                                 /*options=*/0)) {
       result = PyUpb_FileDescriptor_Get(file);
       goto done;
     }

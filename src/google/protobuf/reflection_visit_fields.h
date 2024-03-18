@@ -60,6 +60,12 @@ class ReflectionVisit final {
   template <typename MessageT, typename CallbackFn>
   static void VisitFields(MessageT& message, CallbackFn&& func, FieldMask mask);
 
+  template <typename CallbackFn>
+  static void VisitMessageFields(const Message& message, CallbackFn&& func);
+
+  template <typename CallbackFn>
+  static void VisitMessageFields(Message& message, CallbackFn&& func);
+
  private:
   static const internal::ReflectionSchema& GetSchema(
       const Reflection* reflection) {
@@ -396,10 +402,95 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   });
 }
 
+template <typename CallbackFn>
+void ReflectionVisit::VisitMessageFields(const Message& message,
+                                         CallbackFn&& func) {
+  ReflectionVisit::VisitFields(
+      message,
+      [&](auto info) {
+        if constexpr (info.is_map) {
+          auto value_type = info.value_type();
+          if (value_type != FieldDescriptor::TYPE_MESSAGE &&
+              value_type != FieldDescriptor::TYPE_GROUP) {
+            return;
+          }
+          info.VisitElements([&](auto key, auto val) {
+            if constexpr (val.cpp_type == FieldDescriptor::CPPTYPE_MESSAGE) {
+              func(val.Get());
+            }
+          });
+        } else if constexpr (info.cpp_type ==
+                             FieldDescriptor::CPPTYPE_MESSAGE) {
+          if constexpr (info.is_repeated) {
+            for (const auto& it : info.Get()) {
+              func(DownCast<const Message&>(it));
+            }
+          } else {
+            func(info.Get());
+          }
+        }
+      },
+      FieldMask::kMessage);
+}
+
+template <typename CallbackFn>
+void ReflectionVisit::VisitMessageFields(Message& message, CallbackFn&& func) {
+  ReflectionVisit::VisitFields(
+      message,
+      [&](auto info) {
+        if constexpr (info.is_map) {
+          auto value_type = info.value_type();
+          if (value_type != FieldDescriptor::TYPE_MESSAGE &&
+              value_type != FieldDescriptor::TYPE_GROUP) {
+            return;
+          }
+          info.VisitElements([&](auto key, auto val) {
+            if constexpr (val.cpp_type == FieldDescriptor::CPPTYPE_MESSAGE) {
+              func(*val.Mutable());
+            }
+          });
+        } else if constexpr (info.cpp_type ==
+                             FieldDescriptor::CPPTYPE_MESSAGE) {
+          if constexpr (info.is_repeated) {
+            for (auto& it : info.Mutable()) {
+              func(DownCast<Message&>(it));
+            }
+          } else {
+            func(info.Mutable());
+          }
+        }
+      },
+      FieldMask::kMessage);
+}
+
+// Visits present fields of "message" and calls the callback function "func".
+// Skips fields whose ctypes are missing in "mask".
 template <typename MessageT, typename CallbackFn>
 void VisitFields(MessageT& message, CallbackFn&& func, FieldMask mask) {
-  internal::ReflectionVisit::VisitFields(message,
-                                         std::forward<CallbackFn>(func), mask);
+  ReflectionVisit::VisitFields(message, std::forward<CallbackFn>(func), mask);
+}
+
+// Visits message fields of "message" and calls "func". Expects "func" to
+// accept const Message&. Note the following divergence from VisitFields.
+//
+// --Each of N elements of a repeated message field is visited (total N).
+// --Each of M elements of a map field whose value type is message are visited
+//   (total M).
+// --A map field whose value type is not message is ignored.
+//
+// This is a helper API built on top of VisitFields to hide specifics about
+// extensions, repeated fields, etc.
+template <typename CallbackFn>
+void VisitMessageFields(const Message& message, CallbackFn&& func) {
+  ReflectionVisit::VisitMessageFields(message, std::forward<CallbackFn>(func));
+}
+
+// Same as VisitMessageFields above but expects "func" to accept Message&. This
+// is useful when mutable access is required. As mutable access can be
+// expensive, use it only if it's necessary.
+template <typename CallbackFn>
+void VisitMutableMessageFields(Message& message, CallbackFn&& func) {
+  ReflectionVisit::VisitMessageFields(message, std::forward<CallbackFn>(func));
 }
 
 #endif  // __cpp_if_constexpr

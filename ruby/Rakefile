@@ -22,9 +22,11 @@ well_known_protos = %w[
 
 test_protos = %w[
   tests/basic_test.proto
+  tests/basic_test_features.proto
   tests/basic_test_proto2.proto
   tests/generated_code.proto
   tests/generated_code_proto2.proto
+  tests/generated_code_editions.proto
   tests/multi_level_nesting_test.proto
   tests/repeated_field_test.proto
   tests/stress.proto

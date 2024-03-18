@@ -786,7 +786,11 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);
 
-// Generate the section name to be used for a data object when using implicit
+// Generates a strong reference to the message in `desc`, as a statement.
+std::string StrongReferenceToType(const Descriptor* desc,
+                                  const Options& options);
+
+// Generates the section name to be used for a data object when using implicit
 // weak descriptors. The prefix determines the kind of object and the section it
 // will be merged into afterwards.
 // See `UsingImplicitWeakDescriptor` above.
@@ -1171,6 +1175,12 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // `&ClassName::PostLoopHandler` which should be a static function of the right
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
+
+// Priority used for static initializers.
+enum InitPriority {
+  kInitPriority101,
+  kInitPriority102,
+};
 
 }  // namespace cpp
 }  // namespace compiler

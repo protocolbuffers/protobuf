@@ -329,6 +329,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 //   FastV8S1, FastZ64S2, FastEr1P2, FastBcS1, FastMtR2, FastEndG1
 //
 #define PROTOBUF_TC_PARSE_FUNCTION_LIST                           \
+  /* These functions have the Fast entry ABI */                   \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)                 \
@@ -357,7 +358,12 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()                     \
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoopLite) \
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoop)     \
-  PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionParseLoop)
+  PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionParseLoop)               \
+  /* These functions have the fallback ABI */                     \
+  PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallback)                   \
+  PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallbackLite)               \
+  PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionFallback)                \
+  PROTOBUF_TC_PARSE_FUNCTION_X(DiscardEverythingFallback)
 
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
 enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
@@ -392,6 +398,11 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL);
+
+  // This fallback will discard any field that reaches there.
+  // Note that fields parsed via fast/MiniParse are not going to be discarded
+  // even when this is enabled.
+  static const char* DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL);
 
   // These follow the "fast" function ABI but implement the whole loop for
   // message_set_wire_format types.

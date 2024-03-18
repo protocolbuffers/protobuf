@@ -39,7 +39,9 @@ module Google
           size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
           temporary_arena = Google::Protobuf::FFI.create_arena
           buffer = Google::Protobuf::FFI.file_options(@file_def, size_ptr, temporary_arena)
-          Google::Protobuf::FileOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).freeze
+          opts = Google::Protobuf::FileOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+          opts.clear_features()
+          opts.freeze
         end
       end
     end

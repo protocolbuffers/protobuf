@@ -106,8 +106,7 @@ std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
 std::string ConstantNamePrefix(absl::string_view classname) {
   bool is_reserved = false;
 
-  std::string lower(classname);
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::string lower = absl::AsciiStrToLower(classname);
 
   is_reserved = IsReservedName(lower);
 

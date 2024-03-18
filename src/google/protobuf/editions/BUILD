@@ -122,7 +122,6 @@ internal_objc_proto_library(
     name = "test_messages_proto2_editions_objc_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto2_editions.proto"],
-    enable_editions = True,
     visibility = ["//conformance:__pkg__"],
 )
 
@@ -179,7 +178,6 @@ internal_objc_proto_library(
     name = "test_messages_proto3_editions_objc_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto3_editions.proto"],
-    enable_editions = True,
     includes = [
         ".",
         "src",
@@ -223,6 +221,7 @@ exports_files(
     ],
     visibility = [
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 

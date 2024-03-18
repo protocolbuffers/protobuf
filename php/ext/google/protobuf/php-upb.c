@@ -305,10 +305,10 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
 
-#ifdef UPB_DISABLE_PROTO2_ENUM_CHECKING
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 1
+#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
 #else
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 0
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
 #endif
 
 #if defined(__cplusplus)
@@ -339,6 +339,12 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #else
 #define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
+#endif
+
+#ifdef UPB_TRACING_ENABLED
+#ifdef NDEBUG
+error UPB_TRACING_ENABLED Tracing should be disabled in production builds
+#endif
 #endif
 
 
@@ -416,6 +422,9 @@ const upb_MiniTable google__protobuf__FileDescriptorSet_msg_init = {
   &google_protobuf_FileDescriptorSet_submsgs[0],
   &google_protobuf_FileDescriptorSet__fields[0],
   16, 1, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(8), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FileDescriptorSet",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x000800003f00000a, &upb_prm_1bt_max192b},
@@ -452,6 +461,9 @@ const upb_MiniTable google__protobuf__FileDescriptorProto_msg_init = {
   &google_protobuf_FileDescriptorProto_submsgs[0],
   &google_protobuf_FileDescriptorProto__fields[0],
   UPB_SIZE(80, 136), 13, kUpb_ExtMode_NonExtendable, 12, UPB_FASTTABLE_MASK(120), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FileDescriptorProto",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -500,6 +512,9 @@ const upb_MiniTable google__protobuf__DescriptorProto_msg_init = {
   &google_protobuf_DescriptorProto_submsgs[0],
   &google_protobuf_DescriptorProto__fields[0],
   UPB_SIZE(56, 104), 10, kUpb_ExtMode_NonExtendable, 10, UPB_FASTTABLE_MASK(120), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.DescriptorProto",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -534,6 +549,9 @@ const upb_MiniTable google__protobuf__DescriptorProto__ExtensionRange_msg_init =
   &google_protobuf_DescriptorProto_ExtensionRange_submsgs[0],
   &google_protobuf_DescriptorProto_ExtensionRange__fields[0],
   UPB_SIZE(24, 32), 3, kUpb_ExtMode_NonExtendable, 3, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.DescriptorProto.ExtensionRange",
+#endif
 };
 
 static const upb_MiniTableField google_protobuf_DescriptorProto_ReservedRange__fields[2] = {
@@ -545,6 +563,9 @@ const upb_MiniTable google__protobuf__DescriptorProto__ReservedRange_msg_init = 
   NULL,
   &google_protobuf_DescriptorProto_ReservedRange__fields[0],
   24, 2, kUpb_ExtMode_NonExtendable, 2, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.DescriptorProto.ReservedRange",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_ExtensionRangeOptions_submsgs[4] = {
@@ -565,6 +586,9 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions_msg_init = {
   &google_protobuf_ExtensionRangeOptions_submsgs[0],
   &google_protobuf_ExtensionRangeOptions__fields[0],
   UPB_SIZE(32, 40), 4, kUpb_ExtMode_Extendable, 0, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.ExtensionRangeOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -613,6 +637,9 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions__Declaration_msg_ini
   NULL,
   &google_protobuf_ExtensionRangeOptions_Declaration__fields[0],
   UPB_SIZE(40, 56), 5, kUpb_ExtMode_NonExtendable, 3, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.ExtensionRangeOptions.Declaration",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_FieldDescriptorProto_submsgs[3] = {
@@ -639,6 +666,9 @@ const upb_MiniTable google__protobuf__FieldDescriptorProto_msg_init = {
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
   UPB_SIZE(80, 120), 11, kUpb_ExtMode_NonExtendable, 10, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FieldDescriptorProto",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_OneofDescriptorProto_submsgs[1] = {
@@ -654,6 +684,9 @@ const upb_MiniTable google__protobuf__OneofDescriptorProto_msg_init = {
   &google_protobuf_OneofDescriptorProto_submsgs[0],
   &google_protobuf_OneofDescriptorProto__fields[0],
   UPB_SIZE(24, 40), 2, kUpb_ExtMode_NonExtendable, 2, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.OneofDescriptorProto",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_EnumDescriptorProto_submsgs[3] = {
@@ -674,6 +707,9 @@ const upb_MiniTable google__protobuf__EnumDescriptorProto_msg_init = {
   &google_protobuf_EnumDescriptorProto_submsgs[0],
   &google_protobuf_EnumDescriptorProto__fields[0],
   UPB_SIZE(40, 64), 5, kUpb_ExtMode_NonExtendable, 5, UPB_FASTTABLE_MASK(56), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.EnumDescriptorProto",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -695,6 +731,9 @@ const upb_MiniTable google__protobuf__EnumDescriptorProto__EnumReservedRange_msg
   NULL,
   &google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[0],
   24, 2, kUpb_ExtMode_NonExtendable, 2, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.EnumDescriptorProto.EnumReservedRange",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_EnumValueDescriptorProto_submsgs[1] = {
@@ -711,6 +750,9 @@ const upb_MiniTable google__protobuf__EnumValueDescriptorProto_msg_init = {
   &google_protobuf_EnumValueDescriptorProto_submsgs[0],
   &google_protobuf_EnumValueDescriptorProto__fields[0],
   UPB_SIZE(32, 40), 3, kUpb_ExtMode_NonExtendable, 3, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.EnumValueDescriptorProto",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_ServiceDescriptorProto_submsgs[2] = {
@@ -728,6 +770,9 @@ const upb_MiniTable google__protobuf__ServiceDescriptorProto_msg_init = {
   &google_protobuf_ServiceDescriptorProto_submsgs[0],
   &google_protobuf_ServiceDescriptorProto__fields[0],
   UPB_SIZE(32, 48), 3, kUpb_ExtMode_NonExtendable, 3, UPB_FASTTABLE_MASK(24), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.ServiceDescriptorProto",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -753,6 +798,9 @@ const upb_MiniTable google__protobuf__MethodDescriptorProto_msg_init = {
   &google_protobuf_MethodDescriptorProto_submsgs[0],
   &google_protobuf_MethodDescriptorProto__fields[0],
   UPB_SIZE(48, 72), 6, kUpb_ExtMode_NonExtendable, 6, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.MethodDescriptorProto",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_FileOptions_submsgs[3] = {
@@ -789,6 +837,9 @@ const upb_MiniTable google__protobuf__FileOptions_msg_init = {
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
   UPB_SIZE(112, 200), 21, kUpb_ExtMode_Extendable, 1, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FileOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -844,6 +895,9 @@ const upb_MiniTable google__protobuf__MessageOptions_msg_init = {
   &google_protobuf_MessageOptions_submsgs[0],
   &google_protobuf_MessageOptions__fields[0],
   UPB_SIZE(24, 32), 7, kUpb_ExtMode_Extendable, 3, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.MessageOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -910,6 +964,9 @@ const upb_MiniTable google__protobuf__FieldOptions_msg_init = {
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
   UPB_SIZE(48, 64), 13, kUpb_ExtMode_Extendable, 3, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FieldOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -959,6 +1016,9 @@ const upb_MiniTable google__protobuf__FieldOptions__EditionDefault_msg_init = {
   &google_protobuf_FieldOptions_EditionDefault_submsgs[0],
   &google_protobuf_FieldOptions_EditionDefault__fields[0],
   UPB_SIZE(24, 32), 2, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FieldOptions.EditionDefault",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_OneofOptions_submsgs[2] = {
@@ -975,6 +1035,9 @@ const upb_MiniTable google__protobuf__OneofOptions_msg_init = {
   &google_protobuf_OneofOptions_submsgs[0],
   &google_protobuf_OneofOptions__fields[0],
   UPB_SIZE(24, 32), 2, kUpb_ExtMode_Extendable, 1, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.OneofOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -1028,6 +1091,9 @@ const upb_MiniTable google__protobuf__EnumOptions_msg_init = {
   &google_protobuf_EnumOptions_submsgs[0],
   &google_protobuf_EnumOptions__fields[0],
   UPB_SIZE(24, 32), 5, kUpb_ExtMode_Extendable, 0, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.EnumOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -1080,6 +1146,9 @@ const upb_MiniTable google__protobuf__EnumValueOptions_msg_init = {
   &google_protobuf_EnumValueOptions_submsgs[0],
   &google_protobuf_EnumValueOptions__fields[0],
   UPB_SIZE(24, 32), 4, kUpb_ExtMode_Extendable, 3, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.EnumValueOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -1131,6 +1200,9 @@ const upb_MiniTable google__protobuf__ServiceOptions_msg_init = {
   &google_protobuf_ServiceOptions_submsgs[0],
   &google_protobuf_ServiceOptions__fields[0],
   UPB_SIZE(24, 32), 3, kUpb_ExtMode_Extendable, 0, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.ServiceOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -1184,6 +1256,9 @@ const upb_MiniTable google__protobuf__MethodOptions_msg_init = {
   &google_protobuf_MethodOptions_submsgs[0],
   &google_protobuf_MethodOptions__fields[0],
   UPB_SIZE(24, 32), 4, kUpb_ExtMode_Extendable, 0, UPB_FASTTABLE_MASK(248), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.MethodOptions",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -1238,6 +1313,9 @@ const upb_MiniTable google__protobuf__UninterpretedOption_msg_init = {
   &google_protobuf_UninterpretedOption_submsgs[0],
   &google_protobuf_UninterpretedOption__fields[0],
   UPB_SIZE(64, 96), 7, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(24), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.UninterpretedOption",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -1255,6 +1333,9 @@ const upb_MiniTable google__protobuf__UninterpretedOption__NamePart_msg_init = {
   NULL,
   &google_protobuf_UninterpretedOption_NamePart__fields[0],
   UPB_SIZE(24, 32), 2, kUpb_ExtMode_NonExtendable, 2, UPB_FASTTABLE_MASK(255), 2,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.UninterpretedOption.NamePart",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_FeatureSet_submsgs[6] = {
@@ -1279,6 +1360,9 @@ const upb_MiniTable google__protobuf__FeatureSet_msg_init = {
   &google_protobuf_FeatureSet_submsgs[0],
   &google_protobuf_FeatureSet__fields[0],
   40, 6, kUpb_ExtMode_Extendable, 6, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FeatureSet",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_FeatureSetDefaults_submsgs[3] = {
@@ -1297,6 +1381,9 @@ const upb_MiniTable google__protobuf__FeatureSetDefaults_msg_init = {
   &google_protobuf_FeatureSetDefaults_submsgs[0],
   &google_protobuf_FeatureSetDefaults__fields[0],
   UPB_SIZE(24, 32), 3, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(8), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FeatureSetDefaults",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x001800003f00000a, &upb_prm_1bt_max64b},
@@ -1317,6 +1404,9 @@ const upb_MiniTable google__protobuf__FeatureSetDefaults__FeatureSetEditionDefau
   &google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_submsgs[0],
   &google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault__fields[0],
   24, 2, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault",
+#endif
 };
 
 static const upb_MiniTableSub google_protobuf_SourceCodeInfo_submsgs[1] = {
@@ -1331,6 +1421,9 @@ const upb_MiniTable google__protobuf__SourceCodeInfo_msg_init = {
   &google_protobuf_SourceCodeInfo_submsgs[0],
   &google_protobuf_SourceCodeInfo__fields[0],
   16, 1, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(8), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.SourceCodeInfo",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x000800003f00000a, &upb_prm_1bt_max128b},
@@ -1349,6 +1442,9 @@ const upb_MiniTable google__protobuf__SourceCodeInfo__Location_msg_init = {
   NULL,
   &google_protobuf_SourceCodeInfo_Location__fields[0],
   UPB_SIZE(40, 72), 5, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(56), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.SourceCodeInfo.Location",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x001000003f00000a, &upb_ppv4_1bt},
@@ -1373,6 +1469,9 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo_msg_init = {
   &google_protobuf_GeneratedCodeInfo_submsgs[0],
   &google_protobuf_GeneratedCodeInfo__fields[0],
   16, 1, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(8), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.GeneratedCodeInfo",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x000800003f00000a, &upb_prm_1bt_max64b},
@@ -1395,6 +1494,9 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init = {
   &google_protobuf_GeneratedCodeInfo_Annotation_submsgs[0],
   &google_protobuf_GeneratedCodeInfo_Annotation__fields[0],
   UPB_SIZE(40, 48), 5, kUpb_ExtMode_NonExtendable, 5, UPB_FASTTABLE_MASK(8), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.GeneratedCodeInfo.Annotation",
+#endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x001800003f00000a, &upb_ppv4_1bt},
@@ -1635,7 +1737,7 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
  * regenerated. */
 
 
-static const char descriptor[11630] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p', 
+static const char descriptor[11638] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p', 
 't', 'o', 'r', '.', 'p', 'r', 'o', 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 
 'f', '\"', 'M', '\n', '\021', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'S', 'e', 't', '\022', '8', '\n', 
 '\004', 'f', 'i', 'l', 'e', '\030', '\001', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 
@@ -1991,7 +2093,7 @@ static const char descriptor[11630] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', 
 't', 'e', 'V', 'a', 'l', 'u', 'e', '\032', 'J', '\n', '\010', 'N', 'a', 'm', 'e', 'P', 'a', 'r', 't', '\022', '\033', '\n', '\t', 'n', 'a', 
 'm', 'e', '_', 'p', 'a', 'r', 't', '\030', '\001', ' ', '\002', '(', '\t', 'R', '\010', 'n', 'a', 'm', 'e', 'P', 'a', 'r', 't', '\022', '!', 
 '\n', '\014', 'i', 's', '_', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\002', ' ', '\002', '(', '\010', 'R', '\013', 'i', 's', 'E', 
-'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\"', '\214', '\n', '\n', '\n', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', '\022', '\213', 
+'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\"', '\224', '\n', '\n', '\n', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', '\022', '\213', 
 '\001', '\n', '\016', 'f', 'i', 'e', 'l', 'd', '_', 'p', 'r', 'e', 's', 'e', 'n', 'c', 'e', '\030', '\001', ' ', '\001', '(', '\016', '2', ')', 
 '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 
 'e', 't', '.', 'F', 'i', 'e', 'l', 'd', 'P', 'r', 'e', 's', 'e', 'n', 'c', 'e', 'B', '9', '\210', '\001', '\001', '\230', '\001', '\004', '\230', 
@@ -2042,65 +2144,65 @@ static const char descriptor[11630] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', 
 'S', 'O', 'N', '_', 'F', 'O', 'R', 'M', 'A', 'T', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\t', '\n', '\005', 'A', 
 'L', 'L', 'O', 'W', '\020', '\001', '\022', '\026', '\n', '\022', 'L', 'E', 'G', 'A', 'C', 'Y', '_', 'B', 'E', 'S', 'T', '_', 'E', 'F', 'F', 
 'O', 'R', 'T', '\020', '\002', '*', '\006', '\010', '\350', '\007', '\020', '\351', '\007', '*', '\006', '\010', '\351', '\007', '\020', '\352', '\007', '*', '\006', '\010', '\352', 
-'\007', '\020', '\353', '\007', '*', '\006', '\010', '\213', 'N', '\020', '\220', 'N', '*', '\006', '\010', '\220', 'N', '\020', '\221', 'N', 'J', '\006', '\010', '\347', '\007', 
-'\020', '\350', '\007', '\"', '\376', '\002', '\n', '\022', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 'D', 'e', 'f', 'a', 'u', 'l', 't', 
-'s', '\022', 'X', '\n', '\010', 'd', 'e', 'f', 'a', 'u', 'l', 't', 's', '\030', '\001', ' ', '\003', '(', '\013', '2', '<', '.', 'g', 'o', 'o', 
-'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 'D', 'e', 
-'f', 'a', 'u', 'l', 't', 's', '.', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 'E', 'd', 'i', 't', 'i', 'o', 'n', 'D', 
-'e', 'f', 'a', 'u', 'l', 't', 'R', '\010', 'd', 'e', 'f', 'a', 'u', 'l', 't', 's', '\022', 'A', '\n', '\017', 'm', 'i', 'n', 'i', 'm', 
-'u', 'm', '_', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\004', ' ', '\001', '(', '\016', '2', '\030', '.', 'g', 'o', 'o', 'g', 'l', 'e', 
-'.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'd', 'i', 't', 'i', 'o', 'n', 'R', '\016', 'm', 'i', 'n', 'i', 'm', 'u', 
-'m', 'E', 'd', 'i', 't', 'i', 'o', 'n', '\022', 'A', '\n', '\017', 'm', 'a', 'x', 'i', 'm', 'u', 'm', '_', 'e', 'd', 'i', 't', 'i', 
-'o', 'n', '\030', '\005', ' ', '\001', '(', '\016', '2', '\030', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 
-'f', '.', 'E', 'd', 'i', 't', 'i', 'o', 'n', 'R', '\016', 'm', 'a', 'x', 'i', 'm', 'u', 'm', 'E', 'd', 'i', 't', 'i', 'o', 'n', 
-'\032', '\207', '\001', '\n', '\030', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 'E', 'd', 'i', 't', 'i', 'o', 'n', 'D', 'e', 'f', 
-'a', 'u', 'l', 't', '\022', '2', '\n', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\003', ' ', '\001', '(', '\016', '2', '\030', '.', 'g', 
-'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'd', 'i', 't', 'i', 'o', 'n', 'R', '\007', 'e', 
-'d', 'i', 't', 'i', 'o', 'n', '\022', '7', '\n', '\010', 'f', 'e', 'a', 't', 'u', 'r', 'e', 's', '\030', '\002', ' ', '\001', '(', '\013', '2', 
-'\033', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'e', 'a', 't', 'u', 'r', 'e', 
-'S', 'e', 't', 'R', '\010', 'f', 'e', 'a', 't', 'u', 'r', 'e', 's', '\"', '\247', '\002', '\n', '\016', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 
-'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', 'D', '\n', '\010', 'l', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', 
-'2', '(', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 
-'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'L', 'o', 'c', 'a', 't', 'i', 'o', 'n', 'R', '\010', 'l', 'o', 'c', 'a', 't', 'i', 
-'o', 'n', '\032', '\316', '\001', '\n', '\010', 'L', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a', 't', 'h', '\030', '\001', 
-' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 'p', 'a', 't', 'h', '\022', '\026', '\n', '\004', 's', 'p', 'a', 'n', '\030', '\002', ' ', 
-'\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 's', 'p', 'a', 'n', '\022', ')', '\n', '\020', 'l', 'e', 'a', 'd', 'i', 'n', 'g', '_', 
-'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\003', ' ', '\001', '(', '\t', 'R', '\017', 'l', 'e', 'a', 'd', 'i', 'n', 'g', 'C', 'o', 
-'m', 'm', 'e', 'n', 't', 's', '\022', '+', '\n', '\021', 't', 'r', 'a', 'i', 'l', 'i', 'n', 'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 
-'t', 's', '\030', '\004', ' ', '\001', '(', '\t', 'R', '\020', 't', 'r', 'a', 'i', 'l', 'i', 'n', 'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 
-'s', '\022', ':', '\n', '\031', 'l', 'e', 'a', 'd', 'i', 'n', 'g', '_', 'd', 'e', 't', 'a', 'c', 'h', 'e', 'd', '_', 'c', 'o', 'm', 
-'m', 'e', 'n', 't', 's', '\030', '\006', ' ', '\003', '(', '\t', 'R', '\027', 'l', 'e', 'a', 'd', 'i', 'n', 'g', 'D', 'e', 't', 'a', 'c', 
-'h', 'e', 'd', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\"', '\320', '\002', '\n', '\021', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 
-'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', 'M', '\n', '\n', 'a', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', 
-'\003', '(', '\013', '2', '-', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'G', 'e', 'n', 
-'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', 
-'R', '\n', 'a', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\032', '\353', '\001', '\n', '\n', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 
-'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a', 't', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 'p', 'a', 't', 
-'h', '\022', '\037', '\n', '\013', 's', 'o', 'u', 'r', 'c', 'e', '_', 'f', 'i', 'l', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\n', 's', 
-'o', 'u', 'r', 'c', 'e', 'F', 'i', 'l', 'e', '\022', '\024', '\n', '\005', 'b', 'e', 'g', 'i', 'n', '\030', '\003', ' ', '\001', '(', '\005', 'R', 
-'\005', 'b', 'e', 'g', 'i', 'n', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\004', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\022', 
-'R', '\n', '\010', 's', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\030', '\005', ' ', '\001', '(', '\016', '2', '6', '.', 'g', 'o', 'o', 'g', 'l', 
-'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 
-'n', 'f', 'o', '.', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '.', 'S', 'e', 'm', 'a', 'n', 't', 'i', 'c', 'R', '\010', 
-'s', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\"', '(', '\n', '\010', 'S', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\022', '\010', '\n', '\004', 'N', 
-'O', 'N', 'E', '\020', '\000', '\022', '\007', '\n', '\003', 'S', 'E', 'T', '\020', '\001', '\022', '\t', '\n', '\005', 'A', 'L', 'I', 'A', 'S', '\020', '\002', 
-'*', '\222', '\002', '\n', '\007', 'E', 'd', 'i', 't', 'i', 'o', 'n', '\022', '\023', '\n', '\017', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 'U', 
-'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\023', '\n', '\016', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 'P', 'R', 'O', 'T', 'O', 
-'2', '\020', '\346', '\007', '\022', '\023', '\n', '\016', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 'P', 'R', 'O', 'T', 'O', '3', '\020', '\347', '\007', 
-'\022', '\021', '\n', '\014', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '2', '0', '2', '3', '\020', '\350', '\007', '\022', '\021', '\n', '\014', 'E', 'D', 
-'I', 'T', 'I', 'O', 'N', '_', '2', '0', '2', '4', '\020', '\351', '\007', '\022', '\027', '\n', '\023', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 
-'1', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\001', '\022', '\027', '\n', '\023', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 
-'2', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\002', '\022', '\035', '\n', '\027', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 
-'9', '9', '9', '9', '7', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\235', '\215', '\006', '\022', '\035', '\n', '\027', 'E', 'D', 
-'I', 'T', 'I', 'O', 'N', '_', '9', '9', '9', '9', '8', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\236', '\215', '\006', 
-'\022', '\035', '\n', '\027', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '9', '9', '9', '9', '9', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 
-'L', 'Y', '\020', '\237', '\215', '\006', '\022', '\023', '\n', '\013', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 'M', 'A', 'X', '\020', '\377', '\377', '\377', 
-'\377', '\007', 'B', '~', '\n', '\023', 'c', 'o', 'm', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
-'B', '\020', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 's', 'H', '\001', 'Z', '-', 'g', 'o', 'o', 
-'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 
-'y', 'p', 'e', 's', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'p', 'b', '\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 
-'B', '\252', '\002', '\032', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'R', 'e', 'f', 'l', 'e', 
-'c', 't', 'i', 'o', 'n', 
+'\007', '\020', '\353', '\007', '*', '\006', '\010', '\206', 'N', '\020', '\207', 'N', '*', '\006', '\010', '\213', 'N', '\020', '\220', 'N', '*', '\006', '\010', '\220', 'N', 
+'\020', '\221', 'N', 'J', '\006', '\010', '\347', '\007', '\020', '\350', '\007', '\"', '\376', '\002', '\n', '\022', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 
+'t', 'D', 'e', 'f', 'a', 'u', 'l', 't', 's', '\022', 'X', '\n', '\010', 'd', 'e', 'f', 'a', 'u', 'l', 't', 's', '\030', '\001', ' ', '\003', 
+'(', '\013', '2', '<', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'e', 'a', 't', 
+'u', 'r', 'e', 'S', 'e', 't', 'D', 'e', 'f', 'a', 'u', 'l', 't', 's', '.', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 
+'E', 'd', 'i', 't', 'i', 'o', 'n', 'D', 'e', 'f', 'a', 'u', 'l', 't', 'R', '\010', 'd', 'e', 'f', 'a', 'u', 'l', 't', 's', '\022', 
+'A', '\n', '\017', 'm', 'i', 'n', 'i', 'm', 'u', 'm', '_', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\004', ' ', '\001', '(', '\016', '2', 
+'\030', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'd', 'i', 't', 'i', 'o', 'n', 
+'R', '\016', 'm', 'i', 'n', 'i', 'm', 'u', 'm', 'E', 'd', 'i', 't', 'i', 'o', 'n', '\022', 'A', '\n', '\017', 'm', 'a', 'x', 'i', 'm', 
+'u', 'm', '_', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\005', ' ', '\001', '(', '\016', '2', '\030', '.', 'g', 'o', 'o', 'g', 'l', 'e', 
+'.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'd', 'i', 't', 'i', 'o', 'n', 'R', '\016', 'm', 'a', 'x', 'i', 'm', 'u', 
+'m', 'E', 'd', 'i', 't', 'i', 'o', 'n', '\032', '\207', '\001', '\n', '\030', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 'E', 'd', 
+'i', 't', 'i', 'o', 'n', 'D', 'e', 'f', 'a', 'u', 'l', 't', '\022', '2', '\n', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\030', '\003', 
+' ', '\001', '(', '\016', '2', '\030', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'd', 
+'i', 't', 'i', 'o', 'n', 'R', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\022', '7', '\n', '\010', 'f', 'e', 'a', 't', 'u', 'r', 'e', 
+'s', '\030', '\002', ' ', '\001', '(', '\013', '2', '\033', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
+'.', 'F', 'e', 'a', 't', 'u', 'r', 'e', 'S', 'e', 't', 'R', '\010', 'f', 'e', 'a', 't', 'u', 'r', 'e', 's', '\"', '\247', '\002', '\n', 
+'\016', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', 'D', '\n', '\010', 'l', 'o', 'c', 'a', 't', 'i', 
+'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', '2', '(', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 
+'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'L', 'o', 'c', 'a', 't', 'i', 'o', 'n', 
+'R', '\010', 'l', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\032', '\316', '\001', '\n', '\010', 'L', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\022', '\026', 
+'\n', '\004', 'p', 'a', 't', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 'p', 'a', 't', 'h', '\022', '\026', '\n', 
+'\004', 's', 'p', 'a', 'n', '\030', '\002', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 's', 'p', 'a', 'n', '\022', ')', '\n', '\020', 
+'l', 'e', 'a', 'd', 'i', 'n', 'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\003', ' ', '\001', '(', '\t', 'R', '\017', 'l', 
+'e', 'a', 'd', 'i', 'n', 'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\022', '+', '\n', '\021', 't', 'r', 'a', 'i', 'l', 'i', 'n', 
+'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\004', ' ', '\001', '(', '\t', 'R', '\020', 't', 'r', 'a', 'i', 'l', 'i', 'n', 
+'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\022', ':', '\n', '\031', 'l', 'e', 'a', 'd', 'i', 'n', 'g', '_', 'd', 'e', 't', 'a', 
+'c', 'h', 'e', 'd', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\006', ' ', '\003', '(', '\t', 'R', '\027', 'l', 'e', 'a', 'd', 
+'i', 'n', 'g', 'D', 'e', 't', 'a', 'c', 'h', 'e', 'd', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\"', '\320', '\002', '\n', '\021', 'G', 
+'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', 'M', '\n', '\n', 'a', 'n', 'n', 'o', 't', 
+'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', '2', '-', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 
+'o', 'b', 'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 
+'n', 'o', 't', 'a', 't', 'i', 'o', 'n', 'R', '\n', 'a', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\032', '\353', '\001', '\n', '\n', 
+'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a', 't', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', 
+'\002', '\020', '\001', 'R', '\004', 'p', 'a', 't', 'h', '\022', '\037', '\n', '\013', 's', 'o', 'u', 'r', 'c', 'e', '_', 'f', 'i', 'l', 'e', '\030', 
+'\002', ' ', '\001', '(', '\t', 'R', '\n', 's', 'o', 'u', 'r', 'c', 'e', 'F', 'i', 'l', 'e', '\022', '\024', '\n', '\005', 'b', 'e', 'g', 'i', 
+'n', '\030', '\003', ' ', '\001', '(', '\005', 'R', '\005', 'b', 'e', 'g', 'i', 'n', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\004', ' ', '\001', 
+'(', '\005', 'R', '\003', 'e', 'n', 'd', '\022', 'R', '\n', '\010', 's', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\030', '\005', ' ', '\001', '(', '\016', 
+'2', '6', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 
+'t', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '.', 'S', 'e', 
+'m', 'a', 'n', 't', 'i', 'c', 'R', '\010', 's', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\"', '(', '\n', '\010', 'S', 'e', 'm', 'a', 'n', 
+'t', 'i', 'c', '\022', '\010', '\n', '\004', 'N', 'O', 'N', 'E', '\020', '\000', '\022', '\007', '\n', '\003', 'S', 'E', 'T', '\020', '\001', '\022', '\t', '\n', 
+'\005', 'A', 'L', 'I', 'A', 'S', '\020', '\002', '*', '\222', '\002', '\n', '\007', 'E', 'd', 'i', 't', 'i', 'o', 'n', '\022', '\023', '\n', '\017', 'E', 
+'D', 'I', 'T', 'I', 'O', 'N', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\023', '\n', '\016', 'E', 'D', 'I', 'T', 'I', 
+'O', 'N', '_', 'P', 'R', 'O', 'T', 'O', '2', '\020', '\346', '\007', '\022', '\023', '\n', '\016', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', 'P', 
+'R', 'O', 'T', 'O', '3', '\020', '\347', '\007', '\022', '\021', '\n', '\014', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '2', '0', '2', '3', '\020', 
+'\350', '\007', '\022', '\021', '\n', '\014', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '2', '0', '2', '4', '\020', '\351', '\007', '\022', '\027', '\n', '\023', 
+'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '1', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\001', '\022', '\027', '\n', '\023', 
+'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '2', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\002', '\022', '\035', '\n', '\027', 
+'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '9', '9', '9', '9', '7', '_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\235', 
+'\215', '\006', '\022', '\035', '\n', '\027', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '9', '9', '9', '9', '8', '_', 'T', 'E', 'S', 'T', '_', 
+'O', 'N', 'L', 'Y', '\020', '\236', '\215', '\006', '\022', '\035', '\n', '\027', 'E', 'D', 'I', 'T', 'I', 'O', 'N', '_', '9', '9', '9', '9', '9', 
+'_', 'T', 'E', 'S', 'T', '_', 'O', 'N', 'L', 'Y', '\020', '\237', '\215', '\006', '\022', '\023', '\n', '\013', 'E', 'D', 'I', 'T', 'I', 'O', 'N', 
+'_', 'M', 'A', 'X', '\020', '\377', '\377', '\377', '\377', '\007', 'B', '~', '\n', '\023', 'c', 'o', 'm', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
+'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\020', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 
+'s', 'H', '\001', 'Z', '-', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.', 'o', 'r', 'g', '/', 'p', 'r', 
+'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'p', 'b', 
+'\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', '\032', 'G', 'o', 'o', 'g', 'l', 'e', '.', 'P', 'r', 'o', 't', 'o', 'b', 
+'u', 'f', '.', 'R', 'e', 'f', 'l', 'e', 'c', 't', 'i', 'o', 'n', 
 };
 
 static _upb_DefPool_Init *deps[1] = {
@@ -2111,7 +2213,7 @@ _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit = {
   deps,
   &google_protobuf_descriptor_proto_upb_file_layout,
   "google/protobuf/descriptor.proto",
-  UPB_STRINGVIEW_INIT(descriptor, 11630)
+  UPB_STRINGVIEW_INIT(descriptor, 11638)
 };
 
 
@@ -4428,6 +4530,10 @@ static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
 upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 
+#ifdef UPB_TRACING_ENABLED
+#include <stdatomic.h>
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -4533,6 +4639,38 @@ static uintptr_t _upb_Arena_MakeBlockAlloc(upb_alloc* alloc, bool has_initial) {
 static bool _upb_ArenaInternal_HasInitialBlock(upb_ArenaInternal* ai) {
   return ai->block_alloc & 0x1;
 }
+
+#ifdef UPB_TRACING_ENABLED
+static void (*_init_arena_trace_handler)(const upb_Arena*, size_t size) = NULL;
+static void (*_fuse_arena_trace_handler)(const upb_Arena*,
+                                         const upb_Arena*) = NULL;
+static void (*_free_arena_trace_handler)(const upb_Arena*) = NULL;
+
+void upb_Arena_SetTraceHandler(
+    void (*initArenaTraceHandler)(const upb_Arena*, size_t size),
+    void (*fuseArenaTraceHandler)(const upb_Arena*, const upb_Arena*),
+    void (*freeArenaTraceHandler)(const upb_Arena*)) {
+  _init_arena_trace_handler = initArenaTraceHandler;
+  _fuse_arena_trace_handler = fuseArenaTraceHandler;
+  _free_arena_trace_handler = freeArenaTraceHandler;
+}
+
+void upb_Arena_LogInit(const upb_Arena* arena, size_t size) {
+  if (_init_arena_trace_handler) {
+    _init_arena_trace_handler(arena, size);
+  }
+}
+void upb_Arena_LogFuse(const upb_Arena* arena1, const upb_Arena* arena2) {
+  if (_fuse_arena_trace_handler) {
+    _fuse_arena_trace_handler(arena1, arena2);
+  }
+}
+void upb_Arena_LogFree(const upb_Arena* arena) {
+  if (_free_arena_trace_handler) {
+    _free_arena_trace_handler(arena);
+  }
+}
+#endif  // UPB_TRACING_ENABLED
 
 static upb_ArenaRoot _upb_Arena_FindRoot(upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
@@ -4697,7 +4835,13 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_ArenaState));
 
   if (UPB_UNLIKELY(n < sizeof(upb_ArenaState))) {
+#ifdef UPB_TRACING_ENABLED
+    upb_Arena* ret = _upb_Arena_InitSlow(alloc);
+    upb_Arena_LogInit(ret, n);
+    return ret;
+#else
     return _upb_Arena_InitSlow(alloc);
+#endif
   }
 
   a = UPB_PTR_AT(mem, n - sizeof(upb_ArenaState), upb_ArenaState);
@@ -4710,13 +4854,14 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = mem;
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n - sizeof(upb_ArenaState), char);
-
+#ifdef UPB_TRACING_ENABLED
+  upb_Arena_LogInit(&a->head, n);
+#endif
   return &a->head;
 }
 
 static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
-
   while (ai != NULL) {
     // Load first since arena itself is likely from one of its blocks.
     upb_ArenaInternal* next_arena =
@@ -4747,6 +4892,9 @@ retry:
   // expensive then direct loads.  As an optimization, we only do RMW ops
   // when we need to update things for other threads to see.
   if (poc == _upb_Arena_TaggedFromRefcount(1)) {
+#ifdef UPB_TRACING_ENABLED
+    upb_Arena_LogFree(a);
+#endif
     _upb_Arena_DoFree(ai);
     return;
   }
@@ -4865,6 +5013,10 @@ static bool _upb_Arena_FixupRefs(upb_ArenaInternal* new_root,
 
 bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   if (a1 == a2) return true;  // trivial fuse
+
+#ifdef UPB_TRACING_ENABLED
+  upb_Arena_LogFuse(a1, a2);
+#endif
 
   upb_ArenaInternal* ai1 = upb_Arena_Internal(a1);
   upb_ArenaInternal* ai2 = upb_Arena_Internal(a2);
@@ -5602,7 +5754,8 @@ bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
 }
 
 static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
-                               upb_CType ctype, const upb_MiniTable* m) {
+                               upb_CType ctype, const upb_MiniTable* m,
+                               int options) {
   // Check for trivial equality.
   if (arr1 == arr2) return true;
 
@@ -5615,14 +5768,14 @@ static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
     const upb_MessageValue val1 = upb_Array_Get(arr1, i);
     const upb_MessageValue val2 = upb_Array_Get(arr2, i);
 
-    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m)) return false;
+    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m, options)) return false;
   }
 
   return true;
 }
 
 static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
-                             const upb_MiniTable* m) {
+                             const upb_MiniTable* m, int options) {
   // Check for trivial equality.
   if (map1 == map2) return true;
 
@@ -5639,7 +5792,8 @@ static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
   size_t iter = kUpb_Map_Begin;
   while (upb_Map_Next(map1, &key, &val1, &iter)) {
     if (!upb_Map_Get(map2, key, &val2)) return false;
-    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m2_value)) return false;
+    if (!upb_MessageValue_IsEqual(val1, val2, ctype, m2_value, options))
+      return false;
   }
 
   return true;
@@ -5647,7 +5801,8 @@ static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
 
 static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
-                                            const upb_MiniTable* m) {
+                                            const upb_MiniTable* m,
+                                            int options) {
   // Iterate over all base fields for each message.
   // The order will always match if the messages are equal.
   size_t iter1 = kUpb_BaseField_Begin;
@@ -5670,13 +5825,14 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
     bool eq;
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f1)) {
       case kUpb_FieldMode_Array:
-        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm);
+        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
+                                options);
         break;
       case kUpb_FieldMode_Map:
-        eq = _upb_Map_IsEqual(val1.map_val, val2.map_val, subm);
+        eq = _upb_Map_IsEqual(val1.map_val, val2.map_val, subm, options);
         break;
       case kUpb_FieldMode_Scalar:
-        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm);
+        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
         break;
     }
     if (!eq) return false;
@@ -5685,7 +5841,8 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
 
 static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
-                                            const upb_MiniTable* m) {
+                                            const upb_MiniTable* m,
+                                            int options) {
   // Must have identical extension counts.
   if (upb_Message_ExtensionCount(msg1) != upb_Message_ExtensionCount(msg2)) {
     return false;
@@ -5710,13 +5867,14 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
     bool eq;
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array:
-        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm);
+        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
+                                options);
         break;
       case kUpb_FieldMode_Map:
         UPB_UNREACHABLE();  // Maps cannot be extensions.
         break;
       case kUpb_FieldMode_Scalar: {
-        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm);
+        eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
         break;
       }
     }
@@ -5726,11 +5884,11 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 }
 
 bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
-                         const upb_MiniTable* m) {
+                         const upb_MiniTable* m, int options) {
   if (UPB_UNLIKELY(msg1 == msg2)) return true;
 
-  if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m)) return false;
-  if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m)) return false;
+  if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m, options)) return false;
+  if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m, options)) return false;
 
   // Check the unknown fields.
   size_t usize1, usize2;
@@ -6185,7 +6343,7 @@ typedef enum {
   kUpb_LayoutItemType_Max = kUpb_LayoutItemType_Field,
 } upb_LayoutItemType;
 
-#define kUpb_LayoutItem_IndexSentinel ((uint16_t)-1)
+#define kUpb_LayoutItem_IndexSentinel ((uint16_t) - 1)
 
 typedef struct {
   // Index of the corresponding field.  When this is a oneof field, the field's
@@ -6874,6 +7032,11 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
   decoder->table->UPB_PRIVATE(dense_below) = 0;
   decoder->table->UPB_PRIVATE(table_mask) = -1;
   decoder->table->UPB_PRIVATE(required_count) = 0;
+#if UPB_TRACING_ENABLED
+  // MiniTables built from MiniDescriptors will not be able to vend the message
+  // name unless it is explicitly set with upb_MiniTable_SetFullName().
+  decoder->table->UPB_PRIVATE(full_name) = 0;
+#endif
 
   // Strip off and verify the version tag.
   if (!len--) goto done;
@@ -11773,6 +11936,23 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
   return true;
 }
 
+#if UPB_TRACING_ENABLED
+static void (*_new_message_trace_handler)(const upb_MiniTable*,
+                                          const upb_Arena*);
+
+void UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(
+    void (*new_message_trace_handler)(const upb_MiniTable*, const upb_Arena*)) {
+  _new_message_trace_handler = new_message_trace_handler;
+}
+
+void UPB_PRIVATE(upb_Message_LogNewMessage)(const upb_MiniTable* mini_table,
+                                            const upb_Arena* arena) {
+  if (_new_message_trace_handler) {
+    _new_message_trace_handler(mini_table, arena);
+  }
+}
+#endif
+
 
 const char _kUpb_ToBase92[] = {
     ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
@@ -12802,7 +12982,11 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
 }
 
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
-  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
+  if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
+  return upb_EnumDef_IsSpecifiedAsClosed(e);
+}
+
+bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
   return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
          UPB_DESC(FeatureSet_CLOSED);
 }
@@ -13108,15 +13292,10 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
 static void _upb_EnumValueDef_CheckZeroValue(upb_DefBuilder* ctx,
                                              const upb_EnumDef* e,
                                              const upb_EnumValueDef* v, int n) {
-  if (upb_EnumDef_IsClosed(e) || n == 0 || v[0].number == 0) return;
-
-  // When the special UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 is enabled, we have to
-  // exempt proto2 enums from this check, even when we are treating them as
+  // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
+  // exempt closed enums from this check, even when we are treating them as
   // open.
-  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 &&
-      upb_FileDef_Syntax(upb_EnumDef_File(e)) == kUpb_Syntax_Proto2) {
-    return;
-  }
+  if (upb_EnumDef_IsSpecifiedAsClosed(e) || n == 0 || v[0].number == 0) return;
 
   _upb_DefBuilder_Errf(ctx, "for open enums, the first value must be zero (%s)",
                        upb_EnumDef_FullName(e));
@@ -13894,10 +14073,11 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->type_ == kUpb_FieldType_Message || f->type_ == kUpb_FieldType_Group ||
-       upb_FieldDef_ContainingOneof(f) ||
-       UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
-           UPB_DESC(FeatureSet_IMPLICIT));
+      (f->is_extension ||
+       (f->type_ == kUpb_FieldType_Message ||
+        f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
+        UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
+            UPB_DESC(FeatureSet_IMPLICIT)));
 }
 
 static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
@@ -16472,7 +16652,7 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ASAN
 #undef UPB_ASAN_GUARD_SIZE
 #undef UPB_CLANG_ASAN
-#undef UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3
+#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME

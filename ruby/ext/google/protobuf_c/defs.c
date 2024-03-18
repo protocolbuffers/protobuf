@@ -257,7 +257,20 @@ static VALUE decode_options(VALUE self, const char* option_type, int size,
   VALUE desc_rb = get_msgdef_obj(descriptor_pool, msgdef);
   const Descriptor* desc = ruby_to_Descriptor(desc_rb);
 
-  options_rb = Message_decode_bytes(size, bytes, 0, desc->klass, true);
+  options_rb = Message_decode_bytes(size, bytes, 0, desc->klass, false);
+
+  // Strip features from the options proto to keep it internal.
+  const upb_MessageDef* decoded_desc = NULL;
+  upb_Message* options = Message_GetMutable(options_rb, &decoded_desc);
+  PBRUBY_ASSERT(options != NULL);
+  PBRUBY_ASSERT(decoded_desc == msgdef);
+  const upb_FieldDef* field =
+      upb_MessageDef_FindFieldByName(decoded_desc, "features");
+  PBRUBY_ASSERT(field != NULL);
+  upb_Message_ClearFieldByDef(options, field);
+
+  Message_freeze(options_rb);
+
   rb_ivar_set(self, options_instancevar_interned, options_rb);
   return options_rb;
 }

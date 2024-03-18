@@ -3774,7 +3774,8 @@ bool FieldDescriptor::requires_utf8_validation() const {
 
 bool FieldDescriptor::has_presence() const {
   if (is_repeated()) return false;
-  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
+  return cpp_type() == CPPTYPE_MESSAGE || is_extension() ||
+         containing_oneof() ||
          features().field_presence() != FeatureSet::IMPLICIT;
 }
 
@@ -4051,7 +4052,7 @@ class DescriptorBuilder {
   // Counts down to 0 when there is no depth remaining.
   //
   // Maximum recursion depth corresponds to 32 nested message declarations.
-  int recursion_depth_ = 32;
+  int recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
 
   // Note: Both AddError and AddWarning functions are extremely sensitive to
   // the *caller* stack space used. We call these functions many times in

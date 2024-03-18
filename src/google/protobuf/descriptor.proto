@@ -1020,6 +1020,8 @@ message FeatureSet {
   extensions 1001;  // for Protobuf Java
   extensions 1002;  // for Protobuf Go
 
+  extensions 9990;  // for deprecated Java Proto1
+
   extensions 9995 to 9999;  // For internal testing
   extensions 10000;         // for https://github.com/bufbuild/protobuf-es
 }

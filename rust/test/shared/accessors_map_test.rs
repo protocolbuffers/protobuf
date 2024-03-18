@@ -167,7 +167,7 @@ macro_rules! generate_map_with_msg_values_tests {
                 // this block makes sure `insert` copies/moves, not borrows.
                 {
                     let mut msg_val = TestAllTypes::new();
-                    msg_val.optional_int32_mut().set(1001);
+                    msg_val.set_optional_int32(1001);
                     assert_that!(
                         msg
                             .[< map_ $k_field _all_types_mut >]()

@@ -78,6 +78,9 @@ upb_Message_GetField(const upb_Message* msg, const upb_MiniTableField* field,
   return ret;
 }
 
+// Sets the value of the given field in the given msg. The return value is true
+// if the operation completed successfully, or false if memory allocation
+// failed.
 UPB_INLINE bool upb_Message_SetField(upb_Message* msg,
                                      const upb_MiniTableField* field,
                                      upb_MessageValue val, upb_Arena* a) {
@@ -292,6 +295,10 @@ upb_Message_GetString(const upb_Message* msg, const upb_MiniTableField* field,
   return upb_Message_GetField(msg, field, def).str_val;
 }
 
+// Sets the value of a `string` or `bytes` field. The bytes of the value are not
+// copied, so it is the caller's responsibility to ensure that they remain valid
+// for the lifetime of `msg`. That might be done by copying them into the given
+// arena, or by fusing that arena with the arena the bytes live in, for example.
 UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
                                           const upb_MiniTableField* field,
                                           upb_StringView value, upb_Arena* a) {
@@ -344,6 +351,9 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
   _upb_Message_SetNonExtensionField(msg, field, &sub_message);
 }
 
+// Sets the value of a message-typed field. The `mini_table` and `field`
+// parameters belong to `msg`, not `sub_message`. The mini_tables of `msg` and
+// `sub_message` must have been linked for this to work correctly.
 UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
                                            const upb_MiniTable* mini_table,
                                            const upb_MiniTableField* field,

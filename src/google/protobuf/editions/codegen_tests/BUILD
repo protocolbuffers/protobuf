@@ -8,6 +8,18 @@ exports_files(
 )
 
 proto_library(
+    name = "proto2_inline_comments_proto",
+    srcs = ["proto2_inline_comments.proto"],
+    strip_import_prefix = "/src",
+)
+
+proto_library(
+    name = "proto2_multiline_comments_proto",
+    srcs = ["proto2_multiline_comments.proto"],
+    strip_import_prefix = "/src",
+)
+
+proto_library(
     name = "proto2_required_proto",
     srcs = ["proto2_required.proto"],
     strip_import_prefix = "/src",

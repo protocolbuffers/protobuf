@@ -359,28 +359,30 @@ extern "C" {
     ) -> Option<RawMessage>;
 }
 
+/// The raw type-erased version of an owned `Repeated`.
+#[derive(Debug)]
+pub struct InnerRepeated {
+    raw: RawRepeatedField,
+    arena: Arena,
+}
+
+impl InnerRepeated {
+    pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
+        InnerRepeatedMut::new(Private, self.raw, &self.arena)
+    }
+}
+
 /// The raw type-erased pointer version of `RepeatedMut`.
-///
-/// Contains a `upb_Array*` as well as `RawArena`, most likely that of the
-/// containing message. upb requires a `RawArena` to perform mutations on
-/// a repeated field.
-///
-/// An owned `Repeated` stores a `InnerRepeatedMut<'static>` and manages the
-/// contained `RawArena`.
 #[derive(Clone, Copy, Debug)]
 pub struct InnerRepeatedMut<'msg> {
     pub(crate) raw: RawRepeatedField,
-    // Storing a `RawArena` instead of `&Arena` allows this to be used for
-    // both `RepeatedMut<T>` and `Repeated<T>`.
-    arena: RawArena,
-    _phantom: PhantomData<&'msg Arena>,
+    arena: &'msg Arena,
 }
 
 impl<'msg> InnerRepeatedMut<'msg> {
     #[doc(hidden)]
-    #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
     pub fn new(_private: Private, raw: RawRepeatedField, arena: &'msg Arena) -> Self {
-        InnerRepeatedMut { raw, arena: arena.raw(), _phantom: PhantomData }
+        InnerRepeatedMut { raw, arena }
     }
 }
 
@@ -445,25 +447,15 @@ macro_rules! impl_repeated_base {
     ($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr) => {
         #[allow(dead_code)]
         fn repeated_new(_: Private) -> Repeated<$t> {
-            let arena = ManuallyDrop::new(Arena::new());
-            let raw_arena = arena.raw();
-            unsafe {
-                Repeated::from_inner(InnerRepeatedMut {
-                    raw: upb_Array_New(raw_arena, $upb_tag as c_int),
-                    arena: raw_arena,
-                    _phantom: PhantomData,
-                })
-            }
+            let arena = Arena::new();
+            Repeated::from_inner(InnerRepeated {
+                raw: unsafe { upb_Array_New(arena.raw(), $upb_tag as c_int) },
+                arena,
+            })
         }
         #[allow(dead_code)]
-        unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
-            // Freeing the array itself is handled by `Arena::Drop`
-            // SAFETY:
-            // - `f.raw_arena()` is a live `upb_Arena*` as
-            // - This function is only called once for `f`
-            unsafe {
-                upb_Arena_Free(f.inner().arena);
-            }
+        unsafe fn repeated_free(_: Private, _f: &mut Repeated<$t>) {
+            // No-op: the memory will be dropped by the arena.
         }
         fn repeated_len(f: View<Repeated<$t>>) -> usize {
             unsafe { upb_Array_Size(f.as_raw(Private)) }
@@ -571,7 +563,7 @@ impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
     // Returns a `RawArena` which is live for at least `'msg`
     #[doc(hidden)]
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
-        self.inner.arena
+        self.inner.arena.raw()
     }
 }
 
@@ -641,7 +633,7 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
     // - No shared mutation is possible through the output.
     unsafe {
         let InnerRepeatedMut { arena, raw, .. } = repeated.inner;
-        RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw, _phantom: PhantomData })
+        RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw })
     }
 }
 
@@ -709,21 +701,36 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
     // Returns a `RawArena` which is live for at least `'msg`
     #[doc(hidden)]
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
-        self.inner.raw_arena
+        self.inner.arena.raw()
+    }
+}
+
+#[derive(Debug)]
+pub struct InnerMap {
+    pub(crate) raw: RawMap,
+    arena: Arena,
+}
+
+impl InnerMap {
+    pub fn new(_private: Private, raw: RawMap, arena: Arena) -> Self {
+        Self { raw, arena }
+    }
+
+    pub fn as_mut(&mut self) -> InnerMapMut<'_> {
+        InnerMapMut { raw: self.raw, arena: &self.arena }
     }
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct InnerMapMut<'msg> {
     pub(crate) raw: RawMap,
-    raw_arena: RawArena,
-    _phantom: PhantomData<&'msg Arena>,
+    arena: &'msg Arena,
 }
 
 #[doc(hidden)]
 impl<'msg> InnerMapMut<'msg> {
-    pub fn new(_private: Private, raw: RawMap, raw_arena: RawArena) -> Self {
-        InnerMapMut { raw, raw_arena, _phantom: PhantomData }
+    pub fn new(_private: Private, raw: RawMap, arena: &'msg Arena) -> Self {
+        InnerMapMut { raw, arena }
     }
 
     #[doc(hidden)]
@@ -733,7 +740,7 @@ impl<'msg> InnerMapMut<'msg> {
 
     #[doc(hidden)]
     pub fn raw_arena(&self, _private: Private) -> RawArena {
-        self.raw_arena
+        self.arena.raw()
     }
 }
 
@@ -878,30 +885,16 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
             impl ProxiedInMapValue<$key_t> for $t {
                 fn map_new(_private: Private) -> Map<$key_t, Self> {
                     let arena = Arena::new();
-                    let raw_arena = arena.raw();
-                    std::mem::forget(arena);
-
-                    unsafe {
-                        Map::from_inner(
-                            Private,
-                            InnerMapMut {
-                                raw: upb_Map_New(raw_arena,
-                                    <$key_t as UpbTypeConversions>::upb_type(),
-                                    <$t as UpbTypeConversions>::upb_type()),
-                                raw_arena,
-                                _phantom: PhantomData
-                            }
-                        )
-                    }
+                    let raw = unsafe {
+                        upb_Map_New(arena.raw(),
+                            <$key_t as UpbTypeConversions>::upb_type(),
+                            <$t as UpbTypeConversions>::upb_type())
+                    };
+                    Map::from_inner(Private, InnerMap { raw, arena })
                 }
 
-                unsafe fn map_free(_private: Private, map: &mut Map<$key_t, Self>) {
-                    // SAFETY:
-                    // - `map.inner.raw_arena` is a live `upb_Arena*`
-                    // - This function is only called once for `map` in `Drop`.
-                    unsafe {
-                        upb_Arena_Free(map.as_mut().raw_arena(Private));
-                    }
+                unsafe fn map_free(_private: Private, _map: &mut Map<$key_t, Self>) {
+                    // No-op: the memory will be dropped by the arena.
                 }
 
                 fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {

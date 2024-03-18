@@ -36,9 +36,6 @@ exports_files([
     "text_format_failure_list_python.txt",
     "text_format_failure_list_python_cpp.txt",
     "text_format_failure_list_python_upb.txt",
-    "text_format_failure_list_ruby.txt",
-    "text_format_failure_list_jruby.txt",
-    "text_format_failure_list_jruby_ffi.txt",
 ])
 
 cc_proto_library(
@@ -377,6 +374,7 @@ ruby_binary(
     deps = [
         ":conformance_ruby_proto",
         "//ruby:conformance_test_ruby_proto",
+        "//ruby:protobuf",
     ],
 )
 
