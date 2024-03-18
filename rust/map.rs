@@ -529,6 +529,20 @@ mod tests {
     }
 
     #[test]
+    fn test_overwrite_insert() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        assert!(map_mut.insert(0, "fizz"));
+        // insert should return false when the key is already present
+        assert!(!map_mut.insert(0, "buzz"));
+
+        assert_that!(
+            map.as_mut().iter().collect::<Vec<_>>(),
+            unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]
+        );
+    }
+
+    #[test]
     fn test_all_maps_can_be_constructed() {
         macro_rules! gen_proto_values {
             ($key_t:ty, $($value_t:ty),*) => {
