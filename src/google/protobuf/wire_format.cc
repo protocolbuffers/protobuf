@@ -728,16 +728,15 @@ struct WireFormat::MessageSetParser {
     return ptr;
   }
 
-  const char* ParseMessageSet(const char* ptr, internal::ParseContext* ctx, uint32_t tag) {
-    if (tag != 0) goto tag_ready;
+  const char* ParseMessageSet(const char* ptr, internal::ParseContext* ctx) {
     while (!ctx->Done(&ptr)) {
+      uint32_t tag;
       ptr = ReadTag(ptr, &tag);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
         ctx->SetLastTag(tag);
         break;
       }
-tag_ready:
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
         // A message set item starts
         ptr = ctx->ParseGroupInlined(
@@ -767,11 +766,6 @@ tag_ready:
   const Reflection* reflection;
 };
 
-const char* WireFormat::_InternalParseMessageSet(Message *msg, const char *ptr, ParseContext *ctx, uint32_t tag, const Descriptor* descriptor, const Reflection* reflection) {
-    WireFormat::MessageSetParser message_set{msg, descriptor, reflection};
-    return message_set.ParseMessageSet(ptr, ctx, tag);
-}
-
 const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
                                        internal::ParseContext* ctx) {
   const Descriptor* descriptor = msg->GetDescriptor();
@@ -780,7 +774,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
   ABSL_DCHECK(reflection);
   if (descriptor->options().message_set_wire_format()) {
     MessageSetParser message_set{msg, descriptor, reflection};
-    return message_set.ParseMessageSet(ptr, ctx, 0);
+    return message_set.ParseMessageSet(ptr, ctx);
   }
   while (!ctx->Done(&ptr)) {
     uint32_t tag;

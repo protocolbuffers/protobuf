@@ -59,18 +59,22 @@ const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
   }
 
   SyncHasbits(msg, hasbits, table);
+
+  auto* full_msg = DownCast<Message*>(msg);
+
+  if ((table->extension_offset & 1) != 0) {
+    return WireFormat::_InternalParse(full_msg, ptr, ctx);
+  }
+
   uint32_t tag = data.tag();
   if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
     ctx->SetLastTag(tag);
     return ptr;
   }
 
-  auto* full_msg = DownCast<Message*>(msg);
   auto* descriptor = full_msg->GetDescriptor();
   auto* reflection = full_msg->GetReflection();
-  if (descriptor->options().message_set_wire_format()) {
-    return WireFormat::_InternalParseMessageSet(full_msg, ptr, ctx, tag, descriptor, reflection);
-  }
+
   int field_number = WireFormatLite::GetTagFieldNumber(tag);
   const FieldDescriptor* field = descriptor->FindFieldByNumber(field_number);
 

@@ -79,8 +79,12 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
-  constexpr bool kEnableFastParse = false;
+  constexpr bool kEnableFastParse = true;
   if (kEnableFastParse) return FastParseLoop(msg, ptr, ctx, table, -1);
+
+  if (table->extension_offset & 1) {
+    return table->fallback(msg, ptr, ctx, TcFieldData(), table, 0);
+  }
 
   // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
   // For fast dispatch, we'd like to have a pointer to that, but if we use
@@ -3078,6 +3082,10 @@ bool FastFieldLookup(const TcParseTableBase* table, uint32_t tag, uint64_t* fd) 
 
 const char* TcParser::FastParseLoop(MessageLite* const msg, const char* ptr, ParseContext* const ctx, 
         const TcParseTableBase* const table, int64_t const delta_or_group) {
+  if (table->extension_offset & 1) {
+    // Todo check end
+    return table->fallback(msg, ptr, ctx, TcFieldData(), table, 0);
+  }
   using FFE = TcParseTableBase::FastFieldEntry;
   // TODO move into ParseContext
   char dummy[8] = {};

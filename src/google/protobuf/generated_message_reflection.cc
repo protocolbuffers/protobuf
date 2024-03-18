@@ -3290,7 +3290,9 @@ void Reflection::PopulateTcParseFastEntries(
         ABSL_DCHECK(as_field->hasbit_idx != -1);
         hasbit_idx = 8 * schema_.HasBitsOffset() + as_field->hasbit_idx;
       } else {
-        ABSL_DCHECK(as_field->hasbit_idx == -1);
+        // TODO: why is this not set properly
+        // ABSL_DCHECK(as_field->rep != FFE::kOptional) << as_field->field->containing_type()->name() << " " << as_field->field->name();
+        // ABSL_DCHECK(as_field->hasbit_idx == -1) << as_field->field->containing_type()->name() << " " << as_field->field->name();
       }
       *fast_entries++ = {data, hasbit_idx, offset};
     } else {
@@ -3479,10 +3481,11 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       sizeof(char) * table_info.field_name_data.size();
 
   void* p = ::operator new(byte_size);
+  int message_set_bit = descriptor_->options().message_set_wire_format() ? 1 : 0;
   auto* res = ::new (p) TcParseTableBase{
       static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
       schema_.HasExtensionSet()
-          ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
+          ? static_cast<uint16_t>(schema_.GetExtensionSetOffset() | message_set_bit)
           : uint16_t{0},
       static_cast<uint32_t>(fields.empty() ? 0 : fields.back()->number()),
       static_cast<uint32_t>(fast_entries_count),

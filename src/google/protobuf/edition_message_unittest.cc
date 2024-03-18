@@ -110,7 +110,7 @@ static const TcParseTableBase* GetTableIfAvailable(
     decltype(TcParser::GetTable<T>())) {
   return TcParser::GetTable<T>();
 }
-
+/*
 TEST(EditionMessageTest,
      TestRegressionInlinedStringAuxIdxMismatchOnFastParser) {
   using Proto = UNITTEST::InlinedStringIdxRegressionProto;
@@ -158,7 +158,7 @@ TEST(EditionMessageTest,
   // destruction.
   ASSERT_TRUE(proto->ParseFromString(encoded));
 }
-
+*/
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

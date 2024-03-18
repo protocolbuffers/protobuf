@@ -782,6 +782,11 @@ class PROTOBUF_EXPORT TcParser final {
     }
 
     SyncHasbits(msg, hasbits, table);
+
+    if ((table->extension_offset & 1) != 0) {
+      return MessageSetWireFormatParseLoopImpl<MessageBaseT>(PROTOBUF_TC_PARAM_PASS);
+    }
+
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
       ctx->SetLastTag(tag);
@@ -818,7 +823,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <class MessageBaseT>
   static const char* MessageSetWireFormatParseLoopImpl(
       PROTOBUF_TC_PARAM_NO_DATA_DECL) {
-    return RefAt<ExtensionSet>(msg, table->extension_offset)
+    return RefAt<ExtensionSet>(msg, table->extension_offset & -2)
         .ParseMessageSet(
             ptr, static_cast<const MessageBaseT*>(table->default_instance),
             &msg->_internal_metadata_, ctx);

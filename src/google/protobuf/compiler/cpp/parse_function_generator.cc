@@ -319,7 +319,11 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
         format("0,  // no _has_bits_\n");
       }
       if (descriptor_->extension_range_count() != 0) {
-        format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
+        if (descriptor_->options().message_set_wire_format()) {
+          format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$) | 1,\n");
+        } else {
+          format("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
+        }
       } else {
         format("0, // no _extensions_\n");
       }
@@ -412,8 +416,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       if (line_entries) format("\n");
       format("65535, 65535\n");
     }
-    if (ordered_fields_.empty() &&
-        !descriptor_->options().message_set_wire_format()) {
+    if (ordered_fields_.empty()) {
       ABSL_DLOG_IF(FATAL, !tc_table_info_->aux_entries.empty())
           << "Invalid message: " << descriptor_->full_name() << " has "
           << tc_table_info_->aux_entries.size()

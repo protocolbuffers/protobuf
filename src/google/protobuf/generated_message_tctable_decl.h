@@ -295,7 +295,7 @@ struct alignas(uint64_t) TcParseTableBase {
       uint32_t lookup_table_offset, uint32_t skipmap32,
       uint32_t field_entries_offset, uint16_t num_field_entries,
       uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, void*, TailCallParseFunc fallback
+      const MessageLite* default_instance, PostLoopHandler post_loop_handler, TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
                             ,
                             const TcParseTableBase* to_prefetch
@@ -312,7 +312,7 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
-        post_loop_handler(nullptr /*post_loop_handler*/),
+        post_loop_handler(post_loop_handler),
         fallback(fallback)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
         ,
