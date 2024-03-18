@@ -201,6 +201,9 @@ class MessageDefPtr {
   const char* full_name() const { return upb_MessageDef_FullName(ptr_); }
   const char* name() const { return upb_MessageDef_Name(ptr_); }
 
+  // Returns the MessageDef that contains this MessageDef (or null).
+  MessageDefPtr containing_type() const;
+
   const upb_MiniTable* mini_table() const {
     return upb_MessageDef_MiniTable(ptr_);
   }
@@ -416,6 +419,9 @@ class EnumDefPtr {
   const char* name() const { return upb_EnumDef_Name(ptr_); }
   bool is_closed() const { return upb_EnumDef_IsClosed(ptr_); }
 
+  // Returns the MessageDef that contains this EnumDef (or null).
+  MessageDefPtr containing_type() const;
+
   // The value that is used as the default when no field default is specified.
   // If not set explicitly, the first value that was added will be used.
   // The default value must be a member of the enum.
@@ -568,6 +574,14 @@ inline FileDefPtr FieldDefPtr::file() const {
 
 inline FileDefPtr MessageDefPtr::file() const {
   return FileDefPtr(upb_MessageDef_File(ptr_));
+}
+
+inline MessageDefPtr MessageDefPtr::containing_type() const {
+  return MessageDefPtr(upb_MessageDef_ContainingType(ptr_));
+}
+
+inline MessageDefPtr EnumDefPtr::containing_type() const {
+  return MessageDefPtr(upb_EnumDef_ContainingType(ptr_));
 }
 
 inline EnumDefPtr MessageDefPtr::enum_type(int i) const {
