@@ -88,9 +88,6 @@ Type "help", "copyright", "credits" or "license" for more information.
 upb
 ```
 
-This is not an officially-supported or stable API, but it is useful for ad hoc
-diagnostics.
-
 More information about sharing messages between Python and C++ is available
 here: https://protobuf.dev/reference/python/python-generated/#sharing-messages
 
