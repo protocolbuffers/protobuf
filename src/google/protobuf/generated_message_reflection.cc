@@ -3244,36 +3244,6 @@ static internal::TailCallParseFunc GetFastParseFunction(
   return kFuncs[index];
 }
 
-/*
-const internal::TcParseTableBase* Reflection::CreateTcParseTableReflectionOnly()
-    const {
-  // ParseLoop can't parse message set wire format.
-  // Create a dummy table that only exists to make TcParser::ParseLoop jump
-  // into the reflective parse loop.
-
-  using Table = internal::TcParseTable<0, 0, 0, 0, 1>;
-  // We use `operator new` here because the destruction will be done with
-  // `operator delete` unconditionally.
-  void* p = ::operator new(sizeof(Table));
-  auto* full_table = ::new (p)
-      Table{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, &internal::TcParser::ReflectionFallback
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-             ,
-             nullptr
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-            },
-            {}};
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-  // branches. Here we don't know which field is the hottest, so set the pointer
-  // to itself to avoid nullptr.
-  full_table->header.to_prefetch = &full_table->header;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
-                 static_cast<void*>(full_table));
-  return &full_table->header;
-}
-*/
 void Reflection::PopulateTcParseFastEntries(
     const internal::TailCallTableInfo& table_info,
     TcParseTableBase::FastFieldEntry* fast_entries) const {
@@ -3407,15 +3377,17 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   std::vector<int> has_bit_indices(
       static_cast<size_t>(descriptor_->field_count()), kNoHasbit);
   std::vector<int> inlined_string_indices = has_bit_indices;
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
-    auto* field = descriptor_->field(i);
-    fields.push_back(field);
-    has_bit_indices[static_cast<size_t>(field->index())] =
-        static_cast<int>(schema_.HasBitIndex(field));
+  if (!descriptor_->options().map_entry()) {
+    for (int i = 0; i < descriptor_->field_count(); ++i) {
+      auto* field = descriptor_->field(i);
+      fields.push_back(field);
+      has_bit_indices[static_cast<size_t>(field->index())] =
+          static_cast<int>(schema_.HasBitIndex(field));
 
-    if (IsInlined(field)) {
-      inlined_string_indices[static_cast<size_t>(field->index())] =
-          schema_.InlinedStringIndex(field);
+      if (IsInlined(field)) {
+        inlined_string_indices[static_cast<size_t>(field->index())] =
+            schema_.InlinedStringIndex(field);
+      }
     }
   }
   std::sort(fields.begin(), fields.end(),
