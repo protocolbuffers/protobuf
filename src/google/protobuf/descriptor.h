@@ -474,10 +474,10 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     void CopyTo(DescriptorProto_ExtensionRange* proto) const;
 
     // Returns the start field number of this range (inclusive).
-    int start_number() const { return start; }
+    int start_number() const { return start_; }
 
     // Returns the end field number of this range (exclusive).
-    int end_number() const { return end; }
+    int end_number() const { return end_; }
 
     // Returns the index of this extension range within the message's extension
     // range array.
@@ -502,9 +502,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     // Never nullptr.
     const Descriptor* containing_type() const { return containing_type_; }
 
-    int start;  // Bytedance specific
-    int end;
    private:
+    int start_;
+    int end_;
     const ExtensionRangeOptions* options_;
 
    private:
