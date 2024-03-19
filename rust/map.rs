@@ -314,8 +314,18 @@ where
         V::map_get(self.as_view(), key.into())
     }
 
-    pub fn copy_from(&mut self, _src: MapView<'_, K, V>) {
-        todo!("implement b/28530933");
+    pub fn copy_from<'a, 'b>(
+        &mut self,
+        src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl Into<View<'b, V>>)>,
+    ) where
+        K: 'a,
+        V: 'b,
+    {
+        //TODO
+        self.clear();
+        for (k, v) in src.into_iter() {
+            self.insert(k, v);
+        }
     }
 
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
@@ -432,6 +442,20 @@ where
     }
 }
 
+impl<'msg, 'k, 'v, KView, VView, K, V> Extend<(KView, VView)> for MapMut<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg + 'k,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg + 'v,
+    KView: Into<View<'k, K>>,
+    VView: Into<View<'v, V>>,
+{
+    fn extend<T: IntoIterator<Item = (KView, VView)>>(&mut self, iter: T) {
+        for (k, v) in iter.into_iter() {
+            self.insert(k, v);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -539,6 +563,70 @@ mod tests {
         assert_that!(
             map.as_mut().iter().collect::<Vec<_>>(),
             unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]
+        );
+    }
+
+    #[test]
+    fn test_extend() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        map_mut.extend([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((0, ProtoStr::from_str("fizz"))),
+                eq((1, ProtoStr::from_str("buzz"))),
+                eq((2, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+
+        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2_mut = map_2.as_mut();
+        map_2_mut.extend([(2, "bing"), (3, "bong")]);
+
+        let mut map_mut = map.as_mut();
+        map_mut.extend(&map_2);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((0, ProtoStr::from_str("fizz"))),
+                eq((1, ProtoStr::from_str("buzz"))),
+                eq((2, ProtoStr::from_str("bing"))),
+                eq((3, ProtoStr::from_str("bong")))
+            ]
+        );
+    }
+
+    #[test]
+    fn test_copy_from() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        map_mut.copy_from([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((0, ProtoStr::from_str("fizz"))),
+                eq((1, ProtoStr::from_str("buzz"))),
+                eq((2, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+
+        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2_mut = map_2.as_mut();
+        map_2_mut.copy_from([(2, "bing"), (3, "bong")]);
+
+        let mut map_mut = map.as_mut();
+        map_mut.copy_from(&map_2);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((2, ProtoStr::from_str("bing"))),
+                eq((3, ProtoStr::from_str("bong")))
+            ]
         );
     }
 
