@@ -217,7 +217,7 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 2, 0,
+      1, 2, 0,
       0, 2>
       _table_;
 

@@ -400,11 +400,11 @@ DoubleValue::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> DoubleValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> DoubleValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -419,7 +419,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> DoubleValue::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // double value = 1;
-    {65, 0, PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_)},
+    {::_pbi::TcParser::FastF64S1,
+     {9, 63, 0, PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -589,11 +590,11 @@ FloatValue::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> FloatValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> FloatValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -608,7 +609,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> FloatValue::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // float value = 1;
-    {37, 0, PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_)},
+    {::_pbi::TcParser::FastF32S1,
+     {13, 63, 0, PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -778,11 +780,11 @@ Int64Value::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> Int64Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int64Value::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -797,7 +799,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> Int64Value::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int64 value = 1;
-    {64, 0, PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_)},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Int64Value, _impl_.value_), 63>(),
+     {8, 63, 0, PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -953,11 +956,11 @@ UInt64Value::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> UInt64Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt64Value::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -972,7 +975,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> UInt64Value::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // uint64 value = 1;
-    {64, 0, PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_)},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(UInt64Value, _impl_.value_), 63>(),
+     {8, 63, 0, PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1128,11 +1132,11 @@ Int32Value::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> Int32Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> Int32Value::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1147,7 +1151,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> Int32Value::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // int32 value = 1;
-    {32, 0, PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_)},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Int32Value, _impl_.value_), 63>(),
+     {8, 63, 0, PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1303,11 +1308,11 @@ UInt32Value::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> UInt32Value::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> UInt32Value::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1322,7 +1327,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> UInt32Value::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // uint32 value = 1;
-    {32, 0, PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_)},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(UInt32Value, _impl_.value_), 63>(),
+     {8, 63, 0, PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1478,11 +1484,11 @@ BoolValue::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> BoolValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BoolValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1497,7 +1503,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> BoolValue::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // bool value = 1;
-    {0, 0, PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_)},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(BoolValue, _impl_.value_), 63>(),
+     {8, 63, 0, PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1666,11 +1673,11 @@ StringValue::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 41, 2> StringValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 41, 2> StringValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1685,7 +1692,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 41, 2> StringValue::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // string value = 1;
-    {258, 0, PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_)},
+    {::_pbi::TcParser::FastUS1,
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1861,11 +1869,11 @@ BytesValue::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<1, 1, 0, 0, 2> BytesValue::_table_ = {
+const ::_pbi::TcParseTable<0, 1, 0, 0, 2> BytesValue::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    1, 1,  // max_field_number, num_fast_fields
+    1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967294,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -1880,7 +1888,8 @@ const ::_pbi::TcParseTable<1, 1, 0, 0, 2> BytesValue::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     // bytes value = 1;
-    {2, 0, PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_)},
+    {::_pbi::TcParser::FastBS1,
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_)}},
   }}, {{
     65535, 65535
   }}, {{

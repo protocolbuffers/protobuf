@@ -258,7 +258,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 1, 1,
+      0, 1, 1,
       0, 2>
       _table_;
 
@@ -433,7 +433,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 1, 2,
+      0, 1, 2,
       37, 2>
       _table_;
 
@@ -732,7 +732,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   inline void clear_has_kind();
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      6, 6, 2,
+      0, 6, 2,
       42, 2>
       _table_;
 

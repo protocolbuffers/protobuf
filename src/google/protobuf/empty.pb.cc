@@ -132,7 +132,7 @@ const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    0, 0,  // max_field_number, num_fast_fields
+    0, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967295,  // skipmap
     offsetof(decltype(_table_), field_names),  // no field_entries
@@ -146,6 +146,7 @@ const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::Empty>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
+    {::_pbi::TcParser::MiniParse, {}},
   }}, {{
     65535, 65535
   }},

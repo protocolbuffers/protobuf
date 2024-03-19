@@ -188,11 +188,11 @@ JavaFeatures::GetClassData() const {
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 2, 1, 0, 2> JavaFeatures::_table_ = {
+const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_),
     0, // no _extensions_
-    2, 2,  // max_field_number, num_fast_fields
+    2, 8,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294967292,  // skipmap
     offsetof(decltype(_table_), field_entries),
@@ -206,10 +206,12 @@ const ::_pbi::TcParseTable<2, 2, 1, 0, 2> JavaFeatures::_table_ = {
     ::_pbi::TcParser::GetTable<::pb::JavaFeatures>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {8, 0 + _Internal::kHasBitsOffset, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_)},
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    {56},  // Fallback
+    {::_pbi::TcParser::FastEr0S1,
+     {16, 1, 2, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)}},
+    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.legacy_closed_enum_), 0>(),
+     {8, 0, 0, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_)}},
   }}, {{
     65535, 65535
   }}, {{

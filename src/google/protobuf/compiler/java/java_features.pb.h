@@ -98,7 +98,7 @@ inline bool JavaFeatures_Utf8Validation_Parse(absl::string_view name, JavaFeatur
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT JavaFeatures final  : public ::google::protobuf::Message
+class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.JavaFeatures) */ {
  public:
   inline JavaFeatures() : JavaFeatures(nullptr) {}
@@ -272,7 +272,7 @@ class PROTOC_EXPORT JavaFeatures final  : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 2, 1,
+      1, 2, 1,
       0, 2>
       _table_;
 

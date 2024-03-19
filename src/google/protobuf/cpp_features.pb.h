@@ -274,7 +274,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 2, 1,
+      1, 2, 1,
       0, 2>
       _table_;
 

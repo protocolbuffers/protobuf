@@ -515,7 +515,12 @@ struct TcParseTable {
   // number is masked to fit inside the table. Note that the parsing logic
   // generally calls `TailCallParseTableBase::fast_entry()` instead of accessing
   // this field directly.
+#ifdef PROTOBUF_NEW_PARSER
   std::array<TcParseTableBase::FastFieldEntry, kNumFastTable> fast_entries;
+#else
+  std::array<TcParseTableBase::FastFieldEntry, 1 << kNumFastTable>
+      fast_entries;
+#endif
 
   // Just big enough to find all the field entries.
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
@@ -534,8 +539,12 @@ template <size_t kNumFastTable, size_t kNumFieldEntries,
 struct TcParseTable<kNumFastTable, kNumFieldEntries, 0, kNameTableSize,
                     kFieldLookupSize> {
   TcParseTableBase header;
-  std::array<TcParseTableBase::FastFieldEntry, kNumFastTable>
+#ifdef PROTOBUF_NEW_PARSER
+  std::array<TcParseTableBase::FastFieldEntry, kNumFastTable> fast_entries;
+#else
+  std::array<TcParseTableBase::FastFieldEntry, 1 << kNumFastTable>
       fast_entries;
+#endif
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
   std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
@@ -546,7 +555,11 @@ struct TcParseTable<kNumFastTable, kNumFieldEntries, 0, kNameTableSize,
 template <size_t kNameTableSize, size_t kFieldLookupSize>
 struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   TcParseTableBase header;
+#ifdef PROTOBUF_NEW_PARSER
   std::array<TcParseTableBase::FastFieldEntry, 0> fast_entries;
+#else
+  std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
+#endif
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
 };

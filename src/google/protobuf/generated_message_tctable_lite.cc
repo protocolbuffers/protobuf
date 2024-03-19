@@ -79,7 +79,11 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
+#ifdef PROTOBUF_NEW_PARSER
   constexpr bool kEnableFastParse = true;
+#else
+  constexpr bool kEnableFastParse = false;
+#endif
   if (kEnableFastParse) return FastParseLoop(msg, ptr, ctx, table, -1);
 
   if (table->extension_offset & 1) {
