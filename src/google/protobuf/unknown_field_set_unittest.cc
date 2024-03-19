@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
