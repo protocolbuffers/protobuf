@@ -9,8 +9,8 @@
 /// on proto3.
 use googletest::prelude::*;
 use protobuf::Optional;
-use unittest_proto3::{TestAllTypes, TestAllTypes_};
-use unittest_proto3_optional::{TestProto3Optional, TestProto3Optional_};
+use unittest_proto3::{test_all_types, TestAllTypes};
+use unittest_proto3_optional::{test_proto3_optional, TestProto3Optional};
 
 #[test]
 fn test_fixed32_accessors() {
@@ -125,7 +125,7 @@ fn test_optional_string_accessors() {
 
 #[test]
 fn test_nested_enum_accessors() {
-    use TestAllTypes_::NestedEnum;
+    use test_all_types::NestedEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Zero));
@@ -139,7 +139,7 @@ fn test_nested_enum_accessors() {
 
 #[test]
 fn test_optional_nested_enum_accessors() {
-    use TestProto3Optional_::NestedEnum;
+    use test_proto3_optional::NestedEnum;
 
     let mut msg = TestProto3Optional::new();
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Unspecified));
@@ -170,7 +170,7 @@ fn test_foreign_enum_accessors() {
 
 #[test]
 fn test_oneof_accessors() {
-    use TestAllTypes_::OneofField::*;
+    use test_all_types::OneofField::*;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.oneof_field(), matches_pattern!(not_set(_)));
@@ -199,7 +199,7 @@ fn test_oneof_accessors() {
 
 #[test]
 fn test_oneof_accessors_view_long_lifetime() {
-    use TestAllTypes_::OneofField::*;
+    use test_all_types::OneofField::*;
 
     let mut msg = TestAllTypes::new();
     msg.set_oneof_uint32(7);
@@ -216,8 +216,8 @@ fn test_oneof_accessors_view_long_lifetime() {
 #[test]
 fn test_oneof_enum_accessors() {
     use unittest_proto3::{
+        test_oneof2::{Foo, FooCase, NestedEnum},
         TestOneof2,
-        TestOneof2_::{Foo, FooCase, NestedEnum},
     };
 
     let mut msg = TestOneof2::new();
@@ -233,7 +233,7 @@ fn test_oneof_enum_accessors() {
 
 #[test]
 fn test_submsg_setter() {
-    use TestAllTypes_::*;
+    use test_all_types::*;
 
     let mut nested = NestedMessage::new();
     nested.set_bb(7);

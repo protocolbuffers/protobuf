@@ -497,7 +497,7 @@ void GenerateEnumThunksCc(Context& ctx, const EnumDescriptor& desc) {
   ctx.Emit(
       {
           {"cpp_t", cpp::QualifiedClassName(&desc)},
-          {"rs_t", GetUnderscoreDelimitedFullName(ctx, desc)},
+          {"rs_t", UnderscoreDelimitFullName(ctx, desc.full_name())},
           {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
       },
       R"cc(

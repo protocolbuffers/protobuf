@@ -9,7 +9,7 @@
 
 use googletest::prelude::*;
 use protobuf::{MutProxy, Optional};
-use unittest_proto::{TestAllTypes, TestAllTypes_};
+use unittest_proto::{test_all_types, TestAllTypes};
 
 #[test]
 fn test_default_accessors() {
@@ -485,7 +485,7 @@ fn test_nonempty_default_string_accessors() {
 
 #[test]
 fn test_singular_msg_field() {
-    use TestAllTypes_::*;
+    use test_all_types::*;
 
     let mut msg = TestAllTypes::new();
     let msg_view: NestedMessageView = msg.optional_nested_message();
@@ -507,8 +507,8 @@ fn test_singular_msg_field() {
 fn test_message_opt() {
     let msg = TestAllTypes::new();
     let opt: Optional<
-        unittest_proto::TestAllTypes_::NestedMessageView<'_>,
-        unittest_proto::TestAllTypes_::NestedMessageView<'_>,
+        unittest_proto::test_all_types::NestedMessageView<'_>,
+        unittest_proto::test_all_types::NestedMessageView<'_>,
     > = msg.optional_nested_message_opt();
     assert_that!(opt.is_set(), eq(false));
     assert_that!(opt.into_inner().bb(), eq(0));
@@ -517,7 +517,7 @@ fn test_message_opt() {
 #[test]
 fn test_message_opt_set() {
     let mut msg = TestAllTypes::new();
-    let submsg = TestAllTypes_::NestedMessage::new();
+    let submsg = test_all_types::NestedMessage::new();
 
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
     msg.set_optional_nested_message(submsg);
@@ -530,7 +530,7 @@ fn test_message_opt_set() {
 #[test]
 fn test_setting_submsg() {
     let mut msg = TestAllTypes::new();
-    let submsg = TestAllTypes_::NestedMessage::new();
+    let submsg = test_all_types::NestedMessage::new();
 
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 
@@ -557,7 +557,7 @@ fn test_msg_mut_initializes() {
 
 #[test]
 fn test_optional_nested_enum_accessors() {
-    use TestAllTypes_::NestedEnum;
+    use test_all_types::NestedEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Foo)));
@@ -574,7 +574,7 @@ fn test_optional_nested_enum_accessors() {
 
 #[test]
 fn test_default_nested_enum_accessors() {
-    use TestAllTypes_::NestedEnum;
+    use test_all_types::NestedEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_nested_enum(), eq(NestedEnum::Bar));
@@ -659,8 +659,8 @@ fn test_default_import_enum_accessors() {
 
 #[test]
 fn test_oneof_accessors() {
+    use unittest_proto::test_oneof2::{Foo::*, FooCase, NestedEnum};
     use unittest_proto::TestOneof2;
-    use unittest_proto::TestOneof2_::{Foo::*, FooCase, NestedEnum};
 
     let mut msg = TestOneof2::new();
     assert_that!(msg.foo(), matches_pattern!(not_set(_)));
@@ -707,7 +707,7 @@ fn test_oneof_accessors() {
 
 #[test]
 fn test_msg_oneof_default_accessors() {
-    use unittest_proto::TestOneof2_::{Bar::*, BarCase, NestedEnum};
+    use unittest_proto::test_oneof2::{Bar::*, BarCase, NestedEnum};
 
     let mut msg = unittest_proto::TestOneof2::new();
     assert_that!(msg.bar(), matches_pattern!(not_set(_)));
@@ -764,7 +764,7 @@ fn test_group() {
 
 #[test]
 fn test_submsg_setter() {
-    use TestAllTypes_::*;
+    use test_all_types::*;
 
     let mut nested = NestedMessage::new();
     nested.set_bb(7);

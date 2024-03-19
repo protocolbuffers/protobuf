@@ -712,12 +712,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"nested_in_msg",
         [&] {
           // If we have no nested types, enums, or oneofs, bail out without
-          // emitting an empty mod SomeMsg_.
+          // emitting an empty mod some_msg.
           if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
               msg.real_oneof_decl_count() == 0) {
             return;
           }
-          ctx.Emit({{"Msg", RsSafeName(msg.name())},
+          ctx.Emit({{"mod_name", RsSafeName(CamelToSnakeCase(msg.name()))},
                     {"nested_msgs",
                      [&] {
                        for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -737,13 +737,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                        }
                      }}},
                    R"rs(
-                 #[allow(non_snake_case)]
-                 pub mod $Msg$_ {
+                 pub mod $mod_name$ {
                    $nested_msgs$
                    $nested_enums$
 
                    $oneofs$
-                 }  // mod $Msg$_
+                 }  // mod $mod_name$
                 )rs");
         }},
        {"raw_arena_getter_for_message",

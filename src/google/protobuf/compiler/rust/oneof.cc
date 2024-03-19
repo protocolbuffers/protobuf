@@ -41,7 +41,7 @@ namespace rust {
 // }
 //
 // This will emit as the exposed API:
-// pub mod SomeMsg_ {
+// pub mod some_msg {
 //   pub enum SomeOneof<'msg> {
 //     FieldA(i32) = 7,
 //     FieldB(View<'msg, SomeMsg>) = 9,
@@ -180,6 +180,9 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
           {"oneof_name", RsSafeName(oneof.name())},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"self", ViewReceiver(accessor_case)},
+          {"oneof_enum_module",
+           absl::StrCat("crate::", RustModuleForContainingType(
+                                       ctx, oneof.containing_type()))},
           {"view_enum_name", OneofViewEnumRsName(oneof)},
           {"case_enum_name", OneofCaseEnumRsName(oneof)},
           {"view_cases",
@@ -197,22 +200,22 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
                        {"type", rs_type},
                    },
                    R"rs(
-                $Msg$_::$case_enum_name$::$case$ =>
-                    $Msg$_::$view_enum_name$::$case$(self.$rs_getter$()),
+                $oneof_enum_module$$case_enum_name$::$case$ =>
+                    $oneof_enum_module$$view_enum_name$::$case$(self.$rs_getter$()),
                 )rs");
              }
            }},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
       },
       R"rs(
-        pub fn $oneof_name$($self$) -> $Msg$_::$view_enum_name$<$view_lifetime$> {
+        pub fn $oneof_name$($self$) -> $oneof_enum_module$$view_enum_name$<$view_lifetime$> {
           match $self$.$oneof_name$_case() {
             $view_cases$
-            _ => $Msg$_::$view_enum_name$::not_set(std::marker::PhantomData)
+            _ => $oneof_enum_module$$view_enum_name$::not_set(std::marker::PhantomData)
           }
         }
 
-        pub fn $oneof_name$_case($self$) -> $Msg$_::$case_enum_name$ {
+        pub fn $oneof_name$_case($self$) -> $oneof_enum_module$$case_enum_name$ {
           unsafe { $case_thunk$(self.raw_msg()) }
         }
       )rs");
@@ -221,11 +224,14 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
 void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
   ctx.Emit(
       {
+          {"oneof_enum_module",
+           absl::StrCat("crate::", RustModuleForContainingType(
+                                       ctx, oneof.containing_type()))},
           {"case_enum_rs_name", OneofCaseEnumRsName(oneof)},
           {"case_thunk", ThunkName(ctx, oneof, "case")},
       },
       R"rs(
-        fn $case_thunk$(raw_msg: $pbi$::RawMessage) -> $Msg$_::$case_enum_rs_name$;
+        fn $case_thunk$(raw_msg: $pbi$::RawMessage) -> $oneof_enum_module$$case_enum_rs_name$;
       )rs");
 }
 

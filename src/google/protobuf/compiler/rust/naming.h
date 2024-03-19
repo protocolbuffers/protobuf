@@ -68,17 +68,24 @@ std::string RsSafeName(absl::string_view name);
 //
 // If the message has no package and no containing messages then this returns
 // empty string.
+std::string RustModuleForContainingType(Context& ctx,
+                                        const Descriptor* containing_type);
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
+std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
 std::string GetCrateRelativeQualifiedPath(Context& ctx,
                                           const EnumDescriptor& enum_);
+std::string GetCrateRelativeQualifiedPath(Context& ctx,
+                                          const OneofDescriptor& oneof);
 
-std::string GetUnderscoreDelimitedFullName(Context& ctx, const Descriptor& msg);
-std::string GetUnderscoreDelimitedFullName(Context& ctx,
-                                           const EnumDescriptor& enum_);
+template <typename Desc>
+std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc);
+
+std::string UnderscoreDelimitFullName(Context& ctx,
+                                      absl::string_view full_name);
 
 // TODO: Unify these with other case-conversion functions.
 

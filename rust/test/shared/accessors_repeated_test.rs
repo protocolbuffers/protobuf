@@ -8,7 +8,7 @@
 use googletest::prelude::*;
 use paste::paste;
 use protobuf::ViewProxy;
-use unittest_proto::{TestAllTypes, TestAllTypes_, TestAllTypes_::NestedMessage};
+use unittest_proto::{test_all_types, test_all_types::NestedMessage, TestAllTypes};
 
 macro_rules! generate_repeated_numeric_test {
   ($(($t: ty, $field: ident)),*) => {
@@ -138,7 +138,7 @@ fn test_repeated_bool_accessors() {
 
 #[test]
 fn test_repeated_enum_accessors() {
-    use TestAllTypes_::NestedEnum;
+    use test_all_types::NestedEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_nested_enum(), empty());

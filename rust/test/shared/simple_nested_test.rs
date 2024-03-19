@@ -6,34 +6,34 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use nested_proto::Outer_::InnerView;
-use nested_proto::Outer_::Inner_::InnerEnum;
+use nested_proto::outer::inner::InnerEnum;
+use nested_proto::outer::InnerView;
 use nested_proto::*;
 
 #[test]
 fn test_deeply_nested_message() {
     let deep =
-        Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_::CantBelieveItsSoInner::new();
+        outer::inner::super_inner::duper_inner::even_more_inner::CantBelieveItsSoInner::new();
     assert_that!(deep.num(), eq(0));
 
-    let outer_msg = Outer::new();
-    assert_that!(outer_msg.deep().num(), eq(0));
+    let outermsg = Outer::new();
+    assert_that!(outermsg.deep().num(), eq(0));
 }
 
 #[test]
 fn test_deeply_nested_enum() {
-    use Outer_::Inner_::SuperInner_::DuperInner_::EvenMoreInner_::JustWayTooInner;
+    use outer::inner::super_inner::duper_inner::even_more_inner::JustWayTooInner;
     let deep = JustWayTooInner::default();
     assert_that!(i32::from(deep), eq(0));
 
-    let outer_msg = Outer::new();
-    assert_that!(outer_msg.deep_enum(), eq(JustWayTooInner::Unspecified));
+    let outermsg = Outer::new();
+    assert_that!(outermsg.deep_enum(), eq(JustWayTooInner::Unspecified));
 }
 
 #[test]
 fn test_nested_views() {
-    let outer_msg = Outer::new();
-    let inner_msg: InnerView<'_> = outer_msg.inner();
+    let outermsg = Outer::new();
+    let inner_msg: InnerView<'_> = outermsg.inner();
     assert_that!(inner_msg.double(), eq(0.0));
     assert_that!(inner_msg.float(), eq(0.0));
     assert_that!(inner_msg.int32(), eq(0));
@@ -58,24 +58,24 @@ fn test_nested_view_lifetimes() {
     // Ensure that views have the lifetime of the first layer of borrow, and don't
     // create intermediate borrows through nested accessors.
 
-    let outer_msg = Outer::new();
+    let outermsg = Outer::new();
 
-    let string = outer_msg.inner().string();
+    let string = outermsg.inner().string();
     assert_that!(string, eq(""));
 
-    let bytes = outer_msg.inner().bytes();
+    let bytes = outermsg.inner().bytes();
     assert_that!(bytes, eq(b""));
 
-    let inner_submsg = outer_msg.inner().inner_submsg();
+    let inner_submsg = outermsg.inner().inner_submsg();
     assert_that!(inner_submsg.flag(), eq(false));
 
-    let repeated_int32 = outer_msg.inner().repeated_int32();
+    let repeated_int32 = outermsg.inner().repeated_int32();
     assert_that!(repeated_int32, empty());
 
-    let repeated_inner_submsg = outer_msg.inner().repeated_inner_submsg();
+    let repeated_inner_submsg = outermsg.inner().repeated_inner_submsg();
     assert_that!(repeated_inner_submsg, empty());
 
-    let string_map = outer_msg.inner().string_map();
+    let string_map = outermsg.inner().string_map();
     assert_that!(string_map.len(), eq(0));
 }
 
