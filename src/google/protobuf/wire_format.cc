@@ -594,15 +594,30 @@ bool WireFormat::ParseAndMergeField(
 
       case FieldDescriptor::TYPE_MESSAGE: {
         Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
+        if (WireFormatLite::GetTagWireType(tag) ==
+            WireFormatLite::WIRETYPE_START_GROUP) {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
 
-        if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+          if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
+                                         input, sub_message))
+            return false;
+        } else {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
+
+          if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+        }
         break;
       }
     }
