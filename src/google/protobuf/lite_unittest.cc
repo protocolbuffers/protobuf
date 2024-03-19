@@ -1136,6 +1136,26 @@ TYPED_TEST(LiteTest, CorrectEnding) {
   }
 }
 
+TYPED_TEST(LiteTest, MessageEncoding) {
+  protobuf_unittest::TestAllTypesLite msg;
+  {
+    // Make sure that we support length-prefixed encoding for submsgs
+    static const char kWireFormat[] = "\n\002\010\003";  // 1: {1: 3}
+    io::CodedInputStream cis(reinterpret_cast<const uint8_t*>(kWireFormat), 4);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_TRUE(cis.ConsumedEntireMessage());
+    EXPECT_TRUE(cis.LastTagWas(0));
+  }
+  {
+    // Make sure that we support delimited encoding for submsgs
+    static const char kWireFormat[] = "\013\010\003\014";  // 1: !{1: 3}
+    io::CodedInputStream cis(reinterpret_cast<const uint8_t*>(kWireFormat), 4);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_TRUE(cis.ConsumedEntireMessage());
+    EXPECT_TRUE(cis.LastTagWas(0));
+  }
+}
+
 TYPED_TEST(LiteTest, DebugString) {
   protobuf_unittest::TestAllTypesLite message1, message2;
   EXPECT_TRUE(absl::StartsWith(message1.DebugString(), "MessageLite at 0x"));

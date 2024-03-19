@@ -30,6 +30,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -578,31 +579,59 @@ bool WireFormat::ParseAndMergeField(
 
       case FieldDescriptor::TYPE_GROUP: {
         Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
+        if (WireFormatLite::GetTagWireType(tag) ==
+            WireFormatLite::WIRETYPE_START_GROUP) {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
 
-        if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
-                                       input, sub_message))
-          return false;
+          if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
+                                         input, sub_message))
+            return false;
+        } else {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
+
+          if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+        }
         break;
       }
 
       case FieldDescriptor::TYPE_MESSAGE: {
         Message* sub_message;
-        if (field->is_repeated()) {
-          sub_message = message_reflection->AddMessage(
-              message, field, input->GetExtensionFactory());
-        } else {
-          sub_message = message_reflection->MutableMessage(
-              message, field, input->GetExtensionFactory());
-        }
+        if (WireFormatLite::GetTagWireType(tag) ==
+            WireFormatLite::WIRETYPE_START_GROUP) {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
 
-        if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+          if (!WireFormatLite::ReadGroup(WireFormatLite::GetTagFieldNumber(tag),
+                                         input, sub_message))
+            return false;
+        } else {
+          if (field->is_repeated()) {
+            sub_message = message_reflection->AddMessage(
+                message, field, input->GetExtensionFactory());
+          } else {
+            sub_message = message_reflection->MutableMessage(
+                message, field, input->GetExtensionFactory());
+          }
+
+          if (!WireFormatLite::ReadMessage(input, sub_message)) return false;
+        }
         break;
       }
     }
@@ -871,6 +900,104 @@ const char* WireFormat::_InternalParseAndMergeField(
           ABSL_LOG(FATAL) << "Can't reach";
           return nullptr;
       }
+    } else if (WireFormatLite::GetTagWireType(tag) !=
+                   WireTypeForFieldType(field->type()) &&
+               (WireFormatLite::GetTagWireType(tag) ==
+                    WireFormatLite::WIRETYPE_START_GROUP ||
+                WireFormatLite::GetTagWireType(tag) ==
+                    WireFormatLite::WIRETYPE_LENGTH_DELIMITED)) {
+      switch (field->type()) {
+        case FieldDescriptor::TYPE_GROUP: {
+          Message* sub_message;
+
+          if (WireFormatLite::GetTagWireType(tag) ==
+              WireFormatLite::WIRETYPE_START_GROUP) {
+            if (field->is_repeated()) {
+              sub_message =
+                  reflection->AddMessage(msg, field, ctx->data().factory);
+            } else {
+              sub_message =
+                  reflection->MutableMessage(msg, field, ctx->data().factory);
+            }
+
+            return ctx->ParseGroup(sub_message, ptr, tag);
+          } else {
+            if (field->is_repeated()) {
+              sub_message =
+                  reflection->AddMessage(msg, field, ctx->data().factory);
+            } else {
+              sub_message =
+                  reflection->MutableMessage(msg, field, ctx->data().factory);
+            }
+            ptr = ctx->ParseMessage(sub_message, ptr);
+
+            // For map entries, if the value is an unknown enum we have to push
+            // it into the unknown field set and remove it from the list.
+            if (ptr != nullptr && field->is_map()) {
+              auto* value_field = field->message_type()->map_value();
+              auto* enum_type = value_field->enum_type();
+              if (enum_type != nullptr &&
+                  !internal::cpp::HasPreservingUnknownEnumSemantics(
+                      value_field) &&
+                  enum_type->FindValueByNumber(
+                      sub_message->GetReflection()->GetEnumValue(
+                          *sub_message, value_field)) == nullptr) {
+                reflection->MutableUnknownFields(msg)->AddLengthDelimited(
+                    field->number(), sub_message->SerializeAsString());
+                reflection->RemoveLast(msg, field);
+              }
+            }
+
+            return ptr;
+          }
+        }
+
+        case FieldDescriptor::TYPE_MESSAGE: {
+          Message* sub_message;
+          if (WireFormatLite::GetTagWireType(tag) ==
+              WireFormatLite::WIRETYPE_START_GROUP) {
+            if (field->is_repeated()) {
+              sub_message =
+                  reflection->AddMessage(msg, field, ctx->data().factory);
+            } else {
+              sub_message =
+                  reflection->MutableMessage(msg, field, ctx->data().factory);
+            }
+
+            return ctx->ParseGroup(sub_message, ptr, tag);
+          } else if (field->is_repeated()) {
+            sub_message =
+                reflection->AddMessage(msg, field, ctx->data().factory);
+          } else {
+            sub_message =
+                reflection->MutableMessage(msg, field, ctx->data().factory);
+          }
+          ptr = ctx->ParseMessage(sub_message, ptr);
+
+          // For map entries, if the value is an unknown enum we have to push it
+          // into the unknown field set and remove it from the list.
+          if (ptr != nullptr && field->is_map()) {
+            auto* value_field = field->message_type()->map_value();
+            auto* enum_type = value_field->enum_type();
+            if (enum_type != nullptr &&
+                !internal::cpp::HasPreservingUnknownEnumSemantics(
+                    value_field) &&
+                enum_type->FindValueByNumber(
+                    sub_message->GetReflection()->GetEnumValue(
+                        *sub_message, value_field)) == nullptr) {
+              reflection->MutableUnknownFields(msg)->AddLengthDelimited(
+                  field->number(), sub_message->SerializeAsString());
+              reflection->RemoveLast(msg, field);
+            }
+          }
+
+          return ptr;
+        }
+        default: {
+          return internal::UnknownFieldParse(
+              tag, reflection->MutableUnknownFields(msg), ptr, ctx);
+        }
+      }
     } else {
       // mismatched wiretype;
       return internal::UnknownFieldParse(
@@ -997,19 +1124,59 @@ const char* WireFormat::_InternalParseAndMergeField(
 
     case FieldDescriptor::TYPE_GROUP: {
       Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
-      } else {
-        sub_message =
-            reflection->MutableMessage(msg, field, ctx->data().factory);
-      }
 
-      return ctx->ParseGroup(sub_message, ptr, tag);
+      if (WireFormatLite::GetTagWireType(tag) ==
+          WireFormatLite::WIRETYPE_START_GROUP) {
+        if (field->is_repeated()) {
+          sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
+        } else {
+          sub_message =
+              reflection->MutableMessage(msg, field, ctx->data().factory);
+        }
+
+        return ctx->ParseGroup(sub_message, ptr, tag);
+      } else {
+        if (field->is_repeated()) {
+          sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
+        } else {
+          sub_message =
+              reflection->MutableMessage(msg, field, ctx->data().factory);
+        }
+        ptr = ctx->ParseMessage(sub_message, ptr);
+
+        // For map entries, if the value is an unknown enum we have to push it
+        // into the unknown field set and remove it from the list.
+        if (ptr != nullptr && field->is_map()) {
+          auto* value_field = field->message_type()->map_value();
+          auto* enum_type = value_field->enum_type();
+          if (enum_type != nullptr &&
+              !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
+              enum_type->FindValueByNumber(
+                  sub_message->GetReflection()->GetEnumValue(
+                      *sub_message, value_field)) == nullptr) {
+            reflection->MutableUnknownFields(msg)->AddLengthDelimited(
+                field->number(), sub_message->SerializeAsString());
+            reflection->RemoveLast(msg, field);
+          }
+        }
+
+        return ptr;
+      }
     }
 
     case FieldDescriptor::TYPE_MESSAGE: {
       Message* sub_message;
-      if (field->is_repeated()) {
+      if (WireFormatLite::GetTagWireType(tag) ==
+          WireFormatLite::WIRETYPE_START_GROUP) {
+        if (field->is_repeated()) {
+          sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
+        } else {
+          sub_message =
+              reflection->MutableMessage(msg, field, ctx->data().factory);
+        }
+
+        return ctx->ParseGroup(sub_message, ptr, tag);
+      } else if (field->is_repeated()) {
         sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
       } else {
         sub_message =
