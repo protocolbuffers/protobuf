@@ -104,7 +104,7 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
                         "Generate Rust sources.");
 #ifdef DISABLE_PROTOC_CONFIG
-  internal::SetDisableAllowlistInternalOnly(true);
+  auto cleanup = internal::DisableAllowlistInternalOnly();
 #endif  // DISABLE_PROTOC_CONFIG
   return cli.Run(argc, argv);
 }
