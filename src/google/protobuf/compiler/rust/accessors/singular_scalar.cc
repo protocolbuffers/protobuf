@@ -44,11 +44,11 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
                   pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
-                    if !unsafe { $hazzer_thunk$(self.raw_msg()) } {
-                      return $pb$::Optional::Unset($default_value$);
+                    if self.has_$raw_field_name$() {
+                      $pb$::Optional::Set(self.$field$())
+                    } else {
+                      $pb$::Optional::Unset($default_value$)
                     }
-                    let value = unsafe { $getter_thunk$(self.raw_msg()) };
-                    $pb$::Optional::Set(value)
                   }
                   )rs");
            }},
@@ -60,6 +60,14 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                    unsafe { $setter_thunk$(self.raw_msg(), val) }
                  }
                )rs");
+           }},
+          {"hazzer",
+           [&] {
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                pub fn has_$raw_field_name$($view_self$) -> bool {
+                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                })rs");
            }},
           {"clearer",
            [&] {
@@ -78,6 +86,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           $getter$
           $getter_opt$
           $setter$
+          $hazzer$
           $clearer$
         )rs");
 }

@@ -92,7 +92,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                               $getter_mut_thunk$,
                                               $clearer_thunk$);
                   unsafe {
-                    let has = $hazzer_thunk$(self.raw_msg());
+                    let has = self.has_$raw_field_name$();
                     $pbi$::new_vtable_field_entry($pbi$::Private,
                       self.as_mutator_message_ref(),
                       &VTABLE,
@@ -107,9 +107,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 pub fn $raw_field_name$_opt($view_self$) ->
                 $pb$::Optional<$msg_type$View<$view_lifetime$>> {
                   let view = self.$field$();
-                  $pb$::Optional::new(view, unsafe {
-                    $hazzer_thunk$(self.raw_msg())
-                  })
+                  $pb$::Optional::new(view, self.has_$raw_field_name$())
             }
             )rs");
              }},
@@ -123,6 +121,13 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   self.$raw_field_name$_entry().set(val);
                 }
               )rs");
+             }},
+            {"hazzer",
+             [&] {
+               ctx.Emit({}, R"rs(
+                  pub fn has_$raw_field_name$($view_self$) -> bool {
+                    unsafe { $hazzer_thunk$(self.raw_msg()) }
+                  })rs");
              }},
             {"clearer",
              [&] {
@@ -138,6 +143,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             $private_getter_entry$
             $getter_opt$
             $setter$
+            $hazzer$
             $clearer$
         )rs");
 }

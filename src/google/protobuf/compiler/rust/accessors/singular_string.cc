@@ -69,10 +69,9 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
             pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
-                let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
-                  $transform_view$,
-                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                  self.$field$(),
+                  self.has_$raw_field_name$()
                 )
               }
           )rs");
@@ -87,6 +86,14 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   self.$raw_field_name$_mut().set(val);
                 }
               )rs");
+           }},
+          {"hazzer",
+           [&] {
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                pub fn has_$raw_field_name$($view_self$) -> bool {
+                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                })rs");
            }},
           {"clearer",
            [&] {
@@ -170,6 +177,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
         $getter$
         $getter_opt$
         $setter$
+        $hazzer$
         $clearer$
         $vtable$
         $field_mutator_getter$

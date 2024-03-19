@@ -39,14 +39,17 @@ fn test_default_accessors() {
 #[test]
 fn test_optional_fixed32_accessors() {
     let mut msg = TestAllTypes::new();
+    assert_that!(msg.has_optional_fixed32(), eq(false));
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 
     msg.set_optional_fixed32(7);
+    assert_that!(msg.has_optional_fixed32(), eq(true));
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Set(7)));
     assert_that!(msg.optional_fixed32(), eq(7));
 
     msg.clear_optional_fixed32();
+    assert_that!(msg.has_optional_fixed32(), eq(false));
     assert_that!(msg.optional_fixed32_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.optional_fixed32(), eq(0));
 }
@@ -55,14 +58,17 @@ fn test_optional_fixed32_accessors() {
 fn test_default_fixed32_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_fixed32(), eq(47));
+    assert_that!(msg.has_default_fixed32(), eq(false));
     assert_that!(msg.default_fixed32_opt(), eq(Optional::Unset(47)));
 
     msg.set_default_fixed32(7);
     assert_that!(msg.default_fixed32(), eq(7));
+    assert_that!(msg.has_default_fixed32(), eq(true));
     assert_that!(msg.default_fixed32_opt(), eq(Optional::Set(7)));
 
     msg.clear_default_fixed32();
     assert_that!(msg.default_fixed32(), eq(47));
+    assert_that!(msg.has_default_fixed32(), eq(false));
     assert_that!(msg.default_fixed32_opt(), eq(Optional::Unset(47)));
 }
 
@@ -387,6 +393,7 @@ fn test_default_bool_accessors() {
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
     {
@@ -394,14 +401,17 @@ fn test_optional_bytes_accessors() {
         msg.set_optional_bytes(&s[..]);
     }
     assert_that!(msg.optional_bytes(), eq(b"hello world"));
+    assert_that!(msg.has_optional_bytes(), eq(true));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
 
     msg.clear_optional_bytes();
     assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
     msg.set_optional_bytes(b"");
     assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(msg.has_optional_bytes(), eq(true));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 }
 
@@ -409,6 +419,7 @@ fn test_optional_bytes_accessors() {
 fn test_nonempty_default_bytes_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_bytes(), eq(b"world"));
+    assert_that!(msg.has_default_bytes(), eq(false));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
 
     {
@@ -416,10 +427,12 @@ fn test_nonempty_default_bytes_accessors() {
         msg.set_default_bytes(s.as_bytes());
     }
     assert_that!(msg.default_bytes(), eq(b"hello world"));
+    assert_that!(msg.has_default_bytes(), eq(true));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
 
     msg.clear_default_bytes();
     assert_that!(msg.default_bytes(), eq(b"world"));
+    assert_that!(msg.has_default_bytes(), eq(false));
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
 
     msg.set_default_bytes(b"");
@@ -488,11 +501,13 @@ fn test_singular_msg_field() {
     use test_all_types::*;
 
     let mut msg = TestAllTypes::new();
-    let msg_view: NestedMessageView = msg.optional_nested_message();
+    let msg_view = msg.optional_nested_message();
     // testing reading an int inside a view
     assert_that!(msg_view.bb(), eq(0));
 
-    let mut nested_msg_mut: NestedMessageMut = msg.optional_nested_message_mut();
+    assert_that!(msg.has_optional_nested_message(), eq(false));
+    let mut nested_msg_mut = msg.optional_nested_message_mut();
+
     // test reading an int inside a mut
     assert_that!(nested_msg_mut.bb(), eq(0));
 
@@ -501,6 +516,8 @@ fn test_singular_msg_field() {
     new_nested.set_bb(7);
     nested_msg_mut.set(new_nested);
     assert_that!(nested_msg_mut.bb(), eq(7));
+
+    assert_that!(msg.has_optional_nested_message(), eq(true));
 }
 
 #[test]
@@ -518,11 +535,7 @@ fn test_message_opt() {
 fn test_message_opt_set() {
     let mut msg = TestAllTypes::new();
     let submsg = test_all_types::NestedMessage::new();
-
-    assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
     msg.set_optional_nested_message(submsg);
-    assert_that!(msg.optional_nested_message_opt().is_set(), eq(true));
-
     msg.clear_optional_nested_message();
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 }
@@ -532,26 +545,32 @@ fn test_setting_submsg() {
     let mut msg = TestAllTypes::new();
     let submsg = test_all_types::NestedMessage::new();
 
+    assert_that!(msg.has_optional_nested_message(), eq(false));
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 
     msg.set_optional_nested_message(submsg);
     // confirm that invoking .set on a submsg indeed flips the set bit
+    assert_that!(msg.has_optional_nested_message(), eq(true));
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(true));
 
     msg.clear_optional_nested_message();
+    assert_that!(msg.has_optional_nested_message(), eq(false));
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 }
 
 #[test]
 fn test_msg_mut_initializes() {
     let mut msg = TestAllTypes::new();
+    assert_that!(msg.has_optional_nested_message(), eq(false));
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 
     let _ = msg.optional_nested_message_mut();
     // confirm that that optional_nested_message_mut makes the field Present
+    assert_that!(msg.has_optional_nested_message(), eq(true));
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(true));
 
     msg.clear_optional_nested_message();
+    assert_that!(msg.has_optional_nested_message(), eq(false));
     assert_that!(msg.optional_nested_message_opt().is_set(), eq(false));
 }
 
@@ -560,14 +579,17 @@ fn test_optional_nested_enum_accessors() {
     use test_all_types::NestedEnum;
 
     let mut msg = TestAllTypes::new();
+    assert_that!(msg.has_optional_nested_enum(), eq(false));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Foo)));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Foo));
 
     msg.set_optional_nested_enum(NestedEnum::Neg);
+    assert_that!(msg.has_optional_nested_enum(), eq(true));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Set(NestedEnum::Neg)));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Neg));
 
     msg.clear_optional_nested_enum();
+    assert_that!(msg.has_optional_nested_enum(), eq(false));
     assert_that!(msg.optional_nested_enum_opt(), eq(Optional::Unset(NestedEnum::Foo)));
     assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Foo));
 }
@@ -667,17 +689,20 @@ fn test_oneof_accessors() {
     assert_that!(msg.foo_case(), eq(FooCase::not_set));
 
     msg.set_foo_int(7);
+    assert_that!(msg.has_foo_int(), eq(true));
     assert_that!(msg.foo_int_opt(), eq(Optional::Set(7)));
     assert_that!(msg.foo(), matches_pattern!(FooInt(eq(7))));
     assert_that!(msg.foo_case(), eq(FooCase::FooInt));
 
     msg.clear_foo_int();
+    assert_that!(msg.has_foo_int(), eq(false));
     assert_that!(msg.foo_int_opt(), eq(Optional::Unset(0)));
     assert_that!(msg.foo(), matches_pattern!(not_set(_)));
     assert_that!(msg.foo_case(), eq(FooCase::not_set));
 
     msg.set_foo_int(7);
     msg.set_foo_bytes(b"123");
+    assert_that!(msg.has_foo_int(), eq(false));
     assert_that!(msg.foo_int_opt(), eq(Optional::Unset(0)));
 
     assert_that!(msg.foo(), matches_pattern!(FooBytes(eq(b"123"))));
