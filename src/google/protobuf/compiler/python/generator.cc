@@ -367,12 +367,35 @@ void Generator::PrintTopBoilerplate() const {
     // instead uses aliases assigned when importing modules.
     printer_->Print("import google3\n");
   }
+  bool runtime_version_disabled = false;
   printer_->Print(
       "from google.protobuf import descriptor as _descriptor\n"
       "from google.protobuf import descriptor_pool as _descriptor_pool\n"
+      "$runtime_version_import$"
       "from google.protobuf import symbol_database as _symbol_database\n"
-      "from google.protobuf.internal import builder as _builder\n");
-
+      "from google.protobuf.internal import builder as _builder\n",
+      "runtime_version_import",
+      runtime_version_disabled ? ""
+                               : "from google.protobuf import runtime_version "
+                                 "as _runtime_version\n");
+  if (!runtime_version_disabled) {
+    const auto& version = GetProtobufPythonVersion(opensource_runtime_);
+    printer_->Print(
+        "_runtime_version.ValidateProtobufRuntimeVersion(\n"
+        "    $domain$,\n"
+        "    $major$,\n"
+        "    $minor$,\n"
+        "    $patch$,\n"
+        "    '$suffix$',\n"
+        "    '$location$'\n"
+        ")\n",
+        "domain",
+        opensource_runtime_ ? "_runtime_version.Domain.PUBLIC"
+                            : "_runtime_version.Domain.GOOGLE_INTERNAL",
+        "major", absl::StrCat(version.major()), "minor",
+        absl::StrCat(version.minor()), "patch", absl::StrCat(version.patch()),
+        "suffix", version.suffix(), "location", file_->name());
+  }
   printer_->Print("# @@protoc_insertion_point(imports)\n\n");
   printer_->Print("_sym_db = _symbol_database.Default()\n");
   printer_->Print("\n\n");
