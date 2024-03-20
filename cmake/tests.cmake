@@ -206,8 +206,8 @@ if (protobuf_BUILD_LIBUPB)
         OUT_VAR pb_generated_files
         IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
         IMPORT_DIRS ${protobuf_SOURCE_DIR}
-        PLUGIN protoc-gen-${generator}=$<TARGET_FILE:protoc-gen-${generator}>
-        DEPENDENCIES $<TARGET_FILE:protoc-gen-${generator}>
+        PLUGIN protoc-gen-${generator}=$<TARGET_FILE:protobuf::protoc-gen-${generator}>
+        DEPENDENCIES $<TARGET_FILE:protobuf::protoc-gen-${generator}>
       )
       set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
     endforeach()
@@ -219,8 +219,8 @@ if (protobuf_BUILD_LIBUPB)
     ${upb_test_util_files})
 
   target_link_libraries(upb-test
-    libprotobuf
-    libupb
+    ${protobuf_LIB_PROTOBUF}
+    ${protobuf_LIB_UPB}
     ${protobuf_ABSL_USED_TARGETS}
     ${protobuf_ABSL_USED_TEST_TARGETS}
     GTest::gmock_main)
@@ -239,7 +239,9 @@ add_custom_target(restore-installed-headers)
 
 file(GLOB_RECURSE _local_hdrs
   "${PROJECT_SOURCE_DIR}/src/*.h"
-  "${PROJECT_SOURCE_DIR}/src/*.inc")
+  "${PROJECT_SOURCE_DIR}/src/*.inc"
+  "${PROJECT_SOURCE_DIR}/upb/*.h"
+)
 
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
@@ -250,7 +252,7 @@ set(_exclude_hdrs
 
 # Exclude test library headers.
 list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs})
+  ${compiler_test_utils_hdrs} ${upb_test_util_files})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()

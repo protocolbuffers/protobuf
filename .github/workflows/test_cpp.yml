@@ -108,7 +108,9 @@ jobs:
           command: >
             -c "set -ex;
             sccache -z;
-            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
+            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            -Dprotobuf_BUILD_LIBUPB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14
+            -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
             cmake --build . --parallel 20;
             ctest --parallel 20;
             sccache -s"
@@ -151,7 +153,7 @@ jobs:
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_BUILD_TESTS=ON -Dprotobuf_USE_EXTERNAL_GTEST=ON
-            -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_BUILD_LIBUPB=ON
+            -Dprotobuf_ABSL_PROVIDER=package
 
   linux-cmake-install:
     name: Linux CMake Install
@@ -175,7 +177,9 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
             /test.sh
             ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
@@ -250,7 +254,7 @@ jobs:
               -c 'set -ex;
               cd /workspace;
               sccache -z;
-              cmake . -Dprotobuf_BUILD_LIBUPB=ON ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }};
+              cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
               sccache -s'
@@ -278,7 +282,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ env.SCCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_LIBUPB=ON
+            -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
 
   linux-cmake-32-bit:
     name: Linux CMake 32-bit
@@ -306,7 +310,7 @@ jobs:
               /bin/bash -cex '
               cd /workspace;
               sccache -z;
-              cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_LIBUPB=ON ${{ env.SCCACHE_CMAKE_FLAGS }};
+              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
               sccache -s'
@@ -370,7 +374,7 @@ jobs:
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON -Dprotobuf_BUILD_LIBUPB=ON
+              -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
           - name: Windows CMake 2019
@@ -378,7 +382,7 @@ jobs:
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON -Dprotobuf_BUILD_LIBUPB=ON
+              -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
             cache-prefix: windows-2019-cmake
             # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
@@ -386,14 +390,14 @@ jobs:
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_LIBUPB=ON
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
             vsversion: '2022'
             windows-arch: 'win32'
             cache-prefix: windows-2022-win32-cmake
           - name: Windows CMake Shared
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_LIBUPB=ON
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake

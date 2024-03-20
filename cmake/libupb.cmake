@@ -20,7 +20,10 @@ add_library(libupb STATIC
   ${protobuf_version_rc_file}
 )
 
-target_include_directories(libupb PUBLIC ${bootstrap_cmake_dir})
+target_include_directories(libupb PUBLIC
+  $<BUILD_INTERFACE:${bootstrap_cmake_dir}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 protobuf_configure_target(libupb)
 

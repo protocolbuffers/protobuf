@@ -14,11 +14,12 @@ foreach(generator upb upbdefs upb_minitable)
     ${bootstrap_sources}
     ${protobuf_version_rc_file}
   )
-  target_include_directories(protoc-gen-${generator} PUBLIC ${bootstrap_cmake_dir})
+  target_include_directories(protoc-gen-${generator} PRIVATE ${bootstrap_cmake_dir})
   target_link_libraries(protoc-gen-${generator}
-    libprotobuf
-    libupb
+    ${protobuf_LIB_PROTOBUF}
+    ${protobuf_LIB_UPB}
     ${protobuf_ABSL_USED_TARGETS}
   )
   set_target_properties(protoc-gen-${generator} PROPERTIES VERSION ${protobuf_VERSION})
+  add_executable(protobuf::protoc-gen-${generator} ALIAS protoc-gen-${generator})
 endforeach()
