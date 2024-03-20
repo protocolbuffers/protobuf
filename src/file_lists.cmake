@@ -595,6 +595,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/status.hpp
   ${protobuf_SOURCE_DIR}/upb/base/string_view.h
   ${protobuf_SOURCE_DIR}/upb/base/upcast.h
+  ${protobuf_SOURCE_DIR}/upb/generated_code_support.h
   ${protobuf_SOURCE_DIR}/upb/hash/common.h
   ${protobuf_SOURCE_DIR}/upb/hash/int_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/str_table.h
