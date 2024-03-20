@@ -289,7 +289,6 @@ _upb_cc_proto_library_aspect = aspect(
 )
 
 upb_cc_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _upb_cc_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(
