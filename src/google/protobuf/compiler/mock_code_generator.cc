@@ -234,9 +234,9 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
       const FeatureSet& features = GetResolvedSourceFeatures(descriptor);
       ABSL_CHECK(features.HasExtension(pb::test))
           << "Test features were not resolved properly";
-      ABSL_CHECK(features.GetExtension(pb::test).has_int_file_feature())
+      ABSL_CHECK(features.GetExtension(pb::test).has_file_feature())
           << "Test features were not resolved properly";
-      ABSL_CHECK(features.GetExtension(pb::test).has_int_source_feature())
+      ABSL_CHECK(features.GetExtension(pb::test).has_source_feature())
           << "Test features were not resolved properly";
     });
   }

@@ -1713,8 +1713,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
     package foo;
     message Foo {
       int32 b = 1 [
-        features.(pb.test).int_field_feature = 99,
-        features.(pb.test).int_source_feature = 87
+        features.(pb.test).field_feature = VALUE6,
+        features.(pb.test).source_feature = VALUE5
       ];
     }
   )schema");
@@ -1744,7 +1744,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
     const FeatureSet& features =
         request.proto_file(2).message_type(0).field(0).options().features();
     EXPECT_THAT(features,
-                EqualsProto(R"pb([pb.test] { int_field_feature: 99 })pb"));
+                EqualsProto(R"pb([pb.test] { field_feature: VALUE6 })pb"));
   }
 
   {
@@ -1755,8 +1755,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
                                      .options()
                                      .features();
     EXPECT_THAT(features, EqualsProto(R"pb([pb.test] {
-                                             int_field_feature: 99
-                                             int_source_feature: 87
+                                             field_feature: VALUE6
+                                             source_feature: VALUE5
                                            })pb"));
   }
 }
@@ -1965,20 +1965,20 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   EXPECT_EQ(defaults.defaults(3).edition(), EDITION_99997_TEST_ONLY);
   EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99998_TEST_ONLY);
   EXPECT_EQ(
-      defaults.defaults(0).features().GetExtension(pb::test).int_file_feature(),
-      -2);
+      defaults.defaults(0).features().GetExtension(pb::test).file_feature(),
+      pb::EnumFeature::VALUE1);
   EXPECT_EQ(
-      defaults.defaults(1).features().GetExtension(pb::test).int_file_feature(),
-      -3);
+      defaults.defaults(1).features().GetExtension(pb::test).file_feature(),
+      pb::EnumFeature::VALUE2);
   EXPECT_EQ(
-      defaults.defaults(2).features().GetExtension(pb::test).int_file_feature(),
-      1);
+      defaults.defaults(2).features().GetExtension(pb::test).file_feature(),
+      pb::EnumFeature::VALUE3);
   EXPECT_EQ(
-      defaults.defaults(3).features().GetExtension(pb::test).int_file_feature(),
-      2);
+      defaults.defaults(3).features().GetExtension(pb::test).file_feature(),
+      pb::EnumFeature::VALUE4);
   EXPECT_EQ(
-      defaults.defaults(4).features().GetExtension(pb::test).int_file_feature(),
-      3);
+      defaults.defaults(4).features().GetExtension(pb::test).file_feature(),
+      pb::EnumFeature::VALUE5);
 }
 
 #ifndef _WIN32

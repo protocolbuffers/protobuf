@@ -1145,12 +1145,16 @@ class FeatureSetDefaults(unittest.TestCase):
     )
     defaults.defaults[0].features.Extensions[
         unittest_features_pb2.test
-    ].int_file_feature = 9
+    ].file_feature = unittest_features_pb2.VALUE9
     pool.SetFeatureSetDefaults(defaults)
     file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
     file = pool.AddSerializedFile(file_desc.SerializeToString())
     self.assertTrue(
         file._GetFeatures().HasExtension(unittest_features_pb2.test)
+    )
+    self.assertEqual(
+        file._GetFeatures().Extensions[unittest_features_pb2.test].file_feature,
+        unittest_features_pb2.VALUE9,
     )
 
   def testInvalidType(self):

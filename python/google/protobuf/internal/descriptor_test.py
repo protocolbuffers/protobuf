@@ -1372,14 +1372,14 @@ def GetTestFeature(desc):
   return (
       desc._GetFeatures()
       .Extensions[unittest_features_pb2.test]
-      .int_multiple_feature
+      .multiple_feature
   )
 
 
 def SetTestFeature(proto, value):
   proto.options.features.Extensions[
       unittest_features_pb2.test
-  ].int_multiple_feature = value
+  ].multiple_feature = value
 
 
 @testing_refleaks.TestCase
@@ -1462,7 +1462,7 @@ class FeatureInheritanceTest(unittest.TestCase):
     )
     defaults.defaults[0].features.Extensions[
         unittest_features_pb2.test
-    ].int_multiple_feature = 1
+    ].multiple_feature = 1
     ret.pool.SetFeatureSetDefaults(defaults)
 
     ret.file = ret.pool.AddSerializedFile(self.file_proto.SerializeToString())
