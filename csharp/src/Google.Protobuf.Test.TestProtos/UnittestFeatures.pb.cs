@@ -29,45 +29,40 @@ namespace Pb {
             "c3NhZ2UaTQoGTmVzdGVkMkMKC3Rlc3RfbmVzdGVkEhsuZ29vZ2xlLnByb3Rv",
             "YnVmLkZlYXR1cmVTZXQYjU4gASgLMhAucGIuVGVzdEZlYXR1cmVzMkQKDHRl",
             "c3RfbWVzc2FnZRIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0GI5OIAEo",
-            "CzIQLnBiLlRlc3RGZWF0dXJlcyL9CgoMVGVzdEZlYXR1cmVzElEKEGludF9m",
-            "aWxlX2ZlYXR1cmUYASABKAVCN4gBAZgBAaIBBxICLTIY5geiAQcSAi0zGOcH",
-            "ogEGEgExGOgHogEHEgEyGJ2NBqIBBxIBMxiejQYSNAobaW50X2V4dGVuc2lv",
-            "bl9yYW5nZV9mZWF0dXJlGAIgASgFQg+IAQGYAQKiAQYSATEY5gcSLAoTaW50",
-            "X21lc3NhZ2VfZmVhdHVyZRgDIAEoBUIPiAEBmAEDogEGEgExGOYHEioKEWlu",
-            "dF9maWVsZF9mZWF0dXJlGAQgASgFQg+IAQGYAQSiAQYSATEY5gcSKgoRaW50",
-            "X29uZW9mX2ZlYXR1cmUYBSABKAVCD4gBAZgBBaIBBhIBMRjmBxIpChBpbnRf",
-            "ZW51bV9mZWF0dXJlGAYgASgFQg+IAQGYAQaiAQYSATEY5gcSLwoWaW50X2Vu",
-            "dW1fZW50cnlfZmVhdHVyZRgHIAEoBUIPiAEBmAEHogEGEgExGOYHEiwKE2lu",
-            "dF9zZXJ2aWNlX2ZlYXR1cmUYCCABKAVCD4gBAZgBCKIBBhIBMRjmBxIrChJp",
-            "bnRfbWV0aG9kX2ZlYXR1cmUYCSABKAVCD4gBAZgBCaIBBhIBMRjmBxJFChRp",
-            "bnRfbXVsdGlwbGVfZmVhdHVyZRgKIAEoBUIniAEBmAEBmAEEmAEDmAEGmAEH",
-            "mAEImAEJmAEFmAECogEGEgExGOYHEjwKEmJvb2xfZmllbGRfZmVhdHVyZRgL",
-            "IAEoCEIgiAEBmAEEogEKEgVmYWxzZRjmB6IBChIEdHJ1ZRidjQYSOgoTZmxv",
-            "YXRfZmllbGRfZmVhdHVyZRgMIAEoAkIdiAEBmAEEogEIEgMxLjEY5geiAQkS",
-            "AzEuMhidjQYSzAEKFW1lc3NhZ2VfZmllbGRfZmVhdHVyZRgNIAEoCzIfLnBi",
-            "LlRlc3RGZWF0dXJlcy5NZXNzYWdlRmVhdHVyZUKLAYgBAZgBBKIBEhIMaW50",
-            "X2ZpZWxkOiAyGJ2NBqIBGhIUc3RyaW5nX2ZpZWxkOiAnMjAyNCcYno0GogFI",
-            "EkNib29sX2ZpZWxkOiB0cnVlIGludF9maWVsZDogMSBmbG9hdF9maWVsZDog",
-            "MS41IHN0cmluZ19maWVsZDogJzIwMjMnGOgHogEFEgAY5gcSnAEKEmVudW1f",
-            "ZmllbGRfZmVhdHVyZRgOIAEoDjIcLnBiLlRlc3RGZWF0dXJlcy5FbnVtRmVh",
-            "dHVyZUJiiAEBmAEEogEeEhlURVNUX0VOVU1fRkVBVFVSRV9VTktOT1dOGOYH",
-            "ogEQEgtFTlVNX1ZBTFVFMRjoB6IBERILRU5VTV9WQUxVRTIYnY0GogEREgtF",
-            "TlVNX1ZBTFVFMxiejQYSQwoSaW50X3NvdXJjZV9mZWF0dXJlGA8gASgFQieI",
-            "AQKYAQGYAQSYAQOYAQaYAQeYAQiYAQmYAQWYAQKiAQYSATEY5gcSSwoVc3Ry",
-            "aW5nX3NvdXJjZV9mZWF0dXJlGBAgASgJQiyIAQKYAQGYAQSYAQOYAQaYAQeY",
-            "AQiYAQmYAQWYAQKiAQsSBicyMDIzJxjmBxpiCg5NZXNzYWdlRmVhdHVyZRIS",
-            "Cgpib29sX2ZpZWxkGAEgASgIEhEKCWludF9maWVsZBgCIAEoBRITCgtmbG9h",
-            "dF9maWVsZBgDIAEoAhIUCgxzdHJpbmdfZmllbGQYBCABKAkigQEKC0VudW1G",
-            "ZWF0dXJlEh0KGVRFU1RfRU5VTV9GRUFUVVJFX1VOS05PV04QABIPCgtFTlVN",
-            "X1ZBTFVFMRABEg8KC0VOVU1fVkFMVUUyEAISDwoLRU5VTV9WQUxVRTMQAxIP",
-            "CgtFTlVNX1ZBTFVFNBAEEg8KC0VOVU1fVkFMVUU1EAU6PAoEdGVzdBIbLmdv",
-            "b2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0GI9OIAEoCzIQLnBiLlRlc3RGZWF0",
-            "dXJlcw=="));
+            "CzIQLnBiLlRlc3RGZWF0dXJlcyLOBwoMVGVzdEZlYXR1cmVzEnUKDGZpbGVf",
+            "ZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQk6IAQGYAQGiAQsSBlZB",
+            "TFVFMRjmB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwSBlZBTFVF",
+            "NBidjQaiAQwSBlZBTFVFNRiejQYSRgoXZXh0ZW5zaW9uX3JhbmdlX2ZlYXR1",
+            "cmUYAiABKA4yDy5wYi5FbnVtRmVhdHVyZUIUiAEBmAECogELEgZWQUxVRTEY",
+            "5gcSPgoPbWVzc2FnZV9mZWF0dXJlGAMgASgOMg8ucGIuRW51bUZlYXR1cmVC",
+            "FIgBAZgBA6IBCxIGVkFMVUUxGOYHEjwKDWZpZWxkX2ZlYXR1cmUYBCABKA4y",
+            "Dy5wYi5FbnVtRmVhdHVyZUIUiAEBmAEEogELEgZWQUxVRTEY5gcSPAoNb25l",
+            "b2ZfZmVhdHVyZRgFIAEoDjIPLnBiLkVudW1GZWF0dXJlQhSIAQGYAQWiAQsS",
+            "BlZBTFVFMRjmBxI7CgxlbnVtX2ZlYXR1cmUYBiABKA4yDy5wYi5FbnVtRmVh",
+            "dHVyZUIUiAEBmAEGogELEgZWQUxVRTEY5gcSQQoSZW51bV9lbnRyeV9mZWF0",
+            "dXJlGAcgASgOMg8ucGIuRW51bUZlYXR1cmVCFIgBAZgBB6IBCxIGVkFMVUUx",
+            "GOYHEj4KD3NlcnZpY2VfZmVhdHVyZRgIIAEoDjIPLnBiLkVudW1GZWF0dXJl",
+            "QhSIAQGYAQiiAQsSBlZBTFVFMRjmBxI9Cg5tZXRob2RfZmVhdHVyZRgJIAEo",
+            "DjIPLnBiLkVudW1GZWF0dXJlQhSIAQGYAQmiAQsSBlZBTFVFMRjmBxJXChBt",
+            "dWx0aXBsZV9mZWF0dXJlGAogASgOMg8ucGIuRW51bUZlYXR1cmVCLIgBAZgB",
+            "AZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGOYHEjwKEmJv",
+            "b2xfZmllbGRfZmVhdHVyZRgLIAEoCEIgiAEBmAEEogEKEgVmYWxzZRjmB6IB",
+            "ChIEdHJ1ZRidjQYSVQoOc291cmNlX2ZlYXR1cmUYDyABKA4yDy5wYi5FbnVt",
+            "RmVhdHVyZUIsiAECmAEBmAEEmAEDmAEGmAEHmAEImAEJmAEFmAECogELEgZW",
+            "QUxVRTEY5gcSVgoPc291cmNlX2ZlYXR1cmUyGBAgASgOMg8ucGIuRW51bUZl",
+            "YXR1cmVCLIgBApgBAZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFM",
+            "VUUxGOYHKuYBCgtFbnVtRmVhdHVyZRIdChlURVNUX0VOVU1fRkVBVFVSRV9V",
+            "TktOT1dOEAASCgoGVkFMVUUxEAESCgoGVkFMVUUyEAISCgoGVkFMVUUzEAMS",
+            "CgoGVkFMVUU0EAQSCgoGVkFMVUU1EAUSCgoGVkFMVUU2EAYSCgoGVkFMVUU3",
+            "EAcSCgoGVkFMVUU4EAgSCgoGVkFMVUU5EAkSCwoHVkFMVUUxMBAKEgsKB1ZB",
+            "TFVFMTEQCxILCgdWQUxVRTEyEAwSCwoHVkFMVUUxMxANEgsKB1ZBTFVFMTQQ",
+            "DhILCgdWQUxVRTE1EA86PAoEdGVzdBIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0",
+            "dXJlU2V0GI9OIAEoCzIQLnBiLlRlc3RGZWF0dXJlcw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage), global::Pb.TestMessage.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Extensions.TestMessage }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage.Types.Nested), global::Pb.TestMessage.Types.Nested.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Types.Nested.Extensions.TestNested }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "IntFileFeature", "IntExtensionRangeFeature", "IntMessageFeature", "IntFieldFeature", "IntOneofFeature", "IntEnumFeature", "IntEnumEntryFeature", "IntServiceFeature", "IntMethodFeature", "IntMultipleFeature", "BoolFieldFeature", "FloatFieldFeature", "MessageFieldFeature", "EnumFieldFeature", "IntSourceFeature", "StringSourceFeature" }, null, new[]{ typeof(global::Pb.TestFeatures.Types.EnumFeature) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures.Types.MessageFeature), global::Pb.TestFeatures.Types.MessageFeature.Parser, new[]{ "BoolField", "IntField", "FloatField", "StringField" }, null, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2" }, null, null, null, null)
           }));
     }
     #endregion
@@ -78,6 +73,28 @@ namespace Pb {
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures> Test =
       new pb::Extension<global::Google.Protobuf.Reflection.FeatureSet, global::Pb.TestFeatures>(9999, pb::FieldCodec.ForMessage(79994, global::Pb.TestFeatures.Parser));
   }
+
+  #region Enums
+  public enum EnumFeature {
+    [pbr::OriginalName("TEST_ENUM_FEATURE_UNKNOWN")] TestEnumFeatureUnknown = 0,
+    [pbr::OriginalName("VALUE1")] Value1 = 1,
+    [pbr::OriginalName("VALUE2")] Value2 = 2,
+    [pbr::OriginalName("VALUE3")] Value3 = 3,
+    [pbr::OriginalName("VALUE4")] Value4 = 4,
+    [pbr::OriginalName("VALUE5")] Value5 = 5,
+    [pbr::OriginalName("VALUE6")] Value6 = 6,
+    [pbr::OriginalName("VALUE7")] Value7 = 7,
+    [pbr::OriginalName("VALUE8")] Value8 = 8,
+    [pbr::OriginalName("VALUE9")] Value9 = 9,
+    [pbr::OriginalName("VALUE10")] Value10 = 10,
+    [pbr::OriginalName("VALUE11")] Value11 = 11,
+    [pbr::OriginalName("VALUE12")] Value12 = 12,
+    [pbr::OriginalName("VALUE13")] Value13 = 13,
+    [pbr::OriginalName("VALUE14")] Value14 = 14,
+    [pbr::OriginalName("VALUE15")] Value15 = 15,
+  }
+
+  #endregion
 
   #region Messages
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -451,22 +468,19 @@ namespace Pb {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestFeatures(TestFeatures other) : this() {
       _hasBits0 = other._hasBits0;
-      intFileFeature_ = other.intFileFeature_;
-      intExtensionRangeFeature_ = other.intExtensionRangeFeature_;
-      intMessageFeature_ = other.intMessageFeature_;
-      intFieldFeature_ = other.intFieldFeature_;
-      intOneofFeature_ = other.intOneofFeature_;
-      intEnumFeature_ = other.intEnumFeature_;
-      intEnumEntryFeature_ = other.intEnumEntryFeature_;
-      intServiceFeature_ = other.intServiceFeature_;
-      intMethodFeature_ = other.intMethodFeature_;
-      intMultipleFeature_ = other.intMultipleFeature_;
+      fileFeature_ = other.fileFeature_;
+      extensionRangeFeature_ = other.extensionRangeFeature_;
+      messageFeature_ = other.messageFeature_;
+      fieldFeature_ = other.fieldFeature_;
+      oneofFeature_ = other.oneofFeature_;
+      enumFeature_ = other.enumFeature_;
+      enumEntryFeature_ = other.enumEntryFeature_;
+      serviceFeature_ = other.serviceFeature_;
+      methodFeature_ = other.methodFeature_;
+      multipleFeature_ = other.multipleFeature_;
       boolFieldFeature_ = other.boolFieldFeature_;
-      floatFieldFeature_ = other.floatFieldFeature_;
-      messageFieldFeature_ = other.messageFieldFeature_ != null ? other.messageFieldFeature_.Clone() : null;
-      enumFieldFeature_ = other.enumFieldFeature_;
-      intSourceFeature_ = other.intSourceFeature_;
-      stringSourceFeature_ = other.stringSourceFeature_;
+      sourceFeature_ = other.sourceFeature_;
+      sourceFeature2_ = other.sourceFeature2_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -476,273 +490,273 @@ namespace Pb {
       return new TestFeatures(this);
     }
 
-    /// <summary>Field number for the "int_file_feature" field.</summary>
-    public const int IntFileFeatureFieldNumber = 1;
-    private readonly static int IntFileFeatureDefaultValue = 0;
+    /// <summary>Field number for the "file_feature" field.</summary>
+    public const int FileFeatureFieldNumber = 1;
+    private readonly static global::Pb.EnumFeature FileFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intFileFeature_;
+    private global::Pb.EnumFeature fileFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntFileFeature {
-      get { if ((_hasBits0 & 1) != 0) { return intFileFeature_; } else { return IntFileFeatureDefaultValue; } }
+    public global::Pb.EnumFeature FileFeature {
+      get { if ((_hasBits0 & 1) != 0) { return fileFeature_; } else { return FileFeatureDefaultValue; } }
       set {
         _hasBits0 |= 1;
-        intFileFeature_ = value;
+        fileFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_file_feature" field is set</summary>
+    /// <summary>Gets whether the "file_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntFileFeature {
+    public bool HasFileFeature {
       get { return (_hasBits0 & 1) != 0; }
     }
-    /// <summary>Clears the value of the "int_file_feature" field</summary>
+    /// <summary>Clears the value of the "file_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntFileFeature() {
+    public void ClearFileFeature() {
       _hasBits0 &= ~1;
     }
 
-    /// <summary>Field number for the "int_extension_range_feature" field.</summary>
-    public const int IntExtensionRangeFeatureFieldNumber = 2;
-    private readonly static int IntExtensionRangeFeatureDefaultValue = 0;
+    /// <summary>Field number for the "extension_range_feature" field.</summary>
+    public const int ExtensionRangeFeatureFieldNumber = 2;
+    private readonly static global::Pb.EnumFeature ExtensionRangeFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intExtensionRangeFeature_;
+    private global::Pb.EnumFeature extensionRangeFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntExtensionRangeFeature {
-      get { if ((_hasBits0 & 2) != 0) { return intExtensionRangeFeature_; } else { return IntExtensionRangeFeatureDefaultValue; } }
+    public global::Pb.EnumFeature ExtensionRangeFeature {
+      get { if ((_hasBits0 & 2) != 0) { return extensionRangeFeature_; } else { return ExtensionRangeFeatureDefaultValue; } }
       set {
         _hasBits0 |= 2;
-        intExtensionRangeFeature_ = value;
+        extensionRangeFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_extension_range_feature" field is set</summary>
+    /// <summary>Gets whether the "extension_range_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntExtensionRangeFeature {
+    public bool HasExtensionRangeFeature {
       get { return (_hasBits0 & 2) != 0; }
     }
-    /// <summary>Clears the value of the "int_extension_range_feature" field</summary>
+    /// <summary>Clears the value of the "extension_range_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntExtensionRangeFeature() {
+    public void ClearExtensionRangeFeature() {
       _hasBits0 &= ~2;
     }
 
-    /// <summary>Field number for the "int_message_feature" field.</summary>
-    public const int IntMessageFeatureFieldNumber = 3;
-    private readonly static int IntMessageFeatureDefaultValue = 0;
+    /// <summary>Field number for the "message_feature" field.</summary>
+    public const int MessageFeatureFieldNumber = 3;
+    private readonly static global::Pb.EnumFeature MessageFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intMessageFeature_;
+    private global::Pb.EnumFeature messageFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntMessageFeature {
-      get { if ((_hasBits0 & 4) != 0) { return intMessageFeature_; } else { return IntMessageFeatureDefaultValue; } }
+    public global::Pb.EnumFeature MessageFeature {
+      get { if ((_hasBits0 & 4) != 0) { return messageFeature_; } else { return MessageFeatureDefaultValue; } }
       set {
         _hasBits0 |= 4;
-        intMessageFeature_ = value;
+        messageFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_message_feature" field is set</summary>
+    /// <summary>Gets whether the "message_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntMessageFeature {
+    public bool HasMessageFeature {
       get { return (_hasBits0 & 4) != 0; }
     }
-    /// <summary>Clears the value of the "int_message_feature" field</summary>
+    /// <summary>Clears the value of the "message_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntMessageFeature() {
+    public void ClearMessageFeature() {
       _hasBits0 &= ~4;
     }
 
-    /// <summary>Field number for the "int_field_feature" field.</summary>
-    public const int IntFieldFeatureFieldNumber = 4;
-    private readonly static int IntFieldFeatureDefaultValue = 0;
+    /// <summary>Field number for the "field_feature" field.</summary>
+    public const int FieldFeatureFieldNumber = 4;
+    private readonly static global::Pb.EnumFeature FieldFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intFieldFeature_;
+    private global::Pb.EnumFeature fieldFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntFieldFeature {
-      get { if ((_hasBits0 & 8) != 0) { return intFieldFeature_; } else { return IntFieldFeatureDefaultValue; } }
+    public global::Pb.EnumFeature FieldFeature {
+      get { if ((_hasBits0 & 8) != 0) { return fieldFeature_; } else { return FieldFeatureDefaultValue; } }
       set {
         _hasBits0 |= 8;
-        intFieldFeature_ = value;
+        fieldFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_field_feature" field is set</summary>
+    /// <summary>Gets whether the "field_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntFieldFeature {
+    public bool HasFieldFeature {
       get { return (_hasBits0 & 8) != 0; }
     }
-    /// <summary>Clears the value of the "int_field_feature" field</summary>
+    /// <summary>Clears the value of the "field_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntFieldFeature() {
+    public void ClearFieldFeature() {
       _hasBits0 &= ~8;
     }
 
-    /// <summary>Field number for the "int_oneof_feature" field.</summary>
-    public const int IntOneofFeatureFieldNumber = 5;
-    private readonly static int IntOneofFeatureDefaultValue = 0;
+    /// <summary>Field number for the "oneof_feature" field.</summary>
+    public const int OneofFeatureFieldNumber = 5;
+    private readonly static global::Pb.EnumFeature OneofFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intOneofFeature_;
+    private global::Pb.EnumFeature oneofFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntOneofFeature {
-      get { if ((_hasBits0 & 16) != 0) { return intOneofFeature_; } else { return IntOneofFeatureDefaultValue; } }
+    public global::Pb.EnumFeature OneofFeature {
+      get { if ((_hasBits0 & 16) != 0) { return oneofFeature_; } else { return OneofFeatureDefaultValue; } }
       set {
         _hasBits0 |= 16;
-        intOneofFeature_ = value;
+        oneofFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_oneof_feature" field is set</summary>
+    /// <summary>Gets whether the "oneof_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntOneofFeature {
+    public bool HasOneofFeature {
       get { return (_hasBits0 & 16) != 0; }
     }
-    /// <summary>Clears the value of the "int_oneof_feature" field</summary>
+    /// <summary>Clears the value of the "oneof_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntOneofFeature() {
+    public void ClearOneofFeature() {
       _hasBits0 &= ~16;
     }
 
-    /// <summary>Field number for the "int_enum_feature" field.</summary>
-    public const int IntEnumFeatureFieldNumber = 6;
-    private readonly static int IntEnumFeatureDefaultValue = 0;
+    /// <summary>Field number for the "enum_feature" field.</summary>
+    public const int EnumFeatureFieldNumber = 6;
+    private readonly static global::Pb.EnumFeature EnumFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intEnumFeature_;
+    private global::Pb.EnumFeature enumFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntEnumFeature {
-      get { if ((_hasBits0 & 32) != 0) { return intEnumFeature_; } else { return IntEnumFeatureDefaultValue; } }
+    public global::Pb.EnumFeature EnumFeature {
+      get { if ((_hasBits0 & 32) != 0) { return enumFeature_; } else { return EnumFeatureDefaultValue; } }
       set {
         _hasBits0 |= 32;
-        intEnumFeature_ = value;
+        enumFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_enum_feature" field is set</summary>
+    /// <summary>Gets whether the "enum_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntEnumFeature {
+    public bool HasEnumFeature {
       get { return (_hasBits0 & 32) != 0; }
     }
-    /// <summary>Clears the value of the "int_enum_feature" field</summary>
+    /// <summary>Clears the value of the "enum_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntEnumFeature() {
+    public void ClearEnumFeature() {
       _hasBits0 &= ~32;
     }
 
-    /// <summary>Field number for the "int_enum_entry_feature" field.</summary>
-    public const int IntEnumEntryFeatureFieldNumber = 7;
-    private readonly static int IntEnumEntryFeatureDefaultValue = 0;
+    /// <summary>Field number for the "enum_entry_feature" field.</summary>
+    public const int EnumEntryFeatureFieldNumber = 7;
+    private readonly static global::Pb.EnumFeature EnumEntryFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intEnumEntryFeature_;
+    private global::Pb.EnumFeature enumEntryFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntEnumEntryFeature {
-      get { if ((_hasBits0 & 64) != 0) { return intEnumEntryFeature_; } else { return IntEnumEntryFeatureDefaultValue; } }
+    public global::Pb.EnumFeature EnumEntryFeature {
+      get { if ((_hasBits0 & 64) != 0) { return enumEntryFeature_; } else { return EnumEntryFeatureDefaultValue; } }
       set {
         _hasBits0 |= 64;
-        intEnumEntryFeature_ = value;
+        enumEntryFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_enum_entry_feature" field is set</summary>
+    /// <summary>Gets whether the "enum_entry_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntEnumEntryFeature {
+    public bool HasEnumEntryFeature {
       get { return (_hasBits0 & 64) != 0; }
     }
-    /// <summary>Clears the value of the "int_enum_entry_feature" field</summary>
+    /// <summary>Clears the value of the "enum_entry_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntEnumEntryFeature() {
+    public void ClearEnumEntryFeature() {
       _hasBits0 &= ~64;
     }
 
-    /// <summary>Field number for the "int_service_feature" field.</summary>
-    public const int IntServiceFeatureFieldNumber = 8;
-    private readonly static int IntServiceFeatureDefaultValue = 0;
+    /// <summary>Field number for the "service_feature" field.</summary>
+    public const int ServiceFeatureFieldNumber = 8;
+    private readonly static global::Pb.EnumFeature ServiceFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intServiceFeature_;
+    private global::Pb.EnumFeature serviceFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntServiceFeature {
-      get { if ((_hasBits0 & 128) != 0) { return intServiceFeature_; } else { return IntServiceFeatureDefaultValue; } }
+    public global::Pb.EnumFeature ServiceFeature {
+      get { if ((_hasBits0 & 128) != 0) { return serviceFeature_; } else { return ServiceFeatureDefaultValue; } }
       set {
         _hasBits0 |= 128;
-        intServiceFeature_ = value;
+        serviceFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_service_feature" field is set</summary>
+    /// <summary>Gets whether the "service_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntServiceFeature {
+    public bool HasServiceFeature {
       get { return (_hasBits0 & 128) != 0; }
     }
-    /// <summary>Clears the value of the "int_service_feature" field</summary>
+    /// <summary>Clears the value of the "service_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntServiceFeature() {
+    public void ClearServiceFeature() {
       _hasBits0 &= ~128;
     }
 
-    /// <summary>Field number for the "int_method_feature" field.</summary>
-    public const int IntMethodFeatureFieldNumber = 9;
-    private readonly static int IntMethodFeatureDefaultValue = 0;
+    /// <summary>Field number for the "method_feature" field.</summary>
+    public const int MethodFeatureFieldNumber = 9;
+    private readonly static global::Pb.EnumFeature MethodFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intMethodFeature_;
+    private global::Pb.EnumFeature methodFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntMethodFeature {
-      get { if ((_hasBits0 & 256) != 0) { return intMethodFeature_; } else { return IntMethodFeatureDefaultValue; } }
+    public global::Pb.EnumFeature MethodFeature {
+      get { if ((_hasBits0 & 256) != 0) { return methodFeature_; } else { return MethodFeatureDefaultValue; } }
       set {
         _hasBits0 |= 256;
-        intMethodFeature_ = value;
+        methodFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_method_feature" field is set</summary>
+    /// <summary>Gets whether the "method_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntMethodFeature {
+    public bool HasMethodFeature {
       get { return (_hasBits0 & 256) != 0; }
     }
-    /// <summary>Clears the value of the "int_method_feature" field</summary>
+    /// <summary>Clears the value of the "method_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntMethodFeature() {
+    public void ClearMethodFeature() {
       _hasBits0 &= ~256;
     }
 
-    /// <summary>Field number for the "int_multiple_feature" field.</summary>
-    public const int IntMultipleFeatureFieldNumber = 10;
-    private readonly static int IntMultipleFeatureDefaultValue = 0;
+    /// <summary>Field number for the "multiple_feature" field.</summary>
+    public const int MultipleFeatureFieldNumber = 10;
+    private readonly static global::Pb.EnumFeature MultipleFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private int intMultipleFeature_;
+    private global::Pb.EnumFeature multipleFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntMultipleFeature {
-      get { if ((_hasBits0 & 512) != 0) { return intMultipleFeature_; } else { return IntMultipleFeatureDefaultValue; } }
+    public global::Pb.EnumFeature MultipleFeature {
+      get { if ((_hasBits0 & 512) != 0) { return multipleFeature_; } else { return MultipleFeatureDefaultValue; } }
       set {
         _hasBits0 |= 512;
-        intMultipleFeature_ = value;
+        multipleFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "int_multiple_feature" field is set</summary>
+    /// <summary>Gets whether the "multiple_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntMultipleFeature {
+    public bool HasMultipleFeature {
       get { return (_hasBits0 & 512) != 0; }
     }
-    /// <summary>Clears the value of the "int_multiple_feature" field</summary>
+    /// <summary>Clears the value of the "multiple_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntMultipleFeature() {
+    public void ClearMultipleFeature() {
       _hasBits0 &= ~512;
     }
 
@@ -773,123 +787,58 @@ namespace Pb {
       _hasBits0 &= ~1024;
     }
 
-    /// <summary>Field number for the "float_field_feature" field.</summary>
-    public const int FloatFieldFeatureFieldNumber = 12;
-    private readonly static float FloatFieldFeatureDefaultValue = 0F;
+    /// <summary>Field number for the "source_feature" field.</summary>
+    public const int SourceFeatureFieldNumber = 15;
+    private readonly static global::Pb.EnumFeature SourceFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
 
-    private float floatFieldFeature_;
+    private global::Pb.EnumFeature sourceFeature_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public float FloatFieldFeature {
-      get { if ((_hasBits0 & 2048) != 0) { return floatFieldFeature_; } else { return FloatFieldFeatureDefaultValue; } }
+    public global::Pb.EnumFeature SourceFeature {
+      get { if ((_hasBits0 & 2048) != 0) { return sourceFeature_; } else { return SourceFeatureDefaultValue; } }
       set {
         _hasBits0 |= 2048;
-        floatFieldFeature_ = value;
+        sourceFeature_ = value;
       }
     }
-    /// <summary>Gets whether the "float_field_feature" field is set</summary>
+    /// <summary>Gets whether the "source_feature" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasFloatFieldFeature {
+    public bool HasSourceFeature {
       get { return (_hasBits0 & 2048) != 0; }
     }
-    /// <summary>Clears the value of the "float_field_feature" field</summary>
+    /// <summary>Clears the value of the "source_feature" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearFloatFieldFeature() {
+    public void ClearSourceFeature() {
       _hasBits0 &= ~2048;
     }
 
-    /// <summary>Field number for the "message_field_feature" field.</summary>
-    public const int MessageFieldFeatureFieldNumber = 13;
-    private global::Pb.TestFeatures.Types.MessageFeature messageFieldFeature_;
+    /// <summary>Field number for the "source_feature2" field.</summary>
+    public const int SourceFeature2FieldNumber = 16;
+    private readonly static global::Pb.EnumFeature SourceFeature2DefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature sourceFeature2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Pb.TestFeatures.Types.MessageFeature MessageFieldFeature {
-      get { return messageFieldFeature_; }
-      set {
-        messageFieldFeature_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "enum_field_feature" field.</summary>
-    public const int EnumFieldFeatureFieldNumber = 14;
-    private readonly static global::Pb.TestFeatures.Types.EnumFeature EnumFieldFeatureDefaultValue = global::Pb.TestFeatures.Types.EnumFeature.TestEnumFeatureUnknown;
-
-    private global::Pb.TestFeatures.Types.EnumFeature enumFieldFeature_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Pb.TestFeatures.Types.EnumFeature EnumFieldFeature {
-      get { if ((_hasBits0 & 4096) != 0) { return enumFieldFeature_; } else { return EnumFieldFeatureDefaultValue; } }
+    public global::Pb.EnumFeature SourceFeature2 {
+      get { if ((_hasBits0 & 4096) != 0) { return sourceFeature2_; } else { return SourceFeature2DefaultValue; } }
       set {
         _hasBits0 |= 4096;
-        enumFieldFeature_ = value;
+        sourceFeature2_ = value;
       }
     }
-    /// <summary>Gets whether the "enum_field_feature" field is set</summary>
+    /// <summary>Gets whether the "source_feature2" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasEnumFieldFeature {
+    public bool HasSourceFeature2 {
       get { return (_hasBits0 & 4096) != 0; }
     }
-    /// <summary>Clears the value of the "enum_field_feature" field</summary>
+    /// <summary>Clears the value of the "source_feature2" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearEnumFieldFeature() {
+    public void ClearSourceFeature2() {
       _hasBits0 &= ~4096;
-    }
-
-    /// <summary>Field number for the "int_source_feature" field.</summary>
-    public const int IntSourceFeatureFieldNumber = 15;
-    private readonly static int IntSourceFeatureDefaultValue = 0;
-
-    private int intSourceFeature_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int IntSourceFeature {
-      get { if ((_hasBits0 & 8192) != 0) { return intSourceFeature_; } else { return IntSourceFeatureDefaultValue; } }
-      set {
-        _hasBits0 |= 8192;
-        intSourceFeature_ = value;
-      }
-    }
-    /// <summary>Gets whether the "int_source_feature" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasIntSourceFeature {
-      get { return (_hasBits0 & 8192) != 0; }
-    }
-    /// <summary>Clears the value of the "int_source_feature" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearIntSourceFeature() {
-      _hasBits0 &= ~8192;
-    }
-
-    /// <summary>Field number for the "string_source_feature" field.</summary>
-    public const int StringSourceFeatureFieldNumber = 16;
-    private readonly static string StringSourceFeatureDefaultValue = "";
-
-    private string stringSourceFeature_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string StringSourceFeature {
-      get { return stringSourceFeature_ ?? StringSourceFeatureDefaultValue; }
-      set {
-        stringSourceFeature_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-    /// <summary>Gets whether the "string_source_feature" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasStringSourceFeature {
-      get { return stringSourceFeature_ != null; }
-    }
-    /// <summary>Clears the value of the "string_source_feature" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearStringSourceFeature() {
-      stringSourceFeature_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -907,22 +856,19 @@ namespace Pb {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (IntFileFeature != other.IntFileFeature) return false;
-      if (IntExtensionRangeFeature != other.IntExtensionRangeFeature) return false;
-      if (IntMessageFeature != other.IntMessageFeature) return false;
-      if (IntFieldFeature != other.IntFieldFeature) return false;
-      if (IntOneofFeature != other.IntOneofFeature) return false;
-      if (IntEnumFeature != other.IntEnumFeature) return false;
-      if (IntEnumEntryFeature != other.IntEnumEntryFeature) return false;
-      if (IntServiceFeature != other.IntServiceFeature) return false;
-      if (IntMethodFeature != other.IntMethodFeature) return false;
-      if (IntMultipleFeature != other.IntMultipleFeature) return false;
+      if (FileFeature != other.FileFeature) return false;
+      if (ExtensionRangeFeature != other.ExtensionRangeFeature) return false;
+      if (MessageFeature != other.MessageFeature) return false;
+      if (FieldFeature != other.FieldFeature) return false;
+      if (OneofFeature != other.OneofFeature) return false;
+      if (EnumFeature != other.EnumFeature) return false;
+      if (EnumEntryFeature != other.EnumEntryFeature) return false;
+      if (ServiceFeature != other.ServiceFeature) return false;
+      if (MethodFeature != other.MethodFeature) return false;
+      if (MultipleFeature != other.MultipleFeature) return false;
       if (BoolFieldFeature != other.BoolFieldFeature) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(FloatFieldFeature, other.FloatFieldFeature)) return false;
-      if (!object.Equals(MessageFieldFeature, other.MessageFieldFeature)) return false;
-      if (EnumFieldFeature != other.EnumFieldFeature) return false;
-      if (IntSourceFeature != other.IntSourceFeature) return false;
-      if (StringSourceFeature != other.StringSourceFeature) return false;
+      if (SourceFeature != other.SourceFeature) return false;
+      if (SourceFeature2 != other.SourceFeature2) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -930,22 +876,19 @@ namespace Pb {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasIntFileFeature) hash ^= IntFileFeature.GetHashCode();
-      if (HasIntExtensionRangeFeature) hash ^= IntExtensionRangeFeature.GetHashCode();
-      if (HasIntMessageFeature) hash ^= IntMessageFeature.GetHashCode();
-      if (HasIntFieldFeature) hash ^= IntFieldFeature.GetHashCode();
-      if (HasIntOneofFeature) hash ^= IntOneofFeature.GetHashCode();
-      if (HasIntEnumFeature) hash ^= IntEnumFeature.GetHashCode();
-      if (HasIntEnumEntryFeature) hash ^= IntEnumEntryFeature.GetHashCode();
-      if (HasIntServiceFeature) hash ^= IntServiceFeature.GetHashCode();
-      if (HasIntMethodFeature) hash ^= IntMethodFeature.GetHashCode();
-      if (HasIntMultipleFeature) hash ^= IntMultipleFeature.GetHashCode();
+      if (HasFileFeature) hash ^= FileFeature.GetHashCode();
+      if (HasExtensionRangeFeature) hash ^= ExtensionRangeFeature.GetHashCode();
+      if (HasMessageFeature) hash ^= MessageFeature.GetHashCode();
+      if (HasFieldFeature) hash ^= FieldFeature.GetHashCode();
+      if (HasOneofFeature) hash ^= OneofFeature.GetHashCode();
+      if (HasEnumFeature) hash ^= EnumFeature.GetHashCode();
+      if (HasEnumEntryFeature) hash ^= EnumEntryFeature.GetHashCode();
+      if (HasServiceFeature) hash ^= ServiceFeature.GetHashCode();
+      if (HasMethodFeature) hash ^= MethodFeature.GetHashCode();
+      if (HasMultipleFeature) hash ^= MultipleFeature.GetHashCode();
       if (HasBoolFieldFeature) hash ^= BoolFieldFeature.GetHashCode();
-      if (HasFloatFieldFeature) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(FloatFieldFeature);
-      if (messageFieldFeature_ != null) hash ^= MessageFieldFeature.GetHashCode();
-      if (HasEnumFieldFeature) hash ^= EnumFieldFeature.GetHashCode();
-      if (HasIntSourceFeature) hash ^= IntSourceFeature.GetHashCode();
-      if (HasStringSourceFeature) hash ^= StringSourceFeature.GetHashCode();
+      if (HasSourceFeature) hash ^= SourceFeature.GetHashCode();
+      if (HasSourceFeature2) hash ^= SourceFeature2.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -964,69 +907,57 @@ namespace Pb {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasIntFileFeature) {
+      if (HasFileFeature) {
         output.WriteRawTag(8);
-        output.WriteInt32(IntFileFeature);
+        output.WriteEnum((int) FileFeature);
       }
-      if (HasIntExtensionRangeFeature) {
+      if (HasExtensionRangeFeature) {
         output.WriteRawTag(16);
-        output.WriteInt32(IntExtensionRangeFeature);
+        output.WriteEnum((int) ExtensionRangeFeature);
       }
-      if (HasIntMessageFeature) {
+      if (HasMessageFeature) {
         output.WriteRawTag(24);
-        output.WriteInt32(IntMessageFeature);
+        output.WriteEnum((int) MessageFeature);
       }
-      if (HasIntFieldFeature) {
+      if (HasFieldFeature) {
         output.WriteRawTag(32);
-        output.WriteInt32(IntFieldFeature);
+        output.WriteEnum((int) FieldFeature);
       }
-      if (HasIntOneofFeature) {
+      if (HasOneofFeature) {
         output.WriteRawTag(40);
-        output.WriteInt32(IntOneofFeature);
+        output.WriteEnum((int) OneofFeature);
       }
-      if (HasIntEnumFeature) {
+      if (HasEnumFeature) {
         output.WriteRawTag(48);
-        output.WriteInt32(IntEnumFeature);
+        output.WriteEnum((int) EnumFeature);
       }
-      if (HasIntEnumEntryFeature) {
+      if (HasEnumEntryFeature) {
         output.WriteRawTag(56);
-        output.WriteInt32(IntEnumEntryFeature);
+        output.WriteEnum((int) EnumEntryFeature);
       }
-      if (HasIntServiceFeature) {
+      if (HasServiceFeature) {
         output.WriteRawTag(64);
-        output.WriteInt32(IntServiceFeature);
+        output.WriteEnum((int) ServiceFeature);
       }
-      if (HasIntMethodFeature) {
+      if (HasMethodFeature) {
         output.WriteRawTag(72);
-        output.WriteInt32(IntMethodFeature);
+        output.WriteEnum((int) MethodFeature);
       }
-      if (HasIntMultipleFeature) {
+      if (HasMultipleFeature) {
         output.WriteRawTag(80);
-        output.WriteInt32(IntMultipleFeature);
+        output.WriteEnum((int) MultipleFeature);
       }
       if (HasBoolFieldFeature) {
         output.WriteRawTag(88);
         output.WriteBool(BoolFieldFeature);
       }
-      if (HasFloatFieldFeature) {
-        output.WriteRawTag(101);
-        output.WriteFloat(FloatFieldFeature);
-      }
-      if (messageFieldFeature_ != null) {
-        output.WriteRawTag(106);
-        output.WriteMessage(MessageFieldFeature);
-      }
-      if (HasEnumFieldFeature) {
-        output.WriteRawTag(112);
-        output.WriteEnum((int) EnumFieldFeature);
-      }
-      if (HasIntSourceFeature) {
+      if (HasSourceFeature) {
         output.WriteRawTag(120);
-        output.WriteInt32(IntSourceFeature);
+        output.WriteEnum((int) SourceFeature);
       }
-      if (HasStringSourceFeature) {
-        output.WriteRawTag(130, 1);
-        output.WriteString(StringSourceFeature);
+      if (HasSourceFeature2) {
+        output.WriteRawTag(128, 1);
+        output.WriteEnum((int) SourceFeature2);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1038,69 +969,57 @@ namespace Pb {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasIntFileFeature) {
+      if (HasFileFeature) {
         output.WriteRawTag(8);
-        output.WriteInt32(IntFileFeature);
+        output.WriteEnum((int) FileFeature);
       }
-      if (HasIntExtensionRangeFeature) {
+      if (HasExtensionRangeFeature) {
         output.WriteRawTag(16);
-        output.WriteInt32(IntExtensionRangeFeature);
+        output.WriteEnum((int) ExtensionRangeFeature);
       }
-      if (HasIntMessageFeature) {
+      if (HasMessageFeature) {
         output.WriteRawTag(24);
-        output.WriteInt32(IntMessageFeature);
+        output.WriteEnum((int) MessageFeature);
       }
-      if (HasIntFieldFeature) {
+      if (HasFieldFeature) {
         output.WriteRawTag(32);
-        output.WriteInt32(IntFieldFeature);
+        output.WriteEnum((int) FieldFeature);
       }
-      if (HasIntOneofFeature) {
+      if (HasOneofFeature) {
         output.WriteRawTag(40);
-        output.WriteInt32(IntOneofFeature);
+        output.WriteEnum((int) OneofFeature);
       }
-      if (HasIntEnumFeature) {
+      if (HasEnumFeature) {
         output.WriteRawTag(48);
-        output.WriteInt32(IntEnumFeature);
+        output.WriteEnum((int) EnumFeature);
       }
-      if (HasIntEnumEntryFeature) {
+      if (HasEnumEntryFeature) {
         output.WriteRawTag(56);
-        output.WriteInt32(IntEnumEntryFeature);
+        output.WriteEnum((int) EnumEntryFeature);
       }
-      if (HasIntServiceFeature) {
+      if (HasServiceFeature) {
         output.WriteRawTag(64);
-        output.WriteInt32(IntServiceFeature);
+        output.WriteEnum((int) ServiceFeature);
       }
-      if (HasIntMethodFeature) {
+      if (HasMethodFeature) {
         output.WriteRawTag(72);
-        output.WriteInt32(IntMethodFeature);
+        output.WriteEnum((int) MethodFeature);
       }
-      if (HasIntMultipleFeature) {
+      if (HasMultipleFeature) {
         output.WriteRawTag(80);
-        output.WriteInt32(IntMultipleFeature);
+        output.WriteEnum((int) MultipleFeature);
       }
       if (HasBoolFieldFeature) {
         output.WriteRawTag(88);
         output.WriteBool(BoolFieldFeature);
       }
-      if (HasFloatFieldFeature) {
-        output.WriteRawTag(101);
-        output.WriteFloat(FloatFieldFeature);
-      }
-      if (messageFieldFeature_ != null) {
-        output.WriteRawTag(106);
-        output.WriteMessage(MessageFieldFeature);
-      }
-      if (HasEnumFieldFeature) {
-        output.WriteRawTag(112);
-        output.WriteEnum((int) EnumFieldFeature);
-      }
-      if (HasIntSourceFeature) {
+      if (HasSourceFeature) {
         output.WriteRawTag(120);
-        output.WriteInt32(IntSourceFeature);
+        output.WriteEnum((int) SourceFeature);
       }
-      if (HasStringSourceFeature) {
-        output.WriteRawTag(130, 1);
-        output.WriteString(StringSourceFeature);
+      if (HasSourceFeature2) {
+        output.WriteRawTag(128, 1);
+        output.WriteEnum((int) SourceFeature2);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1112,53 +1031,44 @@ namespace Pb {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasIntFileFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntFileFeature);
+      if (HasFileFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FileFeature);
       }
-      if (HasIntExtensionRangeFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntExtensionRangeFeature);
+      if (HasExtensionRangeFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) ExtensionRangeFeature);
       }
-      if (HasIntMessageFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntMessageFeature);
+      if (HasMessageFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MessageFeature);
       }
-      if (HasIntFieldFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntFieldFeature);
+      if (HasFieldFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FieldFeature);
       }
-      if (HasIntOneofFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntOneofFeature);
+      if (HasOneofFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) OneofFeature);
       }
-      if (HasIntEnumFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntEnumFeature);
+      if (HasEnumFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumFeature);
       }
-      if (HasIntEnumEntryFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntEnumEntryFeature);
+      if (HasEnumEntryFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumEntryFeature);
       }
-      if (HasIntServiceFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntServiceFeature);
+      if (HasServiceFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) ServiceFeature);
       }
-      if (HasIntMethodFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntMethodFeature);
+      if (HasMethodFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MethodFeature);
       }
-      if (HasIntMultipleFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntMultipleFeature);
+      if (HasMultipleFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MultipleFeature);
       }
       if (HasBoolFieldFeature) {
         size += 1 + 1;
       }
-      if (HasFloatFieldFeature) {
-        size += 1 + 4;
+      if (HasSourceFeature) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SourceFeature);
       }
-      if (messageFieldFeature_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageFieldFeature);
-      }
-      if (HasEnumFieldFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumFieldFeature);
-      }
-      if (HasIntSourceFeature) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntSourceFeature);
-      }
-      if (HasStringSourceFeature) {
-        size += 2 + pb::CodedOutputStream.ComputeStringSize(StringSourceFeature);
+      if (HasSourceFeature2) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SourceFeature2);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1172,56 +1082,44 @@ namespace Pb {
       if (other == null) {
         return;
       }
-      if (other.HasIntFileFeature) {
-        IntFileFeature = other.IntFileFeature;
+      if (other.HasFileFeature) {
+        FileFeature = other.FileFeature;
       }
-      if (other.HasIntExtensionRangeFeature) {
-        IntExtensionRangeFeature = other.IntExtensionRangeFeature;
+      if (other.HasExtensionRangeFeature) {
+        ExtensionRangeFeature = other.ExtensionRangeFeature;
       }
-      if (other.HasIntMessageFeature) {
-        IntMessageFeature = other.IntMessageFeature;
+      if (other.HasMessageFeature) {
+        MessageFeature = other.MessageFeature;
       }
-      if (other.HasIntFieldFeature) {
-        IntFieldFeature = other.IntFieldFeature;
+      if (other.HasFieldFeature) {
+        FieldFeature = other.FieldFeature;
       }
-      if (other.HasIntOneofFeature) {
-        IntOneofFeature = other.IntOneofFeature;
+      if (other.HasOneofFeature) {
+        OneofFeature = other.OneofFeature;
       }
-      if (other.HasIntEnumFeature) {
-        IntEnumFeature = other.IntEnumFeature;
+      if (other.HasEnumFeature) {
+        EnumFeature = other.EnumFeature;
       }
-      if (other.HasIntEnumEntryFeature) {
-        IntEnumEntryFeature = other.IntEnumEntryFeature;
+      if (other.HasEnumEntryFeature) {
+        EnumEntryFeature = other.EnumEntryFeature;
       }
-      if (other.HasIntServiceFeature) {
-        IntServiceFeature = other.IntServiceFeature;
+      if (other.HasServiceFeature) {
+        ServiceFeature = other.ServiceFeature;
       }
-      if (other.HasIntMethodFeature) {
-        IntMethodFeature = other.IntMethodFeature;
+      if (other.HasMethodFeature) {
+        MethodFeature = other.MethodFeature;
       }
-      if (other.HasIntMultipleFeature) {
-        IntMultipleFeature = other.IntMultipleFeature;
+      if (other.HasMultipleFeature) {
+        MultipleFeature = other.MultipleFeature;
       }
       if (other.HasBoolFieldFeature) {
         BoolFieldFeature = other.BoolFieldFeature;
       }
-      if (other.HasFloatFieldFeature) {
-        FloatFieldFeature = other.FloatFieldFeature;
+      if (other.HasSourceFeature) {
+        SourceFeature = other.SourceFeature;
       }
-      if (other.messageFieldFeature_ != null) {
-        if (messageFieldFeature_ == null) {
-          MessageFieldFeature = new global::Pb.TestFeatures.Types.MessageFeature();
-        }
-        MessageFieldFeature.MergeFrom(other.MessageFieldFeature);
-      }
-      if (other.HasEnumFieldFeature) {
-        EnumFieldFeature = other.EnumFieldFeature;
-      }
-      if (other.HasIntSourceFeature) {
-        IntSourceFeature = other.IntSourceFeature;
-      }
-      if (other.HasStringSourceFeature) {
-        StringSourceFeature = other.StringSourceFeature;
+      if (other.HasSourceFeature2) {
+        SourceFeature2 = other.SourceFeature2;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1239,70 +1137,55 @@ namespace Pb {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            IntFileFeature = input.ReadInt32();
+            FileFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 16: {
-            IntExtensionRangeFeature = input.ReadInt32();
+            ExtensionRangeFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 24: {
-            IntMessageFeature = input.ReadInt32();
+            MessageFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 32: {
-            IntFieldFeature = input.ReadInt32();
+            FieldFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 40: {
-            IntOneofFeature = input.ReadInt32();
+            OneofFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 48: {
-            IntEnumFeature = input.ReadInt32();
+            EnumFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 56: {
-            IntEnumEntryFeature = input.ReadInt32();
+            EnumEntryFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 64: {
-            IntServiceFeature = input.ReadInt32();
+            ServiceFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 72: {
-            IntMethodFeature = input.ReadInt32();
+            MethodFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 80: {
-            IntMultipleFeature = input.ReadInt32();
+            MultipleFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 88: {
             BoolFieldFeature = input.ReadBool();
             break;
           }
-          case 101: {
-            FloatFieldFeature = input.ReadFloat();
-            break;
-          }
-          case 106: {
-            if (messageFieldFeature_ == null) {
-              MessageFieldFeature = new global::Pb.TestFeatures.Types.MessageFeature();
-            }
-            input.ReadMessage(MessageFieldFeature);
-            break;
-          }
-          case 112: {
-            EnumFieldFeature = (global::Pb.TestFeatures.Types.EnumFeature) input.ReadEnum();
-            break;
-          }
           case 120: {
-            IntSourceFeature = input.ReadInt32();
+            SourceFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
-          case 130: {
-            StringSourceFeature = input.ReadString();
+          case 128: {
+            SourceFeature2 = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
         }
@@ -1321,455 +1204,61 @@ namespace Pb {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            IntFileFeature = input.ReadInt32();
+            FileFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 16: {
-            IntExtensionRangeFeature = input.ReadInt32();
+            ExtensionRangeFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 24: {
-            IntMessageFeature = input.ReadInt32();
+            MessageFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 32: {
-            IntFieldFeature = input.ReadInt32();
+            FieldFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 40: {
-            IntOneofFeature = input.ReadInt32();
+            OneofFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 48: {
-            IntEnumFeature = input.ReadInt32();
+            EnumFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 56: {
-            IntEnumEntryFeature = input.ReadInt32();
+            EnumEntryFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 64: {
-            IntServiceFeature = input.ReadInt32();
+            ServiceFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 72: {
-            IntMethodFeature = input.ReadInt32();
+            MethodFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 80: {
-            IntMultipleFeature = input.ReadInt32();
+            MultipleFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
           case 88: {
             BoolFieldFeature = input.ReadBool();
             break;
           }
-          case 101: {
-            FloatFieldFeature = input.ReadFloat();
-            break;
-          }
-          case 106: {
-            if (messageFieldFeature_ == null) {
-              MessageFieldFeature = new global::Pb.TestFeatures.Types.MessageFeature();
-            }
-            input.ReadMessage(MessageFieldFeature);
-            break;
-          }
-          case 112: {
-            EnumFieldFeature = (global::Pb.TestFeatures.Types.EnumFeature) input.ReadEnum();
-            break;
-          }
           case 120: {
-            IntSourceFeature = input.ReadInt32();
+            SourceFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
-          case 130: {
-            StringSourceFeature = input.ReadString();
+          case 128: {
+            SourceFeature2 = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
         }
       }
     }
     #endif
-
-    #region Nested types
-    /// <summary>Container for nested types declared in the TestFeatures message type.</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static partial class Types {
-      public enum EnumFeature {
-        [pbr::OriginalName("TEST_ENUM_FEATURE_UNKNOWN")] TestEnumFeatureUnknown = 0,
-        [pbr::OriginalName("ENUM_VALUE1")] EnumValue1 = 1,
-        [pbr::OriginalName("ENUM_VALUE2")] EnumValue2 = 2,
-        [pbr::OriginalName("ENUM_VALUE3")] EnumValue3 = 3,
-        [pbr::OriginalName("ENUM_VALUE4")] EnumValue4 = 4,
-        [pbr::OriginalName("ENUM_VALUE5")] EnumValue5 = 5,
-      }
-
-      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-      public sealed partial class MessageFeature : pb::IMessage<MessageFeature>
-      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-          , pb::IBufferMessage
-      #endif
-      {
-        private static readonly pb::MessageParser<MessageFeature> _parser = new pb::MessageParser<MessageFeature>(() => new MessageFeature());
-        private pb::UnknownFieldSet _unknownFields;
-        private int _hasBits0;
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public static pb::MessageParser<MessageFeature> Parser { get { return _parser; } }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public static pbr::MessageDescriptor Descriptor {
-          get { return global::Pb.TestFeatures.Descriptor.NestedTypes[0]; }
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        pbr::MessageDescriptor pb::IMessage.Descriptor {
-          get { return Descriptor; }
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public MessageFeature() {
-          OnConstruction();
-        }
-
-        partial void OnConstruction();
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public MessageFeature(MessageFeature other) : this() {
-          _hasBits0 = other._hasBits0;
-          boolField_ = other.boolField_;
-          intField_ = other.intField_;
-          floatField_ = other.floatField_;
-          stringField_ = other.stringField_;
-          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public MessageFeature Clone() {
-          return new MessageFeature(this);
-        }
-
-        /// <summary>Field number for the "bool_field" field.</summary>
-        public const int BoolFieldFieldNumber = 1;
-        private readonly static bool BoolFieldDefaultValue = false;
-
-        private bool boolField_;
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public bool BoolField {
-          get { if ((_hasBits0 & 1) != 0) { return boolField_; } else { return BoolFieldDefaultValue; } }
-          set {
-            _hasBits0 |= 1;
-            boolField_ = value;
-          }
-        }
-        /// <summary>Gets whether the "bool_field" field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public bool HasBoolField {
-          get { return (_hasBits0 & 1) != 0; }
-        }
-        /// <summary>Clears the value of the "bool_field" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void ClearBoolField() {
-          _hasBits0 &= ~1;
-        }
-
-        /// <summary>Field number for the "int_field" field.</summary>
-        public const int IntFieldFieldNumber = 2;
-        private readonly static int IntFieldDefaultValue = 0;
-
-        private int intField_;
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public int IntField {
-          get { if ((_hasBits0 & 2) != 0) { return intField_; } else { return IntFieldDefaultValue; } }
-          set {
-            _hasBits0 |= 2;
-            intField_ = value;
-          }
-        }
-        /// <summary>Gets whether the "int_field" field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public bool HasIntField {
-          get { return (_hasBits0 & 2) != 0; }
-        }
-        /// <summary>Clears the value of the "int_field" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void ClearIntField() {
-          _hasBits0 &= ~2;
-        }
-
-        /// <summary>Field number for the "float_field" field.</summary>
-        public const int FloatFieldFieldNumber = 3;
-        private readonly static float FloatFieldDefaultValue = 0F;
-
-        private float floatField_;
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public float FloatField {
-          get { if ((_hasBits0 & 4) != 0) { return floatField_; } else { return FloatFieldDefaultValue; } }
-          set {
-            _hasBits0 |= 4;
-            floatField_ = value;
-          }
-        }
-        /// <summary>Gets whether the "float_field" field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public bool HasFloatField {
-          get { return (_hasBits0 & 4) != 0; }
-        }
-        /// <summary>Clears the value of the "float_field" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void ClearFloatField() {
-          _hasBits0 &= ~4;
-        }
-
-        /// <summary>Field number for the "string_field" field.</summary>
-        public const int StringFieldFieldNumber = 4;
-        private readonly static string StringFieldDefaultValue = "";
-
-        private string stringField_;
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public string StringField {
-          get { return stringField_ ?? StringFieldDefaultValue; }
-          set {
-            stringField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-          }
-        }
-        /// <summary>Gets whether the "string_field" field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public bool HasStringField {
-          get { return stringField_ != null; }
-        }
-        /// <summary>Clears the value of the "string_field" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void ClearStringField() {
-          stringField_ = null;
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public override bool Equals(object other) {
-          return Equals(other as MessageFeature);
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public bool Equals(MessageFeature other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (BoolField != other.BoolField) return false;
-          if (IntField != other.IntField) return false;
-          if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(FloatField, other.FloatField)) return false;
-          if (StringField != other.StringField) return false;
-          return Equals(_unknownFields, other._unknownFields);
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public override int GetHashCode() {
-          int hash = 1;
-          if (HasBoolField) hash ^= BoolField.GetHashCode();
-          if (HasIntField) hash ^= IntField.GetHashCode();
-          if (HasFloatField) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(FloatField);
-          if (HasStringField) hash ^= StringField.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public override string ToString() {
-          return pb::JsonFormatter.ToDiagnosticString(this);
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void WriteTo(pb::CodedOutputStream output) {
-        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-          output.WriteRawMessage(this);
-        #else
-          if (HasBoolField) {
-            output.WriteRawTag(8);
-            output.WriteBool(BoolField);
-          }
-          if (HasIntField) {
-            output.WriteRawTag(16);
-            output.WriteInt32(IntField);
-          }
-          if (HasFloatField) {
-            output.WriteRawTag(29);
-            output.WriteFloat(FloatField);
-          }
-          if (HasStringField) {
-            output.WriteRawTag(34);
-            output.WriteString(StringField);
-          }
-          if (_unknownFields != null) {
-            _unknownFields.WriteTo(output);
-          }
-        #endif
-        }
-
-        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-          if (HasBoolField) {
-            output.WriteRawTag(8);
-            output.WriteBool(BoolField);
-          }
-          if (HasIntField) {
-            output.WriteRawTag(16);
-            output.WriteInt32(IntField);
-          }
-          if (HasFloatField) {
-            output.WriteRawTag(29);
-            output.WriteFloat(FloatField);
-          }
-          if (HasStringField) {
-            output.WriteRawTag(34);
-            output.WriteString(StringField);
-          }
-          if (_unknownFields != null) {
-            _unknownFields.WriteTo(ref output);
-          }
-        }
-        #endif
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public int CalculateSize() {
-          int size = 0;
-          if (HasBoolField) {
-            size += 1 + 1;
-          }
-          if (HasIntField) {
-            size += 1 + pb::CodedOutputStream.ComputeInt32Size(IntField);
-          }
-          if (HasFloatField) {
-            size += 1 + 4;
-          }
-          if (HasStringField) {
-            size += 1 + pb::CodedOutputStream.ComputeStringSize(StringField);
-          }
-          if (_unknownFields != null) {
-            size += _unknownFields.CalculateSize();
-          }
-          return size;
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void MergeFrom(MessageFeature other) {
-          if (other == null) {
-            return;
-          }
-          if (other.HasBoolField) {
-            BoolField = other.BoolField;
-          }
-          if (other.HasIntField) {
-            IntField = other.IntField;
-          }
-          if (other.HasFloatField) {
-            FloatField = other.FloatField;
-          }
-          if (other.HasStringField) {
-            StringField = other.StringField;
-          }
-          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        public void MergeFrom(pb::CodedInputStream input) {
-        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-          input.ReadRawMessage(this);
-        #else
-          uint tag;
-          while ((tag = input.ReadTag()) != 0) {
-            switch(tag) {
-              default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-                break;
-              case 8: {
-                BoolField = input.ReadBool();
-                break;
-              }
-              case 16: {
-                IntField = input.ReadInt32();
-                break;
-              }
-              case 29: {
-                FloatField = input.ReadFloat();
-                break;
-              }
-              case 34: {
-                StringField = input.ReadString();
-                break;
-              }
-            }
-          }
-        #endif
-        }
-
-        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-          uint tag;
-          while ((tag = input.ReadTag()) != 0) {
-            switch(tag) {
-              default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-                break;
-              case 8: {
-                BoolField = input.ReadBool();
-                break;
-              }
-              case 16: {
-                IntField = input.ReadInt32();
-                break;
-              }
-              case 29: {
-                FloatField = input.ReadFloat();
-                break;
-              }
-              case 34: {
-                StringField = input.ReadString();
-                break;
-              }
-            }
-          }
-        }
-        #endif
-
-      }
-
-    }
-    #endregion
 
   }
 
