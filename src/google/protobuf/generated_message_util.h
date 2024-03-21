@@ -37,6 +37,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -320,6 +321,43 @@ struct WeakDescriptorDefaultTail {
   const Message** target;
   size_t size;
 };
+
+inline void AssignToString(std::string& dest, const std::string& value) {
+  dest.assign(value);
+}
+inline void AssignToString(std::string& dest, std::string&& value) {
+  dest.assign(std::move(value));
+}
+inline void AssignToString(std::string& dest, const char* value) {
+  dest.assign(value);
+}
+inline void AssignToString(std::string& dest, const char* value,
+                           std::size_t size) {
+  dest.assign(value, size);
+}
+// DO NOT SUBMIT: is this safe?
+inline void AssignToString(std::string& dest, const void* value,
+                           std::size_t size) {
+  dest.assign(reinterpret_cast<const char*>(value), size);
+}
+inline void AssignToString(std::string& dest, std::nullptr_t value,
+                           std::size_t size) {
+  dest.assign(value, size);
+}
+
+inline void AssignToString(std::string& dest, absl::string_view value) {
+  dest.assign(value.data(), value.size());
+}
+
+template <typename Arg, typename... Args>
+void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
+                           Arg&& value, Args... args) {
+  AssignToString(*dest.Add(), std::forward<Arg>(value), args...);
+}
+inline void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
+                                  std::string&& value) {
+  dest.Add(std::move(value));
+}
 
 }  // namespace internal
 }  // namespace protobuf
