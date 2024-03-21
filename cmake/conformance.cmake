@@ -12,11 +12,6 @@ elseif(protobuf_JSONCPP_PROVIDER STREQUAL "package")
   find_package(jsoncpp REQUIRED)
 endif()
 
-set(protoc_cpp_args)
-if (protobuf_BUILD_SHARED_LIBS)
-  set(protoc_cpp_args "dllexport_decl=PROTOBUF_TEST_EXPORTS:")
-endif ()
-
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/conformance)
 
 add_custom_command(
@@ -26,7 +21,7 @@ add_custom_command(
   DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
   COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
       --proto_path=${protobuf_SOURCE_DIR}/conformance
-      --cpp_out=${protoc_cpp_args}${protobuf_BINARY_DIR}/conformance
+      --cpp_out=${protobuf_BINARY_DIR}/conformance
 )
 
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
@@ -52,10 +47,10 @@ add_custom_command(
               ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.proto
               ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.proto
             --proto_path=${protobuf_SOURCE_DIR}/src
-            --cpp_out=${protoc_cpp_args}${protobuf_BINARY_DIR}/src
+            --cpp_out=${protobuf_BINARY_DIR}/src
 )
 
-add_library(libconformance_common ${protobuf_SHARED_OR_STATIC}
+add_library(libconformance_common STATIC
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.h
@@ -71,11 +66,6 @@ target_link_libraries(libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
 )
-if(protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libconformance_common
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
-endif()
 
 add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.cc

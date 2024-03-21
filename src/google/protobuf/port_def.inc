@@ -367,18 +367,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 # define PROTOC_EXPORT
 #endif
 
-#if defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
-# if defined(LIBPROTOBUF_TEST_EXPORTS)
-#  define PROTOBUF_TEST_EXPORTS __declspec(dllexport)
-# else
-#  define PROTOBUF_TEST_EXPORTS __declspec(dllimport)
-# endif  // defined(LIBPROTOBUF_TEST_EXPORTS)
-#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOBUF_TEST_EXPORTS)
-# define PROTOBUF_TEST_EXPORTS __attribute__((visibility("default")))
-#else
-# define PROTOBUF_TEST_EXPORTS
-#endif
-
 #if defined(PROTOBUF_PREDICT_TRUE) || defined(PROTOBUF_PREDICT_FALSE)
 #error PROTOBUF_PREDICT_(TRUE|FALSE) was previously defined
 #endif
