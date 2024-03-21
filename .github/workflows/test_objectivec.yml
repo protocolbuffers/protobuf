@@ -68,18 +68,13 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        PLATFORM: ["ios", "macos", "tvos", "watchos", "visionos"]
+        PLATFORM: ["ios", "macos", "tvos", "watchos"]
         CONFIGURATION: ["Debug", "Release"]
         include:
           - OS: macos-12
             XCODE: "14.1"
-          - OS: macos-14
-            PLATFORM: "visionos"
-            XCODE: "15.2"
     name: CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
     runs-on: ${{ matrix.OS }}
-    # TODO Enable this once GH is ready
-    if: ${{ matrix.PLATFORM != "visionos" }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
