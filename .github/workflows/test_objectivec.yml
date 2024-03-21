@@ -78,6 +78,8 @@ jobs:
             XCODE: "15.2"
     name: CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
     runs-on: ${{ matrix.OS }}
+    # TODO Enable this once GH is ready
+    if: ${{ matrix.PLATFORM != "visionos" }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
