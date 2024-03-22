@@ -474,7 +474,7 @@ mod tests {
 
                 )*
                 assert_that!(
-                    r.iter().collect::<Vec<$t>>(), elements_are![$(eq($vals)),*]);
+                    r, elements_are![$(eq($vals)),*]);
                 r.set(0, <$t as Default>::default());
                 assert_that!(r.get(0).expect("elem 0"), eq(<$t as Default>::default()));
 

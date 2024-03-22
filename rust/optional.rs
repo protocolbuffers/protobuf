@@ -630,7 +630,7 @@ mod tests {
         let mut m2 = MyMessage::default();
 
         let mut m1_a = m1.a_mut();
-        assert_that!(m1_a, matches_pattern!(Optional::Unset(_)));
+        assert_that!(m1_a, matches_pattern!(&Optional::Unset(_)));
 
         assert_that!(m1_a.as_view().val(), eq(0));
 
@@ -642,7 +642,7 @@ mod tests {
 
         m2_b.set(10);
         assert_that!(m2_b.is_set(), eq(true));
-        assert_that!(m2_b, matches_pattern!(Optional::Set(_)));
+        assert_that!(m2_b, matches_pattern!(&Optional::Set(_)));
         assert_that!(m2_b.as_view().val(), eq(10));
 
         assert_that!(m1_a.or_default().as_view().val(), eq(0));
