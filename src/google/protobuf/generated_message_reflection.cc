@@ -3255,20 +3255,28 @@ static internal::TailCallParseFunc GetFastParseFunction(
 void Reflection::PopulateTcParseFastEntries(
     const internal::TailCallTableInfo& table_info,
     TcParseTableBase::FastFieldEntry* fast_entries) const {
+  using FFE = TcParseTableBase::FastFieldEntry;
   for (const auto& fast_field : table_info.fast_path_fields) {
-    if (auto* nonfield = fast_field.AsNonField()) {
+    if (auto* fallback = fast_field.AsFallback()) {
       // No field, but still a special entry.
-      *fast_entries++ = {GetFastParseFunction(nonfield->func),
-                         {nonfield->coded_tag, nonfield->nonfield_info}};
+      *fast_entries++ = fallback->wt | FFE::kFallback | (fallback->entry << 5);
     } else if (auto* as_field = fast_field.AsField()) {
-      *fast_entries++ = {
-          GetFastParseFunction(as_field->func),
-          {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
-           static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
+      auto data = as_field->wt | as_field->card | as_field->rep | as_field->transform;
+      uint32_t offset = as_field->offset.value_or(schema_.GetFieldOffset(as_field->field));
+      uint32_t hasbit_idx = 0;
+      if (internal::cpp::HasHasbit(as_field->field)) {
+        ABSL_DCHECK(as_field->hasbit_idx != -1);
+        hasbit_idx = 8 * schema_.HasBitsOffset() + as_field->hasbit_idx;
+      } else {
+        // TODO: why is this not set properly
+        // ABSL_DCHECK(as_field->rep != FFE::kOptional) << as_field->field->containing_type()->name() << " " << as_field->field->name();
+        // ABSL_DCHECK(as_field->hasbit_idx == -1) << as_field->field->containing_type()->name() << " " << as_field->field->name();
+      }
+      *fast_entries++ = {data, hasbit_idx, offset};
     } else {
       ABSL_DCHECK(fast_field.is_empty());
       // No fast entry here. Use mini parser.
-      *fast_entries++ = {internal::TcParser::MiniParse, {}};
+      *fast_entries++ = {0x1F};
     }
   }
 }
@@ -3377,15 +3385,17 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   std::vector<int> has_bit_indices(
       static_cast<size_t>(descriptor_->field_count()), kNoHasbit);
   std::vector<int> inlined_string_indices = has_bit_indices;
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
-    auto* field = descriptor_->field(i);
-    fields.push_back(field);
-    has_bit_indices[static_cast<size_t>(field->index())] =
-        static_cast<int>(schema_.HasBitIndex(field));
+  if (!descriptor_->options().map_entry()) {
+    for (int i = 0; i < descriptor_->field_count(); ++i) {
+      auto* field = descriptor_->field(i);
+      fields.push_back(field);
+      has_bit_indices[static_cast<size_t>(field->index())] =
+          static_cast<int>(schema_.HasBitIndex(field));
 
-    if (IsInlined(field)) {
-      inlined_string_indices[static_cast<size_t>(field->index())] =
-          schema_.InlinedStringIndex(field);
+      if (IsInlined(field)) {
+        inlined_string_indices[static_cast<size_t>(field->index())] =
+            schema_.InlinedStringIndex(field);
+      }
     }
   }
   std::sort(fields.begin(), fields.end(),
@@ -3435,8 +3445,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       ReflectionOptionProvider(*this), has_bit_indices, inlined_string_indices);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
-  ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),
-                1 << table_info.table_size_log2);
   const uint16_t lookup_table_offset = AlignTo<uint16_t>(
       sizeof(TcParseTableBase) +
       fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
@@ -3453,13 +3461,14 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       sizeof(char) * table_info.field_name_data.size();
 
   void* p = ::operator new(byte_size);
+  int message_set_bit = descriptor_->options().message_set_wire_format() ? 1 : 0;
   auto* res = ::new (p) TcParseTableBase{
       static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
       schema_.HasExtensionSet()
-          ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
+          ? static_cast<uint16_t>(schema_.GetExtensionSetOffset() | message_set_bit)
           : uint16_t{0},
       static_cast<uint32_t>(fields.empty() ? 0 : fields.back()->number()),
-      static_cast<uint8_t>((fast_entries_count - 1) << 3),
+      static_cast<uint32_t>(fast_entries_count),
       lookup_table_offset,
       table_info.num_to_entry_table.skipmap32,
       field_entry_offset,

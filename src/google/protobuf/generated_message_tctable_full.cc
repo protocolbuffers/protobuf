@@ -30,6 +30,7 @@
 
 #include <cstdint>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/message.h"
@@ -58,15 +59,22 @@ const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
   }
 
   SyncHasbits(msg, hasbits, table);
+
+  auto* full_msg = DownCast<Message*>(msg);
+
+  if ((table->extension_offset & 1) != 0) {
+    return WireFormat::_InternalParse(full_msg, ptr, ctx);
+  }
+
   uint32_t tag = data.tag();
   if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
     ctx->SetLastTag(tag);
     return ptr;
   }
 
-  auto* full_msg = DownCast<Message*>(msg);
   auto* descriptor = full_msg->GetDescriptor();
   auto* reflection = full_msg->GetReflection();
+
   int field_number = WireFormatLite::GetTagFieldNumber(tag);
   const FieldDescriptor* field = descriptor->FindFieldByNumber(field_number);
 

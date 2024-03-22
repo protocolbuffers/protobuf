@@ -20,6 +20,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -96,6 +97,10 @@ class MapEntry : public Message {
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
+
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
+    return WireFormat::_InternalParse(this, ptr, ctx);
+  }
 
   ~MapEntry() override {
     if (GetArena() != nullptr) return;
