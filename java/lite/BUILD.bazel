@@ -24,6 +24,7 @@ proto_lang_toolchain(
     name = "toolchain",
     # keep this in sync w/ LITE_WELL_KNOWN_PROTO_MAP in //:BUILD
     blacklisted_protos = [
+        "//java/core:java_features_proto",
         "//:any_proto",
         "//:api_proto",
         "//:duration_proto",
@@ -60,6 +61,7 @@ build_test(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_java_lite.txt",
+    maximum_edition = "2023",
     testee = "//conformance:conformance_java_lite",
     text_format_failure_list = "//conformance:text_format_failure_list_java_lite.txt",
 )

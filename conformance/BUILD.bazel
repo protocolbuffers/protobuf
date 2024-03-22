@@ -271,6 +271,8 @@ java_binary(
         "//:protobuf_javalite",
         "//:test_messages_proto2_java_proto_lite",
         "//:test_messages_proto3_java_proto_lite",
+        "//src/google/protobuf/editions:test_messages_proto2_editions_java_proto_lite",
+        "//src/google/protobuf/editions:test_messages_proto3_editions_java_proto_lite",
     ],
 )
 

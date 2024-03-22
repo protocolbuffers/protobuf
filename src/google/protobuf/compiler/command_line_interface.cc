@@ -2657,14 +2657,6 @@ bool CommandLineInterface::GenerateOutput(
       return false;
     }
 
-    // TODO: Remove once Java lite supports editions.
-    if (output_directive.name == "--java_out" && experimental_editions_) {
-      if (!parameters.empty()) {
-        parameters.append(",");
-      }
-      parameters.append("experimental_editions");
-    }
-
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
