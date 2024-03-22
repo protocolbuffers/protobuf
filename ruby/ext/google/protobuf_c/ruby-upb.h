@@ -11480,8 +11480,8 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       const upb_MessageDef* m,
                                                       int32_t fieldnum);
 
-const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
-                                                    const char* name);
+UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
+  const upb_DefPool* s, const char* name);
 
 const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -11899,18 +11899,19 @@ UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 extern "C" {
 #endif
 
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
+UPB_API bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
 const char* upb_MethodDef_FullName(const upb_MethodDef* m);
 bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
 int upb_MethodDef_Index(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const UPB_DESC(MethodOptions) * upb_MethodDef_Options(const upb_MethodDef* m);
+UPB_API const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
+UPB_API const char* upb_MethodDef_Name(const upb_MethodDef* m);
+UPB_API const UPB_DESC(MethodOptions) *
+    upb_MethodDef_Options(const upb_MethodDef* m);
 const UPB_DESC(FeatureSet) *
     upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+UPB_API const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
+UPB_API bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
+UPB_API const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -11971,16 +11972,17 @@ const UPB_DESC(FeatureSet*)
 extern "C" {
 #endif
 
-const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
+UPB_API const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name);
-const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
+UPB_API const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
 bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
 int upb_ServiceDef_Index(const upb_ServiceDef* s);
-const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i);
-int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
+UPB_API const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s,
+                                                   int i);
+UPB_API int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
 const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
-const UPB_DESC(ServiceOptions) *
+UPB_API const UPB_DESC(ServiceOptions) *
     upb_ServiceDef_Options(const upb_ServiceDef* s);
 const UPB_DESC(FeatureSet) *
     upb_ServiceDef_ResolvedFeatures(const upb_ServiceDef* s);
