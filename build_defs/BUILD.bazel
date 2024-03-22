@@ -38,9 +38,7 @@ config_setting(
 # When using https://bazel.build/concepts/platforms
 config_setting(
     name = "config_android",
-    values = {
-        "crosstool_top": "@platforms//os:android",
-    },
+    constraint_values = ["@platforms//os:android"],
 )
 
 # When using legacy flags like --android_crosstool_top, --android_cpu, and --fat_apk_cpu
