@@ -2231,8 +2231,7 @@ void Reflection::AddEnumValueInternal(Message* message,
                                       int value) const {
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddEnum(field->number(), field->type(),
-                                          field->options().packed(), value,
-                                          field);
+                                          field->is_packed(), value, field);
   } else {
     AddField<int>(message, field, value);
   }
