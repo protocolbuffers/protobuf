@@ -3551,6 +3551,19 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"pin_weak_descriptor", pin_weak_descriptor},
+            {"table",
+             [&] {
+               // Map entries use the dynamic parser.
+               if (IsMapEntryMessage(descriptor_)) {
+                 p->Emit(R"cc(
+                   nullptr,  // tc_table
+                 )cc");
+               } else {
+                 p->Emit(R"cc(
+                   &_table_.header,
+                 )cc");
+               }
+             }},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -3571,6 +3584,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_CONSTINIT static const ::$proto_ns$::MessageLite::
                 ClassDataFull _data_ = {
                     {
+                        $table$,
                         $on_demand_register_arena_dtor$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,
