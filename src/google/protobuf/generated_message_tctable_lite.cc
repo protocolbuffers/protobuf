@@ -110,9 +110,9 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
   table -= 1;
-  /*if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+  if (ABSL_PREDICT_FALSE(table->post_loop_handler != nullptr)) {
     return table->post_loop_handler(msg, ptr, ctx);
-  }*/
+  }
   return ptr;
 }
 
@@ -3110,7 +3110,7 @@ const char* TcParser::FastParseLoop(MessageLite* const msg, const char* ptr, Par
 unusual_end:
           if (delta_or_group == -1) {
             ctx->SetLastTag(tag);
-            return ptr;
+            goto exit;
           } else {
             return nullptr;
           }
@@ -3119,7 +3119,7 @@ unusual:
       if (wt == 4) {
         if (delta_or_group != ~static_cast<uint64_t>(tag)) goto unusual_end;
         ctx->DecGroupDepth();
-        return ptr;
+        goto exit;
       }
       entry = nullptr;
 with_entry:
@@ -3270,12 +3270,14 @@ parse_submessage:
   if (delta_or_group >= 0) {
     (void)ctx->PopLimit(EpsCopyInputStream::LimitToken(delta_or_group));
     // if (!ctx->PopLimit(EpsCopyInputStream::LimitToken(delta_or_group))) return nullptr;
-    return ptr;
-  } else if (delta_or_group == -1) {
-    return ptr;
-  } else {
+  } else if (delta_or_group != -1) {
     return nullptr;
-  } 
+  }
+exit:
+  if (ABSL_PREDICT_FALSE(table->post_loop_handler != nullptr)) {
+    return table->post_loop_handler(msg, ptr, ctx);
+  }
+  return ptr;
 }
 
 const char* TcParser::MessageSetWireFormatParseLoopLite(

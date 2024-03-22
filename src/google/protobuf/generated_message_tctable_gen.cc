@@ -464,6 +464,21 @@ TailCallTableInfo::TailCallTableInfo(
       : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
                                 : TcParseFunction::kGenericFallback;
 
+  if (descriptor->options().message_set_wire_format()) {
+    ABSL_DCHECK(ordered_fields.empty());
+    ABSL_DCHECK(inlined_string_indices.empty());
+    if (message_options.uses_codegen) {
+      aux_entries = {{kSelfVerifyFunc}};
+    } else {
+      ABSL_DCHECK(!message_options.is_lite);
+    }
+
+    num_to_entry_table = MakeNumToEntryTable(ordered_fields);
+    field_name_data = GenerateFieldNames(descriptor, field_entries,
+                                         message_options, option_provider);
+
+  }
+
   ABSL_DCHECK(std::is_sorted(ordered_fields.begin(), ordered_fields.end(),
                              [](const auto* lhs, const auto* rhs) {
                                return lhs->number() < rhs->number();
