@@ -11661,6 +11661,7 @@ bool upb_FieldDef_IsString(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
 UPB_API upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
+uint32_t upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
 UPB_API const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
 bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f);
 

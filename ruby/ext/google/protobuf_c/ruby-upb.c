@@ -13003,6 +13003,10 @@ upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) {
 
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f) { return f->index_; }
 
+uint32_t upb_FieldDef_LayoutIndex(const upb_FieldDef* f) {
+  return f->layout_index;
+}
+
 upb_Label upb_FieldDef_Label(const upb_FieldDef* f) {
   // TODO: remove once we can deprecate kUpb_Label_Required.
   if (UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
