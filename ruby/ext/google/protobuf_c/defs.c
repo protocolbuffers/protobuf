@@ -23,6 +23,9 @@ static VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_EnumDef* def);
 static VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_FieldDef* def);
 static VALUE get_filedef_obj(VALUE descriptor_pool, const upb_FileDef* def);
 static VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_OneofDef* def);
+static VALUE get_servicedef_obj(VALUE descriptor_pool,
+                                const upb_ServiceDef* def);
+static VALUE get_methoddef_obj(VALUE descriptor_pool, const upb_MethodDef* def);
 
 // A distinct object that is not accessible from Ruby.  We use this as a
 // constructor argument to enforce that certain objects cannot be created from
@@ -153,6 +156,7 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   const upb_MessageDef* msgdef;
   const upb_EnumDef* enumdef;
   const upb_FieldDef* fielddef;
+  const upb_ServiceDef* servicedef;
 
   msgdef = upb_DefPool_FindMessageByName(self->symtab, name_str);
   if (msgdef) {
@@ -167,6 +171,11 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   enumdef = upb_DefPool_FindEnumByName(self->symtab, name_str);
   if (enumdef) {
     return get_enumdef_obj(_self, enumdef);
+  }
+
+  servicedef = upb_DefPool_FindServiceByName(self->symtab, name_str);
+  if (servicedef) {
+    return get_servicedef_obj(_self, servicedef);
   }
 
   return Qnil;
@@ -1307,6 +1316,298 @@ static void EnumDescriptor_register(VALUE module) {
   cEnumDescriptor = klass;
 }
 
+// -----------------------------------------------------------------------------
+// ServiceDescriptor
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  const upb_ServiceDef* servicedef;
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
+  VALUE module;           // begins as nil
+  VALUE descriptor_pool;  // Owns the upb_ServiceDef.
+} ServiceDescriptor;
+
+static VALUE cServiceDescriptor = Qnil;
+
+static void ServiceDescriptor_mark(void* _self) {
+  ServiceDescriptor* self = _self;
+  rb_gc_mark(self->module);
+  rb_gc_mark(self->descriptor_pool);
+}
+
+static const rb_data_type_t ServiceDescriptor_type = {
+    "Google::Protobuf::ServicDescriptor",
+    {ServiceDescriptor_mark, RUBY_DEFAULT_FREE, NULL},
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
+};
+
+static ServiceDescriptor* ruby_to_ServiceDescriptor(VALUE val) {
+  ServiceDescriptor* ret;
+  TypedData_Get_Struct(val, ServiceDescriptor, &ServiceDescriptor_type, ret);
+  return ret;
+}
+
+static VALUE ServiceDescriptor_alloc(VALUE klass) {
+  ServiceDescriptor* self = ALLOC(ServiceDescriptor);
+  VALUE ret = TypedData_Wrap_Struct(klass, &ServiceDescriptor_type, self);
+  self->servicedef = NULL;
+  self->module = Qnil;
+  self->descriptor_pool = Qnil;
+  return ret;
+}
+
+/*
+ * call-seq:
+ *    ServiceDescriptor.new(c_only_cookie, ptr) => ServiceDescriptor
+ *
+ * Creates a descriptor wrapper object.  May only be called from C.
+ */
+static VALUE ServiceDescriptor_initialize(VALUE _self, VALUE cookie,
+                                          VALUE descriptor_pool, VALUE ptr) {
+  ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  RB_OBJ_WRITE(_self, &self->descriptor_pool, descriptor_pool);
+  self->servicedef = (const upb_ServiceDef*)NUM2ULL(ptr);
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     ServiceDescriptor.name => name
+ *
+ * Returns the name of this service.
+ */
+static VALUE ServiceDescriptor_name(VALUE _self) {
+  ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
+  return rb_str_maybe_null(upb_ServiceDef_FullName(self->servicedef));
+}
+
+/*
+ * call-seq:
+ *    ServiceDescriptor.file_descriptor
+ *
+ * Returns the FileDescriptor object this service belongs to.
+ */
+static VALUE ServiceDescriptor_file_descriptor(VALUE _self) {
+  ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
+  return get_filedef_obj(self->descriptor_pool,
+                         upb_ServiceDef_File(self->servicedef));
+}
+
+/*
+ * call-seq:
+ *     ServiceDescriptor.each(&block)
+ *
+ * Iterates over methods in this service, yielding to the block on each one.
+ */
+static VALUE ServiceDescriptor_each(VALUE _self) {
+  ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
+
+  int n = upb_ServiceDef_MethodCount(self->servicedef);
+  for (int i = 0; i < n; i++) {
+    const upb_MethodDef* method = upb_ServiceDef_Method(self->servicedef, i);
+    VALUE obj = get_methoddef_obj(self->descriptor_pool, method);
+    rb_yield(obj);
+  }
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     ServiceDescriptor.options => options
+ *
+ * Returns the `ServiceOptions` for this `ServiceDescriptor`.
+ */
+static VALUE ServiceDescriptor_options(VALUE _self) {
+  ServiceDescriptor* self = ruby_to_ServiceDescriptor(_self);
+  const google_protobuf_ServiceOptions* opts =
+      upb_ServiceDef_Options(self->servicedef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized =
+      google_protobuf_ServiceOptions_serialize(opts, arena, &size);
+  VALUE service_options = decode_options(_self, "ServiceOptions", size,
+                                         serialized, self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return service_options;
+}
+
+static void ServiceDescriptor_register(VALUE module) {
+  VALUE klass = rb_define_class_under(module, "ServiceDescriptor", rb_cObject);
+  rb_define_alloc_func(klass, ServiceDescriptor_alloc);
+  rb_define_method(klass, "initialize", ServiceDescriptor_initialize, 3);
+  rb_define_method(klass, "name", ServiceDescriptor_name, 0);
+  rb_define_method(klass, "each", ServiceDescriptor_each, 0);
+  rb_define_method(klass, "file_descriptor", ServiceDescriptor_file_descriptor,
+                   0);
+  rb_define_method(klass, "options", ServiceDescriptor_options, 0);
+  rb_include_module(klass, rb_mEnumerable);
+  rb_gc_register_address(&cServiceDescriptor);
+  cServiceDescriptor = klass;
+}
+
+// -----------------------------------------------------------------------------
+// MethodDescriptor
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  const upb_MethodDef* methoddef;
+  // IMPORTANT: WB_PROTECTED objects must only use the RB_OBJ_WRITE()
+  // macro to update VALUE references, as to trigger write barriers.
+  VALUE module;           // begins as nil
+  VALUE descriptor_pool;  // Owns the upb_MethodDef.
+} MethodDescriptor;
+
+static VALUE cMethodDescriptor = Qnil;
+
+static void MethodDescriptor_mark(void* _self) {
+  MethodDescriptor* self = _self;
+  rb_gc_mark(self->module);
+  rb_gc_mark(self->descriptor_pool);
+}
+
+static const rb_data_type_t MethodDescriptor_type = {
+    "Google::Protobuf::MethodDescriptor",
+    {MethodDescriptor_mark, RUBY_DEFAULT_FREE, NULL},
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
+};
+
+static MethodDescriptor* ruby_to_MethodDescriptor(VALUE val) {
+  MethodDescriptor* ret;
+  TypedData_Get_Struct(val, MethodDescriptor, &MethodDescriptor_type, ret);
+  return ret;
+}
+
+static VALUE MethodDescriptor_alloc(VALUE klass) {
+  MethodDescriptor* self = ALLOC(MethodDescriptor);
+  VALUE ret = TypedData_Wrap_Struct(klass, &MethodDescriptor_type, self);
+  self->methoddef = NULL;
+  self->module = Qnil;
+  self->descriptor_pool = Qnil;
+  return ret;
+}
+
+/*
+ * call-seq:
+ *    MethodDescriptor.new(c_only_cookie, ptr) => MethodDescriptor
+ *
+ * Creates a descriptor wrapper object.  May only be called from C.
+ */
+static VALUE MethodDescriptor_initialize(VALUE _self, VALUE cookie,
+                                         VALUE descriptor_pool, VALUE ptr) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  RB_OBJ_WRITE(_self, &self->descriptor_pool, descriptor_pool);
+  self->methoddef = (const upb_ServiceDef*)NUM2ULL(ptr);
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     MethodDescriptor.name => name
+ *
+ * Returns the name of this method
+ */
+static VALUE MethodDescriptor_name(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  return rb_str_maybe_null(upb_MethodDef_Name(self->methoddef));
+}
+
+/*
+ * call-seq:
+ *     MethodDescriptor.options => options
+ *
+ * Returns the `MethodOptions` for this `MethodDescriptor`.
+ */
+static VALUE MethodDescriptor_options(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  const google_protobuf_MethodOptions* opts =
+      upb_MethodDef_Options(self->methoddef);
+  upb_Arena* arena = upb_Arena_New();
+  size_t size;
+  char* serialized =
+      google_protobuf_MethodOptions_serialize(opts, arena, &size);
+  VALUE method_options = decode_options(_self, "MethodOptions", size,
+                                        serialized, self->descriptor_pool);
+  upb_Arena_Free(arena);
+  return method_options;
+}
+
+/*
+ * call-seq:
+ *      MethodDescriptor.input_type => Descriptor
+ *
+ * Returns the `Descriptor` for the request message type of this method
+ */
+static VALUE MethodDescriptor_input_type(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  const upb_MessageDef* type = upb_MethodDef_InputType(self->methoddef);
+  return get_msgdef_obj(self->descriptor_pool, type);
+}
+
+/*
+ * call-seq:
+ *      MethodDescriptor.output_type => Descriptor
+ *
+ * Returns the `Descriptor` for the response message type of this method
+ */
+static VALUE MethodDescriptor_output_type(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  const upb_MessageDef* type = upb_MethodDef_OutputType(self->methoddef);
+  return get_msgdef_obj(self->descriptor_pool, type);
+}
+
+/*
+ * call-seq:
+ *      MethodDescriptor.client_streaming => bool
+ *
+ * Returns whether or not this is a streaming request method
+ */
+static VALUE MethodDescriptor_client_streaming(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  return upb_MethodDef_ClientStreaming(self->methoddef) ? Qtrue : Qfalse;
+}
+
+/*
+ * call-seq:
+ *      MethodDescriptor.server_streaming => bool
+ *
+ * Returns whether or not this is a streaming response method
+ */
+static VALUE MethodDescriptor_server_streaming(VALUE _self) {
+  MethodDescriptor* self = ruby_to_MethodDescriptor(_self);
+  return upb_MethodDef_ServerStreaming(self->methoddef) ? Qtrue : Qfalse;
+}
+
+static void MethodDescriptor_register(VALUE module) {
+  VALUE klass = rb_define_class_under(module, "MethodDescriptor", rb_cObject);
+  rb_define_alloc_func(klass, MethodDescriptor_alloc);
+  rb_define_method(klass, "initialize", MethodDescriptor_initialize, 3);
+  rb_define_method(klass, "name", MethodDescriptor_name, 0);
+  rb_define_method(klass, "options", MethodDescriptor_options, 0);
+  rb_define_method(klass, "input_type", MethodDescriptor_input_type, 0);
+  rb_define_method(klass, "output_type", MethodDescriptor_output_type, 0);
+  rb_define_method(klass, "client_streaming", MethodDescriptor_client_streaming,
+                   0);
+  rb_define_method(klass, "server_streaming", MethodDescriptor_server_streaming,
+                   0);
+  rb_gc_register_address(&cMethodDescriptor);
+  cMethodDescriptor = klass;
+}
+
 static VALUE get_def_obj(VALUE _descriptor_pool, const void* ptr, VALUE klass) {
   DescriptorPool* descriptor_pool = ruby_to_DescriptorPool(_descriptor_pool);
   VALUE key = ULL2NUM((intptr_t)ptr);
@@ -1346,6 +1647,16 @@ static VALUE get_filedef_obj(VALUE descriptor_pool, const upb_FileDef* def) {
 
 static VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_OneofDef* def) {
   return get_def_obj(descriptor_pool, def, cOneofDescriptor);
+}
+
+static VALUE get_servicedef_obj(VALUE descriptor_pool,
+                                const upb_ServiceDef* def) {
+  return get_def_obj(descriptor_pool, def, cServiceDescriptor);
+}
+
+static VALUE get_methoddef_obj(VALUE descriptor_pool,
+                               const upb_MethodDef* def) {
+  return get_def_obj(descriptor_pool, def, cMethodDescriptor);
 }
 
 // -----------------------------------------------------------------------------
@@ -1423,6 +1734,8 @@ void Defs_register(VALUE module) {
   FieldDescriptor_register(module);
   OneofDescriptor_register(module);
   EnumDescriptor_register(module);
+  ServiceDescriptor_register(module);
+  MethodDescriptor_register(module);
 
   rb_gc_register_address(&c_only_cookie);
   c_only_cookie = rb_class_new_instance(0, NULL, rb_cObject);

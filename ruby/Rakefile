@@ -29,6 +29,7 @@ test_protos = %w[
   tests/generated_code_editions.proto
   tests/multi_level_nesting_test.proto
   tests/repeated_field_test.proto
+  tests/service_test.proto
   tests/stress.proto
   tests/test_import.proto
   tests/test_import_proto2.proto
