@@ -170,7 +170,12 @@ proto_library(
     name = "java_features_proto",
     srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
     strip_import_prefix = "/java/core/src/main/java/com",
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//java/kotlin:__pkg__",
+        "//java/kotlin-lite:__pkg__",
+        "//java/lite:__pkg__",
+        "//pkg:__pkg__",
+    ],
     deps = ["//:descriptor_proto"],
 )
 
