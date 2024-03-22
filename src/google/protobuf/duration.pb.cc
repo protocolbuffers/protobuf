@@ -146,6 +146,7 @@ Duration::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
               false,
