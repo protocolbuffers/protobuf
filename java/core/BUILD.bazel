@@ -175,6 +175,7 @@ proto_library(
     srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
     strip_import_prefix = "/java/core/src/main/java/com",
     visibility = [
+        "//java/kotlin:__pkg__",
         "//java/kotlin-lite:__pkg__",
         "//java/lite:__pkg__",
         "//pkg:__pkg__",
