@@ -333,6 +333,7 @@ cc_library(
     deps = [
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs:lite",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/numeric:bits",
