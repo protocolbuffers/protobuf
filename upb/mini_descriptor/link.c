@@ -88,7 +88,7 @@ uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* m,
 
   for (int i = 0; i < upb_MiniTable_FieldCount(m); i++) {
     const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
-    if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
+    if (upb_MiniTableField_IsClosedEnum(f)) {
       *subs = f;
       ++subs;
       enum_count++;
