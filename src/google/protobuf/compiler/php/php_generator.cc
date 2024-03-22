@@ -512,7 +512,7 @@ std::string BinaryToPhpString(const std::string& src) {
     if (src[i] == '\\' || src[i] == '$' || src[i] == '"') {
       dest += '\\';
       dest += src[i];
-    } else if (std::isprint(src[i])) {
+    } else if (absl::ascii_isprint(src[i])) {
       dest += src[i];
     } else {
       dest += '\\';
