@@ -18,6 +18,7 @@
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
@@ -86,6 +87,9 @@ class FieldDefPtr {
   // f->containing_type()->field_count().  May only be accessed once the def has
   // been finalized.
   uint32_t index() const { return upb_FieldDef_Index(ptr_); }
+
+  // Index into msgdef->layout->fields or file->exts
+  uint32_t layout_index() const { return upb_FieldDef_LayoutIndex(ptr_); }
 
   // The MessageDef to which this field belongs (for extensions, the extended
   // message).
