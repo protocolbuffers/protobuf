@@ -32,3 +32,11 @@ common --noenable_bzlmod
 build --features=layering_check
 
 common --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
+
+# JPMS and Turbine do not get along yet.
+build --nojava_header_compilation
+build --incompatible_use_toolchain_resolution_for_java_rules
+build --java_language_version=11
+build --java_runtime_version=11
+build --tool_java_language_version=11
+build --tool_java_runtime_version=11

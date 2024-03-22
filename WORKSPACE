@@ -62,6 +62,7 @@ maven_install(
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",
+        "https://jpms.pkg.st/repository",
     ],
 )
 
@@ -91,11 +92,11 @@ load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 rules_cc_dependencies()
 
 # For `kt_jvm_library`
-load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
 kotlin_repositories()
 
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+load("@rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 

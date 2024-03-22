@@ -1,0 +1,17 @@
+load("//build_defs:java_opts.bzl", "protobuf_java_module")
+
+package(default_visibility = [
+    "//java/kotlin:__subpackages__",
+    "//java/kotlin-lite:__subpackages__",
+])
+
+protobuf_java_module(
+    name = "javamodule",
+    module = "src/main/java/module-info.java",
+    module_deps = ["//java/core:javamodule"],
+)
+
+alias(
+    name = "kotlin-jmod",
+    actual = "javamodule",
+)
