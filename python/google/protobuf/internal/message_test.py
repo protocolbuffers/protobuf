@@ -549,6 +549,15 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([4, 3, 2, 1],
                      [m.bb for m in msg.repeated_nested_message[::-1]])
 
+  def testSortEmptyRepeated(self, message_module):
+    message = message_module.NestedTestAllTypes()
+    self.assertFalse(message.HasField('child'))
+    self.assertFalse(message.HasField('payload'))
+    message.child.repeated_child.sort()
+    message.payload.repeated_int32.sort()
+    self.assertFalse(message.HasField('child'))
+    self.assertFalse(message.HasField('payload'))
+
   def testSortingRepeatedScalarFieldsDefaultComparator(self, message_module):
     """Check some different types with the default comparator."""
     message = message_module.TestAllTypes()
