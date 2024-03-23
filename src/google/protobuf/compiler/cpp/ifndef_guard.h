@@ -23,8 +23,8 @@
 // '.' characters with '_'.  If a different transformation is required, an
 // optional transformation function can be provided.
 
-#ifndef GOOGLE_PROTOBUF_IO_CPP_UTILS_IFNDEF_GUARD_H__
-#define GOOGLE_PROTOBUF_IO_CPP_UTILS_IFNDEF_GUARD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_IFNDEF_GUARD_H__
+#define GOOGLE_PROTOBUF_COMPILER_CPP_IFNDEF_GUARD_H__
 
 #include <string>
 
@@ -32,12 +32,15 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/printer.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
-namespace io {
+namespace compiler {
 namespace cpp {
 
-class IfdefGuardPrinter final {
+class PROTOC_EXPORT IfdefGuardPrinter final {
  public:
   explicit IfdefGuardPrinter(google::protobuf::io::Printer* p,
                              absl::string_view filename);
@@ -53,9 +56,11 @@ class IfdefGuardPrinter final {
   const std::string ifdef_identifier_;
 };
 
+#include "google/protobuf/port_undef.inc"
+
 }  // namespace cpp
-}  // namespace io
+}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_IO_CPP_UTILS_IFNDEF_GUARD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_IFNDEF_GUARD_H__

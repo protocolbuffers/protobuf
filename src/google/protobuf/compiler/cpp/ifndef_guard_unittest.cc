@@ -1,4 +1,4 @@
-#include "google/protobuf/io/cpp_utils/ifndef_guard.h"
+#include "google/protobuf/compiler/cpp/ifndef_guard.h"
 
 #include <string>
 
@@ -12,14 +12,14 @@
 
 namespace google {
 namespace protobuf {
-namespace io {
+namespace compiler {
 namespace cpp {
 
 namespace {
 
 class IfnDefGuardTest : public testing::Test {
  protected:
-  ZeroCopyOutputStream* output() {
+  io::ZeroCopyOutputStream* output() {
     ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
@@ -29,12 +29,12 @@ class IfnDefGuardTest : public testing::Test {
   }
 
   std::string out_;
-  absl::optional<StringOutputStream> stream_{&out_};
+  absl::optional<io::StringOutputStream> stream_{&out_};
 };
 
 TEST_F(IfnDefGuardTest, Basic) {
   {
-    Printer printer(output(), '$');
+    io::Printer printer(output(), '$');
 
     const IfdefGuardPrinter ifdef_guard(&printer, "A/B/E/alpha");
 
@@ -51,7 +51,7 @@ TEST_F(IfnDefGuardTest, Basic) {
 
 TEST_F(IfnDefGuardTest, DifferentDelim) {
   {
-    Printer printer(output(), '\0');
+    io::Printer printer(output(), '\0');
 
     const IfdefGuardPrinter ifdef_guard(&printer, "A/B/E/alpha");
 
@@ -68,7 +68,7 @@ TEST_F(IfnDefGuardTest, DifferentDelim) {
 
 TEST_F(IfnDefGuardTest, DifferentSubstitutionFunction) {
   {
-    Printer printer(output(), '$');
+    io::Printer printer(output(), '$');
 
     const IfdefGuardPrinter ifdef_guard(
         &printer, "A/B/E/alpha", [](absl::string_view) { return "FOO_BAR_"; });
@@ -85,8 +85,8 @@ TEST_F(IfnDefGuardTest, DifferentSubstitutionFunction) {
 }
 
 }  // namespace
-}  // namespace cpp
-}  // namespace io
 
+}  // namespace cpp
+}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

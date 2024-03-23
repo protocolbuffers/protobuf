@@ -174,7 +174,6 @@ cc_dist_library(
         "//src/google/protobuf:arena_align",
         "//src/google/protobuf:cmake_wkt_cc_proto",
         "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/io/cpp_utils:ifndef_guard",
         "//src/google/protobuf/json",
         "//src/google/protobuf/util:delimited_message_util",
         "//src/google/protobuf/util:differencer",

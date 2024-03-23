@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/io/cpp_utils/ifndef_guard.h"
+#include "google/protobuf/compiler/cpp/ifndef_guard.h"
 
 #include <string>
 
@@ -20,7 +20,7 @@
 
 namespace google {
 namespace protobuf {
-namespace io {
+namespace compiler {
 namespace cpp {
 
 namespace {
@@ -66,6 +66,6 @@ IfdefGuardPrinter::~IfdefGuardPrinter() {
 }
 
 }  // namespace cpp
-}  // namespace io
+}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
