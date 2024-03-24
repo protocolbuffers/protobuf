@@ -192,10 +192,7 @@ GeneratorOptions Generator::ParseParameter(absl::string_view parameter,
   ParseGeneratorParameter(parameter, &option_pairs);
 
   for (const std::pair<std::string, std::string>& option : option_pairs) {
-    if (!opensource_runtime_ &&
-        option.first == "no_enforce_api_compatibility") {
-      // TODO: remove this legacy option, it has no effect.
-    } else if (!opensource_runtime_ && option.first == "bootstrap") {
+    if (!opensource_runtime_ && option.first == "bootstrap") {
       options.bootstrap = true;
     } else if (option.first == "pyi_out") {
       options.generate_pyi = true;
