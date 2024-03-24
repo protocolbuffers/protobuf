@@ -1,2 +1,116 @@
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
+module(
+    name = "protobuf",
+    compatibility_level = 1,
+    repo_name = "com_google_protobuf",
+)
+
+bazel_dep(
+    name = "abseil-cpp",
+    version = "20240116.0",
+    repo_name = "com_google_absl",
+)
+bazel_dep(
+    name = "apple_support",
+    version = "1.12.0",
+    repo_name = "build_bazel_apple_support",
+)
+bazel_dep(
+    name = "bazel_skylib",
+    version = "1.5.0",
+)
+
+bazel_dep(
+    name = "google_benchmark",
+    version = "1.8.2",
+    dev_dependency = True,
+    repo_name = "com_github_google_benchmark",
+)
+bazel_dep(
+    name = "googletest",
+    version = "1.14.0.bcr.1",
+    dev_dependency = True,
+    repo_name = "com_google_googletest",
+)
+
+bazel_dep(
+    name = "jsoncpp",
+    version = "1.9.5",
+)
+bazel_dep(
+    name = "platforms",
+    version = "0.0.9",
+)
+bazel_dep(
+    name = "rules_apple",
+    version = "3.2.1",
+    repo_name = "build_bazel_rules_apple",
+)
+bazel_dep(
+    name = "rules_cc",
+    version = "0.0.9",
+)
+bazel_dep(
+    name = "rules_java",
+    version = "6.0.0",
+)
+bazel_dep(
+    name = "rules_jvm_external",
+    version = "4.4.2",
+)
+bazel_dep(
+    name = "rules_pkg",
+    version = "0.7.0",
+)
+bazel_dep(
+    name = "rules_proto",
+    version = "5.3.0-21.7",
+)
+bazel_dep(
+    name = "rules_python",
+    version = "0.26.0",
+)
+bazel_dep(
+    name = "rules_ruby",
+    version = "0.9.1",
+)
+bazel_dep(
+    name = "zlib",
+    version = "1.2.13",
+)
+# -- bazel_dep definitions -- #
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "maven",
+    artifacts = [
+        "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
+        "com.google.caliper:caliper:1.0-beta-3",
+        "com.google.code.findbugs:jsr305:3.0.2",
+        "com.google.code.gson:gson:2.8.9",
+        "com.google.errorprone:error_prone_annotations:2.5.1",
+        "com.google.j2objc:j2objc-annotations:2.8",
+        "com.google.guava:guava:32.0.1-jre",
+        "com.google.guava:guava-testlib:32.0.1-jre",
+        "com.google.truth:truth:1.1.2",
+        "info.picocli:picocli:4.6.3",
+        "junit:junit:4.13.2",
+        "org.mockito:mockito-core:4.3.1",
+    ],
+    lock_file = "//:maven_install.json",
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.9")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pip_deps",
+    python_version = "3.9",
+    requirements_lock = "//python:requirements.txt",
+)
+use_repo(pip, "pip_deps")

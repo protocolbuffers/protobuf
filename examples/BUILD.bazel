@@ -39,7 +39,7 @@ cc_binary(
     deps = [
         ":addressbook_cc_proto",
         "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/util:time_util",
+        "@com_google_protobuf//:time_util",
     ],
 )
 
@@ -49,7 +49,7 @@ cc_binary(
     deps = [
         ":addressbook_cc_proto",
         "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/util:time_util",
+        "@com_google_protobuf//:time_util",
     ],
 )
 

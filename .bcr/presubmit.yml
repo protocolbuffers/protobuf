@@ -7,10 +7,17 @@ tasks:
     platform: ${{ platform }}
     build_targets:
     - '@protobuf//:protobuf'
+    - '@protobuf//:protobuf_headers'
     - '@protobuf//:protobuf_lite'
+    - '@protobuf//:protobuf_python'
+    - '@protobuf//:protobuf_java'
+    - '@protobuf//:protobuf_javalite'
     - '@protobuf//:protoc'
+    - '@protobuf//:protoc_lib'
     - '@protobuf//:test_messages_proto2_cc_proto'
     - '@protobuf//:test_messages_proto3_cc_proto'
+    - '@protobuf//:well_known_type_protos'
+    - '@protobuf//upb:*'
 
 bcr_test_module:
   module_path: "examples"
