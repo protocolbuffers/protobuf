@@ -127,7 +127,7 @@ struct TcFieldData {
 struct TcParseTableBase;
 
 // TailCallParseFunc is the function pointer type used in the tailcall table.
-typedef const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
+typedef PROTOBUF_CC const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
 
 namespace field_layout {
 struct Offset {
@@ -542,12 +542,14 @@ static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
 
-template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
-const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+template <typename T,
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
+PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
   return func(static_cast<T*>(msg), ptr, ctx);
 }
 
-template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+template <typename T,
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
 constexpr TcParseTable<0> CreateStubTcParseTable(
     const MessageLite* default_instance,
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
