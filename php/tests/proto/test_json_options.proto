@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message TestPreserveProtoFieldNames {
+  string short = 1 ;
+  string long_name = 2;
+  string Strange_case = 3;
+  string with_json_name = 4 [json_name = "json_name"];
+}
+
+message TestEmitsDefaults {
+  string value_string = 1;
+  int32 value_int32 = 2;
+  int64 value_int64 = 3;
+  bool value_bool = 4;
+  double value_double = 5;
+  float value_float = 6;
+  repeated string value_repeated = 7;
+}
