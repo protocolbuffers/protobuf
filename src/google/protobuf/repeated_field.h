@@ -185,6 +185,15 @@ class RepeatedField final
   const_reference at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+  const_reference front() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return (*this)[0];
+  }
+  reference front() ABSL_ATTRIBUTE_LIFETIME_BOUND { return (*this)[0]; }
+  const_reference back() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return (*this)[size() - 1];
+  }
+  reference back() ABSL_ATTRIBUTE_LIFETIME_BOUND { return (*this)[size() - 1]; }
+
   void Set(int index, const Element& value);
   void Add(Element value);
 
@@ -260,11 +269,17 @@ class RepeatedField final
   const_reverse_iterator rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
+  const_reverse_iterator crbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return rbegin();
+  }
   reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(begin());
   }
   const_reverse_iterator rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
+  }
+  const_reverse_iterator crend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return rend();
   }
 
   // Returns the number of bytes used by the repeated field, excluding
