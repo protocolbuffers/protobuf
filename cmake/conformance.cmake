@@ -18,10 +18,16 @@ add_custom_command(
   OUTPUT
     ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
     ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
-  DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
-  COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
-      --proto_path=${protobuf_SOURCE_DIR}/conformance
-      --cpp_out=${protobuf_BINARY_DIR}/conformance
+    ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
+    ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
+  DEPENDS ${protobuf_PROTOC_EXE}
+    ${protobuf_SOURCE_DIR}/conformance/conformance.proto
+    ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition2023.proto
+  COMMAND ${protobuf_PROTOC_EXE}
+      ${protobuf_SOURCE_DIR}/conformance/conformance.proto
+      ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition2023.proto
+      --proto_path=${protobuf_SOURCE_DIR}
+      --cpp_out=${protobuf_BINARY_DIR}
 )
 
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
@@ -53,6 +59,8 @@ add_custom_command(
 add_library(libconformance_common STATIC
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
+  ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
+  ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.h
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.h
