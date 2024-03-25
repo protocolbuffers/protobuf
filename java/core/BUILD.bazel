@@ -75,7 +75,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/NewInstanceSchema.java",
     "src/main/java/com/google/protobuf/NewInstanceSchemaLite.java",
     "src/main/java/com/google/protobuf/NewInstanceSchemas.java",
-    "src/main/java/com/google/protobuf/NioByteString.java",
     "src/main/java/com/google/protobuf/OneofInfo.java",
     "src/main/java/com/google/protobuf/Parser.java",
     "src/main/java/com/google/protobuf/PrimitiveNonBoxingCollection.java",
