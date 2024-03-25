@@ -189,17 +189,18 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.
-  template <typename Functor>
-  void WalkConstSerialArenaChunk(Functor fn) const;
+  template <typename Callback>
+  void WalkConstSerialArenaChunk(Callback fn) const;
 
   // Executes callback function over SerialArenaChunk.
-  template <typename Functor>
-  void WalkSerialArenaChunk(Functor fn);
+  template <typename Callback>
+  void WalkSerialArenaChunk(Callback fn);
 
-  // Executes callback function over SerialArena in chunked list in reverse
-  // chronological order. Passes const SerialArena*.
-  template <typename Functor>
-  void PerConstSerialArenaInChunk(Functor fn) const;
+  // Visits SerialArena and calls "fn", including "first_arena" and ones on
+  // chunks. Do not rely on the order of visit. The callback function should
+  // accept `const SerialArena*`.
+  template <typename Callback>
+  void VisitSerialArena(Callback fn) const;
 
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before

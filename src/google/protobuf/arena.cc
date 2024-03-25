@@ -793,8 +793,8 @@ void* ThreadSafeArena::AllocateFromStringBlock() {
   return GetSerialArena()->AllocateFromStringBlock();
 }
 
-template <typename Functor>
-void ThreadSafeArena::WalkConstSerialArenaChunk(Functor fn) const {
+template <typename Callback>
+void ThreadSafeArena::WalkConstSerialArenaChunk(Callback fn) const {
   const SerialArenaChunk* chunk = head_.load(std::memory_order_acquire);
 
   for (; !chunk->IsSentry(); chunk = chunk->next_chunk()) {
@@ -804,8 +804,8 @@ void ThreadSafeArena::WalkConstSerialArenaChunk(Functor fn) const {
   }
 }
 
-template <typename Functor>
-void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
+template <typename Callback>
+void ThreadSafeArena::WalkSerialArenaChunk(Callback fn) {
   // By omitting an Acquire barrier we help the sanitizer that any user code
   // that doesn't properly synchronize Reset() or the destructor will throw a
   // TSAN warning.
@@ -821,8 +821,12 @@ void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
   }
 }
 
-template <typename Functor>
-void ThreadSafeArena::PerConstSerialArenaInChunk(Functor fn) const {
+template <typename Callback>
+void ThreadSafeArena::VisitSerialArena(Callback fn) const {
+  // In most cases, arenas are single-threaded and "first_arena_" should be
+  // sufficient.
+  fn(&first_arena_);
+
   WalkConstSerialArenaChunk([&fn](const SerialArenaChunk* chunk) {
     for (const auto& each : chunk->arenas()) {
       const SerialArena* serial = each.load(std::memory_order_acquire);
@@ -835,18 +839,17 @@ void ThreadSafeArena::PerConstSerialArenaInChunk(Functor fn) const {
 }
 
 uint64_t ThreadSafeArena::SpaceAllocated() const {
-  uint64_t space_allocated = first_arena_.SpaceAllocated();
-  PerConstSerialArenaInChunk([&space_allocated](const SerialArena* serial) {
+  uint64_t space_allocated = 0;
+  VisitSerialArena([&space_allocated](const SerialArena* serial) {
     space_allocated += serial->SpaceAllocated();
   });
   return space_allocated;
 }
 
 uint64_t ThreadSafeArena::SpaceUsed() const {
-  // First arena is inlined to ThreadSafeArena and the first block's overhead is
-  // smaller than others that contain SerialArena.
-  uint64_t space_used = first_arena_.SpaceUsed();
-  PerConstSerialArenaInChunk([&space_used](const SerialArena* serial) {
+  // `first_arena_` doesn't have kSerialArenaSize overhead, so adjust it here.
+  uint64_t space_used = kSerialArenaSize;
+  VisitSerialArena([&space_used](const SerialArena* serial) {
     // SerialArena on chunks directly allocated from the block and needs to be
     // subtracted from SpaceUsed.
     space_used += serial->SpaceUsed() - kSerialArenaSize;
