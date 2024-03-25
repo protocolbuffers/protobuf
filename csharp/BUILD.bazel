@@ -13,8 +13,8 @@ load("//conformance:defs.bzl", "conformance_test")
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_csharp.txt",
+    maximum_edition = "2023",
     testee = "//conformance:conformance_csharp",
-    text_format_failure_list = "//conformance:text_format_failure_list_csharp.txt",
 )
 
 ################################################################################

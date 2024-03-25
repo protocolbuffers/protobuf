@@ -238,7 +238,7 @@ static void txtenc_field(txtenc* e, upb_MessageValue val,
   if (ctype == kUpb_CType_Message) {
 // begin:google_only
 //     // TODO: Turn this into a feature check and opensource it.
-//     if (upb_FieldDef_Type(f) == kUpb_FieldType_Group) {
+//     if (_upb_FieldDef_IsGroupLike(f)) {
 //       const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
 //       name = upb_MessageDef_Name(m);
 //     }

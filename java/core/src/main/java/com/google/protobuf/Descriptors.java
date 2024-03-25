@@ -1471,6 +1471,31 @@ public final class Descriptors {
     }
 
     /**
+     * Returns true if this field is structured like the synthetic field of a proto2 group. This
+     * allows us to expand our treatment of delimited fields without breaking proto2 files that have
+     * been upgraded to editions.
+     */
+    boolean isGroupLike() {
+      if (getType() != Type.GROUP) {
+        // Groups are always group types.
+        return false;
+      }
+      if (getMessageType().getFile() != getFile()) {
+        // Groups could only be defined in the same file they're used.
+        return false;
+      }
+      if (!getMessageType().getName().toLowerCase().equals(getName())) {
+        // Group fields always are always the lowercase type name.
+        return false;
+      }
+      // Group messages are always defined in the same scope as the field.
+      if (isExtension()) {
+        return getMessageType().getContainingType() == getExtensionScope();
+      }
+      return getMessageType().getContainingType() == getContainingType();
+    }
+
+    /**
      * For extensions defined nested within message types, gets the outer type. Not valid for
      * non-extension fields. For example, consider this {@code .proto} file:
      *

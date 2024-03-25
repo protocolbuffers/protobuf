@@ -40,7 +40,7 @@ void SetCommonFieldVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string camel_case_name = FieldName(descriptor);
   std::string raw_field_name;
-  if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*descriptor)) {
     raw_field_name = descriptor->message_type()->name();
   } else {
     raw_field_name = descriptor->name();

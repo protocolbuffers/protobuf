@@ -1,0 +1,17 @@
+edition = "2023";
+
+package editions_unittest;
+
+option java_multiple_files = true;
+
+message TestDelimited {
+  TestDelimited length_prefixed = 1;
+  TestDelimited nested = 2 [features.message_encoding = DELIMITED];
+
+  message GroupLike {
+    int32 a = 1;
+    int32 b = 2;
+  }
+  GroupLike grouplike = 3 [features.message_encoding = DELIMITED];
+  GroupLike notgrouplike = 4 [features.message_encoding = DELIMITED];
+}

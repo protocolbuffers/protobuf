@@ -250,6 +250,36 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
          UPB_DESC(FeatureSet_VERIFY);
 }
 
+bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f) {
+  // Groups are always group types.
+  if (upb_FieldDef_Type(f) != kUpb_FieldType_Group) return false;
+
+  const upb_MessageDef* msg = upb_FieldDef_MessageSubDef(f);
+
+  // Groups could only be defined in the same file they're used.
+  if (upb_MessageDef_File(msg) != upb_FieldDef_File(f)) {
+    return false;
+  }
+
+  // Group fields always are always the lowercase type name.
+  const char* mname = upb_MessageDef_Name(msg);
+  const char* fname = upb_FieldDef_Name(f);
+  size_t name_size = strlen(fname);
+  if (name_size != strlen(mname)) return false;
+  for (size_t i = 0; i < name_size; ++i) {
+    if ((mname[i] | 0x20) != fname[i]) {
+      // Case-insensitive ascii comparison.
+      return false;
+    }
+  }
+
+  // Group messages are always defined in the same scope as the field.
+  if (upb_FieldDef_IsExtension(f)) {
+    return upb_FieldDef_ExtensionScope(f) == upb_MessageDef_ContainingType(msg);
+  }
+  return upb_FieldDef_ContainingType(f) == upb_MessageDef_ContainingType(msg);
+}
+
 uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
   uint64_t out = upb_FieldDef_IsPacked(f) ? kUpb_FieldModifier_IsPacked : 0;
 

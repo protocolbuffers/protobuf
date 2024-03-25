@@ -9526,6 +9526,22 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
   return Utf8CheckMode::kNone;
 }
 
+bool IsGroupLike(const FieldDescriptor& field) {
+  // Groups are always group types.
+  if (field.type() != FieldDescriptor::TYPE_GROUP) return false;
+  // Groups could only be defined in the same file they're used.
+  if (field.message_type()->file() != field.file()) return false;
+  // Group fields always are always the lowercase type name.
+  if (field.name() != absl::AsciiStrToLower(field.message_type()->name())) {
+    return false;
+  }
+  // Group messages are always defined in the same scope as the field.
+  if (field.is_extension()) {
+    return field.message_type()->containing_type() == field.extension_scope();
+  }
+  return field.message_type()->containing_type() == field.containing_type();
+}
+
 bool IsLazilyInitializedFile(absl::string_view filename) {
   if (filename == "third_party/protobuf/cpp_features.proto" ||
       filename == "google/protobuf/cpp_features.proto") {

@@ -25,6 +25,7 @@ import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
 import com.google.protobuf.testing.proto.TestProto3Optional;
 import com.google.protobuf.testing.proto.TestProto3Optional.NestedEnum;
 import any_test.AnyTestProto.TestAny;
+import editions_unittest.TestDelimited;
 import map_test.MapTestProto.TestMap;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
@@ -1588,6 +1589,91 @@ public class TextFormatTest {
         "1:17: Couldn't parse integer: For input string: \"[\"", "optional_int32: [1]\n");
     assertParseErrorWithOverwriteForbidden(
         "1:17: Couldn't parse integer: For input string: \"[\"", "optional_int32: []\n");
+  }
+
+  // =======================================================================
+  // test delimited
+
+  @Test
+  public void testPrintGroupLikeDelimited() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setGroupLike(TestDelimited.GroupLike.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message)).isEqualTo("GroupLike {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testPrintDelimited() throws Exception {
+    TestDelimited message =
+        TestDelimited.newBuilder()
+            .setNotgrouplike(TestDelimited.GroupLike.newBuilder().setA(1).build())
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("notgrouplike {\n  a: 1\n}\n");
+  }
+
+  @Test
+  public void testParseGroupLikeDelimitedType() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    TextFormat.merge("GroupLike { a: 1 }", message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setGroupLike(TestDelimited.GroupLike.newBuilder().setA(1).build())
+                .build());
+  }
+
+  @Test
+  public void testParseGroupLikeDelimitedField() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    TextFormat.merge("grouplike { a: 2 }", message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setGroupLike(TestDelimited.GroupLike.newBuilder().setA(2).build())
+                .build());
+  }
+
+  @Test
+  public void testParseGroupLikeDelimitedInvalid() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    try {
+      TextFormat.merge("GROUPlike { a: 3 }", message);
+      assertWithMessage("Expected parse exception.").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "1:1: Input contains unknown fields and/or extensions:\n"
+                  + "1:1:\teditions_unittest.TestDelimited.GROUPlike");
+    }
+  }
+
+  @Test
+  public void testParseDelimitedField() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    TextFormat.merge("notgrouplike { b: 3 }", message);
+    assertThat(message.build())
+        .isEqualTo(
+            TestDelimited.newBuilder()
+                .setNotgrouplike(TestDelimited.GroupLike.newBuilder().setB(3).build())
+                .build());
+  }
+
+  @Test
+  public void testParseDelimitedInvalid() throws Exception {
+    TestDelimited.Builder message = TestDelimited.newBuilder();
+    try {
+      TextFormat.merge("NotGroupLike { a: 3 }", message);
+      assertWithMessage("Expected parse exception.").fail();
+    } catch (TextFormat.ParseException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "1:1: Input contains unknown fields and/or extensions:\n"
+                  + "1:1:\teditions_unittest.TestDelimited.NotGroupLike");
+    }
   }
 
   // =======================================================================

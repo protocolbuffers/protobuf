@@ -31,6 +31,7 @@ from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_custom_options_pb2
+from google.protobuf import unittest_delimited_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 # pylint: enable=g-import-not-at-top
@@ -2310,6 +2311,50 @@ class TokenizerTest(unittest.TestCase):
       self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
     else:
       self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
+
+  def testPrintDelimitedGroupLike(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        grouplike=unittest_delimited_pb2.TestDelimited.GroupLike(a=1)
+    )
+    if api_implementation.Type() == 'upb':
+      self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
+    else:
+      self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
+
+  def testPrintDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        notgrouplike=unittest_delimited_pb2.TestDelimited.GroupLike(b=2)
+    )
+    self.assertEqual(str(msg), 'notgrouplike {\n  b: 2\n}\n')
+
+  def testParseDelimitedGroupLikeType(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('GroupLike { a: 1 }', msg)
+    self.assertEqual(msg.grouplike.a, 1)
+    self.assertFalse(msg.HasField('notgrouplike'))
+
+  def testParseDelimitedGroupLikeField(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('grouplike { a: 2 }', msg)
+    self.assertEqual(msg.grouplike.a, 2)
+    self.assertFalse(msg.HasField('notgrouplike'))
+
+  def testParseDelimitedGroupLikeInvalid(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('GROUPlike { b:1 }', msg)
+
+  def testParseDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('notgrouplike { b: 1 }', msg)
+    self.assertEqual(msg.notgrouplike.b, 1)
+    self.assertFalse(msg.HasField('grouplike'))
+
+  def testParseDelimitedInvalid(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('NotGroupLike { b:1 }', msg)
+
 
 # Tests for pretty printer functionality.
 @_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
