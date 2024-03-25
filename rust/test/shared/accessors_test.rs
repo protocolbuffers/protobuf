@@ -13,7 +13,7 @@ use unittest_proto::{test_all_types, TestAllTypes};
 
 #[test]
 fn test_default_accessors() {
-    let msg = TestAllTypes::new();
+    let msg: TestAllTypes = Default::default();
     assert_that!(
         msg,
         matches_pattern!(TestAllTypes{

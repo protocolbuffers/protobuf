@@ -815,6 +815,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl std::default::Default for $Msg$ {
+          fn default() -> Self {
+            Self::new()
+          }
+        }
+
         // SAFETY:
         // - `$Msg$` is `Sync` because it does not implement interior mutability.
         //    Neither does `$Msg$Mut`.
