@@ -43,9 +43,7 @@ fn read_request_from_stdin() -> Option<ConformanceRequest> {
     let msg_len = read_little_endian_i32_from_stdin()?;
     let mut serialized = vec![0_u8; msg_len as usize];
     io::stdin().read_exact(&mut serialized).unwrap();
-    let mut req = ConformanceRequest::new();
-    req.deserialize(&serialized).unwrap();
-    Some(req)
+    Some(ConformanceRequest::parse(&serialized).unwrap())
 }
 
 fn write_response_to_stdout(resp: &ConformanceResponse) {
@@ -76,36 +74,36 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
 
     let serialized = match message_type.as_bytes() {
         b"protobuf_test_messages.proto2.TestAllTypesProto2" => {
-            let mut proto = TestAllTypesProto2::new();
-            if let Err(_) = proto.deserialize(bytes) {
+            if let Ok(msg) = TestAllTypesProto2::parse(bytes) {
+                msg.serialize()
+            } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
-            proto.serialize()
         }
         b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
-            let mut proto = TestAllTypesProto3::new();
-            if let Err(_) = proto.deserialize(bytes) {
+            if let Ok(msg) = TestAllTypesProto3::parse(bytes) {
+                msg.serialize()
+            } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
-            proto.serialize()
         }
         b"protobuf_test_messages.editions.proto2.TestAllTypesProto2" => {
-            let mut proto = EditionsTestAllTypesProto2::new();
-            if let Err(_) = proto.deserialize(bytes) {
+            if let Ok(msg) = EditionsTestAllTypesProto2::parse(bytes) {
+                msg.serialize()
+            } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
-            proto.serialize()
         }
         b"protobuf_test_messages.editions.proto3.TestAllTypesProto3" => {
-            let mut proto = EditionsTestAllTypesProto3::new();
-            if let Err(_) = proto.deserialize(bytes) {
+            if let Ok(msg) = EditionsTestAllTypesProto3::parse(bytes) {
+                msg.serialize()
+            } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
             }
-            proto.serialize()
         }
         _ => panic!("unexpected msg type {message_type}"),
     };
