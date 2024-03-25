@@ -221,40 +221,38 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
 
 void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
   p->Emit(
-      {
-          {"port_def",
-           [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
-          {"port_undef",
-           [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
-          {"dllexport_macro", FileDllExport(file_, options_)},
-          {"undefs", [&] { GenerateMacroUndefs(p); }},
-          {"global_state_decls",
-           [&] { GenerateGlobalStateFunctionDeclarations(p); }},
-          {"any_metadata",
-           [&] {
-             NamespaceOpener ns(ProtobufNamespace(options_), p);
-             p->Emit(R"cc(
-               namespace internal {
-               class AnyMetadata;
-               }  // namespace internal
-             )cc");
-           }},
-          {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
-          {"proto2_ns_enums",
-           [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
-          {"main_decls",
-           [&] {
-             NamespaceOpener ns(Namespace(file_, options_), p);
-             p->Emit(
-                 {
-                     {"enums", [&] { GenerateEnumDefinitions(p); }},
-                     {"messages", [&] { GenerateMessageDefinitions(p); }},
-                     {"services", [&] { GenerateServiceDefinitions(p); }},
-                     {"extensions", [&] { GenerateExtensionIdentifiers(p); }},
-                     {"inline_fns",
-                      [&] { GenerateInlineFunctionDefinitions(p); }},
-                 },
-                 R"(
+      {{"port_def",
+        [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
+       {"port_undef",
+        [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
+       {"dllexport_macro", FileDllExport(file_, options_)},
+       {"undefs", [&] { GenerateMacroUndefs(p); }},
+       {"global_state_decls",
+        [&] { GenerateGlobalStateFunctionDeclarations(p); }},
+       {"any_metadata",
+        [&] {
+          NamespaceOpener ns(ProtobufNamespace(options_), p);
+          p->Emit(R"cc(
+            namespace internal {
+            class AnyMetadata;
+            }  // namespace internal
+          )cc");
+        }},
+       {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
+       {"proto2_ns_enums",
+        [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
+       {"main_decls",
+        [&] {
+          NamespaceOpener ns(Namespace(file_, options_), p);
+          p->Emit(
+              {
+                  {"enums", [&] { GenerateEnumDefinitions(p); }},
+                  {"messages", [&] { GenerateMessageDefinitions(p); }},
+                  {"services", [&] { GenerateServiceDefinitions(p); }},
+                  {"extensions", [&] { GenerateExtensionIdentifiers(p); }},
+                  {"inline_fns", [&] { GenerateInlineFunctionDefinitions(p); }},
+              },
+              R"(
                    $enums$
 
                    $hrule_thick$
@@ -273,8 +271,12 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
 
                    // @@protoc_insertion_point(namespace_scope)
                  )");
-           }},
-      },
+        }},
+       {
+           "static_reflection",
+           [&] {
+           },
+       }},
       R"(
           // Must be included last.
           $port_def$
@@ -290,6 +292,8 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           $main_decls$
 
           $proto2_ns_enums$
+
+          $static_reflection$
 
           // @@protoc_insertion_point(global_scope)
 
