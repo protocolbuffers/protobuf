@@ -1195,7 +1195,15 @@ template <typename Add, typename SizeCb>
 const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
                                                  SizeCb size_callback) {
   int size = ReadSize(&ptr);
-  size_callback(size);
+  auto element_size = 0;
+  const uint8_t* pData = (uint8_t*)ptr;
+  while (pData && pData < (pData + size)) {
+    if (*pData < 0x80) {
+      element_size++;
+    }
+    pData++;
+  }
+  size_callback(element_size);
 
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int chunk_size = static_cast<int>(buffer_end_ - ptr);
