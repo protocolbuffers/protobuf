@@ -306,6 +306,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/ifndef_guard.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/namespace_printer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/padding_optimizer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/parse_function_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/service.cc
@@ -425,6 +426,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_layout_helper.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/names.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/namespace_printer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/padding_optimizer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/parse_function_generator.h
@@ -1099,6 +1101,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/metadata_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/move_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/namespace_printer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc
