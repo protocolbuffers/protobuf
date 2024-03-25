@@ -7,6 +7,15 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+cc_binary(
+    name = "protoc-gen-cpp",
+    srcs = ["main.cc"],
+    deps = [
+        ":cpp",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_library(
     name = "names",
     hdrs = ["names.h"],

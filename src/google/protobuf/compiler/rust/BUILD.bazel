@@ -5,6 +5,15 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+cc_binary(
+    name = "protoc-gen-rust",
+    srcs = ["main.cc"],
+    deps = [
+        ":rust",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_library(
     name = "rust",
     srcs = ["generator.cc"],
