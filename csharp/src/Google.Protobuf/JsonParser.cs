@@ -612,7 +612,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static object ParseSingleNumberValue(FieldDescriptor field, JsonToken token)
+        private static object ParseSingleNumberValue(FieldDescriptor field, in JsonToken token)
         {
             double value = token.NumberValue;
             checked
@@ -805,7 +805,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static void MergeTimestamp(IMessage message, JsonToken token)
+        private static void MergeTimestamp(IMessage message, in JsonToken token)
         {
             if (token.Type != JsonToken.TokenType.StringValue)
             {
@@ -881,7 +881,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static void MergeDuration(IMessage message, JsonToken token)
+        private static void MergeDuration(IMessage message, in JsonToken token)
         {
             if (token.Type != JsonToken.TokenType.StringValue)
             {
@@ -925,7 +925,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static void MergeFieldMask(IMessage message, JsonToken token)
+        private static void MergeFieldMask(IMessage message, in JsonToken token)
         {
             if (token.Type != JsonToken.TokenType.StringValue)
             {
