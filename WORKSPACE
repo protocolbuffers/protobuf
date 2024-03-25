@@ -160,14 +160,7 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//bazel:system_python.bzl", "system_python")
-
-system_python(
-    name = "system_python",
-    minimum_python_version = "3.7",
-)
-
-load("@system_python//:pip.bzl", "pip_parse")
+load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
