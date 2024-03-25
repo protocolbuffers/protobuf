@@ -72,8 +72,7 @@ fn deserialize_in_rust() {
         SerializeTestAllTypes(msg1.as_view().__unstable_cpp_repr_grant_permission_to_break())
     };
 
-    let mut msg2 = TestAllTypes::new();
-    msg2.deserialize(&serialized).unwrap();
+    let msg2 = TestAllTypes::parse(&serialized).unwrap();
     proto_assert_eq!(msg1, msg2);
 }
 
@@ -139,8 +138,7 @@ fn smuggle_extension() {
     };
     let data = msg1.serialize();
 
-    let mut msg2 = TestAllExtensions::new();
-    msg2.deserialize(&data).unwrap();
+    let mut msg2 = TestAllExtensions::parse(&data).unwrap();
     let bytes =
         unsafe { GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref() };
     assert_eq!(&*bytes, b"smuggled");
