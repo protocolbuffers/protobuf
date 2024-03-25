@@ -1911,7 +1911,7 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
       for (size_t i = 1; i <= encoded.size(); ++i) {
         TestInputStream input_stream(encoded, i);
 
-        auto& obj = *arena.CreateMessage<UNITTEST::StringParseTester>(&arena);
+        auto& obj = *arena.Create<UNITTEST::StringParseTester>(&arena);
         auto* ref = obj.GetReflection();
         EXPECT_TRUE(obj.ParseFromZeroCopyStream(&input_stream));
         if (field->is_repeated()) {

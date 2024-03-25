@@ -10,16 +10,16 @@
 #ifndef GOOGLE_PROTOBUF_THREAD_SAFE_ARENA_H__
 #define GOOGLE_PROTOBUF_THREAD_SAFE_ARENA_H__
 
-#include <algorithm>
 #include <atomic>
-#include <string>
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
-#include <utility>
+#include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
-#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"

@@ -13,17 +13,17 @@ use unittest_proto::*;
 
 #[test]
 fn test_nested_enum_values() {
-    assert_that!(i32::from(TestAllTypes_::NestedEnum::Foo), eq(1));
-    assert_that!(i32::from(TestAllTypes_::NestedEnum::Bar), eq(2));
-    assert_that!(i32::from(TestAllTypes_::NestedEnum::Baz), eq(3));
-    assert_that!(i32::from(TestAllTypes_::NestedEnum::Neg), eq(-1));
+    assert_that!(i32::from(test_all_types::NestedEnum::Foo), eq(1));
+    assert_that!(i32::from(test_all_types::NestedEnum::Bar), eq(2));
+    assert_that!(i32::from(test_all_types::NestedEnum::Baz), eq(3));
+    assert_that!(i32::from(test_all_types::NestedEnum::Neg), eq(-1));
 }
 
 #[test]
 fn test_isolated_nested_enum() {
     // Ensure that the enum is generated even when it's the only nested type for the
     // message.
-    assert_that!(i32::from(TestRequiredEnumNoMask_::NestedEnum::Foo), eq(2));
+    assert_that!(i32::from(test_required_enum_no_mask::NestedEnum::Foo), eq(2));
 }
 
 #[test]
@@ -40,7 +40,7 @@ fn test_enum_defaults() {
         TestEnumWithDuplicateStrippedPrefixNames::default(),
         eq(TestEnumWithDuplicateStrippedPrefixNames::Unknown)
     );
-    assert_that!(TestAllTypes_::NestedEnum::default(), eq(TestAllTypes_::NestedEnum::Foo));
+    assert_that!(test_all_types::NestedEnum::default(), eq(test_all_types::NestedEnum::Foo));
 }
 
 #[test]

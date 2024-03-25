@@ -52,11 +52,9 @@ TEST(DefaultsTest, Check2023) {
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[2]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            1);
+  EXPECT_EQ(
+      defaults->defaults()[2].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE3);
 }
 
 TEST(DefaultsTest, CheckFuture) {
@@ -71,19 +69,15 @@ TEST(DefaultsTest, CheckFuture) {
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[2]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            1);
+  EXPECT_EQ(
+      defaults->defaults()[2].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE3);
   EXPECT_EQ(defaults->defaults()[3].edition(), EDITION_99997_TEST_ONLY);
   EXPECT_EQ(defaults->defaults()[3].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[3]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            2);
+  EXPECT_EQ(
+      defaults->defaults()[3].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE4);
 }
 
 TEST(DefaultsTest, CheckFarFuture) {
@@ -98,27 +92,21 @@ TEST(DefaultsTest, CheckFarFuture) {
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[2]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            1);
+  EXPECT_EQ(
+      defaults->defaults()[2].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE3);
   EXPECT_EQ(defaults->defaults()[3].edition(), EDITION_99997_TEST_ONLY);
   EXPECT_EQ(defaults->defaults()[3].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[3]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            2);
+  EXPECT_EQ(
+      defaults->defaults()[3].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE4);
   EXPECT_EQ(defaults->defaults()[4].edition(), EDITION_99998_TEST_ONLY);
   EXPECT_EQ(defaults->defaults()[4].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults->defaults()[4]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            3);
+  EXPECT_EQ(
+      defaults->defaults()[4].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE5);
 }
 
 TEST(DefaultsTest, Embedded) {
@@ -135,11 +123,9 @@ TEST(DefaultsTest, Embedded) {
   EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults()[2].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults.defaults()[2]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            1);
+  EXPECT_EQ(
+      defaults.defaults()[2].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE3);
 }
 
 TEST(DefaultsTest, EmbeddedBase64) {
@@ -159,11 +145,9 @@ TEST(DefaultsTest, EmbeddedBase64) {
   EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults()[2].features().field_presence(),
             FeatureSet::EXPLICIT);
-  EXPECT_EQ(defaults.defaults()[2]
-                .features()
-                .GetExtension(pb::test)
-                .int_file_feature(),
-            1);
+  EXPECT_EQ(
+      defaults.defaults()[2].features().GetExtension(pb::test).file_feature(),
+      pb::VALUE3);
 }
 
 }  // namespace

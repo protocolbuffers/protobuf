@@ -28,14 +28,12 @@
 
 #include "google/protobuf/io/io_win32.h"
 
-#include <ctype.h>
 #include <direct.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <wctype.h>
 
 #include "absl/strings/ascii.h"
 
@@ -71,7 +69,9 @@ struct CharTraits<char> {
 
 template <>
 struct CharTraits<wchar_t> {
-  static bool is_alpha(wchar_t ch) { return iswalpha(ch); }
+  static bool is_alpha(wchar_t ch) {
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+  }
 };
 
 template <typename char_type>

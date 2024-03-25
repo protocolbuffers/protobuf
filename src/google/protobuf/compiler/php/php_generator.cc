@@ -106,8 +106,7 @@ std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
 std::string ConstantNamePrefix(absl::string_view classname) {
   bool is_reserved = false;
 
-  std::string lower(classname);
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::string lower = absl::AsciiStrToLower(classname);
 
   is_reserved = IsReservedName(lower);
 
@@ -513,7 +512,7 @@ std::string BinaryToPhpString(const std::string& src) {
     if (src[i] == '\\' || src[i] == '$' || src[i] == '"') {
       dest += '\\';
       dest += src[i];
-    } else if (std::isprint(src[i])) {
+    } else if (absl::ascii_isprint(src[i])) {
       dest += src[i];
     } else {
       dest += '\\';

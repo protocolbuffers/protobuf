@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -375,6 +376,22 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename T>
   static constexpr auto GetTable() -> decltype(&T::_table_.header) {
     return &T::_table_.header;
+  }
+
+  static PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
+      MessageLite* msg, const char* ptr, ParseContext* ctx,
+      const TcParseTableBase* tc_table) {
+    return ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
+      return ParseLoopInlined(msg, ptr, ctx, tc_table);
+    });
+  }
+
+  static PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+      MessageLite* msg, const char* ptr, ParseContext* ctx,
+      const TcParseTableBase* tc_table, uint32_t start_tag) {
+    return ctx->ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
+      return ParseLoopInlined(msg, ptr, ctx, tc_table);
+    });
   }
 
   // == ABI of the tail call functions ==
@@ -973,6 +990,35 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   (void)ctx;
   SyncHasbits(msg, hasbits, table);
+  return ptr;
+}
+
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
+    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    const TcParseTableBase* table) {
+  // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
+  // For fast dispatch, we'd like to have a pointer to that, but if we use
+  // that expression, there's no easy way to get back to "table", which we also
+  // need during dispatch.  It turns out that "table + 1" points exactly to
+  // fast_entries, so we just increment table by 1 here, to get the register
+  // holding the value we want.
+  table += 1;
+  while (!ctx->Done(&ptr)) {
+#if defined(__GNUC__)
+    // Note: this asm prevents the compiler (clang, specifically) from
+    // believing (thanks to CSE) that it needs to dedicate a registeer both
+    // to "table" and "&table->fast_entries".
+    // TODO: remove this asm
+    asm("" : "+r"(table));
+#endif
+    ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
+    if (ptr == nullptr) break;
+    if (ctx->LastTag() != 1) break;  // Ended on terminating tag
+  }
+  table -= 1;
+  if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+    return table->post_loop_handler(msg, ptr, ctx);
+  }
   return ptr;
 }
 

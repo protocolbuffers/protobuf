@@ -128,7 +128,6 @@ _py_proto_library_aspect = aspect(
 )
 
 py_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _py_proto_library_rule_impl,
     attrs = {
         "deps": attr.label_list(

@@ -14,6 +14,7 @@ edition = "2023";
 
 package protobuf_editions_test;
 
+import "net/proto/proto1_features.proto";
 import "third_party/java_src/protobuf/current/java/com/google/protobuf/java_features.proto";
 import "google/protobuf/cpp_features.proto";
 import "google/protobuf/editions/proto/editions_transform_proto3.proto";
@@ -21,7 +22,6 @@ import "google/protobuf/editions/proto/editions_transform_proto3.proto";
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
 option java_multiple_files = true;
-option cc_enable_arenas = true;
 
 message EmptyMessage {
 }
@@ -79,7 +79,8 @@ message TestMessage {
   map<string, string> string_map_field = 7;
   repeated int32 int_field = 8;
   repeated int32 int_field_packed = 9 [
-    features.repeated_field_encoding = PACKED
+    features.repeated_field_encoding = PACKED,
+    features.(pb.proto1).legacy_packed = true
   ];
 
   repeated int32 int_field_unpacked = 10;

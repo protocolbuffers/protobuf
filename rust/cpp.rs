@@ -727,7 +727,6 @@ impl_ProxiedInMapValue_for_key_types!(
 mod tests {
     use super::*;
     use googletest::prelude::*;
-    use std::boxed::Box;
 
     // We need to allocate the byte array so SerializedData can own it and
     // deallocate it in its drop. This function makes it easier to do so for our

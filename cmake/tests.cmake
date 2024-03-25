@@ -18,11 +18,6 @@ set(tests_protos
   ${util_test_protos_files}
 )
 
-set(protoc_cpp_args)
-if (protobuf_BUILD_SHARED_LIBS)
-  set(protoc_cpp_args "dllexport_decl=PROTOBUF_TEST_EXPORTS")
-endif ()
-
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
 
 set(lite_test_proto_files)
@@ -32,23 +27,17 @@ foreach(proto_file ${lite_test_protos})
     LANGUAGE cpp
     OUT_VAR pb_generated_files
     IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
-    PLUGIN_OPTIONS ${protoc_cpp_args}
   )
   set(lite_test_proto_files ${lite_test_proto_files} ${pb_generated_files})
 endforeach(proto_file)
 
 set(tests_proto_files)
 foreach(proto_file ${tests_protos})
-  if (MSVC AND protobuf_BUILD_SHARED_LIBS AND ${proto_file} MATCHES ".*enormous.*")
-    # Our enormous protos are too big for windows DLLs.
-    continue()
-  endif ()
   protobuf_generate(
     PROTOS ${proto_file}
     LANGUAGE cpp
     OUT_VAR pb_generated_files
     IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
-    PLUGIN_OPTIONS ${protoc_cpp_args}
   )
   set(tests_proto_files ${tests_proto_files} ${pb_generated_files})
 endforeach(proto_file)
@@ -96,7 +85,7 @@ else()
   set(protobuf_GTEST_ARGS)
 endif()
 
-add_library(libtest_common ${protobuf_SHARED_OR_STATIC}
+add_library(libtest_common STATIC
   ${tests_proto_files}
 )
 target_link_libraries(libtest_common
@@ -109,11 +98,6 @@ target_link_libraries(libtest_common
 if (MSVC)
   target_compile_options(libtest_common PRIVATE /bigobj)
 endif ()
-if(protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libtest_common
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
-endif()
 
 add_executable(tests ${tests_files} ${common_test_files})
 if (MSVC)
@@ -155,7 +139,7 @@ target_link_libraries(test_plugin
   GTest::gmock
 )
 
-add_library(libtest_common_lite ${protobuf_SHARED_OR_STATIC}
+add_library(libtest_common_lite STATIC
   ${lite_test_proto_files}
 )
 target_link_libraries(libtest_common_lite
@@ -163,11 +147,6 @@ target_link_libraries(libtest_common_lite
   ${protobuf_ABSL_USED_TARGETS}
   GTest::gmock
 )
-if(protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libtest_common_lite
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
-endif()
 
 add_executable(lite-test
   ${protobuf_lite_test_files}
@@ -206,8 +185,8 @@ if (protobuf_BUILD_LIBUPB)
         OUT_VAR pb_generated_files
         IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
         IMPORT_DIRS ${protobuf_SOURCE_DIR}
-        PLUGIN protoc-gen-${generator}=$<TARGET_FILE:protoc-gen-${generator}>
-        DEPENDENCIES $<TARGET_FILE:protoc-gen-${generator}>
+        PLUGIN protoc-gen-${generator}=$<TARGET_FILE:protobuf::protoc-gen-${generator}>
+        DEPENDENCIES $<TARGET_FILE:protobuf::protoc-gen-${generator}>
       )
       set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
     endforeach()
@@ -219,8 +198,8 @@ if (protobuf_BUILD_LIBUPB)
     ${upb_test_util_files})
 
   target_link_libraries(upb-test
-    libprotobuf
-    libupb
+    ${protobuf_LIB_PROTOBUF}
+    ${protobuf_LIB_UPB}
     ${protobuf_ABSL_USED_TARGETS}
     ${protobuf_ABSL_USED_TEST_TARGETS}
     GTest::gmock_main)
@@ -239,7 +218,9 @@ add_custom_target(restore-installed-headers)
 
 file(GLOB_RECURSE _local_hdrs
   "${PROJECT_SOURCE_DIR}/src/*.h"
-  "${PROJECT_SOURCE_DIR}/src/*.inc")
+  "${PROJECT_SOURCE_DIR}/src/*.inc"
+  "${PROJECT_SOURCE_DIR}/upb/*.h"
+)
 
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
@@ -250,7 +231,7 @@ set(_exclude_hdrs
 
 # Exclude test library headers.
 list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs})
+  ${compiler_test_utils_hdrs} ${upb_test_util_files})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()

@@ -1,5 +1,5 @@
 // Ruby is still using proto3 enum semantics for proto2
-#define UPB_DISABLE_PROTO2_ENUM_CHECKING
+#define UPB_DISABLE_CLOSED_ENUM_CHECKING
 /* Amalgamated source file */
 
 /*
@@ -306,10 +306,10 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
 
-#ifdef UPB_DISABLE_PROTO2_ENUM_CHECKING
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 1
+#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
 #else
-#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 0
+#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
 #endif
 
 #if defined(__cplusplus)
@@ -807,6 +807,14 @@ UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
 // this was not the last alloc.
 UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size);
+
+#ifdef UPB_TRACING_ENABLED
+void upb_Arena_SetTraceHandler(void (*initArenaTraceHandler)(const upb_Arena*,
+                                                             size_t size),
+                               void (*fuseArenaTraceHandler)(const upb_Arena*,
+                                                             const upb_Arena*),
+                               void (*freeArenaTraceHandler)(const upb_Arena*));
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -2444,17 +2452,17 @@ typedef struct upb_Message_Internal {
 } upb_Message_Internal;
 
 #ifdef UPB_TRACING_ENABLED
-void upb_Message_SetNewMessageTraceHandler(
+void UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(
     void (*newMessageTraceHandler)(const upb_MiniTable*, const upb_Arena*));
-void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
-                               const upb_Arena* arena);
+void UPB_PRIVATE(upb_Message_LogNewMessage)(const upb_MiniTable* mini_table,
+                                            const upb_Arena* arena);
 #endif
 
 // Inline version upb_Message_New(), for internal use.
 UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
                                                 upb_Arena* a) {
 #ifdef UPB_TRACING_ENABLED
-  upb_Message_LogNewMessage(m, a);
+  UPB_PRIVATE(upb_Message_LogNewMessage)(m, a);
 #endif
   const int size = m->UPB_PRIVATE(size);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
@@ -2971,12 +2979,6 @@ UPB_API_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
 UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
                             upb_MessageValue* val);
 
-// (DEPRECATED and going away soon. Do not use.)
-UPB_INLINE bool upb_Map_Delete2(upb_Map* map, upb_MessageValue key,
-                                upb_MessageValue* val) {
-  return upb_Map_Delete(map, key, val);
-}
-
 // Map iteration:
 //
 // size_t iter = kUpb_Map_Begin;
@@ -3076,6 +3078,18 @@ UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
 
 // Returns whether a message has been frozen.
 UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
+
+#ifdef UPB_TRACING_ENABLED
+UPB_INLINE void upb_Message_SetNewMessageTraceHandler(
+    void (*newMessageTraceHandler)(const upb_MiniTable* mini_table,
+                                   const upb_Arena* arena)) {
+  UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(newMessageTraceHandler);
+}
+UPB_INLINE void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
+                                          const upb_Arena* arena) {
+  UPB_PRIVATE(upb_Message_LogNewMessage)(mini_table, arena);
+}
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -11466,8 +11480,8 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       const upb_MessageDef* m,
                                                       int32_t fieldnum);
 
-const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
-                                                    const char* name);
+UPB_API const upb_ServiceDef* upb_DefPool_FindServiceByName(
+  const upb_DefPool* s, const char* name);
 
 const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size);
@@ -11518,6 +11532,7 @@ UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(
 UPB_API const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
+bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e);
 
 // Creates a mini descriptor string for an enum, returns true on success.
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
@@ -11646,6 +11661,7 @@ bool upb_FieldDef_IsString(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
 UPB_API upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
+uint32_t upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
 UPB_API const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
 bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f);
 
@@ -11883,18 +11899,19 @@ UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 extern "C" {
 #endif
 
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
+UPB_API bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
 const char* upb_MethodDef_FullName(const upb_MethodDef* m);
 bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
 int upb_MethodDef_Index(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const UPB_DESC(MethodOptions) * upb_MethodDef_Options(const upb_MethodDef* m);
+UPB_API const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
+UPB_API const char* upb_MethodDef_Name(const upb_MethodDef* m);
+UPB_API const UPB_DESC(MethodOptions) *
+    upb_MethodDef_Options(const upb_MethodDef* m);
 const UPB_DESC(FeatureSet) *
     upb_MethodDef_ResolvedFeatures(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+UPB_API const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
+UPB_API bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
+UPB_API const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -11955,16 +11972,17 @@ const UPB_DESC(FeatureSet*)
 extern "C" {
 #endif
 
-const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
+UPB_API const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
                                                      const char* name);
-const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
+UPB_API const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
 bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
 int upb_ServiceDef_Index(const upb_ServiceDef* s);
-const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i);
-int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
+UPB_API const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s,
+                                                   int i);
+UPB_API int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
 const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
-const UPB_DESC(ServiceOptions) *
+UPB_API const UPB_DESC(ServiceOptions) *
     upb_ServiceDef_Options(const upb_ServiceDef* s);
 const UPB_DESC(FeatureSet) *
     upb_ServiceDef_ResolvedFeatures(const upb_ServiceDef* s);
@@ -14073,7 +14091,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ASAN
 #undef UPB_ASAN_GUARD_SIZE
 #undef UPB_CLANG_ASAN
-#undef UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3
+#undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME

@@ -1385,6 +1385,7 @@ public class GeneratedMessageTest {
   // =================================================================
   // oneof generated code test
   @Test
+  @SuppressWarnings("RedundantSetterCall")
   public void testOneofEnumCase() throws Exception {
     TestOneof2 message =
         TestOneof2.newBuilder().setFooInt(123).setFooString("foo").setFooCord("bar").build();
@@ -1400,6 +1401,7 @@ public class GeneratedMessageTest {
   }
 
   @Test
+  @SuppressWarnings("RedundantSetterCall")
   public void testSetOneofClearsOthers() throws Exception {
     TestOneof2.Builder builder = TestOneof2.newBuilder();
     TestOneof2 message = builder.setFooInt(123).setFooString("foo").buildPartial();

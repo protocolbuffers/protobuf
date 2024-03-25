@@ -126,6 +126,7 @@ class SwapFieldHelper;
 class ParseContext;
 
 struct DescriptorTable;
+class DescriptorPoolExtensionFinder;
 class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
@@ -516,6 +517,8 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
+  const internal::TcParseTableBase* GetTcParseTable() const;
+
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
@@ -660,6 +663,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;
+  friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;

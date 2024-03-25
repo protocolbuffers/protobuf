@@ -7,8 +7,8 @@
 
 /// Test covering proto compilation with reserved words.
 use googletest::prelude::*;
-use reserved_proto::r#enum;
 use reserved_proto::Self__mangled_because_ident_isnt_a_legal_raw_identifier;
+use reserved_proto::{r#enum, Ref};
 
 #[test]
 fn test_reserved_keyword_in_accessors() {
@@ -19,6 +19,6 @@ fn test_reserved_keyword_in_accessors() {
 
 #[test]
 fn test_reserved_keyword_in_messages() {
-    let msg = r#enum::new();
-    let _ = msg.r#const();
+    let _ = r#enum::new();
+    let _ = Ref::new().r#const();
 }

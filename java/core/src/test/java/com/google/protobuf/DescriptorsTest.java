@@ -1315,12 +1315,12 @@ public class DescriptorsTest {
       features.setExtension(
           UnittestFeatures.test,
           features.getExtension(UnittestFeatures.test).toBuilder()
-              .setIntMultipleFeature(value)
+              .setMultipleFeature(UnittestFeatures.EnumFeature.forNumber(value))
               .build());
     }
 
     int getTestFeature(DescriptorProtos.FeatureSet features) {
-      return features.getExtension(UnittestFeatures.test).getIntMultipleFeature();
+      return features.getExtension(UnittestFeatures.test).getMultipleFeature().getNumber();
     }
 
     FileDescriptor buildFrom(FileDescriptorProto fileProto) throws Exception {

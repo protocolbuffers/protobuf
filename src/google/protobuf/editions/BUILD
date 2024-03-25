@@ -132,6 +132,13 @@ java_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
+java_lite_proto_library(
+    name = "test_messages_proto2_editions_java_proto_lite",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
 py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
@@ -193,6 +200,13 @@ java_proto_library(
     deps = [":test_messages_proto3_editions_proto"],
 )
 
+java_lite_proto_library(
+    name = "test_messages_proto3_editions_java_proto_lite",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
 py_proto_library(
     name = "test_messages_proto3_editions_py_pb2",
     testonly = True,
@@ -221,6 +235,7 @@ exports_files(
     ],
     visibility = [
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 

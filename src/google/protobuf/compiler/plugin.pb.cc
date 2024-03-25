@@ -6,6 +6,7 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 
 #include <algorithm>
+#include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
@@ -362,6 +363,7 @@ Version::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
               false,
@@ -673,6 +675,7 @@ CodeGeneratorRequest::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
               false,
@@ -1020,6 +1023,7 @@ CodeGeneratorResponse_File::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
               false,
@@ -1340,6 +1344,7 @@ CodeGeneratorResponse::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
               false,
@@ -1611,8 +1616,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::std::false_type _static_init_ PROTOBUF_UNUSED =
-    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto),
-     ::std::false_type{});
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
+    _static_init2_ PROTOBUF_UNUSED =
+        (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto),
+         ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

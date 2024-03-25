@@ -46,18 +46,22 @@
 namespace google {
 namespace protobuf {
 
-const char* MessageLite::_InternalParse(const char* ptr,
-                                        internal::ParseContext* ctx) {
+const internal::TcParseTableBase* MessageLite::GetTcParseTable() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
 
   auto* tc_table = data->tc_table;
   if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
     ABSL_DCHECK(!data->is_lite);
-    tc_table = data->full().descriptor_methods->get_tc_table(*this);
+    return data->full().descriptor_methods->get_tc_table(*this);
   }
+  return tc_table;
+}
 
-  return internal::TcParser::ParseLoop(this, ptr, ctx, tc_table);
+const char* MessageLite::_InternalParse(const char* ptr,
+                                        internal::ParseContext* ctx) {
+  return internal::TcParser::ParseLoopInlined(this, ptr, ctx,
+                                              GetTcParseTable());
 }
 
 std::string MessageLite::GetTypeName() const {

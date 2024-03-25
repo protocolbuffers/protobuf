@@ -137,6 +137,10 @@ struct PrivateAccess {
   static auto CProxy(const upb_Message* p, upb_Arena* arena) {
     return typename T::CProxy(p, arena);
   }
+  template <typename T>
+  static auto CreateMessage(upb_Arena* arena) {
+    return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
+  }
 };
 
 template <typename T>

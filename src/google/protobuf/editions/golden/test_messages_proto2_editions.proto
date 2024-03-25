@@ -23,7 +23,6 @@ option objc_class_prefix = "EditionsProto2";
 
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;
-option cc_enable_arenas = true;
 
 // This proto includes every type of field in both singular and repeated
 // forms.

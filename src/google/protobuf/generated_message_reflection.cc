@@ -1168,6 +1168,14 @@ void Reflection::SwapFieldsImpl(
   }
 }
 
+template void Reflection::SwapFieldsImpl<true>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
+template void Reflection::SwapFieldsImpl<false>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
 void Reflection::SwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
@@ -2223,8 +2231,7 @@ void Reflection::AddEnumValueInternal(Message* message,
                                       int value) const {
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddEnum(field->number(), field->type(),
-                                          field->options().packed(), value,
-                                          field);
+                                          field->is_packed(), value, field);
   } else {
     AddField<int>(message, field, value);
   }
@@ -3771,14 +3778,19 @@ bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
   return field->is_repeated();
 }
 
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index) {
+                                             int index, bool force_build) {
   // First, make sure we inject the surviving default instances.
   InitProtobufDefaults();
 
   // Now check if the table has it. If so, return it.
   if (const auto* msg = table->default_instances[index]) {
     return msg;
+  }
+
+  if (!force_build) {
+    return nullptr;
   }
 
   // Fallback to dynamic messages.
@@ -3798,6 +3810,7 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
 
   return MessageFactory::generated_factory()->GetPrototype(descriptor);
 }
+#endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
 }  // namespace internal
 }  // namespace protobuf

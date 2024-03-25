@@ -5,7 +5,7 @@ use googletest::prelude::*;
 fn test_debug() {
     let mut msg = DebugMsg::new();
     msg.set_id(1);
-    msg.secret_user_data_mut().set("password");
+    msg.set_secret_user_data("password");
 
     assert_that!(format!("{msg:?}"), contains_substring("id: 1"));
     assert_that!(format!("{msg:?}"), not(contains_substring("password")));

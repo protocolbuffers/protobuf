@@ -6,6 +6,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 
 #include <algorithm>
+#include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
@@ -176,6 +177,7 @@ CppFeatures::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
               false,

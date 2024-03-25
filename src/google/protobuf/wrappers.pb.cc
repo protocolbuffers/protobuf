@@ -6,6 +6,7 @@
 #include "google/protobuf/wrappers.pb.h"
 
 #include <algorithm>
+#include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
@@ -388,6 +389,7 @@ DoubleValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
               false,
@@ -578,6 +580,7 @@ FloatValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
               false,
@@ -768,6 +771,7 @@ Int64Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
               false,
@@ -944,6 +948,7 @@ UInt64Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
               false,
@@ -1120,6 +1125,7 @@ Int32Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
               false,
@@ -1296,6 +1302,7 @@ UInt32Value::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
               false,
@@ -1472,6 +1479,7 @@ BoolValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
               false,
@@ -1661,6 +1669,7 @@ StringValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
               false,
@@ -1857,6 +1866,7 @@ BytesValue::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
               false,
@@ -2002,8 +2012,8 @@ namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
-static ::std::false_type _static_init_ PROTOBUF_UNUSED =
-    (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto),
-     ::std::false_type{});
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
+    _static_init2_ PROTOBUF_UNUSED =
+        (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto),
+         ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

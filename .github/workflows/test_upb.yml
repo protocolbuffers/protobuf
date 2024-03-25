@@ -20,14 +20,14 @@ jobs:
           - { name: "Bazel 7", bazel_version: "7.0.0" }
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/..." }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-large }
           - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: Add 32-bit ASAN test
           # TODO: Restore the FastTable tests
 
     name: ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout pending changes

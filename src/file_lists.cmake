@@ -304,6 +304,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/ifndef_guard.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/padding_optimizer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/parse_function_generator.cc
@@ -420,6 +421,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/ifndef_guard.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_layout_helper.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/names.h
@@ -595,6 +597,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/status.hpp
   ${protobuf_SOURCE_DIR}/upb/base/string_view.h
   ${protobuf_SOURCE_DIR}/upb/base/upcast.h
+  ${protobuf_SOURCE_DIR}/upb/generated_code_support.h
   ${protobuf_SOURCE_DIR}/upb/hash/common.h
   ${protobuf_SOURCE_DIR}/upb/hash/int_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/str_table.h
@@ -1092,6 +1095,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/copy_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/ifndef_guard_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/metadata_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/move_unittest.cc

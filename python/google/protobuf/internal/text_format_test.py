@@ -2299,6 +2299,17 @@ class TokenizerTest(unittest.TestCase):
     tokenizer = text_format.Tokenizer(text.splitlines(), skip_comments=False)
     tokenizer.ConsumeString()
 
+  def testGroupName(self):
+    grp = unittest_pb2.TestGroupExtension()
+    grp.Extensions[unittest_pb2.TestNestedExtension.optionalgroup_extension].a = 6
+    self.assertEqual('[protobuf_unittest.TestNestedExtension.optionalgroup_extension] {\n  a: 6\n}\n', str(grp))
+
+    msg = unittest_pb2.TestAllTypes(
+        repeatedgroup=[unittest_pb2.TestAllTypes.RepeatedGroup(a=1)])
+    if api_implementation.Type() == 'upb':
+      self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
+    else:
+      self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
 
 # Tests for pretty printer functionality.
 @_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))

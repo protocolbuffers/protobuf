@@ -7414,7 +7414,8 @@ TEST_F(FeaturesTest, Proto2Features) {
   const FieldDescriptor* field = message->field(0);
   const FieldDescriptor* group = message->field(1);
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), -2);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE1);
   EXPECT_THAT(
       GetCoreFeatures(file), EqualsProto(R"pb(
         field_presence: EXPLICIT
@@ -7494,7 +7495,8 @@ TEST_F(FeaturesTest, Proto3Features) {
   const Descriptor* message = file->message_type(0);
   const FieldDescriptor* field = message->field(0);
   EXPECT_THAT(file->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), -3);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE2);
   EXPECT_THAT(
       GetCoreFeatures(file), EqualsProto(R"pb(
         field_presence: IMPLICIT
@@ -7692,7 +7694,8 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
   // Since pb::test is registered in the pool, it should end up with defaults in
   // our FeatureSet.
   EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 1);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
 }
 
 TEST_F(FeaturesTest, Edition2024Defaults) {
@@ -7718,7 +7721,8 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
   // Since pb::test is registered in the pool, it should end up with defaults in
   // our FeatureSet.
   EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 1);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
 }
 
 TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
@@ -7779,7 +7783,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
     options {
       java_package: "bar"
       features {
-        [pb.test] { int_file_feature: 1 }
+        [pb.test] { file_feature: VALUE3 }
       }
     }
     message_type {
@@ -7787,7 +7791,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
       options {
         deprecated: true
         features {
-          [pb.test] { int_message_feature: 3 }
+          [pb.test] { message_feature: VALUE3 }
         }
       }
       field {
@@ -7798,7 +7802,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
         options {
           deprecated: true
           features {
-            [pb.test] { int_field_feature: 9 }
+            [pb.test] { field_feature: VALUE9 }
           }
         }
       }
@@ -7813,7 +7817,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
         name: "foo_oneof"
         options {
           features {
-            [pb.test] { int_oneof_feature: 7 }
+            [pb.test] { oneof_feature: VALUE7 }
           }
         }
       }
@@ -7823,7 +7827,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
         options {
           verification: UNVERIFIED
           features {
-            [pb.test] { int_extension_range_feature: 15 }
+            [pb.test] { extension_range_feature: VALUE15 }
           }
         }
       }
@@ -7833,7 +7837,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
       options {
         deprecated: true
         features {
-          [pb.test] { int_enum_feature: 4 }
+          [pb.test] { enum_feature: VALUE4 }
         }
       }
       value {
@@ -7842,7 +7846,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
         options {
           deprecated: true
           features {
-            [pb.test] { int_enum_entry_feature: 8 }
+            [pb.test] { enum_entry_feature: VALUE8 }
           }
         }
       }
@@ -7852,7 +7856,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
       options {
         deprecated: true
         features {
-          [pb.test] { int_service_feature: 11 }
+          [pb.test] { service_feature: VALUE11 }
         }
       }
       method {
@@ -7862,7 +7866,7 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
         options {
           deprecated: true
           features {
-            [pb.test] { int_method_feature: 12 }
+            [pb.test] { method_feature: VALUE12 }
           }
         }
       }
@@ -7873,46 +7877,46 @@ TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
   EXPECT_THAT(proto.options(),
               EqualsProto(R"pb(java_package: 'bar'
                                features {
-                                 [pb.test] { int_file_feature: 1 }
+                                 [pb.test] { file_feature: VALUE3 }
                                })pb"));
   EXPECT_THAT(proto.message_type(0).options(),
               EqualsProto(R"pb(deprecated: true
                                features {
-                                 [pb.test] { int_message_feature: 3 }
+                                 [pb.test] { message_feature: VALUE3 }
                                })pb"));
   EXPECT_THAT(proto.message_type(0).field(0).options(),
               EqualsProto(R"pb(deprecated: true
                                features {
-                                 [pb.test] { int_field_feature: 9 }
+                                 [pb.test] { field_feature: VALUE9 }
                                })pb"));
   EXPECT_THAT(proto.message_type(0).oneof_decl(0).options(),
               EqualsProto(R"pb(features {
-                                 [pb.test] { int_oneof_feature: 7 }
+                                 [pb.test] { oneof_feature: VALUE7 }
                                })pb"));
   EXPECT_THAT(proto.message_type(0).extension_range(0).options(),
               EqualsProto(R"pb(verification: UNVERIFIED
                                features {
-                                 [pb.test] { int_extension_range_feature: 15 }
+                                 [pb.test] { extension_range_feature: VALUE15 }
                                })pb"));
   EXPECT_THAT(proto.enum_type(0).options(),
               EqualsProto(R"pb(deprecated: true
                                features {
-                                 [pb.test] { int_enum_feature: 4 }
+                                 [pb.test] { enum_feature: VALUE4 }
                                })pb"));
   EXPECT_THAT(proto.enum_type(0).value(0).options(),
               EqualsProto(R"pb(deprecated: true
                                features {
-                                 [pb.test] { int_enum_entry_feature: 8 }
+                                 [pb.test] { enum_entry_feature: VALUE8 }
                                })pb"));
   EXPECT_THAT(proto.service(0).options(),
               EqualsProto(R"pb(deprecated: true
                                features {
-                                 [pb.test] { int_service_feature: 11 }
+                                 [pb.test] { service_feature: VALUE11 }
                                })pb"));
   EXPECT_THAT(proto.service(0).method(0).options(),
               EqualsProto(R"pb(deprecated: true
                                features {
-                                 [pb.test] { int_method_feature: 12 }
+                                 [pb.test] { method_feature: VALUE12 }
                                })pb"));
 }
 
@@ -7999,9 +8003,9 @@ TEST_F(FeaturesTest, ReusesFeaturesExtension) {
     edition: EDITION_2023
     options {
       features {
-        [pb.TestMessage.test_message] { int_file_feature: 8 }
-        [pb.TestMessage.Nested.test_nested] { int_file_feature: 7 }
-        [pb.test] { int_file_feature: 9 }
+        [pb.TestMessage.test_message] { file_feature: VALUE6 }
+        [pb.TestMessage.Nested.test_nested] { file_feature: VALUE5 }
+        [pb.test] { file_feature: VALUE7 }
       }
     }
   )pb");
@@ -8011,9 +8015,9 @@ TEST_F(FeaturesTest, ReusesFeaturesExtension) {
     edition: EDITION_2023
     options {
       features {
-        [pb.test] { int_file_feature: 9 }
-        [pb.TestMessage.test_message] { int_file_feature: 8 }
-        [pb.TestMessage.Nested.test_nested] { int_file_feature: 7 }
+        [pb.test] { file_feature: VALUE7 }
+        [pb.TestMessage.test_message] { file_feature: VALUE6 }
+        [pb.TestMessage.Nested.test_nested] { file_feature: VALUE5 }
       }
     }
   )pb");
@@ -8176,15 +8180,16 @@ TEST_F(FeaturesTest, FileFeaturesExtension) {
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::OPEN);
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 3);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE5);
   EXPECT_EQ(GetFeatures(file)
                 .GetExtension(pb::TestMessage::test_message)
-                .int_file_feature(),
-            3);
+                .file_feature(),
+            pb::VALUE5);
   EXPECT_EQ(GetFeatures(file)
                 .GetExtension(pb::TestMessage::Nested::test_nested)
-                .int_file_feature(),
-            3);
+                .file_feature(),
+            pb::VALUE5);
 }
 
 TEST_F(FeaturesTest, FileFeaturesExtensionOverride) {
@@ -8198,24 +8203,25 @@ TEST_F(FeaturesTest, FileFeaturesExtensionOverride) {
     options {
       features {
         field_presence: IMPLICIT
-        [pb.test] { int_file_feature: 9 }
-        [pb.TestMessage.test_message] { int_file_feature: 8 }
-        [pb.TestMessage.Nested.test_nested] { int_file_feature: 7 }
+        [pb.test] { file_feature: VALUE7 }
+        [pb.TestMessage.test_message] { file_feature: VALUE6 }
+        [pb.TestMessage.Nested.test_nested] { file_feature: VALUE5 }
       }
     }
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::OPEN);
-  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).int_file_feature(), 9);
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE7);
   EXPECT_EQ(GetFeatures(file)
                 .GetExtension(pb::TestMessage::test_message)
-                .int_file_feature(),
-            8);
+                .file_feature(),
+            pb::VALUE6);
   EXPECT_EQ(GetFeatures(file)
                 .GetExtension(pb::TestMessage::Nested::test_nested)
-                .int_file_feature(),
-            7);
+                .file_feature(),
+            pb::VALUE5);
 }
 
 TEST_F(FeaturesTest, MessageFeaturesDefault) {
@@ -8263,22 +8269,22 @@ TEST_F(FeaturesTest, MessageFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 9 }
+          [pb.test] { multiple_feature: VALUE9 }
         }
       }
     }
   )pb");
   const Descriptor* message = file->message_type(0);
   EXPECT_THAT(message->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, NestedMessageFeaturesOverride) {
@@ -8291,21 +8297,21 @@ TEST_F(FeaturesTest, NestedMessageFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 int_file_feature: 9 }
+        [pb.test] { multiple_feature: VALUE2 file_feature: VALUE7 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 10 int_message_feature: 3 }
+          [pb.test] { multiple_feature: VALUE10 message_feature: VALUE3 }
         }
       }
       nested_type {
         name: "Bar"
         options {
           features {
-            [pb.test] { int_multiple_feature: 5 }
+            [pb.test] { multiple_feature: VALUE5 }
           }
         }
       }
@@ -8313,12 +8319,14 @@ TEST_F(FeaturesTest, NestedMessageFeaturesOverride) {
   )pb");
   const Descriptor* message = file->message_type(0)->nested_type(0);
   EXPECT_THAT(message->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).int_field_feature(), 1);
-  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).int_multiple_feature(),
-            5);
-  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).int_file_feature(), 9);
-  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).int_message_feature(),
-            3);
+  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).field_feature(),
+            pb::VALUE1);
+  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE5);
+  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).file_feature(),
+            pb::VALUE7);
+  EXPECT_EQ(GetFeatures(message).GetExtension(pb::test).message_feature(),
+            pb::VALUE3);
 }
 
 TEST_F(FeaturesTest, FieldFeaturesDefault) {
@@ -8356,14 +8364,14 @@ TEST_F(FeaturesTest, FieldFeaturesInherit) {
     options {
       features {
         field_presence: IMPLICIT
-        [pb.test] { int_multiple_feature: 1 }
+        [pb.test] { multiple_feature: VALUE1 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 9 }
+          [pb.test] { multiple_feature: VALUE9 }
         }
       }
       field { name: "bar" number: 1 label: LABEL_REPEATED type: TYPE_INT64 }
@@ -8372,8 +8380,8 @@ TEST_F(FeaturesTest, FieldFeaturesInherit) {
   const FieldDescriptor* field = file->message_type(0)->field(0);
   EXPECT_THAT(field->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(field).field_presence(), FeatureSet::IMPLICIT);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, FieldFeaturesOverride) {
@@ -8388,14 +8396,14 @@ TEST_F(FeaturesTest, FieldFeaturesOverride) {
       features {
         enum_type: CLOSED
         field_presence: IMPLICIT
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 3 }
+          [pb.test] { multiple_feature: VALUE3 }
         }
       }
       field {
@@ -8406,7 +8414,7 @@ TEST_F(FeaturesTest, FieldFeaturesOverride) {
         options {
           features {
             field_presence: EXPLICIT
-            [pb.test] { int_multiple_feature: 9 }
+            [pb.test] { multiple_feature: VALUE9 }
           }
         }
       }
@@ -8416,8 +8424,8 @@ TEST_F(FeaturesTest, FieldFeaturesOverride) {
   EXPECT_THAT(field->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(field).field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(GetFeatures(field).enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
@@ -8431,14 +8439,14 @@ TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
     options {
       features {
         field_presence: IMPLICIT
-        [pb.test] { int_multiple_feature: 1 }
+        [pb.test] { multiple_feature: VALUE1 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 6 }
+          [pb.test] { multiple_feature: VALUE6 }
         }
       }
       field {
@@ -8452,7 +8460,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
         name: "foo_oneof"
         options {
           features {
-            [pb.test] { int_multiple_feature: 9 }
+            [pb.test] { multiple_feature: VALUE9 }
           }
         }
       }
@@ -8461,8 +8469,8 @@ TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
   const FieldDescriptor* field = file->message_type(0)->field(0);
   EXPECT_THAT(field->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(field).field_presence(), FeatureSet::IMPLICIT);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
@@ -8475,14 +8483,14 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 int_file_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 file_feature: VALUE4 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 3 int_message_feature: 3 }
+          [pb.test] { multiple_feature: VALUE3 message_feature: VALUE3 }
         }
       }
       field {
@@ -8492,7 +8500,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
         type: TYPE_STRING
         options {
           features {
-            [pb.test] { int_multiple_feature: 9 }
+            [pb.test] { multiple_feature: VALUE9 }
           }
         }
         oneof_index: 0
@@ -8501,7 +8509,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
         name: "foo_oneof"
         options {
           features {
-            [pb.test] { int_multiple_feature: 6 int_oneof_feature: 6 }
+            [pb.test] { multiple_feature: VALUE6 oneof_feature: VALUE6 }
           }
         }
       }
@@ -8509,11 +8517,14 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
   )pb");
   const FieldDescriptor* field = file->message_type(0)->field(0);
   EXPECT_THAT(field->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            9);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_oneof_feature(), 6);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_message_feature(), 3);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_file_feature(), 2);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).oneof_feature(),
+            pb::VALUE6);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).message_feature(),
+            pb::VALUE3);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).file_feature(),
+            pb::VALUE4);
 }
 
 TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
@@ -8522,16 +8533,16 @@ TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
 
     import "google/protobuf/unittest_features.proto";
 
-    option features.(pb.test).int_file_feature = 99;
-    option features.(pb.test).int_multiple_feature = 1;
+    option features.(pb.test).file_feature = VALUE7;
+    option features.(pb.test).multiple_feature = VALUE1;
 
     message Foo {
-      option features.(pb.test).int_message_feature = 87;
-      option features.(pb.test).int_multiple_feature = 2;
+      option features.(pb.test).message_feature = VALUE8;
+      option features.(pb.test).multiple_feature = VALUE2;
 
       map<string, string> map_field = 1 [
-        features.(pb.test).int_field_feature = 100,
-        features.(pb.test).int_multiple_feature = 3
+        features.(pb.test).field_feature = VALUE10,
+        features.(pb.test).multiple_feature = VALUE3
       ];
     }
   )schema";
@@ -8557,15 +8568,17 @@ TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
   const FieldDescriptor* value = map_field->message_type()->field(1);
 
   auto validate = [](const FieldDescriptor* desc) {
-    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_file_feature(), 99)
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).file_feature(),
+              pb::VALUE7)
         << desc->DebugString();
-    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_message_feature(),
-              87)
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).message_feature(),
+              pb::VALUE8)
         << desc->DebugString();
-    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_field_feature(), 100)
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).field_feature(),
+              pb::VALUE10)
         << desc->DebugString();
-    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).int_multiple_feature(),
-              3)
+    EXPECT_EQ(GetFeatures(desc).GetExtension(pb::test).multiple_feature(),
+              pb::VALUE3)
         << desc->DebugString();
   };
 
@@ -8632,7 +8645,7 @@ TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
       features {
         enum_type: CLOSED
         field_presence: IMPLICIT
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     extension {
@@ -8643,7 +8656,7 @@ TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
       options {
         features {
           enum_type: OPEN
-          [pb.test] { int_multiple_feature: 9 }
+          [pb.test] { multiple_feature: VALUE9 }
         }
       }
       extendee: "Foo"
@@ -8657,8 +8670,8 @@ TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
   EXPECT_THAT(field->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(field).field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(GetFeatures(field).enum_type(), FeatureSet::OPEN);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, MessageExtensionFeaturesOverride) {
@@ -8673,14 +8686,14 @@ TEST_F(FeaturesTest, MessageExtensionFeaturesOverride) {
       features {
         enum_type: CLOSED
         field_presence: IMPLICIT
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 3 }
+          [pb.test] { multiple_feature: VALUE3 }
         }
       }
       extension {
@@ -8697,7 +8710,7 @@ TEST_F(FeaturesTest, MessageExtensionFeaturesOverride) {
       extension_range { start: 1 end: 2 }
       options {
         features {
-          [pb.test] { int_multiple_feature: 7 }
+          [pb.test] { multiple_feature: VALUE7 }
         }
       }
     }
@@ -8706,8 +8719,8 @@ TEST_F(FeaturesTest, MessageExtensionFeaturesOverride) {
   EXPECT_THAT(field->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(field).field_presence(), FeatureSet::IMPLICIT);
   EXPECT_EQ(GetFeatures(field).enum_type(), FeatureSet::OPEN);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            3);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE3);
 }
 
 TEST_F(FeaturesTest, EnumFeaturesDefault) {
@@ -8761,14 +8774,14 @@ TEST_F(FeaturesTest, EnumFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     enum_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 9 }
+          [pb.test] { multiple_feature: VALUE9 }
         }
       }
       value { name: "BAR" number: 0 }
@@ -8776,7 +8789,8 @@ TEST_F(FeaturesTest, EnumFeaturesOverride) {
   )pb");
   const EnumDescriptor* enm = file->enum_type(0);
   EXPECT_THAT(enm->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).int_multiple_feature(), 9);
+  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, NestedEnumFeatures) {
@@ -8789,21 +8803,21 @@ TEST_F(FeaturesTest, NestedEnumFeatures) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 int_file_feature: 9 }
+        [pb.test] { multiple_feature: VALUE2 file_feature: VALUE7 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 10 int_message_feature: 3 }
+          [pb.test] { multiple_feature: VALUE10 message_feature: VALUE3 }
         }
       }
       enum_type {
         name: "Bar"
         options {
           features {
-            [pb.test] { int_multiple_feature: 5 }
+            [pb.test] { multiple_feature: VALUE5 }
           }
         }
         value { name: "BAR" number: 0 }
@@ -8812,10 +8826,13 @@ TEST_F(FeaturesTest, NestedEnumFeatures) {
   )pb");
   const EnumDescriptor* enm = file->message_type(0)->enum_type(0);
   EXPECT_THAT(enm->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).int_field_feature(), 1);
-  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).int_multiple_feature(), 5);
-  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).int_file_feature(), 9);
-  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).int_message_feature(), 3);
+  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).field_feature(),
+            pb::VALUE1);
+  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE5);
+  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).file_feature(), pb::VALUE7);
+  EXPECT_EQ(GetFeatures(enm).GetExtension(pb::test).message_feature(),
+            pb::VALUE3);
 }
 
 TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
@@ -8853,7 +8870,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesInherit) {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_enum_feature: 9 }
+          [pb.test] { enum_feature: VALUE9 }
         }
       }
       value { name: "BAR" number: 0 }
@@ -8862,7 +8879,8 @@ TEST_F(FeaturesTest, EnumValueFeaturesInherit) {
   const EnumValueDescriptor* value = file->enum_type(0)->value(0);
   EXPECT_THAT(value->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(value).enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(GetFeatures(value).GetExtension(pb::test).int_enum_feature(), 9);
+  EXPECT_EQ(GetFeatures(value).GetExtension(pb::test).enum_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, EnumValueFeaturesOverride) {
@@ -8875,14 +8893,14 @@ TEST_F(FeaturesTest, EnumValueFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 7 }
+        [pb.test] { multiple_feature: VALUE7 }
       }
     }
     enum_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 8 }
+          [pb.test] { multiple_feature: VALUE8 }
         }
       }
       value {
@@ -8890,7 +8908,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesOverride) {
         number: 0
         options {
           features {
-            [pb.test] { int_multiple_feature: 9 int_enum_entry_feature: 87 }
+            [pb.test] { multiple_feature: VALUE9 enum_entry_feature: VALUE8 }
           }
         }
       }
@@ -8898,10 +8916,10 @@ TEST_F(FeaturesTest, EnumValueFeaturesOverride) {
   )pb");
   const EnumValueDescriptor* value = file->enum_type(0)->value(0);
   EXPECT_THAT(value->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(value).GetExtension(pb::test).int_multiple_feature(),
-            9);
-  EXPECT_EQ(GetFeatures(value).GetExtension(pb::test).int_enum_entry_feature(),
-            87);
+  EXPECT_EQ(GetFeatures(value).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
+  EXPECT_EQ(GetFeatures(value).GetExtension(pb::test).enum_entry_feature(),
+            pb::VALUE8);
 }
 
 TEST_F(FeaturesTest, OneofFeaturesDefault) {
@@ -8954,7 +8972,7 @@ TEST_F(FeaturesTest, OneofFeaturesInherit) {
       oneof_decl { name: "foo_oneof" }
       options {
         features {
-          [pb.test] { int_message_feature: 9 }
+          [pb.test] { message_feature: VALUE9 }
         }
       }
     }
@@ -8962,7 +8980,8 @@ TEST_F(FeaturesTest, OneofFeaturesInherit) {
   const OneofDescriptor* oneof = file->message_type(0)->oneof_decl(0);
   EXPECT_THAT(oneof->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(oneof).enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).int_message_feature(), 9);
+  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).message_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, OneofFeaturesOverride) {
@@ -8975,7 +8994,7 @@ TEST_F(FeaturesTest, OneofFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 int_file_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 file_feature: VALUE4 }
       }
     }
     message_type {
@@ -8991,23 +9010,25 @@ TEST_F(FeaturesTest, OneofFeaturesOverride) {
         name: "foo_oneof"
         options {
           features {
-            [pb.test] { int_multiple_feature: 9 }
+            [pb.test] { multiple_feature: VALUE9 }
           }
         }
       }
       options {
         features {
-          [pb.test] { int_multiple_feature: 5 int_message_feature: 5 }
+          [pb.test] { multiple_feature: VALUE5 message_feature: VALUE5 }
         }
       }
     }
   )pb");
   const OneofDescriptor* oneof = file->message_type(0)->oneof_decl(0);
   EXPECT_THAT(oneof->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).int_multiple_feature(),
-            9);
-  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).int_message_feature(), 5);
-  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).int_file_feature(), 2);
+  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
+  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).message_feature(),
+            pb::VALUE5);
+  EXPECT_EQ(GetFeatures(oneof).GetExtension(pb::test).file_feature(),
+            pb::VALUE4);
 }
 
 TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
@@ -9046,7 +9067,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesInherit) {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_message_feature: 9 }
+          [pb.test] { message_feature: VALUE9 }
         }
       }
       extension_range { start: 1 end: 100 }
@@ -9056,7 +9077,8 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesInherit) {
       file->message_type(0)->extension_range(0);
   EXPECT_THAT(range->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(range).enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).int_message_feature(), 9);
+  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).message_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, ExtensionRangeFeaturesOverride) {
@@ -9069,14 +9091,14 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 int_file_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 file_feature: VALUE4 }
       }
     }
     message_type {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 5 int_message_feature: 5 }
+          [pb.test] { multiple_feature: VALUE5 message_feature: VALUE5 }
         }
       }
       extension_range {
@@ -9084,7 +9106,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesOverride) {
         end: 100
         options {
           features {
-            [pb.test] { int_multiple_feature: 9 }
+            [pb.test] { multiple_feature: VALUE9 }
           }
         }
       }
@@ -9093,10 +9115,12 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesOverride) {
   const Descriptor::ExtensionRange* range =
       file->message_type(0)->extension_range(0);
   EXPECT_THAT(range->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).int_multiple_feature(),
-            9);
-  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).int_message_feature(), 5);
-  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).int_file_feature(), 2);
+  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
+  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).message_feature(),
+            pb::VALUE5);
+  EXPECT_EQ(GetFeatures(range).GetExtension(pb::test).file_feature(),
+            pb::VALUE4);
 }
 
 TEST_F(FeaturesTest, ServiceFeaturesDefault) {
@@ -9144,22 +9168,22 @@ TEST_F(FeaturesTest, ServiceFeaturesOverride) {
     dependency: "google/protobuf/unittest_features.proto"
     options {
       features {
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     service {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 9 }
+          [pb.test] { multiple_feature: VALUE9 }
         }
       }
     }
   )pb");
   const ServiceDescriptor* service = file->service(0);
   EXPECT_THAT(service->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(service).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(service).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, MethodFeaturesDefault) {
@@ -9201,7 +9225,7 @@ TEST_F(FeaturesTest, MethodFeaturesInherit) {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_service_feature: 9 }
+          [pb.test] { service_feature: VALUE9 }
         }
       }
       method { name: "Bar" input_type: "EmptyMsg" output_type: "EmptyMsg" }
@@ -9210,8 +9234,8 @@ TEST_F(FeaturesTest, MethodFeaturesInherit) {
   const MethodDescriptor* method = file->service(0)->method(0);
   EXPECT_THAT(method->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(method).enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(GetFeatures(method).GetExtension(pb::test).int_service_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(method).GetExtension(pb::test).service_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, MethodFeaturesOverride) {
@@ -9226,14 +9250,14 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
     options {
       features {
         enum_type: CLOSED
-        [pb.test] { int_multiple_feature: 2 }
+        [pb.test] { multiple_feature: VALUE2 }
       }
     }
     service {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_service_feature: 4 int_multiple_feature: 4 }
+          [pb.test] { service_feature: VALUE4 multiple_feature: VALUE4 }
         }
       }
       method {
@@ -9242,7 +9266,7 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
         output_type: "EmptyMsg"
         options {
           features {
-            [pb.test] { int_multiple_feature: 9 }
+            [pb.test] { multiple_feature: VALUE9 }
           }
         }
       }
@@ -9251,10 +9275,10 @@ TEST_F(FeaturesTest, MethodFeaturesOverride) {
   const MethodDescriptor* method = file->service(0)->method(0);
   EXPECT_THAT(method->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(method).enum_type(), FeatureSet::CLOSED);
-  EXPECT_EQ(GetFeatures(method).GetExtension(pb::test).int_service_feature(),
-            4);
-  EXPECT_EQ(GetFeatures(method).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(method).GetExtension(pb::test).service_feature(),
+            pb::VALUE4);
+  EXPECT_EQ(GetFeatures(method).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE9);
 }
 
 TEST_F(FeaturesTest, FieldFeatureHelpers) {
@@ -9991,7 +10015,7 @@ TEST_F(FeaturesTest, CopyToIncludesFeatures) {
       name: "Foo"
       options {
         features {
-          [pb.test] { int_multiple_feature: 9 }
+          [pb.test] { multiple_feature: VALUE9 }
         }
       }
       field {
@@ -10010,7 +10034,7 @@ TEST_F(FeaturesTest, CopyToIncludesFeatures) {
                                features { field_presence: IMPLICIT })pb"));
   EXPECT_THAT(proto.message_type(0).options(),
               EqualsProto(R"pb(features {
-                                 [pb.test] { int_multiple_feature: 9 }
+                                 [pb.test] { multiple_feature: VALUE9 }
                                })pb"));
   EXPECT_THAT(
       proto.message_type(0).field(0).options(),
@@ -10092,14 +10116,14 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
       uninterpreted_option {
         name { name_part: "features" is_extension: false }
         name { name_part: "pb.test" is_extension: true }
-        name { name_part: "int_multiple_feature" is_extension: false }
-        positive_int_value: 5
+        name { name_part: "multiple_feature" is_extension: false }
+        identifier_value: "VALUE5"
       }
       uninterpreted_option {
         name { name_part: "features" is_extension: false }
         name { name_part: "pb.test" is_extension: true }
-        name { name_part: "int_file_feature" is_extension: false }
-        positive_int_value: 5
+        name { name_part: "file_feature" is_extension: false }
+        identifier_value: "VALUE5"
       }
     }
     message_type {
@@ -10108,14 +10132,14 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
         uninterpreted_option {
           name { name_part: "features" is_extension: false }
           name { name_part: "pb.test" is_extension: true }
-          name { name_part: "int_multiple_feature" is_extension: false }
-          positive_int_value: 7
+          name { name_part: "multiple_feature" is_extension: false }
+          identifier_value: "VALUE6"
         }
         uninterpreted_option {
           name { name_part: "features" is_extension: false }
           name { name_part: "pb.test" is_extension: true }
-          name { name_part: "int_message_feature" is_extension: false }
-          positive_int_value: 7
+          name { name_part: "message_feature" is_extension: false }
+          identifier_value: "VALUE6"
         }
       }
       field {
@@ -10127,14 +10151,14 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
           uninterpreted_option {
             name { name_part: "features" is_extension: false }
             name { name_part: "pb.test" is_extension: true }
-            name { name_part: "int_multiple_feature" is_extension: false }
-            positive_int_value: 9
+            name { name_part: "multiple_feature" is_extension: false }
+            identifier_value: "VALUE7"
           }
           uninterpreted_option {
             name { name_part: "features" is_extension: false }
             name { name_part: "pb.test" is_extension: true }
-            name { name_part: "int_field_feature" is_extension: false }
-            positive_int_value: 9
+            name { name_part: "field_feature" is_extension: false }
+            identifier_value: "VALUE7"
           }
         }
       }
@@ -10142,11 +10166,14 @@ TEST_F(FeaturesTest, UninterpretedOptionsMergeExtension) {
   )pb");
   const FieldDescriptor* field = file->message_type(0)->field(0);
   EXPECT_THAT(field->options(), EqualsProto(""));
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_file_feature(), 5);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_message_feature(), 7);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_field_feature(), 9);
-  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).int_multiple_feature(),
-            9);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).file_feature(),
+            pb::VALUE5);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).message_feature(),
+            pb::VALUE6);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).field_feature(),
+            pb::VALUE7);
+  EXPECT_EQ(GetFeatures(field).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE7);
 }
 
 TEST_F(FeaturesTest, InvalidJsonUniquenessDefaultWarning) {
@@ -10343,7 +10370,7 @@ INSTANTIATE_TEST_SUITE_P(
                  dependency: "google/protobuf/unittest_features.proto"
                  options {
                    features {
-                     [pb.test] { int_file_feature: 1 }
+                     [pb.test] { file_feature: VALUE3 }
                    }
                  }
             )pb"),
@@ -10438,7 +10465,7 @@ INSTANTIATE_TEST_SUITE_P(
                      name: "foo_oneof"
                      options {
                        features {
-                         [pb.test] { int_oneof_feature: 7 }
+                         [pb.test] { oneof_feature: VALUE7 }
                        }
                      }
                    }
@@ -10456,7 +10483,7 @@ INSTANTIATE_TEST_SUITE_P(
                      end: 100
                      options {
                        features {
-                         [pb.test] { int_extension_range_feature: 15 }
+                         [pb.test] { extension_range_feature: VALUE15 }
                        }
                      }
                    }
@@ -10485,7 +10512,7 @@ INSTANTIATE_TEST_SUITE_P(
                      number: 0
                      options {
                        features {
-                         [pb.test] { int_enum_entry_feature: 1 }
+                         [pb.test] { enum_entry_feature: VALUE1 }
                        }
                      }
                    }
@@ -10502,7 +10529,7 @@ INSTANTIATE_TEST_SUITE_P(
                    name: "FooService"
                    options {
                      features {
-                       [pb.test] { int_service_feature: 11 }
+                       [pb.test] { service_feature: VALUE11 }
                      }
                    }
                  }
@@ -10522,7 +10549,7 @@ INSTANTIATE_TEST_SUITE_P(
                      output_type: ".EmptyMessage"
                      options {
                        features {
-                         [pb.test] { int_method_feature: 12 }
+                         [pb.test] { method_feature: VALUE12 }
                        }
                      }
                    }

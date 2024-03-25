@@ -154,7 +154,7 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
-  info.message_info = {prototype};
+  info.message_info = {prototype, prototype->GetTcParseTable()};
   Register(info);
 }
 

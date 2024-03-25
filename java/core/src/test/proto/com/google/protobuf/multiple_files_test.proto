@@ -9,7 +9,7 @@
 //
 // A proto file which tests the java_multiple_files option.
 
-syntax = "proto2";
+edition = "2023";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
@@ -18,29 +18,33 @@ package protobuf_unittest;
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/unittest.proto";
 
+option features.enum_type = CLOSED;
 option java_generic_services = true;  // auto-added
 option java_multiple_files = true;
 option java_outer_classname = "MultipleFilesTestProto";
 
 message MessageWithNoOuter {
   message NestedMessage {
-    optional int32 i = 1;
+    int32 i = 1;
   }
+
   enum NestedEnum {
     BAZ = 3;
   }
-  optional NestedMessage nested = 1;
+
+  NestedMessage nested = 1;
   repeated TestAllTypes foreign = 2;
-  optional NestedEnum nested_enum = 3;
-  optional EnumWithNoOuter foreign_enum = 4;
+  NestedEnum nested_enum = 3;
+  EnumWithNoOuter foreign_enum = 4;
 }
 
 extend google.protobuf.EnumValueOptions {
-  optional int32 enum_value_option = 7654321;
+  int32 enum_value_option = 7654321;
 }
 
 enum EnumWithNoOuter {
   FOO = 1 [(enum_value_option) = 12345];
+
   BAR = 2;
 }
 
@@ -49,5 +53,5 @@ service ServiceWithNoOuter {
 }
 
 extend TestAllExtensions {
-  optional int32 extension_with_outer = 1234567;
+  int32 extension_with_outer = 1234567;
 }

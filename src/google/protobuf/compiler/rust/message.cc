@@ -597,7 +597,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                         $pbr$::InnerMap::new($pbi$::Private, raw, arena))
                 }
 
-                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
+                unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
                     // No-op: the memory will be dropped by the arena.
                 }
 
@@ -712,12 +712,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"nested_in_msg",
         [&] {
           // If we have no nested types, enums, or oneofs, bail out without
-          // emitting an empty mod SomeMsg_.
+          // emitting an empty mod some_msg.
           if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
               msg.real_oneof_decl_count() == 0) {
             return;
           }
-          ctx.Emit({{"Msg", RsSafeName(msg.name())},
+          ctx.Emit({{"mod_name", RsSafeName(CamelToSnakeCase(msg.name()))},
                     {"nested_msgs",
                      [&] {
                        for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -737,13 +737,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                        }
                      }}},
                    R"rs(
-                 #[allow(non_snake_case)]
-                 pub mod $Msg$_ {
+                 pub mod $mod_name$ {
                    $nested_msgs$
                    $nested_enums$
 
                    $oneofs$
-                 }  // mod $Msg$_
+                 }  // mod $mod_name$
                 )rs");
         }},
        {"raw_arena_getter_for_message",
@@ -813,6 +812,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl std::fmt::Debug for $Msg$ {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
+          }
+        }
+
+        impl std::default::Default for $Msg$ {
+          fn default() -> Self {
+            Self::new()
           }
         }
 
@@ -985,6 +990,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn new(_private: $pbi$::Private, msg: &'msg mut $pbr$::MessageInner) -> Self {
             Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
+
+          #[deprecated = "This .or_default() is a no-op, usages can be safely removed"]
+          pub fn or_default(self) -> Self { self }
 
           fn raw_msg(&self) -> $pbi$::RawMessage {
             self.inner.msg()

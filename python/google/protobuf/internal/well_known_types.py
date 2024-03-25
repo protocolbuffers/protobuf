@@ -400,7 +400,7 @@ class Duration(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToTimedelta(self):
+  def ToTimedelta(self) -> datetime.timedelta:
     """Converts Duration to timedelta."""
     return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(

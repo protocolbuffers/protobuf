@@ -109,8 +109,10 @@ internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_javalite",
     javalite = True,
     deps = [
+        ":java_features_proto",
         "//:any_proto",
         "//:api_proto",
+        "//:descriptor_proto",
         "//:duration_proto",
         "//:empty_proto",
         "//:field_mask_proto",
@@ -155,7 +157,9 @@ protobuf_java_export(
     maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/lite:pom_template.xml",
     resources = [
+        ":java_features_proto",
         "//:lite_well_known_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
     runtime_deps = [":lite_bundle"],
@@ -170,7 +174,12 @@ proto_library(
     name = "java_features_proto",
     srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
     strip_import_prefix = "/java/core/src/main/java/com",
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//java/kotlin:__pkg__",
+        "//java/kotlin-lite:__pkg__",
+        "//java/lite:__pkg__",
+        "//pkg:__pkg__",
+    ],
     deps = ["//:descriptor_proto"],
 )
 

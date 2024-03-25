@@ -29,12 +29,11 @@ set(_protobuf_libraries libprotobuf-lite libprotobuf)
 if (protobuf_BUILD_LIBPROTOC)
     list(APPEND _protobuf_libraries libprotoc)
 endif (protobuf_BUILD_LIBPROTOC)
+if (protobuf_BUILD_LIBUPB)
+  list(APPEND _protobuf_libraries libupb)
+endif ()
 
 foreach(_library ${_protobuf_libraries})
-  set_property(TARGET ${_library}
-    PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if (UNIX AND NOT APPLE)
     set_property(TARGET ${_library}
       PROPERTY INSTALL_RPATH "$ORIGIN")
@@ -49,16 +48,27 @@ foreach(_library ${_protobuf_libraries})
 endforeach()
 
 if (protobuf_BUILD_PROTOC_BINARIES)
+  set(_protobuf_binaries protoc)
   install(TARGETS protoc EXPORT protobuf-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
-  if (UNIX AND NOT APPLE)
-    set_property(TARGET protoc
-      PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
-  elseif (APPLE)
-    set_property(TARGET protoc
-      PROPERTY INSTALL_RPATH "@loader_path/../lib")
-  endif()
+  if (protobuf_BUILD_LIBUPB)
+    foreach (generator upb upbdefs upb_minitable)
+      list(APPEND _protobuf_binaries protoc-gen-${generator})
+      install(TARGETS protoc-gen-${generator} EXPORT protobuf-targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT upb-generators
+        BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT upb-generators)
+    endforeach ()
+  endif ()
+  foreach (binary IN LISTS _protobuf_binaries)
+    if (UNIX AND NOT APPLE)
+      set_property(TARGET ${binary}
+        PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+    elseif (APPLE)
+      set_property(TARGET ${binary}
+        PROPERTY INSTALL_RPATH "@loader_path/../lib")
+    endif ()
+  endforeach ()
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
@@ -73,6 +83,17 @@ set(protobuf_HEADERS
   ${plugin_proto_proto_srcs}
   ${java_features_proto_proto_srcs}
 )
+if (protobuf_BUILD_LIBUPB)
+  list(APPEND protobuf_HEADERS ${libupb_hdrs})
+  # Manually install the bootstrap headers
+  install(
+    FILES
+      ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/descriptor.upb.h
+      ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/descriptor.upb_minitable.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/google/protobuf
+    COMPONENT protobuf-headers
+  )
+endif ()
 foreach(_header ${protobuf_HEADERS})
   string(FIND ${_header} "${protobuf_SOURCE_DIR}/src" _find_src)
   string(FIND ${_header} "${protobuf_SOURCE_DIR}" _find_nosrc)

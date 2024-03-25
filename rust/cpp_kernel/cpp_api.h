@@ -86,6 +86,9 @@ struct PtrAndLen {
   bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_insert(       \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty value) {  \
     auto iter_and_inserted = m->try_emplace(to_cpp_key, to_cpp_value);         \
+    if (!iter_and_inserted.second) {                                           \
+      iter_and_inserted.first->second = to_cpp_value;                          \
+    }                                                                          \
     return iter_and_inserted.second;                                           \
   }                                                                            \
   bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_get(          \

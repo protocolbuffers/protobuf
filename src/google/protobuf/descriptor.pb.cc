@@ -6,6 +6,7 @@
 #include "google/protobuf/descriptor.pb.h"
 
 #include <algorithm>
+#include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
@@ -1836,7 +1837,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "ative_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 "
     "\001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_v"
     "alue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002("
-    "\t\022\024\n\014is_extension\030\002 \002(\010\"\255\t\n\nFeatureSet\022|"
+    "\t\022\024\n\014is_extension\030\002 \002(\010\"\265\t\n\nFeatureSet\022|"
     "\n\016field_presence\030\001 \001(\0162).google.protobuf"
     ".FeatureSet.FieldPresenceB9\210\001\001\230\001\004\230\001\001\242\001\r\022"
     "\010EXPLICIT\030\346\007\242\001\r\022\010IMPLICIT\030\347\007\242\001\r\022\010EXPLICI"
@@ -1866,44 +1867,44 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "IXED\020\001\022\r\n\tDELIMITED\020\002\"H\n\nJsonFormat\022\027\n\023J"
     "SON_FORMAT_UNKNOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGAC"
     "Y_BEST_EFFORT\020\002*\006\010\350\007\020\351\007*\006\010\351\007\020\352\007*\006\010\352\007\020\353\007*"
-    "\006\010\213N\020\220N*\006\010\220N\020\221NJ\006\010\347\007\020\350\007\"\300\002\n\022FeatureSetDe"
-    "faults\022N\n\010defaults\030\001 \003(\0132<.google.protob"
-    "uf.FeatureSetDefaults.FeatureSetEditionD"
-    "efault\0221\n\017minimum_edition\030\004 \001(\0162\030.google"
-    ".protobuf.Edition\0221\n\017maximum_edition\030\005 \001"
-    "(\0162\030.google.protobuf.Edition\032t\n\030FeatureS"
-    "etEditionDefault\022)\n\007edition\030\003 \001(\0162\030.goog"
-    "le.protobuf.Edition\022-\n\010features\030\002 \001(\0132\033."
-    "google.protobuf.FeatureSet\"\325\001\n\016SourceCod"
-    "eInfo\022:\n\010location\030\001 \003(\0132(.google.protobu"
-    "f.SourceCodeInfo.Location\032\206\001\n\010Location\022\020"
-    "\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020le"
-    "ading_comments\030\003 \001(\t\022\031\n\021trailing_comment"
-    "s\030\004 \001(\t\022!\n\031leading_detached_comments\030\006 \003"
-    "(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nannotation\030\001"
-    " \003(\0132-.google.protobuf.GeneratedCodeInfo"
-    ".Annotation\032\303\001\n\nAnnotation\022\020\n\004path\030\001 \003(\005"
-    "B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005"
-    "\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google"
-    ".protobuf.GeneratedCodeInfo.Annotation.S"
-    "emantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t"
-    "\n\005ALIAS\020\002*\222\002\n\007Edition\022\023\n\017EDITION_UNKNOWN"
-    "\020\000\022\023\n\016EDITION_PROTO2\020\346\007\022\023\n\016EDITION_PROTO"
-    "3\020\347\007\022\021\n\014EDITION_2023\020\350\007\022\021\n\014EDITION_2024\020"
-    "\351\007\022\027\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023EDITION_2"
-    "_TEST_ONLY\020\002\022\035\n\027EDITION_99997_TEST_ONLY\020"
-    "\235\215\006\022\035\n\027EDITION_99998_TEST_ONLY\020\236\215\006\022\035\n\027ED"
-    "ITION_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDITION_MAX"
-    "\020\377\377\377\377\007B~\n\023com.google.protobufB\020Descripto"
-    "rProtosH\001Z-google.golang.org/protobuf/ty"
-    "pes/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Proto"
-    "buf.Reflection"
+    "\006\010\206N\020\207N*\006\010\213N\020\220N*\006\010\220N\020\221NJ\006\010\347\007\020\350\007\"\300\002\n\022Feat"
+    "ureSetDefaults\022N\n\010defaults\030\001 \003(\0132<.googl"
+    "e.protobuf.FeatureSetDefaults.FeatureSet"
+    "EditionDefault\0221\n\017minimum_edition\030\004 \001(\0162"
+    "\030.google.protobuf.Edition\0221\n\017maximum_edi"
+    "tion\030\005 \001(\0162\030.google.protobuf.Edition\032t\n\030"
+    "FeatureSetEditionDefault\022)\n\007edition\030\003 \001("
+    "\0162\030.google.protobuf.Edition\022-\n\010features\030"
+    "\002 \001(\0132\033.google.protobuf.FeatureSet\"\325\001\n\016S"
+    "ourceCodeInfo\022:\n\010location\030\001 \003(\0132(.google"
+    ".protobuf.SourceCodeInfo.Location\032\206\001\n\010Lo"
+    "cation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002"
+    "\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing"
+    "_comments\030\004 \001(\t\022!\n\031leading_detached_comm"
+    "ents\030\006 \003(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nanno"
+    "tation\030\001 \003(\0132-.google.protobuf.Generated"
+    "CodeInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004pa"
+    "th\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005beg"
+    "in\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\0162"
+    "6.google.protobuf.GeneratedCodeInfo.Anno"
+    "tation.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n"
+    "\003SET\020\001\022\t\n\005ALIAS\020\002*\222\002\n\007Edition\022\023\n\017EDITION"
+    "_UNKNOWN\020\000\022\023\n\016EDITION_PROTO2\020\346\007\022\023\n\016EDITI"
+    "ON_PROTO3\020\347\007\022\021\n\014EDITION_2023\020\350\007\022\021\n\014EDITI"
+    "ON_2024\020\351\007\022\027\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023E"
+    "DITION_2_TEST_ONLY\020\002\022\035\n\027EDITION_99997_TE"
+    "ST_ONLY\020\235\215\006\022\035\n\027EDITION_99998_TEST_ONLY\020\236"
+    "\215\006\022\035\n\027EDITION_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDI"
+    "TION_MAX\020\377\377\377\377\007B~\n\023com.google.protobufB\020D"
+    "escriptorProtosH\001Z-google.golang.org/pro"
+    "tobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032Goog"
+    "le.Protobuf.Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    9574,
+    9582,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -2383,6 +2384,7 @@ FileDescriptorSet::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
               false,
@@ -2616,6 +2618,7 @@ FileDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
               false,
@@ -3190,6 +3193,7 @@ DescriptorProto_ExtensionRange::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
               false,
@@ -3452,6 +3456,7 @@ DescriptorProto_ReservedRange::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
               false,
@@ -3710,6 +3715,7 @@ DescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
               false,
@@ -4202,6 +4208,7 @@ ExtensionRangeOptions_Declaration::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
               false,
@@ -4535,6 +4542,7 @@ ExtensionRangeOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
               false,
@@ -4886,6 +4894,7 @@ FieldDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
               false,
@@ -5388,6 +5397,7 @@ OneofDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
               false,
@@ -5629,6 +5639,7 @@ EnumDescriptorProto_EnumReservedRange::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
               false,
@@ -5877,6 +5888,7 @@ EnumDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
               false,
@@ -6222,6 +6234,7 @@ EnumValueDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
               false,
@@ -6510,6 +6523,7 @@ ServiceDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
               false,
@@ -6814,6 +6828,7 @@ MethodDescriptorProto::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
               false,
@@ -7225,6 +7240,7 @@ FileOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
               false,
@@ -8011,6 +8027,7 @@ MessageOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
               false,
@@ -8383,6 +8400,7 @@ FieldOptions_EditionDefault::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
               false,
@@ -8644,6 +8662,7 @@ FieldOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
               false,
@@ -9178,6 +9197,7 @@ OneofOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
               false,
@@ -9454,6 +9474,7 @@ EnumOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
               false,
@@ -9804,6 +9825,7 @@ EnumValueOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
               false,
@@ -10130,6 +10152,7 @@ ServiceOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
               false,
@@ -10437,6 +10460,7 @@ MethodOptions::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
               false,
@@ -10759,6 +10783,7 @@ UninterpretedOption_NamePart::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
               false,
@@ -11019,6 +11044,7 @@ UninterpretedOption::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
               false,
@@ -11404,6 +11430,7 @@ FeatureSet::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
               false,
@@ -11755,6 +11782,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
               false,
@@ -12013,6 +12041,7 @@ FeatureSetDefaults::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
               false,
@@ -12288,6 +12317,7 @@ SourceCodeInfo_Location::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
               false,
@@ -12615,6 +12645,7 @@ SourceCodeInfo::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
               false,
@@ -12828,6 +12859,7 @@ GeneratedCodeInfo_Annotation::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
               false,
@@ -13147,6 +13179,7 @@ GeneratedCodeInfo::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
       ClassDataFull _data_ = {
           {
+              &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
               false,
