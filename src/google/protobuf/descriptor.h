@@ -68,8 +68,6 @@
 
 namespace google {
 namespace protobuf {
-
-
 // Defined in this file.
 class Descriptor;
 class FieldDescriptor;
@@ -2348,6 +2346,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
+  friend class ::google::protobuf::compiler::CommandLineInterface;
 
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
@@ -2437,7 +2436,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   std::unique_ptr<FeatureSetDefaults> feature_set_defaults_spec_;
 
   // Returns true if the field extends an option message of descriptor.proto.
-  bool IsExtendingDescriptor(const FieldDescriptor& field) const;
+  bool IsReadyForCheckingDescriptorExtDecl(
+      absl::string_view message_name) const;
 
 };
 
