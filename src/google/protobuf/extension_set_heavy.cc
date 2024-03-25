@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -426,39 +427,14 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
 }
 
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
-// First, register all the extensions that have both messages linked in.
-// This will include all messages used as extensions in .proto options.
-// In the second phase, we generate the missing prototypes, but that requires
-// parsing descriptors, which in turn require the extensions from the first
-// phase.
-void ExtensionSet::RegisterWeakMessageExtension(
-    internal::WeakPrototypeRef extendee, int number, FieldType type,
-    bool is_repeated, internal::WeakPrototypeRef prototype,
-    LazyEagerVerifyFnType verify_func, LazyAnnotation is_lazy,
-    bool is_preregistration) {
-  auto* extendee_msg =
-      GetPrototypeForWeakDescriptor(extendee.table, extendee.index, false);
-  auto* prototype_msg =
-      GetPrototypeForWeakDescriptor(prototype.table, prototype.index, false);
-
-  const bool have_both = extendee_msg != nullptr && prototype_msg != nullptr;
-  if (is_preregistration != have_both) {
-    // This is done on the other phase.
-    return;
+bool ExtensionSet::ShouldRegisterAtThisTime(
+    std::initializer_list<WeakPrototypeRef> messages, bool is_preregistration) {
+  bool has_all = true;
+  for (auto ref : messages) {
+    has_all = has_all && GetPrototypeForWeakDescriptor(ref.table, ref.index,
+                                                       false) != nullptr;
   }
-
-  if (extendee_msg == nullptr) {
-    extendee_msg =
-        GetPrototypeForWeakDescriptor(extendee.table, extendee.index, true);
-  }
-  if (prototype_msg == nullptr) {
-    prototype_msg =
-        GetPrototypeForWeakDescriptor(prototype.table, prototype.index, true);
-  }
-
-  ExtensionSet::RegisterMessageExtension(
-      extendee_msg, number, type, is_repeated,
-      /*is_packed=*/false, prototype_msg, verify_func, is_lazy);
+  return has_all == is_preregistration;
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 

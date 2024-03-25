@@ -1077,11 +1077,16 @@ static void GatherAllCustomOptionTypes(
     reflection.ListFields(msg, &fields);
 
     for (auto* field : fields) {
+      if (field->is_extension()) {
+        // Always add the extended.
+        const Descriptor* desc = msg.GetDescriptor();
+        out[desc->full_name()] = desc;
+      }
+
+      // Add and recurse of the extendee if it is a message.
       const auto* field_msg = field->message_type();
       if (field_msg == nullptr) continue;
       if (field->is_extension()) {
-        const Descriptor* desc = msg.GetDescriptor();
-        out[desc->full_name()] = desc;
         out[field_msg->full_name()] = field_msg;
       }
       if (field->is_repeated()) {

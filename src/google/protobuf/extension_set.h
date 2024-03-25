@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -160,14 +161,6 @@ struct ExtensionInfo {
 };
 
 
-// Reference to a prototype via its DescriptorTable.
-// This way we can generate them on the fly if they are missing when Weak
-// Descriptor messages are enabled.
-struct WeakPrototypeRef {
-  const internal::DescriptorTable* table;
-  int index;
-};
-
 // An ExtensionFinder is an object which looks up extension definitions.  It
 // must implement this method:
 //
@@ -236,16 +229,18 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        LazyEagerVerifyFnType verify_func,
                                        LazyAnnotation is_lazy);
 
-  // As RegisterMessageExtension, but for the weak descriptor message mode.
-  // It will perform the registration in two phases to guarantee we can parse
-  // descriptors properly.
-  static void RegisterWeakMessageExtension(internal::WeakPrototypeRef extendee,
-                                           int number, FieldType type,
-                                           bool is_repeated,
-                                           internal::WeakPrototypeRef prototype,
-                                           LazyEagerVerifyFnType verify_func,
-                                           LazyAnnotation is_lazy,
-                                           bool is_preregistration);
+  // In weak descriptor mode we register extensions in two phases.
+  // This function determines if it is the right time to register a particular
+  // extension.
+  // During "preregistration" we only register extensions that have all their
+  // types linked in.
+  struct WeakPrototypeRef {
+    const internal::DescriptorTable* table;
+    int index;
+  };
+  static bool ShouldRegisterAtThisTime(
+      std::initializer_list<WeakPrototypeRef> messages,
+      bool is_preregistration);
 
   // =================================================================
 
