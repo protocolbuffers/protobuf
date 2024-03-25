@@ -19,6 +19,7 @@
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -83,7 +84,7 @@ std::string FieldName(const FieldDescriptor* field) {
   // Groups are hacky:  The name of the field is just the lower-cased name
   // of the group type.  In Java, though, we would like to retain the original
   // capitalization of the type name.
-  if (GetType(field) == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*field)) {
     field_name = field->message_type()->name();
   } else {
     field_name = field->name();

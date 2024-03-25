@@ -15,6 +15,7 @@ use protobuf_upb as kernel;
 use kernel::Optional::{Set, Unset};
 
 use std::io::{self, ErrorKind, Read, Write};
+use test_messages_edition2023_proto::TestAllTypesEdition2023;
 use test_messages_proto2::TestAllTypesProto2;
 use test_messages_proto2_editions_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
 use test_messages_proto3::TestAllTypesProto3;
@@ -83,6 +84,14 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         }
         b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
             if let Ok(msg) = TestAllTypesProto3::parse(bytes) {
+                msg.serialize()
+            } else {
+                resp.set_parse_error("failed to parse bytes");
+                return resp;
+            }
+        }
+        b"protobuf_test_messages.editions.TestAllTypesEdition2023" => {
+            if let Ok(msg) = TestAllTypesEdition2023::parse(bytes) {
                 msg.serialize()
             } else {
                 resp.set_parse_error("failed to parse bytes");

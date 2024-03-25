@@ -8,6 +8,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 require 'conformance/conformance_pb'
+require 'conformance/test_protos/test_messages_edition2023_pb'
 require 'google/protobuf'
 require 'google/protobuf/test_messages_proto3_pb'
 require 'google/protobuf/test_messages_proto2_pb'
@@ -24,6 +25,7 @@ def do_test(request)
 
   unless descriptor
     response.runtime_error = "Unknown message type: " + request.message_type
+    return response
   end
 
   if request.test_category == :TEXT_FORMAT_TEST
