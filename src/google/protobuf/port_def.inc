@@ -612,13 +612,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
 #endif  // PROTOBUF_ASAN
 
-#ifdef PROTOBUF_TSAN_READ
-#error PROTOBUF_TSAN_READ was previously defined
-#endif
-#ifdef PROTOBUF_TSAN_WRITE
-#error PROTOBUF_TSAN_WRITE was previously defined
-#endif
-
 #ifdef PROTOBUF_TSAN
 #define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
 #else
