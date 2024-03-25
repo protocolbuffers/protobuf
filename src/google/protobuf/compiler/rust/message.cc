@@ -80,12 +80,12 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageDeserialize(Context& ctx, const Descriptor& msg) {
+void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit(
           {
-              {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+              {"parse_thunk", ThunkName(ctx, msg, "parse")},
           },
           R"rs(
           let success = unsafe {
@@ -94,17 +94,17 @@ void MessageDeserialize(Context& ctx, const Descriptor& msg) {
               data.len(),
             );
 
-            $deserialize_thunk$(self.raw_msg(), data)
+            $parse_thunk$(self.raw_msg(), data)
           };
           success.then_some(()).ok_or($pb$::ParseError)
         )rs");
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"deserialize_thunk", ThunkName(ctx, msg, "parse")}}, R"rs(
+      ctx.Emit({{"parse_thunk", ThunkName(ctx, msg, "parse")}}, R"rs(
         let arena = $pbr$::Arena::new();
         let msg = unsafe {
-          $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
+          $parse_thunk$(data.as_ptr(), data.len(), arena.raw())
         };
 
         match msg {
@@ -154,7 +154,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"new_thunk", ThunkName(ctx, msg, "new")},
               {"delete_thunk", ThunkName(ctx, msg, "delete")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+              {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
               {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
               {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
@@ -169,7 +169,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $new_thunk$() -> $pbi$::RawMessage;
           fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
           fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
-          fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
+          fn $parse_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbi$::RawMessage, src: $pbi$::RawMessage);
           fn $repeated_len_thunk$(raw: $pbi$::RawRepeatedField) -> usize;
           fn $repeated_add_thunk$(raw: $pbi$::RawRepeatedField) -> $pbi$::RawMessage;
@@ -185,13 +185,13 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           {
               {"new_thunk", ThunkName(ctx, msg, "new")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"deserialize_thunk", ThunkName(ctx, msg, "parse")},
+              {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"minitable", UpbMinitableName(msg)},
           },
           R"rs(
           fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
           fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
-          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
+          fn $parse_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
           /// Opaque wrapper for this message's MiniTable. The only valid way to
           /// reference this static is with `std::ptr::addr_of!(..)`.
           static $minitable$: $pbr$::OpaqueMiniTable;
@@ -683,7 +683,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
       {{"Msg", RsSafeName(msg.name())},
        {"Msg::new", [&] { MessageNew(ctx, msg); }},
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
-       {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
+       {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
@@ -1053,8 +1053,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn serialize(&self) -> $pbr$::SerializedData {
             self.as_view().serialize()
           }
+          #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]
           pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
-            $Msg::deserialize$
+            self.clear_and_parse(data)
+          }
+          pub fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
+            $Msg::clear_and_parse$
+          }
+          pub fn parse(data: &[u8]) -> Result<Self, $pb$::ParseError> {
+            let mut msg = Self::new();
+            msg.clear_and_parse(data).map(|_| msg)
           }
 
           pub fn as_view(&self) -> $Msg$View {
@@ -1143,7 +1151,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"new_thunk", ThunkName(ctx, msg, "new")},
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-       {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+       {"parse_thunk", ThunkName(ctx, msg, "parse")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
        {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
@@ -1180,7 +1188,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
           return google::protobuf::rust_internal::SerializeMsg(msg);
         }
-        bool $deserialize_thunk$($QualifiedMsg$* msg,
+        bool $parse_thunk$($QualifiedMsg$* msg,
                                  google::protobuf::rust_internal::SerializedData data) {
           return msg->ParseFromArray(data.data, data.len);
         }
