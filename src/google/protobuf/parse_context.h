@@ -489,6 +489,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   int depth() const { return depth_; }
 
+  void set_depth(int depth) { depth_ = depth; }
+
   Data& data() { return data_; }
   const Data& data() const { return data_; }
 
