@@ -16,6 +16,8 @@ pkg_files(
     name = "wkt_protos_files",
     srcs = [
         "//:well_known_type_protos",
+        "//java/core:java_features_proto_srcs",
+        "//src/google/protobuf:cpp_features_proto_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     prefix = "include/google/protobuf",

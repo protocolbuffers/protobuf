@@ -727,7 +727,7 @@ filegroup(
 filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
-    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 filegroup(
