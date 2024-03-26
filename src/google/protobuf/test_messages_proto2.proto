@@ -173,6 +173,11 @@ message TestAllTypesProto2 {
     optional uint32 group_uint32 = 203;
   }
 
+  optional group MultiWordGroupField = 204 {
+    optional int32 group_int32 = 205;
+    optional uint32 group_uint32 = 206;
+  }
+
   // default values
   optional int32 default_int32 = 241 [default = -123456789];
   optional int64 default_int64 = 242 [default = -9123456789123456789];
@@ -248,6 +253,13 @@ enum ForeignEnumProto2 {
 
 extend TestAllTypesProto2 {
   optional int32 extension_int32 = 120;
+}
+
+extend TestAllTypesProto2 {
+  optional group GroupField = 121 {
+    optional int32 group_int32 = 122;
+    optional uint32 group_uint32 = 123;
+  }
 }
 
 message UnknownToTestAllTypes {

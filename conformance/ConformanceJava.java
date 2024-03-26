@@ -244,14 +244,19 @@ class ConformanceJava {
     AbstractMessage testMessage;
     String messageType = request.getMessageType();
 
+    ExtensionRegistry extensions = ExtensionRegistry.newInstance();
+    try {
+      createTestFile(messageType)
+          .getMethod("registerAllExtensions", ExtensionRegistry.class)
+          .invoke(null, extensions);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD:
         {
           try {
-            ExtensionRegistry extensions = ExtensionRegistry.newInstance();
-            createTestFile(messageType)
-                .getMethod("registerAllExtensions", ExtensionRegistry.class)
-                .invoke(null, extensions);
             testMessage =
                 parseBinary(
                     request.getProtobufPayload(),
@@ -295,7 +300,7 @@ class ConformanceJava {
             AbstractMessage.Builder<?> builder =
                 (AbstractMessage.Builder<?>)
                     createTestMessage(messageType).getMethod("newBuilder").invoke(null);
-            TextFormat.merge(request.getTextPayload(), builder);
+            TextFormat.merge(request.getTextPayload(), extensions, builder);
             testMessage = (AbstractMessage) builder.build();
             } catch (TextFormat.ParseException e) {
               return Conformance.ConformanceResponse.newBuilder()
