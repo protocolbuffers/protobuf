@@ -60,6 +60,7 @@ kt_jvm_export(
     pom_template = "//java/kotlin:pom_template.xml",
     resources = [
         "//:well_known_type_protos",
+        "//java/core:java_features_proto",
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
@@ -319,6 +320,7 @@ internal_gen_kt_protos(
         "//:timestamp_proto",
         "//:type_proto",
         "//:wrappers_proto",
+        "//java/core:java_features_proto",
     ],
 )
 
