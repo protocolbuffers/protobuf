@@ -826,6 +826,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef TYPE_BOOL
 #endif  // __APPLE__
 
+#if defined(ANDROID) || defined(__ANDROID__)
+// Inconvenient macro names from usr/include/limits.h in some Android NDKs.
+#pragma push_macro("UID_MAX")
+#undef UID_MAX
+#pragma push_macro("GID_MAX")
+#undef GID_MAX
+#endif  // defined(ANDROID) || defined(__ANDROID__)
+
 #ifdef __FreeBSD__
 // Inconvenient macro names from /usr/include/sys/param.h.
 #pragma push_macro("TRUE")
