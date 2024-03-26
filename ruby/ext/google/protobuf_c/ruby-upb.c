@@ -14817,19 +14817,20 @@ void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m) {
 bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                       const upb_DefPool* ext_pool, const upb_FieldDef** out_f,
                       upb_MessageValue* out_val, size_t* iter) {
+  const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
   size_t i = *iter;
-  size_t n = upb_MessageDef_FieldCount(m);
+  size_t n = upb_MiniTable_FieldCount(mt);
+  const upb_MessageValue zero = {0};
   UPB_UNUSED(ext_pool);
 
   // Iterate over normal fields, returning the first one that is set.
   while (++i < n) {
-    const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
-    upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
+    const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(mt, i);
+    upb_MessageValue val = upb_Message_GetField(msg, field, zero);
 
     // Skip field if unset or empty.
     if (upb_MiniTableField_HasPresence(field)) {
-      if (!upb_Message_HasFieldByDef(msg, f)) continue;
+      if (!upb_Message_HasBaseField(msg, field)) continue;
     } else {
       switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
         case kUpb_FieldMode_Map:
@@ -14846,7 +14847,8 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     }
 
     *out_val = val;
-    *out_f = f;
+    *out_f =
+        upb_MessageDef_FindFieldByNumber(m, upb_MiniTableField_Number(field));
     *iter = i;
     return true;
   }
