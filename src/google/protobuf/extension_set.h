@@ -140,7 +140,9 @@ struct ExtensionInfo {
 
   struct MessageInfo {
     const MessageLite* prototype;
-    // The TcParse table used for this object. Never null.
+    // The TcParse table used for this object.
+    // Never null. (except in platforms that don't constant initialize default
+    // instances)
     const internal::TcParseTableBase* tc_table;
   };
 
