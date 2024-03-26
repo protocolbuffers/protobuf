@@ -729,6 +729,14 @@ class PROTOBUF_EXPORT TextFormat {
     // if possible.
     void AllowUnknownField(bool allow) { allow_unknown_field_ = allow; }
 
+    // When an unknown enum value is met, parsing will fail if this option is
+    // set to false (the default). If true, unknown enums will be ignored and
+    // a warning message will be generated.
+    // Beware! Setting this option true may hide some errors (e.g. spelling
+    // error on enum name). This allows data loss; unlike binary format, text
+    // format cannot preserve unknown enums.  Avoid using this option
+    // if possible.
+    void AllowUnknownEnum(bool allow) { allow_unknown_enum_ = allow; }
 
     void AllowFieldNumber(bool allow) { allow_field_number_ = allow; }
 

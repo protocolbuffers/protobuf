@@ -2602,6 +2602,20 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
 }
 
+TEST(TextFormatUnknownFieldTest, TestUnknownEnum) {
+  protobuf_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  std::string message_with_bad_enum =
+      "repeated_nested_enum: BAR_BAD\n"
+      "repeated_nested_enum: BAR\n";
+  // Unknown enums are not permitted by default.
+  EXPECT_FALSE(parser.ParseFromString(message_with_bad_enum, &proto));
+
+  parser.AllowUnknownEnum(true);
+  EXPECT_TRUE(parser.ParseFromString(message_with_bad_enum, &proto));
+  ASSERT_EQ(proto.repeated_nested_enum_size(), 1);
+  EXPECT_EQ(proto.repeated_nested_enum(0), protobuf_unittest::TestAllTypes::BAR);
+}
 
 TEST(TextFormatFloatingPointTest, PreservesNegative0) {
   proto3_unittest::TestAllTypes in_message;
