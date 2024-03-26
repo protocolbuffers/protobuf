@@ -12,6 +12,7 @@ module(
 # Thus the highest version in their module graph is resolved.
 bazel_dep(name = "abseil-cpp", repo_name = "com_google_absl", version = "20230802.0.bcr.1")
 bazel_dep(name = "bazel_skylib", version = "1.4.1")
+bazel_dep(name = "jsoncpp", version = "1.9.5")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "rules_java", version = "4.0.0")
 bazel_dep(name = "rules_jvm_external", version = "5.1")
