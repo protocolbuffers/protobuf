@@ -1588,6 +1588,26 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(json_string, new_parsed_message)
     self.assertEqual(new_message, new_parsed_message)
 
+  def testUnquoted64(self):
+    message = json_format_proto3_pb2.TestMessage()
+    message.repeated_int64_value.append(0)
+    message.repeated_int64_value.append(42)
+    message.repeated_int64_value.append(-((1 << 60) + 1))
+    message.repeated_int64_value.append((1 << 63) - 1)
+    message.repeated_int64_value.append(-(1 << 63))
+    message.repeated_uint64_value.append(0)
+    message.repeated_uint64_value.append(42)
+    message.repeated_uint64_value.append((1 << 60) + 1)
+    message.repeated_uint64_value.append((1 << 64) - 1)
+    text = (
+      '{"repeatedInt64Value":[0,42,"-1152921504606846977","9223372036854775807",-9223372036854775808],'
+      '"repeatedUint64Value":[0,42,"1152921504606846977","18446744073709551615"]}'
+    )
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, unquote_int64_if_possible=True)),
+        json.loads(text),
+    )
+
 
 if __name__ == '__main__':
   unittest.main()

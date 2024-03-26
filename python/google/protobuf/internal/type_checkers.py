@@ -23,6 +23,7 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import ctypes
+import math
 import numbers
 
 from google.protobuf.internal import decoder
@@ -50,6 +51,13 @@ def ToShortestFloat(original):
     precision += 1
     rounded = float('{0:.{1}g}'.format(original, precision))
   return rounded
+
+def RoundTripsThroughDouble(x):
+  """ Returns true if x round-trips through being cast to a double, i.e., if
+  x is representable exactly as a double. This is a slightly weaker condition
+  than x < 2^52.
+  """
+  return int(float(x)) == x
 
 
 def GetTypeChecker(field):

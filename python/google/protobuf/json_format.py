@@ -80,6 +80,7 @@ def MessageToJson(
     float_precision=None,
     ensure_ascii=True,
     always_print_fields_with_no_presence=False,
+    unquote_int64_if_possible = False,
 ):
   """Converts protobuf message to JSON format.
 
@@ -111,7 +112,8 @@ def MessageToJson(
       use_integers_for_enums,
       descriptor_pool,
       float_precision,
-      always_print_fields_with_no_presence
+      always_print_fields_with_no_presence,
+      unquote_int64_if_possible
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
@@ -174,6 +176,7 @@ class _Printer(object):
       descriptor_pool=None,
       float_precision=None,
       always_print_fields_with_no_presence=False,
+      unquote_int64_if_possible=False,
   ):
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
@@ -181,6 +184,7 @@ class _Printer(object):
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
+    self.unquote_int64_if_possible = unquote_int64_if_possible
     if float_precision:
       self.float_format = '.{}g'.format(float_precision)
     else:
@@ -301,7 +305,10 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
     elif field.cpp_type in _INT64_TYPES:
-      return str(value)
+      if self.unquote_int64_if_possible and type_checkers.RoundTripsThroughDouble(value):
+        return value
+      else:
+        return str(value)
     elif field.cpp_type in _FLOAT_TYPES:
       if math.isinf(value):
         if value < 0.0:
