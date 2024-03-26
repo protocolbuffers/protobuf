@@ -8760,7 +8760,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
 
   // if we made a changed copy, put it in place
   if (copying) {
-    *locs = new_locs;
+    *locs = std::move(new_locs);
   }
 }
 
