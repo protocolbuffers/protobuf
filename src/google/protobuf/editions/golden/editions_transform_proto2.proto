@@ -15,7 +15,7 @@ edition = "2023";
 package protobuf_editions_test;
 
 import "net/proto/proto1_features.proto";
-import "third_party/java_src/protobuf/current/java/com/google/protobuf/java_features.proto";
+import "third_party/java/protobuf/java_features.proto";
 import "google/protobuf/cpp_features.proto";
 import "google/protobuf/editions/proto/editions_transform_proto3.proto";
 

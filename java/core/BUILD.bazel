@@ -171,8 +171,8 @@ protobuf_java_library(
 
 proto_library(
     name = "java_features_proto",
-    srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
-    strip_import_prefix = "/java/core/src/main/java/com",
+    srcs = ["src/main/resources/google/protobuf/java_features.proto"],
+    strip_import_prefix = "/java/core/src/main/resources",
     visibility = [
         "//java/kotlin:__pkg__",
         "//java/kotlin-lite:__pkg__",
@@ -184,7 +184,7 @@ proto_library(
 
 filegroup(
     name = "java_features_proto_srcs",
-    srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
+    srcs = ["src/main/resources/google/protobuf/java_features.proto"],
     visibility = ["//pkg:__pkg__"],
 )
 
@@ -560,7 +560,7 @@ pkg_files(
     name = "dist_files",
     srcs = glob([
         "src/main/java/com/google/protobuf/*.java",
-        "src/main/java/com/google/protobuf/*.proto",
+        "src/main/resources/google/protobuf/*.proto",
         "src/test/java/**/*.java",
         "src/test/proto/**/*.proto",
     ]) + [
