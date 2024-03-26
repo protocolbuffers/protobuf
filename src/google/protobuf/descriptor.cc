@@ -11,6 +11,7 @@
 
 #include "google/protobuf/descriptor.h"
 
+#include <fcntl.h>
 #include <limits.h>
 
 #include <algorithm>
@@ -20,6 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <initializer_list>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -1933,7 +1935,6 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
 // ===================================================================
 // DescriptorPool
 
-
 DescriptorPool::ErrorCollector::~ErrorCollector() = default;
 
 absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
@@ -2026,7 +2027,8 @@ void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
   unused_import_track_files_[file_name] = is_error;
 }
 
-bool DescriptorPool::IsExtendingDescriptor(const FieldDescriptor& field) const {
+bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
+    absl::string_view message_name) const {
   static const auto& kDescriptorTypes = *new absl::flat_hash_set<std::string>({
       "google.protobuf.EnumOptions",
       "google.protobuf.EnumValueOptions",
@@ -7768,7 +7770,10 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   // If this is a declared extension, validate that the actual name and type
   // match the declaration.
   if (field->is_extension()) {
-    if (pool_->IsExtendingDescriptor(*field)) return;
+    if (pool_->IsReadyForCheckingDescriptorExtDecl(
+            field->containing_type()->full_name())) {
+      return;
+    }
     const Descriptor::ExtensionRange* extension_range =
         field->containing_type()->FindExtensionRangeContainingNumber(
             field->number());

@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 
 #include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
