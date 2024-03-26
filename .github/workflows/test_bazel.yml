@@ -20,7 +20,4 @@ jobs:
   test:
     uses: bazel-contrib/.github/.github/workflows/bazel.yaml@v6
     with:
-      folders: |
-        [
-          "examples"
-        ]
+      folders: '["examples"]'
