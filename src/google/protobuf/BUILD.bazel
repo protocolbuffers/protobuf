@@ -843,6 +843,8 @@ filegroup(
         "edition_unittest.proto",
         "map_proto3_unittest.proto",
         "unittest_arena.proto",
+        "unittest_delimited.proto",
+        "unittest_delimited_import.proto",
         "unittest_drop_unknown_fields.proto",
         "unittest_lazy_dependencies.proto",
         "unittest_lazy_dependencies_custom_option.proto",
