@@ -52,6 +52,7 @@ message match {}
 message namespace {}
 message new {}
 message or {}
+message object {}
 message parent {}
 message print {}
 message private {}

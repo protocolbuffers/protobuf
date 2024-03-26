@@ -83,4 +83,5 @@ enum NotAllowed {
   null = 74;
   void = 75;
   iterable = 76;
+  object = 81;
 }

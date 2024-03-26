@@ -52,6 +52,7 @@ message MATCH {}
 message NAMESPACE {}
 message NEW {}
 message OR {}
+message OBJECT {}
 message PARENT {}
 message PRINT {}
 message PRIVATE {}
