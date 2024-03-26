@@ -6,7 +6,8 @@ local_path_override(
     path = "..",
 )
 
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_java", version = "7.5.0")
 bazel_dep(name = "rules_pkg", version = "0.10.1")
 bazel_dep(name = "rules_proto", version = "6.0.0-rc2")
-bazel_dep(name = "rules_java", version = "7.5.0")
-bazel_dep(name = "rules_cc", version = "0.0.9")
