@@ -833,7 +833,7 @@ set(plugin_proto_files
 
 # @//java/core:java_features_proto
 set(java_features_proto_proto_srcs
-  ${protobuf_SOURCE_DIR}/java/core/src/main/java/com/google/protobuf/java_features.proto
+  ${protobuf_SOURCE_DIR}/java/core/src/main/resources/google/protobuf/java_features.proto
 )
 
 # @//java/core:java_features_proto
