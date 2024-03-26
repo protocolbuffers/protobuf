@@ -2875,6 +2875,129 @@ void BinaryAndJsonConformanceSuiteImpl<
                                 R"(optional_field_mask: {paths: "foo_3_bar"})");
   ExpectSerializeFailureForJson("FieldMaskTooManyUnderscore", RECOMMENDED,
                                 R"(optional_field_mask: {paths: "foo__bar"})");
+
+  // https://google.aip.dev/161#map-fields introduces map keys as part of FieldMask path
+  // elements. If map keys contain characters otherwise problematic for FieldMask,
+  // backticks can be used for quoting. Backtick itself is escaped using
+  // double-backtick.
+  // If a path element is quoted, no camelCase conversion will be done when serializing
+  // to JSON, it will be copied to JSON as-is, including the quotes.
+  RunValidJsonTest("FieldMaskWithBacktickQuotes", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesNoCamelCase", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo_bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo_bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesTwoPaths", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo`,mapField.`bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo`" paths: "map_field.`bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesTwoElements", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo`.otherMapField.`bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo`.other_map_field.`bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesOneElementWithDot", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo.bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo.bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesOneElementWithComma", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo,bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo,bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesUppercase", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`A`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`A`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesDot", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`.`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`.`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesComma", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`,`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`,`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesEscapedBacktick", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`escaped `` here`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`escaped `` here`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesTooManyUnderscores", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo__bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo__bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesNumber", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`foo_3_bar`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`foo_3_bar`"})");
+
+  RunValidJsonTest("FieldMaskWithBacktickQuotesOnlyNumber", RECOMMENDED,
+                   R"json({"optionalFieldMask": "mapField.`3`"})json",
+                   R"(optional_field_mask: {paths: "map_field.`3`"})");
+
+  // Backtick can only occur either at the start and end of a path element or as a
+  // double-backtick in an escape sequence.
+  //
+  // Everything else should fail to serialize ...
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.foo`bar"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedTrailingBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.foo`"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.`foo"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.foo``bar"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnexpectedTrailingDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.foo``"})");
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.``foo"})");
+
+  // ... and parse.
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.foo`bar"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedTrailingBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.foo`"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.`foo"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.foo``bar"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnexpectedTrailingDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.foo``"})json");
+
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.``foo"})json");
+
+  // Map key must always follow a regular field.
+  // Cases where map key is the first element on the path or follows another map key
+  // should fail to serialize ..
+
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "`key`"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "`key`.b"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "a,`key`"})");
+  ExpectSerializeFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                                R"(optional_field_mask: {paths: "map_field.`key`.`key`"})");
+
+  // ... and parse.
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "`key`"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "`key`.b"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "a,`key`"})json");
+  ExpectParseFailureForJson("FieldMaskWithUnterminatedDoubleBacktick", RECOMMENDED,
+                            R"json({"optionalFieldMask": "mapField.`key`.`key`"})json");
+
 }
 
 template <typename MessageType>
