@@ -1,0 +1,12 @@
+"""Bazel module dependencies"""
+bazel_dep(name = "protobuf", version = "0.0.0", dev_dependency = True, repo_name = "com_google_protobuf")
+
+local_path_override(
+    module_name = "protobuf",
+    path = "..",
+)
+
+bazel_dep(name = "rules_pkg", version = "0.10.1")
+bazel_dep(name = "rules_proto", version = "6.0.0-rc2")
+bazel_dep(name = "rules_java", version = "7.5.0")
+bazel_dep(name = "rules_cc", version = "0.0.9")
