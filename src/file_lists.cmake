@@ -946,6 +946,7 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/test/test.proto
   ${protobuf_SOURCE_DIR}/upb/test/test_cpp.proto
   ${protobuf_SOURCE_DIR}/upb/test/test_import_empty_srcs.proto
+  ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_public_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_regular_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.proto
