@@ -92,9 +92,6 @@ class GetDeallocator {
         space_allocated_(space_allocated) {}
 
   void operator()(SizedPtr mem) const {
-    // This memory was provided by the underlying allocator as unpoisoned,
-    // so return it in an unpoisoned state.
-    PROTOBUF_UNPOISON_MEMORY_REGION(mem.p, mem.n);
     if (dealloc_) {
       dealloc_(mem.p, mem.n);
     } else {
@@ -666,6 +663,15 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
   head_.store(new_head, std::memory_order_release);
 }
 
+void ThreadSafeArena::UnpoisonAllArenaBlocks() const {
+  VisitSerialArena([](const SerialArena* serial) {
+    for (const auto* b = serial->head(); b != nullptr && !b->IsSentry();
+         b = b->next) {
+      PROTOBUF_UNPOISON_MEMORY_REGION(b, b->size);
+    }
+  });
+}
+
 void ThreadSafeArena::Init() {
   tag_and_id_ = GetNextLifeCycleId();
   arena_stats_ = Sample();
@@ -868,6 +874,10 @@ template void*
     ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
 void ThreadSafeArena::CleanupList() {
+#ifdef PROTOBUF_ASAN
+  UnpoisonAllArenaBlocks();
+#endif
+
   WalkSerialArenaChunk([](SerialArenaChunk* chunk) {
     absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
     // Walks arenas backward to handle the first serial arena the last.
