@@ -117,9 +117,12 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
         }
 
       case FD::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
+        switch (internal::cpp::GetStringType(*field)) {
           default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback is
+            // fine.
+          case internal::cpp::StringType::kString:
             return sizeof(RepeatedPtrField<std::string>);
         }
         break;
@@ -147,9 +150,12 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
         return sizeof(Message*);
 
       case FD::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
+        switch (internal::cpp::GetStringType(*field)) {
           default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback is
+            // fine.
+          case internal::cpp::StringType::kString:
             return sizeof(ArenaStringPtr);
         }
         break;
@@ -401,9 +407,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
         break;
 
       case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
+        switch (internal::cpp::GetStringType(*field)) {
           default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback is
+            // fine.
+          case internal::cpp::StringType::kString:
             if (!field->is_repeated()) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
@@ -493,9 +502,12 @@ DynamicMessage::~DynamicMessage() {
       if (*(reinterpret_cast<const int32_t*>(field_ptr)) == field->number()) {
         field_ptr = MutableOneofFieldRaw(field);
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-          switch (field->options().ctype()) {
+          switch (internal::cpp::GetStringType(*field)) {
             default:
-            case FieldOptions::STRING: {
+            case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback is
+            // fine.
+            case internal::cpp::StringType::kString: {
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
               break;
             }
@@ -527,9 +539,12 @@ DynamicMessage::~DynamicMessage() {
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->options().ctype()) {
+          switch (internal::cpp::GetStringType(*field)) {
             default:  // TODO:  Support other string reps.
-            case FieldOptions::STRING:
+            case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback is
+            // fine.
+            case internal::cpp::StringType::kString:
               reinterpret_cast<RepeatedPtrField<std::string>*>(field_ptr)
                   ->~RepeatedPtrField<std::string>();
               break;
@@ -547,9 +562,12 @@ DynamicMessage::~DynamicMessage() {
       }
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      switch (field->options().ctype()) {
+      switch (internal::cpp::GetStringType(*field)) {
         default:  // TODO:  Support other string reps.
-        case FieldOptions::STRING: {
+        case internal::cpp::StringType::kView:
+          // Currently VIEW has the same ABI than string, so this fallback is
+          // fine.
+        case internal::cpp::StringType::kString: {
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
         }

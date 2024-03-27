@@ -40,6 +40,8 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 using ::google::protobuf::internal::WireFormat;
+using ::google::protobuf::internal::cpp::GetStringType;
+using ::google::protobuf::internal::cpp::StringType;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
@@ -228,39 +230,6 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 namespace {
-// Use internal types instead of ctype or string_type.
-enum class StringType {
-  kView,
-  kString,
-  kCord,
-  kStringPiece,
-};
-
-StringType GetStringType(const FieldDescriptor& field) {
-  ABSL_CHECK_EQ(field.cpp_type(), FieldDescriptor::CPPTYPE_STRING);
-
-  if (field.options().has_ctype()) {
-    switch (field.options().ctype()) {
-      case FieldOptions::CORD:
-        return StringType::kCord;
-      case FieldOptions::STRING_PIECE:
-        return StringType::kStringPiece;
-      default:
-        return StringType::kString;
-    }
-  }
-
-  const pb::CppFeatures& cpp_features =
-      CppGenerator::GetResolvedSourceFeatures(field).GetExtension(::pb::cpp);
-  switch (cpp_features.string_type()) {
-    case pb::CppFeatures::CORD:
-      return StringType::kCord;
-    case pb::CppFeatures::VIEW:
-      return StringType::kView;
-    default:
-      return StringType::kString;
-  }
-}
 
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   const Options& options,
@@ -278,7 +247,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return MakeRepeatedMessageGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_STRING: {
-        if (GetStringType(*field) == StringType::kView) {
+        if (internal::cpp::StringTypeIsStringView(*field)) {
           return MakeRepeatedStringViewGenerator(field, options, scc);
         } else {
           return MakeRepeatedStringGenerator(field, options, scc);

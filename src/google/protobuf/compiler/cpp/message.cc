@@ -60,7 +60,9 @@ namespace cpp {
 namespace {
 using ::google::protobuf::internal::WireFormat;
 using ::google::protobuf::internal::WireFormatLite;
+using ::google::protobuf::internal::cpp::GetStringType;
 using ::google::protobuf::internal::cpp::HasHasbit;
+using ::google::protobuf::internal::cpp::StringType;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -302,8 +304,9 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
 
 bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   for (const auto* field : FieldRange(desc)) {
-    if (IsString(field) && !field->is_repeated() &&
-        !field->real_containing_oneof() && !ShouldSplit(field, options)) {
+    if (!field->is_repeated() && !field->real_containing_oneof() &&
+        (IsString(field) || IsStringView(field)) &&
+        !ShouldSplit(field, options)) {
       return true;
     }
   }

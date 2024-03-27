@@ -216,8 +216,6 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
 }
 
 void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  ABSL_CHECK(!field_->options().has_ctype());
-
   auto vars = AnnotatedAccessors(field_, {"", "set_allocated_"});
   vars.push_back(Sub{
       "release_name",
@@ -648,15 +646,6 @@ class RepeatedStringView : public FieldGeneratorBase {
 };
 
 void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  bool unknown_ctype =
-      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
-
-  if (unknown_ctype) {
-    p->Emit(R"cc(
-      private:  // Hidden due to unknown ctype option.
-    )cc");
-  }
-
   auto v1 = p->WithVars(AnnotatedAccessors(field_, {"", "_internal_"}));
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_", "add_"}, AnnotationCollector::kSet));

@@ -560,7 +560,7 @@ bool WireFormat::ParseAndMergeField(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        if (cpp::StringTypeIsCord(*field)) {
           absl::Cord value;
           if (!WireFormatLite::ReadBytes(input, &value)) return false;
           message_reflection->SetString(message, field, value);
@@ -965,7 +965,7 @@ const char* WireFormat::_InternalParseAndMergeField(
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
       if (ptr == nullptr) return nullptr;
-      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+      if (cpp::StringTypeIsCord(*field)) {
         absl::Cord value;
         ptr = ctx->ReadCord(ptr, size, &value);
         if (ptr == nullptr) return nullptr;
@@ -1023,7 +1023,7 @@ const char* WireFormat::_InternalParseAndMergeField(
         auto* value_field = field->message_type()->map_value();
         auto* enum_type = value_field->enum_type();
         if (enum_type != nullptr &&
-            !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
+            !cpp::HasPreservingUnknownEnumSemantics(value_field) &&
             enum_type->FindValueByNumber(
                 sub_message->GetReflection()->GetEnumValue(
                     *sub_message, value_field)) == nullptr) {
@@ -1424,7 +1424,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        if (cpp::StringTypeIsCord(*field)) {
           absl::Cord value = message_reflection->GetCord(message, field);
           target = stream->WriteString(field->number(), value, target);
           break;
@@ -1725,7 +1725,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+      if (cpp::StringTypeIsCord(*field)) {
         for (size_t j = 0; j < count; j++) {
           absl::Cord value = message_reflection->GetCord(message, field);
           data_size += WireFormatLite::StringSize(value);

@@ -174,9 +174,12 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         reflection, message, field, rep});                                     \
   }
 
-          switch (cpp::EffectiveStringCType(field)) {
+          switch (cpp::GetStringType(*field)) {
             default:
-            case FieldOptions::STRING:
+            case cpp::StringType::kView:
+              // Currently VIEW has the same ABI than string, so this fallback
+              // is fine.
+            case cpp::StringType::kString:
               PROTOBUF_IMPL_STRING_CASE(std::string, String);
               break;
           }
@@ -227,11 +230,14 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
+          auto type = cpp::GetStringType(*field);
+          if (type == cpp::StringType::kCord) {
             func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
                                                       field});
           } else {
+            ABSL_DCHECK(type == cpp::StringType::kStringPiece ||
+                        type == cpp::StringType::kString ||
+                        type == cpp::StringType::kView);
             func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
                                                         field});
           }
@@ -279,11 +285,14 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
           break;
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
+          auto type = cpp::GetStringType(*field);
+          if (type == cpp::StringType::kCord) {
             func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
                                                        field});
           } else {
+            ABSL_DCHECK(type == cpp::StringType::kStringPiece ||
+                        type == cpp::StringType::kString ||
+                        type == cpp::StringType::kView);
             func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
                                                          field});
           }

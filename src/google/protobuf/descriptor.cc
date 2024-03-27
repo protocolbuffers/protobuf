@@ -9747,6 +9747,46 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
          filename == "google/protobuf/descriptor.proto";
 }
 
+StringType GetStringType(const FieldDescriptor& field, bool should_normalize) {
+  ABSL_CHECK_EQ(field.cpp_type(), FieldDescriptor::CPPTYPE_STRING);
+
+  const pb::CppFeatures& cpp_features =
+      InternalFeatureHelper::GetFeatures(field).GetExtension(::pb::cpp);
+  switch (cpp_features.string_type()) {
+    case pb::CppFeatures::CORD:
+      ABSL_DCHECK(!field.options().has_ctype() ||
+                  field.options().ctype() == FieldOptions::CORD);
+      if (should_normalize && (field.type() == FieldDescriptor::TYPE_STRING ||
+                               field.is_repeated() || field.is_extension())) {
+        return StringType::kString;
+      }
+      return StringType::kCord;
+    case pb::CppFeatures::STRING_PIECE:
+      ABSL_DCHECK(!field.options().has_ctype() ||
+                  field.options().ctype() == FieldOptions::STRING_PIECE);
+      if (should_normalize) {
+        return StringType::kString;
+      }
+      return StringType::kStringPiece;
+    case pb::CppFeatures::VIEW:
+      return StringType::kView;
+    default:
+      return StringType::kString;
+  }
+}
+
+bool StringTypeIsStdString(const FieldDescriptor& field) {
+  return GetStringType(field) == StringType::kString;
+}
+
+bool StringTypeIsStringView(const FieldDescriptor& field) {
+  return GetStringType(field) == StringType::kView;
+}
+
+bool StringTypeIsCord(const FieldDescriptor& field) {
+  return GetStringType(field) == StringType::kCord;
+}
+
 }  // namespace cpp
 }  // namespace internal
 

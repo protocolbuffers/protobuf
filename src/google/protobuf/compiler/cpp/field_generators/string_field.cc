@@ -235,12 +235,9 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
   // files that applied the ctype.  The field can still be accessed via the
   // reflection interface since the reflection interface is independent of
   // the string's underlying representation.
-  bool unknown_ctype =
-      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
-
-  if (unknown_ctype) {
+  if (!internal::cpp::StringTypeIsSupported(*field_)) {
     p->Emit(R"cc(
-      private:  // Hidden due to unknown ctype option.
+      private:  // Hidden due to unsupported option.
     )cc");
   }
 
@@ -822,10 +819,7 @@ class RepeatedString : public FieldGeneratorBase {
 };
 
 void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
-  bool unknown_ctype =
-      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
-
-  if (unknown_ctype) {
+  if (!internal::cpp::StringTypeIsSupported(*field_)) {
     p->Emit(R"cc(
       private:  // Hidden due to unknown ctype option.
     )cc");

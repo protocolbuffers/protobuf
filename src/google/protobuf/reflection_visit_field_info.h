@@ -116,8 +116,9 @@ struct DynamicFieldInfoHelper {
   static absl::string_view GetStringView(const Reflection* reflection,
                                          const Message& message,
                                          const FieldDescriptor* field) {
-    auto ctype = cpp::EffectiveStringCType(field);
-    ABSL_DCHECK_NE(ctype, FieldOptions::CORD);
+    auto type = cpp::GetStringType(*field);
+    ABSL_DCHECK_NE(static_cast<int>(type),
+                   static_cast<int>(cpp::StringType::kCord));
     ABSL_DCHECK(!is_oneof || reflection->HasOneofField(message, field));
     auto str = Get<ArenaStringPtr>(reflection, message, field);
     ABSL_DCHECK(!str.IsDefault());
