@@ -1,10 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
     "rust_proto_library",
     "rust_upb_proto_library",
 )
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 
 UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
 

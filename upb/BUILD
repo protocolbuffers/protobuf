@@ -5,8 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 

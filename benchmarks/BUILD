@@ -5,17 +5,16 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+# begin:google_only
+# load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+# end:google_only
+
 load("@rules_python//python:defs.bzl", "py_binary")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-
-# begin:google_only
-# load("@rules_cc//cc:defs.bzl", "cc_proto_library")
-# end:google_only
-
 load(
     ":build_defs.bzl",
     "cc_optimizefor_proto_library",

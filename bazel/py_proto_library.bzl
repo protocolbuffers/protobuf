@@ -15,12 +15,13 @@ But it hasn't been deeply tested or reviewed, and upb should not be in the
 business of vending py_proto_library(), so we keep it private to upb.
 """
 
-load("@rules_python//python:py_info.bzl", "PyInfo")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 # begin:github_only
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 # end:github_only
+
+load("@rules_python//python:py_info.bzl", "PyInfo")
 
 # Generic support code #########################################################
 

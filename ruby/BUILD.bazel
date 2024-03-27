@@ -6,10 +6,10 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("//python:internal.bzl", "internal_copy_files")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 load("//conformance:defs.bzl", "conformance_test")
+load("//python:internal.bzl", "internal_copy_files")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 ################################################################################
 # Ruby Runtime
