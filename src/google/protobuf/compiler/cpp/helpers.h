@@ -330,18 +330,26 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
 
 inline bool IsCord(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
+         internal::cpp::GetStringType(*field) ==
+             internal::cpp::StringType::kCord;
 }
 
 inline bool IsString(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
+         internal::cpp::GetStringType(*field) ==
+             internal::cpp::StringType::kString;
+}
+
+inline bool IsStringView(const FieldDescriptor* field) {
+  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+         internal::cpp::GetStringType(*field) ==
+             internal::cpp::StringType::kView;
 }
 
 inline bool IsStringPiece(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) ==
-             FieldOptions::STRING_PIECE;
+         internal::cpp::GetStringType(*field) ==
+             internal::cpp::StringType::kStringPiece;
 }
 
 bool IsProfileDriven(const Options& options);

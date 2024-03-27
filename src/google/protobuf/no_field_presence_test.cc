@@ -283,10 +283,12 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
-    if (field->options().ctype() != FieldOptions::STRING) {
+    if (field->cpp_type() == field->CPPTYPE_STRING &&
+        internal::cpp::GetStringType(*field) !=
+            internal::cpp::GetStringType(*field, false)) {
       continue;
     }
-    EXPECT_EQ(true, r->HasField(message, field));
+    EXPECT_EQ(true, r->HasField(message, field)) << field->full_name();
   }
 
   message.Clear();

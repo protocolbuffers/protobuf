@@ -456,9 +456,12 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
     HANDLE_PRIMITIVE_TYPE(ENUM, int32_t)
 #undef HANDLE_PRIMITIVE_TYPE
     case FieldDescriptor::CPPTYPE_STRING:
-      switch (field->options().ctype()) {
+      switch (internal::cpp::GetStringType(*field)) {
         default:
-        case FieldOptions::STRING:
+        case internal::cpp::StringType::kView:
+          // Currently VIEW has the same ABI than string, so this fallback is
+          // fine.
+        case internal::cpp::StringType::kString:
           return GetSingleton<internal::RepeatedPtrFieldStringAccessor>();
       }
       break;

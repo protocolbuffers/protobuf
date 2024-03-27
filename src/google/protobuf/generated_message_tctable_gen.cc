@@ -122,11 +122,12 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
    : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
                           : PROTOBUF_PICK_FUNCTION(fn##S))
 
-#define PROTOBUF_PICK_STRING_FUNCTION(fn)                       \
-  (field->options().ctype() == FieldOptions::CORD               \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                         \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS) \
-                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
+#define PROTOBUF_PICK_STRING_FUNCTION(fn)                         \
+  (cpp::GetStringType(*field) == cpp::StringType::kCord           \
+       ? PROTOBUF_PICK_FUNCTION(fn##cS)                           \
+       : /* Missing case for kView */                             \
+       options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS) \
+                                 : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
@@ -191,14 +192,14 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
       break;
     case FieldDescriptor::TYPE_STRING:
-      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
-        case internal::cpp::Utf8CheckMode::kStrict:
+      switch (cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
+        case cpp::Utf8CheckMode::kStrict:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
           break;
-        case internal::cpp::Utf8CheckMode::kVerify:
+        case cpp::Utf8CheckMode::kVerify:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastS);
           break;
-        case internal::cpp::Utf8CheckMode::kNone:
+        case cpp::Utf8CheckMode::kNone:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
           break;
       }
@@ -259,13 +260,18 @@ bool IsFieldEligibleForFastParsing(
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      if (field->options().ctype() == FieldOptions::STRING) {
-        // strings are fine...
-      } else if (field->options().ctype() == FieldOptions::CORD) {
-        // Cords are worth putting into the fast table, if they're not repeated
-        if (field->is_repeated()) return false;
-      } else {
-        return false;
+      switch (cpp::GetStringType(*field)) {
+        case cpp::StringType::kView:
+        case cpp::StringType::kString:
+          // strings are fine...
+          break;
+        case cpp::StringType::kCord:
+          // Cords are worth putting into the fast table, if they're not
+          // repeated
+          if (field->is_repeated()) return false;
+          break;
+        default:
+          return false;
       }
       if (options.is_string_inlined) {
         ABSL_CHECK(!field->is_repeated());
@@ -648,14 +654,14 @@ uint16_t MakeTypeCardForField(
       type_card |= fl::kBytes;
       break;
     case FieldDescriptor::TYPE_STRING: {
-      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
-        case internal::cpp::Utf8CheckMode::kStrict:
+      switch (cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
+        case cpp::Utf8CheckMode::kStrict:
           type_card |= fl::kUtf8String;
           break;
-        case internal::cpp::Utf8CheckMode::kVerify:
+        case cpp::Utf8CheckMode::kVerify:
           type_card |= fl::kRawString;
           break;
-        case internal::cpp::Utf8CheckMode::kNone:
+        case cpp::Utf8CheckMode::kNone:
           type_card |= fl::kBytes;
           break;
       }
@@ -697,12 +703,15 @@ uint16_t MakeTypeCardForField(
   // Fill in extra information about string and bytes field representations.
   if (field->type() == FieldDescriptor::TYPE_BYTES ||
       field->type() == FieldDescriptor::TYPE_STRING) {
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (cpp::GetStringType(*field)) {
+      case cpp::StringType::kCord:
         // `Cord` is always used, even for repeated fields.
         type_card |= fl::kRepCord;
         break;
-      case FieldOptions::STRING:
+      case cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback is
+        // fine.
+      case cpp::StringType::kString:
         if (field->is_repeated()) {
           // A repeated string field uses RepeatedPtrField<std::string>
           // (unless it has a ctype option; see above).

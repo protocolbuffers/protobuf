@@ -2857,22 +2857,11 @@ PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
 
 PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
-// For a string field, returns the effective ctype.  If the actual ctype is
-// not supported, returns the default of STRING.
-template <typename FieldDesc = FieldDescriptor,
-          typename FieldOpts = FieldOptions>
-typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
-  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
-  // Open-source protobuf release only supports STRING ctype and CORD for
-  // sinuglar bytes.
-  if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
-      field->options().ctype() == FieldOpts::CORD && !field->is_extension()) {
-    return FieldOpts::CORD;
-  }
-  return FieldOpts::STRING;
-}
-
 #ifndef SWIG
+enum class StringType : uint8_t;
+PROTOBUF_EXPORT StringType GetStringType(const FieldDescriptor& field,
+                                         bool should_normalize = true);
+
 enum class Utf8CheckMode {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
   kVerify = 1,  // Only log an error but parsing will succeed.

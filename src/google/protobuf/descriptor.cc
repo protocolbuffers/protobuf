@@ -9535,6 +9535,49 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
          filename == "google/protobuf/descriptor.proto";
 }
 
+StringType GetStringType(const FieldDescriptor& field, bool should_normalize) {
+  ABSL_CHECK_EQ(field.cpp_type(), FieldDescriptor::CPPTYPE_STRING);
+
+  const auto normalize = [&](StringType result) {
+    if (!should_normalize) return result;
+    switch (result) {
+      // Open-source protobuf release restricts CORD and STRING_PIECE fields.
+      case StringType::kCord:
+        if (field.type() == FieldDescriptor::TYPE_BYTES &&
+            !field.is_repeated() && !field.is_extension()) {
+          return StringType::kCord;
+        }
+        return StringType::kString;
+      case StringType::kStringPiece:
+        return StringType::kString;
+      default:
+        return result;
+    }
+  };
+
+  if (field.options().has_ctype()) {
+    switch (field.options().ctype()) {
+      case FieldOptions::CORD:
+        return normalize(StringType::kCord);
+      case FieldOptions::STRING_PIECE:
+        return normalize(StringType::kStringPiece);
+      default:
+        return StringType::kString;
+    }
+  }
+
+  const pb::CppFeatures& cpp_features =
+      InternalFeatureHelper::GetFeatures(field).GetExtension(::pb::cpp);
+  switch (cpp_features.string_type()) {
+    case pb::CppFeatures::CORD:
+      return normalize(StringType::kCord);
+    case pb::CppFeatures::VIEW:
+      return StringType::kView;
+    default:
+      return StringType::kString;
+  }
+}
+
 }  // namespace cpp
 }  // namespace internal
 

@@ -139,6 +139,7 @@ class MapReflectionTester;
 class TextFormat;
 
 namespace internal {
+
 struct FuzzPeer;
 struct DescriptorTable;
 template <bool is_oneof>
@@ -221,6 +222,17 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 
 // Returns true if "message" is a descendant of "root".
 PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
+
+namespace cpp {
+// Use internal types instead of ctype or string_type.
+enum class StringType : uint8_t {
+  kView,
+  kString,
+  kCord,
+  kStringPiece,
+};
+}  // namespace cpp
+
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -960,17 +972,20 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Obtain a pointer to a Repeated Field Structure and do some type checking:
   //   on field->cpp_type(),
-  //   on field->field_option().ctype() (if ctype >= 0)
+  //   on string type if `string_type.has_value()`
   //   of field->message_type() (if message_type != nullptr).
   // We use 2 routine rather than 4 (const vs mutable) x (scalar vs pointer).
-  void* MutableRawRepeatedField(Message* message, const FieldDescriptor* field,
-                                FieldDescriptor::CppType cpptype, int ctype,
-                                const Descriptor* desc) const;
+  void* MutableRawRepeatedField(
+      Message* message, const FieldDescriptor* field,
+      FieldDescriptor::CppType cpptype,
+      absl::optional<internal::cpp::StringType> string_type,
+      const Descriptor* desc) const;
 
-  const void* GetRawRepeatedField(const Message& message,
-                                  const FieldDescriptor* field,
-                                  FieldDescriptor::CppType cpptype, int ctype,
-                                  const Descriptor* desc) const;
+  const void* GetRawRepeatedField(
+      const Message& message, const FieldDescriptor* field,
+      FieldDescriptor::CppType cpptype,
+      absl::optional<internal::cpp::StringType> string_type,
+      const Descriptor* desc) const;
 
   // The following methods are used to implement (Mutable)RepeatedFieldRef.
   // A Ref object will store a raw pointer to the repeated field data (obtained
@@ -1096,9 +1111,9 @@ class PROTOBUF_EXPORT Reflection final {
   // file here is not possible because it would cause a circular include cycle.
   const void* GetRawRepeatedString(const Message& message,
                                    const FieldDescriptor* field,
-                                   bool is_string) const;
+                                   internal::cpp::StringType string_type) const;
   void* MutableRawRepeatedString(Message* message, const FieldDescriptor* field,
-                                 bool is_string) const;
+                                 internal::cpp::StringType string_type) const;
 
   friend class MapReflectionTester;
   // Returns true if key is in map. Returns false if key is not in map field.
@@ -1528,15 +1543,15 @@ inline const RepeatedPtrField<std::string>&
 Reflection::GetRepeatedPtrFieldInternal<std::string>(
     const Message& message, const FieldDescriptor* field) const {
   return *static_cast<const RepeatedPtrField<std::string>*>(
-      GetRawRepeatedString(message, field, true));
+      GetRawRepeatedString(message, field, internal::cpp::StringType::kString));
 }
 
 template <>
 inline RepeatedPtrField<std::string>*
 Reflection::MutableRepeatedPtrFieldInternal<std::string>(
     Message* message, const FieldDescriptor* field) const {
-  return static_cast<RepeatedPtrField<std::string>*>(
-      MutableRawRepeatedString(message, field, true));
+  return static_cast<RepeatedPtrField<std::string>*>(MutableRawRepeatedString(
+      message, field, internal::cpp::StringType::kString));
 }
 
 
@@ -1545,31 +1560,33 @@ Reflection::MutableRepeatedPtrFieldInternal<std::string>(
 template <>
 inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrFieldInternal(
     const Message& message, const FieldDescriptor* field) const {
-  return *static_cast<const RepeatedPtrField<Message>*>(GetRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
+  return *static_cast<const RepeatedPtrField<Message>*>(
+      GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
+                          absl::nullopt, nullptr));
 }
 
 template <>
 inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field) const {
-  return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
+  return static_cast<RepeatedPtrField<Message>*>(
+      MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
+                              absl::nullopt, nullptr));
 }
 
 template <typename PB>
 inline const RepeatedPtrField<PB>& Reflection::GetRepeatedPtrFieldInternal(
     const Message& message, const FieldDescriptor* field) const {
-  return *static_cast<const RepeatedPtrField<PB>*>(
-      GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
-                          PB::default_instance().GetDescriptor()));
+  return *static_cast<const RepeatedPtrField<PB>*>(GetRawRepeatedField(
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, absl::nullopt,
+      PB::default_instance().GetDescriptor()));
 }
 
 template <typename PB>
 inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
     Message* message, const FieldDescriptor* field) const {
-  return static_cast<RepeatedPtrField<PB>*>(
-      MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
-                              -1, PB::default_instance().GetDescriptor()));
+  return static_cast<RepeatedPtrField<PB>*>(MutableRawRepeatedField(
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, absl::nullopt,
+      PB::default_instance().GetDescriptor()));
 }
 
 template <typename Type>

@@ -648,8 +648,8 @@ class RepeatedStringView : public FieldGeneratorBase {
 };
 
 void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  bool unknown_ctype =
-      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
+  bool unknown_ctype = internal::cpp::GetStringType(*field_) !=
+                       internal::cpp::GetStringType(*field_, false);
 
   if (unknown_ctype) {
     p->Emit(R"cc(

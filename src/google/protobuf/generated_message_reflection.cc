@@ -389,9 +389,12 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->options().ctype()) {
+          switch (internal::cpp::GetStringType(*field)) {
             default:  // TODO:  Support other string reps.
-            case FieldOptions::STRING:
+            case internal::cpp::StringType::kView:
+              // Currently VIEW has the same ABI than string, so this fallback
+              // is fine.
+            case internal::cpp::StringType::kString:
               total_size +=
                   GetRaw<RepeatedPtrField<std::string> >(message, field)
                       .SpaceUsedExcludingSelfLong();
@@ -430,8 +433,8 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
           break;
 
         case FieldDescriptor::CPPTYPE_STRING: {
-          switch (internal::cpp::EffectiveStringCType(field)) {
-            case FieldOptions::CORD:
+          switch (internal::cpp::GetStringType(*field)) {
+            case internal::cpp::StringType::kCord:
               if (schema_.InRealOneof(field)) {
                 total_size += GetField<absl::Cord*>(message, field)
                                   ->EstimatedMemoryUsage();
@@ -444,7 +447,10 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
               }
               break;
             default:
-            case FieldOptions::STRING:
+            case internal::cpp::StringType::kView:
+              // Currently VIEW has the same ABI than string, so this fallback
+              // is fine.
+            case internal::cpp::StringType::kString:
               if (IsInlined(field)) {
                 const std::string* ptr =
                     &GetField<InlinedStringField>(message, field).GetNoArena();
@@ -540,12 +546,15 @@ struct OneofFieldMover {
           to->SetString(from->GetString());
           break;
         }
-        switch (internal::cpp::EffectiveStringCType(field)) {
-          case FieldOptions::CORD:
+        switch (internal::cpp::GetStringType(*field)) {
+          case internal::cpp::StringType::kCord:
             to->SetCord(from->GetCord());
             break;
           default:
-          case FieldOptions::STRING: {
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback is
+            // fine.
+          case internal::cpp::StringType::kString: {
             to->SetArenaStringPtr(from->GetArenaStringPtr());
             break;
           }
@@ -611,9 +620,12 @@ template <bool unsafe_shallow_swap>
 void SwapFieldHelper::SwapRepeatedStringField(const Reflection* r, Message* lhs,
                                               Message* rhs,
                                               const FieldDescriptor* field) {
-  switch (field->options().ctype()) {
+  switch (internal::cpp::GetStringType(*field)) {
     default:
-    case FieldOptions::STRING: {
+    case internal::cpp::StringType::kView:
+      // Currently VIEW has the same ABI than string, so this fallback
+      // is fine.
+    case internal::cpp::StringType::kString: {
       auto* lhs_string = r->MutableRaw<RepeatedPtrFieldBase>(lhs, field);
       auto* rhs_string = r->MutableRaw<RepeatedPtrFieldBase>(rhs, field);
       if (unsafe_shallow_swap) {
@@ -677,14 +689,17 @@ template <bool unsafe_shallow_swap>
 void SwapFieldHelper::SwapStringField(const Reflection* r, Message* lhs,
                                       Message* rhs,
                                       const FieldDescriptor* field) {
-  switch (internal::cpp::EffectiveStringCType(field)) {
-    case FieldOptions::CORD:
+  switch (internal::cpp::GetStringType(*field)) {
+    case internal::cpp::StringType::kCord:
       // Always shallow swap for Cord.
       std::swap(*r->MutableRaw<absl::Cord>(lhs, field),
                 *r->MutableRaw<absl::Cord>(rhs, field));
       break;
     default:
-    case FieldOptions::STRING: {
+    case internal::cpp::StringType::kView:
+      // Currently VIEW has the same ABI than string, so this fallback
+      // is fine.
+    case internal::cpp::StringType::kString: {
       if (r->IsInlined(field)) {
         SwapFieldHelper::SwapInlinedStrings<unsafe_shallow_swap>(r, lhs, rhs,
                                                                  field);
@@ -1156,7 +1171,9 @@ void Reflection::SwapFieldsImpl(
         // may depend on the information in has bits.
         if (!field->is_repeated()) {
           SwapBit(message1, message2, field);
-          if (field->options().ctype() == FieldOptions::STRING &&
+          if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+              internal::cpp::GetStringType(*field) ==
+                  internal::cpp::StringType::kString &&
               IsInlined(field)) {
             ABSL_DCHECK(!unsafe_shallow_swap ||
                         message1->GetArena() == message2->GetArena());
@@ -1273,7 +1290,9 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
       const FieldDescriptor* field = descriptor_->field(i);
       if (field->is_extension() || field->is_repeated() ||
           schema_.InRealOneof(field) ||
-          field->options().ctype() != FieldOptions::STRING ||
+          (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+           internal::cpp::GetStringType(*field) !=
+               internal::cpp::StringType::kString) ||
           !IsInlined(field)) {
         continue;
       }
@@ -1379,8 +1398,8 @@ void Reflection::ClearField(Message* message,
           break;
 
         case FieldDescriptor::CPPTYPE_STRING: {
-          switch (internal::cpp::EffectiveStringCType(field)) {
-            case FieldOptions::CORD:
+          switch (internal::cpp::GetStringType(*field)) {
+            case internal::cpp::StringType::kCord:
               if (field->has_default_value()) {
                 *MutableRaw<absl::Cord>(message, field) =
                     field->default_value_string();
@@ -1389,7 +1408,10 @@ void Reflection::ClearField(Message* message,
               }
               break;
             default:
-            case FieldOptions::STRING:
+            case internal::cpp::StringType::kView:
+              // Currently VIEW has the same ABI than string, so this fallback
+              // is fine.
+            case internal::cpp::StringType::kString:
               if (IsInlined(field)) {
                 // Currently, string with default value can't be inlined. So we
                 // don't have to handle default value here.
@@ -1436,9 +1458,12 @@ void Reflection::ClearField(Message* message,
 #undef HANDLE_TYPE
 
       case FieldDescriptor::CPPTYPE_STRING: {
-        switch (field->options().ctype()) {
+        switch (internal::cpp::GetStringType(*field)) {
           default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback
+            // is fine.
+          case internal::cpp::StringType::kString:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)->Clear();
             break;
         }
@@ -1486,9 +1511,12 @@ void Reflection::RemoveLast(Message* message,
 #undef HANDLE_TYPE
 
       case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
+        switch (internal::cpp::GetStringType(*field)) {
           default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback
+            // is fine.
+          case internal::cpp::StringType::kString:
             MutableRaw<RepeatedPtrField<std::string> >(message, field)
                 ->RemoveLast();
             break;
@@ -1786,15 +1814,18 @@ std::string Reflection::GetString(const Message& message,
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return field->default_value_string();
     }
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (internal::cpp::GetStringType(*field)) {
+      case internal::cpp::StringType::kCord:
         if (schema_.InRealOneof(field)) {
           return std::string(*GetField<absl::Cord*>(message, field));
         } else {
           return std::string(GetField<absl::Cord>(message, field));
         }
       default:
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
         } else {
@@ -1817,8 +1848,8 @@ const std::string& Reflection::GetStringReference(const Message& message,
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return field->default_value_string();
     }
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (internal::cpp::GetStringType(*field)) {
+      case internal::cpp::StringType::kCord:
         if (schema_.InRealOneof(field)) {
           absl::CopyCordToString(*GetField<absl::Cord*>(message, field),
                                  scratch);
@@ -1827,7 +1858,10 @@ const std::string& Reflection::GetStringReference(const Message& message,
         }
         return *scratch;
       default:
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
         } else {
@@ -1848,15 +1882,18 @@ absl::Cord Reflection::GetCord(const Message& message,
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return absl::Cord(field->default_value_string());
     }
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (internal::cpp::GetStringType(*field)) {
+      case internal::cpp::StringType::kCord:
         if (schema_.InRealOneof(field)) {
           return *GetField<absl::Cord*>(message, field);
         } else {
           return GetField<absl::Cord>(message, field);
         }
       default:
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         if (IsInlined(field)) {
           return absl::Cord(
               GetField<InlinedStringField>(message, field).GetNoArena());
@@ -1885,8 +1922,8 @@ absl::string_view Reflection::GetStringView(const Message& message,
     return field->default_value_string();
   }
 
-  switch (internal::cpp::EffectiveStringCType(field)) {
-    case FieldOptions::CORD: {
+  switch (internal::cpp::GetStringType(*field)) {
+    case internal::cpp::StringType::kCord: {
       const auto& cord = schema_.InRealOneof(field)
                              ? *GetField<absl::Cord*>(message, field)
                              : GetField<absl::Cord>(message, field);
@@ -1906,8 +1943,8 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
     return MutableExtensionSet(message)->SetString(
         field->number(), field->type(), std::move(value), field);
   } else {
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (internal::cpp::GetStringType(*field)) {
+      case internal::cpp::StringType::kCord:
         if (schema_.InRealOneof(field)) {
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
@@ -1920,7 +1957,10 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         *MutableField<absl::Cord>(message, field) = value;
         break;
       default:
-      case FieldOptions::STRING: {
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback is
+        // fine.
+      case internal::cpp::StringType::kString: {
         if (IsInlined(field)) {
           const uint32_t index = schema_.InlinedStringIndex(field);
           ABSL_DCHECK_GT(index, 0u);
@@ -1958,8 +1998,8 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
                                   MutableExtensionSet(message)->MutableString(
                                       field->number(), field->type(), field));
   } else {
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (internal::cpp::GetStringType(*field)) {
+      case internal::cpp::StringType::kCord:
         if (schema_.InRealOneof(field)) {
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
@@ -1972,7 +2012,10 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         }
         break;
       default:
-      case FieldOptions::STRING: {
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString: {
         // Oneof string fields are never set as a default instance.
         // We just need to pass some arbitrary default string to make it work.
         // This allows us to not have the real default accessible from
@@ -2008,9 +2051,12 @@ std::string Reflection::GetRepeatedString(const Message& message,
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
-    switch (field->options().ctype()) {
+    switch (internal::cpp::GetStringType(*field)) {
       default:  // TODO:  Support other string reps.
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
   }
@@ -2024,9 +2070,12 @@ const std::string& Reflection::GetRepeatedStringReference(
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
-    switch (field->options().ctype()) {
+    switch (internal::cpp::GetStringType(*field)) {
       default:  // TODO:  Support other string reps.
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         return GetRepeatedPtrField<std::string>(message, field, index);
     }
   }
@@ -2043,8 +2092,11 @@ absl::string_view Reflection::GetRepeatedStringView(
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   }
 
-  switch (internal::cpp::EffectiveStringCType(field)) {
-    case FieldOptions::STRING:
+  switch (internal::cpp::GetStringType(*field)) {
+    case internal::cpp::StringType::kView:
+      // Currently VIEW has the same ABI than string, so this fallback is
+      // fine.
+    case internal::cpp::StringType::kString:
     default:
       return GetRepeatedPtrField<std::string>(message, field, index);
   }
@@ -2059,9 +2111,12 @@ void Reflection::SetRepeatedString(Message* message,
     MutableExtensionSet(message)->SetRepeatedString(field->number(), index,
                                                     std::move(value));
   } else {
-    switch (field->options().ctype()) {
+    switch (internal::cpp::GetStringType(*field)) {
       default:  // TODO:  Support other string reps.
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         MutableRepeatedField<std::string>(message, field, index)
             ->assign(std::move(value));
         break;
@@ -2077,9 +2132,12 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
     MutableExtensionSet(message)->AddString(field->number(), field->type(),
                                             std::move(value), field);
   } else {
-    switch (field->options().ctype()) {
+    switch (internal::cpp::GetStringType(*field)) {
       default:  // TODO:  Support other string reps.
-      case FieldOptions::STRING:
+      case internal::cpp::StringType::kView:
+        // Currently VIEW has the same ABI than string, so this fallback
+        // is fine.
+      case internal::cpp::StringType::kString:
         AddField<std::string>(message, field)->assign(std::move(value));
         break;
     }
@@ -2565,12 +2623,11 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
   }
 }
 
-void* Reflection::MutableRawRepeatedField(Message* message,
-                                          const FieldDescriptor* field,
-                                          FieldDescriptor::CppType cpptype,
-                                          int ctype,
-                                          const Descriptor* desc) const {
-  (void)ctype;  // Parameter is used by Google-internal code.
+void* Reflection::MutableRawRepeatedField(
+    Message* message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpptype,
+    absl::optional<internal::cpp::StringType> string_type,
+    const Descriptor* desc) const {
   USAGE_CHECK_REPEATED("MutableRawRepeatedField");
 
   if (field->cpp_type() != cpptype &&
@@ -2578,6 +2635,20 @@ void* Reflection::MutableRawRepeatedField(Message* message,
        cpptype != FieldDescriptor::CPPTYPE_INT32))
     ReportReflectionUsageTypeError(descriptor_, field,
                                    "MutableRawRepeatedField", cpptype);
+  if (string_type.has_value()) {
+    // VIEW and STRING currently both use the same ABI for repeated field, so
+    // both are accessed through the same call looking for a
+    // `RepeatedPtrField<std::string>`. Normalize that here to avoid false
+    // positives on the check.
+    auto field_string_type = internal::cpp::GetStringType(*field);
+    if (field_string_type == internal::cpp::StringType::kView) {
+      field_string_type = internal::cpp::StringType::kString;
+    }
+    ABSL_CHECK_EQ(static_cast<int>(field_string_type),
+                  static_cast<int>(*string_type))
+        << "subtype mismatch";
+  }
+
   if (desc != nullptr)
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
@@ -2593,19 +2664,22 @@ void* Reflection::MutableRawRepeatedField(Message* message,
   }
 }
 
-const void* Reflection::GetRawRepeatedField(const Message& message,
-                                            const FieldDescriptor* field,
-                                            FieldDescriptor::CppType cpptype,
-                                            int ctype,
-                                            const Descriptor* desc) const {
+const void* Reflection::GetRawRepeatedField(
+    const Message& message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpptype,
+    absl::optional<internal::cpp::StringType> string_type,
+    const Descriptor* desc) const {
   USAGE_CHECK_REPEATED("GetRawRepeatedField");
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
        cpptype != FieldDescriptor::CPPTYPE_INT32))
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
-  if (ctype >= 0)
-    ABSL_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
+  if (string_type.has_value()) {
+    ABSL_CHECK_EQ(static_cast<int>(internal::cpp::GetStringType(*field)),
+                  static_cast<int>(*string_type))
+        << "subtype mismatch";
+  }
   if (desc != nullptr)
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
@@ -2731,7 +2805,8 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
     // be e.g. char).
     if (field->cpp_type() < FieldDescriptor::CPPTYPE_STRING ||
         (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD)) {
+         internal::cpp::GetStringType(*field) ==
+             internal::cpp::StringType::kCord)) {
       ptr =
           reinterpret_cast<Type*>(Arena::Create<RepeatedField<int32_t>>(arena));
     } else {
@@ -2910,11 +2985,14 @@ bool Reflection::HasBit(const Message& message,
     // (which uses HasField()) needs to be consistent with this.
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
-        switch (internal::cpp::EffectiveStringCType(field)) {
-          case FieldOptions::CORD:
+        switch (internal::cpp::GetStringType(*field)) {
+          case internal::cpp::StringType::kCord:
             return !GetField<const absl::Cord>(message, field).empty();
           default:
-          case FieldOptions::STRING: {
+          case internal::cpp::StringType::kView:
+            // Currently VIEW has the same ABI than string, so this fallback
+            // is fine.
+          case internal::cpp::StringType::kString: {
             if (IsInlined(field)) {
               return !GetField<InlinedStringField>(message, field)
                           .GetNoArena()
@@ -3025,12 +3103,15 @@ void Reflection::ClearOneof(Message* message,
     if (message->GetArena() == nullptr) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
-          switch (internal::cpp::EffectiveStringCType(field)) {
-            case FieldOptions::CORD:
+          switch (internal::cpp::GetStringType(*field)) {
+            case internal::cpp::StringType::kCord:
               delete *MutableRaw<absl::Cord*>(message, field);
               break;
             default:
-            case FieldOptions::STRING: {
+            case internal::cpp::StringType::kView:
+              // Currently VIEW has the same ABI than string, so this fallback
+              // is fine.
+            case internal::cpp::StringType::kString: {
               // Oneof string fields are never set as a default instance.
               // We just need to pass some arbitrary default string to make it
               // work. This allows us to not have the real default accessible
@@ -3070,32 +3151,29 @@ void Reflection::ClearOneof(Message* message,
         MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr)); \
   }
 
-HANDLE_TYPE(int32_t, FieldDescriptor::CPPTYPE_INT32, -1);
-HANDLE_TYPE(int64_t, FieldDescriptor::CPPTYPE_INT64, -1);
-HANDLE_TYPE(uint32_t, FieldDescriptor::CPPTYPE_UINT32, -1);
-HANDLE_TYPE(uint64_t, FieldDescriptor::CPPTYPE_UINT64, -1);
-HANDLE_TYPE(float, FieldDescriptor::CPPTYPE_FLOAT, -1);
-HANDLE_TYPE(double, FieldDescriptor::CPPTYPE_DOUBLE, -1);
-HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
+HANDLE_TYPE(int32_t, FieldDescriptor::CPPTYPE_INT32, absl::nullopt);
+HANDLE_TYPE(int64_t, FieldDescriptor::CPPTYPE_INT64, absl::nullopt);
+HANDLE_TYPE(uint32_t, FieldDescriptor::CPPTYPE_UINT32, absl::nullopt);
+HANDLE_TYPE(uint64_t, FieldDescriptor::CPPTYPE_UINT64, absl::nullopt);
+HANDLE_TYPE(float, FieldDescriptor::CPPTYPE_FLOAT, absl::nullopt);
+HANDLE_TYPE(double, FieldDescriptor::CPPTYPE_DOUBLE, absl::nullopt);
+HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, absl::nullopt);
 
 
 #undef HANDLE_TYPE
 
-const void* Reflection::GetRawRepeatedString(const Message& message,
-                                             const FieldDescriptor* field,
-                                             bool is_string) const {
-  (void)is_string;  // Parameter is used by Google-internal code.
+const void* Reflection::GetRawRepeatedString(
+    const Message& message, const FieldDescriptor* field,
+    internal::cpp::StringType string_type) const {
   return GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_STRING,
-                             FieldOptions::STRING, nullptr);
+                             string_type, nullptr);
 }
 
-void* Reflection::MutableRawRepeatedString(Message* message,
-                                           const FieldDescriptor* field,
-                                           bool is_string) const {
-  (void)is_string;  // Parameter is used by Google-internal code.
-  return MutableRawRepeatedField(message, field,
-                                 FieldDescriptor::CPPTYPE_STRING,
-                                 FieldOptions::STRING, nullptr);
+void* Reflection::MutableRawRepeatedString(
+    Message* message, const FieldDescriptor* field,
+    internal::cpp::StringType string_type) const {
+  return MutableRawRepeatedField(
+      message, field, FieldDescriptor::CPPTYPE_STRING, string_type, nullptr);
 }
 
 // Template implementations of basic accessors.  Inline because each
