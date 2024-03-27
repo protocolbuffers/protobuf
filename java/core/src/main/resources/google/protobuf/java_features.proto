@@ -68,4 +68,16 @@ message JavaFeatures {
     },
     edition_defaults = { edition: EDITION_PROTO2, value: "DEFAULT" }
   ];
+
+  // copybara:strip_begin(internal-only)
+  // Allows creation of large Java enums, extending beyond the standard
+  // constant limits imposed by the Java language. See go/javac-large-enums and
+  // go/java-large-enum-support for information on this feature.
+  optional bool large_enum = 3 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    edition_defaults = { edition: EDITION_PROTO2, value: "false" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "false" }
+  ];
+  // copybara:strip_end
 }
