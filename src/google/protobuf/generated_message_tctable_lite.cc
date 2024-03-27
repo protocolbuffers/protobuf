@@ -357,6 +357,16 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  // If ctx's depth_ <= 0 or --depth_ < 0, we return nullptr from
+  // ParseGroup[Inlined], ParseMessage and ParseLengthDelimitedInlined.
+  // Do this check early on and return.
+  int depth = ctx->depth();
+  if (group_coding) {
+    if (--depth < 0) {
+      ctx->set_depth(depth);
+      return nullptr;
+    }
+  }
   auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
