@@ -1,0 +1,10 @@
+// TODO
+
+syntax = "proto3";
+
+package google.protobuf.internal;
+
+message BytesBufferMsg {
+  bytes single_bytes = 1;
+  repeated bytes repeated_bytes = 2;
+}
