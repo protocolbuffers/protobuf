@@ -18,6 +18,8 @@ cc_library(
     hdrs = ["def_to_proto.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//upb:base",
+        "//upb:descriptor_upb_proto",
         "//upb:port",
         "//upb:reflection",
         "//upb/reflection:internal",
@@ -64,11 +66,15 @@ cc_test(
     srcs = ["def_to_proto_test.cc"],
     deps = [
         ":def_to_proto",
+        ":def_to_proto_editions_test_upb_proto",
+        ":def_to_proto_editions_test_upb_proto_reflection",
         ":def_to_proto_test_lib",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:protobuf",
         "//src/google/protobuf/util:differencer",
+        "//upb:base",
+        "//upb:descriptor_upb_proto",
         "//upb:descriptor_upb_proto_reflection",
         "//upb:mem",
         "//upb:reflection",
@@ -106,6 +112,21 @@ cc_library(
         "//upb:port",
         "//upb:reflection",
     ],
+)
+
+proto_library(
+    name = "def_to_proto_editions_test_proto",
+    srcs = ["def_to_proto_editions_test.proto"],
+)
+
+upb_c_proto_library(
+    name = "def_to_proto_editions_test_upb_proto",
+    deps = ["def_to_proto_editions_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "def_to_proto_editions_test_upb_proto_reflection",
+    deps = ["def_to_proto_editions_test_proto"],
 )
 
 proto_library(
