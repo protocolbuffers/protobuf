@@ -6,12 +6,12 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
-load(
     "//protos/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library_copts",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_CPPOPTS",
 )
 
 # begin:google_only

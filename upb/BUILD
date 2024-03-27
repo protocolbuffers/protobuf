@@ -7,8 +7,8 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
+load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:google_only
 # load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
@@ -17,7 +17,7 @@ load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 
 # begin:github_only
 load(
-    "//bazel:amalgamation.bzl",
+    "//upb/bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
 # end:github_only

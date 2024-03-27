@@ -135,7 +135,7 @@ ruby_bundle(
 
 http_archive(
     name = "lua",
-    build_file = "//bazel:lua.BUILD",
+    build_file = "//python/dist:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -160,7 +160,7 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//bazel:system_python.bzl", "system_python")
+load("//python/dist:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",
