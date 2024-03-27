@@ -108,27 +108,62 @@ class GeneratedPhpdocTest extends TestBase
             [
                 [
                     'getRepeatedInt32',
-                    'getRepeatedInt64',
                     'getRepeatedUint32',
-                    'getRepeatedUint64',
                     'getRepeatedSint32',
-                    'getRepeatedSint64',
                     'getRepeatedFixed32',
-                    'getRepeatedFixed64',
                     'getRepeatedSfixed32',
-                    'getRepeatedSfixed64',
-                    'getRepeatedFloat',
-                    'getRepeatedDouble',
-                    'getRepeatedBool',
-                    'getRepeatedString',
-                    'getRepeatedBytes',
                     'getRepeatedEnum',
-                    'getRepeatedMessage',
-                    'getRepeatedRecursive',
-                    'getRepeatedNoNamespaceMessage',
                     'getRepeatedNoNamespaceEnum',
                 ],
-                '@return \Google\Protobuf\Internal\RepeatedField'
+                '@return \Google\Protobuf\Internal\RepeatedField<int>'
+            ],
+            [
+                [
+                    'getRepeatedInt64',
+                    'getRepeatedUint64',
+                    'getRepeatedSint64',
+                    'getRepeatedFixed64',
+                    'getRepeatedSfixed64',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<int>|\Google\Protobuf\Internal\RepeatedField<string>'
+            ],
+            [
+                [
+                    'getRepeatedFloat',
+                    'getRepeatedDouble',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<float>'
+            ],
+            [
+                [
+                    'getRepeatedBool',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<bool>'
+            ],
+            [
+                [
+                    'getRepeatedString',
+                    'getRepeatedBytes',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<string>'
+            ],
+            [
+                [
+                    'getRepeatedMessage',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<\Foo\TestMessage\Sub>'
+            ],
+            [
+                [
+                    'getRepeatedRecursive',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<\Foo\TestMessage>'
+            ],
+            [
+                [
+                    'getRepeatedNoNamespaceMessage',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField<\NoNamespaceMessage>'
             ],
             [
                 [
