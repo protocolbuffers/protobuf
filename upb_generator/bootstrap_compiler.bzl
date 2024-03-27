@@ -1,20 +1,20 @@
 """Macros that implement bootstrapping for the upb code generator."""
 
-load(
-    "//upb/cmake:build_defs.bzl",
-    "staleness_test",
-)
-load(
-    "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
-)
-
 # begin:github_only
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
 # end:github_only
+
+load(
+    "//bazel:upb_proto_library.bzl",
+    "upb_proto_library",
+)
+load(
+    "//upb/cmake:build_defs.bzl",
+    "staleness_test",
+)
 
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc"

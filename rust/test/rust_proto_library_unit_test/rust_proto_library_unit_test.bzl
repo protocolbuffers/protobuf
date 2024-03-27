@@ -1,9 +1,9 @@
 """This module contains unit tests for rust_proto_library and its aspect."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("//rust:aspects.bzl", "RustProtoInfo")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 
 def _find_actions_with_mnemonic(actions, mnemonic):

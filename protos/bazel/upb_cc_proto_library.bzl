@@ -10,7 +10,6 @@
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
 # begin:google_only
 # load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
@@ -27,6 +26,7 @@ load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "
 # begin:github_only
 # Compatibility code for Bazel 4.x. Remove this when we drop support for Bazel 4.x.
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
 def upb_use_cpp_toolchain():
     return ["@bazel_tools//tools/cpp:toolchain_type"]
