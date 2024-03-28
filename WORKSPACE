@@ -3,7 +3,10 @@ workspace(name = "com_google_protobuf")
 # An explicit self-reference to work around changes in Bazel 7.0
 # See https://github.com/bazelbuild/bazel/issues/19973#issuecomment-1787814450
 # buildifier: disable=duplicated-name
-local_repository(name = "com_google_protobuf", path = ".")
+local_repository(
+    name = "com_google_protobuf",
+    path = ".",
+)
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -24,11 +27,11 @@ py_repositories()
 # Bazel platform rules.
 http_archive(
     name = "platforms",
+    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
     urls = [
         "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
         "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
     ],
-    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
 )
 
 http_archive(
@@ -36,7 +39,7 @@ http_archive(
     sha256 = "730215d76eace9dd49bf74ce044e8daa065d175f1ac891cc1d6bb184ef94e565",
     strip_prefix = "googletest-f53219cdcb7b084ef57414efea92ee5b71989558",
     urls = [
-        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz" # 2023-03-16
+        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz",  # 2023-03-16
     ],
 )
 
@@ -101,11 +104,11 @@ kt_register_toolchains()
 
 http_archive(
     name = "rules_ruby",
-    urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
-    ],
-    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
     sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
+    urls = [
+        "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip",
+    ],
 )
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
@@ -146,18 +149,18 @@ http_archive(
 
 http_archive(
     name = "com_github_google_benchmark",
-    urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
-    strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
     sha256 = "62e2f2e6d8a744d67e4bbc212fcfd06647080de4253c97ad5c6749e09faf2cb0",
+    strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
+    urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
 )
 
 http_archive(
     name = "com_google_googleapis",
-    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
-    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
-    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
     build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
+    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
+    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
+    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
 )
 
 load("//bazel:system_python.bzl", "system_python")
@@ -180,11 +183,11 @@ install_deps()
 
 http_archive(
     name = "rules_fuzzing",
+    patch_args = ["-p1"],
+    patches = ["//third_party:rules_fuzzing.patch"],
     sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
     strip_prefix = "rules_fuzzing-0.4.1",
     urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
-    patches = ["//third_party:rules_fuzzing.patch"],
-    patch_args = ["-p1"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
@@ -210,7 +213,9 @@ load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_regi
 rules_rust_dependencies()
 
 rust_register_toolchains(edition = "2021")
+
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository")
+
 # to repin, invoke `CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index`
 crates_repository(
     name = "crate_index",
@@ -221,10 +226,11 @@ crates_repository(
             version = ">0.0.0",
         ),
         "paste": crate.spec(
-          version = ">=1",
+            version = ">=1",
         ),
     },
 )
 
 load("@crate_index//:defs.bzl", "crate_repositories")
+
 crate_repositories()
