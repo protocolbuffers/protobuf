@@ -6,13 +6,13 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "UPB_DEFAULT_CPPOPTS",
-)
-load(
     "//lua:lua_proto_library.bzl",
     "lua_proto_library",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
 )
 
 licenses(["notice"])

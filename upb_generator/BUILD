@@ -6,11 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "UPB_DEFAULT_CPPOPTS",
-)
-load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
@@ -18,6 +13,11 @@ load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
 )
 load(
     "//upb_generator:bootstrap_compiler.bzl",

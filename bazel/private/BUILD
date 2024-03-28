@@ -14,16 +14,17 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 licenses(["notice"])
 
 bzl_library(
-    name = "upb_proto_library_bzl",
+    name = "upb_proto_library_internal_bzl",
     srcs = [
-        "upb_c_proto_library.bzl",
-        "upb_minitable_proto_library.bzl",
-        "upb_proto_library.bzl",
-        "upb_proto_reflection_library.bzl",
+        "upb_proto_library_internal/aspect.bzl",
+        "upb_proto_library_internal/cc_library_func.bzl",
+        "upb_proto_library_internal/copts.bzl",
+        "upb_proto_library_internal/rule.bzl",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__pkg__"],
     deps = [
-        "//bazel/private:upb_proto_library_internal_bzl",
+        "@bazel_skylib//lib:paths",
+        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
         "@rules_proto//proto:defs",
     ],
 )

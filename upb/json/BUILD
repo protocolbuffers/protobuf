@@ -1,11 +1,11 @@
 # TODO: describe this package.
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:google_only
 # package(default_applicable_licenses = ["//upb:license"])

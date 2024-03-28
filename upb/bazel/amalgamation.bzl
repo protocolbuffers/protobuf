@@ -7,7 +7,7 @@
 
 """Internal rules for building upb."""
 
-load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
+load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo")
 
 # upb_amalgamation() rule, with file_list aspect.
 
@@ -54,7 +54,7 @@ upb_amalgamation = rule(
         "_amalgamator": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//bazel:amalgamate",
+            default = "//upb/bazel:amalgamate",
         ),
         "prefix": attr.string(
             default = "",
