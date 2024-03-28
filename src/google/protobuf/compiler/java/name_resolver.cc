@@ -70,7 +70,7 @@ std::string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
                                     bool immutable) {
   // Doesn't append "Mutable" for enum type's name.
   const Descriptor* message_descriptor = descriptor->containing_type();
-  if (message_descriptor == NULL) {
+  if (message_descriptor == nullptr) {
     return descriptor->name();
   } else {
     return absl::StrCat(ClassNameWithoutPackage(message_descriptor, immutable),

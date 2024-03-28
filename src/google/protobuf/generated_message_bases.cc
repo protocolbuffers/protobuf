@@ -35,7 +35,7 @@ ZeroFieldsBase::~ZeroFieldsBase() {
 }
 
 size_t ZeroFieldsBase::ByteSizeLong() const {
-  return MaybeComputeUnknownFieldsSize(0, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(0, &_impl_._cached_size_);
 }
 
 const char* ZeroFieldsBase::_InternalParse(const char* ptr,
@@ -95,19 +95,6 @@ void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
 
 void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
   _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
-}
-
-const Message::ClassData* ZeroFieldsBase::GetClassData() const {
-  ABSL_CONST_INIT static const ClassDataFull data = {
-      {
-          nullptr,  // on_demand_register_arena_dtor
-          PROTOBUF_FIELD_OFFSET(ZeroFieldsBase, _cached_size_),
-          false,
-      },
-      &MergeImpl,
-      &kDescriptorMethods,
-  };
-  return &data;
 }
 
 }  // namespace internal

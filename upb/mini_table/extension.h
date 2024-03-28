@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include "upb/mini_table/field.h"
+#include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/message.h"
 
@@ -23,25 +23,17 @@ typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 extern "C" {
 #endif
 
-UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_AsField(
-    const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_AsField)(e);
-}
+UPB_API_INLINE upb_CType
+upb_MiniTableExtension_CType(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t
-upb_MiniTableExtension_Number(const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_Number)(e);
-}
+upb_MiniTableExtension_Number(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
-    const upb_MiniTableExtension* e) {
-  return UPB_PRIVATE(_upb_MiniTableExtension_GetSubMessage)(e);
-}
+    const upb_MiniTableExtension* e);
 
 UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
-    upb_MiniTableExtension* e, const upb_MiniTable* m) {
-  UPB_PRIVATE(_upb_MiniTableExtension_SetSubMessage)(e, m);
-}
+    upb_MiniTableExtension* e, const upb_MiniTable* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

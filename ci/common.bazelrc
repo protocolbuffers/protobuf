@@ -69,3 +69,7 @@ build --incompatible_use_host_features
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
 common --noenable_bzlmod
+
+# Important: this flag ensures that we remain compliant with the C++ layering
+# check.
+build --features=layering_check

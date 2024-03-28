@@ -472,7 +472,7 @@ public class CodedInputStreamTest {
   /** Skipping a huge blob should not allocate excessive memory, so there should be no limit */
   @Test
   public void testSkipMaliciouslyHugeBlob() throws Exception {
-    InputStream is = new RepeatingInputStream(new byte[]{1}, Integer.MAX_VALUE);
+    InputStream is = new RepeatingInputStream(new byte[] {1}, Integer.MAX_VALUE);
     CodedInputStream.newInstance(is).skipRawBytes(Integer.MAX_VALUE);
   }
 
@@ -1263,16 +1263,17 @@ public class CodedInputStreamTest {
   public void testMaliciousInputStream() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
-    codedOutputStream.writeByteArrayNoTag(new byte[] { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 });
+    codedOutputStream.writeByteArrayNoTag(new byte[] {0x0, 0x1, 0x2, 0x3, 0x4, 0x5});
     codedOutputStream.flush();
     final List<byte[]> maliciousCapture = new ArrayList<>();
-    InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray()) {
-      @Override
-      public synchronized int read(byte[] b, int off, int len) {
-        maliciousCapture.add(b);
-        return super.read(b, off, len);
-      }
-    };
+    InputStream inputStream =
+        new ByteArrayInputStream(outputStream.toByteArray()) {
+          @Override
+          public synchronized int read(byte[] b, int off, int len) {
+            maliciousCapture.add(b);
+            return super.read(b, off, len);
+          }
+        };
 
     // test ByteString
 

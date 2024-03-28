@@ -5,12 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-syntax = "proto2";
+edition = "2023";
 
 package protobuf_unittest;
 
 import "google/protobuf/unittest_lite.proto";
 
+option features.enum_type = CLOSED;
+option features.utf8_validation = NONE;
 option cc_enable_arenas = true;
 option optimize_for = LITE_RUNTIME;
 
@@ -94,15 +96,17 @@ enum MapEnumLite {
 }
 
 message TestRequiredLite {
-  required int32 a = 1;
-  required int32 b = 2;
-  required int32 c = 3;
+  int32 a = 1 [features.field_presence = LEGACY_REQUIRED];
+
+  int32 b = 2 [features.field_presence = LEGACY_REQUIRED];
+
+  int32 c = 3 [features.field_presence = LEGACY_REQUIRED];
 
   extend TestAllExtensionsLite {
-    optional TestRequiredLite single = 1000;
+    TestRequiredLite single = 1000;
   }
 }
 
 message ForeignMessageArenaLite {
-  optional int32 c = 1;
+  int32 c = 1;
 }

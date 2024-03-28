@@ -43,8 +43,8 @@ def protobuf_deps():
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "fb3621f4f897824c0dbe0615fa94543df6192f30",  # Abseil LTS 20230802.1
-            sha256 = "aa768256d0567f626334fcbe722f564c40b281518fc8423e2708a308e5f983ea",
+            commit = "4a2c63365eff8823a5221db86ef490e828306f9d",  # Abseil LTS 20240116.0
+            sha256 = "f49929d22751bf70dd61922fb1fd05eb7aec5e7a7f870beece79a6e28f0a06c1",
         )
 
     if not native.existing_rule("zlib"):
@@ -122,8 +122,15 @@ def protobuf_deps():
     if not native.existing_rule("build_bazel_rules_apple"):
         http_archive(
             name = "build_bazel_rules_apple",
-            sha256 = "34c41bfb59cdaea29ac2df5a2fa79e5add609c71bb303b2ebb10985f93fa20e7",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.1.1/rules_apple.3.1.1.tar.gz",
+            sha256 = "9c4f1e1ec4fdfeac5bddb07fa0e872c398e3d8eb0ac596af9c463f9123ace292",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.2.1/rules_apple.3.2.1.tar.gz",
+        )
+
+    if not native.existing_rule("build_bazel_apple_support"):
+        http_archive(
+            name = "build_bazel_apple_support",
+            sha256 = "100d12617a84ebc7ee7a10ecf3b3e2fdadaebc167ad93a21f820a6cb60158ead",
+            url = "https://github.com/bazelbuild/apple_support/releases/download/1.12.0/apple_support.1.12.0.tar.gz",
         )
 
     if not native.existing_rule("io_bazel_rules_kotlin"):

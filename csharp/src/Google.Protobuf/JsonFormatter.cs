@@ -608,7 +608,7 @@ namespace Google.Protobuf {
         MaybeWriteValueWhitespace(writer, indentationLevel + 1);
         WriteString(writer, keyText);
         writer.Write(NameValueSeparator);
-        WriteValue(writer, pair.Value);
+        WriteValue(writer, pair.Value, indentationLevel + 1);
         first = false;
       }
 

@@ -488,7 +488,7 @@ TEST(ReflectionOpsTest, GenericSwap) {
   Arena arena;
   {
     unittest::TestAllTypes message;
-    auto* arena_message = Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+    auto* arena_message = Arena::Create<unittest::TestAllTypes>(&arena);
     TestUtil::SetAllFields(arena_message);
     const uint64_t initial_arena_size = arena.SpaceUsed();
 
@@ -501,7 +501,7 @@ TEST(ReflectionOpsTest, GenericSwap) {
   }
   {
     unittest::TestAllTypes message;
-    auto* arena_message = Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+    auto* arena_message = Arena::Create<unittest::TestAllTypes>(&arena);
     TestUtil::SetAllFields(arena_message);
     const uint64_t initial_arena_size = arena.SpaceUsed();
 

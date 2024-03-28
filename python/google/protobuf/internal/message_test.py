@@ -549,6 +549,15 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([4, 3, 2, 1],
                      [m.bb for m in msg.repeated_nested_message[::-1]])
 
+  def testSortEmptyRepeated(self, message_module):
+    message = message_module.NestedTestAllTypes()
+    self.assertFalse(message.HasField('child'))
+    self.assertFalse(message.HasField('payload'))
+    message.child.repeated_child.sort()
+    message.payload.repeated_int32.sort()
+    self.assertFalse(message.HasField('child'))
+    self.assertFalse(message.HasField('payload'))
+
   def testSortingRepeatedScalarFieldsDefaultComparator(self, message_module):
     """Check some different types with the default comparator."""
     message = message_module.TestAllTypes()
@@ -1012,6 +1021,12 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_int32)
 
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_int32.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_int32)
+
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_int32.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_int32)
@@ -1021,6 +1036,12 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_float)
 
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_float.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_float)
+
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_float.extend(empty_value)
       self.assertSequenceEqual([], m.repeated_float)
@@ -1029,6 +1050,12 @@ class MessageTest(unittest.TestCase):
     """Test no-ops extending repeated string fields."""
     m = message_module.TestAllTypes()
     self.assertSequenceEqual([], m.repeated_string)
+
+    for falsy_value in MessageTest.FALSY_VALUES:
+      with self.assertRaises(TypeError) as context:
+        m.repeated_string.extend(falsy_value)
+      self.assertIn('iterable', str(context.exception))
+      self.assertSequenceEqual([], m.repeated_string)
 
     for empty_value in MessageTest.EMPTY_VALUES:
       m.repeated_string.extend(empty_value)
@@ -1387,6 +1414,12 @@ class Proto2Test(unittest.TestCase):
     m.known_map_field[123] = 0
     with self.assertRaises(ValueError):
       m.unknown_map_field[1] = 123
+
+  def testDeepCopyClosedEnum(self):
+    m = map_proto2_unittest_pb2.TestEnumMap()
+    m.known_map_field[123] = 0
+    m2 = copy.deepcopy(m)
+    self.assertEqual(m, m2)
 
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()
@@ -1753,7 +1786,8 @@ class Proto3Test(unittest.TestCase):
 
     # Test has presence:
     for field in test_proto3_optional_pb2.TestProto3Optional.DESCRIPTOR.fields:
-      self.assertTrue(field.has_presence)
+      if field.name.startswith('optional_'):
+        self.assertTrue(field.has_presence)
     for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
       if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         self.assertFalse(field.has_presence)
@@ -1842,6 +1876,9 @@ class Proto3Test(unittest.TestCase):
 
     with self.assertRaises(TypeError):
       123 in msg.map_string_string
+
+    with self.assertRaises(TypeError):
+      msg.map_string_string.__contains__(123)
 
   def testScalarMapComparison(self):
     msg1 = map_unittest_pb2.TestMap()
@@ -1981,6 +2018,12 @@ class Proto3Test(unittest.TestCase):
     # Bad key.
     with self.assertRaises(TypeError):
       msg.map_int32_foreign_message['123']
+
+    with self.assertRaises(TypeError):
+      '123' in msg.map_int32_foreign_message
+
+    with self.assertRaises(TypeError):
+      msg.map_int32_foreign_message.__contains__('123')
 
     # Can't assign directly to submessage.
     with self.assertRaises(ValueError):
@@ -2586,6 +2629,30 @@ class ValidTypeNamesTest(unittest.TestCase):
     pb = unittest_pb2.TestAllTypes()
     self.assertImportFromName(pb.repeated_int32, 'Scalar')
     self.assertImportFromName(pb.repeated_nested_message, 'Composite')
+
+
+# We can only test this case under proto2, because proto3 will reject invalid
+# UTF-8 in the parser, so there should be no way of creating a string field
+# that contains invalid UTF-8.
+#
+# We also can't test it in pure-Python, which validates all string fields for
+# UTF-8 even when the spec says it shouldn't.
+@unittest.skipIf(api_implementation.Type() == 'python',
+                 'Python can\'t create invalid UTF-8 strings')
+@testing_refleaks.TestCase
+class InvalidUtf8Test(unittest.TestCase):
+
+  def testInvalidUtf8Printing(self):
+    one_bytes = unittest_pb2.OneBytes()
+    one_bytes.data = b'ABC\xff123'
+    one_string = unittest_pb2.OneString()
+    one_string.ParseFromString(one_bytes.SerializeToString())
+    self.assertIn('data: "ABC\\377123"', str(one_string))
+
+  def testValidUtf8Printing(self):
+    self.assertIn('data: "€"', str(unittest_pb2.OneString(data='€')))  # 2 byte
+    self.assertIn('data: "￡"', str(unittest_pb2.OneString(data='￡')))  # 3 byte
+    self.assertIn('data: "🙂"', str(unittest_pb2.OneString(data='🙂')))  # 4 byte
 
 
 @testing_refleaks.TestCase

@@ -57,7 +57,6 @@ def _upb_c_proto_library_rule_impl(ctx):
     return upb_proto_rule_impl(ctx, UpbWrappedCcInfo, _UpbWrappedGeneratedSrcsInfo)
 
 upb_c_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _upb_c_proto_library_rule_impl,
     attrs = {
         "deps": attr.label_list(

@@ -17,16 +17,61 @@ cc_library(
     ],
     deps = [
         ":context",
+        ":crate_mapping",
         ":enum",
         ":message",
         ":naming",
         ":relative_path",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "crate_mapping",
+    srcs = ["crate_mapping.cc"],
+    hdrs = ["crate_mapping.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":context",
+        "//src/google/protobuf",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "crate_mapping_unittest",
+    srcs = ["crate_mapping_unittest.cc"],
+    deps = [
+        ":context",
+        ":crate_mapping",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -42,25 +87,31 @@ cc_library(
         ":enum",
         ":naming",
         ":oneof",
-        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "//upb_generator:mangle",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
 cc_library(
     name = "accessors",
     srcs = [
+        "accessors/accessor_case.cc",
         "accessors/accessors.cc",
         "accessors/map.cc",
-        "accessors/repeated_scalar.cc",
+        "accessors/repeated_field.cc",
         "accessors/singular_message.cc",
         "accessors/singular_scalar.cc",
         "accessors/singular_string.cc",
         "accessors/unsupported_field.cc",
     ],
     hdrs = [
+        "accessors/accessor_case.h",
         "accessors/accessor_generator.h",
         "accessors/accessors.h",
     ],
@@ -70,10 +121,14 @@ cc_library(
         ":context",
         ":helpers",
         ":naming",
-        "//src/google/protobuf:protobuf_nowkt",
+        ":rust_field_type",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names_internal",
+        "//src/google/protobuf/io:tokenizer",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -84,9 +139,12 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
@@ -103,12 +161,14 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         ":context",
-        "//src/google/protobuf:protobuf_nowkt",
-        "//src/google/protobuf/compiler/cpp:names_internal",
+        ":naming",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
     ],
 )
 
@@ -125,13 +185,25 @@ cc_test(
 
 cc_library(
     name = "naming",
-    srcs = ["naming.cc"],
-    hdrs = ["naming.h"],
+    srcs = [
+        "naming.cc",
+        "rust_keywords.cc",
+    ],
+    hdrs = [
+        "naming.h",
+        "rust_keywords.h",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
-        "//src/google/protobuf:protobuf_nowkt",
+        ":rust_field_type",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
@@ -144,10 +216,14 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
+        ":accessors",
         ":context",
         ":naming",
-        "//src/google/protobuf:protobuf_nowkt",
+        ":rust_field_type",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -181,8 +257,24 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         ":context",
-        "//src/google/protobuf:protobuf_nowkt",
+        ":naming",
+        ":rust_field_type",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io:tokenizer",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "rust_field_type",
+    srcs = ["rust_field_type.cc"],
+    hdrs = ["rust_field_type.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )

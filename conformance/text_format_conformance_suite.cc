@@ -14,6 +14,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "conformance_test.h"
 #include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
@@ -242,6 +243,28 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
   RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
                          "Data: { group_int32: 1 }");
   RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "Data {}");
+  RunValidTextFormatTest("GroupFieldMultiWord", REQUIRED,
+                         "MultiWordGroupField { group_int32: 1 }");
+
+  // Test that lower-cased group name (i.e. implicit field name) is not accepted
+  ExpectParseFailure("GroupFieldLowercased", REQUIRED,
+                     "data { group_int32: 1 }");
+  ExpectParseFailure("GroupFieldLowercasedMultiWord", REQUIRED,
+                     "multiwordgroupfield { group_int32: 1 }");
+
+  // Test extensions of group type
+  RunValidTextFormatTest("GroupFieldExtension", REQUIRED,
+                         absl::StrFormat("[%s] { group_int32: 1 }",
+                                         MessageType::GetDescriptor()
+                                             ->file()
+                                             ->FindExtensionByName("groupfield")
+                                             ->PrintableNameForExtension()));
+  ExpectParseFailure("GroupFieldExtensionGroupName", REQUIRED,
+                     absl::StrFormat("[%s] { group_int32: 1 }",
+                                     MessageType::GetDescriptor()
+                                         ->file()
+                                         ->FindMessageTypeByName("GroupField")
+                                         ->full_name()));
 }
 
 template <typename MessageType>

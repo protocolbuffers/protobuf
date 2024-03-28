@@ -51,6 +51,8 @@ class RepeatedPtrField;
 class FastReflectionMessageMutator;
 class FastReflectionStringSetter;
 class Reflection;
+class Descriptor;
+class AssignDescriptorsHelper;
 
 namespace io {
 
@@ -123,10 +125,13 @@ class SwapFieldHelper;
 // See parse_context.h for explanation
 class ParseContext;
 
+struct DescriptorTable;
+class DescriptorPoolExtensionFinder;
 class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
+struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
 
@@ -491,10 +496,8 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   int GetCachedSize() const;
 
-  virtual const char* _InternalParse(const char* /*ptr*/,
-                                     internal::ParseContext* /*ctx*/) {
-    return nullptr;
-  }
+  virtual const char* _InternalParse(const char* ptr,
+                                     internal::ParseContext* ctx);
 
   void OnDemandRegisterArenaDtor(Arena* arena);
 
@@ -514,6 +517,8 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
+  const internal::TcParseTableBase* GetTcParseTable() const;
+
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
@@ -522,12 +527,19 @@ class PROTOBUF_EXPORT MessageLite {
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
     std::string (*initialization_error_string)(const MessageLite&);
+    const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
   };
   struct ClassDataFull;
   // Note: The order of arguments in the functions is chosen so that it has
   // the same ABI as the member function that calls them. Eg the `this`
   // pointer becomes the first argument in the free function.
+  //
+  // Future work:
+  // We could save more data by omitting any optional pointer that would
+  // otherwise be null. We can have some metadata in ClassData telling us if we
+  // have them and their offset.
   struct ClassData {
+    const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
 
     // Offset of the CachedSize member.
@@ -536,14 +548,27 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
+    // Temporary constructor while we migrate existing classes to populate the
+    // `tc_table` field.
     constexpr ClassData(void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
                         uint32_t cached_size_offset, bool is_lite)
-        : on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+        : tc_table(),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          cached_size_offset(cached_size_offset),
+          is_lite(is_lite) {}
+
+    constexpr ClassData(const internal::TcParseTableBase* tc_table,
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
+                                                              Arena&),
+                        uint32_t cached_size_offset, bool is_lite)
+        : tc_table(tc_table),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           cached_size_offset(cached_size_offset),
           is_lite(is_lite) {}
 
     const ClassDataFull& full() const {
+      ABSL_DCHECK(!is_lite);
       return *static_cast<const ClassDataFull*>(this);
     }
   };
@@ -551,18 +576,43 @@ class PROTOBUF_EXPORT MessageLite {
   struct ClassDataLite {
     ClassData header;
     const char type_name[N];
+
+    constexpr const ClassData* base() const { return &header; }
   };
   struct ClassDataFull : ClassData {
     constexpr ClassDataFull(ClassData base,
                             void (*merge_to_from)(MessageLite& to,
                                                   const MessageLite& from_msg),
-                            const DescriptorMethods* descriptor_methods)
+                            const DescriptorMethods* descriptor_methods,
+                            const internal::DescriptorTable* descriptor_table,
+                            void (*get_metadata_tracker)())
         : ClassData(base),
           merge_to_from(merge_to_from),
-          descriptor_methods(descriptor_methods) {}
+          descriptor_methods(descriptor_methods),
+          descriptor_table(descriptor_table),
+          reflection(),
+          descriptor(),
+          get_metadata_tracker(get_metadata_tracker) {}
+
+    constexpr const ClassData* base() const { return this; }
 
     void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     const DescriptorMethods* descriptor_methods;
+
+    // Codegen types will provide a DescriptorTable to do lazy
+    // registration/initialization of the reflection objects.
+    // Other types, like DynamicMessage, keep the table as null but eagerly
+    // populate `reflection`/`descriptor` fields.
+    const internal::DescriptorTable* descriptor_table;
+    // Accesses are protected by the once_flag in `descriptor_table`. When the
+    // table is null these are populated from the beginning and need to
+    // protection.
+    mutable const Reflection* reflection;
+    mutable const Descriptor* descriptor;
+
+    // When an access tracker is installed, this function notifies the tracker
+    // that GetMetadata was called.
+    void (*get_metadata_tracker)();
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -609,9 +659,11 @@ class PROTOBUF_EXPORT MessageLite {
 
  private:
   friend class FastReflectionMessageMutator;
+  friend class AssignDescriptorsHelper;
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;
+  friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
@@ -627,6 +679,26 @@ class PROTOBUF_EXPORT MessageLite {
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
+
+  template <typename T, const void* ptr = T::_raw_default_instance_>
+  static constexpr auto GetStrongPointerForTypeImpl(int) {
+    return ptr;
+  }
+  template <typename T>
+  static constexpr auto GetStrongPointerForTypeImpl(char) {
+    return &T::default_instance;
+  }
+  // Return a pointer we can use to make a strong reference to a type.
+  // Ideally, this is a pointer to the default instance.
+  // If we can't get that, then we use a pointer to the `default_instance`
+  // function. The latter always works but pins the function artificially into
+  // the binary so we avoid it.
+  template <typename T>
+  static constexpr auto GetStrongPointerForType() {
+    return GetStrongPointerForTypeImpl<T>(0);
+  }
+  template <typename T>
+  friend void internal::StrongReferenceToType();
 };
 
 namespace internal {

@@ -11,10 +11,13 @@
 // though the same identifiers are used internally by the java code generator.
 // LINT: LEGACY_NAMES
 
-syntax = "proto2";
+edition = "2023";
 
 package io_protocol_tests;
 
+option features.repeated_field_encoding = EXPANDED;
+option features.utf8_validation = NONE;
+option features.enum_type = CLOSED;
 option java_generic_services = true;  // auto-added
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TestBadIdentifiersProto";
@@ -24,19 +27,19 @@ option java_outer_classname = "TestBadIdentifiersProto";
 // src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsUnderscoreMessage {
   // java.lang.Object
-  optional bool class = 1;
+  bool class = 1;
   // com.google.protobuf.MessageLiteOrBuilder
-  optional bool default_instance_for_type = 2;
+  bool default_instance_for_type = 2;
   // com.google.protobuf.MessageLite
-  optional bool parser_for_type = 3;
-  optional bool serialized_size = 4;
+  bool parser_for_type = 3;
+  bool serialized_size = 4;
   // com.google.protobuf.MessageOrBuilder
-  optional bool all_fields = 5;
-  optional bool descriptor_for_type = 6;
-  optional bool initialization_error_string = 7;
-  optional bool unknown_fields = 8;
+  bool all_fields = 5;
+  bool descriptor_for_type = 6;
+  bool initialization_error_string = 7;
+  bool unknown_fields = 8;
   // obsolete. kept for backwards compatibility of generated code
-  optional bool cached_size = 9;
+  bool cached_size = 9;
 }
 
 // Message with field names using leading underscores that conflict with
@@ -44,20 +47,20 @@ message ForbiddenWordsUnderscoreMessage {
 // src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsLeadingUnderscoreMessage {
   // java.lang.Object
-  optional bool _class = 1;
+  bool _class = 1;
   // com.google.protobuf.MessageLiteOrBuilder
-  optional bool _default_instance_for_type = 2;
+  bool _default_instance_for_type = 2;
   // com.google.protobuf.MessageLite
-  optional bool _parser_for_type = 3;
-  optional bool _serialized_size = 4;
+  bool _parser_for_type = 3;
+  bool _serialized_size = 4;
   // com.google.protobuf.MessageOrBuilder
-  optional bool _all_fields = 5;
-  optional bool _descriptor_for_type = 6;
-  optional bool _initialization_error_string = 7;
+  bool _all_fields = 5;
+  bool _descriptor_for_type = 6;
+  bool _initialization_error_string = 7;
   // TODO: re-enable
-  // optional bool _unknown_fields = 8;
+  // bool _unknown_fields = 8;
   // obsolete. kept for backwards compatibility of generated code
-  optional bool _cached_size = 9;
+  bool _cached_size = 9;
 }
 
 // Message with field names in camel case that conflict with accessors in the
@@ -65,32 +68,32 @@ message ForbiddenWordsLeadingUnderscoreMessage {
 // src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsCamelMessage {
   // java.lang.Object
-  optional bool class = 1;
+  bool class = 1;
   // com.google.protobuf.MessageLiteOrBuilder
-  optional bool defaultInstanceForType = 2;
+  bool defaultInstanceForType = 2;
   // com.google.protobuf.MessageLite
-  optional bool serializedSize = 3;
-  optional bool parserForType = 4;
+  bool serializedSize = 3;
+  bool parserForType = 4;
   // com.google.protobuf.MessageOrBuilder:
-  optional bool initializationErrorString = 5;
-  optional bool descriptorForType = 6;
-  optional bool allFields = 7;
+  bool initializationErrorString = 5;
+  bool descriptorForType = 6;
+  bool allFields = 7;
   // TODO: re-enable
-  // optional bool unknownFields = 8;
+  // bool unknownFields = 8;
   // obsolete. kept for backwards compatibility of generated code
-  optional bool cachedSize = 9;
+  bool cachedSize = 9;
 }
 
 message Descriptor {
   option no_standard_descriptor_accessor = true;
 
-  optional string descriptor = 1;
+  string descriptor = 1;
   message NestedDescriptor {
     option no_standard_descriptor_accessor = true;
 
-    optional string descriptor = 1;
+    string descriptor = 1;
   }
-  optional NestedDescriptor nested_descriptor = 2;
+  NestedDescriptor nested_descriptor = 2;
   enum NestedEnum {
     UNKNOWN = 0;
     FOO = 1;
@@ -102,7 +105,7 @@ message Parser {
     UNKNOWN = 0;
     PARSER = 1;
   }
-  optional ParserEnum parser = 1;
+  ParserEnum parser = 1;
 }
 
 message Deprecated {
@@ -114,38 +117,38 @@ message Deprecated {
     BAR = 2 [deprecated = true];
   }
 
-  optional int32 field1 = 1 [deprecated = true];
-  optional TestEnum field2 = 2 [deprecated = true];
-  optional ForbiddenWordsUnderscoreMessage field3 = 3 [deprecated = true];
+  int32 field1 = 1 [deprecated = true];
+  TestEnum field2 = 2 [deprecated = true];
+  ForbiddenWordsUnderscoreMessage field3 = 3 [deprecated = true];
 }
 
 message Override {
-  optional int32 override = 1;
+  int32 override = 1;
 }
 
 message Object {
-  optional int32 object = 1;
-  optional string string_object = 2;
+  int32 object = 1;
+  string string_object = 2;
 }
 
 message String {
-  optional string string = 1;
+  string string = 1;
 }
 
 message Integer {
-  optional int32 integer = 1;
+  int32 integer = 1;
 }
 
 message Long {
-  optional int32 long = 1;
+  int32 long = 1;
 }
 
 message Float {
-  optional float float = 1;
+  float float = 1;
 }
 
 message Double {
-  optional double double = 1;
+  double double = 1;
 }
 
 service TestConflictingMethodNames {
@@ -168,11 +171,11 @@ message TestConflictingFieldNames {
   repeated bytes bytes_field = 4;
   repeated ForbiddenWordsUnderscoreMessage message_field = 5;
 
-  optional int32 int32_field_count = 11;
-  optional TestEnum enum_field_count = 12;
-  optional string string_field_count = 13;
-  optional bytes bytes_field_count = 14;
-  optional ForbiddenWordsUnderscoreMessage message_field_count = 15;
+  int32 int32_field_count = 11;
+  TestEnum enum_field_count = 12;
+  string string_field_count = 13;
+  bytes bytes_field_count = 14;
+  ForbiddenWordsUnderscoreMessage message_field_count = 15;
 
   repeated int32 Int32Field = 21;                              // NO_PROTO3
   repeated TestEnum EnumField = 22;                            // NO_PROTO3
@@ -182,13 +185,14 @@ message TestConflictingFieldNames {
 
   // This field conflicts with "int32_field" as they both generate
   // the method getInt32FieldList().
-  required int32 int32_field_list = 31;  // NO_PROTO3
+  int32 int32_field_list = 31
+      [features.field_presence = LEGACY_REQUIRED];  // NO_PROTO3
 
   // These field pairs have the same Java converted name
-  optional string field_name = 32;   // NO_PROTO3
-  optional string field__name = 33;  // NO_PROTO3
-  optional int32 _2conflict = 34;    // NO_PROTO3
-  optional int32 __2conflict = 35;
+  string field_name = 32;   // NO_PROTO3
+  string field__name = 33;  // NO_PROTO3
+  int32 _2conflict = 34;    // NO_PROTO3
+  int32 __2conflict = 35;
 
   extensions 1000 to max;  // NO_PROTO3
 
@@ -196,9 +200,9 @@ message TestConflictingFieldNames {
   extend TestConflictingFieldNames {  // NO_PROTO3
     // We don't generate accessors for extensions so the following extension
     // fields don't conflict with the repeated field "int64_field".
-    optional int64 int64_field_count = 1001;  // NO_PROTO3
-    optional int64 int64_field_list = 1002;   // NO_PROTO3
-  }                                           // NO_PROTO3
+    int64 int64_field_count = 1001;  // NO_PROTO3
+    int64 int64_field_list = 1002;   // NO_PROTO3
+  }  // NO_PROTO3
 }
 
 message TestMapField {
@@ -210,12 +214,12 @@ message TestMapField {
 }
 
 message TestLeadingNumberFields {
-  optional int32 _30day_impressions = 1;
+  int32 _30day_impressions = 1;
   repeated string _60day_impressions = 2;
 
-  optional string __2_underscores = 3;
+  string __2_underscores = 3;
   repeated string __2repeated_underscores = 4;
 
-  optional int32 _32 = 32;
+  int32 _32 = 32;
   repeated int64 _64 = 64;
 }

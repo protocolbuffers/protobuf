@@ -19,9 +19,9 @@ cc_library(
         ":string",
         ":zero_copy_stream",
         "//upb:base",
-        "//upb:lex",
         "//upb:mem",
         "//upb:port",
+        "//upb/lex",
     ],
 )
 
@@ -79,9 +79,9 @@ cc_test(
         ":string",
         ":tokenizer",
         ":zero_copy_stream",
-        "//upb:lex",
         "//upb:mem",
         "//upb:port",
+        "//upb/lex",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",

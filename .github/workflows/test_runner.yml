@@ -79,7 +79,9 @@ jobs:
         # unless this is specifically an event for adding the safe label.
         run: >
           ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
-          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests!" && exit 1)
+          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests." &&
+           echo "A protobuf team member will need to review the PR and add the 'safe for tests' tag." &&
+           exit 1)
 
       - name: Cache safe commit
         id: safe-checkout

@@ -120,7 +120,7 @@ ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state) {
   ABSL_ASSERT(next_stride >= 1);
   sampling_state.next_sample = next_stride;
   const int64_t old_stride =
-      absl::exchange(sampling_state.sample_stride, next_stride);
+      std::exchange(sampling_state.sample_stride, next_stride);
 
   // g_arenaz_enabled can be dynamically flipped, we need to set a threshold low
   // enough that we will start sampling in a reasonable time, so we just use the

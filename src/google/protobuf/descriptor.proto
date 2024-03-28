@@ -73,6 +73,7 @@ enum Edition {
   // should not be depended on, but they will always be time-ordered for easy
   // comparison.
   EDITION_2023 = 1000;
+  EDITION_2024 = 1001;
 
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relyed on outside of tests.
@@ -447,12 +448,16 @@ message FileOptions {
   // This option does nothing.
   optional bool java_generate_equals_and_hash = 20 [deprecated=true];
 
-  // If set true, then the Java2 code generator will generate code that
-  // throws an exception whenever an attempt is made to assign a non-UTF-8
-  // byte sequence to a string field.
-  // Message reflection will do the same.
-  // However, an extension field still accepts non-UTF-8 byte sequences.
-  // This option has no effect on when used with the lite runtime.
+  // A proto2 file can set this to true to opt in to UTF-8 checking for Java,
+  // which will throw an exception if invalid UTF-8 is parsed from the wire or
+  // assigned to a string field.
+  //
+  // TODO: clarify exactly what kinds of field types this option
+  // applies to, and update these docs accordingly.
+  //
+  // Proto3 files already perform these checks. Setting the option explicitly to
+  // false has no effect: it cannot be used to opt proto3 files out of UTF-8
+  // checks.
   optional bool java_string_check_utf8 = 27 [default = false];
 
   // Generated classes can be optimized for speed or code size.
@@ -695,19 +700,11 @@ message FieldOptions {
   // call from multiple threads concurrently, while non-const methods continue
   // to require exclusive access.
   //
-  // Note that implementations may choose not to check required fields within
-  // a lazy sub-message.  That is, calling IsInitialized() on the outer message
-  // may return true even if the inner message has missing required fields.
-  // This is necessary because otherwise the inner message would have to be
-  // parsed in order to perform the check, defeating the purpose of lazy
-  // parsing.  An implementation which chooses not to check required fields
-  // must be consistent about it.  That is, for any particular sub-message, the
-  // implementation must either *always* check its required fields, or *never*
-  // check its required fields, regardless of whether or not the message has
-  // been parsed.
-  //
-  // As of May 2022, lazy verifies the contents of the byte stream during
-  // parsing.  An invalid byte stream will cause the overall parsing to fail.
+  // Note that lazy message fields are still eagerly verified to check
+  // ill-formed wireformat or missing required fields. Calling IsInitialized()
+  // on the outer message would fail if the inner message has missing required
+  // fields. Failed verification would result in parsing failure (except when
+  // uninitialized messages are acceptable).
   optional bool lazy = 5 [default = false];
 
   // unverified_lazy does no correctness checks on the byte stream. This should
@@ -1021,8 +1018,12 @@ message FeatureSet {
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java
+  extensions 1002;  // for Protobuf Go
+
+  extensions 9990;  // for deprecated Java Proto1
 
   extensions 9995 to 9999;  // For internal testing
+  extensions 10000;         // for https://github.com/bufbuild/protobuf-es
 }
 
 // A compiled specification for the defaults of a set of features.  These

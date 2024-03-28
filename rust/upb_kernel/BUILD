@@ -10,5 +10,6 @@ cc_library(
     deps = [
         "//upb:mem",
         "//upb:message",
+        "//upb:message_copy",
     ],
 )

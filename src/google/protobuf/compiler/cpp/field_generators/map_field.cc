@@ -76,7 +76,6 @@ class Map : public FieldGeneratorBase {
   Map(const FieldDescriptor* field, const Options& opts,
       MessageSCCAnalyzer* scc)
       : FieldGeneratorBase(field, opts, scc),
-        field_(field),
         key_(field->message_type()->map_key()),
         val_(field->message_type()->map_value()),
         opts_(&opts),
@@ -168,7 +167,6 @@ class Map : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const FieldDescriptor* key_;
   const FieldDescriptor* val_;
   const Options* opts_;
@@ -215,20 +213,21 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
-    inline const $Map$& $Msg$::_internal_$name$() const {
+    inline const $Map$& $Msg$::_internal_$name_internal$() const {
       $TsanDetectConcurrentRead$;
       return $field_$.GetMap();
     }
   )cc");
   p->Emit(R"cc(
     inline const $Map$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_map:$pkg.Msg.field$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
   p->Emit(R"cc(
-    inline $Map$* $Msg$::_internal_mutable_$name$() {
+    inline $Map$* $Msg$::_internal_mutable_$name_internal$() {
       $PrepareSplitMessageForWrite$;
       $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
@@ -236,9 +235,10 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   )cc");
   p->Emit(R"cc(
     inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
-      return _internal_mutable_$name$();
+      return _internal_mutable_$name_internal$();
     }
   )cc");
 }

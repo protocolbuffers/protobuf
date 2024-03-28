@@ -28,15 +28,15 @@ cc_library(
         ":reader",
         "//third_party/utf8_range",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_accessors",
-        "//upb:message_tagged_ptr",
-        "//upb:message_types",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/base:internal",
+        "//upb/hash",
         "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_table:internal",
     ],
 )
@@ -44,11 +44,10 @@ cc_library(
 cc_library(
     name = "reader",
     srcs = [
+        "internal/reader.h",
         "reader.c",
     ],
     hdrs = [
-        "internal/endian.h",
-        "internal/reader.h",
         "reader.h",
         "types.h",
     ],
@@ -56,6 +55,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//upb:port",
+        "//upb/base:internal",
     ],
 )
 
@@ -105,6 +105,6 @@ filegroup(
             "**/*test.cc",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

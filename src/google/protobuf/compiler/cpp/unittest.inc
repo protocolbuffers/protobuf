@@ -555,7 +555,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
 TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructorWithArenas) {
   Arena arena;
   UNITTEST::TestAllTypes* message1 =
-      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena);
+      Arena::Create<UNITTEST::TestAllTypes>(&arena);
   TestUtil::SetAllFields(message1);
 
   UNITTEST::TestAllTypes message2_stack(*message1);
@@ -848,7 +848,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestEmbedOptimizedForSize) {
 TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
   // Allocate explicitly on the heap to prevent arena creation.
   std::unique_ptr<UNITTEST::TestAllTypes> message1(
-    Arena::CreateMessage<UNITTEST::TestAllTypes>(nullptr));
+      Arena::Create<UNITTEST::TestAllTypes>(nullptr));
   // sizeof provides a lower bound on SpaceUsedLong().
   EXPECT_LE(sizeof(UNITTEST::TestAllTypes), message1->SpaceUsedLong());
   const size_t empty_message_size = message1->SpaceUsedLong();
@@ -889,7 +889,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
 TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
   // Allocate explicitly on the heap to prevent arena creation.
   std::unique_ptr<UNITTEST::TestOneof2> message1(
-    Arena::CreateMessage<UNITTEST::TestOneof2>(nullptr));
+      Arena::Create<UNITTEST::TestOneof2>(nullptr));
   EXPECT_LE(sizeof(UNITTEST::TestOneof2), message1->SpaceUsedLong());
 
   const size_t empty_message_size = message1->SpaceUsedLong();
@@ -1595,8 +1595,7 @@ TEST_F(OneofTest, SetAllocatedString) {
 TEST_F(OneofTest, ArenaSetAllocatedString) {
   // Check that set_allocated_foo() works for strings.
   Arena arena;
-  UNITTEST::TestOneof2* message =
-      Arena::CreateMessage<UNITTEST::TestOneof2>(&arena);
+  UNITTEST::TestOneof2* message = Arena::Create<UNITTEST::TestOneof2>(&arena);
 
   EXPECT_FALSE(message->has_foo_string());
   const std::string kHello("hello");

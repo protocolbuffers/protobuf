@@ -14,7 +14,6 @@
 #include <stdint.h>
 
 #include "upb/base/string_view.h"
-#include "upb/message/tagged_ptr.h"
 
 typedef union {
   bool bool_val;
@@ -33,7 +32,7 @@ typedef union {
   // msg_val if unlinked sub-messages may possibly be in use.  See the
   // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
   // information.
-  upb_TaggedMessagePtr tagged_msg_val;
+  uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
 } upb_MessageValue;
 
 typedef union {

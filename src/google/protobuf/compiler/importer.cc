@@ -36,10 +36,6 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
-#ifdef _WIN32
-#include <ctype.h>
-#endif
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -51,12 +47,16 @@ using google::protobuf::io::win32::access;
 using google::protobuf::io::win32::open;
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "absl/strings/ascii.h"
+#endif
+
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in command_line_interface.cc?
 static bool IsWindowsAbsolutePath(absl::string_view text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-  return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
+  return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
 #else
   return false;

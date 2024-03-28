@@ -5,8 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
 #ifndef UPB_MESSAGE_INTERNAL_MAP_H_
 #define UPB_MESSAGE_INTERNAL_MAP_H_
 
@@ -17,16 +15,24 @@
 #include "upb/base/string_view.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
-#include "upb/message/map.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef enum {
+  kUpb_MapInsertStatus_Inserted = 0,
+  kUpb_MapInsertStatus_Replaced = 1,
+  kUpb_MapInsertStatus_OutOfMemory = 2,
+} upb_MapInsertStatus;
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 struct upb_Map {
   // Size of key and val, based on the map type.
   // Strings are represented as '0' because they must be handled specially.
   char key_size;
   char val_size;
+  bool UPB_PRIVATE(is_frozen);
 
   upb_strtable table;
 };
@@ -34,6 +40,14 @@ struct upb_Map {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_INLINE void UPB_PRIVATE(_upb_Map_ShallowFreeze)(struct upb_Map* map) {
+  map->UPB_PRIVATE(is_frozen) = true;
+}
+
+UPB_API_INLINE bool upb_Map_IsFrozen(const struct upb_Map* map) {
+  return map->UPB_PRIVATE(is_frozen);
+}
 
 // Converting between internal table representation and user values.
 //
@@ -92,11 +106,15 @@ UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
 }
 
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+
   upb_strtable_clear(&map->table);
 }
 
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
                                 size_t key_size, upb_value* val) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+
   upb_StringView k = _upb_map_tokey(key, key_size);
   return upb_strtable_remove2(&map->table, k.data, k.size, val);
 }
@@ -116,6 +134,8 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                const void* key, size_t key_size,
                                                void* val, size_t val_size,
                                                upb_Arena* a) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+
   upb_StringView strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {

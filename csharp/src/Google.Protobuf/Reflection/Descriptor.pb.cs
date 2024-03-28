@@ -182,7 +182,7 @@ namespace Google.Protobuf.Reflection {
             "dmVfaW50X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgFIAEo",
             "AxIUCgxkb3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcgASgM",
             "EhcKD2FnZ3JlZ2F0ZV92YWx1ZRgIIAEoCRozCghOYW1lUGFydBIRCgluYW1l",
-            "X3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9uGAIgAigIIp0JCgpGZWF0dXJl",
+            "X3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9uGAIgAigIIrUJCgpGZWF0dXJl",
             "U2V0EnwKDmZpZWxkX3ByZXNlbmNlGAEgASgOMikuZ29vZ2xlLnByb3RvYnVm",
             "LkZlYXR1cmVTZXQuRmllbGRQcmVzZW5jZUI5iAEBmAEEmAEBogENEghFWFBM",
             "SUNJVBjmB6IBDRIISU1QTElDSVQY5weiAQ0SCEVYUExJQ0lUGOgHElwKCWVu",
@@ -208,34 +208,35 @@ namespace Google.Protobuf.Reflection {
             "Z2VFbmNvZGluZxIcChhNRVNTQUdFX0VOQ09ESU5HX1VOS05PV04QABITCg9M",
             "RU5HVEhfUFJFRklYRUQQARINCglERUxJTUlURUQQAiJICgpKc29uRm9ybWF0",
             "EhcKE0pTT05fRk9STUFUX1VOS05PV04QABIJCgVBTExPVxABEhYKEkxFR0FD",
-            "WV9CRVNUX0VGRk9SVBACKgYI6AcQ6QcqBgjpBxDqByoGCItOEJBOSgYI5wcQ",
-            "6AciwAIKEkZlYXR1cmVTZXREZWZhdWx0cxJOCghkZWZhdWx0cxgBIAMoCzI8",
-            "Lmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0RGVmYXVsdHMuRmVhdHVyZVNl",
-            "dEVkaXRpb25EZWZhdWx0EjEKD21pbmltdW1fZWRpdGlvbhgEIAEoDjIYLmdv",
-            "b2dsZS5wcm90b2J1Zi5FZGl0aW9uEjEKD21heGltdW1fZWRpdGlvbhgFIAEo",
-            "DjIYLmdvb2dsZS5wcm90b2J1Zi5FZGl0aW9uGnQKGEZlYXR1cmVTZXRFZGl0",
-            "aW9uRGVmYXVsdBIpCgdlZGl0aW9uGAMgASgOMhguZ29vZ2xlLnByb3RvYnVm",
-            "LkVkaXRpb24SLQoIZmVhdHVyZXMYAiABKAsyGy5nb29nbGUucHJvdG9idWYu",
-            "RmVhdHVyZVNldCLVAQoOU291cmNlQ29kZUluZm8SOgoIbG9jYXRpb24YASAD",
-            "KAsyKC5nb29nbGUucHJvdG9idWYuU291cmNlQ29kZUluZm8uTG9jYXRpb24a",
-            "hgEKCExvY2F0aW9uEhAKBHBhdGgYASADKAVCAhABEhAKBHNwYW4YAiADKAVC",
-            "AhABEhgKEGxlYWRpbmdfY29tbWVudHMYAyABKAkSGQoRdHJhaWxpbmdfY29t",
-            "bWVudHMYBCABKAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50cxgGIAMo",
-            "CSKcAgoRR2VuZXJhdGVkQ29kZUluZm8SQQoKYW5ub3RhdGlvbhgBIAMoCzIt",
-            "Lmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9u",
-            "GsMBCgpBbm5vdGF0aW9uEhAKBHBhdGgYASADKAVCAhABEhMKC3NvdXJjZV9m",
-            "aWxlGAIgASgJEg0KBWJlZ2luGAMgASgFEgsKA2VuZBgEIAEoBRJICghzZW1h",
-            "bnRpYxgFIAEoDjI2Lmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5m",
-            "by5Bbm5vdGF0aW9uLlNlbWFudGljIigKCFNlbWFudGljEggKBE5PTkUQABIH",
-            "CgNTRVQQARIJCgVBTElBUxACKv8BCgdFZGl0aW9uEhMKD0VESVRJT05fVU5L",
-            "Tk9XThAAEhMKDkVESVRJT05fUFJPVE8yEOYHEhMKDkVESVRJT05fUFJPVE8z",
-            "EOcHEhEKDEVESVRJT05fMjAyMxDoBxIXChNFRElUSU9OXzFfVEVTVF9PTkxZ",
-            "EAESFwoTRURJVElPTl8yX1RFU1RfT05MWRACEh0KF0VESVRJT05fOTk5OTdf",
-            "VEVTVF9PTkxZEJ2NBhIdChdFRElUSU9OXzk5OTk4X1RFU1RfT05MWRCejQYS",
-            "HQoXRURJVElPTl85OTk5OV9URVNUX09OTFkQn40GEhMKC0VESVRJT05fTUFY",
-            "EP////8HQn4KE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2NyaXB0b3JQcm90",
-            "b3NIAVotZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMvZGVzY3Jp",
-            "cHRvcnBi+AEBogIDR1BCqgIaR29vZ2xlLlByb3RvYnVmLlJlZmxlY3Rpb24="));
+            "WV9CRVNUX0VGRk9SVBACKgYI6AcQ6QcqBgjpBxDqByoGCOoHEOsHKgYIhk4Q",
+            "h04qBgiLThCQTioGCJBOEJFOSgYI5wcQ6AciwAIKEkZlYXR1cmVTZXREZWZh",
+            "dWx0cxJOCghkZWZhdWx0cxgBIAMoCzI8Lmdvb2dsZS5wcm90b2J1Zi5GZWF0",
+            "dXJlU2V0RGVmYXVsdHMuRmVhdHVyZVNldEVkaXRpb25EZWZhdWx0EjEKD21p",
+            "bmltdW1fZWRpdGlvbhgEIAEoDjIYLmdvb2dsZS5wcm90b2J1Zi5FZGl0aW9u",
+            "EjEKD21heGltdW1fZWRpdGlvbhgFIAEoDjIYLmdvb2dsZS5wcm90b2J1Zi5F",
+            "ZGl0aW9uGnQKGEZlYXR1cmVTZXRFZGl0aW9uRGVmYXVsdBIpCgdlZGl0aW9u",
+            "GAMgASgOMhguZ29vZ2xlLnByb3RvYnVmLkVkaXRpb24SLQoIZmVhdHVyZXMY",
+            "AiABKAsyGy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldCLVAQoOU291cmNl",
+            "Q29kZUluZm8SOgoIbG9jYXRpb24YASADKAsyKC5nb29nbGUucHJvdG9idWYu",
+            "U291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0aW9uEhAKBHBhdGgY",
+            "ASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxlYWRpbmdfY29tbWVu",
+            "dHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCABKAkSIQoZbGVhZGlu",
+            "Z19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKcAgoRR2VuZXJhdGVkQ29kZUlu",
+            "Zm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5HZW5l",
+            "cmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGsMBCgpBbm5vdGF0aW9uEhAKBHBh",
+            "dGgYASADKAVCAhABEhMKC3NvdXJjZV9maWxlGAIgASgJEg0KBWJlZ2luGAMg",
+            "ASgFEgsKA2VuZBgEIAEoBRJICghzZW1hbnRpYxgFIAEoDjI2Lmdvb2dsZS5w",
+            "cm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uLlNlbWFudGlj",
+            "IigKCFNlbWFudGljEggKBE5PTkUQABIHCgNTRVQQARIJCgVBTElBUxACKpIC",
+            "CgdFZGl0aW9uEhMKD0VESVRJT05fVU5LTk9XThAAEhMKDkVESVRJT05fUFJP",
+            "VE8yEOYHEhMKDkVESVRJT05fUFJPVE8zEOcHEhEKDEVESVRJT05fMjAyMxDo",
+            "BxIRCgxFRElUSU9OXzIwMjQQ6QcSFwoTRURJVElPTl8xX1RFU1RfT05MWRAB",
+            "EhcKE0VESVRJT05fMl9URVNUX09OTFkQAhIdChdFRElUSU9OXzk5OTk3X1RF",
+            "U1RfT05MWRCdjQYSHQoXRURJVElPTl85OTk5OF9URVNUX09OTFkQno0GEh0K",
+            "F0VESVRJT05fOTk5OTlfVEVTVF9PTkxZEJ+NBhITCgtFRElUSU9OX01BWBD/",
+            "////B0J+ChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJvdG9z",
+            "SAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rlc2NyaXB0",
+            "b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -291,6 +292,7 @@ namespace Google.Protobuf.Reflection {
     /// comparison.
     /// </summary>
     [pbr::OriginalName("EDITION_2023")] _2023 = 1000,
+    [pbr::OriginalName("EDITION_2024")] _2024 = 1001,
     /// <summary>
     /// Placeholder editions for testing feature resolution.  These should not be
     /// used or relyed on outside of tests.
@@ -6029,12 +6031,16 @@ namespace Google.Protobuf.Reflection {
 
     private bool javaStringCheckUtf8_;
     /// <summary>
-    /// If set true, then the Java2 code generator will generate code that
-    /// throws an exception whenever an attempt is made to assign a non-UTF-8
-    /// byte sequence to a string field.
-    /// Message reflection will do the same.
-    /// However, an extension field still accepts non-UTF-8 byte sequences.
-    /// This option has no effect on when used with the lite runtime.
+    /// A proto2 file can set this to true to opt in to UTF-8 checking for Java,
+    /// which will throw an exception if invalid UTF-8 is parsed from the wire or
+    /// assigned to a string field.
+    ///
+    /// TODO: clarify exactly what kinds of field types this option
+    /// applies to, and update these docs accordingly.
+    ///
+    /// Proto3 files already perform these checks. Setting the option explicitly to
+    /// false has no effect: it cannot be used to opt proto3 files out of UTF-8
+    /// checks.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -8002,19 +8008,11 @@ namespace Google.Protobuf.Reflection {
     /// call from multiple threads concurrently, while non-const methods continue
     /// to require exclusive access.
     ///
-    /// Note that implementations may choose not to check required fields within
-    /// a lazy sub-message.  That is, calling IsInitialized() on the outer message
-    /// may return true even if the inner message has missing required fields.
-    /// This is necessary because otherwise the inner message would have to be
-    /// parsed in order to perform the check, defeating the purpose of lazy
-    /// parsing.  An implementation which chooses not to check required fields
-    /// must be consistent about it.  That is, for any particular sub-message, the
-    /// implementation must either *always* check its required fields, or *never*
-    /// check its required fields, regardless of whether or not the message has
-    /// been parsed.
-    ///
-    /// As of May 2022, lazy verifies the contents of the byte stream during
-    /// parsing.  An invalid byte stream will cause the overall parsing to fail.
+    /// Note that lazy message fields are still eagerly verified to check
+    /// ill-formed wireformat or missing required fields. Calling IsInitialized()
+    /// on the outer message would fail if the inner message has missing required
+    /// fields. Failed verification would result in parsing failure (except when
+    /// uninitialized messages are acceptable).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

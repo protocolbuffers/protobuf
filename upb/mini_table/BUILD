@@ -30,9 +30,9 @@ cc_library(
     deps = [
         ":internal",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
+        "//upb/hash",
     ],
 )
 
@@ -56,6 +56,8 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:port",
+        "//upb/hash",
+        "//upb/message:types",
     ],
 )
 
@@ -72,9 +74,9 @@ cc_library(
     deps = [
         ":mini_table",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
+        "//upb/hash",
     ],
 )
 
@@ -115,6 +117,6 @@ filegroup(
             "**/*test.cc",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

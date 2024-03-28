@@ -777,7 +777,7 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   EXPECT_EQ(trimed_msg.DebugString(), default_msg.DebugString());
   trimed_msg.Clear();
 
-  // If there is no field set other then those whitelisted,
+  // If there is no field set other then those allowlisted,
   // FieldMaskUtil::TrimMessage() should return false.
   trimed_msg.set_optional_int32(123);
   EXPECT_FALSE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));

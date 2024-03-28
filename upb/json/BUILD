@@ -7,6 +7,10 @@ load(
     "upb_proto_reflection_library",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//upb:license"])
+# end:google_only
+
 cc_library(
     name = "json",
     srcs = [
@@ -21,14 +25,13 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:lex",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_types",
         "//upb:mini_table",
         "//upb:port",
         "//upb:reflection",
         "//upb:wire",
+        "//upb/lex",
     ],
 )
 
@@ -103,7 +106,6 @@ upb_c_proto_library(
 #         "//upb:base",
 #         "//upb:mem",
 #         "//upb:message",
-#         "//upb:message_types",
 #         "//upb:mini_table",
 #         "//upb:reflection",
 #     ],
@@ -117,17 +119,18 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["fuzz_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_protos",
     srcs = glob(
         [
             "**/*test.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

@@ -180,6 +180,12 @@ PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec);
 PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
                                       PyObject* bases);
 
+// Like PyUpb_AddClass(), but allows you to specify a tuple of base classes in
+// `bases` to register as a "virtual subclass" with mixin methods.
+PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
+                                         PyObject* virtual_base,
+                                         const char** methods);
+
 // A function that implements the tp_new slot for types that we do not allow
 // users to create directly. This will immediately fail with an error message.
 PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds);

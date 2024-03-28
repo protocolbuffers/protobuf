@@ -1,8 +1,8 @@
 # Protobuf Rust runtime packages.
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 package(
     default_visibility = [
@@ -127,7 +127,7 @@ rust_library(
 
 proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
-    command_line = "--rust_out=experimental-codegen=enabled,kernel=upb:$(OUT)",
+    command_line = "--rust_out=$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_upb",
     visibility = ["//visibility:public"],
@@ -135,7 +135,7 @@ proto_lang_toolchain(
 
 proto_lang_toolchain(
     name = "proto_rust_cpp_toolchain",
-    command_line = "--rust_out=experimental-codegen=enabled,kernel=cpp:$(OUT)",
+    command_line = "--rust_out=$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_cpp",
     visibility = ["//visibility:public"],

@@ -11,6 +11,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.

@@ -137,13 +137,23 @@ public final class Timestamps {
    */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static boolean isValid(long seconds, int nanos) {
-    if (seconds < TIMESTAMP_SECONDS_MIN || seconds > TIMESTAMP_SECONDS_MAX) {
+    if (!isValidSeconds(seconds)) {
       return false;
     }
     if (nanos < 0 || nanos >= NANOS_PER_SECOND) {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Returns true if the given number of seconds is valid, if combined with a valid number of nanos.
+   * The {@code seconds} value must be in the range [-62,135,596,800, +253,402,300,799] (i.e.,
+   * between 0001-01-01T00:00:00Z and 9999-12-31T23:59:59Z).
+   */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
+  private static boolean isValidSeconds(long seconds) {
+    return seconds >= TIMESTAMP_SECONDS_MIN && seconds <= TIMESTAMP_SECONDS_MAX;
   }
 
   /** Throws an {@link IllegalArgumentException} if the given {@link Timestamp} is not valid. */
@@ -174,9 +184,9 @@ public final class Timestamps {
 
   /**
    * Convert Timestamp to RFC 3339 date string format. The output will always be Z-normalized and
-   * uses 3, 6 or 9 fractional digits as required to represent the exact value. Note that Timestamp
-   * can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. See
-   * https://www.ietf.org/rfc/rfc3339.txt
+   * uses 0, 3, 6 or 9 fractional digits as required to represent the exact value. Note that
+   * Timestamp can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
+   * See https://www.ietf.org/rfc/rfc3339.txt
    *
    * <p>Example of generated format: "1972-01-01T10:00:20.021Z"
    *
@@ -487,6 +497,15 @@ public final class Timestamps {
   }
 
   static Timestamp normalizedTimestamp(long seconds, int nanos) {
+    // This only checks seconds, because nanos can intentionally overflow to increment the seconds
+    // when normalized.
+    if (!isValidSeconds(seconds)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Timestamp is not valid. Input seconds is too large. "
+                  + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. ",
+              seconds));
+    }
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
       nanos = (int) (nanos % NANOS_PER_SECOND);

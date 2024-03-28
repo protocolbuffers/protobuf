@@ -54,7 +54,7 @@ class Amalgamator:
     self.output_c.write('#include "%s"\n' % (self.h_out))
     if self.h_out == "ruby-upb.h":
       self.output_h.write("// Ruby is still using proto3 enum semantics for proto2\n")
-      self.output_h.write("#define UPB_DISABLE_PROTO2_ENUM_CHECKING\n")
+      self.output_h.write("#define UPB_DISABLE_CLOSED_ENUM_CHECKING\n")
 
     self.output_h.write("/* Amalgamated source file */\n")
 

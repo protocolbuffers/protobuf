@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package stress_test_protos;
+
+message TestMessage {
+  optional int32 a = 1;
+  repeated M b = 2;
+}
+
+message M {
+  optional string foo = 1;
+}

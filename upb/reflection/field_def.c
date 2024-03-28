@@ -19,7 +19,6 @@
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
-#include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
@@ -111,26 +110,15 @@ upb_CType upb_FieldDef_CType(const upb_FieldDef* f) {
   return upb_FieldType_CType(f->type_);
 }
 
-upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) {
-  // TODO: remove once we can deprecate kUpb_FieldType_Group.
-  if (f->type_ == kUpb_FieldType_Message &&
-      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-          UPB_DESC(FeatureSet_DELIMITED)) {
-    return kUpb_FieldType_Group;
-  }
-  return f->type_;
-}
+upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) { return f->type_; }
 
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f) { return f->index_; }
 
-upb_Label upb_FieldDef_Label(const upb_FieldDef* f) {
-  // TODO: remove once we can deprecate kUpb_Label_Required.
-  if (UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
-      UPB_DESC(FeatureSet_LEGACY_REQUIRED)) {
-    return kUpb_Label_Required;
-  }
-  return f->label_;
+uint32_t upb_FieldDef_LayoutIndex(const upb_FieldDef* f) {
+  return f->layout_index;
 }
+
+upb_Label upb_FieldDef_Label(const upb_FieldDef* f) { return f->label_; }
 
 uint32_t upb_FieldDef_Number(const upb_FieldDef* f) { return f->number_; }
 
@@ -238,7 +226,7 @@ const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
   }
 }
 
-const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
+const upb_MiniTableExtension* upb_FieldDef_MiniTableExtension(
     const upb_FieldDef* f) {
   UPB_ASSERT(upb_FieldDef_IsExtension(f));
   const upb_FileDef* file = upb_FieldDef_File(f);
@@ -593,7 +581,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   const upb_StringView name = UPB_DESC(FieldDescriptorProto_name)(field_proto);
   f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
   f->number_ = UPB_DESC(FieldDescriptorProto_number)(field_proto);
   f->is_proto3_optional =
       UPB_DESC(FieldDescriptorProto_proto3_optional)(field_proto);
@@ -639,6 +626,14 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   f->resolved_features = _upb_DefBuilder_DoResolveFeatures(
       ctx, parent_features, unresolved_features, implicit);
 
+  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
+  if (f->label_ == kUpb_Label_Optional &&
+      // TODO: remove once we can deprecate kUpb_Label_Required.
+      UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
+          UPB_DESC(FeatureSet_LEGACY_REQUIRED)) {
+    f->label_ = kUpb_Label_Required;
+  }
+
   if (!UPB_DESC(FieldDescriptorProto_has_name)(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "field has no name");
   }
@@ -658,6 +653,12 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
 
   f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
+  if (f->type_ == kUpb_FieldType_Message &&
+      // TODO: remove once we can deprecate kUpb_FieldType_Group.
+      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+          UPB_DESC(FeatureSet_DELIMITED)) {
+    f->type_ = kUpb_FieldType_Group;
+  }
 
   if (has_type) {
     switch (f->type_) {
@@ -707,10 +708,11 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->type_ == kUpb_FieldType_Message || f->type_ == kUpb_FieldType_Group ||
-       upb_FieldDef_ContainingOneof(f) ||
-       UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
-           UPB_DESC(FeatureSet_IMPLICIT));
+      (f->is_extension ||
+       (f->type_ == kUpb_FieldType_Message ||
+        f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
+        UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
+            UPB_DESC(FeatureSet_IMPLICIT)));
 }
 
 static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
@@ -732,7 +734,7 @@ static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,
 
   if (ctx->layout) {
     UPB_ASSERT(upb_MiniTableExtension_Number(
-                   _upb_FieldDef_ExtensionMiniTable(f)) == f->number_);
+                   upb_FieldDef_MiniTableExtension(f)) == f->number_);
   }
 }
 
@@ -924,7 +926,7 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
 
 void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
                                            const upb_FieldDef* f) {
-  const upb_MiniTableExtension* ext = _upb_FieldDef_ExtensionMiniTable(f);
+  const upb_MiniTableExtension* ext = upb_FieldDef_MiniTableExtension(f);
 
   if (ctx->layout) {
     UPB_ASSERT(upb_FieldDef_Number(f) == upb_MiniTableExtension_Number(ext));

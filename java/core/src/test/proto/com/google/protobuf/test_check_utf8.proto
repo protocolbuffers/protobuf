@@ -8,21 +8,23 @@
 // Author: Jacob Butcher (jbaum@google.com)
 //
 // Test file option java_string_check_utf8.
-syntax = "proto2";
+edition = "2023";
 
 package proto2_test_check_utf8;
 
+option features.utf8_validation = VERIFY;
 option java_outer_classname = "TestCheckUtf8";
-option java_string_check_utf8 = true;
 
 message StringWrapper {
-  required string req = 1;
-  optional string opt = 2;
+  string req = 1 [features.field_presence = LEGACY_REQUIRED];
+
+  string opt = 2;
   repeated string rep = 3;
 }
 
 message BytesWrapper {
-  required bytes req = 1;
-  optional bytes opt = 2;
+  bytes req = 1 [features.field_presence = LEGACY_REQUIRED];
+
+  bytes opt = 2;
   repeated bytes rep = 3;
 }

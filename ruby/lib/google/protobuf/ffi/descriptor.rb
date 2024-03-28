@@ -100,7 +100,9 @@ module Google
           size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
           temporary_arena = Google::Protobuf::FFI.create_arena
           buffer = Google::Protobuf::FFI.message_options(self, size_ptr, temporary_arena)
-          Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).send(:internal_deep_freeze)
+          opts = Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+          opts.clear_features()
+          opts.freeze
         end
       end
 
@@ -138,7 +140,7 @@ module Google
         message = OBJECT_CACHE.get(msg.address)
         if message.nil?
           message = descriptor.msgclass.send(:private_constructor, arena, msg: msg)
-          message.send :internal_deep_freeze if frozen?
+          message.freeze if frozen?
         end
         message
       end
@@ -158,7 +160,6 @@ module Google
       attach_function :oneof_count,          :upb_MessageDef_OneofCount,              [Descriptor], :int
       attach_function :message_options,      :Descriptor_serialized_options,          [Descriptor, :pointer, Internal::Arena], :pointer
       attach_function :get_well_known_type,  :upb_MessageDef_WellKnownType,           [Descriptor], WellKnown
-      attach_function :message_def_syntax,   :upb_MessageDef_Syntax,                  [Descriptor], Syntax
       attach_function :find_msg_def_by_name, :upb_MessageDef_FindByNameWithSize,      [Descriptor, :string, :size_t, :FieldDefPointer, :OneofDefPointer], :bool
     end
   end

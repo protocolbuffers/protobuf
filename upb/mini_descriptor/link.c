@@ -72,13 +72,13 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
   return true;
 }
 
-uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
+uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* m,
                                   const upb_MiniTableField** subs) {
   uint32_t msg_count = 0;
   uint32_t enum_count = 0;
 
-  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
-    const upb_MiniTableField* f = &mt->UPB_PRIVATE(fields)[i];
+  for (int i = 0; i < upb_MiniTable_FieldCount(m); i++) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
     if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
       *subs = f;
       ++subs;
@@ -86,9 +86,9 @@ uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
     }
   }
 
-  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
-    const upb_MiniTableField* f = &mt->UPB_PRIVATE(fields)[i];
-    if (upb_MiniTableField_CType(f) == kUpb_CType_Enum) {
+  for (int i = 0; i < upb_MiniTable_FieldCount(m); i++) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
+    if (upb_MiniTableField_IsClosedEnum(f)) {
       *subs = f;
       ++subs;
       enum_count++;
@@ -101,34 +101,32 @@ uint32_t upb_MiniTable_GetSubList(const upb_MiniTable* mt,
 // The list of sub_tables and sub_enums must exactly match the number and order
 // of sub-message fields and sub-enum fields given by upb_MiniTable_GetSubList()
 // above.
-bool upb_MiniTable_Link(upb_MiniTable* mt, const upb_MiniTable** sub_tables,
+bool upb_MiniTable_Link(upb_MiniTable* m, const upb_MiniTable** sub_tables,
                         size_t sub_table_count,
                         const upb_MiniTableEnum** sub_enums,
                         size_t sub_enum_count) {
   uint32_t msg_count = 0;
   uint32_t enum_count = 0;
 
-  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
-    upb_MiniTableField* f = (upb_MiniTableField*)&mt->UPB_PRIVATE(fields)[i];
+  for (int i = 0; i < upb_MiniTable_FieldCount(m); i++) {
+    upb_MiniTableField* f =
+        (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(m, i);
     if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
       const upb_MiniTable* sub = sub_tables[msg_count++];
       if (msg_count > sub_table_count) return false;
-      if (sub != NULL) {
-        if (!upb_MiniTable_SetSubMessage(mt, f, sub)) return false;
-      }
+      if (sub && !upb_MiniTable_SetSubMessage(m, f, sub)) return false;
     }
   }
 
-  for (int i = 0; i < mt->UPB_PRIVATE(field_count); i++) {
-    upb_MiniTableField* f = (upb_MiniTableField*)&mt->UPB_PRIVATE(fields)[i];
+  for (int i = 0; i < upb_MiniTable_FieldCount(m); i++) {
+    upb_MiniTableField* f =
+        (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(m, i);
     if (upb_MiniTableField_IsClosedEnum(f)) {
       const upb_MiniTableEnum* sub = sub_enums[enum_count++];
       if (enum_count > sub_enum_count) return false;
-      if (sub != NULL) {
-        if (!upb_MiniTable_SetSubEnum(mt, f, sub)) return false;
-      }
+      if (sub && !upb_MiniTable_SetSubEnum(m, f, sub)) return false;
     }
   }
 
-  return true;
+  return (msg_count == sub_table_count) && (enum_count == sub_enum_count);
 }

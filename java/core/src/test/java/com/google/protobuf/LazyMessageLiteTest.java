@@ -24,6 +24,7 @@ import org.junit.runners.JUnit4;
 public class LazyMessageLiteTest {
 
   @Test
+  @SuppressWarnings("RedundantSetterCall")
   public void testSetValues() {
     LazyNestedInnerMessageLite nested = LazyNestedInnerMessageLite.newBuilder().setNum(3).build();
     LazyInnerMessageLite inner =

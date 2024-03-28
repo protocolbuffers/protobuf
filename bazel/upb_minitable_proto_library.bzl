@@ -65,7 +65,6 @@ def _upb_minitable_proto_library_rule_impl(ctx):
     return upb_proto_rule_impl(ctx, UpbMinitableCcInfo, _UpbWrappedGeneratedSrcsInfo)
 
 upb_minitable_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _upb_minitable_proto_library_rule_impl,
     attrs = {
         "deps": attr.label_list(

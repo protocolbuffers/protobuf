@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.25.0</version>
+    <version>4.27.0</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -47,6 +47,7 @@
         <includes>
           <include>google/protobuf/any.proto</include>
           <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/descriptor.proto</include>
           <include>google/protobuf/duration.proto</include>
           <include>google/protobuf/empty.proto</include>
           <include>google/protobuf/field_mask.proto</include>
@@ -55,6 +56,12 @@
           <include>google/protobuf/timestamp.proto</include>
           <include>google/protobuf/type.proto</include>
           <include>google/protobuf/wrappers.proto</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${protobuf.java_source.dir}</directory>
+        <includes>
+          <include>google/protobuf/java_features.proto</include>
         </includes>
       </resource>
     </resources>
@@ -214,6 +221,7 @@
                     <exclude>GeneratedMessageTest.java</exclude>
                     <exclude>LazyFieldTest.java</exclude>
                     <exclude>LazyStringEndToEndTest.java</exclude>
+                    <exclude>LazilyParsedMessageSetTest.java</exclude>
                     <exclude>MapForProto2Test.java</exclude>
                     <exclude>MapTest.java</exclude>
                     <exclude>MessageTest.java</exclude>
@@ -224,10 +232,9 @@
                     <exclude>Proto2ExtensionLookupSchemaTest.java</exclude>
                     <exclude>Proto2SchemaTest.java</exclude>
                     <exclude>Proto2UnknownEnumValueTest.java</exclude>
-                    <exclude>RepeatedFieldBuilderV3Test.java</exclude>
-                    <exclude>RuntimeVersionTest.java</exclude>
+                    <exclude>RepeatedFieldBuilderTest.java</exclude>
                     <exclude>ServiceTest.java</exclude>
-                    <exclude>SingleFieldBuilderV3Test.java</exclude>
+                    <exclude>SingleFieldBuilderTest.java</exclude>
                     <exclude>TestBadIdentifiers.java</exclude>
                     <exclude>TextFormatParseInfoTreeTest.java</exclude>
                     <exclude>TextFormatParseLocationTest.java</exclude>

@@ -55,7 +55,9 @@ struct Options {
   bool opensource_runtime = false;
   bool annotate_accessor = false;
   bool force_split = false;
-  bool profile_driven_cluster_aux_subtable = false;
+  // TODO: clean this up after the change is rolled out for 2
+  // weeks.
+  bool profile_driven_cluster_aux_subtable = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;

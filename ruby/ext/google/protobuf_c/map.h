@@ -39,6 +39,6 @@ extern VALUE cMap;
 void Map_register(VALUE module);
 
 // Recursively freeze map
-VALUE Map_internal_deep_freeze(VALUE _self);
+VALUE Map_freeze(VALUE _self);
 
 #endif  // RUBY_PROTOBUF_MAP_H_

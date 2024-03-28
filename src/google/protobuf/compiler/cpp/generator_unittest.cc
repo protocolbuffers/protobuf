@@ -69,14 +69,13 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
                  R"schema(
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
-    
+
     message Foo {
       int32 bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
     })schema");
 
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
-      "--experimental_editions foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectErrorSubstring(
       "Field Foo.bar specifies the legacy_closed_enum feature but has non-enum "
@@ -97,8 +96,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
     })schema");
 
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
-      "--experimental_editions foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectNoErrors();
 }
@@ -109,7 +107,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
-    
+
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
     }
@@ -119,8 +117,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
     })schema");
 
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
-      "--experimental_editions foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectNoErrors();
 }
@@ -130,7 +127,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
     edition = "2023";
     import "google/protobuf/cpp_features.proto";
     option features.(pb.cpp).legacy_closed_enum = true;
-    
+
     enum TestEnum {
       TEST_ENUM_UNKNOWN = 0;
     }
@@ -141,14 +138,106 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
   )schema");
 
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
-      "--experimental_editions foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectErrorSubstring(
       "Field Foo.bar has a closed enum type with implicit presence.");
 }
 
-#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+TEST_F(CppGeneratorTest, NoStringTypeTillEdition2024) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.baz specifies string_type which is not currently allowed.");
+}
+
+TEST_F(CppGeneratorTest, StringTypeForCord) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, CtypeForCord) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+
+    message Foo {
+      int32 bar = 1;
+      bytes baz = 2 [ctype = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, StringTypeForStringFieldsOnly) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      int32 bar = 1;
+      int32 baz = 2 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Field Foo.baz specifies string_type, but is not a string nor bytes "
+      "field.");
+}
+
+TEST_F(CppGeneratorTest, StringTypeCordNotForExtension) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/cpp_features.proto";
+
+    message Foo {
+      extensions 1 to max;
+    }
+    extend Foo {
+      bytes bar = 1 [features.(pb.cpp).string_type = CORD];
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--experimental_editions foo.proto");
+
+  ExpectErrorSubstring(
+      "Extension bar specifies string_type=CORD which is not supported for "
+      "extensions.");
+}
+
 TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -157,8 +246,7 @@ TEST_F(CppGeneratorTest, CtypeOnNoneStringFieldTest) {
       int32 bar = 1 [ctype=STRING];
     })schema");
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
-      "--experimental_editions foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "Field Foo.bar specifies ctype, but is not "
       "a string nor bytes field.");
@@ -175,13 +263,11 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       bytes bar = 1 [ctype=CORD];
     })schema");
   RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
-      "--experimental_editions foo.proto");
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "Extension bar specifies ctype=CORD which is "
       "not supported for extensions.");
 }
-#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler

@@ -1529,10 +1529,6 @@ static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
-static PyObject* GetEdition(PyFileDescriptor* self, void* closure) {
-  return PyLong_FromLong(_GetDescriptor(self)->edition());
-}
-
 static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
   return CopyToPythonProto<FileDescriptorProto>(_GetDescriptor(self), target);
 }
@@ -1559,7 +1555,6 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
-    {"edition", (getter)GetEdition, (setter) nullptr, "Edition"},
     {nullptr},
 };
 

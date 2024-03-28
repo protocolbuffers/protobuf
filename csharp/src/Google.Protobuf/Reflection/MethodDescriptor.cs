@@ -17,7 +17,6 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class MethodDescriptor : DescriptorBase
     {
-
         /// <value>
         /// The service this method belongs to.
         /// </value>
@@ -55,7 +54,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public MethodOptions GetOptions() => Proto.Options?.Clone();
+        public MethodOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value method option for this descriptor
@@ -78,7 +88,7 @@ namespace Google.Protobuf.Reflection
 
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
-            : base(file, parent.FullName + "." + proto.Name, index)
+            : base(file, parent.FullName + "." + proto.Name, index, parent.Features.MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Service = parent;
@@ -118,4 +128,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 

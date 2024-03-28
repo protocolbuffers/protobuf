@@ -5,8 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load("//bazel:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 
@@ -23,7 +23,7 @@ load(
 # end:github_only
 
 # begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
+# package(default_applicable_licenses = [":license"])
 #
 # license(
 #     name = "license",
@@ -79,20 +79,6 @@ package_group(
     packages = ["//..."],
 )
 
-cc_library(
-    name = "upb",
-    hdrs = [
-        "upb.hpp",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    deprecation = "use upb:base and/or upb:mem instead",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":mem",
-    ],
-)
-
 # Common support routines used by generated code.  This library has no
 # implementation, but depends on :upb and exposes a few more hdrs.
 #
@@ -111,10 +97,10 @@ cc_library(
         ":base",
         ":mem",
         ":message",
-        ":message_accessors",
         ":mini_descriptor",
         ":mini_table",
         ":wire",
+        "//upb/message:internal",
     ],
 )
 
@@ -134,13 +120,6 @@ cc_library(
 alias(
     name = "base",
     actual = "//upb/base",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "collections",
-    actual = "//upb/collections",
-    deprecation = "use upb:message instead",
     visibility = ["//visibility:public"],
 )
 
@@ -169,20 +148,8 @@ alias(
 )
 
 alias(
-    name = "hash",
-    actual = "//upb/hash",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "json",
     actual = "//upb/json",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "lex",
-    actual = "//upb/lex",
     visibility = ["//visibility:public"],
 )
 
@@ -195,12 +162,6 @@ alias(
 alias(
     name = "message",
     actual = "//upb/message",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_accessors",
-    actual = "//upb/message:accessors",
     visibility = ["//visibility:public"],
 )
 
@@ -225,24 +186,6 @@ alias(
 alias(
     name = "message_split64",
     actual = "//upb/message:split64",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_tagged_ptr",
-    actual = "//upb/message:tagged_ptr",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "message_types",
-    actual = "//upb/message:types",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_value",
-    actual = "//upb/message:value",
     visibility = ["//visibility:public"],
 )
 
@@ -283,12 +226,6 @@ alias(
 )
 
 alias(
-    name = "reflection_internal",
-    actual = "//upb/reflection:internal",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "text",
     actual = "//upb/text",
     visibility = ["//visibility:public"],
@@ -312,28 +249,6 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# Internal C/C++ libraries #####################################################
-
-cc_binary(
-    name = "libupb.so",
-    srcs = ["upb_so.c"],
-    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
-    linkshared = 1,
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mem",
-        ":message",
-        ":message_accessors",
-        ":message_compare",
-        ":message_split64",
-        ":mini_descriptor",
-        ":mini_table",
-        ":port",
-        ":wire",
-    ],
-)
-
 # Amalgamation #################################################################
 
 # begin:github_only
@@ -350,28 +265,26 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
-        ":lex",
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_copy",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
         ":mini_table",
         ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
         ":wire_reader",
         "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
         "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -397,29 +310,27 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_copy",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
         ":mini_table",
         ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
         ":wire_reader",
         "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
         "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -446,29 +357,27 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ":hash",
         ":json",
-        ":lex",
         ":mem",
         ":message",
-        ":message_accessors",
         ":message_compare",
         ":message_copy",
-        ":message_tagged_ptr",
-        ":message_types",
-        ":message_value",
         ":mini_descriptor",
         ":mini_table",
         ":mini_table_compat",
         ":port",
         ":reflection",
-        ":reflection_internal",
         ":wire",
         ":wire_reader",
         "//upb/base:internal",
+        "//upb/hash:hash",
+        "//upb/lex:lex",
         "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
@@ -495,9 +404,7 @@ filegroup(
     name = "source_files",
     srcs = glob(
         [
-            "**/*.c",
             "**/*.h",
-            "**/*.hpp",
         ],
         exclude = [
             "**/conformance_upb.c",
@@ -508,6 +415,42 @@ filegroup(
         "//python/dist:__pkg__",
         "//upb/cmake:__pkg__",
     ],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = [
+        "//src/google/protobuf:test_messages_proto2.proto",
+        "//src/google/protobuf:test_messages_proto3.proto",
+        "//src/google/protobuf:well_known_type_protos",
+        "//upb/json:test_protos",
+        "//upb/message:test_protos",
+        "//upb/test:test_protos",
+        "//upb/util:test_protos",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = [
+        "//upb/json:test_srcs",
+        "//upb/mem:test_srcs",
+        "//upb/message:test_srcs",
+        "//upb/test:test_srcs",
+        "//upb/util:test_srcs",
+        "//upb/wire:test_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_util",
+    srcs = [
+        "//upb/test:test_util",
+        "//upb/util:test_util",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )
 # end:github_only
 
@@ -530,7 +473,11 @@ filegroup(
 #         "**/*.hpp",
 #     ]),
 #     kotlin_package = "upb",
-#     no_string_conversion = ["_upb_MiniTable_Build"],
+#     no_string_conversion = [
+#         "_upb_MiniTable_Build",
+#         "upb_Decode",
+#         "upb_StringView_FromDataAndSize",
+#     ],
 #     strict_enums = [
 #         "upb_CType",
 #         "upb_DecodeStatus",

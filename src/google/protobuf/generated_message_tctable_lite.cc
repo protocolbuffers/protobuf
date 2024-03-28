@@ -73,31 +73,6 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
-    const TcParseTableBase* table) {
-  // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
-  // For fast dispatch, we'd like to have a pointer to that, but if we use
-  // that expression, there's no easy way to get back to "table", which we also
-  // need during dispatch.  It turns out that "table + 1" points exactly to
-  // fast_entries, so we just increment table by 1 here, to get the register
-  // holding the value we want.
-  table += 1;
-  while (!ctx->Done(&ptr)) {
-#if defined(__GNUC__)
-    // Note: this asm prevents the compiler (clang, specifically) from
-    // believing (thanks to CSE) that it needs to dedicate a registeer both
-    // to "table" and "&table->fast_entries".
-    // TODO: remove this asm
-    asm("" : "+r"(table));
-#endif
-    ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
-    if (ptr == nullptr) break;
-    if (ctx->LastTag() != 1) break;  // Ended on terminating tag
-  }
-  return ptr;
-}
-
 PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
@@ -2812,6 +2787,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+const char* TcParser::MessageSetWireFormatParseLoopLite(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<MessageLite>(
+      PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
 std::string TypeCardToString(uint16_t type_card) {
   // In here we convert the runtime value of entry.type_card back into a
   // sequence of literal enum labels. We use the mnenonic labels for nicer
@@ -2942,6 +2923,16 @@ std::string TypeCardToString(uint16_t type_card) {
 #undef PROTOBUF_INTERNAL_TYPE_CARD_CASE
 
   return out;
+}
+
+const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+  return UnknownFieldParse(tag, nullptr, ptr, ctx);
 }
 
 }  // namespace internal

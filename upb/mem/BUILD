@@ -78,6 +78,6 @@ filegroup(
             "**/*test.cc",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

@@ -10,7 +10,9 @@
 // A proto file with nested extensions. Note that this must be defined in
 // a separate file to properly test the initialization of the outer class.
 
-syntax = "proto2";
+// LINT: LEGACY_NAMES
+
+edition = "2023";
 
 package protobuf_unittest;
 
@@ -19,7 +21,7 @@ import "com/google/protobuf/non_nested_extension.proto";
 
 message MyNestedExtension {
   extend MessageToBeExtended {
-    optional MessageToBeExtended recursiveExtension = 2;
-    optional int32 default = 2002;
+    MessageToBeExtended recursiveExtension = 2;
+    int32 default = 2002;
   }
 }

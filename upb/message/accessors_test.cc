@@ -49,6 +49,7 @@ const uint32_t kFieldOptionalBool = 13;
 const uint32_t kFieldOptionalString = 14;
 const uint32_t kFieldOptionalNestedMessage = 18;
 const uint32_t kFieldOptionalRepeatedInt32 = 31;
+const uint32_t kFieldOptionalRepeatedNestedMessage = 48;
 const uint32_t kFieldOptionalNestedMessageA = 1;
 const uint32_t kFieldOptionalOneOfUInt32 = 111;
 const uint32_t kFieldOptionalOneOfString = 113;
@@ -82,11 +83,14 @@ TEST(GeneratedCode, HazzersProto2) {
   // Scalar/Boolean.
   const upb_MiniTableField* optional_bool_field =
       find_proto2_field(kFieldOptionalBool);
-  EXPECT_EQ(false, upb_Message_HasField(UPB_UPCAST(msg), optional_bool_field));
+  EXPECT_EQ(false,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_bool_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_bool(msg, true);
-  EXPECT_EQ(true, upb_Message_HasField(UPB_UPCAST(msg), optional_bool_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_bool_field);
-  EXPECT_EQ(false, upb_Message_HasField(UPB_UPCAST(msg), optional_bool_field));
+  EXPECT_EQ(true,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_bool_field));
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_bool_field);
+  EXPECT_EQ(false,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_bool_field));
   EXPECT_EQ(
       false,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_bool(msg));
@@ -95,17 +99,18 @@ TEST(GeneratedCode, HazzersProto2) {
   const upb_MiniTableField* optional_string_field =
       find_proto2_field(kFieldOptionalString);
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_string(
       msg, upb_StringView_FromString(kTestStr1));
-  EXPECT_EQ(true, upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+  EXPECT_EQ(true,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
       strlen(kTestStr1),
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_string(msg)
           .size);
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_string_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_string_field);
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_string(msg)
              .size);
@@ -114,14 +119,14 @@ TEST(GeneratedCode, HazzersProto2) {
   const upb_MiniTableField* optional_message_field =
       find_proto2_field(kFieldOptionalNestedMessage);
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_mutable_optional_nested_message(
       msg, arena);
   EXPECT_EQ(true,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_message_field);
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
   EXPECT_EQ(
       true,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(
@@ -133,31 +138,31 @@ TEST(GeneratedCode, HazzersProto2) {
   const upb_MiniTableField* optional_oneof_string_field =
       find_proto2_field(kFieldOptionalOneOfString);
 
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_uint32_field));
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_string_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_set_oneof_uint32(msg, 123);
-  EXPECT_EQ(true,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
+  EXPECT_EQ(true, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                           optional_oneof_uint32_field));
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_string_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_set_oneof_string(
       msg, upb_StringView_FromString(kTestStr1));
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
-  EXPECT_EQ(true,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_oneof_uint32_field);
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
-  EXPECT_EQ(true,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_oneof_string_field);
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_uint32_field));
-  EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_oneof_string_field));
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_uint32_field));
+  EXPECT_EQ(true, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                           optional_oneof_string_field));
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_oneof_uint32_field);
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_uint32_field));
+  EXPECT_EQ(true, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                           optional_oneof_string_field));
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_oneof_string_field);
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_uint32_field));
+  EXPECT_EQ(false, upb_Message_HasBaseField(UPB_UPCAST(msg),
+                                            optional_oneof_string_field));
 
   upb_Arena_Free(arena);
 }
@@ -176,7 +181,8 @@ TEST(GeneratedCode, ScalarsProto2) {
   EXPECT_EQ(0, upb_Message_GetInt32(UPB_UPCAST(msg), optional_int32_field, 0));
   upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
                        nullptr);
-  EXPECT_EQ(true, upb_Message_HasField(UPB_UPCAST(msg), optional_int32_field));
+  EXPECT_EQ(true,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_int32_field));
   EXPECT_EQ(kTestInt32,
             upb_Message_GetInt32(UPB_UPCAST(msg), optional_int32_field, 0));
   EXPECT_EQ(
@@ -241,26 +247,28 @@ TEST(GeneratedCode, Strings) {
 
   // Test default.
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   // Test read after write using C.
   protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_string(
       msg, upb_StringView_FromString(kTestStr1));
-  EXPECT_EQ(true, upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+  EXPECT_EQ(true,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   upb_StringView value = upb_Message_GetString(
       UPB_UPCAST(msg), optional_string_field, upb_StringView{nullptr, 0});
   std::string read_value = std::string(value.data, value.size);
   EXPECT_EQ(kTestStr1, read_value);
   // Clear.
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_string_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_string_field);
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
       false,
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
           msg));
   upb_Message_SetString(UPB_UPCAST(msg), optional_string_field,
                         upb_StringView_FromString(kTestStr2), nullptr);
-  EXPECT_EQ(true, upb_Message_HasField(UPB_UPCAST(msg), optional_string_field));
+  EXPECT_EQ(true,
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
       true,
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
@@ -281,11 +289,11 @@ TEST(GeneratedCode, SubMessage) {
       find_proto2_field(kFieldOptionalNestedMessage);
 
   const upb_Message* test_message =
-      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field, nullptr);
+      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(nullptr, test_message);
 
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
 
   // Get mutable using C API.
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage* nested_message =
@@ -293,13 +301,13 @@ TEST(GeneratedCode, SubMessage) {
           msg, arena);
   EXPECT_EQ(true, nested_message != nullptr);
   EXPECT_EQ(true,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
       nested_message, 5);
 
   // Read back using mini table API.
   const upb_Message* sub_message =
-      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field, nullptr);
+      upb_Message_GetMessage(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(true, sub_message != nullptr);
 
   const upb_MiniTableField* nested_message_a_field =
@@ -308,13 +316,13 @@ TEST(GeneratedCode, SubMessage) {
           kFieldOptionalNestedMessageA);
   EXPECT_EQ(5, upb_Message_GetInt32(sub_message, nested_message_a_field, 0));
 
-  upb_Message_ClearField(UPB_UPCAST(msg), optional_message_field);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), optional_message_field);
   EXPECT_EQ(
       nullptr,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(
           msg));
   EXPECT_EQ(false,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
 
   upb_Message* new_nested_message = UPB_UPCAST(
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
@@ -335,7 +343,7 @@ TEST(GeneratedCode, SubMessage) {
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(
           msg) != nullptr);
   EXPECT_EQ(true,
-            upb_Message_HasField(UPB_UPCAST(msg), optional_message_field));
+            upb_Message_HasBaseField(UPB_UPCAST(msg), optional_message_field));
   EXPECT_EQ(123,
             upb_Message_GetInt32(mutable_message, nested_message_a_field, 0));
 
@@ -391,6 +399,28 @@ TEST(GeneratedCode, RepeatedScalar) {
                                                                       &len);
   EXPECT_EQ(0, len);
   EXPECT_EQ(true, zero_length_array != nullptr);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, RepeatedMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  const upb_MiniTableField* repeated_nested_message_field =
+      find_proto2_field(kFieldOptionalRepeatedNestedMessage);
+  upb_Message* nested_message = (upb_Message*)
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(arena);
+
+  upb_Array* array = upb_Message_GetOrCreateMutableArray(
+      UPB_UPCAST(msg), repeated_nested_message_field, arena);
+  upb_MessageValue new_value;
+  new_value.msg_val = nested_message;
+  EXPECT_TRUE(upb_Array_Append(array, new_value, arena));
+
+  EXPECT_EQ(nested_message, upb_Array_GetMutable(array, 0).msg);
+  EXPECT_EQ(nested_message, upb_Array_Get(array, 0).msg_val);
 
   upb_Arena_Free(arena);
 }

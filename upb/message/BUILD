@@ -17,24 +17,71 @@ load(
 )
 
 cc_library(
-    name = "accessors",
+    name = "message",
     srcs = [
         "accessors.c",
+        "array.c",
+        "compat.c",
+        "map.c",
+        "map_sorter.c",
+        "message.c",
     ],
     hdrs = [
         "accessors.h",
-        "internal/accessors.h",
+        "array.h",
+        "compat.h",
+        "map.h",
+        "map_gencode_util.h",
+        "message.h",
+        "tagged_ptr.h",
+        "value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":message",
-        ":tagged_ptr",
+        ":internal",
         ":types",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb/base:internal",
+        "//upb/hash",
+        "//upb/mini_table:internal",
+    ],
+)
+
+cc_library(
+    name = "internal",
+    srcs = [
+        "internal/compare_unknown.c",
+        "internal/extension.c",
+        "internal/message.c",
+        "value.h",
+    ],
+    hdrs = [
+        "internal/accessors.h",
+        "internal/array.h",
+        "internal/compare_unknown.h",
+        "internal/extension.h",
+        "internal/map.h",
+        "internal/map_sorter.h",
+        "internal/message.h",
+        "internal/tagged_ptr.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":types",
+        "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:mem",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb:wire_reader",
+        "//upb/base:internal",
+        "//upb/hash",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -49,12 +96,12 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
         ":message",
-        ":types",
-        "//upb:mem",
+        "//upb:base",
         "//upb:mini_table",
         "//upb:port",
-        "//upb:wire",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -69,50 +116,9 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":accessors",
+        ":internal",
         ":message",
-        ":tagged_ptr",
-        ":types",
         "//upb:base",
-        "//upb:mem",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb/mini_table:internal",
-    ],
-)
-
-cc_library(
-    name = "message",
-    srcs = [
-        "array.c",
-        "compat.c",
-        "internal/extension.c",
-        "internal/message.c",
-        "map.c",
-        "map_sorter.c",
-        "message.c",
-    ],
-    hdrs = [
-        "array.h",
-        "compat.h",
-        "internal/array.h",
-        "internal/extension.h",
-        "internal/map.h",
-        "internal/map_entry.h",
-        "internal/map_sorter.h",
-        "internal/message.h",
-        "internal/types.h",
-        "map.h",
-        "map_gencode_util.h",
-        "message.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":types",
-        ":value",
-        "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
@@ -132,10 +138,8 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":accessors",
+        ":internal",
         ":message",
-        ":tagged_ptr",
-        ":types",
         "//upb:base",
         "//upb:eps_copy_input_stream",
         "//upb:mem",
@@ -150,24 +154,11 @@ cc_library(
     name = "split64",
     hdrs = [
         "accessors_split64.h",
-        "array_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":accessors",
         ":message",
-        "//upb:port",
-    ],
-)
-
-cc_library(
-    name = "tagged_ptr",
-    hdrs = ["tagged_ptr.h"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":types",
         "//upb:port",
     ],
 )
@@ -175,24 +166,15 @@ cc_library(
 cc_library(
     name = "types",
     hdrs = [
-        "types.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [],
-)
-
-cc_library(
-    name = "value",
-    hdrs = [
-        "value.h",
+        "internal/map_entry.h",
+        "internal/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":tagged_ptr",
-        ":types",
         "//upb:base",
+        "//upb:port",
+        "//upb/hash",
     ],
 )
 
@@ -225,7 +207,6 @@ cc_test(
     name = "accessors_test",
     srcs = ["accessors_test.cc"],
     deps = [
-        ":accessors",
         ":message",
         "//:protobuf",
         "//upb:base",
@@ -259,11 +240,25 @@ cc_test(
 )
 
 cc_test(
+    name = "compare_unknown_test",
+    srcs = ["internal/compare_unknown_test.cc"],
+    deps = [
+        ":internal",
+        "//upb:port",
+        "//upb:wire_reader",
+        "//upb/base:internal",
+        "@com_google_absl//absl/types:variant",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "copy_test",
     srcs = ["copy_test.cc"],
     deps = [
-        ":accessors",
         ":copy",
+        ":internal",
         ":message",
         "//:protobuf",
         "//upb:base",
@@ -296,11 +291,10 @@ cc_test(
     name = "promote_test",
     srcs = ["promote_test.cc"],
     deps = [
-        ":accessors",
         ":copy",
+        ":internal",
         ":message",
         ":promote",
-        ":tagged_ptr",
         "//:protobuf",
         "//upb:base",
         "//upb:mem",
@@ -324,14 +318,14 @@ cc_test(
     name = "test",
     srcs = ["test.cc"],
     deps = [
+        ":internal",
+        ":message",
         ":message_test_upb_minitable_proto",
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
-        ":value",
         "//upb:base",
         "//upb:json",
         "//upb:mem",
-        "//upb:message",
         "//upb:mini_table",
         "//upb:reflection",
         "//upb:wire",
@@ -346,7 +340,12 @@ proto_library(
     name = "utf8_test_proto",
     testonly = 1,
     srcs = ["utf8_test.proto"],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+proto_library(
+    name = "utf8_test_proto2_proto",
+    testonly = 1,
+    srcs = ["utf8_test_proto2.proto"],
 )
 
 upb_minitable_proto_library(
@@ -355,16 +354,30 @@ upb_minitable_proto_library(
     deps = [":utf8_test_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "utf8_test_proto2_upb_minitable_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto2_proto"],
+)
+
 upb_c_proto_library(
     name = "utf8_test_upb_proto",
     testonly = 1,
     deps = [":utf8_test_proto"],
 )
 
+upb_c_proto_library(
+    name = "utf8_test_proto2_upb_proto",
+    testonly = 1,
+    deps = [":utf8_test_proto2_proto"],
+)
+
 cc_test(
     name = "utf8_test",
     srcs = ["utf8_test.cc"],
     deps = [
+        ":utf8_test_proto2_upb_minitable_proto",
+        ":utf8_test_proto2_upb_proto",
         ":utf8_test_upb_minitable_proto",
         ":utf8_test_upb_proto",
         "//upb:base",
@@ -398,17 +411,18 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["promote_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_protos",
     srcs = glob(
         [
-            "**/*test.proto",
+            "**/*.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

@@ -41,7 +41,7 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
     return absl::InvalidArgumentError(
         "The Rust codegen is highly experimental. Future versions will break "
         "existing code. Use at your own risk. You can opt-in by passing "
-        "'experimental-codegen=enabled' to '--rust_out'.");
+        "'experimental-codegen=enabled' to '--rust_opt'.");
   }
 
   Options opts;
@@ -65,6 +65,12 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
                          kernel_arg->second));
   }
 
+  auto mapping_arg = absl::c_find_if(
+      args, [](auto& arg) { return arg.first == "bazel_crate_mapping"; });
+  if (mapping_arg != args.end()) {
+    opts.mapping_file_path = mapping_arg->second;
+  }
+
   return opts;
 }
 
@@ -74,6 +80,10 @@ bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file) {
 
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message) {
   return IsInCurrentlyGeneratingCrate(ctx, *message.file());
+}
+
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_) {
+  return IsInCurrentlyGeneratingCrate(ctx, *enum_.file());
 }
 
 }  // namespace rust

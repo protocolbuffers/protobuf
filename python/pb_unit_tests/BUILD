@@ -5,11 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
-
 # begin:github_only
 load("@pip_deps//:requirements.bzl", "requirement")
 # end:github_only
+
+load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 
 # begin:google_only
 # package(default_applicable_licenses = ["//upb:license"])

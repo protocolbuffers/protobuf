@@ -24,6 +24,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/stubs/common.h"
@@ -331,8 +332,14 @@ std::string ObjCClassDeclaration(absl::string_view class_name) {
   return absl::StrCat("GPBObjCClassDeclaration(", class_name, ");");
 }
 
-void EmitCommentsString(io::Printer* printer, const SourceLocation& location,
+void EmitCommentsString(io::Printer* printer, const GenerationOptions& opts,
+                        const SourceLocation& location,
                         CommentStringFlags flags) {
+  if (opts.experimental_strip_nonfunctional_codegen) {
+    // Comments are inherently non-functional, and may change subtly on
+    // transformations.
+    return;
+  }
   absl::string_view comments = location.leading_comments.empty()
                                    ? location.trailing_comments
                                    : location.leading_comments;

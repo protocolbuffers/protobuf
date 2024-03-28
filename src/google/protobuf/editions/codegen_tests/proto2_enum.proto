@@ -17,4 +17,10 @@ enum Proto2Enum {
 message Proto2EnumMessage {
   optional Proto2Enum enum_field = 1;
   optional Proto2Enum enum_field_default = 2 [default = BAZ];
+  enum Proto2NestedEnum {
+    FOO = 1;
+    BAT = 2;
+  }
+  optional Proto2NestedEnum nested_enum_field = 3;
+  optional Proto2NestedEnum nested_enum_field_default = 4 [default = BAT];
 }

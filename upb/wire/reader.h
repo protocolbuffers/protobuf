@@ -8,8 +8,8 @@
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
 
+#include "upb/base/internal/endian.h"
 #include "upb/wire/eps_copy_input_stream.h"
-#include "upb/wire/internal/endian.h"
 #include "upb/wire/internal/reader.h"
 #include "upb/wire/types.h"  // IWYU pragma: export
 
@@ -32,8 +32,8 @@ extern "C" {
 // REQUIRES: there must be at least 10 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-static UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
-                                                          uint32_t* tag) {
+UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
+                                                   uint32_t* tag) {
   uint64_t val;
   ptr = UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, &val, 5, UINT32_MAX);
   if (!ptr) return NULL;
@@ -42,14 +42,10 @@ static UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
 }
 
 // Given a tag, returns the field number.
-UPB_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
-  return UPB_PRIVATE(_upb_WireReader_GetFieldNumber)(tag);
-}
+UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
 
 // Given a tag, returns the wire type.
-UPB_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag) {
-  return UPB_PRIVATE(_upb_WireReader_GetWireType)(tag);
-}
+UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag);
 
 UPB_INLINE const char* upb_WireReader_ReadVarint(const char* ptr,
                                                  uint64_t* val) {
@@ -89,7 +85,7 @@ UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
 UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
   uint32_t uval;
   memcpy(&uval, ptr, 4);
-  uval = UPB_PRIVATE(_upb_BigEndian32)(uval);
+  uval = upb_BigEndian32(uval);
   memcpy(val, &uval, 4);
   return ptr + 4;
 }
@@ -102,7 +98,7 @@ UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
 UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
   uint64_t uval;
   memcpy(&uval, ptr, 8);
-  uval = UPB_PRIVATE(_upb_BigEndian64)(uval);
+  uval = upb_BigEndian64(uval);
   memcpy(val, &uval, 8);
   return ptr + 8;
 }

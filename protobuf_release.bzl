@@ -2,8 +2,8 @@
 Generates package naming variables for use with rules_pkg.
 """
 
-load("@rules_pkg//:providers.bzl", "PackageVariablesInfo")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@rules_pkg//pkg:providers.bzl", "PackageVariablesInfo")
 load(":protobuf_version.bzl", "PROTOC_VERSION")
 
 def _package_naming_impl(ctx):

@@ -1,0 +1,16 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package non_primary_src_testing_packages;
+
+message NonPrimarySrcPubliclyImportedMsg2 {}
+
+enum NonPrimarySrcPubliclyImportedEnum2 {
+  NON_PRIMARY_SRC_PUBLICLY_IMPORTED_ENUM2_UNSPECIFIED = 0;
+}
