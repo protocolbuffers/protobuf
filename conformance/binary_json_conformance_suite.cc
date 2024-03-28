@@ -14,7 +14,6 @@
 #include <cstring>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -25,7 +24,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "json/json.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
@@ -37,6 +35,7 @@
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -323,7 +322,8 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
 
     default:
       ABSL_LOG(FATAL) << test_name
-                      << ": unknown payload type: " << response.result_case();
+                      << ": unknown payload type: " << response.result_case()
+                      << ", response: " << response;
   }
 
   return true;
@@ -1286,6 +1286,55 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownMessage() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
+  // Implementations must preserve the ordering of different unknown fields for
+  // the same field number.  This is because some field types will accept
+  // multiple wire types for the same field.  For example, repeated primitive
+  // fields will accept both length-delimited (packed) and
+  // varint/fixed32/fixed64 (unpacked) wire types, and reordering these could
+  // reorder the elements of the repeated field.
+  MessageType message;
+  MessageType prototype;
+  message.mutable_unknown_fields()->AddLengthDelimited(UNKNOWN_FIELD, "abc");
+  message.mutable_unknown_fields()->AddVarint(UNKNOWN_FIELD, 123);
+  message.mutable_unknown_fields()->AddLengthDelimited(UNKNOWN_FIELD, "def");
+  message.mutable_unknown_fields()->AddVarint(UNKNOWN_FIELD, 456);
+  std::string serialized = message.SerializeAsString();
+
+  ConformanceRequestSetting setting(
+      REQUIRED, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST, prototype, "UnknownOrdering", serialized);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  suite_.RunTest(setting.GetTestName(), request, &response);
+  MessageType response_message;
+  if (response.result_case() == ConformanceResponse::kSkipped) {
+    suite_.ReportSkip(setting.GetTestName(), request, response);
+    return;
+  }
+  suite_.ParseResponse(response, setting, &response_message);
+
+  const UnknownFieldSet& ufs = response_message.unknown_fields();
+  if (ufs.field_count() != 4 || ufs.field(0).number() != UNKNOWN_FIELD ||
+      ufs.field(1).number() != UNKNOWN_FIELD ||
+      ufs.field(2).number() != UNKNOWN_FIELD ||
+      ufs.field(3).number() != UNKNOWN_FIELD ||
+      ufs.field(0).type() != UnknownField::Type::TYPE_LENGTH_DELIMITED ||
+      ufs.field(1).type() != UnknownField::Type::TYPE_VARINT ||
+      ufs.field(2).type() != UnknownField::Type::TYPE_LENGTH_DELIMITED ||
+      ufs.field(3).type() != UnknownField::Type::TYPE_VARINT ||
+      ufs.field(0).length_delimited() != "abc" ||
+      ufs.field(1).varint() != 123 ||
+      ufs.field(2).length_delimited() != "def" ||
+      ufs.field(3).varint() != 456) {
+    suite_.ReportFailure(setting.GetTestName(), setting.GetLevel(), request,
+                         response, "Unknown field mismatch");
+  } else {
+    suite_.ReportSuccess(setting.GetTestName());
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
     MessageType>::TestBinaryPerformanceForAlternatingUnknownFields() {
   std::string unknown_field_1 = absl::StrCat(
@@ -1571,6 +1620,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
     // from failure list of python_cpp python java
     TestUnknownMessage();
+    TestUnknownOrdering();
     TestOneofMessage();
 
     RunJsonTests();
