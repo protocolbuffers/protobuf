@@ -59,7 +59,6 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
       Sub{"lazy_args", !empty_default ? absl::StrCat(lazy_var, ",") : ""}
           .WithSuffix(","),
 
-      {"byte", bytes ? "void" : "char"},
       {"Set", bytes ? "SetBytes" : "Set"},
   };
 }
@@ -840,17 +839,11 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
   p->Emit(R"cc(
     $DEPRECATED$ const std::string& $name$(int index) const;
     $DEPRECATED$ std::string* $mutable_name$(int index);
-    $DEPRECATED$ void $set_name$(int index, const std::string& value);
-    $DEPRECATED$ void $set_name$(int index, std::string&& value);
-    $DEPRECATED$ void $set_name$(int index, const char* value);
-    $DEPRECATED$ void $set_name$(int index, const $byte$* value, std::size_t size);
-    $DEPRECATED$ void $set_name$(int index, absl::string_view value);
+    template <typename Arg_ = const std::string&, typename... Args_>
+    $DEPRECATED$ void set_$name$(int index, Arg_&& value, Args_... args);
     $DEPRECATED$ std::string* $add_name$();
-    $DEPRECATED$ void $add_name$(const std::string& value);
-    $DEPRECATED$ void $add_name$(std::string&& value);
-    $DEPRECATED$ void $add_name$(const char* value);
-    $DEPRECATED$ void $add_name$(const $byte$* value, std::size_t size);
-    $DEPRECATED$ void $add_name$(absl::string_view value);
+    template <typename Arg_ = const std::string&, typename... Args_>
+    $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
     $DEPRECATED$ const $pb$::RepeatedPtrField<std::string>& $name$() const;
     $DEPRECATED$ $pb$::RepeatedPtrField<std::string>* $mutable_name$();
 
@@ -863,125 +856,81 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
 }
 
 void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
-  p->Emit({{"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
-           {"GetExtraArg",
-            [&] {
-              p->Emit(opts_->safe_boundary_check
-                          ? ", $pbi$::GetEmptyStringAlreadyInited()"
-                          : "");
-            }}},
-          R"cc(
-            inline std::string* $Msg$::add_$name$()
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $TsanDetectConcurrentMutation$;
-              std::string* _s = _internal_mutable_$name_internal$()->Add();
-              $annotate_add_mutable$;
-              // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
-              return _s;
-            }
-            inline const std::string& $Msg$::$name$(int index) const
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_get$;
-              // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-              return _internal_$name_internal$().$Get$(index$GetExtraArg$);
-            }
-            inline std::string* $Msg$::mutable_$name$(int index)
-                ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_mutable$;
-              // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-              return _internal_mutable_$name_internal$()->Mutable(index);
-            }
-            inline void $Msg$::set_$name$(int index, const std::string& value) {
-              $WeakDescriptorSelfPin$;
-              _internal_mutable_$name_internal$()->Mutable(index)->assign(value);
-              $annotate_set$;
-              // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-            }
-            inline void $Msg$::set_$name$(int index, std::string&& value) {
-              $WeakDescriptorSelfPin$;
-              _internal_mutable_$name_internal$()->Mutable(index)->assign(std::move(value));
-              $annotate_set$;
-              // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
-            }
-            inline void $Msg$::set_$name$(int index, const char* value) {
-              $WeakDescriptorSelfPin$;
-              $DCHK$(value != nullptr);
-              _internal_mutable_$name_internal$()->Mutable(index)->assign(value);
-              $annotate_set$;
-              // @@protoc_insertion_point(field_set_char:$pkg.Msg.field$)
-            }
-            inline void $Msg$::set_$name$(int index, const $byte$* value,
-                                          std::size_t size) {
-              $WeakDescriptorSelfPin$;
-              _internal_mutable_$name_internal$()->Mutable(index)->assign(
-                  reinterpret_cast<const char*>(value), size);
-              $annotate_set$;
-              // @@protoc_insertion_point(field_set_pointer:$pkg.Msg.field$)
-            }
-            inline void $Msg$::set_$name$(int index, absl::string_view value) {
-              $WeakDescriptorSelfPin$;
-              _internal_mutable_$name_internal$()->Mutable(index)->assign(
-                  value.data(), value.size());
-              $annotate_set$;
-              // @@protoc_insertion_point(field_set_string_piece:$pkg.Msg.field$)
-            }
-            inline void $Msg$::add_$name$(const std::string& value) {
-              $WeakDescriptorSelfPin$;
-              $TsanDetectConcurrentMutation$;
-              _internal_mutable_$name_internal$()->Add()->assign(value);
-              $annotate_add$;
-              // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
-            }
-            inline void $Msg$::add_$name$(std::string&& value) {
-              $WeakDescriptorSelfPin$;
-              $TsanDetectConcurrentMutation$;
-              _internal_mutable_$name_internal$()->Add(std::move(value));
-              $annotate_add$;
-              // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
-            }
-            inline void $Msg$::add_$name$(const char* value) {
-              $WeakDescriptorSelfPin$;
-              $DCHK$(value != nullptr);
-              $TsanDetectConcurrentMutation$;
-              _internal_mutable_$name_internal$()->Add()->assign(value);
-              $annotate_add$;
-              // @@protoc_insertion_point(field_add_char:$pkg.Msg.field$)
-            }
-            inline void $Msg$::add_$name$(const $byte$* value, std::size_t size) {
-              $WeakDescriptorSelfPin$;
-              $TsanDetectConcurrentMutation$;
-              _internal_mutable_$name_internal$()->Add()->assign(
-                  reinterpret_cast<const char*>(value), size);
-              $annotate_add$;
-              // @@protoc_insertion_point(field_add_pointer:$pkg.Msg.field$)
-            }
-            inline void $Msg$::add_$name$(absl::string_view value) {
-              $WeakDescriptorSelfPin$;
-              $TsanDetectConcurrentMutation$;
-              _internal_mutable_$name_internal$()->Add()->assign(value.data(),
-                                                                 value.size());
-              $annotate_add$;
-              // @@protoc_insertion_point(field_add_string_piece:$pkg.Msg.field$)
-            }
-            inline const ::$proto_ns$::RepeatedPtrField<std::string>&
-            $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_list$;
-              // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-              return _internal_$name_internal$();
-            }
-            inline ::$proto_ns$::RepeatedPtrField<std::string>*
-            $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-              $WeakDescriptorSelfPin$;
-              $annotate_mutable_list$;
-              // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-              $TsanDetectConcurrentMutation$;
-              return _internal_mutable_$name_internal$();
-            }
-          )cc");
+  bool bytes = field_->type() == FieldDescriptor::TYPE_BYTES;
+  p->Emit(
+      {
+          {"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
+          {"GetExtraArg",
+           [&] {
+             p->Emit(opts_->safe_boundary_check
+                         ? ", $pbi$::GetEmptyStringAlreadyInited()"
+                         : "");
+           }},
+          {"bytes_tag",
+           [&] {
+             if (bytes) {
+               p->Emit(", $pbi$::BytesTag{}");
+             }
+           }},
+      },
+      R"cc(
+        inline std::string* $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $TsanDetectConcurrentMutation$;
+          std::string* _s = _internal_mutable_$name_internal$()->Add();
+          $annotate_add_mutable$;
+          // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
+          return _s;
+        }
+        inline const std::string& $Msg$::$name$(int index) const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_get$;
+          // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
+          return _internal_$name_internal$().$Get$(index$GetExtraArg$);
+        }
+        inline std::string* $Msg$::mutable_$name$(int index)
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_mutable$;
+          // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+          return _internal_mutable_$name_internal$()->Mutable(index);
+        }
+        template <typename Arg_, typename... Args_>
+        inline void $Msg$::set_$name$(int index, Arg_&& value, Args_... args) {
+          $WeakDescriptorSelfPin$;
+          $pbi$::AssignToString(
+              *_internal_mutable_$name_internal$()->Mutable(index),
+              std::forward<Arg_>(value), args... $bytes_tag$);
+          $annotate_set$;
+          // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
+        }
+        template <typename Arg_, typename... Args_>
+        inline void $Msg$::add_$name$(Arg_&& value, Args_... args) {
+          $WeakDescriptorSelfPin$;
+          $TsanDetectConcurrentMutation$;
+          $pbi$::AddToRepeatedPtrField(*_internal_mutable_$name_internal$(),
+                                       std::forward<Arg_>(value),
+                                       args... $bytes_tag$);
+          $annotate_add$;
+          // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
+        }
+        inline const ::$proto_ns$::RepeatedPtrField<std::string>&
+        $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return _internal_$name_internal$();
+        }
+        inline ::$proto_ns$::RepeatedPtrField<std::string>*
+        $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return _internal_mutable_$name_internal$();
+        }
+      )cc");
   if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedPtrField<std::string>&

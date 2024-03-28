@@ -37,6 +37,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -320,6 +321,59 @@ struct WeakDescriptorDefaultTail {
   const Message** target;
   size_t size;
 };
+
+// Tag to distinguish overloads below:
+//  - if last argument is `BytesTag tag = BytesTag{}` then the overload is
+//    available to both string and byte fields.
+//  - if last argument is `BytesTag tag` then the overload is only available to
+//    byte fields.
+//  - if there is no BytesTag argument, then the overload is only available to
+//    string fields.
+struct BytesTag {
+  explicit BytesTag() = default;
+};
+
+// Assigns to `dest` the content of `value`, optionally bounded by `size`.
+// This overload set is used to implement `set_xxx()` methods for repeated
+// string fields in generated code.
+inline void AssignToString(std::string& dest, const std::string& value,
+                           BytesTag tag = BytesTag{}) {
+  dest.assign(value);
+}
+inline void AssignToString(std::string& dest, std::string&& value,
+                           BytesTag tag = BytesTag{}) {
+  dest.assign(std::move(value));
+}
+inline void AssignToString(std::string& dest, const char* value,
+                           BytesTag tag = BytesTag{}) {
+  dest.assign(value);
+}
+inline void AssignToString(std::string& dest, const char* value,
+                           std::size_t size) {
+  dest.assign(value, size);
+}
+inline void AssignToString(std::string& dest, const void* value,
+                           std::size_t size, BytesTag tag) {
+  dest.assign(reinterpret_cast<const char*>(value), size);
+}
+inline void AssignToString(std::string& dest, absl::string_view value,
+                           BytesTag tag = BytesTag{}) {
+  dest.assign(value.data(), value.size());
+}
+
+// Adds `value`, optionally bounded by `size`, as the last element of `dest`.
+// This overload set is used to implement `add_xxx()` methods for repeated
+// string fields in generated code.
+template <typename Arg, typename... Args>
+void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
+                           Arg&& value, Args... args) {
+  AssignToString(*dest.Add(), std::forward<Arg>(value), args...);
+}
+inline void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
+                                  std::string&& value,
+                                  BytesTag tag = BytesTag{}) {
+  dest.Add(std::move(value));
+}
 
 }  // namespace internal
 }  // namespace protobuf
