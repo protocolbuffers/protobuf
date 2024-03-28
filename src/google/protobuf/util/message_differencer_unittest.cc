@@ -1153,6 +1153,21 @@ TEST(MessageDifferencerTest, BasicFieldOrderingInequalityTest) {
   EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
+TEST(MessageDifferencerTest, BasicRepeatedFieldOrderingInequalityTest) {
+  // Create the testing protos
+  unittest::MoreString msg1;
+  unittest::MoreString msg2;
+
+  msg1.add_data("a");
+  msg1.add_data("b");
+  msg2.add_data("b");
+  msg2.add_data("a");
+
+  // Compare
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+  EXPECT_FALSE(util::MessageDifferencer::Equivalent(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, BasicExtensionTest) {
   // Create the testing protos
   unittest::TestAllExtensions msg1;
