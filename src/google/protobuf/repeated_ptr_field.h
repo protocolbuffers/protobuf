@@ -577,9 +577,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class internal::SwapFieldHelper;
 
   // Concrete Arena enabled copy function used to copy messages instances.
-  // This follows the `Arena::CreateMaybeMessage` signature so that the compiler
+  // This follows the `Arena::CopyConstruct` signature so that the compiler
   // can have the inlined call into the out of line copy function(s) simply pass
-  // the address of `Arena::CreateMaybeMessage` 'as is'.
+  // the address of `Arena::CopyConstruct` 'as is'.
   using CopyFn = void* (*)(Arena*, const void*);
 
   struct Rep {
