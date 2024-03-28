@@ -331,6 +331,7 @@ cc_test(
         "//upb:wire",
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/util:length_delimited",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

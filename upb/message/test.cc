@@ -35,6 +35,7 @@
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/message.h"
 #include "upb/test/fuzz_util.h"
+#include "upb/util/length_delimited.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
@@ -588,7 +589,7 @@ TEST(MessageTest, Freeze) {
 //
 // static void DecodeEncodeArbitrarySchemaAndPayload(
 //     const upb::fuzz::MiniTableFuzzInput& input, std::string_view proto_payload,
-//     int decode_options, int encode_options) {
+//     int decode_options, int encode_options, bool length_delimited = false) {
 // // Lexan does not have setenv
 // #ifndef _MSC_VER
 //   setenv("FUZZTEST_STACK_LIMIT", "262144", 1);
@@ -605,11 +606,25 @@ TEST(MessageTest, Freeze) {
 //       upb::fuzz::BuildMiniTable(input, &exts, arena.ptr());
 //   if (!mini_table) return;
 //   upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
-//   upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table, exts,
-//              decode_options, arena.ptr());
+//   if (length_delimited) {
+//     size_t num_bytes_read = 0;
+//     upb_DecodeStatus status = upb_util_DecodeLengthDelimited(
+//         proto_payload.data(), proto_payload.size(), msg, &num_bytes_read,
+//         mini_table, exts, decode_options, arena.ptr());
+//     ASSERT_TRUE(status != kUpb_DecodeStatus_Ok ||
+//                 num_bytes_read <= proto_payload.size());
+//   } else {
+//     upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table,
+//                exts, decode_options, arena.ptr());
+//   }
 //   char* ptr;
 //   size_t size;
-//   upb_Encode(msg, mini_table, encode_options, arena.ptr(), &ptr, &size);
+//   if (length_delimited) {
+//     upb_util_EncodeLengthDelimited(msg, mini_table, encode_options, arena.ptr(),
+//                                    &ptr, &size);
+//   } else {
+//     upb_Encode(msg, mini_table, encode_options, arena.ptr(), &ptr, &size);
+//   }
 // }
 // FUZZ_TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayload);
 //

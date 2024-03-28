@@ -1,3 +1,4 @@
+load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
@@ -160,6 +161,41 @@ cc_test(
         "//upb:reflection",
         "//upb/reflection:internal",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "length_delimited",
+    srcs = ["length_delimited.c"],
+    hdrs = ["length_delimited.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//upb:friends"],
+    deps = [
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb:wire",
+    ],
+)
+
+cc_test(
+    name = "length_delimited_test",
+    srcs = ["length_delimited_test.cc"],
+    deps = [
+        ":length_delimited",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:message_compare",
+        "//upb:mini_table",
+        "//upb:wire",
+        "//upb/mem:internal",
+        "//upb/test:test_messages_proto2_upb_minitable",
+        "//upb/test:test_messages_proto2_upb_proto",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
