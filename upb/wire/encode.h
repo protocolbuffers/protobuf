@@ -68,6 +68,13 @@ UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
                                     const upb_MiniTable* l, int options,
                                     upb_Arena* arena, char** buf, size_t* size);
 
+// Encodes the message prepended by a varint of the serialized length.
+UPB_API upb_EncodeStatus upb_EncodeLengthDelimited(const upb_Message* msg,
+                                                   const upb_MiniTable* l,
+                                                   int options,
+                                                   upb_Arena* arena, char** buf,
+                                                   size_t* size);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
