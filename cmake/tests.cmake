@@ -103,6 +103,7 @@ add_executable(tests ${tests_files} ${common_test_files})
 if (MSVC)
   target_compile_options(tests PRIVATE
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
+    /bigobj
   )
 endif()
 target_link_libraries(tests
