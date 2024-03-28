@@ -162,8 +162,8 @@ cc_library(
     hdrs = ["time_util.h"],
     strip_include_prefix = "/src",
     visibility = [
-        "//:__subpackages__",
-        "@com_google_protobuf_examples//:__subpackages__",
+        # Needed when building from within the /examples repository
+        "//visibility:public",
     ],
     deps = [
         "//src/google/protobuf",
