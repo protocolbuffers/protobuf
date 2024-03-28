@@ -49,6 +49,7 @@ class TextFormatConformanceTestSuiteImpl {
 
   void RunAllTests();
 
+  void RunDelimitedTests();
   void RunGroupTests();
   void RunAnyTests();
 
