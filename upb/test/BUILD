@@ -202,6 +202,25 @@ cc_test(
 )
 
 cc_test(
+    name = "length_delimited_test",
+    srcs = ["length_delimited_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":test_messages_proto2_upb_minitable",
+        ":test_messages_proto2_upb_proto",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:message_compare",
+        "//upb:mini_table",
+        "//upb:wire",
+        "//upb/mem:internal",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "test_cpp",
     srcs = ["test_cpp.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
