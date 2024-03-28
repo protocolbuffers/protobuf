@@ -16,6 +16,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance_test.h"
+#include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -25,6 +26,7 @@
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
+using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -123,6 +125,7 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
   if (maximum_edition_ >= Edition::EDITION_2023) {
     TextFormatConformanceTestSuiteImpl<TestAllTypesProto2Editions>(this);
     TextFormatConformanceTestSuiteImpl<TestAllTypesProto3Editions>(this);
+    TextFormatConformanceTestSuiteImpl<TestAllTypesEdition2023>(this);
   }
 }
 
@@ -132,10 +135,17 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
     : suite_(*ABSL_DIE_IF_NULL(suite)) {
   // Flag control performance tests to keep them internal and opt-in only
   if (suite_.performance_) {
+    if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
+      // There are no editions-sensitive performance tests.
+      return;
+    }
     RunTextFormatPerformanceTests();
   } else {
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto2") {
       RunGroupTests();
+    }
+    if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
+      RunDelimitedTests();
     }
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
@@ -237,6 +247,31 @@ void TextFormatConformanceTestSuiteImpl<
 }
 
 template <typename MessageType>
+void TextFormatConformanceTestSuiteImpl<MessageType>::RunDelimitedTests() {
+  RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
+                         "Data { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
+                         "Data: { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "Data {}");
+  RunValidTextFormatTest(
+      "GroupFieldExtension", REQUIRED,
+      "[protobuf_test_messages.editions.delimited_ext] { c: 1 }");
+
+  // Test that lower-cased group name (i.e. implicit field name) is not accepted
+  // for now.
+  RunValidTextFormatTest("GroupFieldLowercased", REQUIRED,
+                         "data { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldLowercasedDifferent", REQUIRED,
+                         "other_data { group_int32: 1 }");
+
+  // Extensions always used the field name, and should never accept the message
+  // name.
+  ExpectParseFailure("GroupFieldExtensionMessageName", REQUIRED,
+                     "[protobuf_test_messages.editions."
+                     "ForeignMessageEdition2023] { group_int32: 1 }");
+}
+
+template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
   RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
                          "Data { group_int32: 1 }");
@@ -246,11 +281,11 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
   RunValidTextFormatTest("GroupFieldMultiWord", REQUIRED,
                          "MultiWordGroupField { group_int32: 1 }");
 
-  // Test that lower-cased group name (i.e. implicit field name) is not accepted
-  ExpectParseFailure("GroupFieldLowercased", REQUIRED,
-                     "data { group_int32: 1 }");
-  ExpectParseFailure("GroupFieldLowercasedMultiWord", REQUIRED,
-                     "multiwordgroupfield { group_int32: 1 }");
+  // Test that lower-cased group name (i.e. implicit field name) is accepted
+  RunValidTextFormatTest("GroupFieldLowercased", REQUIRED,
+                         "data { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldLowercasedMultiWord", REQUIRED,
+                         "multiwordgroupfield { group_int32: 1 }");
 
   // Test extensions of group type
   RunValidTextFormatTest("GroupFieldExtension", REQUIRED,

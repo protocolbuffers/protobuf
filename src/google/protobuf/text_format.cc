@@ -584,23 +584,19 @@ class TextFormat::Parser::ParserImpl {
         }
       } else {
         field = descriptor->FindFieldByName(field_name);
-        // Group names are expected to be capitalized as they appear in the
-        // .proto file, which actually matches their type names, not their
-        // field names.
+        // Group-like delimited fields will accept both the capitalized type
+        // names as well.
         if (field == nullptr) {
           std::string lower_field_name = field_name;
           absl::AsciiStrToLower(&lower_field_name);
           field = descriptor->FindFieldByName(lower_field_name);
           // If the case-insensitive match worked but the field is NOT a group,
-          if (field != nullptr &&
-              field->type() != FieldDescriptor::TYPE_GROUP) {
+          if (field != nullptr && !internal::cpp::IsGroupLike(*field)) {
             field = nullptr;
           }
-        }
-        // Again, special-case group names as described above.
-        if (field != nullptr && field->type() == FieldDescriptor::TYPE_GROUP &&
-            field->message_type()->name() != field_name) {
-          field = nullptr;
+          if (field != nullptr && field->message_type()->name() != field_name) {
+            field = nullptr;
+          }
         }
 
         if (field == nullptr && allow_case_insensitive_field_) {
@@ -2062,7 +2058,7 @@ void TextFormat::FastFieldValuePrinter::PrintFieldName(
     generator->PrintLiteral("[");
     generator->PrintString(field->PrintableNameForExtension());
     generator->PrintLiteral("]");
-  } else if (field->type() == FieldDescriptor::TYPE_GROUP) {
+  } else if (internal::cpp::IsGroupLike(*field)) {
     // Groups must be serialized with their original capitalization.
     generator->PrintString(field->message_type()->name());
   } else {
