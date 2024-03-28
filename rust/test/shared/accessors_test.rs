@@ -16,7 +16,7 @@ fn test_default_accessors() {
     let msg: TestAllTypes = Default::default();
     assert_that!(
         msg,
-        matches_pattern!(TestAllTypes{
+        matches_pattern!(&TestAllTypes{
             default_int32(): eq(41),
             default_int64(): eq(42),
             default_uint32(): eq(43),

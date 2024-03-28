@@ -60,12 +60,12 @@ fn test_closed_enum_is_nonexhaustive() {
 #[test]
 fn test_closed_enum_conversion() {
     assert_that!(i32::from(TestSparseEnum::SparseA), eq(123));
-    assert_that!(TestSparseEnum::try_from(123), ok(eq(TestSparseEnum::SparseA)));
+    assert_that!(TestSparseEnum::try_from(123), ok(eq(&TestSparseEnum::SparseA)));
 
     assert_that!(i32::from(TestSparseEnum::SparseD), eq(-15));
-    assert_that!(TestSparseEnum::try_from(-15), ok(eq(TestSparseEnum::SparseD)));
+    assert_that!(TestSparseEnum::try_from(-15), ok(eq(&TestSparseEnum::SparseD)));
 
-    assert_that!(TestSparseEnum::try_from(0), ok(eq(TestSparseEnum::SparseF)));
+    assert_that!(TestSparseEnum::try_from(0), ok(eq(&TestSparseEnum::SparseF)));
     assert_that!(TestSparseEnum::try_from(1), err(anything()));
 }
 
@@ -77,9 +77,9 @@ fn test_closed_aliased_enum_conversion() {
     assert_that!(i32::from(TestEnumWithDupValue::Bar2), eq(2));
     assert_that!(i32::from(TestEnumWithDupValue::Baz), eq(3));
 
-    assert_that!(TestEnumWithDupValue::try_from(1), ok(eq(TestEnumWithDupValue::Foo1)));
-    assert_that!(TestEnumWithDupValue::try_from(2), ok(eq(TestEnumWithDupValue::Bar1)));
-    assert_that!(TestEnumWithDupValue::try_from(3), ok(eq(TestEnumWithDupValue::Baz)));
+    assert_that!(TestEnumWithDupValue::try_from(1), ok(eq(&TestEnumWithDupValue::Foo1)));
+    assert_that!(TestEnumWithDupValue::try_from(2), ok(eq(&TestEnumWithDupValue::Bar1)));
+    assert_that!(TestEnumWithDupValue::try_from(3), ok(eq(&TestEnumWithDupValue::Baz)));
     assert_that!(TestEnumWithDupValue::try_from(0), err(anything()));
     assert_that!(TestEnumWithDupValue::try_from(4), err(anything()));
 

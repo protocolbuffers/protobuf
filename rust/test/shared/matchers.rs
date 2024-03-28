@@ -7,19 +7,21 @@ use std::marker::PhantomData;
 /// ===============================
 ///               IS_UNSET
 /// ===============================
-pub fn is_unset<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized + 'a>()
--> impl Matcher<ActualT = Optional<PresentField<'a, T>, AbsentField<'a, T>>> {
-    UnsetMatcher::<T> { _phantom: PhantomData }
+pub fn is_unset<'a, 'b, T: std::fmt::Debug + ProxiedWithPresence + ?Sized + 'a>()
+-> impl Matcher<&'b Optional<PresentField<'a, T>, AbsentField<'a, T>>> {
+    UnsetMatcher
 }
 
-struct UnsetMatcher<'a, T: ProxiedWithPresence + ?Sized> {
-    _phantom: PhantomData<PresentField<'a, T>>,
-}
+#[derive(MatcherBase)]
+struct UnsetMatcher;
 
-impl<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized> Matcher for UnsetMatcher<'a, T> {
-    type ActualT = Optional<PresentField<'a, T>, AbsentField<'a, T>>;
-
-    fn matches(&self, actual: &Self::ActualT) -> MatcherResult {
+impl<'a, 'b, T: std::fmt::Debug + ProxiedWithPresence + ?Sized>
+    Matcher<&'b Optional<PresentField<'a, T>, AbsentField<'a, T>>> for UnsetMatcher
+{
+    fn matches(
+        &self,
+        actual: &'b Optional<PresentField<'a, T>, AbsentField<'a, T>>,
+    ) -> MatcherResult {
         actual.is_unset().into()
     }
 
@@ -34,19 +36,21 @@ impl<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized> Matcher for UnsetMat
 /// ===============================
 ///               IS_SET
 /// ===============================
-pub fn is_set<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized + 'a>()
--> impl Matcher<ActualT = Optional<PresentField<'a, T>, AbsentField<'a, T>>> {
-    SetMatcher::<T> { _phantom: PhantomData }
+pub fn is_set<'a, 'b, T: std::fmt::Debug + ProxiedWithPresence + ?Sized + 'a>()
+-> impl Matcher<&'b Optional<PresentField<'a, T>, AbsentField<'a, T>>> {
+    SetMatcher
 }
 
-struct SetMatcher<'a, T: ProxiedWithPresence + ?Sized> {
-    _phantom: PhantomData<PresentField<'a, T>>,
-}
+#[derive(MatcherBase)]
+struct SetMatcher;
 
-impl<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized> Matcher for SetMatcher<'a, T> {
-    type ActualT = Optional<PresentField<'a, T>, AbsentField<'a, T>>;
-
-    fn matches(&self, actual: &Self::ActualT) -> MatcherResult {
+impl<'a, 'b, T: std::fmt::Debug + ProxiedWithPresence + ?Sized>
+    Matcher<&'b Optional<PresentField<'a, T>, AbsentField<'a, T>>> for SetMatcher
+{
+    fn matches(
+        &self,
+        actual: &'b Optional<PresentField<'a, T>, AbsentField<'a, T>>,
+    ) -> MatcherResult {
         actual.is_set().into()
     }
 
