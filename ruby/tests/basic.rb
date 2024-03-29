@@ -732,14 +732,13 @@ module BasicTest
           end
         end
       end
-
-      proto = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("RepeatedString").msgclass.new
-      proto.things << "a"
-      proto.things << "b"
-      proto.things << "c"
+      proto = proto_module::TestMessage.new
+      proto.repeated_string << "a"
+      proto.repeated_string << "b"
+      proto.repeated_string << "c"
 
       # should not throw.
-      proto.things.each.with_index { |item, index| puts(item, index) }
+      proto.repeated_string.each.with_index { |item, index| puts(item, index) }
     end
 
     def test_oneof_fields_respond_to? # regression test for issue 9202
