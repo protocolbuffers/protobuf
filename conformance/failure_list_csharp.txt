@@ -13,3 +13,5 @@ Required.Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
 Required.Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
 Recommended.Proto3.ValueRejectInfNumberValue.JsonOutput
 Recommended.Proto3.ValueRejectNanNumberValue.JsonOutput
+Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
+Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
