@@ -904,16 +904,18 @@ TailCallTableInfo::TailCallTableInfo(
       // an int16_t) and count (a uint16_t). Otherwise, the entry holds a
       // pointer to the generated Name_IsValid function.
 
-      entry.aux_idx = aux_entries.size();
-      aux_entries.push_back({});
-      auto& aux_entry = aux_entries.back();
+      AuxEntry::EnumRange range;
 
-      if (GetEnumValidationRange(field->enum_type(), aux_entry.enum_range.start,
-                                 aux_entry.enum_range.size)) {
-        aux_entry.type = kEnumRange;
+      if (GetEnumValidationRange(field->enum_type(), range.start, range.size)) {
+        entry.aux_idx = aux_entries.size();
+        aux_entries.push_back({kEnumRange});
+        aux_entries.back().enum_range = range;
+      } else if (message_options.uses_codegen) {
+        entry.aux_idx = aux_entries.size();
+        aux_entries.push_back({kEnumValidator, {field}});
       } else {
-        aux_entry.type = kEnumValidator;
-        aux_entry.field = field;
+        // Disable the type card for this entry to force the fallback.
+        entry.type_card = 0;
       }
 
     } else if ((field->type() == FieldDescriptor::TYPE_STRING ||

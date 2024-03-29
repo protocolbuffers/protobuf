@@ -3292,26 +3292,18 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    if (field->type() == field->TYPE_ENUM &&
-        table_info.aux_entries[entry.aux_idx].type ==
-            internal::TailCallTableInfo::kEnumValidator) {
-      // Mini parse can't handle it. Fallback to reflection.
-      *entries = {};
-      table_info.aux_entries[entry.aux_idx] = {};
+    const OneofDescriptor* oneof = field->real_containing_oneof();
+    entries->offset = schema_.GetFieldOffset(field);
+    if (oneof != nullptr) {
+      entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+    } else if (schema_.HasHasbits()) {
+      entries->has_idx =
+          static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
     } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
-      entries->offset = schema_.GetFieldOffset(field);
-      if (oneof != nullptr) {
-        entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
-      } else if (schema_.HasHasbits()) {
-        entries->has_idx =
-            static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
-      } else {
-        entries->has_idx = 0;
-      }
-      entries->aux_idx = entry.aux_idx;
-      entries->type_card = entry.type_card;
+      entries->has_idx = 0;
     }
+    entries->aux_idx = entry.aux_idx;
+    entries->type_card = entry.type_card;
 
     ++entries;
   }
@@ -3326,6 +3318,7 @@ void Reflection::PopulateTcParseFieldAux(
         *field_aux++ = {};
         break;
       case internal::TailCallTableInfo::kInlinedStringDonatedOffset:
+        ABSL_DCHECK_NE(schema_.inlined_string_donated_offset_, -1);
         field_aux++->offset =
             static_cast<uint32_t>(schema_.inlined_string_donated_offset_);
         break;
@@ -3375,7 +3368,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   constexpr int kNoHasbit = -1;
   std::vector<int> has_bit_indices(
       static_cast<size_t>(descriptor_->field_count()), kNoHasbit);
-  std::vector<int> inlined_string_indices = has_bit_indices;
+  std::vector<int> inlined_string_indices;
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     auto* field = descriptor_->field(i);
     fields.push_back(field);
@@ -3383,6 +3376,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         static_cast<int>(schema_.HasBitIndex(field));
 
     if (IsInlined(field)) {
+      if (inlined_string_indices.empty()) {
+        inlined_string_indices.resize(descriptor_->field_count(), kNoHasbit);
+      }
       inlined_string_indices[static_cast<size_t>(field->index())] =
           schema_.InlinedStringIndex(field);
     }
