@@ -277,7 +277,8 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const ListValue& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -452,7 +453,8 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const Struct& from_msg);
     ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
@@ -751,7 +753,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const Value& from_msg);
     union KindUnion {
       constexpr KindUnion() : _constinit_{} {}
       ::google::protobuf::internal::ConstantInitialized _constinit_;

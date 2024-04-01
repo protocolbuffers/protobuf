@@ -249,7 +249,7 @@ Api::Api(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Api& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         methods_{visibility, arena, from.methods_},
@@ -266,7 +266,7 @@ Api::Api(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
                               arena, *from._impl_.source_context_)
@@ -649,7 +649,7 @@ Method::Method(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Method& from_msg)
       : options_{visibility, arena, from.options_},
         name_(arena, from.name_),
         request_type_url_(arena, from.request_type_url_),
@@ -664,7 +664,7 @@ Method::Method(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, request_streaming_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -1020,7 +1020,7 @@ Mixin::Mixin(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Mixin& from_msg)
       : name_(arena, from.name_),
         root_(arena, from.root_),
         _cached_size_{0} {}
@@ -1033,7 +1033,7 @@ Mixin::Mixin(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Mixin)
 }

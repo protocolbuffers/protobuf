@@ -136,7 +136,7 @@ Any::Any(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Any& from_msg)
       : type_url_(arena, from.type_url_),
         value_(arena, from.value_),
         _cached_size_{0},
@@ -150,7 +150,7 @@ Any::Any(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }

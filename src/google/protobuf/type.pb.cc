@@ -429,7 +429,7 @@ Type::Type(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Type& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         fields_{visibility, arena, from.fields_},
@@ -446,7 +446,7 @@ Type::Type(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
                               arena, *from._impl_.source_context_)
@@ -822,7 +822,7 @@ Field::Field(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Field& from_msg)
       : options_{visibility, arena, from.options_},
         name_(arena, from.name_),
         type_url_(arena, from.type_url_),
@@ -838,7 +838,7 @@ Field::Field(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, kind_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -1280,7 +1280,7 @@ Enum::Enum(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Enum& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         enumvalue_{visibility, arena, from.enumvalue_},
@@ -1296,7 +1296,7 @@ Enum::Enum(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.source_context_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::SourceContext>(
                               arena, *from._impl_.source_context_)
@@ -1648,7 +1648,7 @@ EnumValue::EnumValue(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::EnumValue& from_msg)
       : options_{visibility, arena, from.options_},
         name_(arena, from.name_),
         _cached_size_{0} {}
@@ -1661,7 +1661,7 @@ EnumValue::EnumValue(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_.number_ = from._impl_.number_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
@@ -1909,7 +1909,7 @@ Option::Option(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Option& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_) {}
@@ -1922,7 +1922,7 @@ Option::Option(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.value_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::Any>(
                               arena, *from._impl_.value_)

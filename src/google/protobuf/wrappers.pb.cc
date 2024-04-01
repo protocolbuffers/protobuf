@@ -1628,7 +1628,7 @@ StringValue::StringValue(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::StringValue& from_msg)
       : value_(arena, from.value_),
         _cached_size_{0} {}
 
@@ -1640,7 +1640,7 @@ StringValue::StringValue(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
@@ -1825,7 +1825,7 @@ BytesValue::BytesValue(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::BytesValue& from_msg)
       : value_(arena, from.value_),
         _cached_size_{0} {}
 
@@ -1837,7 +1837,7 @@ BytesValue::BytesValue(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }

@@ -114,7 +114,7 @@ SourceContext::SourceContext(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::SourceContext& from_msg)
       : file_name_(arena, from.file_name_),
         _cached_size_{0} {}
 
@@ -126,7 +126,7 @@ SourceContext::SourceContext(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }

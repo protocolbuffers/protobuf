@@ -245,7 +245,7 @@ Struct::Struct(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Struct& from_msg)
       : fields_{visibility, arena, from.fields_},
         _cached_size_{0} {}
 
@@ -257,7 +257,7 @@ Struct::Struct(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
@@ -488,7 +488,7 @@ Value::Value(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::Value& from_msg)
       : kind_{},
         _cached_size_{0},
         _oneof_case_{from._oneof_case_[0]} {}
@@ -501,7 +501,7 @@ Value::Value(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   switch (kind_case()) {
     case KIND_NOT_SET:
       break;
@@ -886,7 +886,7 @@ ListValue::ListValue(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::ListValue& from_msg)
       : values_{visibility, arena, from.values_},
         _cached_size_{0} {}
 
@@ -898,7 +898,7 @@ ListValue::ListValue(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }

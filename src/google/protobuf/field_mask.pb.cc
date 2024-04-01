@@ -112,7 +112,7 @@ FieldMask::FieldMask(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::FieldMask& from_msg)
       : paths_{visibility, arena, from.paths_},
         _cached_size_{0} {}
 
@@ -124,7 +124,7 @@ FieldMask::FieldMask(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
