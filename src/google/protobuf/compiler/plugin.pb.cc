@@ -308,7 +308,7 @@ Version::Version(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::compiler::Version& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         suffix_(arena, from.suffix_) {}
@@ -321,7 +321,7 @@ Version::Version(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, major_),
            reinterpret_cast<const char *>(&from._impl_) +
@@ -621,7 +621,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_to_generate_{visibility, arena, from.file_to_generate_},
@@ -637,7 +637,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.compiler_version_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::compiler::Version>(
                               arena, *from._impl_.compiler_version_)
@@ -969,7 +969,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
 }
 inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_),
@@ -984,7 +984,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.generated_code_info_ = (cached_has_bits & 0x00000008u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::GeneratedCodeInfo>(
                               arena, *from._impl_.generated_code_info_)
@@ -1287,7 +1287,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
 }
 inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from)
+    const Impl_& from, const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_{visibility, arena, from.file_},
@@ -1301,7 +1301,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, supported_features_),
            reinterpret_cast<const char *>(&from._impl_) +

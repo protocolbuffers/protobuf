@@ -609,7 +609,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual size_t SpaceUsedLong() const = 0;
 
     virtual void MergeFrom(const MessageLite* prototype,
-                           const LazyMessageExtension& other, Arena* arena) = 0;
+                           const LazyMessageExtension& other, Arena* arena,
+                           Arena* other_arena) = 0;
     virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
     virtual void Clear() = 0;
 

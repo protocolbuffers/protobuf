@@ -876,7 +876,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const UninterpretedOption_NamePart& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_part_;
@@ -1140,7 +1141,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const SourceCodeInfo_Location& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -1399,7 +1401,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const GeneratedCodeInfo_Annotation& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
@@ -1594,7 +1597,8 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FieldOptions_EditionDefault& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr value_;
@@ -2127,7 +2131,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FeatureSet& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -2365,7 +2370,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const ExtensionRangeOptions_Declaration& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr full_name_;
@@ -2553,7 +2559,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const EnumDescriptorProto_EnumReservedRange& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -2738,7 +2745,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const DescriptorProto_ReservedRange& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
@@ -3008,7 +3016,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const UninterpretedOption& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
@@ -3193,7 +3202,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const SourceCodeInfo& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3371,7 +3381,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const GeneratedCodeInfo& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3558,7 +3569,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FeatureSetDefaults_FeatureSetEditionDefault& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::FeatureSet* features_;
@@ -3944,7 +3956,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const ServiceOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -4320,7 +4333,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const OneofOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -4739,7 +4753,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const MethodOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -5176,7 +5191,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const MessageOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -5864,7 +5880,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FileOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -6492,7 +6509,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FieldOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -6708,7 +6726,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FeatureSetDefaults& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
@@ -7133,7 +7152,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const ExtensionRangeOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -7534,7 +7554,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const EnumValueOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -7947,7 +7968,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const EnumOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
@@ -8146,7 +8168,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const OneofDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8401,7 +8424,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const MethodDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -8787,7 +8811,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FieldDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -9003,7 +9028,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const EnumValueDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
@@ -9205,7 +9231,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const DescriptorProto_ExtensionRange& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::ExtensionRangeOptions* options_;
@@ -9419,7 +9446,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const ServiceDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
@@ -9681,7 +9709,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const EnumDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
@@ -10036,7 +10065,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const DescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
@@ -10442,7 +10472,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FileDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> dependency_;
@@ -10632,7 +10663,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from);
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const FileDescriptorSet& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     mutable ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
