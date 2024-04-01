@@ -38,14 +38,13 @@ namespace internal {
 // describes the common header for all blocks.
 struct ArenaBlock {
   // For the sentry block with zero-size where ptr_, limit_, cleanup_nodes all
-  // point to "this".
-  constexpr ArenaBlock()
-      : next(nullptr), cleanup_nodes(this), size(0) {}
+  // point to `this`.
+  constexpr ArenaBlock() : cleanup_nodes(this) {}
 
-  ArenaBlock(ArenaBlock* next, size_t size)
-      : next(next), cleanup_nodes(nullptr), size(size) {
+  ArenaBlock(ArenaBlock* next, size_t size) : next(next), size(size) {
     ABSL_DCHECK_GT(size, sizeof(ArenaBlock));
   }
+  explicit ArenaBlock(size_t size) : ArenaBlock(nullptr, size) {}
 
   char* Pointer(size_t n) {
     ABSL_DCHECK_LE(n, size);
@@ -55,9 +54,12 @@ struct ArenaBlock {
 
   bool IsSentry() const { return size == 0; }
 
-  ArenaBlock* const next;
+  ArenaBlock* const next = nullptr;
+  // cleanup_nodes is uninitialized for the current head block (if non-sentry)
+  // and is initialized during SerialArena::AllocateNewBlock. cleanup_nodes is
+  // `this` for sentry blocks.
   void* cleanup_nodes;
-  const size_t size;
+  const size_t size = 0;
   // data follows
 };
 

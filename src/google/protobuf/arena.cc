@@ -42,7 +42,7 @@ namespace {
 #if defined(__GNUC__) && __GNUC__ >= 5
 // kSentryArenaBlock is used for arenas which can be referenced pre-main. So,
 // constexpr is required.
-constexpr ArenaBlock kSentryArenaBlock;
+constexpr ArenaBlock kSentryArenaBlock{};
 
 ArenaBlock* SentryArenaBlock() {
   // const_cast<> is okay as kSentryArenaBlock will never be mutated.
@@ -54,7 +54,7 @@ ArenaBlock* SentryArenaBlock() {
 // fail.  This version is no longer in our support window, but we use it in
 // some of our aarch64 docker images.
 ArenaBlock* SentryArenaBlock() {
-  static const ArenaBlock kSentryArenaBlock;
+  static const ArenaBlock kSentryArenaBlock{};
   // const_cast<> is okay as kSentryArenaBlock will never be mutated.
   return const_cast<ArenaBlock*>(&kSentryArenaBlock);
 }
@@ -174,7 +174,7 @@ SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
   ThreadSafeArenaStats::RecordAllocateStats(parent.arena_stats_.MutableStats(),
                                             /*used=*/0, /*allocated=*/mem.n,
                                             /*wasted=*/0);
-  auto b = new (mem.p) ArenaBlock{nullptr, mem.n};
+  auto b = new (mem.p) ArenaBlock{mem.n};
   return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, parent);
 }
 
@@ -543,7 +543,7 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size) {
   }
   // Record user-owned block.
   alloc_policy_.set_is_user_owned_initial_block(true);
-  return new (buf) ArenaBlock{nullptr, size};
+  return new (buf) ArenaBlock{size};
 }
 
 ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
@@ -561,7 +561,7 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
     alloc_policy_.set_is_user_owned_initial_block(true);
   }
 
-  return new (mem.p) ArenaBlock{nullptr, mem.n};
+  return new (mem.p) ArenaBlock{mem.n};
 }
 
 void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
@@ -747,7 +747,7 @@ uint64_t ThreadSafeArena::Reset() {
     size_t offset = alloc_policy_.get() == nullptr
                         ? kBlockHeaderSize
                         : kBlockHeaderSize + kAllocPolicySize;
-    first_arena_.Init(new (mem.p) ArenaBlock{nullptr, mem.n}, offset);
+    first_arena_.Init(new (mem.p) ArenaBlock{mem.n}, offset);
   } else {
     first_arena_.Init(SentryArenaBlock(), 0);
   }
