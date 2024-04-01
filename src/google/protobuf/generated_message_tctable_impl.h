@@ -153,9 +153,8 @@ enum TransformValidation : uint16_t {
   kTvUtf8      = 2 << kTvShift,  // proto3
 
   // Message fields:
-  kTvDefault   = 1 << kTvShift,  // Aux has default_instance*
-  kTvTable     = 2 << kTvShift,  // Aux has TcParseTableBase*
-  kTvWeakPtr   = 3 << kTvShift,  // Aux has default_instance** (for weak)
+  kTvTable     = 1 << kTvShift,  // Aux has TcParseTableBase*
+  kTvWeakPtr   = 2 << kTvShift,  // Aux has default_instance** (for weak)
 
   // Lazy message fields:
   kTvEager     = 1 << kTvShift,
@@ -351,9 +350,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)                  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt)                \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMl)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()                     \
@@ -572,22 +569,14 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group
-  //   d: default*   t: TcParseTable* (the contents of aux)  l: lazy
+  //   t: TcParseTable* (the contents of aux)  l: lazy
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
-  PROTOBUF_NOINLINE static const char* FastMdS1(PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE static const char* FastMdS2(PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE static const char* FastGdS1(PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE static const char* FastGdS2(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastMtS1(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastMtS2(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastGtS1(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastGtS2(PROTOBUF_TC_PARAM_DECL);
 
-  PROTOBUF_NOINLINE static const char* FastMdR1(PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE static const char* FastMdR2(PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE static const char* FastGdR1(PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE static const char* FastGdR2(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastMtR1(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastMtR2(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE static const char* FastGtR1(PROTOBUF_TC_PARAM_DECL);
@@ -730,9 +719,9 @@ class PROTOBUF_EXPORT TcParser final {
   template <bool export_called_function>
   static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
 
-  template <typename TagType, bool group_coding, bool aux_is_table>
+  template <typename TagType, bool group_coding>
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
-  template <typename TagType, bool group_coding, bool aux_is_table>
+  template <typename TagType, bool group_coding>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType>
   static inline const char* LazyMessage(PROTOBUF_TC_PARAM_DECL);
@@ -910,6 +899,9 @@ class PROTOBUF_EXPORT TcParser final {
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
                           MessageLite* msg);
+
+  static const TcParseTableBase* GetTableForAux(TcParseTableBase::FieldAux aux,
+                                                uint16_t type_card);
 
   // UTF-8 validation:
   static void ReportFastUtf8Error(uint32_t decoded_tag,

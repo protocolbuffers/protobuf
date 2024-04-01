@@ -204,16 +204,12 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      picked =
-          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
-           : options.use_direct_tcparser_table
-               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
-               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
+      picked = HasLazyRep(field, options)
+                   ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
+                   : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt);
       break;
     case FieldDescriptor::TYPE_GROUP:
-      picked = (options.use_direct_tcparser_table
-                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt)
-                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGd));
+      picked = PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt);
       break;
   }
 
@@ -666,10 +662,8 @@ uint16_t MakeTypeCardForField(
       type_card |= 0 | fl::kMessage | fl::kRepGroup;
       if (options.is_implicitly_weak) {
         type_card |= fl::kTvWeakPtr;
-      } else if (options.use_direct_tcparser_table) {
-        type_card |= fl::kTvTable;
       } else {
-        type_card |= fl::kTvDefault;
+        type_card |= fl::kTvTable;
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
@@ -684,10 +678,8 @@ uint16_t MakeTypeCardForField(
         } else {
           if (options.is_implicitly_weak) {
             type_card |= fl::kTvWeakPtr;
-          } else if (options.use_direct_tcparser_table) {
-            type_card |= fl::kTvTable;
           } else {
-            type_card |= fl::kTvDefault;
+            type_card |= fl::kTvTable;
           }
         }
       }
@@ -821,7 +813,7 @@ TailCallTableInfo::TailCallTableInfo(
               field->type() == FieldDescriptor::TYPE_GROUP) &&
              !field->is_map() && !field->options().weak() &&
              !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-             options.use_direct_tcparser_table && is_non_cold(options);
+             is_non_cold(options);
     };
     for (const FieldDescriptor* field : ordered_fields) {
       if (is_non_cold_subtable(field)) {
@@ -878,9 +870,7 @@ TailCallTableInfo::TailCallTableInfo(
           entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
-                       : options.use_direct_tcparser_table ? kSubTable
-                                                           : kSubMessage;
+        AuxType type = options.is_implicitly_weak ? kSubMessageWeak : kSubTable;
         if (message_options.should_profile_driven_cluster_aux_subtable &&
             type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
