@@ -1,5 +1,6 @@
 name: PHP Tests
 
+
 on:
   workflow_call:
     inputs:
@@ -171,7 +172,7 @@ jobs:
         run: brew install coreutils gd
 
       - name: Pin PHP version
-        uses: shivammathur/setup-php@a4e22b60bbb9c1021113f2860347b0759f66fe5d # 2.30.0
+        uses: shivammathur/setup-php@8872c784b04a1420e81191df5d64fbd59d3d3033 # 2.30.2
         with:
           php-version: ${{ matrix.version }}
 
