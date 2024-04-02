@@ -273,11 +273,11 @@ where
     K: Proxied + ?Sized + 'msg,
     V: ProxiedInMapValue<K> + ?Sized + 'msg,
 {
-    pub fn len(self) -> usize {
+    pub fn len(&self) -> usize {
         self.as_view().len()
     }
 
-    pub fn is_empty(self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
@@ -570,6 +570,10 @@ mod tests {
     fn test_extend() {
         let mut map: Map<i32, ProtoStr> = Map::new();
         let mut map_mut = map.as_mut();
+
+        map_mut.extend([(0, ""); 0]);
+        assert_that!(map_mut.len(), eq(0));
+
         map_mut.extend([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
         assert_that!(

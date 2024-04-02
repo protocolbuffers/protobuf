@@ -508,6 +508,10 @@ mod tests {
     #[test]
     fn test_repeated_extend() {
         let mut r = Repeated::<i32>::new();
+
+        r.as_mut().extend([0; 0]);
+        assert_that!(r.as_mut().len(), eq(0));
+
         r.as_mut().extend([0, 1]);
         assert_that!(r.as_mut().iter().collect::<Vec<_>>(), elements_are![eq(0), eq(1)]);
         let mut x = Repeated::<i32>::new();
