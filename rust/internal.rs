@@ -9,10 +9,13 @@
 //! exposed to through the `protobuf` path but must be public for use by
 //! generated code.
 
+pub use crate::r#enum::Enum;
 pub use crate::vtable::{
     new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, PrimitiveOptionalMutVTable,
-    PrimitiveVTable, RawVTableMutator,
+    PrimitiveVTable, PrimitiveWithRawVTable, ProxiedWithRawOptionalVTable, ProxiedWithRawVTable,
+    RawVTableMutator, RawVTableOptionalMutatorData,
 };
+pub use crate::ProtoStr;
 use std::ptr::NonNull;
 use std::slice;
 
@@ -129,5 +132,12 @@ impl PtrAndLen {
 impl From<&[u8]> for PtrAndLen {
     fn from(slice: &[u8]) -> Self {
         Self { ptr: slice.as_ptr(), len: slice.len() }
+    }
+}
+
+impl From<&ProtoStr> for PtrAndLen {
+    fn from(s: &ProtoStr) -> Self {
+        let bytes = s.as_bytes();
+        Self { ptr: bytes.as_ptr(), len: bytes.len() }
     }
 }

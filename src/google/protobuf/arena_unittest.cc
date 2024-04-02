@@ -7,16 +7,20 @@
 
 #include "google/protobuf/arena.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <new>  // IWYU pragma: keep for operator new
 #include <string>
 #include <thread>
 #include <type_traits>
-#include <typeinfo>
 #include <utility>
 #include <vector>
 
@@ -26,6 +30,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
+#include "absl/utility/utility.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -47,12 +52,13 @@
 #include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
-using protobuf_unittest::ForeignMessage;
+using protobuf_unittest::NestedTestAllTypes;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestRepeatedString;
+using ::testing::ElementsAreArray;
 
 namespace google {
 namespace protobuf {
@@ -155,6 +161,89 @@ TEST(ArenaTest, DestructorSkippable) {
   EXPECT_TRUE(Arena::is_destructor_skippable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_destructor_skippable<const TestAllTypes>::type::value);
   EXPECT_FALSE(Arena::is_destructor_skippable<Arena>::type::value);
+}
+
+template <int>
+struct EmptyBase {};
+struct ArenaCtorBase {
+  using InternalArenaConstructable_ = void;
+};
+struct ArenaDtorBase {
+  using DestructorSkippable_ = void;
+};
+
+template <bool arena_ctor, bool arena_dtor>
+void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
+                           std::vector<absl::string_view> copy,
+                           std::vector<absl::string_view> with_int) {
+  static auto& actions = *new std::vector<absl::string_view>;
+  struct TraitsProber
+      : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
+        std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
+        Message {
+    TraitsProber() { actions.push_back("()"); }
+    TraitsProber(const TraitsProber&) { actions.push_back("(const T&)"); }
+    explicit TraitsProber(int) { actions.push_back("(int)"); }
+    explicit TraitsProber(Arena* arena) { actions.push_back("(Arena)"); }
+    TraitsProber(Arena* arena, const TraitsProber&) {
+      actions.push_back("(Arena, const T&)");
+    }
+    TraitsProber(Arena* arena, int) { actions.push_back("(Arena, int)"); }
+    ~TraitsProber() override { actions.push_back("~()"); }
+
+    TraitsProber* New(Arena*) const final {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+    const ClassData* GetClassData() const final {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+  };
+
+  static_assert(
+      !arena_ctor || Arena::is_arena_constructable<TraitsProber>::value, "");
+  static_assert(
+      !arena_dtor || Arena::is_destructor_skippable<TraitsProber>::value, "");
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(def));
+
+  const TraitsProber p;
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, p);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(copy));
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, 17);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(with_int));
+}
+
+TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
+  TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
+                                      {"(int)", "~()"});
+  // If the object is not arena constructible, then the destructor is always
+  // called even if marked as skippable.
+  TestCtorAndDtorTraits<false, true>({"()", "~()"}, {"(const T&)", "~()"},
+                                     {"(int)", "~()"});
+
+  // Some types are arena constructible but we can't skip the destructor. Those
+  // are constructed with an arena but still destroyed.
+  TestCtorAndDtorTraits<true, false>({"(Arena)", "~()"},
+                                     {"(Arena, const T&)", "~()"},
+                                     {"(Arena, int)", "~()"});
+  TestCtorAndDtorTraits<true, true>({"(Arena)"}, {"(Arena, const T&)"},
+                                    {"(Arena, int)"});
 }
 
 TEST(ArenaTest, BasicCreate) {
@@ -302,8 +391,8 @@ TEST(ArenaTest, CreateDestroy) {
 
   // Test memory leak.
   Arena arena;
-  TestAllTypes* heap_message = Arena::CreateMessage<TestAllTypes>(nullptr);
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* heap_message = Arena::Create<TestAllTypes>(nullptr);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
 
   *heap_message = original;
   *arena_message = original;
@@ -316,6 +405,79 @@ TEST(ArenaTest, CreateDestroy) {
             strlen(arena_message->optional_string().c_str()));
 }
 
+TEST(ArenaTest, MoveCtorOnArena) {
+  Arena arena;
+
+  ASSERT_EQ(arena.SpaceUsed(), 0);
+
+  auto* original = Arena::Create<NestedTestAllTypes>(&arena);
+  TestUtil::SetAllFields(original->mutable_payload());
+  TestUtil::ExpectAllFieldsSet(original->payload());
+
+  auto usage_original = arena.SpaceUsed();
+  auto* moved = Arena::Create<NestedTestAllTypes>(&arena, std::move(*original));
+  auto usage_by_move = arena.SpaceUsed() - usage_original;
+
+  TestUtil::ExpectAllFieldsSet(moved->payload());
+
+  // The only extra allocation with moves is sizeof(NestedTestAllTypes).
+  EXPECT_EQ(usage_by_move, sizeof(NestedTestAllTypes));
+  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  TestUtil::ExpectClear(original->payload());
+}
+
+TEST(ArenaTest, RepeatedFieldMoveCtorOnArena) {
+  Arena arena;
+
+  auto* original = Arena::Create<RepeatedField<int32_t>>(&arena);
+  original->Add(1);
+  original->Add(2);
+  ASSERT_EQ(original->size(), 2);
+  ASSERT_EQ(original->Get(0), 1);
+  ASSERT_EQ(original->Get(1), 2);
+
+  auto* moved =
+      Arena::Create<RepeatedField<int32_t>>(&arena, std::move(*original));
+
+  EXPECT_EQ(moved->size(), 2);
+  EXPECT_EQ(moved->Get(0), 1);
+  EXPECT_EQ(moved->Get(1), 2);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  EXPECT_EQ(original->size(), 0);
+}
+
+TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
+  Arena arena;
+
+  ASSERT_EQ(arena.SpaceUsed(), 0);
+
+  auto* original = Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  auto* msg = original->Add();
+  TestUtil::SetAllFields(msg);
+  TestUtil::ExpectAllFieldsSet(*msg);
+
+  auto usage_original = arena.SpaceUsed();
+  auto* moved = Arena::Create<RepeatedPtrField<TestAllTypes>>(
+      &arena, std::move(*original));
+  auto usage_by_move = arena.SpaceUsed() - usage_original;
+
+  EXPECT_EQ(moved->size(), 1);
+  TestUtil::ExpectAllFieldsSet(moved->Get(0));
+
+  // The only extra allocation with moves is sizeof(RepeatedPtrField).
+  EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
+  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+
+  // Status after move is unspecified and must not be assumed. It's merely
+  // checking current implementation specifics for protobuf internal.
+  EXPECT_EQ(original->size(), 0);
+}
+
 struct OnlyArenaConstructible {
   using InternalArenaConstructable_ = void;
   explicit OnlyArenaConstructible(Arena* arena) {}
@@ -323,7 +485,7 @@ struct OnlyArenaConstructible {
 
 TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
   Arena arena;
-  Arena::CreateMessage<OnlyArenaConstructible>(&arena);
+  Arena::Create<OnlyArenaConstructible>(&arena);
 }
 
 TEST(ArenaTest, GetConstructTypeWorks) {
@@ -346,12 +508,12 @@ TEST(ArenaTest, GetConstructTypeWorks) {
 class DispatcherTestProto : public Message {
  public:
   using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   // For the test below to construct.
   explicit DispatcherTestProto(absl::in_place_t) {}
   explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
   DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
   DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
-  Metadata GetMetadata() const final { ABSL_LOG(FATAL); }
   const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
 };
 // We use a specialization to inject behavior for the test.
@@ -369,34 +531,57 @@ void* Arena::CopyConstruct<DispatcherTestProto>(Arena*, const void*) {
   return nullptr;
 }
 template <>
-DispatcherTestProto* Arena::CreateMessageInternal<DispatcherTestProto, int>(
+DispatcherTestProto* Arena::CreateArenaCompatible<DispatcherTestProto, int>(
     Arena*, int&&) {
   hook_called = "fallback";
   return nullptr;
 }
 
+TEST(ArenaTest, CreateArenaConstructable) {
+  TestAllTypes original;
+  TestUtil::SetAllFields(&original);
+
+  Arena arena;
+  auto copied = Arena::Create<TestAllTypes>(&arena, original);
+
+  TestUtil::ExpectAllFieldsSet(*copied);
+  EXPECT_EQ(copied->GetArena(), &arena);
+  EXPECT_EQ(copied->optional_nested_message().GetArena(), &arena);
+}
+
+TEST(ArenaTest, CreateRepeatedPtrField) {
+  Arena arena;
+  auto repeated = Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  TestUtil::SetAllFields(repeated->Add());
+
+  TestUtil::ExpectAllFieldsSet(repeated->Get(0));
+  EXPECT_EQ(repeated->GetArena(), &arena);
+  EXPECT_EQ(repeated->Get(0).GetArena(), &arena);
+  EXPECT_EQ(repeated->Get(0).optional_nested_message().GetArena(), &arena);
+}
+
 TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   hook_called = "";
-  Arena::CreateMessage<DispatcherTestProto>(nullptr);
+  Arena::Create<DispatcherTestProto>(nullptr);
   EXPECT_EQ(hook_called, "default");
 
   DispatcherTestProto ref(absl::in_place);
   const DispatcherTestProto& cref = ref;
 
   hook_called = "";
-  Arena::CreateMessage<DispatcherTestProto>(nullptr);
+  Arena::Create<DispatcherTestProto>(nullptr);
   EXPECT_EQ(hook_called, "default");
 
   hook_called = "";
-  Arena::CreateMessage<DispatcherTestProto>(nullptr, ref);
+  Arena::Create<DispatcherTestProto>(nullptr, ref);
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::CreateMessage<DispatcherTestProto>(nullptr, cref);
+  Arena::Create<DispatcherTestProto>(nullptr, cref);
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::CreateMessage<DispatcherTestProto>(nullptr, 1);
+  Arena::Create<DispatcherTestProto>(nullptr, 1);
   EXPECT_EQ(hook_called, "fallback");
 }
 #endif  // __cpp_if_constexpr
@@ -407,7 +592,7 @@ TEST(ArenaTest, Parsing) {
 
   // Test memory leak.
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   TestUtil::ExpectAllFieldsSet(*arena_message);
 
@@ -423,8 +608,7 @@ TEST(ArenaTest, UnknownFields) {
   // Test basic parsing into (populating) and reading out of unknown fields on
   // an arena.
   Arena arena;
-  TestEmptyMessage* arena_message =
-      Arena::CreateMessage<TestEmptyMessage>(&arena);
+  TestEmptyMessage* arena_message = Arena::Create<TestEmptyMessage>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
 
   TestAllTypes copied;
@@ -432,7 +616,7 @@ TEST(ArenaTest, UnknownFields) {
   TestUtil::ExpectAllFieldsSet(copied);
 
   // Exercise UFS manual manipulation (setters).
-  arena_message = Arena::CreateMessage<TestEmptyMessage>(&arena);
+  arena_message = Arena::Create<TestEmptyMessage>(&arena);
   arena_message->mutable_unknown_fields()->AddVarint(
       TestAllTypes::kOptionalInt32FieldNumber, 42);
   copied.Clear();
@@ -441,8 +625,7 @@ TEST(ArenaTest, UnknownFields) {
   EXPECT_EQ(42, copied.optional_int32());
 
   // Exercise UFS swap path.
-  TestEmptyMessage* arena_message_2 =
-      Arena::CreateMessage<TestEmptyMessage>(&arena);
+  TestEmptyMessage* arena_message_2 = Arena::Create<TestEmptyMessage>(&arena);
   arena_message_2->Swap(arena_message);
   copied.Clear();
   copied.ParseFromString(arena_message_2->SerializeAsString());
@@ -450,8 +633,7 @@ TEST(ArenaTest, UnknownFields) {
   EXPECT_EQ(42, copied.optional_int32());
 
   // Test field manipulation.
-  TestEmptyMessage* arena_message_3 =
-      Arena::CreateMessage<TestEmptyMessage>(&arena);
+  TestEmptyMessage* arena_message_3 = Arena::Create<TestEmptyMessage>(&arena);
   arena_message_3->mutable_unknown_fields()->AddVarint(1000, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed32(1001, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed64(1002, 42);
@@ -470,15 +652,15 @@ TEST(ArenaTest, Swap) {
 
   // Case 1: Swap(), no UFS on either message, both messages on different
   // arenas. Arena pointers should remain the same after swap.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  arena2_message = Arena::Create<TestAllTypes>(&arena2);
   arena1_message->Swap(arena2_message);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
 
   // Case 2: Swap(), UFS on one message, both messages on different arenas.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  arena2_message = Arena::Create<TestAllTypes>(&arena2);
   arena1_message->mutable_unknown_fields()->AddVarint(1, 42);
   arena1_message->Swap(arena2_message);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
@@ -488,8 +670,8 @@ TEST(ArenaTest, Swap) {
   EXPECT_EQ(42, arena2_message->unknown_fields().field(0).varint());
 
   // Case 3: Swap(), UFS on both messages, both messages on different arenas.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  arena2_message = Arena::Create<TestAllTypes>(&arena2);
   arena1_message->mutable_unknown_fields()->AddVarint(1, 42);
   arena2_message->mutable_unknown_fields()->AddVarint(2, 84);
   arena1_message->Swap(arena2_message);
@@ -508,8 +690,8 @@ TEST(ArenaTest, ReflectionSwapFields) {
   TestAllTypes* arena2_message;
 
   // Case 1: messages on different arenas, only one message is set.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  arena2_message = Arena::Create<TestAllTypes>(&arena2);
   TestUtil::SetAllFields(arena1_message);
   const Reflection* reflection = arena1_message->GetReflection();
   std::vector<const FieldDescriptor*> fields;
@@ -527,8 +709,8 @@ TEST(ArenaTest, ReflectionSwapFields) {
   TestUtil::ExpectAllFieldsSet(*arena1_message);
 
   // Case 2: messages on different arenas, both messages are set.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  arena2_message = Arena::Create<TestAllTypes>(&arena2);
   TestUtil::SetAllFields(arena1_message);
   TestUtil::SetAllFields(arena2_message);
   reflection->SwapFields(arena1_message, arena2_message, fields);
@@ -538,17 +720,17 @@ TEST(ArenaTest, ReflectionSwapFields) {
   TestUtil::ExpectAllFieldsSet(*arena2_message);
 
   // Case 3: messages on different arenas with different lifetimes.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
   {
     Arena arena3;
-    TestAllTypes* arena3_message = Arena::CreateMessage<TestAllTypes>(&arena3);
+    TestAllTypes* arena3_message = Arena::Create<TestAllTypes>(&arena3);
     TestUtil::SetAllFields(arena3_message);
     reflection->SwapFields(arena1_message, arena3_message, fields);
   }
   TestUtil::ExpectAllFieldsSet(*arena1_message);
 
   // Case 4: one message on arena, the other on heap.
-  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  arena1_message = Arena::Create<TestAllTypes>(&arena1);
   TestAllTypes message;
   TestUtil::SetAllFields(arena1_message);
   reflection->SwapFields(arena1_message, &message, fields);
@@ -561,7 +743,7 @@ TEST(ArenaTest, ReflectionSwapFields) {
 
 TEST(ArenaTest, SetAllocatedMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
@@ -570,7 +752,7 @@ TEST(ArenaTest, SetAllocatedMessage) {
 
 TEST(ArenaTest, ReleaseMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
@@ -583,7 +765,7 @@ TEST(ArenaTest, ReleaseMessage) {
 
 TEST(ArenaTest, SetAllocatedString) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   std::string* allocated_str = new std::string("hello");
   arena_message->set_allocated_optional_string(allocated_str);
   EXPECT_EQ("hello", arena_message->optional_string());
@@ -591,7 +773,7 @@ TEST(ArenaTest, SetAllocatedString) {
 
 TEST(ArenaTest, ReleaseString) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->set_optional_string("hello");
   std::unique_ptr<std::string> released_str(
       arena_message->release_optional_string());
@@ -603,10 +785,10 @@ TEST(ArenaTest, ReleaseString) {
 
 TEST(ArenaTest, SwapBetweenArenasWithAllFieldsSet) {
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   {
     Arena arena2;
-    TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+    TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
     TestUtil::SetAllFields(arena2_message);
     arena2_message->Swap(arena1_message);
     std::string output;
@@ -621,7 +803,7 @@ TEST(ArenaTest, SwapBetweenArenaAndNonArenaWithAllFieldsSet) {
   TestUtil::SetAllFields(&non_arena_message);
   {
     Arena arena2;
-    TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+    TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
     TestUtil::SetAllFields(arena2_message);
     arena2_message->Swap(&non_arena_message);
     TestUtil::ExpectAllFieldsSet(*arena2_message);
@@ -631,8 +813,8 @@ TEST(ArenaTest, SwapBetweenArenaAndNonArenaWithAllFieldsSet) {
 
 TEST(ArenaTest, UnsafeArenaSwap) {
   Arena shared_arena;
-  TestAllTypes* message1 = Arena::CreateMessage<TestAllTypes>(&shared_arena);
-  TestAllTypes* message2 = Arena::CreateMessage<TestAllTypes>(&shared_arena);
+  TestAllTypes* message1 = Arena::Create<TestAllTypes>(&shared_arena);
+  TestAllTypes* message2 = Arena::Create<TestAllTypes>(&shared_arena);
   TestUtil::SetAllFields(message1);
   message1->UnsafeArenaSwap(message2);
   TestUtil::ExpectAllFieldsSet(*message2);
@@ -640,10 +822,10 @@ TEST(ArenaTest, UnsafeArenaSwap) {
 
 TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   {
     Arena arena2;
-    TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+    TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
     TestUtil::SetAllFields(arena2_message);
     const Reflection* r = arena2_message->GetReflection();
     r->Swap(arena1_message, arena2_message);
@@ -659,7 +841,7 @@ TEST(ArenaTest, SwapBetweenArenaAndNonArenaUsingReflection) {
   TestUtil::SetAllFields(&non_arena_message);
   {
     Arena arena2;
-    TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+    TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
     TestUtil::SetAllFields(arena2_message);
     const Reflection* r = arena2_message->GetReflection();
     r->Swap(&non_arena_message, arena2_message);
@@ -673,7 +855,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageMakesCopy) {
   std::string* nested_string = nullptr;
   {
     Arena arena;
-    TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
     arena_message->mutable_optional_nested_message()->set_bb(42);
     *arena_message->mutable_optional_string() = "Hello";
     nested_msg = arena_message->release_optional_nested_message();
@@ -691,12 +873,12 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
   // Note: no string: reflection API only supports releasing submessages.
   {
     Arena arena;
-    TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+    TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
     arena_message->mutable_optional_nested_message()->set_bb(42);
     const Reflection* r = arena_message->GetReflection();
     const FieldDescriptor* f = arena_message->GetDescriptor()->FindFieldByName(
         "optional_nested_message");
-    nested_msg = static_cast<TestAllTypes::NestedMessage*>(
+    nested_msg = DownCastToGenerated<TestAllTypes::NestedMessage>(
         r->ReleaseMessage(arena_message, f));
   }
   EXPECT_EQ(42, nested_msg->bb());
@@ -706,7 +888,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
 
 TEST(ArenaTest, SetAllocatedAcrossArenas) {
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   TestAllTypes::NestedMessage* heap_submessage =
       new TestAllTypes::NestedMessage();
   heap_submessage->set_bb(42);
@@ -716,7 +898,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
 #if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(arena1_message->set_allocated_optional_nested_message(
@@ -728,7 +910,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
   }
 
   TestAllTypes::NestedMessage* arena1_submessage =
-      Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
+      Arena::Create<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
 #if GTEST_HAS_DEATH_TEST
@@ -742,11 +924,11 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
 
 TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenas) {
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     arena1_message->unsafe_arena_set_allocated_optional_nested_message(
         arena2_submessage);
@@ -757,7 +939,7 @@ TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenas) {
   }
 
   TestAllTypes::NestedMessage* arena1_submessage =
-      Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
+      Arena::Create<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
   heap_message->unsafe_arena_set_allocated_optional_nested_message(
@@ -771,7 +953,7 @@ TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenas) {
 TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
   // Same as above, with reflection.
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
   const FieldDescriptor* msg_field =
@@ -785,7 +967,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
 #if GTEST_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
@@ -797,7 +979,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
   }
 
   TestAllTypes::NestedMessage* arena1_submessage =
-      Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
+      Arena::Create<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
 #if GTEST_HAS_DEATH_TEST
@@ -812,7 +994,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
 TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenasWithReflection) {
   // Same as above, with reflection.
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
   const FieldDescriptor* msg_field =
@@ -820,7 +1002,7 @@ TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenasWithReflection) {
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     r->UnsafeArenaSetAllocatedMessage(arena1_message, arena2_submessage,
                                       msg_field);
@@ -831,7 +1013,7 @@ TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenasWithReflection) {
   }
 
   TestAllTypes::NestedMessage* arena1_submessage =
-      Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
+      Arena::Create<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
   r->UnsafeArenaSetAllocatedMessage(heap_message, arena1_submessage, msg_field);
@@ -843,7 +1025,7 @@ TEST(ArenaTest, UnsafeArenaSetAllocatedAcrossArenasWithReflection) {
 
 TEST(ArenaTest, AddAllocatedWithReflection) {
   Arena arena1;
-  ArenaMessage* arena1_message = Arena::CreateMessage<ArenaMessage>(&arena1);
+  ArenaMessage* arena1_message = Arena::Create<ArenaMessage>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
   // Message with cc_enable_arenas = true;
@@ -855,20 +1037,6 @@ TEST(ArenaTest, AddAllocatedWithReflection) {
 }
 
 TEST(ArenaTest, RepeatedPtrFieldAddClearedTest) {
-#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
-  {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    RepeatedPtrField<TestAllTypes> repeated_field;
-    EXPECT_TRUE(repeated_field.empty());
-    EXPECT_EQ(0, repeated_field.size());
-    // Ownership is passed to repeated_field.
-    TestAllTypes* cleared = new TestAllTypes();
-    repeated_field.AddCleared(cleared);
-    EXPECT_TRUE(repeated_field.empty());
-    EXPECT_EQ(0, repeated_field.size());
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-  }
-#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
   {
     RepeatedPtrField<TestAllTypes> repeated_field;
     EXPECT_TRUE(repeated_field.empty());
@@ -884,7 +1052,7 @@ TEST(ArenaTest, RepeatedPtrFieldAddClearedTest) {
 TEST(ArenaTest, AddAllocatedToRepeatedField) {
   // Heap->arena case.
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   for (int i = 0; i < 10; i++) {
     TestAllTypes::NestedMessage* heap_submessage =
         new TestAllTypes::NestedMessage();
@@ -901,7 +1069,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
   for (int i = 0; i < 10; i++) {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     arena1_message->mutable_repeated_nested_message()->AddAllocated(
         arena2_submessage);
@@ -917,7 +1085,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
   for (int i = 0; i < 10; i++) {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     heap_message->mutable_repeated_nested_message()->AddAllocated(
         arena2_submessage);
@@ -942,7 +1110,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
 TEST(ArenaTest, UnsafeArenaAddAllocatedToRepeatedField) {
   // Heap->arena case.
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   {
     auto* heap_submessage = new TestAllTypes::NestedMessage;
     arena1_message->mutable_repeated_nested_message()->UnsafeArenaAddAllocated(
@@ -959,7 +1127,7 @@ TEST(ArenaTest, UnsafeArenaAddAllocatedToRepeatedField) {
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     arena1_message->mutable_repeated_nested_message()->UnsafeArenaAddAllocated(
         arena2_submessage);
@@ -975,7 +1143,7 @@ TEST(ArenaTest, UnsafeArenaAddAllocatedToRepeatedField) {
   {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     heap_message->mutable_repeated_nested_message()->UnsafeArenaAddAllocated(
         arena2_submessage);
@@ -1001,7 +1169,7 @@ TEST(ArenaTest, UnsafeArenaAddAllocatedToRepeatedField) {
 TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
   // Heap->arena case.
   Arena arena1;
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
   const FieldDescriptor* fd = d->FindFieldByName("repeated_nested_message");
@@ -1020,7 +1188,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
   for (int i = 0; i < 10; i++) {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     r->AddAllocatedMessage(arena1_message, fd, arena2_submessage);
     ASSERT_THAT(arena1_message->repeated_nested_message(), testing::SizeIs(1));
@@ -1035,7 +1203,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
   for (int i = 0; i < 10; i++) {
     Arena arena2;
     TestAllTypes::NestedMessage* arena2_submessage =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
     r->AddAllocatedMessage(heap_message, fd, arena2_submessage);
     ASSERT_THAT(heap_message->repeated_nested_message(), testing::SizeIs(1));
@@ -1050,10 +1218,10 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
   // Release from arena-allocated repeated field and ensure that returned object
   // is heap-allocated.
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   for (int i = 0; i < 10; i++) {
     TestAllTypes::NestedMessage* nested =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena);
     nested->set_bb(42);
     arena_message->mutable_repeated_nested_message()->AddAllocated(nested);
   }
@@ -1071,7 +1239,7 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
   // Test UnsafeArenaReleaseLast().
   for (int i = 0; i < 10; i++) {
     TestAllTypes::NestedMessage* nested =
-        Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena);
+        Arena::Create<TestAllTypes::NestedMessage>(&arena);
     nested->set_bb(42);
     arena_message->mutable_repeated_nested_message()->AddAllocated(nested);
   }
@@ -1110,7 +1278,7 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
 
 TEST(ArenaTest, UnsafeArenaAddAllocated) {
   Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
   for (int i = 0; i < 10; i++) {
     std::string* arena_string = Arena::Create<std::string>(&arena);
     message->mutable_repeated_string()->UnsafeArenaAddAllocated(arena_string);
@@ -1120,8 +1288,8 @@ TEST(ArenaTest, UnsafeArenaAddAllocated) {
 
 TEST(ArenaTest, OneofMerge) {
   Arena arena;
-  TestAllTypes* message0 = Arena::CreateMessage<TestAllTypes>(&arena);
-  TestAllTypes* message1 = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message0 = Arena::Create<TestAllTypes>(&arena);
+  TestAllTypes* message1 = Arena::Create<TestAllTypes>(&arena);
 
   message0->set_oneof_string("x");
   ASSERT_TRUE(message0->has_oneof_string());
@@ -1136,7 +1304,7 @@ TEST(ArenaTest, OneofMerge) {
 
 TEST(ArenaTest, ArenaOneofReflection) {
   Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
   const Descriptor* desc = message->GetDescriptor();
   const Reflection* refl = message->GetReflection();
 
@@ -1168,7 +1336,7 @@ void TestSwapRepeatedField(Arena* arena1, Arena* arena2) {
   RepeatedPtrField<TestAllTypes> field1(arena1);
   RepeatedPtrField<TestAllTypes> field2(arena2);
   for (int i = 0; i < 10; i++) {
-    TestAllTypes* t = Arena::CreateMessage<TestAllTypes>(arena1);
+    TestAllTypes* t = Arena::Create<TestAllTypes>(arena1);
     t->set_optional_string("field1");
     t->set_optional_int32(i);
     if (arena1 != nullptr) {
@@ -1178,7 +1346,7 @@ void TestSwapRepeatedField(Arena* arena1, Arena* arena2) {
     }
   }
   for (int i = 0; i < 5; i++) {
-    TestAllTypes* t = Arena::CreateMessage<TestAllTypes>(arena2);
+    TestAllTypes* t = Arena::Create<TestAllTypes>(arena2);
     t->set_optional_string("field2");
     t->set_optional_int32(i);
     if (arena2 != nullptr) {
@@ -1225,8 +1393,7 @@ TEST(ArenaTest, SwapRepeatedFieldWithNoArenaOnLeftHandSide) {
 TEST(ArenaTest, ExtensionsOnArena) {
   Arena arena;
   // Ensure no leaks.
-  TestAllExtensions* message_ext =
-      Arena::CreateMessage<TestAllExtensions>(&arena);
+  TestAllExtensions* message_ext = Arena::Create<TestAllExtensions>(&arena);
   message_ext->SetExtension(protobuf_unittest::optional_int32_extension, 42);
   message_ext->SetExtension(protobuf_unittest::optional_string_extension,
                             std::string("test"));
@@ -1292,7 +1459,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // code that may allocate messages or repeated fields of messages on an arena.
   {
     RepeatedPtrField<TestAllTypes>* repeated_ptr_on_arena =
-        Arena::CreateMessage<RepeatedPtrField<TestAllTypes> >(&arena);
+        Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
     for (int i = 0; i < 10; i++) {
       // Add some elements and let the leak-checker ensure that everything is
       // freed.
@@ -1300,7 +1467,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     }
 
     RepeatedField<int>* repeated_int_on_arena =
-        Arena::CreateMessage<RepeatedField<int> >(&arena);
+        Arena::Create<RepeatedField<int>>(&arena);
     for (int i = 0; i < 100; i++) {
       repeated_int_on_arena->Add(i);
     }
@@ -1314,12 +1481,12 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
 #if PROTOBUF_RTTI
 TEST(ArenaTest, MutableMessageReflection) {
   Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
   const Reflection* r = message->GetReflection();
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* submessage =
-      static_cast<TestAllTypes::NestedMessage*>(
+      DownCastToGenerated<TestAllTypes::NestedMessage>(
           r->MutableMessage(message, field));
   TestAllTypes::NestedMessage* submessage_expected =
       message->mutable_optional_nested_message();
@@ -1329,7 +1496,7 @@ TEST(ArenaTest, MutableMessageReflection) {
 
   const FieldDescriptor* oneof_field =
       d->FindFieldByName("oneof_nested_message");
-  submessage = static_cast<TestAllTypes::NestedMessage*>(
+  submessage = DownCastToGenerated<TestAllTypes::NestedMessage>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
 
@@ -1368,7 +1535,7 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
 
   {
 
-    TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+    TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
     FillArenaAwareFields(message);
   }
 
@@ -1492,7 +1659,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0u) << i << ": " << p;
   }
 }
 
@@ -1514,7 +1681,7 @@ TEST(ArenaTest, BlockSizeSmallerThanAllocation) {
 
 TEST(ArenaTest, GetArenaShouldReturnTheArenaForArenaAllocatedMessages) {
   Arena arena;
-  ArenaMessage* message = Arena::CreateMessage<ArenaMessage>(&arena);
+  ArenaMessage* message = Arena::Create<ArenaMessage>(&arena);
   const ArenaMessage* const_pointer_to_message = message;
   EXPECT_EQ(&arena, message->GetArena());
   EXPECT_EQ(&arena, const_pointer_to_message->GetArena());
@@ -1538,6 +1705,31 @@ TEST(ArenaTest, AddCleanup) {
   for (int i = 0; i < 100; i++) {
     arena.Own(new int);
   }
+}
+
+struct DestroyOrderRecorder {
+  std::vector<int>* destroy_order;
+  int i;
+
+  DestroyOrderRecorder(std::vector<int>* destroy_order, int i)
+      : destroy_order(destroy_order), i(i) {}
+  ~DestroyOrderRecorder() { destroy_order->push_back(i); }
+};
+
+// TODO: we do not guarantee this behavior, but some users rely on
+// it. We need to decide whether we want to guarantee this. In the meantime,
+// user code should avoid adding new dependencies on this.
+// Tests that when using an Arena from a single thread, objects are destroyed in
+// reverse order from construction.
+TEST(ArenaTest, CleanupDestructionOrder) {
+  std::vector<int> destroy_order;
+  {
+    Arena arena;
+    for (int i = 0; i < 3; i++) {
+      Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i);
+    }
+  }
+  EXPECT_THAT(destroy_order, testing::ElementsAre(2, 1, 0));
 }
 
 TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {

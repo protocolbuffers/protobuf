@@ -19,16 +19,11 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.hpp"
+#include "upb_generator/mangle.h"
 
 // Must be last
 #include "upb/port/def.inc"
-
-// Generate a mangled C name for a proto object.
-static std::string MangleName(absl::string_view name) {
-  return absl::StrReplaceAll(name, {{"_", "_0"}, {".", "__"}});
-}
 
 namespace upb {
 namespace generator {
@@ -60,10 +55,6 @@ void EmitFileWarning(absl::string_view name, Output& output) {
       name);
 }
 
-std::string MessageInit(absl::string_view full_name) {
-  return MangleName(full_name) + "_msg_init";
-}
-
 std::string MessageInitName(upb::MessageDefPtr descriptor) {
   return MessageInit(descriptor.full_name());
 }
@@ -92,8 +83,9 @@ std::string FieldInitializer(upb::FieldDefPtr field,
                              const upb_MiniTableField* field64,
                              const upb_MiniTableField* field32) {
   return absl::Substitute(
-      "{$0, $1, $2, $3, $4, $5}", field64->number,
-      ArchDependentSize(field32->offset, field64->offset),
+      "{$0, $1, $2, $3, $4, $5}", upb_MiniTableField_Number(field64),
+      ArchDependentSize(field32->UPB_PRIVATE(offset),
+                        field64->UPB_PRIVATE(offset)),
       ArchDependentSize(field32->presence, field64->presence),
       field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
           ? "kUpb_NoSub"
@@ -114,7 +106,7 @@ std::string ArchDependentSize(int64_t size32, int64_t size64) {
 std::string GetModeInit(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
   std::string ret;
-  uint8_t mode32 = field32->mode;
+  uint8_t mode32 = field32->UPB_PRIVATE(mode);
   switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
       ret = "(int)kUpb_FieldMode_Map";
@@ -148,15 +140,18 @@ std::string GetModeInit(const upb_MiniTableField* field32,
 
 std::string GetFieldRep(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
-  switch (_upb_MiniTableField_GetRep(field32)) {
+  const auto rep32 = UPB_PRIVATE(_upb_MiniTableField_GetRep)(field32);
+  const auto rep64 = UPB_PRIVATE(_upb_MiniTableField_GetRep)(field64);
+
+  switch (rep32) {
     case kUpb_FieldRep_1Byte:
       return "kUpb_FieldRep_1Byte";
       break;
     case kUpb_FieldRep_4Byte: {
-      if (_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_4Byte) {
+      if (rep64 == kUpb_FieldRep_4Byte) {
         return "kUpb_FieldRep_4Byte";
       } else {
-        assert(_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_8Byte);
+        assert(rep64 == kUpb_FieldRep_8Byte);
         return "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
       }
       break;

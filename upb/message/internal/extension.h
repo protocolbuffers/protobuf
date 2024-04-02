@@ -8,10 +8,10 @@
 #ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
-#include "upb/base/descriptor_constants.h"
-#include "upb/base/string_view.h"
+#include <stddef.h>
+
 #include "upb/mem/arena.h"
-#include "upb/message/message.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.
@@ -27,12 +27,8 @@
 // the most common extension type.
 typedef struct {
   const upb_MiniTableExtension* ext;
-  union {
-    upb_StringView str;
-    void* ptr;
-    char scalar_data[8];
-  } data;
-} upb_Message_Extension;
+  upb_MessageValue data;
+} upb_Extension;
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,18 +37,19 @@ extern "C" {
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
-    upb_Message* msg, const upb_MiniTableExtension* ext, upb_Arena* arena);
+upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* ext,
+    upb_Arena* arena);
 
 // Returns an array of extensions for this message.
 // Note: the array is ordered in reverse relative to the order of creation.
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count);
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getexts)(
+    const struct upb_Message* msg, size_t* count);
 
-// Returns an extension for the given field number, or NULL if no extension
-// exists for this field number.
-const upb_Message_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTableExtension* ext);
+// Returns an extension for a message with a given mini table,
+// or NULL if no extension exists with this mini table.
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
+    const struct upb_Message* msg, const upb_MiniTableExtension* ext);
 
 #ifdef __cplusplus
 } /* extern "C" */

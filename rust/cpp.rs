@@ -7,10 +7,17 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Private, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::{
+    Map, MapIter, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, SettableValue, View,
+};
+use core::fmt::Debug;
 use paste::paste;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
+use std::convert::identity;
+use std::ffi::{c_int, c_void};
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
@@ -135,10 +142,81 @@ impl fmt::Debug for SerializedData {
     }
 }
 
+impl SettableValue<[u8]> for SerializedData {
+    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
+    where
+        [u8]: 'msg,
+    {
+        mutator.set(self.as_ref())
+    }
+}
+
+/// A type to transfer an owned Rust string across the FFI boundary:
+///   * This struct is ABI-compatible with the equivalent C struct.
+///   * It owns its data but does not drop it. Immediately turn it into a
+///     `String` by calling `.into()` on it.
+///   * `.data` points to a valid UTF-8 string that has been allocated with the
+///     Rust allocator and is 1-byte aligned.
+///   * `.data` contains exactly `.len` bytes.
+///   * The empty string is represented as `.data.is_null() == true`.
+#[repr(C)]
+pub struct RustStringRawParts {
+    data: *const u8,
+    len: usize,
+}
+
+impl From<RustStringRawParts> for String {
+    fn from(value: RustStringRawParts) -> Self {
+        if value.data.is_null() {
+            // Handle the case where the string is empty.
+            return String::new();
+        }
+        // SAFETY:
+        //  - `value.data` contains valid UTF-8 bytes as promised by
+        //    `RustStringRawParts`.
+        //  - `value.data` has been allocated with the Rust allocator and is 1-byte
+        //    aligned as promised by `RustStringRawParts`.
+        //  - `value.data` contains and is allocated for exactly `value.len` bytes.
+        unsafe { String::from_raw_parts(value.data as *mut u8, value.len, value.len) }
+    }
+}
+
+extern "C" {
+    fn utf8_debug_string(msg: RawMessage) -> RustStringRawParts;
+}
+
+pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    // SAFETY:
+    // - `msg` is a valid protobuf message.
+    let dbg_str: String = unsafe { utf8_debug_string(msg) }.into();
+    write!(f, "{dbg_str}")
+}
+
+pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
+pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
 pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
 pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'a, T> = crate::vtable::RawVTableMutator<'a, T>;
+pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
+pub type RawMapIter = UntypedMapIterator;
+
+#[derive(Debug)]
+pub struct MessageVTable {
+    pub getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
+    pub mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
+    pub clearer: unsafe extern "C" fn(msg: RawMessage),
+}
+
+impl MessageVTable {
+    pub const fn new(
+        _private: Private,
+        getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
+        mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
+        clearer: unsafe extern "C" fn(msg: RawMessage),
+    ) -> Self {
+        MessageVTable { getter, mut_getter, clearer }
+    }
+}
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -173,283 +251,482 @@ impl<'msg> MutatorMessageRef<'msg> {
 
     pub fn from_parent(
         _private: Private,
-        _parent_msg: &'msg mut MessageInner,
+        _parent_msg: MutatorMessageRef<'msg>,
         message_field_ptr: RawMessage,
     ) -> Self {
-        MutatorMessageRef { msg: message_field_ptr, _phantom: PhantomData }
+        Self { msg: message_field_ptr, _phantom: PhantomData }
     }
 
     pub fn msg(&self) -> RawMessage {
         self.msg
     }
+
+    pub fn from_raw_msg(_private: Private, msg: &RawMessage) -> Self {
+        Self { msg: *msg, _phantom: PhantomData }
+    }
 }
 
-pub fn copy_bytes_in_arena_if_needed_by_runtime<'a>(
-    _msg_ref: MutatorMessageRef<'a>,
-    val: &'a [u8],
-) -> &'a [u8] {
+pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
+    _msg_ref: MutatorMessageRef<'msg>,
+    val: &'msg [u8],
+) -> &'msg [u8] {
     // Nothing to do, the message manages its own string memory for C++.
     val
 }
 
-/// RepeatedField impls delegate out to `extern "C"` functions exposed by
-/// `cpp_api.h` and store either a RepeatedField* or a RepeatedPtrField*
-/// depending on the type.
-///
-/// Note: even though this type is `Copy`, it should only be copied by
-/// protobuf internals that can maintain mutation invariants:
-///
-/// - No concurrent mutation for any two fields in a message: this means
-///   mutators cannot be `Send` but are `Sync`.
-/// - If there are multiple accessible `Mut` to a single message at a time, they
-///   must be different fields, and not be in the same oneof. As such, a `Mut`
-///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
-///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
+/// The raw type-erased version of an owned `Repeated`.
 #[derive(Debug)]
-pub struct RepeatedField<'msg, T: ?Sized> {
-    inner: RepeatedFieldInner<'msg>,
-    _phantom: PhantomData<&'msg mut T>,
+pub struct InnerRepeated {
+    raw: RawRepeatedField,
 }
 
-/// CPP runtime-specific arguments for initializing a RepeatedField.
-/// See RepeatedField comment about mutation invariants for when this type can
-/// be copied.
+impl InnerRepeated {
+    pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
+        InnerRepeatedMut::new(Private, self.raw)
+    }
+}
+
+/// The raw type-erased pointer version of `RepeatedMut`.
+///
+/// Contains a `proto2::RepeatedField*` or `proto2::RepeatedPtrField*`.
 #[derive(Clone, Copy, Debug)]
-pub struct RepeatedFieldInner<'msg> {
-    pub raw: RawRepeatedField,
-    pub _phantom: PhantomData<&'msg ()>,
+pub struct InnerRepeatedMut<'msg> {
+    pub(crate) raw: RawRepeatedField,
+    _phantom: PhantomData<&'msg ()>,
 }
 
-impl<'msg, T: ?Sized> RepeatedField<'msg, T> {
-    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
-        RepeatedField { inner, _phantom: PhantomData }
+impl<'msg> InnerRepeatedMut<'msg> {
+    #[doc(hidden)]
+    pub fn new(_private: Private, raw: RawRepeatedField) -> Self {
+        InnerRepeatedMut { raw, _phantom: PhantomData }
     }
 }
 
-// These use manual impls instead of derives to avoid unnecessary bounds on `T`.
-// This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
-impl<'msg, T: ?Sized> Copy for RepeatedField<'msg, T> {}
-impl<'msg, T: ?Sized> Clone for RepeatedField<'msg, T> {
-    fn clone(&self) -> RepeatedField<'msg, T> {
-        *self
+trait CppTypeConversions: Proxied {
+    type ElemType;
+
+    fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self>;
+}
+
+macro_rules! impl_cpp_type_conversions_for_scalars {
+    ($($t:ty),* $(,)?) => {
+        $(
+            impl CppTypeConversions for $t {
+                type ElemType = Self;
+
+                fn elem_to_view<'msg>(v: Self) -> View<'msg, Self> {
+                    v
+                }
+            }
+        )*
     }
 }
 
-pub trait RepeatedScalarOps {
-    fn new_repeated_field() -> RawRepeatedField;
-    fn push(f: RawRepeatedField, v: Self);
-    fn len(f: RawRepeatedField) -> usize;
-    fn get(f: RawRepeatedField, i: usize) -> Self;
-    fn set(f: RawRepeatedField, i: usize, v: Self);
-    fn copy_from(src: RawRepeatedField, dst: RawRepeatedField);
+impl_cpp_type_conversions_for_scalars!(i32, u32, i64, u64, f32, f64, bool);
+
+impl CppTypeConversions for ProtoStr {
+    type ElemType = PtrAndLen;
+
+    fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoStr> {
+        ptrlen_to_str(v)
+    }
 }
 
-macro_rules! impl_repeated_scalar_ops {
-    ($($t: ty),*) => {
-        paste! { $(
+impl CppTypeConversions for [u8] {
+    type ElemType = PtrAndLen;
+
+    fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self> {
+        ptrlen_to_bytes(v)
+    }
+}
+
+// This type alias is used so macros can generate valid extern "C" symbol names
+// for functions working with [u8] types.
+type Bytes = [u8];
+
+macro_rules! impl_repeated_primitives {
+    (@impl $($t:ty => [
+        $new_thunk:ident,
+        $free_thunk:ident,
+        $add_thunk:ident,
+        $size_thunk:ident,
+        $get_thunk:ident,
+        $set_thunk:ident,
+        $clear_thunk:ident,
+        $copy_from_thunk:ident $(,)?
+    ]),* $(,)?) => {
+        $(
             extern "C" {
-                fn [< __pb_rust_RepeatedField_ $t _new >]() -> RawRepeatedField;
-                fn [< __pb_rust_RepeatedField_ $t _add >](f: RawRepeatedField, v: $t);
-                fn [< __pb_rust_RepeatedField_ $t _size >](f: RawRepeatedField) -> usize;
-                fn [< __pb_rust_RepeatedField_ $t _get >](f: RawRepeatedField, i: usize) -> $t;
-                fn [< __pb_rust_RepeatedField_ $t _set >](f: RawRepeatedField, i: usize, v: $t);
-                fn [< __pb_rust_RepeatedField_ $t _copy_from >](src: RawRepeatedField, dst: RawRepeatedField);
+                fn $new_thunk() -> RawRepeatedField;
+                fn $free_thunk(f: RawRepeatedField);
+                fn $add_thunk(f: RawRepeatedField, v: <$t as CppTypeConversions>::ElemType);
+                fn $size_thunk(f: RawRepeatedField) -> usize;
+                fn $get_thunk(
+                    f: RawRepeatedField,
+                    i: usize) -> <$t as CppTypeConversions>::ElemType;
+                fn $set_thunk(
+                    f: RawRepeatedField,
+                    i: usize,
+                    v: <$t as CppTypeConversions>::ElemType);
+                fn $clear_thunk(f: RawRepeatedField);
+                fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
             }
-            impl RepeatedScalarOps for $t {
-                fn new_repeated_field() -> RawRepeatedField {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _new >]() }
+
+            unsafe impl ProxiedInRepeated for $t {
+                #[allow(dead_code)]
+                fn repeated_new(_: Private) -> Repeated<$t> {
+                    Repeated::from_inner(InnerRepeated {
+                        raw: unsafe { $new_thunk() }
+                    })
                 }
-                fn push(f: RawRepeatedField, v: Self) {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _add >](f, v) }
+                #[allow(dead_code)]
+                unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
+                    unsafe { $free_thunk(f.as_mut().as_raw(Private)) }
                 }
-                fn len(f: RawRepeatedField) -> usize {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _size >](f) }
+                fn repeated_len(f: View<Repeated<$t>>) -> usize {
+                    unsafe { $size_thunk(f.as_raw(Private)) }
                 }
-                fn get(f: RawRepeatedField, i: usize) -> Self {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _get >](f, i) }
+                fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
+                    unsafe { $add_thunk(f.as_raw(Private), v.into()) }
                 }
-                fn set(f: RawRepeatedField, i: usize, v: Self) {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _set >](f, i, v) }
+                fn repeated_clear(mut f: Mut<Repeated<$t>>) {
+                    unsafe { $clear_thunk(f.as_raw(Private)) }
                 }
-                fn copy_from(src: RawRepeatedField, dst: RawRepeatedField) {
-                    unsafe { [< __pb_rust_RepeatedField_ $t _copy_from >](src, dst) }
+                unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
+                    <$t as CppTypeConversions>::elem_to_view(
+                        unsafe { $get_thunk(f.as_raw(Private), i) })
+                }
+                unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
+                    unsafe { $set_thunk(f.as_raw(Private), i, v.into()) }
+                }
+                fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
+                    unsafe { $copy_from_thunk(src.as_raw(Private), dest.as_raw(Private)) }
                 }
             }
-        )* }
+        )*
+    };
+    ($($t:ty),* $(,)?) => {
+        paste!{
+            impl_repeated_primitives!(@impl $(
+                $t => [
+                    [< __pb_rust_RepeatedField_ $t _new >],
+                    [< __pb_rust_RepeatedField_ $t _free >],
+                    [< __pb_rust_RepeatedField_ $t _add >],
+                    [< __pb_rust_RepeatedField_ $t _size >],
+                    [< __pb_rust_RepeatedField_ $t _get >],
+                    [< __pb_rust_RepeatedField_ $t _set >],
+                    [< __pb_rust_RepeatedField_ $t _clear >],
+                    [< __pb_rust_RepeatedField_ $t _copy_from >],
+                ],
+            )*);
+        }
     };
 }
 
-impl_repeated_scalar_ops!(i32, u32, i64, u64, f32, f64, bool);
+impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoStr, Bytes);
 
-impl<'msg, T: RepeatedScalarOps> RepeatedField<'msg, T> {
-    #[allow(clippy::new_without_default, dead_code)]
-    /// new() is not currently used in our normal pathways, it is only used
-    /// for testing. Existing `RepeatedField<>`s are owned by, and retrieved
-    /// from, the containing `Message`.
-    pub fn new() -> Self {
-        Self::from_inner(
-            Private,
-            RepeatedFieldInner::<'msg> { raw: T::new_repeated_field(), _phantom: PhantomData },
+/// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
+pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedView<E>,
+) -> RepeatedView<c_int> {
+    // SAFETY: the implementer of `Enum` has promised that this
+    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    unsafe { RepeatedView::from_raw(private, repeated.as_raw(Private)) }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>`.
+///
+/// Writing an unknown value is sound because all enums
+/// are representationally open.
+pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    mut repeated: RepeatedMut<E>,
+) -> RepeatedMut<c_int> {
+    // SAFETY: the implementer of `Enum` has promised that this
+    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    unsafe {
+        RepeatedMut::from_inner(
+            private,
+            InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
         )
-    }
-    pub fn push(&mut self, val: T) {
-        T::push(self.inner.raw, val)
-    }
-    pub fn len(&self) -> usize {
-        T::len(self.inner.raw)
-    }
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-    pub fn get(&self, index: usize) -> Option<T> {
-        if index >= self.len() {
-            return None;
-        }
-        Some(T::get(self.inner.raw, index))
-    }
-    pub fn set(&mut self, index: usize, val: T) {
-        if index >= self.len() {
-            return;
-        }
-        T::set(self.inner.raw, index, val)
-    }
-    pub fn copy_from(&mut self, src: &RepeatedField<'_, T>) {
-        T::copy_from(src.inner.raw, self.inner.raw)
     }
 }
 
 #[derive(Debug)]
-pub struct MapInner<'msg, K: ?Sized, V: ?Sized> {
-    pub raw: RawMap,
-    pub _phantom_key: PhantomData<&'msg mut K>,
-    pub _phantom_value: PhantomData<&'msg mut V>,
+pub struct InnerMap {
+    pub(crate) raw: RawMap,
 }
 
-// These use manual impls instead of derives to avoid unnecessary bounds on `K`
-// and `V`. This problem is referred to as "perfect derive".
-// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
-impl<'msg, K: ?Sized, V: ?Sized> Copy for MapInner<'msg, K, V> {}
-impl<'msg, K: ?Sized, V: ?Sized> Clone for MapInner<'msg, K, V> {
-    fn clone(&self) -> MapInner<'msg, K, V> {
-        *self
+impl InnerMap {
+    pub fn new(_private: Private, raw: RawMap) -> Self {
+        Self { raw }
+    }
+
+    pub fn as_mut(&mut self) -> InnerMapMut<'_> {
+        InnerMapMut { raw: self.raw, _phantom: PhantomData }
     }
 }
 
-macro_rules! impl_scalar_map_values {
-    ($kt:ty, $trait:ident for $($t:ty),*) => {
+#[derive(Clone, Copy, Debug)]
+pub struct InnerMapMut<'msg> {
+    pub(crate) raw: RawMap,
+    _phantom: PhantomData<&'msg ()>,
+}
+
+#[doc(hidden)]
+impl<'msg> InnerMapMut<'msg> {
+    pub fn new(_private: Private, raw: RawMap) -> Self {
+        InnerMapMut { raw, _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn as_raw(&self, _private: Private) -> RawMap {
+        self.raw
+    }
+}
+
+/// An untyped iterator in a map, produced via `.cbegin()` on a typed map.
+///
+/// This struct is ABI-compatible with `proto2::internal::UntypedMapIterator`.
+/// It is trivially constructible and destructible.
+#[repr(C)]
+pub struct UntypedMapIterator {
+    node: *mut c_void,
+    map: *const c_void,
+    bucket_index: u32,
+}
+
+impl UntypedMapIterator {
+    /// Returns `true` if this iterator is at the end of the map.
+    fn at_end(&self) -> bool {
+        // This behavior is verified via test `IteratorNodeFieldIsNullPtrAtEnd`.
+        self.node.is_null()
+    }
+
+    /// Assumes that the map iterator is for the input types, gets the current
+    /// entry, and moves the iterator forward to the next entry.
+    ///
+    /// Conversion to and from FFI types is provided by the user.
+    /// This is a helper function for implementing
+    /// `ProxiedInMapValue::iter_next`.
+    ///
+    /// # Safety
+    /// - The backing map must be valid and not be mutated for `'a`.
+    /// - The thunk must be safe to call if the iterator is not at the end of
+    ///   the map.
+    /// - The thunk must always write to the `key` and `value` fields, but not
+    ///   read from them.
+    /// - The get thunk must not move the iterator forward or backward.
+    #[inline(always)]
+    pub unsafe fn next_unchecked<'a, K, V, FfiKey, FfiValue>(
+        &mut self,
+        _private: Private,
+        iter_get_thunk: unsafe extern "C" fn(
+            iter: &mut UntypedMapIterator,
+            key: *mut FfiKey,
+            value: *mut FfiValue,
+        ),
+        from_ffi_key: impl FnOnce(FfiKey) -> View<'a, K>,
+        from_ffi_value: impl FnOnce(FfiValue) -> View<'a, V>,
+    ) -> Option<(View<'a, K>, View<'a, V>)>
+    where
+        K: Proxied + ?Sized + 'a,
+        V: ProxiedInMapValue<K> + ?Sized + 'a,
+    {
+        if self.at_end() {
+            return None;
+        }
+        let mut ffi_key = MaybeUninit::uninit();
+        let mut ffi_value = MaybeUninit::uninit();
+        // SAFETY:
+        // - The backing map outlives `'a`.
+        // - The iterator is not at the end (node is non-null).
+        // - `ffi_key` and `ffi_value` are not read (as uninit) as promised by the
+        //   caller.
+        unsafe { (iter_get_thunk)(self, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
+
+        // SAFETY:
+        // - The backing map is alive as promised by the caller.
+        // - `self.at_end()` is false and the `get` does not change that.
+        // - `UntypedMapIterator` has the same ABI as
+        //   `proto2::internal::UntypedMapIterator`. It is statically checked to be:
+        //   - Trivially copyable.
+        //   - Trivially destructible.
+        //   - Standard layout.
+        //   - The size and alignment of the Rust type above.
+        //   - With the `node_` field first.
+        unsafe { __rust_proto_thunk__UntypedMapIterator_increment(self) }
+
+        // SAFETY:
+        // - The `get` function always writes valid values to `ffi_key` and `ffi_value`
+        //   as promised by the caller.
+        unsafe {
+            Some((from_ffi_key(ffi_key.assume_init()), from_ffi_value(ffi_value.assume_init())))
+        }
+    }
+}
+
+extern "C" {
+    fn __rust_proto_thunk__UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
+}
+
+macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
+    ($key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, $from_ffi_key:expr, for $($t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr;)*) => {
         paste! { $(
             extern "C" {
-                fn [< __pb_rust_Map_ $kt _ $t _new >]() -> RawMap;
-                fn [< __pb_rust_Map_ $kt _ $t _clear >](m: RawMap);
-                fn [< __pb_rust_Map_ $kt _ $t _size >](m: RawMap) -> usize;
-                fn [< __pb_rust_Map_ $kt _ $t _insert >](m: RawMap, key: $kt, value: $t);
-                fn [< __pb_rust_Map_ $kt _ $t _get >](m: RawMap, key: $kt, value: *mut $t) -> bool;
-                fn [< __pb_rust_Map_ $kt _ $t _remove >](m: RawMap, key: $kt, value: *mut $t) -> bool;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _new >]() -> RawMap;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _free >](m: RawMap);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _clear >](m: RawMap);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _size >](m: RawMap) -> usize;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t) -> bool;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_t);
+                fn [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
-            impl $trait for $t {
-                fn new_map() -> RawMap {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _new >]() }
+
+            impl ProxiedInMapValue<$key_t> for $t {
+                fn map_new(_private: Private) -> Map<$key_t, Self> {
+                    unsafe {
+                        Map::from_inner(
+                            Private,
+                            InnerMap {
+                                raw: [< __rust_proto_thunk__Map_ $key_t _ $t _new >](),
+                            }
+                        )
+                    }
                 }
 
-                fn clear(m: RawMap) {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _clear >](m) }
+                unsafe fn map_free(_private: Private, map: &mut Map<$key_t, Self>) {
+                    // SAFETY:
+                    // - `map.inner.raw` is a live `RawMap`
+                    // - This function is only called once for `map` in `Drop`.
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _free >](map.as_mut().as_raw(Private)); }
                 }
 
-                fn size(m: RawMap) -> usize {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _size >](m) }
+
+                fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _clear >](map.as_raw(Private)); }
                 }
 
-                fn insert(m: RawMap, key: $kt, value: $t) {
-                    unsafe { [< __pb_rust_Map_ $kt _ $t _insert >](m, key, value) }
+                fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _size >](map.as_raw(Private)) }
                 }
 
-                fn get(m: RawMap, key: $kt) -> Option<$t> {
-                    let mut val: $t = Default::default();
-                    let found = unsafe { [< __pb_rust_Map_ $kt _ $t _get >](m, key, &mut val) };
+                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                    let ffi_key = $to_ffi_key(key);
+                    let ffi_value = $to_ffi_value(value);
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _insert >](map.as_raw(Private), ffi_key, ffi_value) }
+                }
+
+                fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
+                    let ffi_key = $to_ffi_key(key);
+                    let mut ffi_value = MaybeUninit::uninit();
+                    let found = unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _get >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) };
+
                     if !found {
                         return None;
                     }
-                    Some(val)
+                    // SAFETY: if `found` is true, then the `ffi_value` was written to by `get`.
+                    Some($from_ffi_value(unsafe { ffi_value.assume_init() }))
                 }
 
-                fn remove(m: RawMap, key: $kt) -> Option<$t> {
-                    let mut val: $t = Default::default();
-                    let removed =
-                        unsafe { [< __pb_rust_Map_ $kt _ $t _remove >](m, key, &mut val) };
-                    if !removed {
-                        return None;
+                fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
+                    let ffi_key = $to_ffi_key(key);
+                    let mut ffi_value = MaybeUninit::uninit();
+                    unsafe { [< __rust_proto_thunk__Map_ $key_t _ $t _remove >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) }
+                }
+
+                fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
+                    // SAFETY:
+                    // - The backing map for `map.as_raw` is valid for at least '_.
+                    // - A View that is live for '_ guarantees the backing map is unmodified for '_.
+                    // - The `iter` function produces an iterator that is valid for the key
+                    //   and value types, and live for at least '_.
+                    unsafe {
+                        MapIter::from_raw(
+                            Private,
+                            [< __rust_proto_thunk__Map_ $key_t _ $t _iter >](map.as_raw(Private))
+                        )
                     }
-                    Some(val)
+                }
+
+                fn map_iter_next<'a>(iter: &mut MapIter<'a, $key_t, Self>) -> Option<(View<'a, $key_t>, View<'a, Self>)> {
+                    // SAFETY:
+                    // - The `MapIter` API forbids the backing map from being mutated for 'a,
+                    //   and guarantees that it's the correct key and value types.
+                    // - The thunk is safe to call as long as the iterator isn't at the end.
+                    // - The thunk always writes to key and value fields and does not read.
+                    // - The thunk does not increment the iterator.
+                    unsafe {
+                        iter.as_raw_mut(Private).next_unchecked::<$key_t, Self, _, _>(
+                            Private,
+                            [< __rust_proto_thunk__Map_ $key_t _ $t _iter_get >],
+                            $from_ffi_key,
+                            $from_ffi_value,
+                        )
+                    }
                 }
             }
          )* }
     }
 }
 
-macro_rules! impl_scalar_maps {
-    ($($t:ty),*) => {
-        paste! { $(
-                pub trait [< MapWith $t:camel KeyOps >] {
-                    fn new_map() -> RawMap;
-                    fn clear(m: RawMap);
-                    fn size(m: RawMap) -> usize;
-                    fn insert(m: RawMap, key: $t, value: Self);
-                    fn get(m: RawMap, key: $t) -> Option<Self>
-                    where
-                        Self: Sized;
-                    fn remove(m: RawMap, key: $t) -> Option<Self>
-                    where
-                        Self: Sized;
-                }
+fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
+    val.into().as_bytes().into()
+}
 
-                impl_scalar_map_values!(
-                    $t, [< MapWith $t:camel KeyOps >] for i32, u32, f32, f64, bool, u64, i64
+// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
+// call.
+fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
+    unsafe { ProtoStr::from_utf8_unchecked(val.as_ref()) }
+}
+
+fn bytes_to_ptrlen(val: &[u8]) -> PtrAndLen {
+    val.into()
+}
+
+// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
+// call.
+fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
+    unsafe { val.as_ref() }
+}
+
+macro_rules! impl_ProxiedInMapValue_for_key_types {
+    ($($t:ty, $ffi_t:ty, $to_ffi_key:expr, $from_ffi_key:expr;)*) => {
+        paste! {
+            $(
+                impl_ProxiedInMapValue_for_non_generated_value_types!(
+                    $t, $ffi_t, $to_ffi_key, $from_ffi_key, for
+                    f32, f32, identity, identity;
+                    f64, f64, identity, identity;
+                    i32, i32, identity, identity;
+                    u32, u32, identity, identity;
+                    i64, i64, identity, identity;
+                    u64, u64, identity, identity;
+                    bool, bool, identity, identity;
+                    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
+                    Bytes, PtrAndLen, bytes_to_ptrlen, ptrlen_to_bytes;
                 );
-
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> Default for MapInner<'msg, $t, V> {
-                    fn default() -> Self {
-                        MapInner {
-                            raw: V::new_map(),
-                            _phantom_key: PhantomData,
-                            _phantom_value: PhantomData
-                        }
-                    }
-                }
-
-                impl<'msg, V: [< MapWith $t:camel KeyOps >]> MapInner<'msg, $t, V> {
-                    pub fn size(&self) -> usize {
-                        V::size(self.raw)
-                    }
-
-                    pub fn clear(&mut self) {
-                        V::clear(self.raw)
-                    }
-
-                    pub fn get(&self, key: $t) -> Option<V> {
-                        V::get(self.raw, key)
-                    }
-
-                    pub fn remove(&mut self, key: $t) -> Option<V> {
-                        V::remove(self.raw, key)
-                    }
-
-                    pub fn insert(&mut self, key: $t, value: V) -> bool {
-                        V::insert(self.raw, key, value);
-                        true
-                    }
-                }
-        )* }
+            )*
+        }
     }
 }
 
-impl_scalar_maps!(i32, u32, bool, u64, i64);
+impl_ProxiedInMapValue_for_key_types!(
+    i32, i32, identity, identity;
+    u32, u32, identity, identity;
+    i64, i64, identity, identity;
+    u64, u64, identity, identity;
+    bool, bool, identity, identity;
+    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
+);
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use googletest::prelude::*;
-    use std::boxed::Box;
 
     // We need to allocate the byte array so SerializedData can own it and
     // deallocate it in its drop. This function makes it easier to do so for our
@@ -467,65 +744,8 @@ mod tests {
     }
 
     #[test]
-    fn repeated_field() {
-        let mut r = RepeatedField::<i32>::new();
-        assert_that!(r.len(), eq(0));
-        r.push(32);
-        assert_that!(r.get(0), eq(Some(32)));
-
-        let mut r = RepeatedField::<u32>::new();
-        assert_that!(r.len(), eq(0));
-        r.push(32);
-        assert_that!(r.get(0), eq(Some(32)));
-
-        let mut r = RepeatedField::<f64>::new();
-        assert_that!(r.len(), eq(0));
-        r.push(0.1234f64);
-        assert_that!(r.get(0), eq(Some(0.1234)));
-
-        let mut r = RepeatedField::<bool>::new();
-        assert_that!(r.len(), eq(0));
-        r.push(true);
-        assert_that!(r.get(0), eq(Some(true)));
-    }
-
-    #[test]
-    fn i32_i32_map() {
-        let mut map: MapInner<'_, i32, i32> = Default::default();
-        assert_that!(map.size(), eq(0));
-
-        assert_that!(map.insert(1, 2), eq(true));
-        assert_that!(map.get(1), eq(Some(2)));
-        assert_that!(map.get(3), eq(None));
-        assert_that!(map.size(), eq(1));
-
-        assert_that!(map.remove(1), eq(Some(2)));
-        assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(None));
-
-        assert_that!(map.insert(4, 5), eq(true));
-        assert_that!(map.insert(6, 7), eq(true));
-        map.clear();
-        assert_that!(map.size(), eq(0));
-    }
-
-    #[test]
-    fn i64_f64_map() {
-        let mut map: MapInner<'_, i64, f64> = Default::default();
-        assert_that!(map.size(), eq(0));
-
-        assert_that!(map.insert(1, 2.5), eq(true));
-        assert_that!(map.get(1), eq(Some(2.5)));
-        assert_that!(map.get(3), eq(None));
-        assert_that!(map.size(), eq(1));
-
-        assert_that!(map.remove(1), eq(Some(2.5)));
-        assert_that!(map.size(), eq(0));
-        assert_that!(map.remove(1), eq(None));
-
-        assert_that!(map.insert(4, 5.1), eq(true));
-        assert_that!(map.insert(6, 7.2), eq(true));
-        map.clear();
-        assert_that!(map.size(), eq(0));
+    fn test_empty_string() {
+        let empty_str: String = RustStringRawParts { data: std::ptr::null(), len: 0 }.into();
+        assert_that!(empty_str, eq(""));
     }
 }

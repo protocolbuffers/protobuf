@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "absl/base/casts.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -178,8 +179,7 @@ Parser::Parser()
       stop_after_syntax_identifier_(false) {
 }
 
-Parser::~Parser() {}
-
+Parser::~Parser() = default;
 // ===================================================================
 
 inline bool Parser::LookingAt(absl::string_view text) {
@@ -740,7 +740,9 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
 
   if (has_edition) {
     if (!Edition_Parse(absl::StrCat("EDITION_", syntax), &edition_) ||
-        edition_ < Edition::EDITION_2023) {
+        edition_ == Edition::EDITION_PROTO2 ||
+        edition_ == Edition::EDITION_PROTO3 ||
+        edition_ == Edition::EDITION_UNKNOWN) {
       RecordError(syntax_token.line, syntax_token.column, [&] {
         return absl::StrCat("Unknown edition \"", syntax, "\".");
       });
@@ -773,6 +775,8 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
+    // Maximum depth allowed by the DescriptorPool.
+    recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
     return ParseMessageDefinition(file->add_message_type(), location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
@@ -850,6 +854,12 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
 bool Parser::ParseMessageDefinition(
     DescriptorProto* message, const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
+  const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
+  if (--recursion_depth_ <= 0) {
+    RecordError("Reached maximum recursion limit for nested messages.");
+    return false;
+  }
+
   DO(Consume("message"));
   {
     LocationRecorder location(message_location,

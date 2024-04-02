@@ -37,8 +37,8 @@ typedef struct {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t aliasing;
-  int limit;              // Submessage limit relative to end
-  bool error;             // To distinguish between EOF and error.
+  int limit;   // Submessage limit relative to end
+  bool error;  // To distinguish between EOF and error.
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
 
@@ -375,7 +375,7 @@ typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
 // fits within this buffer, calls `func` with `ctx` as a parameter, where the
 // pushing and popping of limits is handled automatically and with lower cost
 // than the normal PushLimit()/PopLimit() sequence.
-static UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
+UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
     upb_EpsCopyInputStream* e, const char** ptr, int len,
     upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
   if (!upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(e, *ptr, len)) {

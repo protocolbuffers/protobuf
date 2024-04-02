@@ -44,25 +44,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Base class to keep common fields and virtual function overrides.
-class MapEntryBase : public Message {
- protected:
-  using Message::Message;
-
-  const ClassData* GetClassData() const final {
-    ABSL_CONST_INIT static const ClassData data = {
-        &MergeImpl,
-        nullptr,  // on_demand_register_arena_dtor
-        &kDescriptorMethods,
-        PROTOBUF_FIELD_OFFSET(MapEntryBase, _cached_size_),
-    };
-    return &data;
-  }
-
-  HasBits<1> _has_bits_{};
-  mutable CachedSize _cached_size_{};
-};
-
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
 // google::protobuf::Reflection. In order to let it work with generated message
 // reflection, its in-memory type is the same as generated message with the same
@@ -92,7 +73,7 @@ class MapEntryBase : public Message {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public MapEntryBase {
+class MapEntry : public Message {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
@@ -103,24 +84,13 @@ class MapEntry : public MapEntryBase {
   using KeyOnMemory = typename KeyTypeHandler::TypeOnMemory;
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
-  // Constants for field number.
-  static const int kKeyFieldNumber = 1;
-  static const int kValueFieldNumber = 2;
-
-  // Constants for field tag.
-  static const uint8_t kKeyTag =
-      GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(kKeyFieldNumber, KeyTypeHandler::kWireType);
-  static const uint8_t kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
-      kValueFieldNumber, ValueTypeHandler::kWireType);
-  static const size_t kTagSize = 1;
-
  public:
   constexpr MapEntry()
       : key_(KeyTypeHandler::Constinit()),
         value_(ValueTypeHandler::Constinit()) {}
 
   explicit MapEntry(Arena* arena)
-      : MapEntryBase(arena),
+      : Message(arena),
         key_(KeyTypeHandler::Constinit()),
         value_(ValueTypeHandler::Constinit()) {}
 
@@ -137,81 +107,15 @@ class MapEntry : public MapEntryBase {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  // accessors ======================================================
-
-  inline const auto& key() const {
-    return KeyTypeHandler::GetExternalReference(key_);
-  }
-  inline const auto& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(value_);
-  }
-  inline auto* mutable_key() {
-    _has_bits_[0] |= 0x00000001u;
-    return KeyTypeHandler::EnsureMutable(&key_, GetArena());
-  }
-  inline auto* mutable_value() {
-    _has_bits_[0] |= 0x00000002u;
-    return ValueTypeHandler::EnsureMutable(&value_, GetArena());
-  }
-
-  // TODO: These methods currently differ in behavior from the ones
-  // implemented via reflection. This means that a MapEntry does not behave the
-  // same as an equivalent object made via DynamicMessage.
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
-    while (!ctx->Done(&ptr)) {
-      uint32_t tag;
-      ptr = ReadTag(ptr, &tag);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (tag == kKeyTag) {
-        auto* key = mutable_key();
-        ptr = KeyTypeHandler::Read(ptr, ctx, key);
-        if (!Derived::ValidateKey(key)) return nullptr;
-      } else if (tag == kValueTag) {
-        auto* value = mutable_value();
-        ptr = ValueTypeHandler::Read(ptr, ctx, value);
-        if (!Derived::ValidateValue(value)) return nullptr;
-      } else {
-        if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
-                            WireFormatLite::WIRETYPE_END_GROUP) {
-          ctx->SetLastTag(tag);
-          return ptr;
-        }
-        ptr = UnknownFieldParse(tag, static_cast<std::string*>(nullptr), ptr,
-                                ctx);
-      }
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    }
-    return ptr;
-  }
-
-  size_t ByteSizeLong() const final {
-    size_t size = 0;
-    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
-    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
-    _cached_size_.Set(ToCachedSize(size));
-    return size;
-  }
-
-  ::uint8_t* _InternalSerialize(::uint8_t* ptr,
-                                io::EpsCopyOutputStream* stream) const final {
-    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
-    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
-  }
-
-  bool IsInitialized() const final {
-    return ValueTypeHandler::IsInitialized(value_);
-  }
-
   Message* New(Arena* arena) const final {
-    return Arena::CreateMessage<Derived>(arena);
+    return Arena::Create<Derived>(arena);
   }
 
  protected:
   friend class google::protobuf::Arena;
-  template <typename C, typename K, typename V, WireFormatLite::FieldType,
-            WireFormatLite::FieldType>
-  friend class MapField;
+
+  HasBits<1> _has_bits_{};
+  mutable CachedSize _cached_size_{};
 
   KeyOnMemory key_;
   ValueOnMemory value_;

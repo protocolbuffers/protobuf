@@ -18,6 +18,7 @@
 #include <atomic>
 #include <climits>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <utility>
@@ -47,6 +48,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -295,12 +297,9 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 }
 }  // namespace
 
-const void* TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-    const Message& message, const Reflection& reflection,
-    const FieldDescriptor& fd) {
-  // reflection->GetRaw() is a simple cast for any non-repeated type, so for
-  // simplicity we just pass in char as the template argument.
-  return &reflection.GetRaw<char>(message, &fd);
+auto TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
+    const Message& message, const FieldDescriptor& fd) -> Id {
+  return {&message, &fd};
 }
 
 // ===========================================================================
@@ -843,20 +842,19 @@ class TextFormat::Parser::ParserImpl {
 // the message and the new value are the default. If the existing field value is
 // not the default, setting it to the default should not be treated as a no-op.
 // The pointer of this is kept in no_op_fields_ for bookkeeping.
-#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                            \
-  if (field->is_repeated()) {                                              \
-    reflection->Add##CPPTYPE(message, field, VALUE);                       \
-  } else {                                                                 \
-    if (no_op_fields_ && !field->has_presence() &&                         \
-        field->default_value_##CPPTYPELCASE() ==                           \
-            reflection->Get##CPPTYPE(*message, field) &&                   \
-        field->default_value_##CPPTYPELCASE() == VALUE) {                  \
-      no_op_fields_->addresses_.insert(                                    \
-          UnsetFieldsMetadata::GetUnsetFieldAddress(*message, *reflection, \
-                                                    *field));              \
-    } else {                                                               \
-      reflection->Set##CPPTYPE(message, field, std::move(VALUE));          \
-    }                                                                      \
+#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                    \
+  if (field->is_repeated()) {                                      \
+    reflection->Add##CPPTYPE(message, field, VALUE);               \
+  } else {                                                         \
+    if (no_op_fields_ && !field->has_presence() &&                 \
+        field->default_value_##CPPTYPELCASE() ==                   \
+            reflection->Get##CPPTYPE(*message, field) &&           \
+        field->default_value_##CPPTYPELCASE() == VALUE) {          \
+      no_op_fields_->ids_.insert(                                  \
+          UnsetFieldsMetadata::GetUnsetFieldId(*message, *field)); \
+    } else {                                                       \
+      reflection->Set##CPPTYPE(message, field, std::move(VALUE));  \
+    }                                                              \
   }
 
     switch (field->cpp_type()) {
@@ -1647,6 +1645,94 @@ class TextFormat::Printer::DebugStringFieldValuePrinter
   }
 };
 
+namespace {
+
+// Returns true if `ch` needs to be escaped in TextFormat, independent of any
+// UTF-8 validity issues.
+bool DefinitelyNeedsEscape(unsigned char ch) {
+  if (ch >= 0x80) {
+    return false;  // High byte; no escapes necessary if UTF-8 is valid.
+  }
+
+  if (!absl::ascii_isprint(ch)) {
+    return true;  // Unprintable characters need escape.
+  }
+
+  switch (ch) {
+    case '\"':
+    case '\'':
+    case '\\':
+      // These characters need escapes despite being printable.
+      return true;
+  }
+
+  return false;
+}
+
+// Returns true if this is a high byte that requires UTF-8 validation.  If the
+// UTF-8 validation fails, we must escape the byte.
+bool NeedsUtf8Validation(unsigned char ch) { return ch > 127; }
+
+// Returns the number of bytes in the prefix of `val` that do not need escaping.
+// This is like utf8_range::SpanStructurallyValid(), except that it also
+// terminates at any ASCII char that needs to be escaped in TextFormat (any char
+// that has `DefinitelyNeedsEscape(ch) == true`).
+//
+// If we could get a variant of utf8_range::SpanStructurallyValid() that could
+// terminate on any of these chars, that might be more efficient, but it would
+// be much more complicated to modify that heavily SIMD code.
+size_t SkipPassthroughBytes(absl::string_view val) {
+  for (size_t i = 0; i < val.size(); i++) {
+    unsigned char uc = val[i];
+    if (DefinitelyNeedsEscape(uc)) return i;
+    if (NeedsUtf8Validation(uc)) {
+      // Find the end of this region of consecutive high bytes, so that we only
+      // give high bytes to the UTF-8 checker.  This avoids needing to perform
+      // a second scan of the ASCII characters looking for characters that
+      // need escaping.
+      //
+      // We assume that high bytes are less frequent than plain, printable ASCII
+      // bytes, so we accept the double-scan of high bytes.
+      size_t end = i + 1;
+      for (; end < val.size(); end++) {
+        if (!NeedsUtf8Validation(val[end])) break;
+      }
+      size_t n = end - i;
+      size_t ok = utf8_range::SpanStructurallyValid(val.substr(i, n));
+      if (ok != n) return i + ok;
+      i += ok - 1;
+    }
+  }
+  return val.size();
+}
+
+}  // namespace
+
+void TextFormat::Printer::HardenedPrintString(
+    absl::string_view src, TextFormat::BaseTextGenerator* generator) {
+  // Print as UTF-8, while guarding against any invalid UTF-8 in the string
+  // field.
+  //
+  // If in the future we have a guaranteed invariant that invalid UTF-8 will
+  // never be present, we could avoid the UTF-8 check here.
+
+  generator->PrintLiteral("\"");
+  while (!src.empty()) {
+    size_t n = SkipPassthroughBytes(src);
+    if (n != 0) {
+      generator->PrintString(src.substr(0, n));
+      src.remove_prefix(n);
+      if (src.empty()) break;
+    }
+
+    // If repeated calls to CEscape() and PrintString() are expensive, we could
+    // consider batching them, at the cost of some complexity.
+    generator->PrintString(absl::CEscape(src.substr(0, 1)));
+    src.remove_prefix(1);
+  }
+  generator->PrintLiteral("\"");
+}
+
 // ===========================================================================
 //  An internal field value printer that escape UTF8 strings.
 class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
@@ -1654,9 +1740,7 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
  public:
   void PrintString(const std::string& val,
                    TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("\"");
-    generator->PrintString(absl::Utf8SafeCEscape(val));
-    generator->PrintLiteral("\"");
+    TextFormat::Printer::HardenedPrintString(val, generator);
   }
   void PrintBytes(const std::string& val,
                   TextFormat::BaseTextGenerator* generator) const override {
@@ -1956,7 +2040,9 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
 void TextFormat::FastFieldValuePrinter::PrintString(
     const std::string& val, BaseTextGenerator* generator) const {
   generator->PrintLiteral("\"");
-  generator->PrintString(absl::CEscape(val));
+  if (!val.empty()) {
+    generator->PrintString(absl::CEscape(val));
+  }
   generator->PrintLiteral("\"");
 }
 void TextFormat::FastFieldValuePrinter::PrintBytes(
@@ -2258,6 +2344,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   const std::string& type_url = reflection->GetString(message, type_url_field);
   std::string url_prefix;
   std::string full_type_name;
+
   if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
     return false;
   }

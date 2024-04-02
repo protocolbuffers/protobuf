@@ -789,6 +789,11 @@ class ReflectionTest(unittest.TestCase):
     messages.remove(messages[0])
     self.assertEqual(len(messages), 0)
 
+  def testEmptyDeepCopy(self, message_module):
+    proto1 = message_module.TestAllTypes()
+    nested2 = copy.deepcopy(proto1.optional_nested_message)
+    self.assertEqual(0, nested2.bb)
+
     # TODO: Implement deepcopy for extension dict
 
   def testDisconnectingBeforeClear(self, message_module):

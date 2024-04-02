@@ -19,11 +19,10 @@ option features.enum_type = CLOSED;
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
 option java_package = "com.google.protobuf_test_messages.editions.proto2";
-option objc_class_prefix = "Proto2";
+option objc_class_prefix = "EditionsProto2";
 
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;
-option cc_enable_arenas = true;
 
 // This proto includes every type of field in both singular and repeated
 // forms.
@@ -222,6 +221,15 @@ message TestAllTypesProto2 {
     features.message_encoding = DELIMITED
   ];
 
+  message MultiWordGroupField {
+    int32 group_int32 = 205;
+    uint32 group_uint32 = 206;
+  }
+
+  MultiWordGroupField multiwordgroupfield = 204 [
+    features.message_encoding = DELIMITED
+  ];
+
   // default values
   int32 default_int32 = 241 [
     default = -123456789
@@ -264,11 +272,11 @@ message TestAllTypesProto2 {
   ];
 
   float default_float = 251 [
-    default = 9.0E9
+    default = 9e9
   ];
 
   double default_double = 252 [
-    default = 7.0E22
+    default = 7e22
   ];
 
   bool default_bool = 253 [
@@ -343,6 +351,17 @@ enum ForeignEnumProto2 {
 
 extend TestAllTypesProto2 {
   int32 extension_int32 = 120;
+}
+
+extend TestAllTypesProto2 {
+  GroupField groupfield = 121 [
+    features.message_encoding = DELIMITED
+  ];
+}
+
+message GroupField {
+  int32 group_int32 = 122;
+  uint32 group_uint32 = 123;
 }
 
 message UnknownToTestAllTypes {
@@ -567,12 +586,12 @@ message TestAllRequiredTypesProto2 {
 
   float default_float = 251 [
     features.field_presence = LEGACY_REQUIRED,
-    default = 9.0E9
+    default = 9e9
   ];
 
   double default_double = 252 [
     features.field_presence = LEGACY_REQUIRED,
-    default = 7.0E22
+    default = 7e22
   ];
 
   bool default_bool = 253 [

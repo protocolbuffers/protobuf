@@ -170,6 +170,10 @@ class Plugin {
         UPB_DESC(compiler_CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS);
     UPB_DESC(compiler_CodeGeneratorResponse_set_supported_features)
     (response_, features);
+    UPB_DESC(compiler_CodeGeneratorResponse_set_minimum_edition)
+    (response_, UPB_DESC(EDITION_PROTO2));
+    UPB_DESC(compiler_CodeGeneratorResponse_set_maximum_edition)
+    (response_, UPB_DESC(EDITION_2023));
   }
 
   void WriteResponse() {

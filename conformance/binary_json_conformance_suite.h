@@ -63,6 +63,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void RunBinaryPerformanceTests();
   void RunJsonPerformanceTests();
   void RunJsonTests();
+  void RunJsonTestsForStoresDefaultPrimitive();
   void RunJsonTestsForFieldNameConvention();
   void RunJsonTestsForNonRepeatedTypes();
   void RunJsonTestsForRepeatedTypes();
@@ -130,6 +131,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestIllegalTags();
   void TestOneofMessage();
   void TestUnknownMessage();
+  void TestUnknownOrdering();
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);

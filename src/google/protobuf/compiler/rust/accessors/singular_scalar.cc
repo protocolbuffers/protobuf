@@ -5,8 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
 #include "google/protobuf/compiler/rust/accessors/helpers.h"
 #include "google/protobuf/compiler/rust/context.h"
@@ -18,160 +21,145 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void SingularScalar::InMsgImpl(Context<FieldDescriptor> field) const {
-  field.Emit(
+void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                               AccessorCase accessor_case) const {
+  ctx.Emit(
       {
-          {"field", field.desc().name()},
-          {"Scalar", PrimitiveRsTypeName(field.desc())},
-          {"hazzer_thunk", Thunk(field, "has")},
-          {"default_value", DefaultValue(field)},
+          {"field", RsSafeName(field.name())},
+          {"raw_field_name", field.name()},  // Never r# prefixed
+          {"view_self", ViewReceiver(accessor_case)},
+          {"Scalar", RsTypePath(ctx, field)},
+          {"hazzer_thunk", ThunkName(ctx, field, "has")},
+          {"default_value", DefaultValue(ctx, field)},
           {"getter",
            [&] {
-             field.Emit({}, R"rs(
-                  pub fn r#$field$(&self) -> $Scalar$ {
-                    unsafe { $getter_thunk$(self.inner.msg) }
+             ctx.Emit(R"rs(
+                  pub fn $field$($view_self$) -> $Scalar$ {
+                    unsafe { $getter_thunk$(self.raw_msg()) }
                   }
                 )rs");
            }},
           {"getter_opt",
            [&] {
-             if (!field.desc().is_optional()) return;
-             if (!field.desc().has_presence()) return;
-             field.Emit({}, R"rs(
-                  pub fn r#$field$_opt(&self) -> $pb$::Optional<$Scalar$> {
-                    if !unsafe { $hazzer_thunk$(self.inner.msg) } {
-                      return $pb$::Optional::Unset($default_value$);
+             if (!field.has_presence()) return;
+             ctx.Emit(R"rs(
+                  pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
+                    if self.has_$raw_field_name$() {
+                      $pb$::Optional::Set(self.$field$())
+                    } else {
+                      $pb$::Optional::Unset($default_value$)
                     }
-                    let value = unsafe { $getter_thunk$(self.inner.msg) };
-                    $pb$::Optional::Set(value)
                   }
                   )rs");
            }},
-          {"getter_thunk", Thunk(field, "get")},
-          {"setter_thunk", Thunk(field, "set")},
-          {"clearer_thunk", Thunk(field, "clear")},
-          {"field_setter",
+          {"setter",
            [&] {
-             if (field.desc().has_presence()) {
-               field.Emit({}, R"rs(
-                  pub fn r#$field$_set(&mut self, val: Option<$Scalar$>) {
-                    match val {
-                      Some(val) => unsafe { $setter_thunk$(self.inner.msg, val) },
-                      None => unsafe { $clearer_thunk$(self.inner.msg) },
-                    }
-                  }
-                )rs");
-             }
+             if (accessor_case == AccessorCase::VIEW) return;
+             ctx.Emit({}, R"rs(
+                 pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
+                   unsafe { $setter_thunk$(self.raw_msg(), val) }
+                 }
+               )rs");
            }},
-          {"field_mutator_getter",
+          {"hazzer",
            [&] {
-             if (field.desc().has_presence()) {
-               field.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
-                    static VTABLE: $pbi$::PrimitiveOptionalMutVTable<$Scalar$> =
-                      $pbi$::PrimitiveOptionalMutVTable::new(
-                        $pbi$::Private,
-                        $getter_thunk$,
-                        $setter_thunk$,
-                        $clearer_thunk$,
-                        $default_value$,
-                      );
-
-                      unsafe {
-                        let has = $hazzer_thunk$(self.inner.msg);
-                        $pbi$::new_vtable_field_entry::<$Scalar$>(
-                          $pbi$::Private,
-                          $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner),
-                          &VTABLE,
-                          has,
-                        )
-                      }
-                  }
-                )rs");
-             } else {
-               field.Emit({}, R"rs(
-                  pub fn r#$field$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
-                    static VTABLE: $pbi$::PrimitiveVTable<$Scalar$> =
-                      $pbi$::PrimitiveVTable::new(
-                        $pbi$::Private,
-                        $getter_thunk$,
-                        $setter_thunk$,
-                      );
-
-                      $pb$::PrimitiveMut::from_singular(
-                        $pbi$::Private,
-                        unsafe {
-                          $pbi$::RawVTableMutator::new(
-                            $pbi$::Private,
-                            $pbr$::MutatorMessageRef::new(
-                              $pbi$::Private, &mut self.inner
-                            ),
-                            &VTABLE,
-                          )
-                        },
-                      )
-                  }
-                )rs");
-             }
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                pub fn has_$raw_field_name$($view_self$) -> bool {
+                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                })rs");
            }},
+          {"clearer",
+           [&] {
+             if (accessor_case == AccessorCase::VIEW) return;
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                  pub fn clear_$raw_field_name$(&mut self) {
+                    unsafe { $clearer_thunk$(self.raw_msg()) }
+                  })rs");
+           }},
+          {"getter_thunk", ThunkName(ctx, field, "get")},
+          {"setter_thunk", ThunkName(ctx, field, "set")},
+          {"clearer_thunk", ThunkName(ctx, field, "clear")},
       },
       R"rs(
           $getter$
           $getter_opt$
-          $field_setter$
-          $field_mutator_getter$
+          $setter$
+          $hazzer$
+          $clearer$
         )rs");
 }
 
-void SingularScalar::InExternC(Context<FieldDescriptor> field) const {
-  field.Emit(
-      {{"Scalar", PrimitiveRsTypeName(field.desc())},
-       {"hazzer_thunk", Thunk(field, "has")},
-       {"getter_thunk", Thunk(field, "get")},
-       {"setter_thunk", Thunk(field, "set")},
-       {"clearer_thunk", Thunk(field, "clear")},
-       {"hazzer",
-        [&] {
-          if (field.desc().has_presence()) {
-            field.Emit(
-                R"rs(fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;)rs");
-          }
-        }}},
-      R"rs(
-          $hazzer$
+void SingularScalar::InExternC(Context& ctx,
+                               const FieldDescriptor& field) const {
+  // In order to soundly pass a Rust type to C/C++ as a function argument,
+  // the types must be FFI-compatible.
+  // This requires special consideration for enums, which aren't trivial
+  // primitive types. Rust protobuf enums are defined as `#[repr(transparent)]`
+  // over `i32`, making them ABI-compatible with `int32_t`.
+  // Upb defines enum thunks as taking `int32_t`, and so we can pass Rust enums
+  // directly to thunks without any cast.
+  ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
+            {"hazzer_thunk", ThunkName(ctx, field, "has")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"setter_thunk", ThunkName(ctx, field, "set")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"with_presence_fields_thunks",
+             [&] {
+               if (field.has_presence()) {
+                 ctx.Emit(R"rs(
+                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+                )rs");
+               }
+             }}},
+           R"rs(
+          $with_presence_fields_thunks$
           fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
           fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
-          fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
         )rs");
 }
 
-void SingularScalar::InThunkCc(Context<FieldDescriptor> field) const {
-  field.Emit({{"field", cpp::FieldName(&field.desc())},
-              {"Scalar", cpp::PrimitiveTypeName(field.desc().cpp_type())},
-              {"QualifiedMsg",
-               cpp::QualifiedClassName(field.desc().containing_type())},
-              {"hazzer_thunk", Thunk(field, "has")},
-              {"getter_thunk", Thunk(field, "get")},
-              {"setter_thunk", Thunk(field, "set")},
-              {"clearer_thunk", Thunk(field, "clear")},
-              {"hazzer",
-               [&] {
-                 if (field.desc().has_presence()) {
-                   field.Emit(R"cc(
-                     bool $hazzer_thunk$($QualifiedMsg$* msg) {
-                       return msg->has_$field$();
-                     }
-                   )cc");
+void SingularScalar::InThunkCc(Context& ctx,
+                               const FieldDescriptor& field) const {
+  std::string scalar;
+  auto enum_ = field.enum_type();
+  if (enum_ != nullptr) {
+    // The C++ runtime defines its thunks as receiving enum types.
+    // This is fine since:
+    // - the C++ runtime represents enums as `int`
+    // - the C++ runtime guarantees `int` is a `int32_t`.
+    // - Rust gencode defines enums as `#[repr(transparent)]` over `i32`.
+    scalar = cpp::QualifiedClassName(enum_);
+  } else {
+    scalar = cpp::PrimitiveTypeName(field.cpp_type());
+  }
+
+  ctx.Emit({{"field", cpp::FieldName(&field)},
+            {"Scalar", scalar},
+            {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"hazzer_thunk", ThunkName(ctx, field, "has")},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"setter_thunk", ThunkName(ctx, field, "set")},
+            {"clearer_thunk", ThunkName(ctx, field, "clear")},
+            {"with_presence_fields_thunks",
+             [&] {
+               if (!field.has_presence()) return;
+               ctx.Emit(R"cc(
+                 bool $hazzer_thunk$($QualifiedMsg$* msg) {
+                   return msg->has_$field$();
                  }
-               }}},
-             R"cc(
-               $hazzer$;
-               $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
-               void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
-                 msg->set_$field$(val);
-               }
-               void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-             )cc");
+                 void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
+               )cc");
+             }}},
+           R"cc(
+             $with_presence_fields_thunks$;
+             $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
+             void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
+               msg->set_$field$(val);
+             }
+           )cc");
 }
 
 }  // namespace rust

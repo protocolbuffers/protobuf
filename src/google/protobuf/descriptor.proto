@@ -62,6 +62,10 @@ enum Edition {
   // A placeholder for an unknown edition value.
   EDITION_UNKNOWN = 0;
 
+  // A placeholder edition for specifying default behaviors *before* a feature
+  // was first introduced.  This is effectively an "infinite past".
+  EDITION_LEGACY = 900;
+
   // Legacy syntax "editions".  These pre-date editions, but behave much like
   // distinct editions.  These can't be used to specify the edition of proto
   // files, but feature definitions must supply proto2/proto3 defaults for
@@ -73,6 +77,7 @@ enum Edition {
   // should not be depended on, but they will always be time-ordered for easy
   // comparison.
   EDITION_2023 = 1000;
+  EDITION_2024 = 1001;
 
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relyed on outside of tests.
@@ -81,6 +86,11 @@ enum Edition {
   EDITION_99997_TEST_ONLY = 99997;
   EDITION_99998_TEST_ONLY = 99998;
   EDITION_99999_TEST_ONLY = 99999;
+
+  // Placeholder for specifying unbounded edition support.  This should only
+  // ever be used by plugins that can expect to never require any changes to
+  // support a new edition.
+  EDITION_MAX = 0x7FFFFFFF;
 }
 
 // Describes a complete .proto file.
@@ -202,7 +212,8 @@ message ExtensionRangeOptions {
   // The verification state of the range.
   // TODO: flip the default to DECLARATION once all empty ranges
   // are marked as UNVERIFIED.
-  optional VerificationState verification = 3 [default = UNVERIFIED];
+  optional VerificationState verification = 3
+      [default = UNVERIFIED, retention = RETENTION_SOURCE];
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
@@ -294,12 +305,12 @@ message FieldDescriptorProto {
   // If true, this is a proto3 "optional". When a proto3 field is optional, it
   // tracks presence regardless of field type.
   //
-  // When proto3_optional is true, this field must be belong to a oneof to
-  // signal to old proto3 clients that presence is tracked for this field. This
-  // oneof is known as a "synthetic" oneof, and this field must be its sole
-  // member (each proto3 optional field gets its own synthetic oneof). Synthetic
-  // oneofs exist in the descriptor only, and do not generate any API. Synthetic
-  // oneofs must be ordered after all "real" oneofs.
+  // When proto3_optional is true, this field must belong to a oneof to signal
+  // to old proto3 clients that presence is tracked for this field. This oneof
+  // is known as a "synthetic" oneof, and this field must be its sole member
+  // (each proto3 optional field gets its own synthetic oneof). Synthetic oneofs
+  // exist in the descriptor only, and do not generate any API. Synthetic oneofs
+  // must be ordered after all "real" oneofs.
   //
   // For message fields, proto3_optional doesn't create any semantic change,
   // since non-repeated message fields always track presence. However it still
@@ -441,12 +452,16 @@ message FileOptions {
   // This option does nothing.
   optional bool java_generate_equals_and_hash = 20 [deprecated=true];
 
-  // If set true, then the Java2 code generator will generate code that
-  // throws an exception whenever an attempt is made to assign a non-UTF-8
-  // byte sequence to a string field.
-  // Message reflection will do the same.
-  // However, an extension field still accepts non-UTF-8 byte sequences.
-  // This option has no effect on when used with the lite runtime.
+  // A proto2 file can set this to true to opt in to UTF-8 checking for Java,
+  // which will throw an exception if invalid UTF-8 is parsed from the wire or
+  // assigned to a string field.
+  //
+  // TODO: clarify exactly what kinds of field types this option
+  // applies to, and update these docs accordingly.
+  //
+  // Proto3 files already perform these checks. Setting the option explicitly to
+  // false has no effect: it cannot be used to opt proto3 files out of UTF-8
+  // checks.
   optional bool java_string_check_utf8 = 27 [default = false];
 
   // Generated classes can be optimized for speed or code size.
@@ -478,7 +493,7 @@ message FileOptions {
   optional bool cc_generic_services = 16 [default = false];
   optional bool java_generic_services = 17 [default = false];
   optional bool py_generic_services = 18 [default = false];
-  optional bool php_generic_services = 42 [default = false];
+  reserved 42;  // removed php_generic_services
 
   // Is this file deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
@@ -570,10 +585,6 @@ message MessageOptions {
 
   reserved 4, 5, 6;
 
-  // NOTE: Do not set the option in .proto files. Always use the maps syntax
-  // instead. The option should only be implicitly set by the proto compiler
-  // parser.
-  //
   // Whether the message is an automatically generated map entry type for the
   // maps field.
   //
@@ -591,6 +602,10 @@ message MessageOptions {
   // use a native map in the target language to hold the keys and values.
   // The reflection APIs in such implementations still need to work as
   // if the field is a repeated message field.
+  //
+  // NOTE: Do not set the option in .proto files. Always use the maps syntax
+  // instead. The option should only be implicitly set by the proto compiler
+  // parser.
   optional bool map_entry = 7;
 
   reserved 8;  // javalite_serializable
@@ -689,19 +704,11 @@ message FieldOptions {
   // call from multiple threads concurrently, while non-const methods continue
   // to require exclusive access.
   //
-  // Note that implementations may choose not to check required fields within
-  // a lazy sub-message.  That is, calling IsInitialized() on the outer message
-  // may return true even if the inner message has missing required fields.
-  // This is necessary because otherwise the inner message would have to be
-  // parsed in order to perform the check, defeating the purpose of lazy
-  // parsing.  An implementation which chooses not to check required fields
-  // must be consistent about it.  That is, for any particular sub-message, the
-  // implementation must either *always* check its required fields, or *never*
-  // check its required fields, regardless of whether or not the message has
-  // been parsed.
-  //
-  // As of May 2022, lazy verifies the contents of the byte stream during
-  // parsing.  An invalid byte stream will cause the overall parsing to fail.
+  // Note that lazy message fields are still eagerly verified to check
+  // ill-formed wireformat or missing required fields. Calling IsInitialized()
+  // on the outer message would fail if the inner message has missing required
+  // fields. Failed verification would result in parsing failure (except when
+  // uninitialized messages are acceptable).
   optional bool lazy = 5 [default = false];
 
   // unverified_lazy does no correctness checks on the byte stream. This should
@@ -760,6 +767,28 @@ message FieldOptions {
 
   // Any features defined in the specific edition.
   optional FeatureSet features = 21;
+
+  // Information about the support window of a feature.
+  message FeatureSupport {
+    // The edition that this feature was first available in.  In editions
+    // earlier than this one, the default assigned to EDITION_LEGACY will be
+    // used, and proto files will not be able to override it.
+    optional Edition edition_introduced = 1;
+
+    // The edition this feature becomes deprecated in.  Using this after this
+    // edition may trigger warnings.
+    optional Edition edition_deprecated = 2;
+
+    // The deprecation warning text if this feature is used after the edition it
+    // was marked deprecated in.
+    optional string deprecation_warning = 3;
+
+    // The edition this feature is no longer available in.  In editions after
+    // this one, the last default assigned will be used, and proto files will
+    // not be able to override it.
+    optional Edition edition_removed = 4;
+  }
+  optional FeatureSupport feature_support = 22;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -974,8 +1003,8 @@ message FeatureSet {
 
   enum Utf8Validation {
     UTF8_VALIDATION_UNKNOWN = 0;
-    NONE = 1;
     VERIFY = 2;
+    NONE = 3;
   }
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,
@@ -1015,8 +1044,12 @@ message FeatureSet {
 
   extensions 1000;  // for Protobuf C++
   extensions 1001;  // for Protobuf Java
+  extensions 1002;  // for Protobuf Go
+
+  extensions 9990;  // for deprecated Java Proto1
 
   extensions 9995 to 9999;  // For internal testing
+  extensions 10000;         // for https://github.com/bufbuild/protobuf-es
 }
 
 // A compiled specification for the defaults of a set of features.  These
@@ -1030,6 +1063,15 @@ message FeatureSetDefaults {
   // be used.  This field must be in strict ascending order by edition.
   message FeatureSetEditionDefault {
     optional Edition edition = 3;
+
+    // Defaults of features that can be overridden in this edition.
+    optional FeatureSet overridable_features = 4;
+
+    // Defaults of features that can't be overridden in this edition.
+    optional FeatureSet fixed_features = 5;
+
+    // TODO Deprecate and remove this field, which is just the
+    // above two merged.
     optional FeatureSet features = 2;
   }
   repeated FeatureSetEditionDefault defaults = 1;
@@ -1098,7 +1140,7 @@ message SourceCodeInfo {
     // location.
     //
     // Each element is a field number or an index.  They form a path from
-    // the root FileDescriptorProto to the place where the definition occurs.
+    // the root FileDescriptorProto to the place where the definition appears.
     // For example, this path:
     //   [ 4, 3, 2, 7, 1 ]
     // refers to:

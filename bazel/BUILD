@@ -5,14 +5,25 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_python//python:defs.bzl", "py_binary")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 # begin:google_only
 # package(default_applicable_licenses = ["//upb:license"])
 # end:google_only
 
 licenses(["notice"])
+
+# begin:google_only
+# selects.config_setting_group(
+#     name = "android_opt",
+#     match_all = [
+#         "//tools/cc_target_os:android",
+#         "//tools/compilation_mode:opt",
+#     ],
+# )
+# end:google_only
 
 py_binary(
     name = "amalgamate",
@@ -26,6 +37,9 @@ py_binary(
 bzl_library(
     name = "py_proto_library_bzl",
     srcs = ["py_proto_library.bzl"],
+    deps = [
+        "@rules_python//python:py_info_bzl",
+    ],
 )
 
 bzl_library(
@@ -38,8 +52,8 @@ bzl_library(
     ],
     deps = [
         "@bazel_skylib//lib:paths",
-        "@rules_proto//proto:defs",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+        "@rules_proto//proto:defs",
     ],
 )
 

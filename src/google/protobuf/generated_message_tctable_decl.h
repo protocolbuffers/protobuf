@@ -238,7 +238,7 @@ constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
 
     case WireFormatLite::TYPE_GROUP:
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 }
 
@@ -272,6 +272,10 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t extension_offset;
   uint32_t max_field_number;
   uint8_t fast_idx_mask;
+  // Testing one bit is cheaper than testing whether post_loop_handler is null,
+  // and we expect it to be null most of the time so no reason to load the
+  // pointer.
+  uint8_t has_post_loop_handler : 1;
   uint16_t lookup_table_offset;
   uint32_t skipmap32;
   uint32_t field_entries_offset;
@@ -281,6 +285,9 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const MessageLite* default_instance;
+  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+                                          ParseContext* ctx);
+  PostLoopHandler post_loop_handler;
 
   // Handler for fields which are not handled by table dispatch.
   TailCallParseFunc fallback;
@@ -303,6 +310,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
                              const MessageLite* default_instance,
+                             PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
                              ,
@@ -313,6 +321,7 @@ struct alignas(uint64_t) TcParseTableBase {
         extension_offset(extension_offset),
         max_field_number(max_field_number),
         fast_idx_mask(fast_idx_mask),
+        has_post_loop_handler(post_loop_handler != nullptr),
         lookup_table_offset(lookup_table_offset),
         skipmap32(skipmap32),
         field_entries_offset(field_entries_offset),
@@ -320,6 +329,7 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
+        post_loop_handler(post_loop_handler),
         fallback(fallback)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
         ,
@@ -531,6 +541,38 @@ static_assert(std::is_standard_layout<TcParseTable<1>>::value,
 static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
+
+template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+  return func(static_cast<T*>(msg), ptr, ctx);
+}
+
+template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+constexpr TcParseTable<0> CreateStubTcParseTable(
+    const MessageLite* default_instance,
+    TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
+  return {
+      {
+          0,                  // has_bits_offset
+          0,                  // extension_offset
+          0,                  // max_field_number
+          0,                  // fast_idx_mask
+          0,                  // lookup_table_offset
+          0,                  // skipmap32
+          0,                  // field_entries_offset
+          0,                  // num_field_entries
+          0,                  // num_aux_entries
+          0,                  // aux_offset
+          default_instance,   //
+          post_loop_handler,  //
+          nullptr,            // fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,  // to_prefetch
+#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
+      },
+      {{{StubParseImpl<T, func>, {}}}},
+  };
+}
 
 }  // namespace internal
 }  // namespace protobuf

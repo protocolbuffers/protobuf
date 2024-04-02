@@ -426,13 +426,13 @@ public final class Durations {
    * Add two durations.
    *
    * <!-- MOE:begin_intracomment_strip -->
-   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Duration} using
-   * {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there,
-   * and convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   *
-   * <p>This method will be deprecated once most uses have been eliminated.
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Duration}
+   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the
+   *     arithmetic there, and convert back using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
    * <!-- MOE:end_intracomment_strip -->
    */
+  @Deprecated // MOE:strip_line
   public static Duration add(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);
@@ -444,13 +444,13 @@ public final class Durations {
    * Subtract a duration from another.
    *
    * <!-- MOE:begin_intracomment_strip -->
-   * <p>Do not use this method for new code. Instead, convert to {@link java.time.Duration} using
-   * {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there,
-   * and convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   *
-   * <p>This method will be deprecated once most uses have been eliminated.
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Duration}
+   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the
+   *     arithmetic there, and convert back using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
    * <!-- MOE:end_intracomment_strip -->
    */
+  @Deprecated // MOE:strip_line
   public static Duration subtract(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);

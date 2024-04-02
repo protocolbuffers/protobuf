@@ -184,6 +184,9 @@ class PROTOBUF_EXPORT TaggedStringPtr {
 
  private:
   static inline void assert_aligned(const void* p) {
+    static_assert(kMask <= alignof(void*), "Pointer underaligned for bit mask");
+    static_assert(kMask <= alignof(std::string),
+                  "std::string underaligned for bit mask");
     ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
   }
 

@@ -66,7 +66,10 @@ PROTOBUF_EXPORT enum class FieldReporterLevel {
   kUtf8Format = 8,
   kDebugString = 12,
   kShortDebugString = 13,
-  kUtf8DebugString = 14
+  kUtf8DebugString = 14,
+  kUnredactedDebugFormatForTest = 15,
+  kUnredactedShortDebugFormatForTest = 16,
+  kUnredactedUtf8DebugFormatForTest = 17
 };
 
 }  // namespace internal
@@ -74,6 +77,12 @@ PROTOBUF_EXPORT enum class FieldReporterLevel {
 namespace io {
 class ErrorCollector;  // tokenizer.h
 }
+
+namespace python {
+namespace cmessage {
+class PythonFieldValuePrinter;
+}
+}  // namespace python
 
 namespace internal {
 // Enum used to set printing options for StringifyMessage.
@@ -523,6 +532,10 @@ class PROTOBUF_EXPORT TextFormat {
                                           : it->second.get();
     }
 
+    friend class google::protobuf::python::cmessage::PythonFieldValuePrinter;
+    static void HardenedPrintString(absl::string_view src,
+                                    TextFormat::BaseTextGenerator* generator);
+
     int initial_indent_level_;
     bool single_line_mode_;
     bool use_field_number_;
@@ -723,25 +736,25 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
-    // Uniquely addresses fields in a message that was explicitly unset in
+    // Metadata representing all the fields that were explicitly unset in
     // textproto. Example:
     // "some_int_field: 0"
-    // where some_int_field is non-optional.
+    // where some_int_field has implicit presence.
     //
-    // This class should only be used to pass data between the text_format
-    // parser and the MessageDifferencer.
+    // This class should only be used to pass data between TextFormat and the
+    // MessageDifferencer.
     class UnsetFieldsMetadata {
      public:
       UnsetFieldsMetadata() = default;
 
      private:
-      // Return a pointer to the unset field in the given message.
-      static const void* GetUnsetFieldAddress(const Message& message,
-                                              const Reflection& reflection,
-                                              const FieldDescriptor& fd);
+      using Id = std::pair<const Message*, const FieldDescriptor*>;
+      // Return an id representing the unset field in the given message.
+      static Id GetUnsetFieldId(const Message& message,
+                                const FieldDescriptor& fd);
 
-      // List of addresses of explicitly unset proto fields.
-      absl::flat_hash_set<const void*> addresses_;
+      // List of ids of explicitly unset proto fields.
+      absl::flat_hash_set<Id> ids_;
 
       friend class ::google::protobuf::internal::
           UnsetFieldsMetadataMessageDifferencerTestUtil;

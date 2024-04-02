@@ -195,6 +195,12 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 }
 
 - (GPBMessage *)unpackMessageClass:(Class)messageClass error:(NSError **)errorPtr {
+  return [self unpackMessageClass:messageClass extensionRegistry:nil error:errorPtr];
+}
+
+- (nullable GPBMessage *)unpackMessageClass:(Class)messageClass
+                          extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                                      error:(NSError **)errorPtr {
   NSString *fullName = [messageClass descriptor].fullName;
   if (fullName.length == 0) {
     if (errorPtr) {
@@ -215,10 +221,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
     return nil;
   }
 
-  // Any is proto3, which means no extensions, so this assumes anything put
-  // within an any also won't need extensions. A second helper could be added
-  // if needed.
-  return [messageClass parseFromData:self.value error:errorPtr];
+  return [messageClass parseFromData:self.value extensionRegistry:extensionRegistry error:errorPtr];
 }
 
 @end

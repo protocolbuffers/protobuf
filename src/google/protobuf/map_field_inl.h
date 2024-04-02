@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_MAP_FIELD_INL_H__
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -31,36 +32,35 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-// UnwrapMapKey template
-template <typename T>
-T UnwrapMapKey(const MapKey& map_key);
-template <>
-inline int32_t UnwrapMapKey(const MapKey& map_key) {
+// UnwrapMapKey template. We're using overloading rather than template
+// specialization so that we can return a value or reference type depending on
+// `T`.
+inline int32_t UnwrapMapKeyImpl(const MapKey& map_key, const int32_t*) {
   return map_key.GetInt32Value();
 }
-template <>
-inline uint32_t UnwrapMapKey(const MapKey& map_key) {
+inline uint32_t UnwrapMapKeyImpl(const MapKey& map_key, const uint32_t*) {
   return map_key.GetUInt32Value();
 }
-template <>
-inline int64_t UnwrapMapKey(const MapKey& map_key) {
+inline int64_t UnwrapMapKeyImpl(const MapKey& map_key, const int64_t*) {
   return map_key.GetInt64Value();
 }
-template <>
-inline uint64_t UnwrapMapKey(const MapKey& map_key) {
+inline uint64_t UnwrapMapKeyImpl(const MapKey& map_key, const uint64_t*) {
   return map_key.GetUInt64Value();
 }
-template <>
-inline bool UnwrapMapKey(const MapKey& map_key) {
+inline bool UnwrapMapKeyImpl(const MapKey& map_key, const bool*) {
   return map_key.GetBoolValue();
 }
-template <>
-inline std::string UnwrapMapKey(const MapKey& map_key) {
+inline const std::string& UnwrapMapKeyImpl(const MapKey& map_key,
+                                           const std::string*) {
   return map_key.GetStringValue();
 }
-template <>
-inline MapKey UnwrapMapKey(const MapKey& map_key) {
+inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key, const MapKey*) {
   return map_key;
+}
+
+template <typename T>
+decltype(auto) UnwrapMapKey(const MapKey& map_key) {
+  return UnwrapMapKeyImpl(map_key, static_cast<T*>(nullptr));
 }
 
 // SetMapKey

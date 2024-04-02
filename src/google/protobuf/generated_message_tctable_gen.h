@@ -48,7 +48,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     field_layout::TransformValidation lazy_opt;
     bool is_string_inlined;
     bool is_implicitly_weak;
-    bool use_direct_tcparser_table;
     bool should_split;
   };
   class OptionProvider {
@@ -65,6 +64,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
                     const OptionProvider& option_provider,
                     const std::vector<int>& has_bit_indices,
                     const std::vector<int>& inlined_string_indices);
+
+  TcParseFunction fallback_function;
 
   // Fields parsed by the table fast-path.
   struct FastFieldInfo {
@@ -108,6 +109,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kSubTable,
     kSubMessageWeak,
     kMessageVerifyFunc,
+    kSelfVerifyFunc,
     kEnumRange,
     kEnumValidator,
     kNumericOffset,

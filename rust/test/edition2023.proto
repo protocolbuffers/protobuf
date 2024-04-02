@@ -1,0 +1,8 @@
+edition = "2023";
+
+package test;
+
+message EditionsMessage {
+  int32 plain_field = 1;
+  int32 implicit_presence_field = 2 [features.field_presence = IMPLICIT];
+}

@@ -745,8 +745,11 @@ class FieldDescriptor(DescriptorBase):
     """
     if self.label == FieldDescriptor.LABEL_REPEATED:
       return False
-    if (self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE or
-        self.containing_oneof):
+    if (
+        self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE
+        or self.is_extension
+        or self.containing_oneof
+    ):
       return True
 
     return (
@@ -1179,24 +1182,23 @@ class FileDescriptor(DescriptorBase):
   Attributes:
     name (str): Name of file, relative to root of source tree.
     package (str): Name of the package
-    syntax (str): string indicating syntax of the file (can be "proto2" or
-      "proto3")
+    edition (Edition): Enum value indicating edition of the file
     serialized_pb (bytes): Byte string of serialized
       :class:`descriptor_pb2.FileDescriptorProto`.
     dependencies (list[FileDescriptor]): List of other :class:`FileDescriptor`
       objects this :class:`FileDescriptor` depends on.
     public_dependencies (list[FileDescriptor]): A subset of
       :attr:`dependencies`, which were declared as "public".
-    message_types_by_name (dict(str, Descriptor)): Mapping from message names
-      to their :class:`Descriptor`.
+    message_types_by_name (dict(str, Descriptor)): Mapping from message names to
+      their :class:`Descriptor`.
     enum_types_by_name (dict(str, EnumDescriptor)): Mapping from enum names to
       their :class:`EnumDescriptor`.
     extensions_by_name (dict(str, FieldDescriptor)): Mapping from extension
       names declared at file scope to their :class:`FieldDescriptor`.
     services_by_name (dict(str, ServiceDescriptor)): Mapping from services'
       names to their :class:`ServiceDescriptor`.
-    pool (DescriptorPool): The pool this descriptor belongs to.  When not
-      passed to the constructor, the global default pool is used.
+    pool (DescriptorPool): The pool this descriptor belongs to.  When not passed
+      to the constructor, the global default pool is used.
   """
 
   if _USE_C_DESCRIPTORS:
@@ -1260,7 +1262,6 @@ class FileDescriptor(DescriptorBase):
     self.message_types_by_name = {}
     self.name = name
     self.package = package
-    self._deprecated_syntax = syntax or "proto2"
     self.serialized_pb = serialized_pb
 
     self.enum_types_by_name = {}
@@ -1268,15 +1269,6 @@ class FileDescriptor(DescriptorBase):
     self.services_by_name = {}
     self.dependencies = (dependencies or [])
     self.public_dependencies = (public_dependencies or [])
-
-  @property
-  def syntax(self):
-    warnings.warn(
-      'descriptor.syntax is deprecated. It will be removed'
-      ' soon. Most usages are checking field descriptors. Consider to use'
-      ' has_presence, is_packed on field descriptors.'
-    )
-    return self._deprecated_syntax
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.

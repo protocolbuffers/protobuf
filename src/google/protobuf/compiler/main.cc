@@ -18,8 +18,17 @@
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
 #include "google/protobuf/compiler/rust/generator.h"
 
+#ifdef DISABLE_PROTOC_CONFIG
+#include "google/protobuf/compiler/allowlists/allowlist.h"
+#endif  // DISABLE_PROTOC_CONFIG
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+#ifdef _MSC_VER
+#include <windows.h>
+#include <shellapi.h>
+#endif
 
 namespace google {
 namespace protobuf {
@@ -92,8 +101,11 @@ int ProtobufMain(int argc, char* argv[]) {
 
   // Rust
   rust::RustGenerator rust_generator;
-  cli.RegisterGenerator("--rust_out", &rust_generator,
+  cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
                         "Generate Rust sources.");
+#ifdef DISABLE_PROTOC_CONFIG
+  internal::SetDisableAllowlistInternalOnly(true);
+#endif  // DISABLE_PROTOC_CONFIG
   return cli.Run(argc, argv);
 }
 
@@ -101,6 +113,28 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace protobuf
 }  // namespace google
 
+#ifdef _MSC_VER
+std::string ToMultiByteUtf8String(const wchar_t* input) {
+  int size = WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0,
+                                 nullptr, nullptr);
+  std::string result(size, 0);
+  if (size)
+    WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), &result[0], size,
+                        nullptr, nullptr);
+  return result;
+}
+
+int main(int argc, char* argv[]) {
+  wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
+  char** argv_mbcs = new char*[argc];
+  for (int i = 0; i < argc; i++) {
+    std::string* multibyte_string = new auto(ToMultiByteUtf8String(wargv[i]));
+    argv_mbcs[i] = const_cast<char*>(multibyte_string->c_str());
+  }
+  return google::protobuf::compiler::ProtobufMain(argc, argv);
+}
+#else
 int main(int argc, char* argv[]) {
   return google::protobuf::compiler::ProtobufMain(argc, argv);
 }
+#endif

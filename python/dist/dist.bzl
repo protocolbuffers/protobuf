@@ -113,7 +113,6 @@ def _py_dist_module_impl(ctx):
         ]
 
 py_dist_module = rule(
-    output_to_genfiles = True,
     implementation = _py_dist_module_impl,
     attrs = {
         "module_name": attr.string(mandatory = True),

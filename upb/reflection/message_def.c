@@ -7,13 +7,22 @@
 
 #include "upb/reflection/internal/message_def.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_table/file.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
-#include "upb/reflection/def_type.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/desc_state.h"
 #include "upb/reflection/internal/enum_def.h"
@@ -406,7 +415,10 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
       _upb_MessageDef_Insert(m, shortname, shortnamelen, field_v, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  if (strcmp(shortname, json_name) != 0 &&
+  bool skip_json_conflicts =
+      UPB_DESC(MessageOptions_deprecated_legacy_json_field_conflicts)(
+          upb_MessageDef_Options(m));
+  if (!skip_json_conflicts && strcmp(shortname, json_name) != 0 &&
       UPB_DESC(FeatureSet_json_format)(m->resolved_features) ==
           UPB_DESC(FeatureSet_ALLOW) &&
       upb_strtable_lookup(&m->ntof, json_name, &v)) {
@@ -416,13 +428,15 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   }
 
   if (upb_strtable_lookup(&m->jtof, json_name, &v)) {
-    _upb_DefBuilder_Errf(ctx, "duplicate json_name (%s)", json_name);
+    if (!skip_json_conflicts) {
+      _upb_DefBuilder_Errf(ctx, "duplicate json_name (%s)", json_name);
+    }
+  } else {
+    const size_t json_size = strlen(json_name);
+    ok = upb_strtable_insert(&m->jtof, json_name, json_size,
+                             upb_value_constptr(f), ctx->arena);
+    if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
-
-  const size_t json_size = strlen(json_name);
-  ok = upb_strtable_insert(&m->jtof, json_name, json_size,
-                           upb_value_constptr(f), ctx->arena);
-  if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   if (upb_inttable_lookup(&m->itof, field_number, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate field number (%u)", field_number);
@@ -436,9 +450,8 @@ void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
   if (ctx->layout == NULL) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   } else {
-    UPB_ASSERT(ctx->msg_count < ctx->layout->msg_count);
-    m->layout = ctx->layout->msgs[ctx->msg_count++];
-    UPB_ASSERT(m->field_count == m->layout->field_count);
+    m->layout = upb_MiniTableFile_Message(ctx->layout, ctx->msg_count++);
+    UPB_ASSERT(m->field_count == upb_MiniTable_FieldCount(m->layout));
 
     // We don't need the result of this call, but it will assign layout_index
     // for all the fields in O(n lg n) time.
@@ -474,9 +487,9 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
 
     UPB_ASSERT(layout_index < m->field_count);
     upb_MiniTableField* mt_f =
-        (upb_MiniTableField*)&m->layout->fields[layout_index];
+        (upb_MiniTableField*)&m->layout->UPB_PRIVATE(fields)[layout_index];
     if (sub_m) {
-      if (!mt->subs) {
+      if (!mt->UPB_PRIVATE(subs)) {
         _upb_DefBuilder_Errf(ctx, "unexpected submsg for (%s)", m->full_name);
       }
       UPB_ASSERT(mt_f);
@@ -496,8 +509,9 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
     const int layout_index = _upb_FieldDef_LayoutIndex(f);
-    UPB_ASSERT(layout_index < m->layout->field_count);
-    const upb_MiniTableField* mt_f = &m->layout->fields[layout_index];
+    UPB_ASSERT(layout_index < upb_MiniTable_FieldCount(m->layout));
+    const upb_MiniTableField* mt_f =
+        &m->layout->UPB_PRIVATE(fields)[layout_index];
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
     UPB_ASSERT(upb_FieldDef_CType(f) == upb_MiniTableField_CType(mt_f));
     UPB_ASSERT(upb_FieldDef_HasPresence(f) ==

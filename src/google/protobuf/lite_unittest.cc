@@ -8,6 +8,7 @@
 // Author: kenton@google.com (Kenton Varda)
 
 #include <climits>
+#include <cstdint>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -104,7 +105,7 @@ void SetSomeTypesInEmptyMessageUnknownFields(
 
 TEST(ParseVarintTest, Varint32) {
   auto test_value = [](uint32_t value, int varint_length) {
-    uint8_t buffer[10];
+    uint8_t buffer[10] = {0};
     uint8_t* p = io::CodedOutputStream::WriteVarint32ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -131,7 +132,7 @@ TEST(ParseVarintTest, Varint32) {
 
 TEST(ParseVarintTest, Varint64) {
   auto test_value = [](uint64_t value, int varint_length) {
-    uint8_t buffer[10];
+    uint8_t buffer[10] = {0};
     uint8_t* p = io::CodedOutputStream::WriteVarint64ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -1094,7 +1095,7 @@ TYPED_TEST(LiteTest, AllLite47) {
 TYPED_TEST(LiteTest, MapCrash) {
   // See b/113635730
   Arena arena;
-  auto msg = Arena::CreateMessage<protobuf_unittest::TestMapLite>(&arena);
+  auto msg = Arena::Create<protobuf_unittest::TestMapLite>(&arena);
   // Payload for the map<string, Enum> with a enum varint that's longer >
   // 10 bytes. This causes a parse fail and a subsequent delete. field 16
   // (map<int32, MapEnumLite>) tag = 128+2 = \202 \1

@@ -7,7 +7,7 @@
 
 // Author: liujisi@google.com (Pherl Liu)
 
-syntax = "proto2";
+edition = "2023";
 
 package protobuf_unittest_import;
 
@@ -15,5 +15,5 @@ option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.protobuf";
 
 message PublicImportMessageLite {
-  optional int32 e = 1;
+  int32 e = 1;
 }

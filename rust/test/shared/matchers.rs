@@ -1,3 +1,4 @@
+use googletest::description::Description;
 use googletest::matcher::MatcherResult;
 use googletest::prelude::*;
 use protobuf::{AbsentField, Optional, PresentField, ProxiedWithPresence};
@@ -22,10 +23,10 @@ impl<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized> Matcher for UnsetMat
         actual.is_unset().into()
     }
 
-    fn describe(&self, matcher_result: MatcherResult) -> String {
+    fn describe(&self, matcher_result: MatcherResult) -> Description {
         match matcher_result {
-            MatcherResult::Match => "is not set".to_string(),
-            MatcherResult::NoMatch => "is set".to_string(),
+            MatcherResult::Match => "is not set".into(),
+            MatcherResult::NoMatch => "is set".into(),
         }
     }
 }
@@ -49,10 +50,10 @@ impl<'a, T: std::fmt::Debug + ProxiedWithPresence + ?Sized> Matcher for SetMatch
         actual.is_set().into()
     }
 
-    fn describe(&self, matcher_result: MatcherResult) -> String {
+    fn describe(&self, matcher_result: MatcherResult) -> Description {
         match matcher_result {
-            MatcherResult::Match => "is set".to_string(),
-            MatcherResult::NoMatch => "is not set".to_string(),
+            MatcherResult::Match => "is set".into(),
+            MatcherResult::NoMatch => "is not set".into(),
         }
     }
 }

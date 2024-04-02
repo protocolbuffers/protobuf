@@ -1,11 +1,23 @@
+#include "rust/cpp_kernel/cpp_api.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <string>
+
 #include "google/protobuf/map.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 extern "C" {
-
 #define expose_repeated_field_methods(ty, rust_ty)                            \
   google::protobuf::RepeatedField<ty>* __pb_rust_RepeatedField_##rust_ty##_new() {      \
     return new google::protobuf::RepeatedField<ty>();                                   \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_free(                              \
+      google::protobuf::RepeatedField<ty>* r) {                                         \
+    delete r;                                                                 \
   }                                                                           \
   void __pb_rust_RepeatedField_##rust_ty##_add(google::protobuf::RepeatedField<ty>* r,  \
                                                ty val) {                      \
@@ -24,8 +36,12 @@ extern "C" {
     return r->Set(index, val);                                                \
   }                                                                           \
   void __pb_rust_RepeatedField_##rust_ty##_copy_from(                         \
-      google::protobuf::RepeatedField<ty> const& src, google::protobuf::RepeatedField<ty>& dst) { \
-    dst.CopyFrom(src);                                                        \
+      const google::protobuf::RepeatedField<ty>* src, google::protobuf::RepeatedField<ty>* dst) { \
+    dst->CopyFrom(*src);                                                      \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_clear(                             \
+      google::protobuf::RepeatedField<ty>* r) {                                         \
+    r->Clear();                                                               \
   }
 
 expose_repeated_field_methods(int32_t, i32);
@@ -35,63 +51,106 @@ expose_repeated_field_methods(double, f64);
 expose_repeated_field_methods(bool, bool);
 expose_repeated_field_methods(uint64_t, u64);
 expose_repeated_field_methods(int64_t, i64);
-
 #undef expose_repeated_field_methods
 
-#define expose_scalar_map_methods(key_ty, rust_key_ty, value_ty,       \
-                                  rust_value_ty)                       \
-  google::protobuf::Map<key_ty, value_ty>*                                       \
-      __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_new() {          \
-    return new google::protobuf::Map<key_ty, value_ty>();                        \
+#define expose_repeated_ptr_field_methods(ty)                          \
+  google::protobuf::RepeatedPtrField<std::string>*                               \
+      __pb_rust_RepeatedField_##ty##_new() {                           \
+    return new google::protobuf::RepeatedPtrField<std::string>();                \
   }                                                                    \
-  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_clear(          \
-      google::protobuf::Map<key_ty, value_ty>* m) {                              \
-    m->clear();                                                        \
+  void __pb_rust_RepeatedField_##ty##_free(                            \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                      \
+    delete r;                                                          \
   }                                                                    \
-  size_t __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_size(         \
-      google::protobuf::Map<key_ty, value_ty>* m) {                              \
-    return m->size();                                                  \
+  void __pb_rust_RepeatedField_##ty##_add(                             \
+      google::protobuf::RepeatedPtrField<std::string>* r,                        \
+      google::protobuf::rust_internal::PtrAndLen val) {                          \
+    r->Add(std::string(val.ptr, val.len));                             \
   }                                                                    \
-  void __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_insert(         \
-      google::protobuf::Map<key_ty, value_ty>* m, key_ty key, value_ty val) {    \
-    (*m)[key] = val;                                                   \
+  size_t __pb_rust_RepeatedField_##ty##_size(                          \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                      \
+    return r->size();                                                  \
   }                                                                    \
-  bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_get(            \
-      google::protobuf::Map<key_ty, value_ty>* m, key_ty key, value_ty* value) { \
-    auto it = m->find(key);                                            \
-    if (it == m->end()) {                                              \
-      return false;                                                    \
-    }                                                                  \
-    *value = it->second;                                               \
-    return true;                                                       \
+  google::protobuf::rust_internal::PtrAndLen __pb_rust_RepeatedField_##ty##_get( \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t index) {        \
+    const std::string& s = r->Get(index);                              \
+    return google::protobuf::rust_internal::PtrAndLen(s.data(), s.size());       \
   }                                                                    \
-  bool __pb_rust_Map_##rust_key_ty##_##rust_value_ty##_remove(         \
-      google::protobuf::Map<key_ty, value_ty>* m, key_ty key, value_ty* value) { \
-    auto it = m->find(key);                                            \
-    if (it == m->end()) {                                              \
-      return false;                                                    \
-    } else {                                                           \
-      *value = it->second;                                             \
-      m->erase(it);                                                    \
-      return true;                                                     \
-    }                                                                  \
+  void __pb_rust_RepeatedField_##ty##_set(                             \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t index,          \
+      google::protobuf::rust_internal::PtrAndLen val) {                          \
+    *r->Mutable(index) = std::string(val.ptr, val.len);                \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_copy_from(                       \
+      const google::protobuf::RepeatedPtrField<std::string>* src,                \
+      google::protobuf::RepeatedPtrField<std::string>* dst) {                    \
+    dst->CopyFrom(*src);                                               \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_clear(                           \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                      \
+    r->Clear();                                                        \
   }
 
-#define expose_scalar_map_methods_for_key_type(key_ty, rust_key_ty) \
-  expose_scalar_map_methods(key_ty, rust_key_ty, int32_t, i32);     \
-  expose_scalar_map_methods(key_ty, rust_key_ty, uint32_t, u32);    \
-  expose_scalar_map_methods(key_ty, rust_key_ty, float, f32);       \
-  expose_scalar_map_methods(key_ty, rust_key_ty, double, f64);      \
-  expose_scalar_map_methods(key_ty, rust_key_ty, bool, bool);       \
-  expose_scalar_map_methods(key_ty, rust_key_ty, uint64_t, u64);    \
-  expose_scalar_map_methods(key_ty, rust_key_ty, int64_t, i64);
+expose_repeated_ptr_field_methods(ProtoStr);
+expose_repeated_ptr_field_methods(Bytes);
+#undef expose_repeated_field_methods
 
-expose_scalar_map_methods_for_key_type(int32_t, i32);
-expose_scalar_map_methods_for_key_type(uint32_t, u32);
-expose_scalar_map_methods_for_key_type(bool, bool);
-expose_scalar_map_methods_for_key_type(uint64_t, u64);
-expose_scalar_map_methods_for_key_type(int64_t, i64);
+#undef expose_repeated_ptr_field_methods
+
+void __rust_proto_thunk__UntypedMapIterator_increment(
+    google::protobuf::internal::UntypedMapIterator* iter) {
+  iter->PlusPlus();
+}
+
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int32_t, i32, int32_t, value,
+                                                   cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint32_t, u32, uint32_t,
+                                                   value, cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(float, f32, float, value,
+                                                   cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(double, f64, double, value,
+                                                   cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(bool, bool, bool, value,
+                                                   cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint64_t, u64, uint64_t,
+                                                   value, cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int64_t, i64, int64_t, value,
+                                                   cpp_value);
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
+    std::string, Bytes, google::protobuf::rust_internal::PtrAndLen,
+    std::string(value.ptr, value.len),
+    google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
+__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
+    std::string, ProtoStr, google::protobuf::rust_internal::PtrAndLen,
+    std::string(value.ptr, value.len),
+    google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
 
 #undef expose_scalar_map_methods
 #undef expose_map_methods
+
+google::protobuf::rust_internal::RustStringRawParts utf8_debug_string(
+    const google::protobuf::Message* msg) {
+  std::string text = google::protobuf::Utf8Format(*msg);
+  return google::protobuf::rust_internal::RustStringRawParts(text);
 }
+}
+
+namespace google {
+namespace protobuf {
+namespace rust_internal {
+
+RustStringRawParts::RustStringRawParts(std::string src) {
+  if (src.empty()) {
+    data = nullptr;
+    len = 0;
+  } else {
+    void* data_ = google::protobuf::rust_internal::__pb_rust_alloc(src.length(), 1);
+    std::memcpy(data_, src.data(), src.length());
+    data = static_cast<char*>(data_);
+    len = src.length();
+  }
+}
+
+}  // namespace rust_internal
+}  // namespace protobuf
+}  // namespace google

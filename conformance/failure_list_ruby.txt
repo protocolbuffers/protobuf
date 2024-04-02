@@ -1,2 +1,0 @@
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInRepeatedField.ProtobufOutput

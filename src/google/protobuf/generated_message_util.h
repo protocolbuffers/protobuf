@@ -316,6 +316,11 @@ class MapSorterPtr {
   std::unique_ptr<storage_type[]> items_;
 };
 
+struct WeakDescriptorDefaultTail {
+  const Message** target;
+  size_t size;
+};
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

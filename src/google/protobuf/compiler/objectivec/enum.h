@@ -37,6 +37,7 @@ class EnumGenerator {
 
  private:
   const EnumDescriptor* descriptor_;
+  const GenerationOptions& generation_options_;
   std::vector<const EnumValueDescriptor*> base_values_;
   std::vector<const EnumValueDescriptor*> all_values_;
   absl::flat_hash_set<const EnumValueDescriptor*> alias_values_to_skip_;

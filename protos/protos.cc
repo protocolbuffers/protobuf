@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "protos/protos.h"
 
@@ -39,10 +16,11 @@
 #include "absl/strings/string_view.h"
 #include "protos/protos_extension_lock.h"
 #include "upb/mem/arena.h"
+#include "upb/message/accessors.h"
 #include "upb/message/copy.h"
-#include "upb/message/internal/extension.h"
+#include "upb/message/message.h"
 #include "upb/message/promote.h"
-#include "upb/message/types.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
@@ -137,23 +115,18 @@ class MessageLock {
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
-  return _upb_Message_Getext(msg, eid) != nullptr ||
-         upb_MiniTable_FindUnknown(msg, eid->field.number, 0).status ==
-             kUpb_FindUnknown_Ok;
+  if (upb_Message_HasExtension(msg, eid)) return true;
+
+  const int number = upb_MiniTableExtension_Number(eid);
+  return upb_Message_FindUnknown(msg, number, 0).status == kUpb_FindUnknown_Ok;
 }
 
-const upb_Message_Extension* GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena) {
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value) {
   MessageLock msg_lock(msg);
-  const upb_Message_Extension* ext = _upb_Message_Getext(msg, eid);
-  if (ext == nullptr) {
-    upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
-        (upb_Message*)msg, eid, 0, arena, &ext);
-    if (ext_status != kUpb_GetExtension_Ok) {
-      ext = nullptr;
-    }
-  }
-  return ext;
+  upb_GetExtension_Status ext_status = upb_Message_GetOrPromoteExtension(
+      (upb_Message*)msg, eid, 0, arena, value);
+  return ext_status == kUpb_GetExtension_Ok;
 }
 
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
@@ -185,35 +158,26 @@ upb_Message* DeepClone(const upb_Message* source,
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
                            upb_Message* extension, upb_Arena* extension_arena) {
-  upb_Message_Extension* msg_ext =
-      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
+  if (message_arena != extension_arena &&
+      // Try fuse, if fusing is not allowed or fails, create copy of extension.
+      !upb_Arena_Fuse(message_arena, extension_arena)) {
+    extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
+                          message_arena);
   }
-  if (message_arena != extension_arena) {
-    // Try fuse, if fusing is not allowed or fails, create copy of extension.
-    if (!upb_Arena_Fuse(message_arena, extension_arena)) {
-      msg_ext->data.ptr =
-          DeepClone(extension, msg_ext->ext->sub.submsg, message_arena);
-      return absl::OkStatus();
-    }
-  }
-  msg_ext->data.ptr = extension;
-  return absl::OkStatus();
+  return _upb_Message_SetExtensionField(message, ext, &extension, message_arena)
+             ? absl::OkStatus()
+             : MessageAllocationError();
 }
 
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension) {
-  upb_Message_Extension* msg_ext =
-      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
-  }
   // Clone extension into target message arena.
-  msg_ext->data.ptr =
-      DeepClone(extension, msg_ext->ext->sub.submsg, message_arena);
-  return absl::OkStatus();
+  extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
+                        message_arena);
+  return _upb_Message_SetExtensionField(message, ext, &extension, message_arena)
+             ? absl::OkStatus()
+             : MessageAllocationError();
 }
 
 }  // namespace internal

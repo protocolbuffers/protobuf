@@ -4,9 +4,10 @@
 # the WORKSPACE file in the same directory with this BUILD file for an
 # example.
 
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 # For each .proto file, a proto_library target should be defined. This target
@@ -39,6 +40,7 @@ cc_binary(
     deps = [
         ":addressbook_cc_proto",
         "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
@@ -48,6 +50,7 @@ cc_binary(
     deps = [
         ":addressbook_cc_proto",
         "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
@@ -109,6 +112,14 @@ java_binary(
     srcs = ["ListPeople.java"],
     main_class = "ListPeople",
     deps = [":addressbook_java_lite_proto"],
+)
+
+build_test(
+    name = "test",
+    targets = [
+        ":add_person_cpp",
+        ":add_person_java",
+    ],
 )
 
 # Files included in all source distributions

@@ -69,6 +69,11 @@ absl::Status ValidateDescriptor(const Descriptor& descriptor) {
       return Error("Feature field ", field.full_name(),
                    " is an unsupported repeated field.");
     }
+    if (field.type() != FieldDescriptor::TYPE_ENUM &&
+        field.type() != FieldDescriptor::TYPE_BOOL) {
+      return Error("Feature field ", field.full_name(),
+                   " is not an enum or boolean.");
+    }
     if (field.options().targets().empty()) {
       return Error("Feature field ", field.full_name(),
                    " has no target specified.");

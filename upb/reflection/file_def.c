@@ -8,9 +8,16 @@
 #include "upb/reflection/internal/file_def.h"
 
 #include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
-#include "upb/reflection/def_pool.h"
+#include "upb/base/string_view.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/file.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/message_def.h"
@@ -258,11 +265,12 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
-    file->ext_layouts = ctx->layout->exts;
-    if (ctx->layout->ext_count != file->ext_count) {
+    file->ext_layouts = ctx->layout->UPB_PRIVATE(exts);
+    const int mt_ext_count = upb_MiniTableFile_ExtensionCount(ctx->layout);
+    if (mt_ext_count != file->ext_count) {
       _upb_DefBuilder_Errf(ctx,
                            "Extension count did not match layout (%d vs %d)",
-                           ctx->layout->ext_count, file->ext_count);
+                           mt_ext_count, file->ext_count);
     }
   } else {
     // We are building ext layouts from scratch.

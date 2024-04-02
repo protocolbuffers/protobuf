@@ -857,6 +857,16 @@ public class TimestampsTest {
         .isEqualTo(timestamp(3, 1));
   }
 
+  @Test
+  public void normalizedTimestamp_veryLarge_isInvalidNotOverflow() {
+    try {
+      Timestamps.normalizedTimestamp(9223372036854775807L, 2);
+      fail("should have thrown IllegalArgumentException");
+    } catch (IllegalArgumentException expected) {
+      assertThat(expected).hasMessageThat().startsWith("Timestamp is not valid.");
+    }
+  }
+
   static Timestamp timestamp(long seconds, int nanos) {
     return Timestamps.checkValid(
         Timestamps.checkValid(Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos)));

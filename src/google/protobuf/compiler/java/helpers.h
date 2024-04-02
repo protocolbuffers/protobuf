@@ -22,7 +22,6 @@
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -59,6 +58,11 @@ void PrintEnumVerifierLogic(
     const absl::flat_hash_map<absl::string_view, std::string>& variables,
     absl::string_view var_name, absl::string_view terminating_string,
     bool enforce_lite);
+
+// Prints the Protobuf Java Version validator checking that the runtime and
+// gencode versions are compatible.
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  absl::string_view java_class_name);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
@@ -150,7 +154,7 @@ inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
 // `immutable` should be set to true if we're generating for the immutable API.
 template <typename Descriptor>
 bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
-  return descriptor->containing_type() == NULL &&
+  return descriptor->containing_type() == nullptr &&
          MultipleJavaFiles(descriptor->file(), immutable);
 }
 
@@ -340,13 +344,6 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return internal::cpp::HasHasbit(descriptor);
 }
 
-// Whether generate classes expose public PARSER instances.
-inline bool ExposePublicParser(const FileDescriptor* descriptor) {
-  // TODO: Mark the PARSER private in 3.1.x releases.
-  return FileDescriptorLegacy(descriptor).syntax() ==
-         FileDescriptorLegacy::Syntax::SYNTAX_PROTO2;
-}
-
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.
@@ -388,10 +385,6 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
                  .utf8_validation() == FeatureSet::VERIFY ||
          // For legacy syntax. This is not allowed under Editions.
          descriptor->file()->options().java_string_check_utf8();
-}
-
-inline std::string GeneratedCodeVersionSuffix() {
-  return "V3";
 }
 
 void WriteUInt32ToUtf16CharSequence(uint32_t number,

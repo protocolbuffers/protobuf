@@ -82,35 +82,37 @@ class alignas(std::string) StringBlock {
   size_t effective_size() const;
 
  private:
+  using size_type = uint16_t;
+
   static_assert(alignof(std::string) <= sizeof(void*), "");
   static_assert(alignof(std::string) <= ArenaAlignDefault::align, "");
 
   ~StringBlock() = default;
 
-  explicit StringBlock(StringBlock* next, bool heap_allocated, uint32_t size,
-                       uint32_t next_size) noexcept
+  explicit StringBlock(StringBlock* next, bool heap_allocated, size_type size,
+                       size_type next_size) noexcept
       : next_(next),
-        heap_allocated_(heap_allocated),
         allocated_size_(size),
-        next_size_(next_size) {}
+        next_size_(next_size),
+        heap_allocated_(heap_allocated) {}
 
-  static constexpr uint32_t min_size() { return size_t{256}; }
-  static constexpr uint32_t max_size() { return size_t{8192}; }
+  static constexpr size_type min_size() { return size_type{256}; }
+  static constexpr size_type max_size() { return size_type{8192}; }
 
   // Returns `size` rounded down such that we can fit a perfect number
   // of std::string instances inside a StringBlock of that size.
-  static constexpr uint32_t RoundedSize(uint32_t size);
+  static constexpr size_type RoundedSize(size_type size);
 
   // Returns the size of the next block.
   size_t next_size() const { return next_size_; }
 
   StringBlock* const next_;
-  const bool heap_allocated_ : 1;
-  const uint32_t allocated_size_ : 31;
-  const uint32_t next_size_;
+  const size_type allocated_size_;
+  const size_type next_size_;
+  const bool heap_allocated_;
 };
 
-constexpr uint32_t StringBlock::RoundedSize(uint32_t size) {
+constexpr StringBlock::size_type StringBlock::RoundedSize(size_type size) {
   return size - (size - sizeof(StringBlock)) % sizeof(std::string);
 }
 
@@ -119,10 +121,10 @@ inline size_t StringBlock::NextSize(StringBlock* block) {
 }
 
 inline StringBlock* StringBlock::Emplace(void* p, size_t n, StringBlock* next) {
-  const auto count = static_cast<uint32_t>(n);
+  const auto count = static_cast<size_type>(n);
   ABSL_DCHECK_EQ(count, NextSize(next));
-  uint32_t doubled = count * 2;
-  uint32_t next_size = next ? std::min(doubled, max_size()) : min_size();
+  size_type doubled = count * 2;
+  size_type next_size = next ? std::min(doubled, max_size()) : min_size();
   return new (p) StringBlock(next, false, RoundedSize(count), next_size);
 }
 
@@ -130,11 +132,11 @@ inline StringBlock* StringBlock::New(StringBlock* next) {
   // Compute required size, rounding down to a multiple of sizeof(std:string)
   // so that we can optimize the allocation path. I.e., we incur a (constant
   // size) MOD() operation cost here to avoid any MUL() later on.
-  uint32_t size = min_size();
-  uint32_t next_size = min_size();
+  size_type size = min_size();
+  size_type next_size = min_size();
   if (next) {
     size = next->next_size_;
-    next_size = std::min(size * 2, max_size());
+    next_size = std::min<size_type>(size * 2, max_size());
   }
   size = RoundedSize(size);
   void* p = ::operator new(size);

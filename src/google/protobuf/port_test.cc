@@ -33,10 +33,15 @@ TEST(PortTest, ProtobufAssume) {
 
 TEST(PortTest, UnreachableTrapsOnDebugMode) {
 #ifdef GTEST_HAS_DEATH_TEST
-  EXPECT_DEBUG_DEATH(Unreachable(), "Assumption failed: 'Unreachable'");
-#if ABSL_HAVE_BUILTIN(__builtin_FILE)
-  EXPECT_DEBUG_DEATH(Unreachable(),
-                     "port_test\\.cc:.*Assumption failed: 'Unreachable'");
+#if defined(NDEBUG)
+  // In NDEBUG we crash with a UD instruction, so we don't get the "Assumption
+  // failed" error.
+  GTEST_SKIP() << "Can't test __builtin_unreachable()";
+#elif ABSL_HAVE_BUILTIN(__builtin_FILE)
+  EXPECT_DEATH(Unreachable(),
+               "port_test\\.cc:.*Assumption failed: 'Unreachable'");
+#else
+  EXPECT_DEATH(Unreachable(), "Assumption failed: 'Unreachable'");
 #endif
 #endif
 }

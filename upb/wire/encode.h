@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -63,9 +64,9 @@ UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
   return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
 }
 
-UPB_API upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
-                                    int options, upb_Arena* arena, char** buf,
-                                    size_t* size);
+UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
+                                    const upb_MiniTable* l, int options,
+                                    upb_Arena* arena, char** buf, size_t* size);
 
 #ifdef __cplusplus
 } /* extern "C" */

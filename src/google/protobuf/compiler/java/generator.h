@@ -58,6 +58,7 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
     opensource_runtime_ = opensource;
   }
 
+  using CodeGenerator::GetEdition;
   using CodeGenerator::GetResolvedSourceFeatures;
 
  private:

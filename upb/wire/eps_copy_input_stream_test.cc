@@ -34,7 +34,7 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 //
 // class FakeStream {
 //  public:
-//   FakeStream(const std::string& data) : data_(data), offset_(0) {
+//   explicit FakeStream(const std::string& data) : data_(data), offset_(0) {
 //     limits_.push_back(data.size());
 //   }
 //

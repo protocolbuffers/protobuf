@@ -6,6 +6,10 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
+    "@rules_cc//cc:defs.bzl",
+    "cc_proto_library",
+)
+load(
     "//bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
@@ -16,10 +20,6 @@ load(
 load(
     "//protos/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library",
-)
-load(
-    "@rules_cc//cc:defs.bzl",
-    "cc_proto_library",
 )
 
 # begin:google_only
@@ -124,12 +124,13 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         # begin:google_only
-#         ":legacy_name_test_proto",
+        #         ":legacy_name_test_proto",
         # end:google_only
         ":no_package_upb_cc_proto",
         ":test_model_upb_cc_proto",
         ":test_model_upb_proto",
         ":naming_conflict_upb_cc_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

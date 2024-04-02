@@ -22,17 +22,17 @@ TEST_VALUES = [
      "signi\\\\fying\\\\ nothing\\\\",
      b"signi\\fying\\ nothing\\"),
     ("\\010\\t\\n\\013\\014\\r",
-     "\x08\\t\\n\x0b\x0c\\r",
+     "\\010\\t\\n\\013\\014\\r",
      b"\010\011\012\013\014\015")]
 
 
 class TextEncodingTestCase(unittest.TestCase):
   def testCEscape(self):
     for escaped, escaped_utf8, unescaped in TEST_VALUES:
-      self.assertEqual(escaped,
-                        text_encoding.CEscape(unescaped, as_utf8=False))
-      self.assertEqual(escaped_utf8,
-                        text_encoding.CEscape(unescaped, as_utf8=True))
+      self.assertEqual(escaped, text_encoding.CEscape(unescaped, as_utf8=False))
+      self.assertEqual(
+          escaped_utf8, text_encoding.CEscape(unescaped, as_utf8=True)
+      )
 
   def testCUnescape(self):
     for escaped, escaped_utf8, unescaped in TEST_VALUES:

@@ -12,7 +12,9 @@
 #include "google/protobuf/compiler/cpp/extension.h"
 
 #include <string>
+#include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -25,8 +27,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
-using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
                                        const Options& options,
@@ -68,6 +68,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));
+  variables_["repeated"] = descriptor_->is_repeated() ? "true" : "false";
   variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
   variables_["dllexport_decl"] = options.dllexport_decl;
 
@@ -122,8 +123,8 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
     } else if (descriptor_->message_type()) {
       // We have to initialize the default instance for extensions at
       // registration time.
-      return absl::StrCat(FieldMessageTypeName(descriptor_, options_),
-                          "::default_instance()");
+      return absl::StrCat("&", QualifiedDefaultInstanceName(
+                                   descriptor_->message_type(), options_));
     } else {
       return DefaultValue(options_, descriptor_);
     }
@@ -162,58 +163,13 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
            }},
           {"define_extension_id",
            [&] {
-             if (IsLazilyInitializedFile(descriptor_->file()->name())) {
-               p->Emit(R"cc(
-                 PROTOBUF_CONSTINIT$ dllexport_decl$
-                     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                             $field_type$, $packed$>
-                             $scoped_name$($constant_name$);
-               )cc");
-               return;
-             }
-
-             bool should_verify =
-                 // Only verify msgs.
-                 descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-                 // Options say to verify.
-                 ShouldVerify(descriptor_->message_type(), options_,
-                              scc_analyzer_) &&
-                 ShouldVerify(descriptor_->containing_type(), options_,
-                              scc_analyzer_);
-
-             if (!should_verify) {
-               p->Emit(R"cc(
-                 $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                     ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                         $field_type$, $packed$>
-                         $scoped_name$($constant_name$, $default_str$);
-               )cc");
-               return;
-             }
-
-             const auto& options = descriptor_->options();
-             if (options.has_lazy()) {
-               p->Emit(
-                   {{"is_lazy", options.lazy() ? "kLazy" : "kEager"}},
-                   R"cc(
-                     $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                             $field_type$, $packed$>
-                             $scoped_name$($constant_name$, $default_str$,
-                                           &$message_type$::InternalVerify,
-                                           ::_pbi::LazyAnnotation::$is_lazy$);
-                   )cc");
-             } else {
-               p->Emit(
-                   R"cc(
-                     $dllexport_decl $PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
-                         ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
-                                             $field_type$, $packed$>
-                             $scoped_name$($constant_name$, $default_str$,
-                                           &$message_type$::InternalVerify);
-                   )cc");
-             }
+             p->Emit(R"cc(
+               PROTOBUF_CONSTINIT$ dllexport_decl$
+                   PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::
+                       ExtensionIdentifier<$extendee$, ::_pbi::$type_traits$,
+                                           $field_type$, $packed$>
+                           $scoped_name$($constant_name$, $default_str$);
+             )cc");
            }},
       },
       R"cc(
@@ -221,6 +177,153 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* p) {
         $declare_const_var$;
         $define_extension_id$;
       )cc");
+}
+
+bool ExtensionGenerator::WillGenerateRegistration(InitPriority priority) {
+  // When not using weak descriptors we initialize everything on priority 102.
+  if (!UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
+    return priority == kInitPriority102;
+  }
+  return true;
+}
+
+void ExtensionGenerator::GenerateRegistration(io::Printer* p,
+                                              InitPriority priority) {
+  ABSL_CHECK(WillGenerateRegistration(priority));
+  const bool using_implicit_weak_descriptors =
+      UsingImplicitWeakDescriptor(descriptor_->file(), options_);
+  const auto find_index = [](auto* desc) {
+    const std::vector<const Descriptor*> msgs =
+        FlattenMessagesInFile(desc->file());
+    return absl::c_find(msgs, desc) - msgs.begin();
+  };
+  auto vars = p->WithVars(variables_);
+  auto vars2 = p->WithVars({{
+      {"extendee_table",
+       DescriptorTableName(descriptor_->containing_type()->file(), options_)},
+      {"extendee_index", find_index(descriptor_->containing_type())},
+      {"preregister", priority == kInitPriority101},
+  }});
+  switch (descriptor_->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+      if (using_implicit_weak_descriptors) {
+        p->Emit({{"enum_name", ClassName(descriptor_->enum_type(), true)}},
+                R"cc(
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
+                  (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
+                       {{&$extendee_table$, $extendee_index$}}, $preregister$)
+                       ? ::_pbi::ExtensionSet::RegisterEnumExtension(
+                             ::_pbi::GetPrototypeForWeakDescriptor(
+                                 &$extendee_table$, $extendee_index$, true),
+                             $number$, $field_type$, $repeated$, $packed$,
+                             $enum_name$_IsValid)
+                       : (void)0),
+#else
+                )cc");
+      }
+      if (priority == kInitPriority102) {
+        p->Emit({{"enum_name", ClassName(descriptor_->enum_type(), true)}},
+                R"cc(
+                  ::_pbi::ExtensionSet::RegisterEnumExtension(
+                      &$extendee$::default_instance(), $number$, $field_type$,
+                      $repeated$, $packed$, $enum_name$_IsValid),
+                )cc");
+      }
+      if (using_implicit_weak_descriptors) {
+        p->Emit(R"cc(
+#endif
+        )cc");
+      }
+
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE: {
+      const bool should_verify =
+          // Only verify msgs.
+          descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+          // Options say to verify.
+          ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
+          ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_);
+      const auto message_type = FieldMessageTypeName(descriptor_, options_);
+      auto v = p->WithVars(
+          {{"verify", should_verify
+                          ? absl::StrCat("&", message_type, "::InternalVerify")
+                          : "nullptr"},
+           {"message_type", message_type},
+           {"lazy", descriptor_->options().has_lazy()
+                        ? descriptor_->options().lazy() ? "kLazy" : "kEager"
+                        : "kUndefined"}});
+      if (using_implicit_weak_descriptors) {
+        p->Emit(
+            {
+                {"extension_table",
+                 DescriptorTableName(descriptor_->message_type()->file(),
+                                     options_)},
+                {"extension_index", find_index(descriptor_->message_type())},
+            },
+            R"cc(
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
+              (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
+                   {{&$extendee_table$, $extendee_index$},
+                    {&$extension_table$, $extension_index$}},
+                   $preregister$)
+                   ? ::_pbi::ExtensionSet::RegisterMessageExtension(
+                         ::_pbi::GetPrototypeForWeakDescriptor(
+                             &$extendee_table$, $extendee_index$, true),
+                         $number$, $field_type$, $repeated$, $packed$,
+                         ::_pbi::GetPrototypeForWeakDescriptor(
+                             &$extension_table$, $extension_index$, true),
+                         $verify$, ::_pbi::LazyAnnotation::$lazy$)
+                   : (void)0),
+#else
+            )cc");
+      }
+      if (priority == kInitPriority102) {
+        p->Emit(R"cc(
+          ::_pbi::ExtensionSet::RegisterMessageExtension(
+              &$extendee$::default_instance(), $number$, $field_type$,
+              $repeated$, $packed$, &$message_type$::default_instance(),
+              $verify$, ::_pbi::LazyAnnotation::$lazy$),
+        )cc");
+      }
+      if (using_implicit_weak_descriptors) {
+        p->Emit(R"cc(
+#endif
+        )cc");
+      }
+      break;
+    }
+
+    default:
+      if (using_implicit_weak_descriptors) {
+        p->Emit(R"cc(
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
+          (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
+               {{&$extendee_table$, $extendee_index$}}, $preregister$)
+               ? ::_pbi::ExtensionSet::RegisterExtension(
+                     ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
+                                                           $extendee_index$,
+                                                           true),
+                     $number$, $field_type$, $repeated$, $packed$)
+               : (void)0),
+#else
+        )cc");
+      }
+      if (priority == kInitPriority102) {
+        p->Emit(
+            R"cc(
+              ::_pbi::ExtensionSet::RegisterExtension(
+                  &$extendee$::default_instance(), $number$, $field_type$,
+                  $repeated$, $packed$),
+            )cc");
+      }
+      if (using_implicit_weak_descriptors) {
+        p->Emit(R"cc(
+#endif
+        )cc");
+      }
+
+      break;
+  }
 }
 
 }  // namespace cpp

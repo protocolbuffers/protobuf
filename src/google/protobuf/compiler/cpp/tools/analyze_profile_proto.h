@@ -17,6 +17,9 @@ struct AnalyzeProfileProtoOptions {
   // true to print the 'unlikely used' threshold.
   bool print_unused_threshold = true;
 
+  // true to print the PDProto optimizations that would be applied to the field.
+  bool print_optimized = true;
+
   // true to print all fields instead of optimized fields only.
   bool print_all_fields = false;
 
@@ -30,8 +33,15 @@ struct AnalyzeProfileProtoOptions {
   std::string message_filter;
 };
 
+// Prints analysis for the given proto profile.
 absl::Status AnalyzeProfileProtoToText(
     std::ostream& stream, absl::string_view proto_profile,
+    const AnalyzeProfileProtoOptions& options);
+
+// Prints aggregated analysis for the proto profiles under the given root
+// directory.
+absl::Status AnalyzeAndAggregateProfileProtosToText(
+    std::ostream& stream, absl::string_view root,
     const AnalyzeProfileProtoOptions& options);
 
 }  // namespace tools

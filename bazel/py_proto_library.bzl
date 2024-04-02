@@ -21,6 +21,8 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 # end:github_only
 
+load("@rules_python//python:py_info.bzl", "PyInfo")
+
 # Generic support code #########################################################
 
 # begin:github_only
@@ -127,7 +129,6 @@ _py_proto_library_aspect = aspect(
 )
 
 py_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _py_proto_library_rule_impl,
     attrs = {
         "deps": attr.label_list(

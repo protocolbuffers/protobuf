@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef UPB_PROTOS_PROTOS_H_
 #define UPB_PROTOS_PROTOS_H_
@@ -39,8 +16,7 @@
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
-#include "upb/message/internal/accessors.h"
-#include "upb/message/internal/extension.h"
+#include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
@@ -94,7 +70,7 @@ class Ptr final {
 #endif
 
  private:
-  Ptr(void* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
+  Ptr(upb_Message* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
 
   friend class Ptr<const T>;
   friend typename T::Access;
@@ -154,12 +130,16 @@ struct PrivateAccess {
     return message->msg();
   }
   template <typename T>
-  static auto Proxy(void* p, upb_Arena* arena) {
+  static auto Proxy(upb_Message* p, upb_Arena* arena) {
     return typename T::Proxy(p, arena);
   }
   template <typename T>
-  static auto CProxy(const void* p, upb_Arena* arena) {
+  static auto CProxy(const upb_Message* p, upb_Arena* arena) {
     return typename T::CProxy(p, arena);
+  }
+  template <typename T>
+  static auto CreateMessage(upb_Arena* arena) {
+    return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
   }
 };
 
@@ -174,7 +154,7 @@ T CreateMessage() {
 }
 
 template <typename T>
-typename T::Proxy CreateMessageProxy(void* msg, upb_Arena* arena) {
+typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
 }
 
@@ -245,8 +225,8 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid);
 
-const upb_Message_Extension* GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value);
 
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena);
@@ -366,8 +346,8 @@ void ClearExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   static_assert(!std::is_const_v<T>, "");
-  _upb_Message_ClearExtensionField(internal::GetInternalMsg(message),
-                                   id.mini_table_ext());
+  upb_Message_ClearExtension(internal::GetInternalMsg(message),
+                             id.mini_table_ext());
 }
 
 template <typename T, typename Extendee, typename Extension,
@@ -431,14 +411,16 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   // TODO: Fix const correctness issues.
-  const upb_Message_Extension* ext = ::protos::internal::GetOrPromoteExtension(
+  upb_MessageValue value;
+  const bool ok = ::protos::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
-      id.mini_table_ext(), ::protos::internal::GetArena(message));
-  if (!ext) {
-    return ExtensionNotFoundError(id.mini_table_ext()->field.number);
+      id.mini_table_ext(), ::protos::internal::GetArena(message), &value);
+  if (!ok) {
+    return ExtensionNotFoundError(
+        upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
   return Ptr<const Extension>(::protos::internal::CreateMessage<Extension>(
-      ext->data.ptr, ::protos::internal::GetArena(message)));
+      (upb_Message*)value.msg_val, ::protos::internal::GetArena(message)));
 }
 
 template <typename T, typename Extendee, typename Extension,

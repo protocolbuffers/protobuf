@@ -5,19 +5,18 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use protobuf_cpp::__internal::PtrAndLen;
-use protobuf_cpp::__internal::RawMessage;
-use unittest_proto::proto2_unittest::TestAllExtensions;
-use unittest_proto::proto2_unittest::TestAllTypes;
+use googletest::prelude::*;
+use protobuf_cpp::__internal::{PtrAndLen, RawMessage};
+use unittest_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
 
 macro_rules! proto_assert_eq {
     ($lhs:expr, $rhs:expr) => {{
         let lhs = &$lhs;
         let rhs = &$rhs;
 
-        assert_eq!(lhs.optional_int64(), rhs.optional_int64());
-        assert_eq!(lhs.optional_bytes(), rhs.optional_bytes());
-        assert_eq!(lhs.optional_bool(), rhs.optional_bool());
+        assert_that!(lhs.optional_int64(), eq(rhs.optional_int64()));
+        assert_that!(lhs.optional_bytes(), eq(rhs.optional_bytes()));
+        assert_that!(lhs.optional_bool(), eq(rhs.optional_bool()));
     }};
 }
 
@@ -27,6 +26,7 @@ extern "C" {
     fn DeserializeTestAllTypes(data: *const u8, len: usize) -> RawMessage;
     fn MutateTestAllTypes(msg: RawMessage);
     fn SerializeTestAllTypes(msg: RawMessage) -> protobuf_cpp::__runtime::SerializedData;
+    fn DeleteTestAllTypes(msg: RawMessage);
 
     fn NewWithExtension() -> RawMessage;
     fn GetBytesExtension(msg: RawMessage) -> PtrAndLen;
@@ -40,9 +40,25 @@ fn mutate_message_in_cpp() {
     }
 
     let mut msg2 = TestAllTypes::new();
-    msg2.optional_int64_set(Some(42));
-    msg2.optional_bytes_mut().set(b"something mysterious");
-    msg2.optional_bool_set(Some(false));
+    msg2.set_optional_int64(42);
+    msg2.set_optional_bytes(b"something mysterious");
+    msg2.set_optional_bool(false);
+
+    proto_assert_eq!(msg1, msg2);
+}
+
+#[test]
+fn mutate_message_mut_in_cpp() {
+    let mut msg1 = TestAllTypes::new();
+    let mut msg_mut = msg1.as_mut();
+    unsafe {
+        MutateTestAllTypes(msg_mut.__unstable_cpp_repr_grant_permission_to_break());
+    }
+
+    let mut msg2 = TestAllTypes::new();
+    msg2.set_optional_int64(42);
+    msg2.set_optional_bytes(b"something mysterious");
+    msg2.set_optional_bool(false);
 
     proto_assert_eq!(msg1, msg2);
 }
@@ -50,21 +66,21 @@ fn mutate_message_in_cpp() {
 #[test]
 fn deserialize_in_rust() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_set(Some(-1));
-    msg1.optional_bytes_mut().set(b"some cool data I guess");
-    let serialized =
-        unsafe { SerializeTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break()) };
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
+    let serialized = unsafe {
+        SerializeTestAllTypes(msg1.as_view().__unstable_cpp_repr_grant_permission_to_break())
+    };
 
-    let mut msg2 = TestAllTypes::new();
-    msg2.deserialize(&serialized).unwrap();
+    let msg2 = TestAllTypes::parse(&serialized).unwrap();
     proto_assert_eq!(msg1, msg2);
 }
 
 #[test]
 fn deserialize_in_cpp() {
     let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_set(Some(-1));
-    msg1.optional_bytes_mut().set(b"some cool data I guess");
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
     let data = msg1.serialize();
 
     let msg2 = unsafe {
@@ -77,6 +93,42 @@ fn deserialize_in_cpp() {
     proto_assert_eq!(msg1, msg2);
 }
 
+#[test]
+fn deserialize_in_cpp_into_mut() {
+    let mut msg1 = TestAllTypes::new();
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
+    let data = msg1.serialize();
+
+    let mut raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
+    let msg2 = TestAllTypesMut::__unstable_wrap_cpp_grant_permission_to_break(&mut raw_msg);
+
+    proto_assert_eq!(msg1, msg2);
+
+    // The C++ still owns the message here and needs to delete it.
+    unsafe {
+        DeleteTestAllTypes(raw_msg);
+    }
+}
+
+#[test]
+fn deserialize_in_cpp_into_view() {
+    let mut msg1 = TestAllTypes::new();
+    msg1.set_optional_int64(-1);
+    msg1.set_optional_bytes(b"some cool data I guess");
+    let data = msg1.serialize();
+
+    let raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
+    let msg2 = TestAllTypesView::__unstable_wrap_cpp_grant_permission_to_break(&raw_msg);
+
+    proto_assert_eq!(msg1, msg2);
+
+    // The C++ still owns the message here and needs to delete it.
+    unsafe {
+        DeleteTestAllTypes(raw_msg);
+    }
+}
+
 // This test ensures that random fields we (Rust) don't know about don't
 // accidentally get destroyed by Rust.
 #[test]
@@ -86,8 +138,7 @@ fn smuggle_extension() {
     };
     let data = msg1.serialize();
 
-    let mut msg2 = TestAllExtensions::new();
-    msg2.deserialize(&data).unwrap();
+    let mut msg2 = TestAllExtensions::parse(&data).unwrap();
     let bytes =
         unsafe { GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref() };
     assert_eq!(&*bytes, b"smuggled");

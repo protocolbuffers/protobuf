@@ -89,7 +89,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
  public:
   SingularPrimitive(const FieldDescriptor* field, const Options& opts,
                     MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~SingularPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -108,7 +108,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->_internal_set_$name$(from._internal_$name$());
+      _this->$field_$ = from.$field_$;
     )cc");
   }
 
@@ -164,7 +164,6 @@ class SingularPrimitive final : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -188,48 +187,48 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(R"cc(
     inline $Type$ $Msg$::$name$() const {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
 
   if (is_oneof()) {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
+        $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
-        _internal_set_$name$(value);
+        if ($not_has_field$) {
+          clear_$oneof_name$();
+          set_has_$name_internal$();
+        }
+        $field_$ = value;
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Type$ $Msg$::_internal_$name$() const {
+      inline $Type$ $Msg$::_internal_$name_internal$() const {
         if ($has_field$) {
           return $field_$;
         }
         return $kDefault$;
       }
-      inline void $Msg$::_internal_set_$name$($Type$ value) {
-        if ($not_has_field$) {
-          clear_$oneof_name$();
-          set_has_$name$();
-        }
-        $field_$ = value;
-      }
     )cc");
   } else {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Type$ value) {
+        $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
-        _internal_set_$name$(value);
+        _internal_set_$name_internal$(value);
         $set_hasbit$;
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Type$ $Msg$::_internal_$name$() const {
+      inline $Type$ $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline void $Msg$::_internal_set_$name$($Type$ value) {
+      inline void $Msg$::_internal_set_$name_internal$($Type$ value) {
         $TsanDetectConcurrentMutation$;
         $field_$ = value;
       }
@@ -239,10 +238,10 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
 
 void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
-  if ((descriptor_->number() < 16) &&
-      (descriptor_->type() == FieldDescriptor::TYPE_INT32 ||
-       descriptor_->type() == FieldDescriptor::TYPE_INT64 ||
-       descriptor_->type() == FieldDescriptor::TYPE_ENUM)) {
+  if ((field_->number() < 16) &&
+      (field_->type() == FieldDescriptor::TYPE_INT32 ||
+       field_->type() == FieldDescriptor::TYPE_INT64 ||
+       field_->type() == FieldDescriptor::TYPE_ENUM)) {
     // Call special non-inlined routine with tag number hardcoded as a
     // template parameter that handles the EnsureSpace and the writing
     // of the tag+value to the array
@@ -291,7 +290,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
   RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
                     MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), field_(field), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
   ~RepeatedPrimitive() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -421,7 +420,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
-  const FieldDescriptor* field_;
   const Options* opts_;
 };
 
@@ -470,22 +468,25 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(R"cc(
     inline $Type$ $Msg$::$name$(int index) const {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
-      return _internal_$name$().Get(index);
+      return _internal_$name_internal$().Get(index);
     }
   )cc");
   p->Emit(R"cc(
     inline void $Msg$::set_$name$(int index, $Type$ value) {
+      $WeakDescriptorSelfPin$;
       $annotate_set$;
-      _internal_mutable_$name$()->Set(index, value);
+      _internal_mutable_$name_internal$()->Set(index, value);
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
   )cc");
   p->Emit(R"cc(
     inline void $Msg$::add_$name$($Type$ value) {
+      $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name$()->Add(value);
+      _internal_mutable_$name_internal$()->Add(value);
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
@@ -493,46 +494,47 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
   p->Emit(R"cc(
     inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_list$;
       // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
   )cc");
   p->Emit(R"cc(
     inline $pb$::RepeatedField<$Type$>* $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;
-      return _internal_mutable_$name$();
+      return _internal_mutable_$name_internal$();
     }
   )cc");
 
   if (should_split()) {
     p->Emit(R"cc(
-      inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$()
-          const {
+      inline const $pb$::RepeatedField<$Type$>&
+      $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedField<$Type$>* $Msg$::_internal_mutable_$name$() {
+      inline $pb$::RepeatedField<$Type$>* $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set($pb$::Arena::CreateMessage<$pb$::RepeatedField<$Type$>>(
-              GetArena()));
+          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<$Type$>>(GetArena()));
         }
         return $field_$.Get();
       }
     )cc");
   } else {
     p->Emit(R"cc(
-      inline const $pb$::RepeatedField<$Type$>& $Msg$::_internal_$name$()
-          const {
+      inline const $pb$::RepeatedField<$Type$>&
+      $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::RepeatedField<$Type$>* $Msg$::_internal_mutable_$name$() {
+      inline $pb$::RepeatedField<$Type$>* $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
       }
@@ -592,7 +594,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
       {
           Sub{"data_size",
               [&] {
-                auto fixed_size = FixedSize(descriptor_->type());
+                auto fixed_size = FixedSize(field_->type());
                 if (fixed_size.has_value()) {
                   p->Emit({{"kFixed", *fixed_size}}, R"cc(
                     std::size_t{$kFixed$} *

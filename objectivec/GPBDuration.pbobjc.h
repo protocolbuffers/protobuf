@@ -123,6 +123,9 @@ GPB_FINAL @interface GPBDuration : GPBMessage
  **/
 @property(nonatomic, readwrite) int32_t nanos;
 
+// NOTE: There are some Objective-C specific methods/properties in
+// GPBWellKnownTypes.h that will likey be useful.
+
 @end
 
 NS_ASSUME_NONNULL_END

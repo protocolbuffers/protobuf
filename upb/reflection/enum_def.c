@@ -7,16 +7,27 @@
 
 #include "upb/reflection/internal/enum_def.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/file.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/desc_state.h"
 #include "upb/reflection/internal/enum_reserved_range.h"
 #include "upb/reflection/internal/enum_value_def.h"
 #include "upb/reflection/internal/file_def.h"
-#include "upb/reflection/internal/message_def.h"
 #include "upb/reflection/internal/strdup2.h"
 
 // Must be last.
@@ -149,7 +160,11 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
 }
 
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
-  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
+  if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
+  return upb_EnumDef_IsSpecifiedAsClosed(e);
+}
+
+bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
   return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
          UPB_DESC(FeatureSet_CLOSED);
 }
@@ -274,8 +289,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
 
   if (upb_EnumDef_IsClosed(e)) {
     if (ctx->layout) {
-      UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
-      e->layout = ctx->layout->enums[ctx->enum_count++];
+      e->layout = upb_MiniTableFile_Enum(ctx->layout, ctx->enum_count++);
     } else {
       e->layout = create_enumlayout(ctx, e);
     }

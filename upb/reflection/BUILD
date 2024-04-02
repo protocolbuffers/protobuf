@@ -5,18 +5,18 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(
-    "//upb/cmake:build_defs.bzl",
-    "staleness_test",
-)
+load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load(
     "//src/google/protobuf/editions:defaults.bzl",
     "compile_edition_defaults",
     "embed_edition_defaults",
 )
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
+load(
+    "//upb/cmake:build_defs.bzl",
+    "staleness_test",
+)
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -64,8 +64,10 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_value",
+        "//upb:mini_descriptor",
+        "//upb:mini_table",
         "//upb:port",
+        "//upb/message:internal",
     ],
 )
 
@@ -131,17 +133,18 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_accessors",
         "//upb:message_copy",
-        "//upb:message_value",
         "//upb:mini_descriptor",
-        "//upb:mini_descriptor_internal",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire",
         "//upb/base:internal",
+        "//upb/hash",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -157,9 +160,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
         "//upb:mem",
         "//upb:mini_descriptor",
-        "//upb:reflection_internal",
     ],
 )
 
@@ -173,13 +176,15 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
-        "@com_google_googletest//:gtest_main",
-        "//upb:hash",
+        ":internal",
+        "//upb:base",
         "//upb:mem",
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/hash",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -216,11 +221,14 @@ filegroup(
             "**/*.h",
             "**/*.hpp",
         ],
-        exclude = ["stage0/**"],
+        exclude = [
+            "stage0/**",
+            "cmake/**",
+        ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only

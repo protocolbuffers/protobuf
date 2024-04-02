@@ -25,13 +25,13 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/enum_lite.h"
 #include "google/protobuf/compiler/java/extension_lite.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/message_builder.h"
 #include "google/protobuf/compiler/java/message_builder_lite.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -149,7 +149,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   variables["deprecation"] =
       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "";
 
-  WriteMessageDocComment(printer, descriptor_);
+  WriteMessageDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
 
@@ -473,18 +473,15 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   std::vector<uint16_t> chars;
 
   int flags = 0;
-  if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_PROTO2) {
-    if (!context_->options().strip_nonfunctional_codegen) {
-      flags |= 0x1;
-    }
-  }
   if (descriptor_->options().message_set_wire_format()) {
     flags |= 0x2;
   }
-  if (FileDescriptorLegacy(descriptor_->file()).syntax() ==
-      FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS) {
-    if (!context_->options().strip_nonfunctional_codegen) {
+  if (!context_->options().strip_nonfunctional_codegen) {
+    if (JavaGenerator::GetEdition(*descriptor_->file()) ==
+        Edition::EDITION_PROTO2) {
+      flags |= 0x1;
+    } else if (JavaGenerator::GetEdition(*descriptor_->file()) >=
+               Edition::EDITION_2023) {
       flags |= 0x4;
     }
   }
@@ -810,7 +807,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
       "message",
       EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
-  WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
+  WriteMessageDocComment(printer, descriptor_, context_->options(),
+                         /* kdoc */ true);
   printer->Print("public object $name$Kt {\n", "name", descriptor_->name());
   printer->Indent();
   GenerateKotlinDsl(printer);

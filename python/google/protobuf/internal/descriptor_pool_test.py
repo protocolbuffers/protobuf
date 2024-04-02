@@ -132,6 +132,51 @@ class DescriptorPoolTestBase(object):
     self.assertRaises(KeyError, self.pool.FindFileContainingSymbol,
                       'google.protobuf.python.internal.Factory1Message.none_field')
 
+  def testCrossFileMessageTypesByName(self):
+    self.assertIs(
+        descriptor_pool_test1_pb2.DescriptorPoolTest1.DESCRIPTOR,
+        descriptor_pool_test1_pb2.DESCRIPTOR.message_types_by_name[
+            'DescriptorPoolTest1'
+        ],
+    )
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.message_types_by_name[
+          'DescriptorPoolTest1'
+      ]
+
+  def testCrossFileEnumTypesByName(self):
+    self.assertIs(
+        descriptor_pool_test1_pb2.TopLevelEnumTest1.DESCRIPTOR,
+        descriptor_pool_test1_pb2.DESCRIPTOR.enum_types_by_name[
+            'TopLevelEnumTest1'
+        ],
+    )
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.enum_types_by_name[
+          'TopLevelEnumTest1'
+      ]
+
+  def testCrossFileExtensionsByName(self):
+    self.assertIs(
+        descriptor_pool_test1_pb2.top_level_extension_test1,
+        descriptor_pool_test1_pb2.DESCRIPTOR.extensions_by_name[
+            'top_level_extension_test1'
+        ],
+    )
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.extensions_by_name[
+          'top_level_extension_test1'
+      ]
+
+  def testCrossFileServicesByName(self):
+    descriptor_pool_test1_pb2.DESCRIPTOR.services_by_name[
+        'DescriporPoolTestService'
+    ],
+    with self.assertRaises(KeyError):
+      descriptor_pool_test2_pb2.DESCRIPTOR.services_by_name[
+          'DescriporPoolTestService'
+      ]
+
   def testFindFileContainingSymbolFailure(self):
     with self.assertRaises(KeyError):
       self.pool.FindFileContainingSymbol('Does not exist')
@@ -1100,12 +1145,16 @@ class FeatureSetDefaults(unittest.TestCase):
     )
     defaults.defaults[0].features.Extensions[
         unittest_features_pb2.test
-    ].int_file_feature = 9
+    ].file_feature = unittest_features_pb2.VALUE9
     pool.SetFeatureSetDefaults(defaults)
     file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
     file = pool.AddSerializedFile(file_desc.SerializeToString())
     self.assertTrue(
         file._GetFeatures().HasExtension(unittest_features_pb2.test)
+    )
+    self.assertEqual(
+        file._GetFeatures().Extensions[unittest_features_pb2.test].file_feature,
+        unittest_features_pb2.VALUE9,
     )
 
   def testInvalidType(self):

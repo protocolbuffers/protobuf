@@ -23,6 +23,7 @@
 #include <iterator>
 #include <limits>
 #include <list>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -33,6 +34,7 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "absl/random/random.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
@@ -54,10 +56,93 @@ namespace {
 
 using ::protobuf_unittest::TestAllTypes;
 using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
+using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
 using ::testing::Le;
+
+TEST(RepeatedFieldIterator, Traits) {
+  using It = RepeatedField<absl::Cord>::iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, absl::Cord>::value));
+  EXPECT_TRUE((std::is_same<It::reference, absl::Cord&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, absl::Cord*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(ConstRepeatedFieldIterator, Traits) {
+  using It = RepeatedField<absl::Cord>::const_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, absl::Cord>::value));
+  EXPECT_TRUE((std::is_same<It::reference, const absl::Cord&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, const absl::Cord*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(RepeatedPtrOverPtrsIterator, Traits) {
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, std::string*>::value));
+  EXPECT_TRUE((std::is_same<It::reference, std::string*&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, std::string**>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+#if __cplusplus >= 202002L
+TEST(RepeatedPtrOverPtrsIterator, ToAddress) {
+  // empty container
+  RepeatedPtrField<std::string> field;
+  EXPECT_THAT(std::to_address(field.pointer_begin()), A<std::string**>());
+  EXPECT_EQ(std::to_address(field.pointer_begin()),
+            std::to_address(field.pointer_end()));
+
+  // "null" iterator
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_THAT(std::to_address(It()), A<std::string**>());
+}
+#endif
+
+TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
+  using It = RepeatedPtrField<std::string>::const_pointer_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, const std::string*>::value));
+  EXPECT_TRUE((std::is_same<It::reference, const std::string* const&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, const std::string* const*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
 
 TEST(RepeatedField, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
@@ -152,7 +237,7 @@ void CheckAllocationSizes(bool is_ptr) {
   std::string buf(1 << 20, 0);
 
   Arena arena(&buf[0], buf.size());
-  auto* rep = Arena::CreateMessage<Rep>(&arena);
+  auto* rep = Arena::Create<Rep>(&arena);
   size_t prev = arena.SpaceUsed();
 
   for (int i = 0; i < 100; ++i) {
@@ -198,7 +283,7 @@ TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
   for (int i = 0; i < kNumFields; ++i) {
-    values.push_back(Arena::CreateMessage<RepeatedField<int>>(&arena));
+    values.push_back(Arena::Create<RepeatedField<int>>(&arena));
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
       field.Add(j);
@@ -823,8 +908,7 @@ TEST(RepeatedField, MoveConstruct) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* source = Arena::Create<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
     RepeatedField<int> destination = std::move(*source);
@@ -855,12 +939,10 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* source = Arena::Create<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
-    RepeatedField<int>* destination =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* destination = Arena::Create<RepeatedField<int>>(&arena);
     destination->Add(3);
     const int* source_data = source->data();
     *destination = std::move(*source);
@@ -871,12 +953,12 @@ TEST(RepeatedField, MoveAssign) {
   {
     Arena source_arena;
     RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&source_arena);
+        Arena::Create<RepeatedField<int>>(&source_arena);
     source->Add(1);
     source->Add(2);
     Arena destination_arena;
     RepeatedField<int>* destination =
-        Arena::CreateMessage<RepeatedField<int>>(&destination_arena);
+        Arena::Create<RepeatedField<int>>(&destination_arena);
     destination->Add(3);
     *destination = std::move(*source);
     EXPECT_THAT(*destination, ElementsAre(1, 2));
@@ -886,8 +968,7 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* source = Arena::Create<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
     RepeatedField<int> destination;
@@ -903,8 +984,7 @@ TEST(RepeatedField, MoveAssign) {
     source.Add(1);
     source.Add(2);
     Arena arena;
-    RepeatedField<int>* destination =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* destination = Arena::Create<RepeatedField<int>>(&arena);
     destination->Add(3);
     *destination = std::move(source);
     EXPECT_THAT(*destination, ElementsAre(1, 2));
@@ -925,8 +1005,7 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* field =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* field = Arena::Create<RepeatedField<int>>(&arena);
     field->Add(1);
     field->Add(2);
     const int* data = field->data();
@@ -966,7 +1045,7 @@ TEST(Movable, Works) {
   EXPECT_FALSE(internal::IsMovable<NonMovable>::value);
 }
 
-TEST(RepeatedField, MoveAdd) {
+TEST(RepeatedPtrField, MoveAdd) {
   RepeatedPtrField<TestAllTypes> field;
   TestAllTypes test_all_types;
   auto* optional_nested_message =
@@ -1257,13 +1336,12 @@ TEST(RepeatedField, PoisonsMemoryOnAssign) {
 TEST(RepeatedField, Cleanups) {
   Arena arena;
   auto growth = internal::CleanupGrowth(
-      arena, [&] { Arena::CreateMessage<RepeatedField<int>>(&arena); });
+      arena, [&] { Arena::Create<RepeatedField<int>>(&arena); });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 
   void* ptr;
-  growth = internal::CleanupGrowth(arena, [&] {
-    ptr = Arena::CreateMessage<RepeatedField<absl::Cord>>(&arena);
-  });
+  growth = internal::CleanupGrowth(
+      arena, [&] { ptr = Arena::Create<RepeatedField<absl::Cord>>(&arena); });
   EXPECT_THAT(growth.cleanups, testing::UnorderedElementsAre(ptr));
 }
 
@@ -1411,7 +1489,7 @@ TEST(RepeatedPtrField, NaturalGrowthOnArenasReuseBlocks) {
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
   for (int i = 0; i < kNumFields; ++i) {
-    values.push_back(Arena::CreateMessage<Rep>(&arena));
+    values.push_back(Arena::Create<Rep>(&arena));
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
       field.Add("");
@@ -1606,19 +1684,6 @@ TEST(RepeatedPtrField, ClearedElements) {
 
   field.Clear();
   EXPECT_EQ(field.ClearedCount(), 2);
-#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
-  EXPECT_EQ(field.ReleaseCleared(), original);  // Take ownership again.
-  EXPECT_EQ(field.ClearedCount(), 1);
-  EXPECT_NE(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-  EXPECT_NE(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-
-  field.AddCleared(original);  // Give ownership back, but as a cleared object.
-  EXPECT_EQ(field.ClearedCount(), 1);
-  EXPECT_EQ(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
@@ -1688,7 +1753,7 @@ TEST(RepeatedPtrField, AddMethodsDontAcceptNull) {
 TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
   RepeatedPtrField<TestAllTypes> field;
   Arena arena;
-  auto* msg = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* msg = Arena::Create<TestAllTypes>(&arena);
   field.AddAllocated(msg);
 }
 
@@ -1839,7 +1904,7 @@ TEST(RepeatedPtrField, SmallOptimization) {
 
   // We use an arena to easily measure memory usage, but not needed.
   Arena arena;
-  auto* array = Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+  auto* array = Arena::Create<RepeatedPtrField<std::string>>(&arena);
   EXPECT_EQ(array->Capacity(), 1);
   EXPECT_EQ(array->SpaceUsedExcludingSelf(), 0);
   std::string str;
@@ -1855,9 +1920,12 @@ TEST(RepeatedPtrField, SmallOptimization) {
   // Verify the string is where we think it is.
   EXPECT_EQ(&*array->begin(), &str);
   EXPECT_EQ(array->pointer_begin()[0], &str);
+  auto is_inlined = [array]() {
+    return std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
+           std::less<void*>{}(&*array->pointer_begin(), array + 1);
+  };
   // The T** in pointer_begin points into the sso in the object.
-  EXPECT_TRUE(std::less_equal<void*>{}(array, &*array->pointer_begin()));
-  EXPECT_TRUE(std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+  EXPECT_TRUE(is_inlined());
 
   // Adding a second object stops sso.
   std::string str2;
@@ -1869,8 +1937,7 @@ TEST(RepeatedPtrField, SmallOptimization) {
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.
-  EXPECT_FALSE(std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
-               std::less_equal<void*>{}(&*array->pointer_begin(), array + 1));
+  EXPECT_FALSE(is_inlined());
 }
 
 TEST(RepeatedPtrField, CopyAssign) {
@@ -1918,7 +1985,7 @@ TEST(RepeatedPtrField, MoveConstruct) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<std::string> destination = std::move(*source);
@@ -1946,11 +2013,11 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<std::string>* destination =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     const std::string* const* source_data = source->data();
     *destination = std::move(*source);
@@ -1961,12 +2028,12 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     Arena source_arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&source_arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&source_arena);
     *source->Add() = "1";
     *source->Add() = "2";
     Arena destination_arena;
     RepeatedPtrField<std::string>* destination =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&destination_arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&destination_arena);
     *destination->Add() = "3";
     *destination = std::move(*source);
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
@@ -1977,7 +2044,7 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<std::string> destination;
@@ -1994,7 +2061,7 @@ TEST(RepeatedPtrField, MoveAssign) {
     *source.Add() = "2";
     Arena arena;
     RepeatedPtrField<std::string>* destination =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     *destination = std::move(source);
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
@@ -2016,7 +2083,7 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* field =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *field->Add() = "1";
     *field->Add() = "2";
     const std::string* const* data = field->data();
@@ -2059,8 +2126,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           // Create an array with "sz" elements and "extra" cleared elements.
           // Use an arena to avoid copies from debug-build stability checks.
           Arena arena;
-          auto& field =
-              *Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+          auto& field = *Arena::Create<RepeatedPtrField<std::string>>(&arena);
           for (int i = 0; i < sz + extra; ++i) {
             subject.push_back(new std::string());
             field.AddAllocated(subject[i]);
@@ -2118,14 +2184,12 @@ TEST(RepeatedPtrField, DeleteSubrange) {
 
 TEST(RepeatedPtrField, Cleanups) {
   Arena arena;
-  auto growth = internal::CleanupGrowth(arena, [&] {
-    Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
-  });
+  auto growth = internal::CleanupGrowth(
+      arena, [&] { Arena::Create<RepeatedPtrField<std::string>>(&arena); });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 
-  growth = internal::CleanupGrowth(arena, [&] {
-    Arena::CreateMessage<RepeatedPtrField<TestAllTypes>>(&arena);
-  });
+  growth = internal::CleanupGrowth(
+      arena, [&] { Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena); });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 }
 
@@ -2726,13 +2790,13 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
   std::vector<Nested*> data;
   Arena arena;
-  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* goldenproto = Arena::Create<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
     auto* new_data = goldenproto->add_repeated_nested_message();
     new_data->set_bb(i);
     data.push_back(new_data);
   }
-  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* testproto = Arena::Create<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
                 testproto->mutable_repeated_nested_message()));
@@ -2743,13 +2807,13 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
   std::vector<std::string*> data;
   Arena arena;
-  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* goldenproto = Arena::Create<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
     auto* new_data = goldenproto->add_repeated_string();
     *new_data = absl::StrCat("name-", i);
     data.push_back(new_data);
   }
-  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* testproto = Arena::Create<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
                 testproto->mutable_repeated_string()));

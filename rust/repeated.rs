@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::fmt::{self, Debug};
+use std::iter;
+use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
 /// `RepeatedField` struct. `RepeatedField` stores an opaque pointer to the
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
@@ -14,220 +17,511 @@ use std::marker::PhantomData;
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::{Private, RawRepeatedField},
-    __runtime::{RepeatedField, RepeatedFieldInner},
-    primitive::PrimitiveMut,
-    vtable::ProxiedWithRawVTable,
+    __runtime::{InnerRepeated, InnerRepeatedMut},
 };
 
-#[derive(Clone, Copy)]
-pub struct RepeatedFieldRef<'a> {
-    pub repeated_field: RawRepeatedField,
-    pub _phantom: PhantomData<&'a mut ()>,
-}
-
-unsafe impl<'a> Send for RepeatedFieldRef<'a> {}
-unsafe impl<'a> Sync for RepeatedFieldRef<'a> {}
-
-#[derive(Clone, Copy)]
+/// Views the elements in a `repeated` field of `T`.
 #[repr(transparent)]
-pub struct RepeatedView<'a, T: ?Sized> {
-    inner: RepeatedField<'a, T>,
+pub struct RepeatedView<'msg, T: ?Sized> {
+    // This does not need to carry an arena in upb, so it can be just the raw repeated field
+    raw: RawRepeatedField,
+    _phantom: PhantomData<&'msg T>,
 }
 
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for RepeatedView<'a, T> {}
-unsafe impl<'a, T: ProxiedWithRawVTable> Send for RepeatedView<'a, T> {}
+impl<'msg, T: ?Sized> Copy for RepeatedView<'msg, T> {}
+impl<'msg, T: ?Sized> Clone for RepeatedView<'msg, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
 
+unsafe impl<'msg, T: ?Sized> Sync for RepeatedView<'msg, T> {}
+unsafe impl<'msg, T: ?Sized> Send for RepeatedView<'msg, T> {}
+
+impl<'msg, T: ?Sized> Debug for RepeatedView<'msg, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RepeatedView").field("raw", &self.raw).finish()
+    }
+}
+
+/// Mutates the elements in a `repeated` field of `T`.
+pub struct RepeatedMut<'msg, T: ?Sized> {
+    pub(crate) inner: InnerRepeatedMut<'msg>,
+    _phantom: PhantomData<&'msg mut T>,
+}
+
+unsafe impl<'msg, T: ?Sized> Sync for RepeatedMut<'msg, T> {}
+
+impl<'msg, T: ?Sized> Debug for RepeatedMut<'msg, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RepeatedMut").field("raw", &self.inner.raw).finish()
+    }
+}
+
+#[doc(hidden)]
 impl<'msg, T: ?Sized> RepeatedView<'msg, T> {
-    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
-        Self { inner: RepeatedField::<'msg>::from_inner(_private, inner) }
+    #[doc(hidden)]
+    pub fn as_raw(&self, _private: Private) -> RawRepeatedField {
+        self.raw
+    }
+
+    /// # Safety
+    /// - `inner` must be valid to read from for `'msg`
+    #[doc(hidden)]
+    pub unsafe fn from_raw(_private: Private, raw: RawRepeatedField) -> Self {
+        Self { raw, _phantom: PhantomData }
     }
 }
 
-pub struct RepeatedFieldIter<'a, T> {
-    inner: RepeatedField<'a, T>,
-    current_index: usize,
-}
+impl<'msg, T> RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    /// Gets the length of the repeated field.
+    pub fn len(&self) -> usize {
+        T::repeated_len(*self)
+    }
 
-impl<'a, T> std::fmt::Debug for RepeatedView<'a, T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("RepeatedView").finish()
+    /// Returns true if the repeated field has no values.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Gets the value at `index`.
+    ///
+    /// Returns `None` if `index > len`.
+    pub fn get(self, index: usize) -> Option<View<'msg, T>> {
+        if index >= self.len() {
+            return None;
+        }
+        // SAFETY: `index` has been checked to be in-bounds
+        Some(unsafe { self.get_unchecked(index) })
+    }
+
+    /// Gets the value at `index` without bounds-checking.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    pub unsafe fn get_unchecked(self, index: usize) -> View<'msg, T> {
+        // SAFETY: in-bounds as promised
+        unsafe { T::repeated_get_unchecked(self, index) }
+    }
+
+    /// Iterates over the values in the repeated field.
+    pub fn iter(self) -> RepeatedIter<'msg, T> {
+        self.into_iter()
     }
 }
 
-#[repr(transparent)]
-#[derive(Debug)]
-pub struct RepeatedMut<'a, T: ?Sized> {
-    inner: RepeatedField<'a, T>,
-}
-
-unsafe impl<'a, T: ProxiedWithRawVTable> Sync for RepeatedMut<'a, T> {}
-
+#[doc(hidden)]
 impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
-    pub fn from_inner(_private: Private, inner: RepeatedFieldInner<'msg>) -> Self {
-        Self { inner: RepeatedField::from_inner(_private, inner) }
+    /// # Safety
+    /// - `inner` must be valid to read and write from for `'msg`
+    /// - There must be no aliasing references or mutations on the same
+    ///   underlying object.
+    #[doc(hidden)]
+    pub unsafe fn from_inner(_private: Private, inner: InnerRepeatedMut<'msg>) -> Self {
+        Self { inner, _phantom: PhantomData }
     }
-    pub fn as_mut(&self) -> RepeatedMut<'_, T> {
-        Self { inner: self.inner }
+
+    #[doc(hidden)]
+    pub fn as_raw(&mut self, _private: Private) -> RawRepeatedField {
+        self.inner.raw
     }
 }
 
-impl<'a, T> std::ops::Deref for RepeatedMut<'a, T> {
-    type Target = RepeatedView<'a, T>;
-    fn deref(&self) -> &Self::Target {
-        // SAFETY:
-        //   - `Repeated{View,Mut}<'a, T>` are both `#[repr(transparent)]` over
-        //     `RepeatedField<'a, T>`.
-        //   - `RepeatedField` is a type alias for `NonNull`.
-        unsafe { &*(self as *const Self as *const RepeatedView<'a, T>) }
+impl<'msg, T> RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    /// Gets the length of the repeated field.
+    pub fn len(&self) -> usize {
+        self.as_view().len()
+    }
+
+    /// Returns true if the repeated field has no values.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Gets the value at `index`.
+    ///
+    /// Returns `None` if `index > len`.
+    pub fn get(&self, index: usize) -> Option<View<T>> {
+        self.as_view().get(index)
+    }
+
+    /// Gets the value at `index` without bounds-checking.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    pub unsafe fn get_unchecked(&self, index: usize) -> View<T> {
+        // SAFETY: in-bounds as promised
+        unsafe { self.as_view().get_unchecked(index) }
+    }
+
+    /// Appends `val` to the end of the repeated field.
+    pub fn push(&mut self, val: View<T>) {
+        // TODO: b/320936046 - Use SettableValue instead of View for added ergonomics.
+        T::repeated_push(self.as_mut(), val);
+    }
+
+    /// Sets the value at `index` to the value `val`.
+    ///
+    /// # Panics
+    /// Panics if `index >= len`
+    pub fn set(&mut self, index: usize, val: View<T>) {
+        let len = self.len();
+        if index >= len {
+            panic!("index {index} >= repeated len {len}");
+        }
+        // TODO: b/320936046 - Use SettableValue instead of View for added ergonomics.
+        // SAFETY: `index` has been checked to be in-bounds.
+        unsafe { self.set_unchecked(index, val) }
+    }
+
+    /// Sets the value at `index` to the value `val`.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`
+    pub unsafe fn set_unchecked(&mut self, index: usize, val: View<T>) {
+        // TODO: b/320936046 - Use SettableValue instead of View for added ergonomics.
+        // SAFETY: `index` is in-bounds as promised by the caller.
+        unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
+    }
+
+    /// Iterates over the values in the repeated field.
+    pub fn iter(&self) -> RepeatedIter<T> {
+        self.as_view().into_iter()
+    }
+
+    /// Copies from the `src` repeated field into this one.
+    ///
+    /// Also provided by [`MutProxy::set`].
+    pub fn copy_from(&mut self, src: RepeatedView<'_, T>) {
+        T::repeated_copy_from(src, self.as_mut())
+    }
+
+    /// Clears the repeated field.
+    pub fn clear(&mut self) {
+        T::repeated_clear(self.as_mut())
     }
 }
 
-pub struct RepeatedFieldIterMut<'a, T> {
-    inner: RepeatedMut<'a, T>,
+/// Types that can appear in a `Repeated<T>`.
+///
+/// This trait is implemented by generated code to communicate how the proxied
+/// type can be manipulated for a repeated field.
+///
+/// Scalars and messages implement `ProxiedInRepeated`.
+///
+/// # Safety
+/// - It must be sound to call `*_unchecked*(x)` with an `index` less than
+///   `repeated_len(x)`.
+pub unsafe trait ProxiedInRepeated: Proxied {
+    /// Constructs a new owned `Repeated` field.
+    #[doc(hidden)]
+    fn repeated_new(_private: Private) -> Repeated<Self> {
+        unimplemented!("not required")
+    }
+
+    /// Frees the repeated field in-place, for use in `Drop`.
+    ///
+    /// # Safety
+    /// - After `repeated_free`, no other methods on the input are safe to call.
+    #[doc(hidden)]
+    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>) {
+        unimplemented!("not required")
+    }
+
+    /// Gets the length of the repeated field.
+    fn repeated_len(repeated: View<Repeated<Self>>) -> usize;
+
+    /// Appends a new element to the end of the repeated field.
+    fn repeated_push(repeated: Mut<Repeated<Self>>, val: View<Self>);
+
+    /// Clears the repeated field of elements.
+    fn repeated_clear(repeated: Mut<Repeated<Self>>);
+
+    /// # Safety
+    /// `index` must be less than `Self::repeated_len(repeated)`
+    unsafe fn repeated_get_unchecked(repeated: View<Repeated<Self>>, index: usize) -> View<Self>;
+
+    /// # Safety
+    /// `index` must be less than `Self::repeated_len(repeated)`
+    unsafe fn repeated_set_unchecked(repeated: Mut<Repeated<Self>>, index: usize, val: View<Self>);
+
+    /// Copies the values in the `src` repeated field into `dest`.
+    fn repeated_copy_from(src: View<Repeated<Self>>, dest: Mut<Repeated<Self>>);
+}
+
+/// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
+pub struct RepeatedIter<'msg, T: ?Sized> {
+    view: RepeatedView<'msg, T>,
     current_index: usize,
 }
 
-pub struct Repeated<T>(PhantomData<T>);
-
-macro_rules! impl_repeated_primitives {
-    ($($t:ty),*) => {
-        $(
-            impl Proxied for Repeated<$t> {
-                type View<'a> = RepeatedView<'a, $t>;
-                type Mut<'a> = RepeatedMut<'a, $t>;
-            }
-
-            impl<'a> ViewProxy<'a> for RepeatedView<'a, $t> {
-                type Proxied = Repeated<$t>;
-
-                fn as_view(&self) -> View<'_, Self::Proxied> {
-                    *self
-                }
-
-                fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-                where 'a: 'shorter,
-                {
-                    RepeatedView { inner: self.inner }
-                }
-            }
-
-            impl<'a> ViewProxy<'a> for RepeatedMut<'a, $t> {
-                type Proxied = Repeated<$t>;
-
-                fn as_view(&self) -> View<'_, Self::Proxied> {
-                    **self
-                }
-
-                fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-                where 'a: 'shorter,
-                {
-                    *self.into_mut::<'shorter>()
-                }
-            }
-
-            impl<'a> MutProxy<'a> for RepeatedMut<'a, $t> {
-                fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-                    RepeatedMut { inner: self.inner }
-                }
-
-                fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
-                where 'a: 'shorter,
-                {
-                    RepeatedMut { inner: self.inner }
-                }
-            }
-
-            impl <'a> SettableValue<Repeated<$t>> for RepeatedView<'a, $t> {
-                fn set_on(self, _private: Private, mut mutator: Mut<'_, Repeated<$t>>) {
-                    mutator.copy_from(self);
-                }
-            }
-
-            impl<'a> RepeatedView<'a, $t> {
-                pub fn len(&self) -> usize {
-                    self.inner.len()
-                }
-                pub fn is_empty(&self) -> bool {
-                    self.len() == 0
-                }
-                pub fn get(&self, index: usize) -> Option<$t> {
-                    self.inner.get(index)
-                }
-                pub fn iter(&self) -> RepeatedFieldIter<'_, $t> {
-                    (*self).into_iter()
-                }
-            }
-
-            impl<'a> RepeatedMut<'a, $t> {
-                pub fn push(&mut self, val: $t) {
-                    self.inner.push(val)
-                }
-                pub fn set(&mut self, index: usize, val: $t) {
-                    self.inner.set(index, val)
-                }
-                pub fn get_mut(&mut self, index: usize) -> Option<Mut<'_, $t>> {
-                    if index >= self.len() {
-                        return None;
-                    }
-                    Some(PrimitiveMut::Repeated(self.as_mut(), index))
-                }
-                pub fn iter(&self) -> RepeatedFieldIter<'_, $t> {
-                    self.as_view().into_iter()
-                }
-                pub fn iter_mut(&mut self) -> RepeatedFieldIterMut<'_, $t> {
-                    self.as_mut().into_iter()
-                }
-                pub fn copy_from(&mut self, src: RepeatedView<'_, $t>) {
-                    self.inner.copy_from(&src.inner);
-                }
-            }
-
-            impl<'a> std::iter::Iterator for RepeatedFieldIter<'a, $t> {
-                type Item = $t;
-                fn next(&mut self) -> Option<Self::Item> {
-                    let val = self.inner.get(self.current_index);
-                    if val.is_some() {
-                        self.current_index += 1;
-                    }
-                    val
-                }
-            }
-
-            impl<'a> std::iter::IntoIterator for RepeatedView<'a, $t> {
-                type Item = $t;
-                type IntoIter = RepeatedFieldIter<'a, $t>;
-                fn into_iter(self) -> Self::IntoIter {
-                    RepeatedFieldIter { inner: self.inner, current_index: 0 }
-                }
-            }
-
-            impl <'a> std::iter::Iterator for RepeatedFieldIterMut<'a, $t> {
-                type Item = Mut<'a, $t>;
-                fn next(&mut self) -> Option<Self::Item> {
-                    if self.current_index >= self.inner.len() {
-                        return None;
-                    }
-                    let elem = PrimitiveMut::Repeated(
-                        // While this appears to allow mutable aliasing
-                        // (multiple `Self::Item`s can co-exist), each `Item`
-                        // only references a specific unique index.
-                        RepeatedMut{ inner: self.inner.inner },
-                        self.current_index,
-                    );
-                    self.current_index += 1;
-                    Some(elem)
-                }
-            }
-
-            impl<'a> std::iter::IntoIterator for RepeatedMut<'a, $t> {
-                type Item = Mut<'a, $t>;
-                type IntoIter = RepeatedFieldIterMut<'a, $t>;
-                fn into_iter(self) -> Self::IntoIter {
-                    RepeatedFieldIterMut { inner: self, current_index: 0 }
-                }
-            }
-        )*
+impl<'msg, T: ?Sized> Debug for RepeatedIter<'msg, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RepeatedIter")
+            .field("view", &self.view)
+            .field("current_index", &self.current_index)
+            .finish()
     }
 }
 
-impl_repeated_primitives!(i32, u32, bool, f32, f64, i64, u64);
+/// A `repeated` field of `T`, used as the owned target for `Proxied`.
+///
+/// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
+/// [`Mut<Repeated<T>>`](RepeatedMut) to access the repeated elements
+pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
+    inner: InnerRepeated,
+    _phantom: PhantomData<T>,
+}
+
+impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
+    pub fn new() -> Self {
+        T::repeated_new(Private)
+    }
+
+    pub(crate) fn from_inner(inner: InnerRepeated) -> Self {
+        Self { inner, _phantom: PhantomData }
+    }
+
+    pub(crate) fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        RepeatedMut { inner: self.inner.as_mut(), _phantom: PhantomData }
+    }
+}
+
+impl<T: ?Sized + ProxiedInRepeated> Default for Repeated<T> {
+    fn default() -> Self {
+        Repeated::new()
+    }
+}
+
+impl<T: ?Sized + ProxiedInRepeated> Drop for Repeated<T> {
+    fn drop(&mut self) {
+        // SAFETY: only called once
+        unsafe { T::repeated_free(Private, self) }
+    }
+}
+
+// SAFETY: `Repeated` does not allow for shared mutability.
+unsafe impl<T: ProxiedInRepeated> Sync for Repeated<T> {}
+
+impl<T> Proxied for Repeated<T>
+where
+    T: ProxiedInRepeated + ?Sized,
+{
+    type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
+    type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
+}
+
+impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    type Proxied = Repeated<T>;
+
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        *self
+    }
+
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        RepeatedView { raw: self.raw, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T> ViewProxy<'msg> for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    type Proxied = Repeated<T>;
+
+    fn as_view(&self) -> View<'_, Self::Proxied> {
+        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
+    }
+
+    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T> MutProxy<'msg> for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
+        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    }
+
+    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+    where
+        'msg: 'shorter,
+    {
+        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T> SettableValue<Repeated<T>> for RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    fn set_on<'b>(self, _private: Private, mutator: Mut<'b, Repeated<T>>)
+    where
+        Repeated<T>: 'b,
+    {
+        T::repeated_copy_from(self, mutator)
+    }
+}
+
+impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    type Item = View<'msg, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let val = self.view.get(self.current_index);
+        if val.is_some() {
+            self.current_index += 1;
+        }
+        val
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.len();
+        (len, Some(len))
+    }
+}
+
+impl<'msg, T: ?Sized + ProxiedInRepeated> ExactSizeIterator for RepeatedIter<'msg, T> {
+    fn len(&self) -> usize {
+        self.view.len() - self.current_index
+    }
+}
+
+// TODO: impl DoubleEndedIterator
+impl<'msg, T: ?Sized + ProxiedInRepeated> FusedIterator for RepeatedIter<'msg, T> {}
+
+impl<'msg, T> iter::IntoIterator for RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    type Item = View<'msg, T>;
+    type IntoIter = RepeatedIter<'msg, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RepeatedIter { view: self, current_index: 0 }
+    }
+}
+
+impl<'msg, T> iter::IntoIterator for &'_ RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'msg,
+{
+    type Item = View<'msg, T>;
+    type IntoIter = RepeatedIter<'msg, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RepeatedIter { view: *self, current_index: 0 }
+    }
+}
+
+impl<'borrow, T> iter::IntoIterator for &'borrow RepeatedMut<'_, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'borrow,
+{
+    type Item = View<'borrow, T>;
+    type IntoIter = RepeatedIter<'borrow, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RepeatedIter { view: self.as_view(), current_index: 0 }
+    }
+}
+
+impl<'msg, 'view, T, ViewT> Extend<ViewT> for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + ?Sized + 'view,
+    ViewT: Into<View<'view, T>>,
+{
+    fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
+        for item in iter {
+            self.push(item.into());
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use googletest::prelude::*;
+
+    #[test]
+    fn test_primitive_repeated() {
+        macro_rules! primitive_repeated_tests {
+            ($($t:ty => [$($vals:expr),* $(,)?]),* $(,)?) => {
+                $({
+                // Constructs a new, owned, `Repeated`, only used for tests.
+                let mut r = Repeated::<$t>::new();
+                let mut r = r.as_mut();
+                assert_that!(r.len(), eq(0));
+                assert!(r.iter().next().is_none(), "starts with empty iter");
+                assert!(r.iter().next().is_none(), "starts with empty mut iter");
+                assert!(r.is_empty(), "starts is_empty");
+
+                let mut expected_len = 0usize;
+                $(
+                    let val: View<$t> = $vals;
+                    r.push(val);
+                    assert_that!(r.get(expected_len), eq(Some(val)));
+                    expected_len += 1;
+                    assert_that!(r.len(), eq(expected_len));
+
+                )*
+                assert_that!(
+                    r.iter().collect::<Vec<$t>>(), elements_are![$(eq($vals)),*]);
+                r.set(0, <$t as Default>::default());
+                assert_that!(r.get(0).expect("elem 0"), eq(<$t as Default>::default()));
+
+                r.clear();
+                assert!(r.is_empty(), "is_empty after clear");
+                assert!(r.iter().next().is_none(), "iter empty after clear");
+                assert!(r.into_iter().next().is_none(), "mut iter empty after clear");
+                })*
+            }
+        }
+        primitive_repeated_tests!(
+            u32 => [1,2,3],
+            i32 => [1,2],
+            f64 => [10.0, 0.1234f64],
+            bool => [false, true, true, false],
+        );
+    }
+
+    #[test]
+    fn test_repeated_extend() {
+        let mut r = Repeated::<i32>::new();
+
+        r.as_mut().extend([0; 0]);
+        assert_that!(r.as_mut().len(), eq(0));
+
+        r.as_mut().extend([0, 1]);
+        assert_that!(r.as_mut().iter().collect::<Vec<_>>(), elements_are![eq(0), eq(1)]);
+        let mut x = Repeated::<i32>::new();
+        x.as_mut().extend([2, 3]);
+
+        r.as_mut().extend(&x.as_mut());
+
+        assert_that!(
+            r.as_mut().iter().collect::<Vec<_>>(),
+            elements_are![eq(0), eq(1), eq(2), eq(3)]
+        );
+    }
+}
