@@ -12,9 +12,9 @@
 #include "google/protobuf/compiler/cpp/file.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,6 +27,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -35,9 +36,9 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/service.h"
 #include "google/protobuf/compiler/retention.h"
-#include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -116,7 +117,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   ABSL_CHECK(msgs_topologically_ordered.size() == msgs.size())
       << "Size mismatch";
 
-  for (int i = 0; i < msgs.size(); ++i) {
+  for (size_t i = 0; i < msgs.size(); ++i) {
     message_generators_.push_back(std::make_unique<MessageGenerator>(
         msgs[i], variables_, i, options, &scc_analyzer_));
     message_generators_.back()->AddGenerators(&enum_generators_,
@@ -890,7 +891,7 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
   }
 
   NamespaceOpener ns(Namespace(file_, options_), p);
-  for (int i = 0; i < enum_generators_.size(); ++i) {
+  for (size_t i = 0; i < enum_generators_.size(); ++i) {
     enum_generators_[i]->GenerateMethods(i, p);
   }
 }
@@ -954,7 +955,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
   {
     NamespaceOpener ns(Namespace(file_, options_), p);
-    for (int i = 0; i < message_generators_.size(); ++i) {
+    for (size_t i = 0; i < message_generators_.size(); ++i) {
       GenerateSourceDefaultInstance(
           message_generators_topologically_ordered_[i], p);
     }
@@ -974,12 +975,12 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     // Actually implement the protos
 
     // Generate enums.
-    for (int i = 0; i < enum_generators_.size(); ++i) {
+    for (size_t i = 0; i < enum_generators_.size(); ++i) {
       enum_generators_[i]->GenerateMethods(i, p);
     }
 
     // Generate classes.
-    for (int i = 0; i < message_generators_.size(); ++i) {
+    for (size_t i = 0; i < message_generators_.size(); ++i) {
       p->Emit(R"(
         $hrule_thick$
       )");
@@ -988,7 +989,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
     if (HasGenericServices(file_, options_)) {
       // Generate services.
-      for (int i = 0; i < service_generators_.size(); ++i) {
+      for (size_t i = 0; i < service_generators_.size(); ++i) {
         p->Emit(R"(
           $hrule_thick$
         )");
@@ -998,7 +999,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
     // Define extensions.
     const auto is_lazily_init = IsLazilyInitializedFile(file_->name());
-    for (int i = 0; i < extension_generators_.size(); ++i) {
+    for (size_t i = 0; i < extension_generators_.size(); ++i) {
       extension_generators_[i]->GenerateDefinition(p);
       if (!is_lazily_init) {
         for (auto priority : {kInitPriority101, kInitPriority102}) {
@@ -1019,7 +1020,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
   {
     NamespaceOpener proto_ns(ProtobufNamespace(options_), p);
-    for (int i = 0; i < message_generators_.size(); ++i) {
+    for (size_t i = 0; i < message_generators_.size(); ++i) {
       message_generators_[i]->GenerateSourceInProto2Namespace(p);
     }
   }
@@ -1165,14 +1166,14 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
         {
             {"offsets",
              [&] {
-               for (int i = 0; i < message_generators_.size(); ++i) {
+               for (size_t i = 0; i < message_generators_.size(); ++i) {
                  offsets.push_back(message_generators_[i]->GenerateOffsets(p));
                }
              }},
             {"schemas",
              [&] {
                int offset = 0;
-               for (int i = 0; i < message_generators_.size(); ++i) {
+               for (size_t i = 0; i < message_generators_.size(); ++i) {
                  message_generators_[i]->GenerateSchema(p, offset,
                                                         offsets[i].second);
                  offset += offsets[i].first;
@@ -1729,7 +1730,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
 }
 
 void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
-  for (int i = 0; i < message_generators_.size(); ++i) {
+  for (size_t i = 0; i < message_generators_.size(); ++i) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
@@ -1739,7 +1740,7 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
 }
 
 void FileGenerator::GenerateEnumDefinitions(io::Printer* p) {
-  for (int i = 0; i < enum_generators_.size(); ++i) {
+  for (size_t i = 0; i < enum_generators_.size(); ++i) {
     enum_generators_[i]->GenerateDefinition(p);
   }
 }
@@ -1749,7 +1750,7 @@ void FileGenerator::GenerateServiceDefinitions(io::Printer* p) {
     return;
   }
 
-  for (int i = 0; i < service_generators_.size(); ++i) {
+  for (size_t i = 0; i < service_generators_.size(); ++i) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
@@ -1782,7 +1783,7 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* p) {
       #endif  // __GNUC__
   )");
 
-  for (int i = 0; i < message_generators_.size(); ++i) {
+  for (size_t i = 0; i < message_generators_.size(); ++i) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
@@ -1815,7 +1816,7 @@ std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()
     const {
   std::vector<const Descriptor*> descs;
   descs.reserve(message_generators_.size());
-  for (int i = 0; i < message_generators_.size(); ++i) {
+  for (size_t i = 0; i < message_generators_.size(); ++i) {
     descs.push_back(
         message_generators_[message_generators_topologically_ordered_[i]]
             ->descriptor());
