@@ -152,8 +152,7 @@ static _upb_DecodeLongVarintReturn _upb_Decoder_DecodeLongVarint(
     const char* ptr, uint64_t val) {
   _upb_DecodeLongVarintReturn ret = {NULL, 0};
   uint64_t byte;
-  int i;
-  for (i = 1; i < 10; i++) {
+  for (int i = 1; i < 10; i++) {
     byte = (uint8_t)ptr[i];
     val += (byte - 1) << (i * 7);
     if (!(byte & 0x80)) {
