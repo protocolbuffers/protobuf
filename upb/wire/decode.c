@@ -691,7 +691,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, wireval* val,
     int op) {
   void* mem = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
-  int type = field->UPB_PRIVATE(descriptortype);
+  //int type = field->UPB_PRIVATE(descriptortype);
 
   if (UPB_UNLIKELY(op == kUpb_DecodeOp_Enum) &&
       !_upb_Decoder_CheckEnum(d, ptr, msg,
@@ -723,7 +723,12 @@ static const char* _upb_Decoder_DecodeToSubMessage(
       } else {
         submsg = _upb_Decoder_NewSubMessage(d, subs, field, submsgp);
       }
-      if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
+
+      uint32_t tag;
+      _upb_Decoder_DecodeTag(d, ptr, &tag);
+      int wire_type = tag & 7;
+
+      if (UPB_UNLIKELY(wire_type == kUpb_WireType_StartGroup)) {
         ptr = _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, subs, field);
       } else {
         ptr = _upb_Decoder_DecodeSubMessage(d, ptr, submsg, subs, field,
