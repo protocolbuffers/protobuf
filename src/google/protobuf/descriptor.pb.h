@@ -665,7 +665,6 @@ inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(absl::string_view name, 
 }
 enum Edition : int {
   EDITION_UNKNOWN = 0,
-  EDITION_LEGACY = 900,
   EDITION_PROTO2 = 998,
   EDITION_PROTO3 = 999,
   EDITION_2023 = 1000,
