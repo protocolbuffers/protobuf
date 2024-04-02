@@ -46,13 +46,11 @@
 #include <memory>
 #include <new>
 
-#include "absl/log/absl_check.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
-#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
@@ -285,8 +283,6 @@ struct DynamicMessageFactory::TypeInfo {
   ~TypeInfo() {
     delete prototype;
     delete class_data.reflection;
-    ::operator delete(
-        const_cast<internal::TcParseTableBase*>(class_data.tc_table));
 
     auto* type = class_data.descriptor;
 
@@ -419,9 +415,9 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           new (field_ptr) Message*(nullptr);
         } else {
           if (IsMapFieldInApi(field)) {
-            // We need to lock in most cases to avoid data racing.
-            // When building the prototype via GetPrototypeNoLock, we construct
-            // this during crosslinking.
+            // We need to lock in most cases to avoid data racing. Only not lock
+            // when the constructor is called inside GetPrototype(), in which
+            // case we have already locked the factory.
             if (lock_factory) {
               if (arena != nullptr) {
                 new (field_ptr) DynamicMapField(
@@ -430,6 +426,17 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               } else {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()));
+              }
+            } else {
+              if (arena != nullptr) {
+                new (field_ptr)
+                    DynamicMapField(type_info_->factory->GetPrototypeNoLock(
+                                        field->message_type()),
+                                    arena);
+              } else {
+                new (field_ptr)
+                    DynamicMapField(type_info_->factory->GetPrototypeNoLock(
+                        field->message_type()));
               }
             }
           } else {
@@ -574,18 +581,6 @@ void DynamicMessage::CrossLinkPrototypes() {
       // point to the prototype.
       *reinterpret_cast<const Message**>(field_ptr) =
           factory->GetPrototypeNoLock(field->message_type());
-    }
-  }
-
-  // Construct the map fields.
-  // We need to delay this until we can do cross references.
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    const FieldDescriptor* field = descriptor->field(i);
-    if (field->cpp_type() == field->CPPTYPE_MESSAGE && field->is_repeated() &&
-        IsMapFieldInApi(field)) {
-      void* field_ptr = MutableRaw(i);
-      new (field_ptr) DynamicMapField(
-          type_info_->factory->GetPrototypeNoLock(field->message_type()));
     }
   }
 }
@@ -778,16 +773,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   type_info->class_data.reflection = new Reflection(
       type_info->class_data.descriptor, schema, type_info->pool, this);
-
-  type_info->class_data.reflection->CreateTcParseTable(
-      type_info->class_data.tc_table, [&](const auto* field) {
-        // The prototype we get might not necessarily be a dynamic message, so
-        // use GetClassData to fetch the table.
-        auto* table =
-            GetPrototypeNoLock(field->message_type())->GetTcParseTable();
-        ABSL_DCHECK(table != nullptr);
-        return table;
-      });
 
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();

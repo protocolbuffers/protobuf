@@ -351,7 +351,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
 // Message fields
 //////////////////////////////////////////////////////////////////////////////
 
-template <typename TagType, bool group_coding>
+template <typename TagType, bool group_coding, bool aux_is_table>
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
@@ -363,32 +363,67 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
 
-  const auto* inner_table = table->field_aux(data.aux_idx())->table;
-  if (field == nullptr) {
-    field = inner_table->default_instance->New(msg->GetArena());
+  if (aux_is_table) {
+    const auto* inner_table = table->field_aux(data.aux_idx())->table;
+    if (field == nullptr) {
+      field = inner_table->default_instance->New(msg->GetArena());
+    }
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoopInlined(field, ptr, ctx, inner_table);
+    };
+    return group_coding ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag),
+                                                 inner_loop)
+                        : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
+  } else {
+    if (field == nullptr) {
+      const MessageLite* default_instance =
+          table->field_aux(data.aux_idx())->message_default();
+      field = default_instance->New(msg->GetArena());
+    }
+    if (group_coding) {
+      return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
+    }
+    return ctx->ParseMessage(field, ptr);
   }
-  return group_coding ? ParseGroup(field, ptr, ctx, inner_table,
-                                   FastDecodeTag(saved_tag))
-                      : ParseMessage(field, ptr, ctx, inner_table);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMdS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMdS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastGdS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastGdS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true, false>(
+      PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false>(
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false>(
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true>(
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true>(
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -406,7 +441,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastMlS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return LazyMessage<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename TagType, bool group_coding>
+template <typename TagType, bool group_coding, bool aux_is_table>
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
@@ -415,13 +450,25 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
-  const MessageLite* const default_instance = aux.table->default_instance;
+  const MessageLite* const default_instance =
+      aux_is_table ? aux.table->default_instance : aux.message_default();
   do {
     ptr += sizeof(TagType);
     MessageLite* submsg = field.AddMessage(default_instance);
-    ptr = group_coding ? ParseGroup(submsg, ptr, ctx, aux.table,
-                                    FastDecodeTag(expected_tag))
-                       : ParseMessage(submsg, ptr, ctx, aux.table);
+    if (aux_is_table) {
+      const auto inner_loop = [&](const char* ptr) {
+        return ParseLoopInlined(submsg, ptr, ctx, aux.table);
+      };
+      ptr = group_coding ? ctx->ParseGroupInlined(
+                               ptr, FastDecodeTag(expected_tag), inner_loop)
+                         : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
+    } else {
+      if (group_coding) {
+        ptr = ctx->ParseGroup(submsg, ptr, FastDecodeTag(expected_tag));
+      } else {
+        ptr = ctx->ParseMessage(submsg, ptr);
+      }
+    }
     if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -433,23 +480,43 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+PROTOBUF_NOINLINE const char* TcParser::FastMdR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMdR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastGdR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastGdR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
 PROTOBUF_NOINLINE const char* TcParser::FastMtR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false>(
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMtR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false>(
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true>(
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastGtR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true>(
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -2224,16 +2291,6 @@ parse_loop:
 }
 
 
-PROTOBUF_ALWAYS_INLINE inline const TcParseTableBase* TcParser::GetTableForAux(
-    TcParseTableBase::FieldAux aux, uint16_t type_card) {
-  if (ABSL_PREDICT_TRUE((type_card & field_layout::kTvMask) ==
-                        field_layout::kTvTable)) {
-    return aux.table;
-  }
-  ABSL_DCHECK_EQ(type_card & field_layout::kTvMask, +field_layout::kTvWeakPtr);
-  return aux.message_default_weak()->GetTcParseTable();
-}
-
 template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
@@ -2289,13 +2346,33 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   SyncHasbits(msg, hasbits, table);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
-
-  auto* inner_table = GetTableForAux(*table->field_aux(&entry), type_card);
-  if (need_init || field == nullptr) {
-    field = inner_table->default_instance->New(msg->GetArena());
+  if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
+    auto* inner_table = table->field_aux(&entry)->table;
+    if (need_init || field == nullptr) {
+      field = inner_table->default_instance->New(msg->GetArena());
+    }
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoop(field, ptr, ctx, inner_table);
+    };
+    return is_group ? ctx->ParseGroupInlined(ptr, decoded_tag, inner_loop)
+                    : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
+  } else {
+    if (need_init || field == nullptr) {
+      const MessageLite* def;
+      if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
+        def = table->field_aux(&entry)->message_default();
+      } else {
+        ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
+                       +field_layout::kTvWeakPtr);
+        def = table->field_aux(&entry)->message_default_weak();
+      }
+      field = def->New(msg->GetArena());
+    }
+    if (is_group) {
+      return ctx->ParseGroup(field, ptr, decoded_tag);
+    }
+    return ctx->ParseMessage(field, ptr);
   }
-  return is_group ? ParseGroup(field, ptr, ctx, inner_table, decoded_tag)
-                  : ParseMessage(field, ptr, ctx, inner_table);
 }
 
 template <bool is_split, bool is_group>
@@ -2326,19 +2403,45 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
   RepeatedPtrFieldBase& field =
       MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
           base, entry.offset, msg);
-  auto* inner_table = GetTableForAux(*table->field_aux(&entry), type_card);
-  const MessageLite* default_instance = inner_table->default_instance;
-  const char* ptr2 = ptr;
-  uint32_t next_tag;
-  do {
-    MessageLite* value = field.AddMessage(default_instance);
-    ptr = is_group ? ParseGroup(value, ptr2, ctx, inner_table, decoded_tag)
-                   : ParseMessage(value, ptr2, ctx, inner_table);
-    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
-    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-    ptr2 = ReadTag(ptr, &next_tag);
-    if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-  } while (next_tag == decoded_tag);
+  const auto aux = *table->field_aux(&entry);
+  if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
+    auto* inner_table = aux.table;
+    const MessageLite* default_instance = inner_table->default_instance;
+    const char* ptr2 = ptr;
+    uint32_t next_tag;
+    do {
+      MessageLite* value = field.AddMessage(default_instance);
+      const auto inner_loop = [&](const char* ptr) {
+        return ParseLoop(value, ptr, ctx, inner_table);
+      };
+      ptr = is_group ? ctx->ParseGroupInlined(ptr2, decoded_tag, inner_loop)
+                     : ctx->ParseLengthDelimitedInlined(ptr2, inner_loop);
+      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
+      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+      ptr2 = ReadTag(ptr, &next_tag);
+      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
+    } while (next_tag == decoded_tag);
+  } else {
+    const MessageLite* default_instance;
+    if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
+      default_instance = aux.message_default();
+    } else {
+      ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
+                     +field_layout::kTvWeakPtr);
+      default_instance = aux.message_default_weak();
+    }
+    const char* ptr2 = ptr;
+    uint32_t next_tag;
+    do {
+      MessageLite* value = field.AddMessage(default_instance);
+      ptr = is_group ? ctx->ParseGroup(value, ptr2, decoded_tag)
+                     : ctx->ParseMessage(value, ptr2);
+      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
+      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+      ptr2 = ReadTag(ptr, &next_tag);
+      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
+    } while (next_tag == decoded_tag);
+  }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 parse_loop:
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2749,10 +2852,11 @@ std::string TypeCardToString(uint16_t type_card) {
       }
 
       static constexpr const char* kXFormNames[2][4] = {
-          {nullptr, "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
+          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
 
-      static_assert((fl::kTvTable >> fl::kTvShift) == 1, "");
-      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 2, "");
+      static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
+      static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
+      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
       static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
 

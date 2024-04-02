@@ -48,6 +48,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     field_layout::TransformValidation lazy_opt;
     bool is_string_inlined;
     bool is_implicitly_weak;
+    bool use_direct_tcparser_table;
     bool should_split;
   };
   class OptionProvider {

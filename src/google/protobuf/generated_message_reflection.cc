@@ -25,7 +25,6 @@
 #include "absl/base/call_once.h"
 #include "absl/base/const_init.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
@@ -3319,8 +3318,6 @@ void Reflection::PopulateTcParseEntries(
 
 void Reflection::PopulateTcParseFieldAux(
     const internal::TailCallTableInfo& table_info,
-    absl::FunctionRef<const TcParseTableBase*(const FieldDescriptor*)>
-        fetch_subtable,
     TcParseTableBase::FieldAux* field_aux) const {
   for (const auto& aux_entry : table_info.aux_entries) {
     switch (aux_entry.type) {
@@ -3338,8 +3335,6 @@ void Reflection::PopulateTcParseFieldAux(
         field_aux++->offset = schema_.SizeofSplit();
         break;
       case internal::TailCallTableInfo::kSubTable:
-        field_aux++->table = fetch_subtable(aux_entry.field);
-        break;
       case internal::TailCallTableInfo::kSubMessageWeak:
       case internal::TailCallTableInfo::kCreateInArena:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
@@ -3372,19 +3367,7 @@ void Reflection::PopulateTcParseFieldAux(
 }
 
 
-const internal::TcParseTableBase* Reflection::GetTcParseTable() const {
-  absl::call_once(tcparse_table_once_, [&] {
-    CreateTcParseTable(tcparse_table_, [&](const auto* field) {
-      return GetDefaultMessageInstance(field)->GetTcParseTable();
-    });
-  });
-  return tcparse_table_;
-}
-
-void Reflection::CreateTcParseTable(
-    const TcParseTableBase*& out,
-    absl::FunctionRef<const TcParseTableBase*(const FieldDescriptor*)>
-        fetch_subtable) const {
+const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
   std::vector<const FieldDescriptor*> fields;
@@ -3428,6 +3411,11 @@ void Reflection::CreateTcParseTable(
 
           // Only LITE can be implicitly weak.
           /* is_implicitly_weak */ false,
+
+          // We could change this to use direct table.
+          // Might be easier to do when all messages support TDP.
+          /* use_direct_tcparser_table */ false,
+
           ref_.schema_.IsSplit(field),  //
       };
     }
@@ -3484,12 +3472,6 @@ void Reflection::CreateTcParseTable(
       nullptr
 #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   };
-
-  // Set the `out` pointer first. `fetch_subtable` is reentrant and we need to
-  // update the cache tables before the reentrancy. That way we can do cross
-  // referencing while building the tables.
-  out = res;
-
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
   // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
   // branches. Here we don't know which field is the hottest, so set the pointer
@@ -3504,7 +3486,7 @@ void Reflection::CreateTcParseTable(
 
   PopulateTcParseEntries(table_info, res->field_entries_begin());
 
-  PopulateTcParseFieldAux(table_info, fetch_subtable, res->field_aux(0u));
+  PopulateTcParseFieldAux(table_info, res->field_aux(0u));
 
   // Copy the name data.
   if (!table_info.field_name_data.empty()) {
@@ -3515,6 +3497,8 @@ void Reflection::CreateTcParseTable(
   ABSL_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
                     reinterpret_cast<char*>(res),
                 byte_size);
+
+  return res;
 }
 
 namespace {

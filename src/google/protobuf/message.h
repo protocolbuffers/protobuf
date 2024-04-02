@@ -1045,25 +1045,20 @@ class PROTOBUF_EXPORT Reflection final {
   using TcParseTableBase = internal::TcParseTableBase;
   mutable const TcParseTableBase* tcparse_table_ = nullptr;
 
-  const TcParseTableBase* GetTcParseTable() const;
+  const TcParseTableBase* GetTcParseTable() const {
+    absl::call_once(tcparse_table_once_,
+                    [&] { tcparse_table_ = CreateTcParseTable(); });
+    return tcparse_table_;
+  }
 
-  // We use an output parameter to ensure we write it as soon as we have the
-  // pointer. This allows DynamicMessageFactory to cross link as it is being
-  // built.
-  void CreateTcParseTable(
-      const TcParseTableBase*& out,
-      absl::FunctionRef<const TcParseTableBase*(const FieldDescriptor*)>
-          fetch_subtable) const;
+  const TcParseTableBase* CreateTcParseTable() const;
   void PopulateTcParseFastEntries(
       const internal::TailCallTableInfo& table_info,
       TcParseTableBase::FastFieldEntry* fast_entries) const;
   void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
                               TcParseTableBase::FieldEntry* entries) const;
-  void PopulateTcParseFieldAux(
-      const internal::TailCallTableInfo& table_info,
-      absl::FunctionRef<const TcParseTableBase*(const FieldDescriptor*)>
-          fetch_subtable,
-      TcParseTableBase::FieldAux* field_aux) const;
+  void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
+                               TcParseTableBase::FieldAux* field_aux) const;
 
   template <typename T, typename Enable>
   friend class RepeatedFieldRef;

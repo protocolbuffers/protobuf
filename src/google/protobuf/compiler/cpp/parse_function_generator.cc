@@ -72,6 +72,7 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
         verify_flag(),
         IsStringInlined(field, gen_->options_),
         IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
+        /* use_direct_tcparser_table */ true,
         ShouldSplit(field, gen_->options_),
     };
   }

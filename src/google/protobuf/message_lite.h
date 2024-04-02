@@ -53,7 +53,6 @@ class FastReflectionStringSetter;
 class Reflection;
 class Descriptor;
 class AssignDescriptorsHelper;
-class DynamicMessageFactory;
 
 namespace io {
 
@@ -663,7 +662,6 @@ class PROTOBUF_EXPORT MessageLite {
   friend class AssignDescriptorsHelper;
   friend class FastReflectionStringSetter;
   friend class Message;
-  friend class DynamicMessageFactory;
   friend class Reflection;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
