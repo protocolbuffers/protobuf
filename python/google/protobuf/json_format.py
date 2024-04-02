@@ -303,7 +303,7 @@ class _Printer(object):
         # Use base64 Data encoding for bytes
         return base64.b64encode(value).decode('utf-8')
       else:
-        return value
+        return str(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
     elif field.cpp_type in _INT64_TYPES:
