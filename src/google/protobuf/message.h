@@ -186,6 +186,7 @@ class ReflectionOps;           // reflection_ops.h
 class MapKeySorter;            // wire_format.cc
 class WireFormat;              // wire_format.h
 class MapFieldReflectionTest;  // map_test.cc
+class GTestVisibility;         // gtest_visibility.cc
 }  // namespace internal
 
 template <typename T>
@@ -322,6 +323,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   std::string Utf8DebugString() const;
   // Convenience function useful in GDB.  Prints DebugString() to stdout.
   void PrintDebugString() const;
+
+  std::string GetTextFormat(internal::GTestVisibility visibility) const;
+  std::string GetShortTextFormat(internal::GTestVisibility visibility) const;
 
   // Implementation of the `AbslStringify` interface. This adds something
   // similar to either `ShortDebugString()` or `DebugString()` to the sink.

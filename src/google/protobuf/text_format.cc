@@ -36,6 +36,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/gtest_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -158,6 +159,29 @@ std::string Message::Utf8DebugString() const {
 }
 
 void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
+
+std::string Message::GetTextFormat(internal::GTestVisibility visibility) const {
+  std::string text_format;
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  printer.PrintToString(*this, &text_format);
+
+  return text_format;
+}
+
+std::string Message::GetShortTextFormat(
+    internal::GTestVisibility visibility) const {
+  std::string text_format;
+
+  TextFormat::Printer printer;
+  printer.SetSingleLineMode(true);
+  printer.SetExpandAny(true);
+  printer.PrintToString(*this, &text_format);
+  TrimTrailingSpace(text_format);
+
+  return text_format;
+}
 
 namespace internal {
 
