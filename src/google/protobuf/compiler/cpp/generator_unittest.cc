@@ -97,6 +97,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
   ExpectWarningSubstring(
       "foo.proto:9:16: warning: Feature pb.CppFeatures.legacy_closed_enum has "
       "been deprecated in edition 2023");

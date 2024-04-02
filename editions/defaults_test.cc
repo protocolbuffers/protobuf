@@ -200,13 +200,14 @@ class OverridableDefaultsTest : public ::testing::Test {
   }
 };
 
-// TODO Enable these once they become fixed internally.
+
 TEST_F(OverridableDefaultsTest, Proto2) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 1);
-  const auto& defaults = feature_defaults->defaults(0);
+  auto defaults = feature_defaults->defaults(0);
   ASSERT_EQ(defaults.edition(), EDITION_PROTO2);
+
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
                                                                 [pb.java] {}
@@ -216,8 +217,9 @@ TEST_F(OverridableDefaultsTest, Proto3) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 2);
-  const auto& defaults = feature_defaults->defaults(1);
+  auto defaults = feature_defaults->defaults(1);
   ASSERT_EQ(defaults.edition(), EDITION_PROTO3);
+
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
                                                                 [pb.java] {}
@@ -230,8 +232,9 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 3);
-  const auto& defaults = feature_defaults->defaults(2);
+  auto defaults = feature_defaults->defaults(2);
   ASSERT_EQ(defaults.edition(), EDITION_2023);
+
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb(
                 field_presence: EXPLICIT
