@@ -27,8 +27,8 @@ jobs:
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           # TODO Re-enable these once flakes are fixed
           #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
     name: Linux ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
@@ -160,8 +160,8 @@ jobs:
           - { name: Ruby 3.2, ruby: ruby-3.2.0}
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
     name: Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
