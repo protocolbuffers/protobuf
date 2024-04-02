@@ -35,12 +35,11 @@ namespace protobuf {
 namespace internal {
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
-// describes the common header for all blocks.
+// describes the common footer for all blocks.
 struct ArenaBlock {
   // For the sentry block with zero-size where ptr_, limit_, cleanup_nodes all
   // point to "this".
-  constexpr ArenaBlock()
-      : next(nullptr), cleanup_nodes(this), size(0) {}
+  constexpr ArenaBlock() : cleanup_nodes(this), size(0) {}
 
   ArenaBlock(ArenaBlock* next, size_t size)
       : next(next), cleanup_nodes(nullptr), size(size) {
@@ -49,16 +48,41 @@ struct ArenaBlock {
 
   char* Pointer(size_t n) {
     ABSL_DCHECK_LE(n, size);
-    return reinterpret_cast<char*>(this) + n;
+    return Begin() + n;
   }
-  char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
+  char* Begin() {
+    char* begin = Limit();
+    if (!IsSentry()) begin = begin + sizeof(ArenaBlock) - UsableSize(size);
+    return begin;
+  }
+  char* Limit() { return reinterpret_cast<char*>(this); }
 
   bool IsSentry() const { return size == 0; }
 
-  ArenaBlock* const next;
+  static ArenaBlock* New(void* buf, size_t size, ArenaBlock* next = nullptr) {
+    char* addr =
+        static_cast<char*>(buf) + UsableSize(size) - sizeof(ArenaBlock);
+    ArenaBlock* b = new (addr) ArenaBlock{next, size};
+    ABSL_DCHECK_EQ(static_cast<void*>(b->Begin()), buf);
+    return b;
+  }
+
+ private:
+  // In order to avoid issues with unaligned ArenaBlocks, we only use the
+  // aligned part of the buffer. Note that this is only an issue for
+  // user-provided blocks.
+  static size_t UsableSize(size_t size) {
+    return size & static_cast<size_t>(-8);
+  }
+
+ public:
+  // The layout of the arena blocks is: user data, cleanup nodes, and then this
+  // footer. We put the footer next to the cleanup nodes for better data
+  // locality during cleanup.
+  ArenaBlock* const next = nullptr;
+  // The start of the cleanup nodes.
   void* cleanup_nodes;
   const size_t size;
-  // data follows
 };
 
 enum class AllocationClient { kDefault, kArray };
@@ -83,7 +107,7 @@ struct FirstSerialArena {
 // used.
 class PROTOBUF_EXPORT SerialArena {
  public:
-  static constexpr size_t kBlockHeaderSize =
+  static constexpr size_t kBlockFooterSize =
       ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 
   void CleanupList();
@@ -127,7 +151,7 @@ class PROTOBUF_EXPORT SerialArena {
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(static_cast<void*>(limit_), static_cast<void*>(ptr()));
 
     if (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
@@ -310,7 +334,7 @@ class PROTOBUF_EXPORT SerialArena {
   PROTOBUF_ALWAYS_INLINE
   void MaybePrefetchForwards(const char* next) {
     ABSL_DCHECK(static_cast<const void*>(prefetch_ptr_) == nullptr ||
-                static_cast<const void*>(prefetch_ptr_) >= head());
+                static_cast<const void*>(prefetch_ptr_) >= head()->Begin());
     if (PROTOBUF_PREDICT_TRUE(prefetch_ptr_ - next > kPrefetchForwardsDegree))
       return;
     if (PROTOBUF_PREDICT_TRUE(prefetch_ptr_ < prefetch_limit_)) {

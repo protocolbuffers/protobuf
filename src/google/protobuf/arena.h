@@ -168,7 +168,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // that a series of allocations will fit in the initial block, especially if
   // Arena changes its alignment guarantees in the future!
   static const size_t kBlockOverhead =
-      internal::ThreadSafeArena::kBlockHeaderSize +
+      internal::ThreadSafeArena::kBlockFooterSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
   inline ~Arena() = default;

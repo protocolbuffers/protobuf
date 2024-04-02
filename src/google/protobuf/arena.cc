@@ -74,10 +74,10 @@ static SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr,
   } else {
     size = policy.start_block_size;
   }
-  // Verify that min_bytes + kBlockHeaderSize won't overflow.
+  // Verify that min_bytes + kBlockFooterSize won't overflow.
   ABSL_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() -
-                               SerialArena::kBlockHeaderSize);
-  size = std::max(size, SerialArena::kBlockHeaderSize + min_bytes);
+                               SerialArena::kBlockFooterSize);
+  size = std::max(size, SerialArena::kBlockFooterSize + min_bytes);
 
   if (policy.block_alloc == nullptr) {
     return AllocateAtLeast(size);
@@ -111,10 +111,9 @@ class GetDeallocator {
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
 SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
-    : ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
+    : ptr_{b->Pointer(ThreadSafeArena::kSerialArenaSize)},
       limit_{b->Limit()},
-      prefetch_ptr_(
-          b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)),
+      prefetch_ptr_(b->Pointer(ThreadSafeArena::kSerialArenaSize)),
       prefetch_limit_(b->Limit()),
       head_{b},
       space_allocated_{b->size},
@@ -132,7 +131,7 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
                          ThreadSafeArena& parent)
     : head_{b}, space_allocated_{b->size}, parent_{parent} {
   if (b->IsSentry()) return;
-  set_range(b->Pointer(kBlockHeaderSize), b->Limit());
+  set_range(b->Begin(), b->Limit());
 }
 
 std::vector<void*> SerialArena::PeekCleanupListForTesting() {
@@ -170,22 +169,22 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
 }
 
 SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
-  ABSL_DCHECK_LE(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize, mem.n);
+  ABSL_DCHECK_LE(ThreadSafeArena::kSerialArenaSize, mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent.arena_stats_.MutableStats(),
                                             /*used=*/0, /*allocated=*/mem.n,
                                             /*wasted=*/0);
-  auto b = new (mem.p) ArenaBlock{nullptr, mem.n};
-  return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, parent);
+  ArenaBlock* b = ArenaBlock::New(mem.p, mem.n);
+  return new (b->Begin()) SerialArena(b, parent);
 }
 
 template <typename Deallocator>
 SizedPtr SerialArena::Free(Deallocator deallocator) {
   ArenaBlock* b = head();
-  SizedPtr mem = {b, b->size};
+  SizedPtr mem = {b->Begin(), b->size};
   while (b->next) {
     b = b->next;  // We must first advance before deleting this block
     deallocator(mem);
-    mem = {b, b->size};
+    mem = {b->Begin(), b->size};
   }
   return mem;
 }
@@ -247,8 +246,8 @@ void SerialArena::AllocateNewBlock(size_t n) {
     old_head->cleanup_nodes = limit_;
 
     // Record how much used in this block.
-    used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
-    wasted = old_head->size - used - kBlockHeaderSize;
+    used = static_cast<size_t>(ptr() - old_head->Begin());
+    wasted = old_head->size - used;
     AddSpaceUsed(used);
   }
 
@@ -265,8 +264,8 @@ void SerialArena::AllocateNewBlock(size_t n) {
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.n, wasted);
-  auto* new_head = new (mem.p) ArenaBlock{old_head, mem.n};
-  set_range(new_head->Pointer(kBlockHeaderSize), new_head->Limit());
+  ArenaBlock* new_head = ArenaBlock::New(mem.p, mem.n, old_head);
+  set_range(new_head->Begin(), new_head->Limit());
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
@@ -293,8 +292,7 @@ uint64_t SerialArena::SpaceUsed() const {
 
   const uint64_t current_block_size = h->size;
   space_used += std::min(
-      static_cast<uint64_t>(
-          ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
+      static_cast<uint64_t>(ptr() - const_cast<ArenaBlock*>(h)->Begin()),
       current_block_size);
   return space_used + space_used_.load(std::memory_order_relaxed);
 }
@@ -538,12 +536,12 @@ ThreadSafeArena::ThreadSafeArena(void* mem, size_t size,
 
 ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size) {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
-  if (buf == nullptr || size <= kBlockHeaderSize) {
+  if (buf == nullptr || size <= kBlockFooterSize) {
     return SentryArenaBlock();
   }
   // Record user-owned block.
   alloc_policy_.set_is_user_owned_initial_block(true);
-  return new (buf) ArenaBlock{nullptr, size};
+  return ArenaBlock::New(buf, size);
 }
 
 ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
@@ -553,7 +551,7 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
 
   SizedPtr mem;
-  if (buf == nullptr || size < kBlockHeaderSize + kAllocPolicySize) {
+  if (buf == nullptr || size < kBlockFooterSize + kAllocPolicySize) {
     mem = AllocateMemory(&policy, 0, kAllocPolicySize);
   } else {
     mem = {buf, size};
@@ -561,7 +559,7 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
     alloc_policy_.set_is_user_owned_initial_block(true);
   }
 
-  return new (mem.p) ArenaBlock{nullptr, mem.n};
+  return ArenaBlock::New(mem.p, mem.n);
 }
 
 void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
@@ -744,10 +742,8 @@ uint64_t ThreadSafeArena::Reset() {
   // we need to preserve alloc_policy_.
   if (alloc_policy_.is_user_owned_initial_block() ||
       alloc_policy_.get() != nullptr) {
-    size_t offset = alloc_policy_.get() == nullptr
-                        ? kBlockHeaderSize
-                        : kBlockHeaderSize + kAllocPolicySize;
-    first_arena_.Init(new (mem.p) ArenaBlock{nullptr, mem.n}, offset);
+    size_t offset = alloc_policy_.get() == nullptr ? 0 : kAllocPolicySize;
+    first_arena_.Init(ArenaBlock::New(mem.p, mem.n), offset);
   } else {
     first_arena_.Init(SentryArenaBlock(), 0);
   }

@@ -254,16 +254,17 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #endif
 
  public:
-  // kBlockHeaderSize is sizeof(ArenaBlock), aligned up to the nearest multiple
-  // of 8 to protect the invariant that pos is always at a multiple of 8.
-  static constexpr size_t kBlockHeaderSize = SerialArena::kBlockHeaderSize;
+  // kBlockFooterSize is sizeof(ArenaBlock), aligned up to the nearest multiple
+  // of 8 to protect the invariant that pos is always at a multiple of 8 and to
+  // avoid issues with misaligned ArenaBlocks.
+  static constexpr size_t kBlockFooterSize = SerialArena::kBlockFooterSize;
   static constexpr size_t kSerialArenaSize =
       (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
   static constexpr size_t kAllocPolicySize =
       ArenaAlignDefault::Ceil(sizeof(AllocationPolicy));
   static constexpr size_t kMaxCleanupNodeSize = 16;
-  static_assert(kBlockHeaderSize % 8 == 0,
-                "kBlockHeaderSize must be a multiple of 8.");
+  static_assert(kBlockFooterSize % 8 == 0,
+                "kBlockFooterSize must be a multiple of 8.");
   static_assert(kSerialArenaSize % 8 == 0,
                 "kSerialArenaSize must be a multiple of 8.");
 };

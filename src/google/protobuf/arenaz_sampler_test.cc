@@ -586,7 +586,7 @@ TEST(ThreadSafeArenazSamplerTest, UsedAndWasted) {
           h.block_histogram[ThreadSafeArenaStats::FindBin(kSize << i)];
       EXPECT_EQ(histbin.bytes_allocated, kSize << i);
       EXPECT_EQ(histbin.bytes_used,
-                (kSize << i) - google::protobuf::internal::SerialArena::kBlockHeaderSize);
+                (kSize << i) - google::protobuf::internal::SerialArena::kBlockFooterSize);
       EXPECT_EQ(histbin.bytes_wasted, 0);
     }
   });

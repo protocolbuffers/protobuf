@@ -354,7 +354,7 @@ TEST(ArenaTest, CreateWithMoveArguments) {
 TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small blocks of memory to be used by the arena allocator; then,
   // allocate an object which will not fit in the initial block.
-  for (uint32_t size = 0; size <= internal::SerialArena::kBlockHeaderSize + 32;
+  for (uint32_t size = 0; size <= internal::SerialArena::kBlockFooterSize + 32;
        size++) {
     std::vector<char> arena_block(size);
     ArenaOptions options;
@@ -1632,7 +1632,7 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
 
 TEST(ArenaTest, FirstArenaOverhead) {
   Arena arena;
-  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
+  VerifyArenaOverhead(arena, internal::SerialArena::kBlockFooterSize);
 }
 
 
