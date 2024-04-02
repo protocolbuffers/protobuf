@@ -75,29 +75,6 @@ class Message(object):
     """Outputs a human-readable representation of the message."""
     raise NotImplementedError
 
-  def __contains__(self, field_name):
-    """Checks if a certain field is set for the message.
-
-    Has presence fields return true if the field is set, false if the field is
-    not set. Fields without presence do raise `ValueError` (this includes
-    repeated fields, map fields, and implicit presence fields).
-
-    If field_name is not defined in the message descriptor, `ValueError` will
-    be raised.
-    Note: WKT Struct checks if the key is contained in fields.
-
-    Args:
-      field_name (str): The name of the field to check for presence.
-
-    Returns:
-      bool: Whether a value has been set for the named field.
-
-    Raises:
-      ValueError: if the `field_name` is not a member of this message or
-                  `field_name` is not a string.
-    """
-    raise NotImplementedError
-
   def MergeFrom(self, other_msg):
     """Merges the contents of the specified message into current message.
 
