@@ -125,7 +125,7 @@ namespace Google.Protobuf.Reflection {
             "CghmZWF0dXJlcxgMIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0",
             "EkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90",
             "b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAJKBAgEEAVKBAgF",
-            "EAZKBAgGEAdKBAgIEAlKBAgJEAoijQkKDEZpZWxkT3B0aW9ucxI6CgVjdHlw",
+            "EAZKBAgGEAdKBAgIEAlKBAgJEAoiowsKDEZpZWxkT3B0aW9ucxI6CgVjdHlw",
             "ZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuQ1R5cGU6",
             "BlNUUklORxIOCgZwYWNrZWQYAiABKAgSPwoGanN0eXBlGAYgASgOMiQuZ29v",
             "Z2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5KU1R5cGU6CUpTX05PUk1BTBIT",
@@ -137,106 +137,116 @@ namespace Google.Protobuf.Reflection {
             "b2J1Zi5GaWVsZE9wdGlvbnMuT3B0aW9uVGFyZ2V0VHlwZRJGChBlZGl0aW9u",
             "X2RlZmF1bHRzGBQgAygLMiwuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9u",
             "cy5FZGl0aW9uRGVmYXVsdBItCghmZWF0dXJlcxgVIAEoCzIbLmdvb2dsZS5w",
+            "cm90b2J1Zi5GZWF0dXJlU2V0EkUKD2ZlYXR1cmVfc3VwcG9ydBgWIAEoCzIs",
+            "Lmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuRmVhdHVyZVN1cHBvcnQS",
+            "QwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3Rv",
+            "YnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24aSgoORWRpdGlvbkRlZmF1bHQSKQoH",
+            "ZWRpdGlvbhgDIAEoDjIYLmdvb2dsZS5wcm90b2J1Zi5FZGl0aW9uEg0KBXZh",
+            "bHVlGAIgASgJGswBCg5GZWF0dXJlU3VwcG9ydBI0ChJlZGl0aW9uX2ludHJv",
+            "ZHVjZWQYASABKA4yGC5nb29nbGUucHJvdG9idWYuRWRpdGlvbhI0ChJlZGl0",
+            "aW9uX2RlcHJlY2F0ZWQYAiABKA4yGC5nb29nbGUucHJvdG9idWYuRWRpdGlv",
+            "bhIbChNkZXByZWNhdGlvbl93YXJuaW5nGAMgASgJEjEKD2VkaXRpb25fcmVt",
+            "b3ZlZBgEIAEoDjIYLmdvb2dsZS5wcm90b2J1Zi5FZGl0aW9uIi8KBUNUeXBl",
+            "EgoKBlNUUklORxAAEggKBENPUkQQARIQCgxTVFJJTkdfUElFQ0UQAiI1CgZK",
+            "U1R5cGUSDQoJSlNfTk9STUFMEAASDQoJSlNfU1RSSU5HEAESDQoJSlNfTlVN",
+            "QkVSEAIiVQoPT3B0aW9uUmV0ZW50aW9uEhUKEVJFVEVOVElPTl9VTktOT1dO",
+            "EAASFQoRUkVURU5USU9OX1JVTlRJTUUQARIUChBSRVRFTlRJT05fU09VUkNF",
+            "EAIijAIKEE9wdGlvblRhcmdldFR5cGUSFwoTVEFSR0VUX1RZUEVfVU5LTk9X",
+            "ThAAEhQKEFRBUkdFVF9UWVBFX0ZJTEUQARIfChtUQVJHRVRfVFlQRV9FWFRF",
+            "TlNJT05fUkFOR0UQAhIXChNUQVJHRVRfVFlQRV9NRVNTQUdFEAMSFQoRVEFS",
+            "R0VUX1RZUEVfRklFTEQQBBIVChFUQVJHRVRfVFlQRV9PTkVPRhAFEhQKEFRB",
+            "UkdFVF9UWVBFX0VOVU0QBhIaChZUQVJHRVRfVFlQRV9FTlVNX0VOVFJZEAcS",
+            "FwoTVEFSR0VUX1RZUEVfU0VSVklDRRAIEhYKElRBUkdFVF9UWVBFX01FVEhP",
+            "RBAJKgkI6AcQgICAgAJKBAgEEAVKBAgSEBMijQEKDE9uZW9mT3B0aW9ucxIt",
+            "CghmZWF0dXJlcxgBIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0",
+            "EkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90",
+            "b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi9gEKC0VudW1P",
+            "cHRpb25zEhMKC2FsbG93X2FsaWFzGAIgASgIEhkKCmRlcHJlY2F0ZWQYAyAB",
+            "KAg6BWZhbHNlEjIKJmRlcHJlY2F0ZWRfbGVnYWN5X2pzb25fZmllbGRfY29u",
+            "ZmxpY3RzGAYgASgIQgIYARItCghmZWF0dXJlcxgHIAEoCzIbLmdvb2dsZS5w",
             "cm90b2J1Zi5GZWF0dXJlU2V0EkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH",
-            "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uGkoK",
-            "DkVkaXRpb25EZWZhdWx0EikKB2VkaXRpb24YAyABKA4yGC5nb29nbGUucHJv",
-            "dG9idWYuRWRpdGlvbhINCgV2YWx1ZRgCIAEoCSIvCgVDVHlwZRIKCgZTVFJJ",
-            "TkcQABIICgRDT1JEEAESEAoMU1RSSU5HX1BJRUNFEAIiNQoGSlNUeXBlEg0K",
-            "CUpTX05PUk1BTBAAEg0KCUpTX1NUUklORxABEg0KCUpTX05VTUJFUhACIlUK",
-            "D09wdGlvblJldGVudGlvbhIVChFSRVRFTlRJT05fVU5LTk9XThAAEhUKEVJF",
-            "VEVOVElPTl9SVU5USU1FEAESFAoQUkVURU5USU9OX1NPVVJDRRACIowCChBP",
-            "cHRpb25UYXJnZXRUeXBlEhcKE1RBUkdFVF9UWVBFX1VOS05PV04QABIUChBU",
-            "QVJHRVRfVFlQRV9GSUxFEAESHwobVEFSR0VUX1RZUEVfRVhURU5TSU9OX1JB",
-            "TkdFEAISFwoTVEFSR0VUX1RZUEVfTUVTU0FHRRADEhUKEVRBUkdFVF9UWVBF",
-            "X0ZJRUxEEAQSFQoRVEFSR0VUX1RZUEVfT05FT0YQBRIUChBUQVJHRVRfVFlQ",
-            "RV9FTlVNEAYSGgoWVEFSR0VUX1RZUEVfRU5VTV9FTlRSWRAHEhcKE1RBUkdF",
-            "VF9UWVBFX1NFUlZJQ0UQCBIWChJUQVJHRVRfVFlQRV9NRVRIT0QQCSoJCOgH",
-            "EICAgIACSgQIBBAFSgQIEhATIo0BCgxPbmVvZk9wdGlvbnMSLQoIZmVhdHVy",
-            "ZXMYASABKAsyGy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldBJDChR1bmlu",
-            "dGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5p",
-            "bnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIvYBCgtFbnVtT3B0aW9ucxIT",
-            "CgthbGxvd19hbGlhcxgCIAEoCBIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxz",
-            "ZRIyCiZkZXByZWNhdGVkX2xlZ2FjeV9qc29uX2ZpZWxkX2NvbmZsaWN0cxgG",
-            "IAEoCEICGAESLQoIZmVhdHVyZXMYByABKAsyGy5nb29nbGUucHJvdG9idWYu",
-            "RmVhdHVyZVNldBJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5n",
-            "b29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIAC",
-            "SgQIBRAGIskBChBFbnVtVmFsdWVPcHRpb25zEhkKCmRlcHJlY2F0ZWQYASAB",
-            "KAg6BWZhbHNlEi0KCGZlYXR1cmVzGAIgASgLMhsuZ29vZ2xlLnByb3RvYnVm",
-            "LkZlYXR1cmVTZXQSGwoMZGVidWdfcmVkYWN0GAMgASgIOgVmYWxzZRJDChR1",
+            "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI",
+            "6AcQgICAgAJKBAgFEAYiyQEKEEVudW1WYWx1ZU9wdGlvbnMSGQoKZGVwcmVj",
+            "YXRlZBgBIAEoCDoFZmFsc2USLQoIZmVhdHVyZXMYAiABKAsyGy5nb29nbGUu",
+            "cHJvdG9idWYuRmVhdHVyZVNldBIbCgxkZWJ1Z19yZWRhY3QYAyABKAg6BWZh",
+            "bHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5w",
+            "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiqgEKDlNl",
+            "cnZpY2VPcHRpb25zEi0KCGZlYXR1cmVzGCIgASgLMhsuZ29vZ2xlLnByb3Rv",
+            "YnVmLkZlYXR1cmVTZXQSGQoKZGVwcmVjYXRlZBghIAEoCDoFZmFsc2USQwoU",
+            "dW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVm",
+            "LlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiLcAgoNTWV0aG9kT3B0",
+            "aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJfChFpZGVtcG90ZW5j",
+            "eV9sZXZlbBgiIAEoDjIvLmdvb2dsZS5wcm90b2J1Zi5NZXRob2RPcHRpb25z",
+            "LklkZW1wb3RlbmN5TGV2ZWw6E0lERU1QT1RFTkNZX1VOS05PV04SLQoIZmVh",
+            "dHVyZXMYIyABKAsyGy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldBJDChR1",
             "bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYu",
-            "VW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIqoBCg5TZXJ2aWNlT3B0",
-            "aW9ucxItCghmZWF0dXJlcxgiIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0",
-            "dXJlU2V0EhkKCmRlcHJlY2F0ZWQYISABKAg6BWZhbHNlEkMKFHVuaW50ZXJw",
-            "cmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVy",
-            "cHJldGVkT3B0aW9uKgkI6AcQgICAgAIi3AIKDU1ldGhvZE9wdGlvbnMSGQoK",
-            "ZGVwcmVjYXRlZBghIAEoCDoFZmFsc2USXwoRaWRlbXBvdGVuY3lfbGV2ZWwY",
-            "IiABKA4yLy5nb29nbGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucy5JZGVtcG90",
-            "ZW5jeUxldmVsOhNJREVNUE9URU5DWV9VTktOT1dOEi0KCGZlYXR1cmVzGCMg",
-            "ASgLMhsuZ29vZ2xlLnByb3RvYnVmLkZlYXR1cmVTZXQSQwoUdW5pbnRlcnBy",
-            "ZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJw",
-            "cmV0ZWRPcHRpb24iUAoQSWRlbXBvdGVuY3lMZXZlbBIXChNJREVNUE9URU5D",
-            "WV9VTktOT1dOEAASEwoPTk9fU0lERV9FRkZFQ1RTEAESDgoKSURFTVBPVEVO",
-            "VBACKgkI6AcQgICAgAIingIKE1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoEbmFt",
-            "ZRgCIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9u",
-            "Lk5hbWVQYXJ0EhgKEGlkZW50aWZpZXJfdmFsdWUYAyABKAkSGgoScG9zaXRp",
-            "dmVfaW50X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgFIAEo",
-            "AxIUCgxkb3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcgASgM",
-            "EhcKD2FnZ3JlZ2F0ZV92YWx1ZRgIIAEoCRozCghOYW1lUGFydBIRCgluYW1l",
-            "X3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9uGAIgAigIIrUJCgpGZWF0dXJl",
-            "U2V0EnwKDmZpZWxkX3ByZXNlbmNlGAEgASgOMikuZ29vZ2xlLnByb3RvYnVm",
-            "LkZlYXR1cmVTZXQuRmllbGRQcmVzZW5jZUI5iAEBmAEEmAEBogENEghFWFBM",
-            "SUNJVBjmB6IBDRIISU1QTElDSVQY5weiAQ0SCEVYUExJQ0lUGOgHElwKCWVu",
-            "dW1fdHlwZRgCIAEoDjIkLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0LkVu",
-            "dW1UeXBlQiOIAQGYAQaYAQGiAQsSBkNMT1NFRBjmB6IBCRIET1BFThjnBxJ7",
-            "ChdyZXBlYXRlZF9maWVsZF9lbmNvZGluZxgDIAEoDjIxLmdvb2dsZS5wcm90",
-            "b2J1Zi5GZWF0dXJlU2V0LlJlcGVhdGVkRmllbGRFbmNvZGluZ0IniAEBmAEE",
-            "mAEBogENEghFWFBBTkRFRBjmB6IBCxIGUEFDS0VEGOcHEmgKD3V0ZjhfdmFs",
-            "aWRhdGlvbhgEIAEoDjIqLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0LlV0",
-            "ZjhWYWxpZGF0aW9uQiOIAQGYAQSYAQGiAQkSBE5PTkUY5geiAQsSBlZFUklG",
-            "WRjnBxJnChBtZXNzYWdlX2VuY29kaW5nGAUgASgOMisuZ29vZ2xlLnByb3Rv",
-            "YnVmLkZlYXR1cmVTZXQuTWVzc2FnZUVuY29kaW5nQiCIAQGYAQSYAQGiARQS",
-            "D0xFTkdUSF9QUkVGSVhFRBjmBxJwCgtqc29uX2Zvcm1hdBgGIAEoDjImLmdv",
-            "b2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0Lkpzb25Gb3JtYXRCM4gBAZgBA5gB",
-            "BpgBAaIBFxISTEVHQUNZX0JFU1RfRUZGT1JUGOYHogEKEgVBTExPVxjnByJc",
-            "Cg1GaWVsZFByZXNlbmNlEhoKFkZJRUxEX1BSRVNFTkNFX1VOS05PV04QABIM",
-            "CghFWFBMSUNJVBABEgwKCElNUExJQ0lUEAISEwoPTEVHQUNZX1JFUVVJUkVE",
-            "EAMiNwoIRW51bVR5cGUSFQoRRU5VTV9UWVBFX1VOS05PV04QABIICgRPUEVO",
-            "EAESCgoGQ0xPU0VEEAIiVgoVUmVwZWF0ZWRGaWVsZEVuY29kaW5nEiMKH1JF",
-            "UEVBVEVEX0ZJRUxEX0VOQ09ESU5HX1VOS05PV04QABIKCgZQQUNLRUQQARIM",
-            "CghFWFBBTkRFRBACIkMKDlV0ZjhWYWxpZGF0aW9uEhsKF1VURjhfVkFMSURB",
-            "VElPTl9VTktOT1dOEAASCgoGVkVSSUZZEAISCAoETk9ORRADIlMKD01lc3Nh",
-            "Z2VFbmNvZGluZxIcChhNRVNTQUdFX0VOQ09ESU5HX1VOS05PV04QABITCg9M",
-            "RU5HVEhfUFJFRklYRUQQARINCglERUxJTUlURUQQAiJICgpKc29uRm9ybWF0",
-            "EhcKE0pTT05fRk9STUFUX1VOS05PV04QABIJCgVBTExPVxABEhYKEkxFR0FD",
-            "WV9CRVNUX0VGRk9SVBACKgYI6AcQ6QcqBgjpBxDqByoGCOoHEOsHKgYIhk4Q",
-            "h04qBgiLThCQTioGCJBOEJFOSgYI5wcQ6AciwAIKEkZlYXR1cmVTZXREZWZh",
-            "dWx0cxJOCghkZWZhdWx0cxgBIAMoCzI8Lmdvb2dsZS5wcm90b2J1Zi5GZWF0",
-            "dXJlU2V0RGVmYXVsdHMuRmVhdHVyZVNldEVkaXRpb25EZWZhdWx0EjEKD21p",
-            "bmltdW1fZWRpdGlvbhgEIAEoDjIYLmdvb2dsZS5wcm90b2J1Zi5FZGl0aW9u",
-            "EjEKD21heGltdW1fZWRpdGlvbhgFIAEoDjIYLmdvb2dsZS5wcm90b2J1Zi5F",
-            "ZGl0aW9uGnQKGEZlYXR1cmVTZXRFZGl0aW9uRGVmYXVsdBIpCgdlZGl0aW9u",
-            "GAMgASgOMhguZ29vZ2xlLnByb3RvYnVmLkVkaXRpb24SLQoIZmVhdHVyZXMY",
-            "AiABKAsyGy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldCLVAQoOU291cmNl",
-            "Q29kZUluZm8SOgoIbG9jYXRpb24YASADKAsyKC5nb29nbGUucHJvdG9idWYu",
-            "U291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0aW9uEhAKBHBhdGgY",
-            "ASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxlYWRpbmdfY29tbWVu",
-            "dHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCABKAkSIQoZbGVhZGlu",
-            "Z19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKcAgoRR2VuZXJhdGVkQ29kZUlu",
-            "Zm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5HZW5l",
-            "cmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGsMBCgpBbm5vdGF0aW9uEhAKBHBh",
-            "dGgYASADKAVCAhABEhMKC3NvdXJjZV9maWxlGAIgASgJEg0KBWJlZ2luGAMg",
-            "ASgFEgsKA2VuZBgEIAEoBRJICghzZW1hbnRpYxgFIAEoDjI2Lmdvb2dsZS5w",
-            "cm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uLlNlbWFudGlj",
-            "IigKCFNlbWFudGljEggKBE5PTkUQABIHCgNTRVQQARIJCgVBTElBUxACKpIC",
-            "CgdFZGl0aW9uEhMKD0VESVRJT05fVU5LTk9XThAAEhMKDkVESVRJT05fUFJP",
-            "VE8yEOYHEhMKDkVESVRJT05fUFJPVE8zEOcHEhEKDEVESVRJT05fMjAyMxDo",
-            "BxIRCgxFRElUSU9OXzIwMjQQ6QcSFwoTRURJVElPTl8xX1RFU1RfT05MWRAB",
-            "EhcKE0VESVRJT05fMl9URVNUX09OTFkQAhIdChdFRElUSU9OXzk5OTk3X1RF",
-            "U1RfT05MWRCdjQYSHQoXRURJVElPTl85OTk5OF9URVNUX09OTFkQno0GEh0K",
-            "F0VESVRJT05fOTk5OTlfVEVTVF9PTkxZEJ+NBhITCgtFRElUSU9OX01BWBD/",
-            "////B0J+ChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJvdG9z",
-            "SAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rlc2NyaXB0",
-            "b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
+            "VW5pbnRlcnByZXRlZE9wdGlvbiJQChBJZGVtcG90ZW5jeUxldmVsEhcKE0lE",
+            "RU1QT1RFTkNZX1VOS05PV04QABITCg9OT19TSURFX0VGRkVDVFMQARIOCgpJ",
+            "REVNUE9URU5UEAIqCQjoBxCAgICAAiKeAgoTVW5pbnRlcnByZXRlZE9wdGlv",
+            "bhI7CgRuYW1lGAIgAygLMi0uZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0",
+            "ZWRPcHRpb24uTmFtZVBhcnQSGAoQaWRlbnRpZmllcl92YWx1ZRgDIAEoCRIa",
+            "ChJwb3NpdGl2ZV9pbnRfdmFsdWUYBCABKAQSGgoSbmVnYXRpdmVfaW50X3Zh",
+            "bHVlGAUgASgDEhQKDGRvdWJsZV92YWx1ZRgGIAEoARIUCgxzdHJpbmdfdmFs",
+            "dWUYByABKAwSFwoPYWdncmVnYXRlX3ZhbHVlGAggASgJGjMKCE5hbWVQYXJ0",
+            "EhEKCW5hbWVfcGFydBgBIAIoCRIUCgxpc19leHRlbnNpb24YAiACKAgitQkK",
+            "CkZlYXR1cmVTZXQSfAoOZmllbGRfcHJlc2VuY2UYASABKA4yKS5nb29nbGUu",
+            "cHJvdG9idWYuRmVhdHVyZVNldC5GaWVsZFByZXNlbmNlQjmIAQGYAQSYAQGi",
+            "AQ0SCEVYUExJQ0lUGOYHogENEghJTVBMSUNJVBjnB6IBDRIIRVhQTElDSVQY",
+            "6AcSXAoJZW51bV90eXBlGAIgASgOMiQuZ29vZ2xlLnByb3RvYnVmLkZlYXR1",
+            "cmVTZXQuRW51bVR5cGVCI4gBAZgBBpgBAaIBCxIGQ0xPU0VEGOYHogEJEgRP",
+            "UEVOGOcHEnsKF3JlcGVhdGVkX2ZpZWxkX2VuY29kaW5nGAMgASgOMjEuZ29v",
+            "Z2xlLnByb3RvYnVmLkZlYXR1cmVTZXQuUmVwZWF0ZWRGaWVsZEVuY29kaW5n",
+            "QieIAQGYAQSYAQGiAQ0SCEVYUEFOREVEGOYHogELEgZQQUNLRUQY5wcSaAoP",
+            "dXRmOF92YWxpZGF0aW9uGAQgASgOMiouZ29vZ2xlLnByb3RvYnVmLkZlYXR1",
+            "cmVTZXQuVXRmOFZhbGlkYXRpb25CI4gBAZgBBJgBAaIBCRIETk9ORRjmB6IB",
+            "CxIGVkVSSUZZGOcHEmcKEG1lc3NhZ2VfZW5jb2RpbmcYBSABKA4yKy5nb29n",
+            "bGUucHJvdG9idWYuRmVhdHVyZVNldC5NZXNzYWdlRW5jb2RpbmdCIIgBAZgB",
+            "BJgBAaIBFBIPTEVOR1RIX1BSRUZJWEVEGOYHEnAKC2pzb25fZm9ybWF0GAYg",
+            "ASgOMiYuZ29vZ2xlLnByb3RvYnVmLkZlYXR1cmVTZXQuSnNvbkZvcm1hdEIz",
+            "iAEBmAEDmAEGmAEBogEXEhJMRUdBQ1lfQkVTVF9FRkZPUlQY5geiAQoSBUFM",
+            "TE9XGOcHIlwKDUZpZWxkUHJlc2VuY2USGgoWRklFTERfUFJFU0VOQ0VfVU5L",
+            "Tk9XThAAEgwKCEVYUExJQ0lUEAESDAoISU1QTElDSVQQAhITCg9MRUdBQ1lf",
+            "UkVRVUlSRUQQAyI3CghFbnVtVHlwZRIVChFFTlVNX1RZUEVfVU5LTk9XThAA",
+            "EggKBE9QRU4QARIKCgZDTE9TRUQQAiJWChVSZXBlYXRlZEZpZWxkRW5jb2Rp",
+            "bmcSIwofUkVQRUFURURfRklFTERfRU5DT0RJTkdfVU5LTk9XThAAEgoKBlBB",
+            "Q0tFRBABEgwKCEVYUEFOREVEEAIiQwoOVXRmOFZhbGlkYXRpb24SGwoXVVRG",
+            "OF9WQUxJREFUSU9OX1VOS05PV04QABIKCgZWRVJJRlkQAhIICgROT05FEAMi",
+            "UwoPTWVzc2FnZUVuY29kaW5nEhwKGE1FU1NBR0VfRU5DT0RJTkdfVU5LTk9X",
+            "ThAAEhMKD0xFTkdUSF9QUkVGSVhFRBABEg0KCURFTElNSVRFRBACIkgKCkpz",
+            "b25Gb3JtYXQSFwoTSlNPTl9GT1JNQVRfVU5LTk9XThAAEgkKBUFMTE9XEAES",
+            "FgoSTEVHQUNZX0JFU1RfRUZGT1JUEAIqBgjoBxDpByoGCOkHEOoHKgYI6gcQ",
+            "6wcqBgiGThCHTioGCItOEJBOKgYIkE4QkU5KBgjnBxDoByKxAwoSRmVhdHVy",
+            "ZVNldERlZmF1bHRzEk4KCGRlZmF1bHRzGAEgAygLMjwuZ29vZ2xlLnByb3Rv",
+            "YnVmLkZlYXR1cmVTZXREZWZhdWx0cy5GZWF0dXJlU2V0RWRpdGlvbkRlZmF1",
+            "bHQSMQoPbWluaW11bV9lZGl0aW9uGAQgASgOMhguZ29vZ2xlLnByb3RvYnVm",
+            "LkVkaXRpb24SMQoPbWF4aW11bV9lZGl0aW9uGAUgASgOMhguZ29vZ2xlLnBy",
+            "b3RvYnVmLkVkaXRpb24a5AEKGEZlYXR1cmVTZXRFZGl0aW9uRGVmYXVsdBIp",
+            "CgdlZGl0aW9uGAMgASgOMhguZ29vZ2xlLnByb3RvYnVmLkVkaXRpb24SOQoU",
+            "b3ZlcnJpZGFibGVfZmVhdHVyZXMYBCABKAsyGy5nb29nbGUucHJvdG9idWYu",
+            "RmVhdHVyZVNldBIzCg5maXhlZF9mZWF0dXJlcxgFIAEoCzIbLmdvb2dsZS5w",
+            "cm90b2J1Zi5GZWF0dXJlU2V0Ei0KCGZlYXR1cmVzGAIgASgLMhsuZ29vZ2xl",
+            "LnByb3RvYnVmLkZlYXR1cmVTZXQi1QEKDlNvdXJjZUNvZGVJbmZvEjoKCGxv",
+            "Y2F0aW9uGAEgAygLMiguZ29vZ2xlLnByb3RvYnVmLlNvdXJjZUNvZGVJbmZv",
+            "LkxvY2F0aW9uGoYBCghMb2NhdGlvbhIQCgRwYXRoGAEgAygFQgIQARIQCgRz",
+            "cGFuGAIgAygFQgIQARIYChBsZWFkaW5nX2NvbW1lbnRzGAMgASgJEhkKEXRy",
+            "YWlsaW5nX2NvbW1lbnRzGAQgASgJEiEKGWxlYWRpbmdfZGV0YWNoZWRfY29t",
+            "bWVudHMYBiADKAkinAIKEUdlbmVyYXRlZENvZGVJbmZvEkEKCmFubm90YXRp",
+            "b24YASADKAsyLS5nb29nbGUucHJvdG9idWYuR2VuZXJhdGVkQ29kZUluZm8u",
+            "QW5ub3RhdGlvbhrDAQoKQW5ub3RhdGlvbhIQCgRwYXRoGAEgAygFQgIQARIT",
+            "Cgtzb3VyY2VfZmlsZRgCIAEoCRINCgViZWdpbhgDIAEoBRILCgNlbmQYBCAB",
+            "KAUSSAoIc2VtYW50aWMYBSABKA4yNi5nb29nbGUucHJvdG9idWYuR2VuZXJh",
+            "dGVkQ29kZUluZm8uQW5ub3RhdGlvbi5TZW1hbnRpYyIoCghTZW1hbnRpYxII",
+            "CgROT05FEAASBwoDU0VUEAESCQoFQUxJQVMQAiqnAgoHRWRpdGlvbhITCg9F",
+            "RElUSU9OX1VOS05PV04QABITCg5FRElUSU9OX0xFR0FDWRCEBxITCg5FRElU",
+            "SU9OX1BST1RPMhDmBxITCg5FRElUSU9OX1BST1RPMxDnBxIRCgxFRElUSU9O",
+            "XzIwMjMQ6AcSEQoMRURJVElPTl8yMDI0EOkHEhcKE0VESVRJT05fMV9URVNU",
+            "X09OTFkQARIXChNFRElUSU9OXzJfVEVTVF9PTkxZEAISHQoXRURJVElPTl85",
+            "OTk5N19URVNUX09OTFkQnY0GEh0KF0VESVRJT05fOTk5OThfVEVTVF9PTkxZ",
+            "EJ6NBhIdChdFRElUSU9OXzk5OTk5X1RFU1RfT05MWRCfjQYSEwoLRURJVElP",
+            "Tl9NQVgQ/////wdCfgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv",
+            "clByb3Rvc0gBWi1nb29nbGUuZ29sYW5nLm9yZy9wcm90b2J1Zi90eXBlcy9k",
+            "ZXNjcmlwdG9ycGL4AQGiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYuUmVmbGVj",
+            "dGlvbg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -253,7 +263,8 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "SwiftPrefix", "PhpClassPrefix", "PhpNamespace", "PhpMetadataNamespace", "RubyPackage", "Features", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "DeprecatedLegacyJsonFieldConflicts", "Features", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "UnverifiedLazy", "Deprecated", "Weak", "DebugRedact", "Retention", "Targets", "EditionDefaults", "Features", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionRetention), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.EditionDefault), global::Google.Protobuf.Reflection.FieldOptions.Types.EditionDefault.Parser, new[]{ "Edition", "Value" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "UnverifiedLazy", "Deprecated", "Weak", "DebugRedact", "Retention", "Targets", "EditionDefaults", "Features", "FeatureSupport", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionRetention), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.OptionTargetType) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.EditionDefault), global::Google.Protobuf.Reflection.FieldOptions.Types.EditionDefault.Parser, new[]{ "Edition", "Value" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport), global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport.Parser, new[]{ "EditionIntroduced", "EditionDeprecated", "DeprecationWarning", "EditionRemoved" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofOptions), global::Google.Protobuf.Reflection.OneofOptions.Parser, new[]{ "Features", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "DeprecatedLegacyJsonFieldConflicts", "Features", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "Features", "DebugRedact", "UninterpretedOption" }, null, null, null, null),
@@ -261,7 +272,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "IdempotencyLevel", "Features", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption), global::Google.Protobuf.Reflection.UninterpretedOption.Parser, new[]{ "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart), global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser, new[]{ "NamePart_", "IsExtension" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FeatureSet), global::Google.Protobuf.Reflection.FeatureSet.Parser, new[]{ "FieldPresence", "EnumType", "RepeatedFieldEncoding", "Utf8Validation", "MessageEncoding", "JsonFormat" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FeatureSet.Types.FieldPresence), typeof(global::Google.Protobuf.Reflection.FeatureSet.Types.EnumType), typeof(global::Google.Protobuf.Reflection.FeatureSet.Types.RepeatedFieldEncoding), typeof(global::Google.Protobuf.Reflection.FeatureSet.Types.Utf8Validation), typeof(global::Google.Protobuf.Reflection.FeatureSet.Types.MessageEncoding), typeof(global::Google.Protobuf.Reflection.FeatureSet.Types.JsonFormat) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FeatureSetDefaults), global::Google.Protobuf.Reflection.FeatureSetDefaults.Parser, new[]{ "Defaults", "MinimumEdition", "MaximumEdition" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FeatureSetDefaults.Types.FeatureSetEditionDefault), global::Google.Protobuf.Reflection.FeatureSetDefaults.Types.FeatureSetEditionDefault.Parser, new[]{ "Edition", "Features" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FeatureSetDefaults), global::Google.Protobuf.Reflection.FeatureSetDefaults.Parser, new[]{ "Defaults", "MinimumEdition", "MaximumEdition" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FeatureSetDefaults.Types.FeatureSetEditionDefault), global::Google.Protobuf.Reflection.FeatureSetDefaults.Types.FeatureSetEditionDefault.Parser, new[]{ "Edition", "OverridableFeatures", "FixedFeatures", "Features" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo), global::Google.Protobuf.Reflection.SourceCodeInfo.Parser, new[]{ "Location" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location), global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser, new[]{ "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Parser, new[]{ "Annotation" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser, new[]{ "Path", "SourceFile", "Begin", "End", "Semantic" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic) }, null, null)})
           }));
@@ -278,6 +289,11 @@ namespace Google.Protobuf.Reflection {
     /// A placeholder for an unknown edition value.
     /// </summary>
     [pbr::OriginalName("EDITION_UNKNOWN")] Unknown = 0,
+    /// <summary>
+    /// A placeholder edition for specifying default behaviors *before* a feature
+    /// was first introduced.  This is effectively an "infinite past".
+    /// </summary>
+    [pbr::OriginalName("EDITION_LEGACY")] Legacy = 900,
     /// <summary>
     /// Legacy syntax "editions".  These pre-date editions, but behave much like
     /// distinct editions.  These can't be used to specify the edition of proto
@@ -7863,6 +7879,7 @@ namespace Google.Protobuf.Reflection {
       targets_ = other.targets_.Clone();
       editionDefaults_ = other.editionDefaults_.Clone();
       features_ = other.features_ != null ? other.features_.Clone() : null;
+      featureSupport_ = other.featureSupport_ != null ? other.featureSupport_.Clone() : null;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
       _extensions = pb::ExtensionSet.Clone(other._extensions);
@@ -8226,6 +8243,18 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    /// <summary>Field number for the "feature_support" field.</summary>
+    public const int FeatureSupportFieldNumber = 22;
+    private global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport featureSupport_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport FeatureSupport {
+      get { return featureSupport_; }
+      set {
+        featureSupport_ = value;
+      }
+    }
+
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
     public const int UninterpretedOptionFieldNumber = 999;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
@@ -8267,6 +8296,7 @@ namespace Google.Protobuf.Reflection {
       if(!targets_.Equals(other.targets_)) return false;
       if(!editionDefaults_.Equals(other.editionDefaults_)) return false;
       if (!object.Equals(Features, other.Features)) return false;
+      if (!object.Equals(FeatureSupport, other.FeatureSupport)) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
       if (!Equals(_extensions, other._extensions)) {
         return false;
@@ -8290,6 +8320,7 @@ namespace Google.Protobuf.Reflection {
       hash ^= targets_.GetHashCode();
       hash ^= editionDefaults_.GetHashCode();
       if (features_ != null) hash ^= Features.GetHashCode();
+      if (featureSupport_ != null) hash ^= FeatureSupport.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
@@ -8354,6 +8385,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(170, 1);
         output.WriteMessage(Features);
       }
+      if (featureSupport_ != null) {
+        output.WriteRawTag(178, 1);
+        output.WriteMessage(FeatureSupport);
+      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(output);
@@ -8410,6 +8445,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(170, 1);
         output.WriteMessage(Features);
       }
+      if (featureSupport_ != null) {
+        output.WriteRawTag(178, 1);
+        output.WriteMessage(FeatureSupport);
+      }
       uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(ref output);
@@ -8455,6 +8494,9 @@ namespace Google.Protobuf.Reflection {
       size += editionDefaults_.CalculateSize(_repeated_editionDefaults_codec);
       if (features_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(Features);
+      }
+      if (featureSupport_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(FeatureSupport);
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       if (_extensions != null) {
@@ -8506,6 +8548,12 @@ namespace Google.Protobuf.Reflection {
           Features = new global::Google.Protobuf.Reflection.FeatureSet();
         }
         Features.MergeFrom(other.Features);
+      }
+      if (other.featureSupport_ != null) {
+        if (featureSupport_ == null) {
+          FeatureSupport = new global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport();
+        }
+        FeatureSupport.MergeFrom(other.FeatureSupport);
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
@@ -8576,6 +8624,13 @@ namespace Google.Protobuf.Reflection {
               Features = new global::Google.Protobuf.Reflection.FeatureSet();
             }
             input.ReadMessage(Features);
+            break;
+          }
+          case 178: {
+            if (featureSupport_ == null) {
+              FeatureSupport = new global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport();
+            }
+            input.ReadMessage(FeatureSupport);
             break;
           }
           case 7994: {
@@ -8649,6 +8704,13 @@ namespace Google.Protobuf.Reflection {
               Features = new global::Google.Protobuf.Reflection.FeatureSet();
             }
             input.ReadMessage(Features);
+            break;
+          }
+          case 178: {
+            if (featureSupport_ == null) {
+              FeatureSupport = new global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport();
+            }
+            input.ReadMessage(FeatureSupport);
             break;
           }
           case 7994: {
@@ -9001,6 +9063,389 @@ namespace Google.Protobuf.Reflection {
               }
               case 24: {
                 Edition = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
+      }
+
+      /// <summary>
+      /// Information about the support window of a feature.
+      /// </summary>
+      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+      public sealed partial class FeatureSupport : pb::IMessage<FeatureSupport>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
+        private static readonly pb::MessageParser<FeatureSupport> _parser = new pb::MessageParser<FeatureSupport>(() => new FeatureSupport());
+        private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public static pb::MessageParser<FeatureSupport> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Google.Protobuf.Reflection.FieldOptions.Descriptor.NestedTypes[1]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public FeatureSupport() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public FeatureSupport(FeatureSupport other) : this() {
+          _hasBits0 = other._hasBits0;
+          editionIntroduced_ = other.editionIntroduced_;
+          editionDeprecated_ = other.editionDeprecated_;
+          deprecationWarning_ = other.deprecationWarning_;
+          editionRemoved_ = other.editionRemoved_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public FeatureSupport Clone() {
+          return new FeatureSupport(this);
+        }
+
+        /// <summary>Field number for the "edition_introduced" field.</summary>
+        public const int EditionIntroducedFieldNumber = 1;
+        private readonly static global::Google.Protobuf.Reflection.Edition EditionIntroducedDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
+
+        private global::Google.Protobuf.Reflection.Edition editionIntroduced_;
+        /// <summary>
+        /// The edition that this feature was first available in.  In editions
+        /// earlier than this one, the default assigned to EDITION_LEGACY will be
+        /// used, and proto files will not be able to override it.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public global::Google.Protobuf.Reflection.Edition EditionIntroduced {
+          get { if ((_hasBits0 & 1) != 0) { return editionIntroduced_; } else { return EditionIntroducedDefaultValue; } }
+          set {
+            _hasBits0 |= 1;
+            editionIntroduced_ = value;
+          }
+        }
+        /// <summary>Gets whether the "edition_introduced" field is set</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public bool HasEditionIntroduced {
+          get { return (_hasBits0 & 1) != 0; }
+        }
+        /// <summary>Clears the value of the "edition_introduced" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void ClearEditionIntroduced() {
+          _hasBits0 &= ~1;
+        }
+
+        /// <summary>Field number for the "edition_deprecated" field.</summary>
+        public const int EditionDeprecatedFieldNumber = 2;
+        private readonly static global::Google.Protobuf.Reflection.Edition EditionDeprecatedDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
+
+        private global::Google.Protobuf.Reflection.Edition editionDeprecated_;
+        /// <summary>
+        /// The edition this feature becomes deprecated in.  Using this after this
+        /// edition may trigger warnings.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public global::Google.Protobuf.Reflection.Edition EditionDeprecated {
+          get { if ((_hasBits0 & 2) != 0) { return editionDeprecated_; } else { return EditionDeprecatedDefaultValue; } }
+          set {
+            _hasBits0 |= 2;
+            editionDeprecated_ = value;
+          }
+        }
+        /// <summary>Gets whether the "edition_deprecated" field is set</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public bool HasEditionDeprecated {
+          get { return (_hasBits0 & 2) != 0; }
+        }
+        /// <summary>Clears the value of the "edition_deprecated" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void ClearEditionDeprecated() {
+          _hasBits0 &= ~2;
+        }
+
+        /// <summary>Field number for the "deprecation_warning" field.</summary>
+        public const int DeprecationWarningFieldNumber = 3;
+        private readonly static string DeprecationWarningDefaultValue = "";
+
+        private string deprecationWarning_;
+        /// <summary>
+        /// The deprecation warning text if this feature is used after the edition it
+        /// was marked deprecated in.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public string DeprecationWarning {
+          get { return deprecationWarning_ ?? DeprecationWarningDefaultValue; }
+          set {
+            deprecationWarning_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+          }
+        }
+        /// <summary>Gets whether the "deprecation_warning" field is set</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public bool HasDeprecationWarning {
+          get { return deprecationWarning_ != null; }
+        }
+        /// <summary>Clears the value of the "deprecation_warning" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void ClearDeprecationWarning() {
+          deprecationWarning_ = null;
+        }
+
+        /// <summary>Field number for the "edition_removed" field.</summary>
+        public const int EditionRemovedFieldNumber = 4;
+        private readonly static global::Google.Protobuf.Reflection.Edition EditionRemovedDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
+
+        private global::Google.Protobuf.Reflection.Edition editionRemoved_;
+        /// <summary>
+        /// The edition this feature is no longer available in.  In editions after
+        /// this one, the last default assigned will be used, and proto files will
+        /// not be able to override it.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public global::Google.Protobuf.Reflection.Edition EditionRemoved {
+          get { if ((_hasBits0 & 4) != 0) { return editionRemoved_; } else { return EditionRemovedDefaultValue; } }
+          set {
+            _hasBits0 |= 4;
+            editionRemoved_ = value;
+          }
+        }
+        /// <summary>Gets whether the "edition_removed" field is set</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public bool HasEditionRemoved {
+          get { return (_hasBits0 & 4) != 0; }
+        }
+        /// <summary>Clears the value of the "edition_removed" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void ClearEditionRemoved() {
+          _hasBits0 &= ~4;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public override bool Equals(object other) {
+          return Equals(other as FeatureSupport);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public bool Equals(FeatureSupport other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (EditionIntroduced != other.EditionIntroduced) return false;
+          if (EditionDeprecated != other.EditionDeprecated) return false;
+          if (DeprecationWarning != other.DeprecationWarning) return false;
+          if (EditionRemoved != other.EditionRemoved) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (HasEditionIntroduced) hash ^= EditionIntroduced.GetHashCode();
+          if (HasEditionDeprecated) hash ^= EditionDeprecated.GetHashCode();
+          if (HasDeprecationWarning) hash ^= DeprecationWarning.GetHashCode();
+          if (HasEditionRemoved) hash ^= EditionRemoved.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
+          if (HasEditionIntroduced) {
+            output.WriteRawTag(8);
+            output.WriteEnum((int) EditionIntroduced);
+          }
+          if (HasEditionDeprecated) {
+            output.WriteRawTag(16);
+            output.WriteEnum((int) EditionDeprecated);
+          }
+          if (HasDeprecationWarning) {
+            output.WriteRawTag(26);
+            output.WriteString(DeprecationWarning);
+          }
+          if (HasEditionRemoved) {
+            output.WriteRawTag(32);
+            output.WriteEnum((int) EditionRemoved);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasEditionIntroduced) {
+            output.WriteRawTag(8);
+            output.WriteEnum((int) EditionIntroduced);
+          }
+          if (HasEditionDeprecated) {
+            output.WriteRawTag(16);
+            output.WriteEnum((int) EditionDeprecated);
+          }
+          if (HasDeprecationWarning) {
+            output.WriteRawTag(26);
+            output.WriteString(DeprecationWarning);
+          }
+          if (HasEditionRemoved) {
+            output.WriteRawTag(32);
+            output.WriteEnum((int) EditionRemoved);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public int CalculateSize() {
+          int size = 0;
+          if (HasEditionIntroduced) {
+            size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EditionIntroduced);
+          }
+          if (HasEditionDeprecated) {
+            size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EditionDeprecated);
+          }
+          if (HasDeprecationWarning) {
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(DeprecationWarning);
+          }
+          if (HasEditionRemoved) {
+            size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EditionRemoved);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void MergeFrom(FeatureSupport other) {
+          if (other == null) {
+            return;
+          }
+          if (other.HasEditionIntroduced) {
+            EditionIntroduced = other.EditionIntroduced;
+          }
+          if (other.HasEditionDeprecated) {
+            EditionDeprecated = other.EditionDeprecated;
+          }
+          if (other.HasDeprecationWarning) {
+            DeprecationWarning = other.DeprecationWarning;
+          }
+          if (other.HasEditionRemoved) {
+            EditionRemoved = other.EditionRemoved;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                EditionIntroduced = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+              case 16: {
+                EditionDeprecated = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+              case 26: {
+                DeprecationWarning = input.ReadString();
+                break;
+              }
+              case 32: {
+                EditionRemoved = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+            }
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                EditionIntroduced = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+              case 16: {
+                EditionDeprecated = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+              case 26: {
+                DeprecationWarning = input.ReadString();
+                break;
+              }
+              case 32: {
+                EditionRemoved = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
                 break;
               }
             }
@@ -12574,6 +13019,8 @@ namespace Google.Protobuf.Reflection {
         public FeatureSetEditionDefault(FeatureSetEditionDefault other) : this() {
           _hasBits0 = other._hasBits0;
           edition_ = other.edition_;
+          overridableFeatures_ = other.overridableFeatures_ != null ? other.overridableFeatures_.Clone() : null;
+          fixedFeatures_ = other.fixedFeatures_ != null ? other.fixedFeatures_.Clone() : null;
           features_ = other.features_ != null ? other.features_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
@@ -12611,9 +13058,43 @@ namespace Google.Protobuf.Reflection {
           _hasBits0 &= ~1;
         }
 
+        /// <summary>Field number for the "overridable_features" field.</summary>
+        public const int OverridableFeaturesFieldNumber = 4;
+        private global::Google.Protobuf.Reflection.FeatureSet overridableFeatures_;
+        /// <summary>
+        /// Defaults of features that can be overridden in this edition.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public global::Google.Protobuf.Reflection.FeatureSet OverridableFeatures {
+          get { return overridableFeatures_; }
+          set {
+            overridableFeatures_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "fixed_features" field.</summary>
+        public const int FixedFeaturesFieldNumber = 5;
+        private global::Google.Protobuf.Reflection.FeatureSet fixedFeatures_;
+        /// <summary>
+        /// Defaults of features that can't be overridden in this edition.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public global::Google.Protobuf.Reflection.FeatureSet FixedFeatures {
+          get { return fixedFeatures_; }
+          set {
+            fixedFeatures_ = value;
+          }
+        }
+
         /// <summary>Field number for the "features" field.</summary>
         public const int FeaturesFieldNumber = 2;
         private global::Google.Protobuf.Reflection.FeatureSet features_;
+        /// <summary>
+        /// TODO Deprecate and remove this field, which is just the
+        /// above two merged.
+        /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -12639,6 +13120,8 @@ namespace Google.Protobuf.Reflection {
             return true;
           }
           if (Edition != other.Edition) return false;
+          if (!object.Equals(OverridableFeatures, other.OverridableFeatures)) return false;
+          if (!object.Equals(FixedFeatures, other.FixedFeatures)) return false;
           if (!object.Equals(Features, other.Features)) return false;
           return Equals(_unknownFields, other._unknownFields);
         }
@@ -12648,6 +13131,8 @@ namespace Google.Protobuf.Reflection {
         public override int GetHashCode() {
           int hash = 1;
           if (HasEdition) hash ^= Edition.GetHashCode();
+          if (overridableFeatures_ != null) hash ^= OverridableFeatures.GetHashCode();
+          if (fixedFeatures_ != null) hash ^= FixedFeatures.GetHashCode();
           if (features_ != null) hash ^= Features.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
@@ -12675,6 +13160,14 @@ namespace Google.Protobuf.Reflection {
             output.WriteRawTag(24);
             output.WriteEnum((int) Edition);
           }
+          if (overridableFeatures_ != null) {
+            output.WriteRawTag(34);
+            output.WriteMessage(OverridableFeatures);
+          }
+          if (fixedFeatures_ != null) {
+            output.WriteRawTag(42);
+            output.WriteMessage(FixedFeatures);
+          }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
@@ -12693,6 +13186,14 @@ namespace Google.Protobuf.Reflection {
             output.WriteRawTag(24);
             output.WriteEnum((int) Edition);
           }
+          if (overridableFeatures_ != null) {
+            output.WriteRawTag(34);
+            output.WriteMessage(OverridableFeatures);
+          }
+          if (fixedFeatures_ != null) {
+            output.WriteRawTag(42);
+            output.WriteMessage(FixedFeatures);
+          }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(ref output);
           }
@@ -12705,6 +13206,12 @@ namespace Google.Protobuf.Reflection {
           int size = 0;
           if (HasEdition) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Edition);
+          }
+          if (overridableFeatures_ != null) {
+            size += 1 + pb::CodedOutputStream.ComputeMessageSize(OverridableFeatures);
+          }
+          if (fixedFeatures_ != null) {
+            size += 1 + pb::CodedOutputStream.ComputeMessageSize(FixedFeatures);
           }
           if (features_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(Features);
@@ -12723,6 +13230,18 @@ namespace Google.Protobuf.Reflection {
           }
           if (other.HasEdition) {
             Edition = other.Edition;
+          }
+          if (other.overridableFeatures_ != null) {
+            if (overridableFeatures_ == null) {
+              OverridableFeatures = new global::Google.Protobuf.Reflection.FeatureSet();
+            }
+            OverridableFeatures.MergeFrom(other.OverridableFeatures);
+          }
+          if (other.fixedFeatures_ != null) {
+            if (fixedFeatures_ == null) {
+              FixedFeatures = new global::Google.Protobuf.Reflection.FeatureSet();
+            }
+            FixedFeatures.MergeFrom(other.FixedFeatures);
           }
           if (other.features_ != null) {
             if (features_ == null) {
@@ -12756,6 +13275,20 @@ namespace Google.Protobuf.Reflection {
                 Edition = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
                 break;
               }
+              case 34: {
+                if (overridableFeatures_ == null) {
+                  OverridableFeatures = new global::Google.Protobuf.Reflection.FeatureSet();
+                }
+                input.ReadMessage(OverridableFeatures);
+                break;
+              }
+              case 42: {
+                if (fixedFeatures_ == null) {
+                  FixedFeatures = new global::Google.Protobuf.Reflection.FeatureSet();
+                }
+                input.ReadMessage(FixedFeatures);
+                break;
+              }
             }
           }
         #endif
@@ -12780,6 +13313,20 @@ namespace Google.Protobuf.Reflection {
               }
               case 24: {
                 Edition = (global::Google.Protobuf.Reflection.Edition) input.ReadEnum();
+                break;
+              }
+              case 34: {
+                if (overridableFeatures_ == null) {
+                  OverridableFeatures = new global::Google.Protobuf.Reflection.FeatureSet();
+                }
+                input.ReadMessage(OverridableFeatures);
+                break;
+              }
+              case 42: {
+                if (fixedFeatures_ == null) {
+                  FixedFeatures = new global::Google.Protobuf.Reflection.FeatureSet();
+                }
+                input.ReadMessage(FixedFeatures);
                 break;
               }
             }
