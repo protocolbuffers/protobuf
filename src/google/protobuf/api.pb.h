@@ -168,7 +168,6 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -363,7 +362,6 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -631,7 +629,6 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;

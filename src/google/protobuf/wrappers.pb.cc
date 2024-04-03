@@ -399,6 +399,8 @@ DoubleValue::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -444,11 +446,6 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
 
   _impl_.value_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* DoubleValue::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* DoubleValue::_InternalSerialize(
@@ -590,6 +587,8 @@ FloatValue::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -635,11 +634,6 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
 
   _impl_.value_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FloatValue::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* FloatValue::_InternalSerialize(
@@ -781,6 +775,8 @@ Int64Value::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -826,11 +822,6 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
 
   _impl_.value_ = ::int64_t{0};
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Int64Value::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Int64Value::_InternalSerialize(
@@ -958,6 +949,8 @@ UInt64Value::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1003,11 +996,6 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
 
   _impl_.value_ = ::uint64_t{0u};
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* UInt64Value::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* UInt64Value::_InternalSerialize(
@@ -1135,6 +1123,8 @@ Int32Value::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1180,11 +1170,6 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
 
   _impl_.value_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Int32Value::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Int32Value::_InternalSerialize(
@@ -1312,6 +1297,8 @@ UInt32Value::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1357,11 +1344,6 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
 
   _impl_.value_ = 0u;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* UInt32Value::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* UInt32Value::_InternalSerialize(
@@ -1489,6 +1471,8 @@ BoolValue::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1534,11 +1518,6 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
 
   _impl_.value_ = false;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* BoolValue::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* BoolValue::_InternalSerialize(
@@ -1679,6 +1658,8 @@ StringValue::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1727,11 +1708,6 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
 
   _impl_.value_.ClearToEmpty();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* StringValue::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* StringValue::_InternalSerialize(
@@ -1876,6 +1852,8 @@ BytesValue::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1921,11 +1899,6 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
 
   _impl_.value_.ClearToEmpty();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* BytesValue::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* BytesValue::_InternalSerialize(

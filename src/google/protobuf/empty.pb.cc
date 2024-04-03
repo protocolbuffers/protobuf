@@ -127,6 +127,8 @@ Empty::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fempty_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

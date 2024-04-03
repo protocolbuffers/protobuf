@@ -322,6 +322,8 @@ Api::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fapi_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -422,11 +424,6 @@ PROTOBUF_NOINLINE void Api::Clear() {
   _impl_.syntax_ = 0;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Api::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Api::_InternalSerialize(
@@ -721,6 +718,8 @@ Method::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fapi_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -814,11 +813,6 @@ PROTOBUF_NOINLINE void Method::Clear() {
       reinterpret_cast<char*>(&_impl_.syntax_) -
       reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Method::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Method::_InternalSerialize(
@@ -1074,6 +1068,8 @@ Mixin::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fapi_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1130,11 +1126,6 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   _impl_.name_.ClearToEmpty();
   _impl_.root_.ClearToEmpty();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Mixin::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Mixin::_InternalSerialize(

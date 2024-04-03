@@ -502,6 +502,8 @@ Type::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -602,11 +604,6 @@ PROTOBUF_NOINLINE void Type::Clear() {
   _impl_.syntax_ = 0;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Type::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Type::_InternalSerialize(
@@ -897,6 +894,8 @@ Field::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1015,11 +1014,6 @@ PROTOBUF_NOINLINE void Field::Clear() {
       reinterpret_cast<char*>(&_impl_.packed_) -
       reinterpret_cast<char*>(&_impl_.kind_)) + sizeof(_impl_.packed_));
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Field::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Field::_InternalSerialize(
@@ -1351,6 +1345,8 @@ Enum::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1444,11 +1440,6 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   _impl_.syntax_ = 0;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Enum::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Enum::_InternalSerialize(
@@ -1703,6 +1694,8 @@ EnumValue::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1766,11 +1759,6 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   _impl_.name_.ClearToEmpty();
   _impl_.number_ = 0;
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* EnumValue::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* EnumValue::_InternalSerialize(
@@ -1967,6 +1955,8 @@ Option::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -2027,11 +2017,6 @@ PROTOBUF_NOINLINE void Option::Clear() {
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* Option::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* Option::_InternalSerialize(
