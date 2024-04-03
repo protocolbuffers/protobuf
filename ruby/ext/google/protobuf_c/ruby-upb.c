@@ -8451,12 +8451,12 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
   return upb_Decoder_Decode(&decoder, buf, msg, mt, arena);
 }
 
-upb_DecodeStatus upb_DecodeLengthDelimited(const char* buf, size_t size,
-                                           upb_Message* msg,
-                                           size_t* num_bytes_read,
-                                           const upb_MiniTable* mt,
-                                           const upb_ExtensionRegistry* extreg,
-                                           int options, upb_Arena* arena) {
+upb_DecodeStatus upb_DecodeLengthPrefixed(const char* buf, size_t size,
+                                          upb_Message* msg,
+                                          size_t* num_bytes_read,
+                                          const upb_MiniTable* mt,
+                                          const upb_ExtensionRegistry* extreg,
+                                          int options, upb_Arena* arena) {
   // To avoid needing to make a Decoder just to decode the initial length,
   // hand-decode the leading varint for the message length here.
   uint64_t msg_len = 0;
@@ -9119,10 +9119,10 @@ upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
   return _upb_Encode(msg, l, options, arena, buf, size, false);
 }
 
-upb_EncodeStatus upb_EncodeLengthDelimited(const upb_Message* msg,
-                                           const upb_MiniTable* l, int options,
-                                           upb_Arena* arena, char** buf,
-                                           size_t* size) {
+upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
+                                          const upb_MiniTable* l, int options,
+                                          upb_Arena* arena, char** buf,
+                                          size_t* size) {
   return _upb_Encode(msg, l, options, arena, buf, size, true);
 }
 
