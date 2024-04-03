@@ -149,6 +149,11 @@ class ReflectionVisit;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
+
+namespace field_layout {
+enum TransformValidation : uint16_t;
+}  // namespace field_layout
+
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -1018,6 +1023,8 @@ class PROTOBUF_EXPORT Reflection final {
 
   bool IsLazilyVerifiedLazyField(const FieldDescriptor* field) const;
   bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
+  internal::field_layout::TransformValidation GetLazyStyle(
+      const FieldDescriptor* field) const;
 
   bool IsSplit(const FieldDescriptor* field) const {
     return schema_.IsSplit(field);

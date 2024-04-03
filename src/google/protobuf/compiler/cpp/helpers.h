@@ -394,6 +394,10 @@ inline bool IsExplicitLazy(const FieldDescriptor* field) {
   return field->options().lazy() || field->options().unverified_lazy();
 }
 
+internal::field_layout::TransformValidation GetLazyStyle(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer);
+
 bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
                            MessageSCCAnalyzer* scc_analyzer);
 
