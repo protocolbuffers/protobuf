@@ -76,9 +76,7 @@ upb_cc_proto_library(
 
 upb_cc_proto_library(
     name = "naming_conflict_upb_cc_proto",
-    visibility = [
-        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-    ],
+    visibility = ["//visibility:private"],
     deps = [":naming_conflict_proto"],
 )
 
@@ -111,9 +109,7 @@ cc_proto_library(
 #
 # upb_cc_proto_library(
 #     name = "legacy_name_test_proto",
-#     visibility = [
-#         "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-#     ],
+#     visibility = ["//visibility:private"],
 #     deps = [":legacy_name_proto"],
 # )
 # end:google_only
