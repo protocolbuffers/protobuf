@@ -8423,7 +8423,7 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
 }
 
 upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
-                            const upb_MiniTable* m,
+                            const upb_MiniTable* mt,
                             const upb_ExtensionRegistry* extreg, int options,
                             upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
@@ -8448,7 +8448,42 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
   // (particularly parent_or_count).
   UPB_PRIVATE(_upb_Arena_SwapIn)(&decoder.arena, arena);
 
-  return upb_Decoder_Decode(&decoder, buf, msg, m, arena);
+  return upb_Decoder_Decode(&decoder, buf, msg, mt, arena);
+}
+
+upb_DecodeStatus upb_DecodeLengthDelimited(const char* buf, size_t size,
+                                           upb_Message* msg,
+                                           size_t* num_bytes_read,
+                                           const upb_MiniTable* mt,
+                                           const upb_ExtensionRegistry* extreg,
+                                           int options, upb_Arena* arena) {
+  // To avoid needing to make a Decoder just to decode the initial length,
+  // hand-decode the leading varint for the message length here.
+  uint64_t msg_len = 0;
+  for (size_t i = 0;; ++i) {
+    if (i >= size || i > 9) {
+      return kUpb_DecodeStatus_Malformed;
+    }
+    uint64_t b = *buf;
+    buf++;
+    msg_len += (b & 0x7f) << (i * 7);
+    if ((b & 0x80) == 0) {
+      *num_bytes_read = i + 1 + msg_len;
+      break;
+    }
+  }
+
+  // If the total number of bytes we would read (= the bytes from the varint
+  // plus however many bytes that varint says we should read) is larger then the
+  // input buffer then error as malformed.
+  if (*num_bytes_read > size) {
+    return kUpb_DecodeStatus_Malformed;
+  }
+  if (msg_len > INT32_MAX) {
+    return kUpb_DecodeStatus_Malformed;
+  }
+
+  return upb_Decode(buf, msg_len, msg, mt, extreg, options, arena);
 }
 
 #undef OP_FIXPCK_LG2
@@ -9029,14 +9064,18 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
 static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
                                            const upb_Message* const msg,
                                            const upb_MiniTable* const l,
-                                           char** const buf,
-                                           size_t* const size) {
+                                           char** const buf, size_t* const size,
+                                           bool prepend_len) {
   // Unfortunately we must continue to perform hackery here because there are
   // code paths which blindly copy the returned pointer without bothering to
   // check for errors until much later (b/235839510). So we still set *buf to
   // NULL on error and we still set it to non-NULL on a successful empty result.
   if (UPB_SETJMP(encoder->err) == 0) {
-    encode_message(encoder, msg, l, size);
+    size_t encoded_msg_size;
+    encode_message(encoder, msg, l, &encoded_msg_size);
+    if (prepend_len) {
+      encode_varint(encoder, encoded_msg_size);
+    }
     *size = encoder->limit - encoder->ptr;
     if (*size == 0) {
       static char ch;
@@ -9055,9 +9094,10 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
   return encoder->status;
 }
 
-upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
-                            int options, upb_Arena* arena, char** buf,
-                            size_t* size) {
+static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
+                                    const upb_MiniTable* l, int options,
+                                    upb_Arena* arena, char** buf, size_t* size,
+                                    bool prepend_len) {
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
 
@@ -9070,7 +9110,20 @@ upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 
-  return upb_Encoder_Encode(&e, msg, l, buf, size);
+  return upb_Encoder_Encode(&e, msg, l, buf, size, prepend_len);
+}
+
+upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                            int options, upb_Arena* arena, char** buf,
+                            size_t* size) {
+  return _upb_Encode(msg, l, options, arena, buf, size, false);
+}
+
+upb_EncodeStatus upb_EncodeLengthDelimited(const upb_Message* msg,
+                                           const upb_MiniTable* l, int options,
+                                           upb_Arena* arena, char** buf,
+                                           size_t* size) {
+  return _upb_Encode(msg, l, options, arena, buf, size, true);
 }
 
 // Fast decoder: ~3x the speed of decode.c, but requires x86-64/ARM64.

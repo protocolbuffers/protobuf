@@ -969,6 +969,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/test.cc
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
+  ${protobuf_SOURCE_DIR}/upb/test/length_delimited_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/proto3_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/test_cpp.cc
   ${protobuf_SOURCE_DIR}/upb/test/test_generated_code.cc
