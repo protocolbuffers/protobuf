@@ -764,6 +764,28 @@ message FieldOptions {
   // Any features defined in the specific edition.
   optional FeatureSet features = 21;
 
+  // Information about the support window of a feature.
+  message FeatureSupport {
+    // The edition that this feature was first available in.  In editions
+    // earlier than this one, the default assigned to EDITION_LEGACY will be
+    // used, and proto files will not be able to override it.
+    optional Edition edition_introduced = 1;
+
+    // The edition this feature becomes deprecated in.  Using this after this
+    // edition may trigger warnings.
+    optional Edition edition_deprecated = 2;
+
+    // The deprecation warning text if this feature is used after the edition it
+    // was marked deprecated in.
+    optional string deprecation_warning = 3;
+
+    // The edition this feature is no longer available in.  In editions after
+    // this one, the last default assigned will be used, and proto files will
+    // not be able to override it.
+    optional Edition edition_removed = 4;
+  }
+  optional FeatureSupport feature_support = 22;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -1037,6 +1059,15 @@ message FeatureSetDefaults {
   // be used.  This field must be in strict ascending order by edition.
   message FeatureSetEditionDefault {
     optional Edition edition = 3;
+
+    // Defaults of features that can be overridden in this edition.
+    optional FeatureSet overridable_features = 4;
+
+    // Defaults of features that can't be overridden in this edition.
+    optional FeatureSet fixed_features = 5;
+
+    // TODO Deprecate and remove this field, which is just the
+    // above two merged.
     optional FeatureSet features = 2;
   }
   repeated FeatureSetEditionDefault defaults = 1;
