@@ -28,9 +28,9 @@ static void TestEncodeDecodeRoundTrip(
   for (auto msg : msgs) {
     char* buf;
     size_t size;
-    ASSERT_TRUE(upb_EncodeLengthDelimited(UPB_UPCAST(msg), kTestMiniTable, 0,
-                                          arena, &buf,
-                                          &size) == kUpb_EncodeStatus_Ok);
+    ASSERT_TRUE(upb_EncodeLengthPrefixed(UPB_UPCAST(msg), kTestMiniTable, 0,
+                                         arena, &buf,
+                                         &size) == kUpb_EncodeStatus_Ok);
     ASSERT_GT(size, 0);  // Even empty messages are 1 byte in this encoding.
     s.append(std::string(buf, size));
   }
@@ -41,7 +41,7 @@ static void TestEncodeDecodeRoundTrip(
     protobuf_test_messages_proto2_TestAllTypesProto2* msg =
         protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
     size_t num_bytes_read;
-    ASSERT_TRUE(upb_DecodeLengthDelimited(
+    ASSERT_TRUE(upb_DecodeLengthPrefixed(
                     s.data(), s.length(), UPB_UPCAST(msg), &num_bytes_read,
                     kTestMiniTable, nullptr, 0, arena) == kUpb_DecodeStatus_Ok);
     ASSERT_GT(num_bytes_read, 0);
@@ -57,7 +57,7 @@ static void TestEncodeDecodeRoundTrip(
   }
 }
 
-TEST(LengthDelimitedTest, OneEmptyMessage) {
+TEST(LengthPrefixedTest, OneEmptyMessage) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* msg =
       protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
@@ -65,7 +65,7 @@ TEST(LengthDelimitedTest, OneEmptyMessage) {
   upb_Arena_Free(arena);
 }
 
-TEST(LengthDelimitedTest, AFewMessages) {
+TEST(LengthPrefixedTest, AFewMessages) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* a =
       protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);

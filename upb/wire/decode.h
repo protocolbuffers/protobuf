@@ -136,7 +136,7 @@ UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
 // Same as upb_Decode but with a varint-encoded length prepended.
 // On success 'num_bytes_read' will be set to the how many bytes were read,
 // on failure the contents of num_bytes_read is undefined.
-UPB_API upb_DecodeStatus upb_DecodeLengthDelimited(
+UPB_API upb_DecodeStatus upb_DecodeLengthPrefixed(
     const char* buf, size_t size, upb_Message* msg, size_t* num_bytes_read,
     const upb_MiniTable* mt, const upb_ExtensionRegistry* extreg, int options,
     upb_Arena* arena);

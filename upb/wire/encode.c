@@ -662,9 +662,9 @@ upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
   return _upb_Encode(msg, l, options, arena, buf, size, false);
 }
 
-upb_EncodeStatus upb_EncodeLengthDelimited(const upb_Message* msg,
-                                           const upb_MiniTable* l, int options,
-                                           upb_Arena* arena, char** buf,
-                                           size_t* size) {
+upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
+                                          const upb_MiniTable* l, int options,
+                                          upb_Arena* arena, char** buf,
+                                          size_t* size) {
   return _upb_Encode(msg, l, options, arena, buf, size, true);
 }

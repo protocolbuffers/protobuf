@@ -202,8 +202,8 @@ cc_test(
 )
 
 cc_test(
-    name = "length_delimited_test",
-    srcs = ["length_delimited_test.cc"],
+    name = "length_prefixed_test",
+    srcs = ["length_prefixed_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":test_messages_proto2_upb_minitable",
