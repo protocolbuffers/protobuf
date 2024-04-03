@@ -107,30 +107,6 @@ ParseFunctionGenerator::ParseFunctionGenerator(
   variables_["classname"] = ClassName(descriptor, false);
 }
 
-static bool ShouldGenerateInternalParse(const Descriptor* descriptor,
-                                        const Options& options) {
-  return HasGeneratedMethods(descriptor->file(), options) &&
-         HasDescriptorMethods(descriptor->file(), options);
-}
-
-void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
-  if (!ShouldGenerateInternalParse(descriptor_, options_)) return;
-  Formatter format(printer, variables_);
-  format(
-      "const char* _InternalParse(const char* ptr, "
-      "::$proto_ns$::internal::ParseContext* ctx) final;\n");
-}
-
-void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
-  if (!ShouldGenerateInternalParse(descriptor_, options_)) return;
-  printer->Emit(R"cc(
-    const char* $classname$::_InternalParse(const char* ptr,
-                                            ::_pbi::ParseContext* ctx) {
-      return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-    }
-  )cc");
-}
-
 struct SkipEntry16 {
   uint16_t skipmap;
   uint16_t field_entry_offset;

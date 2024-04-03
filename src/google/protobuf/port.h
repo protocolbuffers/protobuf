@@ -23,6 +23,7 @@
 
 
 #include "absl/base/config.h"
+#include "absl/base/prefetch.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -301,6 +302,12 @@ inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
 inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
 inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
+
+// This trampoline allows calling from codegen without needing a #include to
+// absl. It simplifies IWYU and deps.
+inline void PrefetchToLocalCache(const void* ptr) {
+  absl::PrefetchToLocalCache(ptr);
+}
 
 }  // namespace internal
 }  // namespace protobuf

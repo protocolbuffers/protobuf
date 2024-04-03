@@ -496,8 +496,7 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   int GetCachedSize() const;
 
-  virtual const char* _InternalParse(const char* ptr,
-                                     internal::ParseContext* ctx);
+  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
 
   void OnDemandRegisterArenaDtor(Arena* arena);
 
@@ -517,7 +516,17 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
-  const internal::TcParseTableBase* GetTcParseTable() const;
+  const internal::TcParseTableBase* GetTcParseTable() const {
+    auto* data = GetClassData();
+    ABSL_DCHECK(data != nullptr);
+
+    auto* tc_table = data->tc_table;
+    if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
+      ABSL_DCHECK(!data->is_lite);
+      return data->full().descriptor_methods->get_tc_table(*this);
+    }
+    return tc_table;
+  }
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
@@ -705,22 +714,28 @@ namespace internal {
 
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     absl::string_view input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     absl::string_view input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 
 template <bool alias>
 bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 
 struct BoundedZCIS {
@@ -730,19 +745,25 @@ struct BoundedZCIS {
 
 template <bool alias>
 bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
-    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+    BoundedZCIS input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
-    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+    BoundedZCIS input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 
 template <typename T>
 struct SourceWrapper;
 
 template <bool alias, typename T>
 bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags) {
-  return input.template MergeInto<alias>(msg, parse_flags);
+  return input.template MergeInto<alias>(msg, tc_table, parse_flags);
 }
 
 }  // namespace internal
@@ -751,7 +772,9 @@ template <MessageLite::ParseFlags flags, typename T>
 bool MessageLite::ParseFrom(const T& input) {
   if (flags & kParse) Clear();
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
-  return internal::MergeFromImpl<alias>(input, this, flags);
+  const internal::TcParseTableBase* tc_table;
+  PROTOBUF_ALWAYS_INLINE_CALL tc_table = GetTcParseTable();
+  return internal::MergeFromImpl<alias>(input, this, tc_table, flags);
 }
 
 // ===================================================================

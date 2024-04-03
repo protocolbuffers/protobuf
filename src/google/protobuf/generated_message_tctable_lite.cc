@@ -73,12 +73,6 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
 
-PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
-    const TcParseTableBase* table) {
-  return ParseLoopInlined(msg, ptr, ctx, table);
-}
-
 // On the fast path, a (matching) 1-byte tag already has the decoded value.
 static uint32_t FastDecodeTag(uint8_t coded_tag) {
   return coded_tag;
@@ -369,7 +363,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
       field = inner_table->default_instance->New(msg->GetArena());
     }
     const auto inner_loop = [&](const char* ptr) {
-      return ParseLoopInlined(field, ptr, ctx, inner_table);
+      return ParseLoop(field, ptr, ctx, inner_table);
     };
     return group_coding ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag),
                                                  inner_loop)
@@ -457,7 +451,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     MessageLite* submsg = field.AddMessage(default_instance);
     if (aux_is_table) {
       const auto inner_loop = [&](const char* ptr) {
-        return ParseLoopInlined(submsg, ptr, ctx, aux.table);
+        return ParseLoop(submsg, ptr, ctx, aux.table);
       };
       ptr = group_coding ? ctx->ParseGroupInlined(
                                ptr, FastDecodeTag(expected_tag), inner_loop)

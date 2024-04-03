@@ -1732,11 +1732,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               bool IsInitialized() const final;
 
               ::size_t ByteSizeLong() const final;
-            )cc");
-
-            parse_function_generator_->GenerateMethodDecls(p);
-
-            p->Emit(R"cc(
               $uint8$* _InternalSerialize(
                   $uint8$* target,
                   ::$proto_ns$::io::EpsCopyOutputStream* stream) const final;
@@ -2187,11 +2182,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     GenerateClear(p);
     format("\n");
-
-    if (!HasSimpleBaseClass(descriptor_, options_)) {
-      parse_function_generator_->GenerateMethodImpls(p);
-      format("\n");
-    }
 
     GenerateSerializeWithCachedSizesToArray(p);
     format("\n");
@@ -3595,6 +3585,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     &$desc_table$,
                     $tracker_on_get_metadata$,
                 };
+            $pbi$::PrefetchToLocalCache(&_data_);
+            $pbi$::PrefetchToLocalCache(_data_.tc_table);
             return _data_.base();
           }
         )cc");

@@ -382,7 +382,7 @@ class PROTOBUF_EXPORT TcParser final {
       MessageLite* msg, const char* ptr, ParseContext* ctx,
       const TcParseTableBase* tc_table) {
     return ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
-      return ParseLoopInlined(msg, ptr, ctx, tc_table);
+      return ParseLoop(msg, ptr, ctx, tc_table);
     });
   }
 
@@ -390,7 +390,7 @@ class PROTOBUF_EXPORT TcParser final {
       MessageLite* msg, const char* ptr, ParseContext* ctx,
       const TcParseTableBase* tc_table, uint32_t start_tag) {
     return ctx->ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
-      return ParseLoopInlined(msg, ptr, ctx, tc_table);
+      return ParseLoop(msg, ptr, ctx, tc_table);
     });
   }
 
@@ -428,13 +428,9 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* MessageSetWireFormatParseLoopLite(
       PROTOBUF_TC_PARAM_NO_DATA_DECL);
 
-  PROTOBUF_NOINLINE
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,
                                const TcParseTableBase* table);
-  static const char* ParseLoopInlined(MessageLite* msg, const char* ptr,
-                                      ParseContext* ctx,
-                                      const TcParseTableBase* table);
 
   // Functions referenced by generated fast tables (numeric types):
   //   F: fixed      V: varint     Z: zigzag
@@ -993,7 +989,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
   return ptr;
 }
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
   // Note: TagDispatch uses a dispatch table at "&table->fast_entries".

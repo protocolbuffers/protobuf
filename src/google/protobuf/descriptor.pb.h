@@ -795,7 +795,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -987,7 +986,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -1257,7 +1255,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -1516,7 +1513,6 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -1734,7 +1730,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -1926,7 +1921,6 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -2465,7 +2459,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -2702,7 +2695,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -2888,7 +2880,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -3074,7 +3065,6 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -3350,7 +3340,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -3529,7 +3518,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -3708,7 +3696,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -3932,7 +3919,6 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -4321,7 +4307,6 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -4697,7 +4682,6 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -5119,7 +5103,6 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -5560,7 +5543,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -6263,7 +6245,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -6902,7 +6883,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -7108,7 +7088,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -7536,7 +7515,6 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -7938,7 +7916,6 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -8353,7 +8330,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -8549,7 +8525,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -8809,7 +8784,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -9201,7 +9175,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -9410,7 +9383,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -9613,7 +9585,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -9828,7 +9799,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -10093,7 +10063,6 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -10454,7 +10423,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
@@ -10864,7 +10832,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   bool IsInitialized() const final;
 
   ::size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::google::protobuf::internal::ParseContext* ctx) final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
       ::google::protobuf::io::EpsCopyOutputStream* stream) const final;

@@ -268,6 +268,7 @@ struct DynamicMessageFactory::TypeInfo {
 
   DynamicMessage::ClassDataFull class_data = {
       {
+          nullptr,  // tc_table
           nullptr,  // on_demand_register_arena_dtor
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
           false,

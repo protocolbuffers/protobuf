@@ -187,6 +187,8 @@ JavaFeatures::GetClassData() const {
           &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
           nullptr,  // tracker
       };
+  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
   return _data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -244,11 +246,6 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* JavaFeatures::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
 }
 
 ::uint8_t* JavaFeatures::_InternalSerialize(
