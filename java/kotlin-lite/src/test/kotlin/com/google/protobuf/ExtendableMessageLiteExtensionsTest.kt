@@ -60,4 +60,41 @@ class ExtendableMessageLiteExtensionsTest {
     val builder = ExampleExtensibleMessage.newBuilder()
     assertThat(TestProto.int32Extension in builder).isFalse()
   }
+
+  @Test
+  fun getOrNullOnMessage() {
+    val message =
+      ExampleExtensibleMessage.newBuilder().setExtension(TestProto.int32Extension, 7).build()
+    assertThat(message.getOrNull(TestProto.int32Extension)).isEqualTo(7)
+  }
+
+  @Test
+  fun getOrNullOnBuilder() {
+    val builder = ExampleExtensibleMessage.newBuilder().setExtension(TestProto.int32Extension, 8)
+    assertThat(builder.getOrNull(TestProto.int32Extension)).isEqualTo(8)
+  }
+
+  @Test
+  fun getReturnsDefaultWhenNotSetOnMessage() {
+    val message = ExampleExtensibleMessage.newBuilder().build()
+    assertThat(message[TestProto.int32Extension]).isEqualTo(0)
+  }
+
+  @Test
+  fun getReturnsDefaultWhenNotSetOnBuilder() {
+    val builder = ExampleExtensibleMessage.newBuilder()
+    assertThat(builder[TestProto.int32Extension]).isEqualTo(0)
+  }
+
+  @Test
+  fun getOrNullReturnsNullWhenNotSetOnMessage() {
+    val message = ExampleExtensibleMessage.newBuilder().build()
+    assertThat(message.getOrNull(TestProto.int32Extension)).isNull()
+  }
+
+  @Test
+  fun getOrNullReturnsNullWhenNotSetOnBuilder() {
+    val builder = ExampleExtensibleMessage.newBuilder()
+    assertThat(builder.getOrNull(TestProto.int32Extension)).isNull()
+  }
 }

@@ -37,19 +37,32 @@ import com.google.protobuf.GeneratedMessage
 operator fun <
   M : GeneratedMessage.ExtendableMessage<M>,
   B : GeneratedMessage.ExtendableBuilder<M, B>,
-  T : Any> B.set(extension: ExtensionLite<M, T>, value: T) {
+  T : Any,
+> B.set(extension: ExtensionLite<M, T>, value: T) {
   setExtension(extension, value)
 }
 
-/** Gets the current value of the proto extension. */
+/** Gets the current value of the proto extension, or the default value if it is not present. */
 operator fun <
   M : GeneratedMessage.ExtendableMessage<M>,
   MorBT : GeneratedMessage.ExtendableMessageOrBuilder<M>,
-  T : Any> MorBT.get(extension: ExtensionLite<M, T>): T = getExtension(extension)
+  T : Any,
+> MorBT.get(extension: ExtensionLite<M, T>): T = getExtension(extension)
+
+/** Gets the current value of the proto extension, or null if it is not present. */
+fun <
+  M : GeneratedMessage.ExtendableMessage<M>,
+  MOrBT : GeneratedMessage.ExtendableMessageOrBuilder<M>,
+  T : Any,
+> MOrBT.getOrNull(extension: ExtensionLite<M, T>): T? =
+  if (contains(extension)) {
+    this[extension]
+  } else {
+    null
+  }
 
 /** Returns true if the specified extension is set on this builder. */
 operator fun <
   M : GeneratedMessage.ExtendableMessage<M>,
-  MorBT : GeneratedMessage.ExtendableMessageOrBuilder<M>> MorBT.contains(
-  extension: ExtensionLite<M, *>
-): Boolean = hasExtension(extension)
+  MorBT : GeneratedMessage.ExtendableMessageOrBuilder<M>,
+> MorBT.contains(extension: ExtensionLite<M, *>): Boolean = hasExtension(extension)
