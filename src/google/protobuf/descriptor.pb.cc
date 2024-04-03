@@ -118,35 +118,6 @@ struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
 
-inline constexpr FieldOptions_FeatureSupport::Impl_::Impl_(
-    ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        deprecation_warning_(
-            &::google::protobuf::internal::fixed_address_empty_string,
-            ::_pbi::ConstantInitialized()),
-        edition_introduced_{static_cast< ::google::protobuf::Edition >(0)},
-        edition_deprecated_{static_cast< ::google::protobuf::Edition >(0)},
-        edition_removed_{static_cast< ::google::protobuf::Edition >(0)} {}
-
-template <typename>
-PROTOBUF_CONSTEXPR FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
-struct FieldOptions_FeatureSupportDefaultTypeInternal {
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  constexpr FieldOptions_FeatureSupportDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-#else   // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  FieldOptions_FeatureSupportDefaultTypeInternal() {}
-  void Init() { ::new (&_instance) FieldOptions_FeatureSupport(); };
-#endif  // defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  ~FieldOptions_FeatureSupportDefaultTypeInternal() {}
-  union {
-    FieldOptions_FeatureSupport _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_FeatureSupportDefaultTypeInternal _FieldOptions_FeatureSupport_default_instance_;
-
 inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
@@ -373,8 +344,6 @@ inline constexpr FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
         features_{nullptr},
-        overridable_features_{nullptr},
-        fixed_features_{nullptr},
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
@@ -575,7 +544,6 @@ inline constexpr FieldOptions::Impl_::Impl_(
         edition_defaults_{},
         uninterpreted_option_{},
         features_{nullptr},
-        feature_support_{nullptr},
         ctype_{static_cast< ::google::protobuf::FieldOptions_CType >(0)},
         jstype_{static_cast< ::google::protobuf::FieldOptions_JSType >(0)},
         packed_{false},
@@ -1374,22 +1342,6 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_EditionDefault, _impl_.value_),
         1,
         0,
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _impl_._has_bits_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _internal_metadata_),
-        ~0u,  // no _extensions_
-        ~0u,  // no _oneof_case_
-        ~0u,  // no _weak_field_map_
-        ~0u,  // no _inlined_string_donated_
-        ~0u,  // no _split_
-        ~0u,  // no sizeof(Split)
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _impl_.edition_introduced_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _impl_.edition_deprecated_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _impl_.deprecation_warning_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions_FeatureSupport, _impl_.edition_removed_),
-        1,
-        2,
-        0,
-        3,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _internal_metadata_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_._extensions_),
@@ -1410,21 +1362,19 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.features_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.feature_support_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_),
+        1,
+        3,
         2,
         4,
-        3,
         5,
         6,
         7,
         8,
         9,
-        10,
         ~0u,
         ~0u,
         0,
-        1,
         ~0u,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _internal_metadata_),
@@ -1565,12 +1515,8 @@ const ::uint32_t
         ~0u,  // no _split_
         ~0u,  // no sizeof(Split)
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _impl_.edition_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _impl_.overridable_features_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _impl_.fixed_features_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault, _impl_.features_),
-        3,
         1,
-        2,
         0,
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _internal_metadata_),
@@ -1661,22 +1607,21 @@ static const ::_pbi::MigrationSchema
         {251, 280, -1, sizeof(::google::protobuf::FileOptions)},
         {301, 316, -1, sizeof(::google::protobuf::MessageOptions)},
         {323, 333, -1, sizeof(::google::protobuf::FieldOptions_EditionDefault)},
-        {335, 347, -1, sizeof(::google::protobuf::FieldOptions_FeatureSupport)},
-        {351, 373, -1, sizeof(::google::protobuf::FieldOptions)},
-        {387, 397, -1, sizeof(::google::protobuf::OneofOptions)},
-        {399, 412, -1, sizeof(::google::protobuf::EnumOptions)},
-        {417, 429, -1, sizeof(::google::protobuf::EnumValueOptions)},
-        {433, 444, -1, sizeof(::google::protobuf::ServiceOptions)},
-        {447, 459, -1, sizeof(::google::protobuf::MethodOptions)},
-        {463, 473, -1, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
-        {475, 490, -1, sizeof(::google::protobuf::UninterpretedOption)},
-        {497, 511, -1, sizeof(::google::protobuf::FeatureSet)},
-        {517, 529, -1, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
-        {533, 544, -1, sizeof(::google::protobuf::FeatureSetDefaults)},
-        {547, 560, -1, sizeof(::google::protobuf::SourceCodeInfo_Location)},
-        {565, -1, -1, sizeof(::google::protobuf::SourceCodeInfo)},
-        {574, 587, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
-        {592, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
+        {335, 356, -1, sizeof(::google::protobuf::FieldOptions)},
+        {369, 379, -1, sizeof(::google::protobuf::OneofOptions)},
+        {381, 394, -1, sizeof(::google::protobuf::EnumOptions)},
+        {399, 411, -1, sizeof(::google::protobuf::EnumValueOptions)},
+        {415, 426, -1, sizeof(::google::protobuf::ServiceOptions)},
+        {429, 441, -1, sizeof(::google::protobuf::MethodOptions)},
+        {445, 455, -1, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
+        {457, 472, -1, sizeof(::google::protobuf::UninterpretedOption)},
+        {479, 493, -1, sizeof(::google::protobuf::FeatureSet)},
+        {499, 509, -1, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
+        {511, 522, -1, sizeof(::google::protobuf::FeatureSetDefaults)},
+        {525, 538, -1, sizeof(::google::protobuf::SourceCodeInfo_Location)},
+        {543, -1, -1, sizeof(::google::protobuf::SourceCodeInfo)},
+        {552, 565, -1, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
+        {570, -1, -1, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_FileDescriptorSet_default_instance_._instance,
@@ -1696,7 +1641,6 @@ static const ::_pb::Message* const file_default_instances[] = {
     &::google::protobuf::_FileOptions_default_instance_._instance,
     &::google::protobuf::_MessageOptions_default_instance_._instance,
     &::google::protobuf::_FieldOptions_EditionDefault_default_instance_._instance,
-    &::google::protobuf::_FieldOptions_FeatureSupport_default_instance_._instance,
     &::google::protobuf::_FieldOptions_default_instance_._instance,
     &::google::protobuf::_OneofOptions_default_instance_._instance,
     &::google::protobuf::_EnumOptions_default_instance_._instance,
@@ -1829,7 +1773,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "obuf.FeatureSet\022C\n\024uninterpreted_option\030"
     "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
     "tion*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005J\004\010\005\020\006J\004\010\006\020\007J\004\010\010\020\tJ"
-    "\004\010\t\020\n\"\243\013\n\014FieldOptions\022:\n\005ctype\030\001 \001(\0162#."
+    "\004\010\t\020\n\"\215\t\n\014FieldOptions\022:\n\005ctype\030\001 \001(\0162#."
     "google.protobuf.FieldOptions.CType:\006STRI"
     "NG\022\016\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001(\0162$.goo"
     "gle.protobuf.FieldOptions.JSType:\tJS_NOR"
@@ -1842,141 +1786,131 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "Options.OptionTargetType\022F\n\020edition_defa"
     "ults\030\024 \003(\0132,.google.protobuf.FieldOption"
     "s.EditionDefault\022-\n\010features\030\025 \001(\0132\033.goo"
-    "gle.protobuf.FeatureSet\022E\n\017feature_suppo"
-    "rt\030\026 \001(\0132,.google.protobuf.FieldOptions."
-    "FeatureSupport\022C\n\024uninterpreted_option\030\347"
-    "\007 \003(\0132$.google.protobuf.UninterpretedOpt"
-    "ion\032J\n\016EditionDefault\022)\n\007edition\030\003 \001(\0162\030"
-    ".google.protobuf.Edition\022\r\n\005value\030\002 \001(\t\032"
-    "\314\001\n\016FeatureSupport\0224\n\022edition_introduced"
-    "\030\001 \001(\0162\030.google.protobuf.Edition\0224\n\022edit"
-    "ion_deprecated\030\002 \001(\0162\030.google.protobuf.E"
-    "dition\022\033\n\023deprecation_warning\030\003 \001(\t\0221\n\017e"
-    "dition_removed\030\004 \001(\0162\030.google.protobuf.E"
-    "dition\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n"
-    "\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORMAL\020\000"
-    "\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002\"U\n\017Option"
-    "Retention\022\025\n\021RETENTION_UNKNOWN\020\000\022\025\n\021RETE"
-    "NTION_RUNTIME\020\001\022\024\n\020RETENTION_SOURCE\020\002\"\214\002"
-    "\n\020OptionTargetType\022\027\n\023TARGET_TYPE_UNKNOW"
-    "N\020\000\022\024\n\020TARGET_TYPE_FILE\020\001\022\037\n\033TARGET_TYPE"
-    "_EXTENSION_RANGE\020\002\022\027\n\023TARGET_TYPE_MESSAG"
-    "E\020\003\022\025\n\021TARGET_TYPE_FIELD\020\004\022\025\n\021TARGET_TYP"
-    "E_ONEOF\020\005\022\024\n\020TARGET_TYPE_ENUM\020\006\022\032\n\026TARGE"
-    "T_TYPE_ENUM_ENTRY\020\007\022\027\n\023TARGET_TYPE_SERVI"
-    "CE\020\010\022\026\n\022TARGET_TYPE_METHOD\020\t*\t\010\350\007\020\200\200\200\200\002J"
-    "\004\010\004\020\005J\004\010\022\020\023\"\215\001\n\014OneofOptions\022-\n\010features"
-    "\030\001 \001(\0132\033.google.protobuf.FeatureSet\022C\n\024u"
-    "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
-    "obuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\366\001\n\013"
-    "EnumOptions\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndepr"
-    "ecated\030\003 \001(\010:\005false\0222\n&deprecated_legacy"
-    "_json_field_conflicts\030\006 \001(\010B\002\030\001\022-\n\010featu"
-    "res\030\007 \001(\0132\033.google.protobuf.FeatureSet\022C"
-    "\n\024uninterpreted_option\030\347\007 \003(\0132$.google.p"
-    "rotobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002J\004"
-    "\010\005\020\006\"\311\001\n\020EnumValueOptions\022\031\n\ndeprecated\030"
-    "\001 \001(\010:\005false\022-\n\010features\030\002 \001(\0132\033.google."
-    "protobuf.FeatureSet\022\033\n\014debug_redact\030\003 \001("
-    "\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132"
-    "$.google.protobuf.UninterpretedOption*\t\010"
-    "\350\007\020\200\200\200\200\002\"\252\001\n\016ServiceOptions\022-\n\010features\030"
-    "\" \001(\0132\033.google.protobuf.FeatureSet\022\031\n\nde"
-    "precated\030! \001(\010:\005false\022C\n\024uninterpreted_o"
-    "ption\030\347\007 \003(\0132$.google.protobuf.Uninterpr"
-    "etedOption*\t\010\350\007\020\200\200\200\200\002\"\334\002\n\rMethodOptions\022"
-    "\031\n\ndeprecated\030! \001(\010:\005false\022_\n\021idempotenc"
-    "y_level\030\" \001(\0162/.google.protobuf.MethodOp"
-    "tions.IdempotencyLevel:\023IDEMPOTENCY_UNKN"
-    "OWN\022-\n\010features\030# \001(\0132\033.google.protobuf."
-    "FeatureSet\022C\n\024uninterpreted_option\030\347\007 \003("
-    "\0132$.google.protobuf.UninterpretedOption\""
-    "P\n\020IdempotencyLevel\022\027\n\023IDEMPOTENCY_UNKNO"
-    "WN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016\n\nIDEMPOTENT\020"
-    "\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;\n\004"
-    "name\030\002 \003(\0132-.google.protobuf.Uninterpret"
-    "edOption.NamePart\022\030\n\020identifier_value\030\003 "
-    "\001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022negat"
-    "ive_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 \001("
-    "\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_val"
-    "ue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t\022"
-    "\024\n\014is_extension\030\002 \002(\010\"\265\t\n\nFeatureSet\022|\n\016"
-    "field_presence\030\001 \001(\0162).google.protobuf.F"
-    "eatureSet.FieldPresenceB9\210\001\001\230\001\004\230\001\001\242\001\r\022\010E"
-    "XPLICIT\030\346\007\242\001\r\022\010IMPLICIT\030\347\007\242\001\r\022\010EXPLICIT\030"
-    "\350\007\022\\\n\tenum_type\030\002 \001(\0162$.google.protobuf."
-    "FeatureSet.EnumTypeB#\210\001\001\230\001\006\230\001\001\242\001\013\022\006CLOSE"
-    "D\030\346\007\242\001\t\022\004OPEN\030\347\007\022{\n\027repeated_field_encod"
-    "ing\030\003 \001(\01621.google.protobuf.FeatureSet.R"
-    "epeatedFieldEncodingB\'\210\001\001\230\001\004\230\001\001\242\001\r\022\010EXPA"
-    "NDED\030\346\007\242\001\013\022\006PACKED\030\347\007\022h\n\017utf8_validation"
-    "\030\004 \001(\0162*.google.protobuf.FeatureSet.Utf8"
-    "ValidationB#\210\001\001\230\001\004\230\001\001\242\001\t\022\004NONE\030\346\007\242\001\013\022\006VE"
-    "RIFY\030\347\007\022g\n\020message_encoding\030\005 \001(\0162+.goog"
-    "le.protobuf.FeatureSet.MessageEncodingB "
-    "\210\001\001\230\001\004\230\001\001\242\001\024\022\017LENGTH_PREFIXED\030\346\007\022p\n\013json"
-    "_format\030\006 \001(\0162&.google.protobuf.FeatureS"
-    "et.JsonFormatB3\210\001\001\230\001\003\230\001\006\230\001\001\242\001\027\022\022LEGACY_B"
-    "EST_EFFORT\030\346\007\242\001\n\022\005ALLOW\030\347\007\"\\\n\rFieldPrese"
-    "nce\022\032\n\026FIELD_PRESENCE_UNKNOWN\020\000\022\014\n\010EXPLI"
-    "CIT\020\001\022\014\n\010IMPLICIT\020\002\022\023\n\017LEGACY_REQUIRED\020\003"
-    "\"7\n\010EnumType\022\025\n\021ENUM_TYPE_UNKNOWN\020\000\022\010\n\004O"
-    "PEN\020\001\022\n\n\006CLOSED\020\002\"V\n\025RepeatedFieldEncodi"
-    "ng\022#\n\037REPEATED_FIELD_ENCODING_UNKNOWN\020\000\022"
-    "\n\n\006PACKED\020\001\022\014\n\010EXPANDED\020\002\"C\n\016Utf8Validat"
-    "ion\022\033\n\027UTF8_VALIDATION_UNKNOWN\020\000\022\n\n\006VERI"
-    "FY\020\002\022\010\n\004NONE\020\003\"S\n\017MessageEncoding\022\034\n\030MES"
-    "SAGE_ENCODING_UNKNOWN\020\000\022\023\n\017LENGTH_PREFIX"
-    "ED\020\001\022\r\n\tDELIMITED\020\002\"H\n\nJsonFormat\022\027\n\023JSO"
-    "N_FORMAT_UNKNOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGACY_"
-    "BEST_EFFORT\020\002*\006\010\350\007\020\351\007*\006\010\351\007\020\352\007*\006\010\352\007\020\353\007*\006\010"
-    "\206N\020\207N*\006\010\213N\020\220N*\006\010\220N\020\221NJ\006\010\347\007\020\350\007\"\261\003\n\022Featur"
-    "eSetDefaults\022N\n\010defaults\030\001 \003(\0132<.google."
-    "protobuf.FeatureSetDefaults.FeatureSetEd"
-    "itionDefault\0221\n\017minimum_edition\030\004 \001(\0162\030."
-    "google.protobuf.Edition\0221\n\017maximum_editi"
-    "on\030\005 \001(\0162\030.google.protobuf.Edition\032\344\001\n\030F"
-    "eatureSetEditionDefault\022)\n\007edition\030\003 \001(\016"
-    "2\030.google.protobuf.Edition\0229\n\024overridabl"
-    "e_features\030\004 \001(\0132\033.google.protobuf.Featu"
-    "reSet\0223\n\016fixed_features\030\005 \001(\0132\033.google.p"
-    "rotobuf.FeatureSet\022-\n\010features\030\002 \001(\0132\033.g"
-    "oogle.protobuf.FeatureSet\"\325\001\n\016SourceCode"
-    "Info\022:\n\010location\030\001 \003(\0132(.google.protobuf"
-    ".SourceCodeInfo.Location\032\206\001\n\010Location\022\020\n"
-    "\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020lea"
-    "ding_comments\030\003 \001(\t\022\031\n\021trailing_comments"
-    "\030\004 \001(\t\022!\n\031leading_detached_comments\030\006 \003("
-    "\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 "
-    "\003(\0132-.google.protobuf.GeneratedCodeInfo."
-    "Annotation\032\303\001\n\nAnnotation\022\020\n\004path\030\001 \003(\005B"
-    "\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022"
-    "\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google."
-    "protobuf.GeneratedCodeInfo.Annotation.Se"
-    "mantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n"
-    "\005ALIAS\020\002*\232\002\n\007Edition\022\023\n\017EDITION_UNKNOWN\020"
-    "\000\022\023\n\016EDITION_PROTO2\020\346\007\022\023\n\016EDITION_PROTO3"
-    "\020\347\007\022\021\n\014EDITION_2023\020\350\007\022\021\n\014EDITION_2024\020\351"
-    "\007\022\027\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023EDITION_2_"
-    "TEST_ONLY\020\002\022\035\n\027EDITION_99997_TEST_ONLY\020\235"
-    "\215\006\022\035\n\027EDITION_99998_TEST_ONLY\020\236\215\006\022\035\n\027EDI"
-    "TION_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDITION_MAX\020"
-    "\377\377\377\377\007\"\006\010\204\007\020\204\007B~\n\023com.google.protobufB\020De"
-    "scriptorProtosH\001Z-google.golang.org/prot"
-    "obuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032Googl"
-    "e.Protobuf.Reflection"
+    "gle.protobuf.FeatureSet\022C\n\024uninterpreted"
+    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
+    "pretedOption\032J\n\016EditionDefault\022)\n\007editio"
+    "n\030\003 \001(\0162\030.google.protobuf.Edition\022\r\n\005val"
+    "ue\030\002 \001(\t\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022"
+    "\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORMAL"
+    "\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002\"U\n\017Opti"
+    "onRetention\022\025\n\021RETENTION_UNKNOWN\020\000\022\025\n\021RE"
+    "TENTION_RUNTIME\020\001\022\024\n\020RETENTION_SOURCE\020\002\""
+    "\214\002\n\020OptionTargetType\022\027\n\023TARGET_TYPE_UNKN"
+    "OWN\020\000\022\024\n\020TARGET_TYPE_FILE\020\001\022\037\n\033TARGET_TY"
+    "PE_EXTENSION_RANGE\020\002\022\027\n\023TARGET_TYPE_MESS"
+    "AGE\020\003\022\025\n\021TARGET_TYPE_FIELD\020\004\022\025\n\021TARGET_T"
+    "YPE_ONEOF\020\005\022\024\n\020TARGET_TYPE_ENUM\020\006\022\032\n\026TAR"
+    "GET_TYPE_ENUM_ENTRY\020\007\022\027\n\023TARGET_TYPE_SER"
+    "VICE\020\010\022\026\n\022TARGET_TYPE_METHOD\020\t*\t\010\350\007\020\200\200\200\200"
+    "\002J\004\010\004\020\005J\004\010\022\020\023\"\215\001\n\014OneofOptions\022-\n\010featur"
+    "es\030\001 \001(\0132\033.google.protobuf.FeatureSet\022C\n"
+    "\024uninterpreted_option\030\347\007 \003(\0132$.google.pr"
+    "otobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\366\001"
+    "\n\013EnumOptions\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\nde"
+    "precated\030\003 \001(\010:\005false\0222\n&deprecated_lega"
+    "cy_json_field_conflicts\030\006 \001(\010B\002\030\001\022-\n\010fea"
+    "tures\030\007 \001(\0132\033.google.protobuf.FeatureSet"
+    "\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.google"
+    ".protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002"
+    "J\004\010\005\020\006\"\311\001\n\020EnumValueOptions\022\031\n\ndeprecate"
+    "d\030\001 \001(\010:\005false\022-\n\010features\030\002 \001(\0132\033.googl"
+    "e.protobuf.FeatureSet\022\033\n\014debug_redact\030\003 "
+    "\001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003("
+    "\0132$.google.protobuf.UninterpretedOption*"
+    "\t\010\350\007\020\200\200\200\200\002\"\252\001\n\016ServiceOptions\022-\n\010feature"
+    "s\030\" \001(\0132\033.google.protobuf.FeatureSet\022\031\n\n"
+    "deprecated\030! \001(\010:\005false\022C\n\024uninterpreted"
+    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
+    "pretedOption*\t\010\350\007\020\200\200\200\200\002\"\334\002\n\rMethodOption"
+    "s\022\031\n\ndeprecated\030! \001(\010:\005false\022_\n\021idempote"
+    "ncy_level\030\" \001(\0162/.google.protobuf.Method"
+    "Options.IdempotencyLevel:\023IDEMPOTENCY_UN"
+    "KNOWN\022-\n\010features\030# \001(\0132\033.google.protobu"
+    "f.FeatureSet\022C\n\024uninterpreted_option\030\347\007 "
+    "\003(\0132$.google.protobuf.UninterpretedOptio"
+    "n\"P\n\020IdempotencyLevel\022\027\n\023IDEMPOTENCY_UNK"
+    "NOWN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016\n\nIDEMPOTEN"
+    "T\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;"
+    "\n\004name\030\002 \003(\0132-.google.protobuf.Uninterpr"
+    "etedOption.NamePart\022\030\n\020identifier_value\030"
+    "\003 \001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022neg"
+    "ative_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 "
+    "\001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_v"
+    "alue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002("
+    "\t\022\024\n\014is_extension\030\002 \002(\010\"\265\t\n\nFeatureSet\022|"
+    "\n\016field_presence\030\001 \001(\0162).google.protobuf"
+    ".FeatureSet.FieldPresenceB9\210\001\001\230\001\004\230\001\001\242\001\r\022"
+    "\010EXPLICIT\030\346\007\242\001\r\022\010IMPLICIT\030\347\007\242\001\r\022\010EXPLICI"
+    "T\030\350\007\022\\\n\tenum_type\030\002 \001(\0162$.google.protobu"
+    "f.FeatureSet.EnumTypeB#\210\001\001\230\001\006\230\001\001\242\001\013\022\006CLO"
+    "SED\030\346\007\242\001\t\022\004OPEN\030\347\007\022{\n\027repeated_field_enc"
+    "oding\030\003 \001(\01621.google.protobuf.FeatureSet"
+    ".RepeatedFieldEncodingB\'\210\001\001\230\001\004\230\001\001\242\001\r\022\010EX"
+    "PANDED\030\346\007\242\001\013\022\006PACKED\030\347\007\022h\n\017utf8_validati"
+    "on\030\004 \001(\0162*.google.protobuf.FeatureSet.Ut"
+    "f8ValidationB#\210\001\001\230\001\004\230\001\001\242\001\t\022\004NONE\030\346\007\242\001\013\022\006"
+    "VERIFY\030\347\007\022g\n\020message_encoding\030\005 \001(\0162+.go"
+    "ogle.protobuf.FeatureSet.MessageEncoding"
+    "B \210\001\001\230\001\004\230\001\001\242\001\024\022\017LENGTH_PREFIXED\030\346\007\022p\n\013js"
+    "on_format\030\006 \001(\0162&.google.protobuf.Featur"
+    "eSet.JsonFormatB3\210\001\001\230\001\003\230\001\006\230\001\001\242\001\027\022\022LEGACY"
+    "_BEST_EFFORT\030\346\007\242\001\n\022\005ALLOW\030\347\007\"\\\n\rFieldPre"
+    "sence\022\032\n\026FIELD_PRESENCE_UNKNOWN\020\000\022\014\n\010EXP"
+    "LICIT\020\001\022\014\n\010IMPLICIT\020\002\022\023\n\017LEGACY_REQUIRED"
+    "\020\003\"7\n\010EnumType\022\025\n\021ENUM_TYPE_UNKNOWN\020\000\022\010\n"
+    "\004OPEN\020\001\022\n\n\006CLOSED\020\002\"V\n\025RepeatedFieldEnco"
+    "ding\022#\n\037REPEATED_FIELD_ENCODING_UNKNOWN\020"
+    "\000\022\n\n\006PACKED\020\001\022\014\n\010EXPANDED\020\002\"C\n\016Utf8Valid"
+    "ation\022\033\n\027UTF8_VALIDATION_UNKNOWN\020\000\022\n\n\006VE"
+    "RIFY\020\002\022\010\n\004NONE\020\003\"S\n\017MessageEncoding\022\034\n\030M"
+    "ESSAGE_ENCODING_UNKNOWN\020\000\022\023\n\017LENGTH_PREF"
+    "IXED\020\001\022\r\n\tDELIMITED\020\002\"H\n\nJsonFormat\022\027\n\023J"
+    "SON_FORMAT_UNKNOWN\020\000\022\t\n\005ALLOW\020\001\022\026\n\022LEGAC"
+    "Y_BEST_EFFORT\020\002*\006\010\350\007\020\351\007*\006\010\351\007\020\352\007*\006\010\352\007\020\353\007*"
+    "\006\010\206N\020\207N*\006\010\213N\020\220N*\006\010\220N\020\221NJ\006\010\347\007\020\350\007\"\300\002\n\022Feat"
+    "ureSetDefaults\022N\n\010defaults\030\001 \003(\0132<.googl"
+    "e.protobuf.FeatureSetDefaults.FeatureSet"
+    "EditionDefault\0221\n\017minimum_edition\030\004 \001(\0162"
+    "\030.google.protobuf.Edition\0221\n\017maximum_edi"
+    "tion\030\005 \001(\0162\030.google.protobuf.Edition\032t\n\030"
+    "FeatureSetEditionDefault\022)\n\007edition\030\003 \001("
+    "\0162\030.google.protobuf.Edition\022-\n\010features\030"
+    "\002 \001(\0132\033.google.protobuf.FeatureSet\"\325\001\n\016S"
+    "ourceCodeInfo\022:\n\010location\030\001 \003(\0132(.google"
+    ".protobuf.SourceCodeInfo.Location\032\206\001\n\010Lo"
+    "cation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002"
+    "\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing"
+    "_comments\030\004 \001(\t\022!\n\031leading_detached_comm"
+    "ents\030\006 \003(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nanno"
+    "tation\030\001 \003(\0132-.google.protobuf.Generated"
+    "CodeInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004pa"
+    "th\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005beg"
+    "in\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\0162"
+    "6.google.protobuf.GeneratedCodeInfo.Anno"
+    "tation.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n"
+    "\003SET\020\001\022\t\n\005ALIAS\020\002*\222\002\n\007Edition\022\023\n\017EDITION"
+    "_UNKNOWN\020\000\022\023\n\016EDITION_PROTO2\020\346\007\022\023\n\016EDITI"
+    "ON_PROTO3\020\347\007\022\021\n\014EDITION_2023\020\350\007\022\021\n\014EDITI"
+    "ON_2024\020\351\007\022\027\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023E"
+    "DITION_2_TEST_ONLY\020\002\022\035\n\027EDITION_99997_TE"
+    "ST_ONLY\020\235\215\006\022\035\n\027EDITION_99998_TEST_ONLY\020\236"
+    "\215\006\022\035\n\027EDITION_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDI"
+    "TION_MAX\020\377\377\377\377\007B~\n\023com.google.protobufB\020D"
+    "escriptorProtosH\001Z-google.golang.org/pro"
+    "tobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032Goog"
+    "le.Protobuf.Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    9981,
+    9582,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
     nullptr,
     0,
-    33,
+    32,
     schemas,
     file_default_instances,
     TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
@@ -2005,7 +1939,6 @@ _MethodDescriptorProto_default_instance_.Init();
 _FileOptions_default_instance_.Init();
 _MessageOptions_default_instance_.Init();
 _FieldOptions_EditionDefault_default_instance_.Init();
-_FieldOptions_FeatureSupport_default_instance_.Init();
 _FieldOptions_default_instance_.Init();
 _OneofOptions_default_instance_.Init();
 _EnumOptions_default_instance_.Init();
@@ -8649,312 +8582,6 @@ void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROT
 }
 // ===================================================================
 
-class FieldOptions_FeatureSupport::_Internal {
- public:
-  using HasBits = decltype(std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_);
-};
-
-FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
-  SharedCtor(arena);
-  // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.FeatureSupport)
-}
-inline PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
-    const Impl_& from, const ::google::protobuf::FieldOptions_FeatureSupport& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0},
-        deprecation_warning_(arena, from.deprecation_warning_) {}
-
-FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
-    ::google::protobuf::Arena* arena,
-    const FieldOptions_FeatureSupport& from)
-    : ::google::protobuf::Message(arena) {
-  FieldOptions_FeatureSupport* const _this = this;
-  (void)_this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
-               offsetof(Impl_, edition_introduced_),
-           reinterpret_cast<const char *>(&from._impl_) +
-               offsetof(Impl_, edition_introduced_),
-           offsetof(Impl_, edition_removed_) -
-               offsetof(Impl_, edition_introduced_) +
-               sizeof(Impl_::edition_removed_));
-
-  // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions.FeatureSupport)
-}
-inline PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* arena)
-      : _cached_size_{0},
-        deprecation_warning_(arena) {}
-
-inline void FieldOptions_FeatureSupport::SharedCtor(::_pb::Arena* arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
-               offsetof(Impl_, edition_introduced_),
-           0,
-           offsetof(Impl_, edition_removed_) -
-               offsetof(Impl_, edition_introduced_) +
-               sizeof(Impl_::edition_removed_));
-}
-FieldOptions_FeatureSupport::~FieldOptions_FeatureSupport() {
-  // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.FeatureSupport)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
-}
-inline void FieldOptions_FeatureSupport::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.deprecation_warning_.Destroy();
-  _impl_.~Impl_();
-}
-
-const ::google::protobuf::MessageLite::ClassData*
-FieldOptions_FeatureSupport::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
-              false,
-          },
-          &FieldOptions_FeatureSupport::MergeImpl,
-          &FieldOptions_FeatureSupport::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  return _data_.base();
-}
-constexpr ::_pbi::TcParseTable<2, 4, 3, 71, 2> FieldOptions_FeatureSupport::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_),
-    0, // no _extensions_
-    4, 24,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967280,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    4,  // num_field_entries
-    3,  // num_aux_entries
-    offsetof(decltype(_table_), aux_entries),
-    &_FieldOptions_FeatureSupport_default_instance_._instance,
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    // optional .google.protobuf.Edition edition_removed = 4;
-    {::_pbi::TcParser::FastEvS1,
-     {32, 3, 2, PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_removed_)}},
-    // optional .google.protobuf.Edition edition_introduced = 1;
-    {::_pbi::TcParser::FastEvS1,
-     {8, 1, 0, PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_introduced_)}},
-    // optional .google.protobuf.Edition edition_deprecated = 2;
-    {::_pbi::TcParser::FastEvS1,
-     {16, 2, 1, PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_deprecated_)}},
-    // optional string deprecation_warning = 3;
-    {::_pbi::TcParser::FastSS1,
-     {26, 0, 0, PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.deprecation_warning_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // optional .google.protobuf.Edition edition_introduced = 1;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_introduced_), _Internal::kHasBitsOffset + 1, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-    // optional .google.protobuf.Edition edition_deprecated = 2;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_deprecated_), _Internal::kHasBitsOffset + 2, 1,
-    (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-    // optional string deprecation_warning = 3;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.deprecation_warning_), _Internal::kHasBitsOffset + 0, 0,
-    (0 | ::_fl::kFcOptional | ::_fl::kRawString | ::_fl::kRepAString)},
-    // optional .google.protobuf.Edition edition_removed = 4;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_removed_), _Internal::kHasBitsOffset + 3, 2,
-    (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-  }}, {{
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-  }}, {{
-    "\53\0\0\23\0\0\0\0"
-    "google.protobuf.FieldOptions.FeatureSupport"
-    "deprecation_warning"
-  }},
-};
-
-PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.FeatureSupport)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    _impl_.deprecation_warning_.ClearNonDefaultToEmpty();
-  }
-  if (cached_has_bits & 0x0000000eu) {
-    ::memset(&_impl_.edition_introduced_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.edition_removed_) -
-        reinterpret_cast<char*>(&_impl_.edition_introduced_)) + sizeof(_impl_.edition_removed_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-const char* FieldOptions_FeatureSupport::_InternalParse(const char* ptr,
-                                        ::_pbi::ParseContext* ctx) {
-  return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-}
-
-::uint8_t* FieldOptions_FeatureSupport::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions.FeatureSupport)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  // optional .google.protobuf.Edition edition_introduced = 1;
-  if (cached_has_bits & 0x00000002u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        1, this->_internal_edition_introduced(), target);
-  }
-
-  // optional .google.protobuf.Edition edition_deprecated = 2;
-  if (cached_has_bits & 0x00000004u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        2, this->_internal_edition_deprecated(), target);
-  }
-
-  // optional string deprecation_warning = 3;
-  if (cached_has_bits & 0x00000001u) {
-    const std::string& _s = this->_internal_deprecation_warning();
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
-                                "google.protobuf.FieldOptions.FeatureSupport.deprecation_warning");
-    target = stream->WriteStringMaybeAliased(3, _s, target);
-  }
-
-  // optional .google.protobuf.Edition edition_removed = 4;
-  if (cached_has_bits & 0x00000008u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        4, this->_internal_edition_removed(), target);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldOptions.FeatureSupport)
-  return target;
-}
-
-::size_t FieldOptions_FeatureSupport::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions.FeatureSupport)
-  ::size_t total_size = 0;
-
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    // optional string deprecation_warning = 3;
-    if (cached_has_bits & 0x00000001u) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_deprecation_warning());
-    }
-
-    // optional .google.protobuf.Edition edition_introduced = 1;
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_edition_introduced());
-    }
-
-    // optional .google.protobuf.Edition edition_deprecated = 2;
-    if (cached_has_bits & 0x00000004u) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_edition_deprecated());
-    }
-
-    // optional .google.protobuf.Edition edition_removed = 4;
-    if (cached_has_bits & 0x00000008u) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_edition_removed());
-    }
-
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
-
-
-void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<FieldOptions_FeatureSupport*>(&to_msg);
-  auto& from = static_cast<const FieldOptions_FeatureSupport&>(from_msg);
-  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.FeatureSupport)
-  ABSL_DCHECK_NE(&from, _this);
-  ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_deprecation_warning(from._internal_deprecation_warning());
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _this->_impl_.edition_introduced_ = from._impl_.edition_introduced_;
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _this->_impl_.edition_deprecated_ = from._impl_.edition_deprecated_;
-    }
-    if (cached_has_bits & 0x00000008u) {
-      _this->_impl_.edition_removed_ = from._impl_.edition_removed_;
-    }
-  }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
-}
-
-void FieldOptions_FeatureSupport::CopyFrom(const FieldOptions_FeatureSupport& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.FeatureSupport)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-PROTOBUF_NOINLINE bool FieldOptions_FeatureSupport::IsInitialized() const {
-  return true;
-}
-
-void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROTOBUF_RESTRICT other) {
-  using std::swap;
-  auto* arena = GetArena();
-  ABSL_DCHECK_EQ(arena, other->GetArena());
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.deprecation_warning_, &other->_impl_.deprecation_warning_, arena);
-  ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_removed_)
-      + sizeof(FieldOptions_FeatureSupport::_impl_.edition_removed_)
-      - PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_introduced_)>(
-          reinterpret_cast<char*>(&_impl_.edition_introduced_),
-          reinterpret_cast<char*>(&other->_impl_.edition_introduced_));
-}
-
-::google::protobuf::Metadata FieldOptions_FeatureSupport::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
-}
-// ===================================================================
-
 class FieldOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldOptions>()._impl_._has_bits_);
@@ -8990,9 +8617,6 @@ FieldOptions::FieldOptions(
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
                               arena, *from._impl_.features_)
-                        : nullptr;
-  _impl_.feature_support_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions_FeatureSupport>(
-                              arena, *from._impl_.feature_support_)
                         : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
                offsetof(Impl_, ctype_),
@@ -9030,7 +8654,6 @@ FieldOptions::~FieldOptions() {
 inline void FieldOptions::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
-  delete _impl_.feature_support_;
   _impl_.~Impl_();
 }
 
@@ -9051,16 +8674,16 @@ FieldOptions::GetClassData() const {
       };
   return _data_.base();
 }
-constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
+constexpr ::_pbi::TcParseTable<4, 13, 7, 0, 7> FieldOptions::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._extensions_),
     999, 120,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4290919880,  // skipmap
+    4293017032,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    14,  // num_field_entries
-    8,  // num_aux_entries
+    13,  // num_field_entries
+    7,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     &_FieldOptions_default_instance_._instance,
     nullptr,  // post_loop_handler
@@ -9071,74 +8694,74 @@ constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
   }, {{
     // optional bool debug_redact = 16 [default = false];
     {::_pbi::TcParser::FastV8S2,
-     {384, 9, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_)}},
+     {384, 8, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_)}},
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
     {::_pbi::TcParser::FastEr0S1,
-     {8, 2, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_)}},
+     {8, 1, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_)}},
     // optional bool packed = 2;
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.packed_), 4>(),
-     {16, 4, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.packed_), 3>(),
+     {16, 3, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_)}},
     // optional bool deprecated = 3 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.deprecated_), 7>(),
-     {24, 7, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.deprecated_), 6>(),
+     {24, 6, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_)}},
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
     {::_pbi::TcParser::FastMtR2,
      {418, 63, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_)}},
     // optional bool lazy = 5 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.lazy_), 5>(),
-     {40, 5, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.lazy_), 4>(),
+     {40, 4, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_)}},
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
     {::_pbi::TcParser::FastEr0S1,
-     {48, 3, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_)}},
+     {48, 2, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_)}},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     {::_pbi::TcParser::FastMtR2,
-     {16058, 63, 3, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_)}},
+     {16058, 63, 2, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool weak = 10 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 8>(),
-     {80, 8, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 7>(),
+     {80, 7, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     // optional bool unverified_lazy = 15 [default = false];
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.unverified_lazy_), 6>(),
-     {120, 6, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.unverified_lazy_), 5>(),
+     {120, 5, 0, PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_)}},
   }}, {{
     999, 0, 1,
-    65534, 13,
+    65534, 12,
     65535, 65535
   }}, {{
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_), _Internal::kHasBitsOffset + 2, 4,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.ctype_), _Internal::kHasBitsOffset + 1, 3,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool packed = 2;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_), _Internal::kHasBitsOffset + 4, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.packed_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool deprecated = 3 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 7, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.deprecated_), _Internal::kHasBitsOffset + 6, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool lazy = 5 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_), _Internal::kHasBitsOffset + 5, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 3, 5,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 2, 4,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // optional bool weak = 10 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 8, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 7, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool unverified_lazy = 15 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_), _Internal::kHasBitsOffset + 6, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool debug_redact = 16 [default = false];
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_), _Internal::kHasBitsOffset + 9, 0,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.debug_redact_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.retention_), _Internal::kHasBitsOffset + 10, 6,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.retention_), _Internal::kHasBitsOffset + 9, 5,
     (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.targets_), -1, 7,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.targets_), -1, 6,
     (0 | ::_fl::kFcRepeated | ::_fl::kEnumRange)},
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_), -1, 0,
@@ -9146,16 +8769,12 @@ constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
     // optional .google.protobuf.FeatureSet features = 21;
     {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-    // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.feature_support_), _Internal::kHasBitsOffset + 1, 2,
-    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_), -1, 3,
+    {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_), -1, 2,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_EditionDefault>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::UninterpretedOption>()},
     {0, 3},
     {0, 3},
@@ -9177,25 +8796,19 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   _impl_.edition_defaults_.Clear();
   _impl_.uninterpreted_option_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    if (cached_has_bits & 0x00000001u) {
-      ABSL_DCHECK(_impl_.features_ != nullptr);
-      _impl_.features_->Clear();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.feature_support_ != nullptr);
-      _impl_.feature_support_->Clear();
-    }
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
   }
-  if (cached_has_bits & 0x000000fcu) {
+  if (cached_has_bits & 0x000000feu) {
     ::memset(&_impl_.ctype_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.deprecated_) -
-        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.deprecated_));
+        reinterpret_cast<char*>(&_impl_.weak_) -
+        reinterpret_cast<char*>(&_impl_.ctype_)) + sizeof(_impl_.weak_));
   }
-  if (cached_has_bits & 0x00000700u) {
-    ::memset(&_impl_.weak_, 0, static_cast<::size_t>(
+  if (cached_has_bits & 0x00000300u) {
+    ::memset(&_impl_.debug_redact_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.retention_) -
-        reinterpret_cast<char*>(&_impl_.weak_)) + sizeof(_impl_.retention_));
+        reinterpret_cast<char*>(&_impl_.debug_redact_)) + sizeof(_impl_.retention_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -9215,63 +8828,63 @@ const char* FieldOptions::_InternalParse(const char* ptr,
 
   cached_has_bits = _impl_._has_bits_[0];
   // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         1, this->_internal_ctype(), target);
   }
 
   // optional bool packed = 2;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000008u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         2, this->_internal_packed(), target);
   }
 
   // optional bool deprecated = 3 [default = false];
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         3, this->_internal_deprecated(), target);
   }
 
   // optional bool lazy = 5 [default = false];
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000010u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         5, this->_internal_lazy(), target);
   }
 
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000004u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         6, this->_internal_jstype(), target);
   }
 
   // optional bool weak = 10 [default = false];
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000080u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         10, this->_internal_weak(), target);
   }
 
   // optional bool unverified_lazy = 15 [default = false];
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         15, this->_internal_unverified_lazy(), target);
   }
 
   // optional bool debug_redact = 16 [default = false];
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000100u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         16, this->_internal_debug_redact(), target);
   }
 
   // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000200u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         17, this->_internal_retention(), target);
@@ -9300,12 +8913,6 @@ const char* FieldOptions::_InternalParse(const char* ptr,
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         21, *_impl_.features_, _impl_.features_->GetCachedSize(), target, stream);
-  }
-
-  // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
-  if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        22, *_impl_.feature_support_, _impl_.feature_support_->GetCachedSize(), target, stream);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9372,58 +8979,52 @@ const char* FieldOptions::_InternalParse(const char* ptr,
           2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.features_);
     }
 
-    // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
-    if (cached_has_bits & 0x00000002u) {
-      total_size +=
-          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.feature_support_);
-    }
-
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_ctype());
     }
 
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000004u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_jstype());
     }
 
     // optional bool packed = 2;
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000008u) {
       total_size += 2;
     }
 
     // optional bool lazy = 5 [default = false];
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000010u) {
       total_size += 2;
     }
 
     // optional bool unverified_lazy = 15 [default = false];
-    if (cached_has_bits & 0x00000040u) {
+    if (cached_has_bits & 0x00000020u) {
       total_size += 2;
     }
 
     // optional bool deprecated = 3 [default = false];
+    if (cached_has_bits & 0x00000040u) {
+      total_size += 2;
+    }
+
+    // optional bool weak = 10 [default = false];
     if (cached_has_bits & 0x00000080u) {
       total_size += 2;
     }
 
   }
-  if (cached_has_bits & 0x00000700u) {
-    // optional bool weak = 10 [default = false];
-    if (cached_has_bits & 0x00000100u) {
-      total_size += 2;
-    }
-
+  if (cached_has_bits & 0x00000300u) {
     // optional bool debug_redact = 16 [default = false];
-    if (cached_has_bits & 0x00000200u) {
+    if (cached_has_bits & 0x00000100u) {
       total_size += 3;
     }
 
     // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
-    if (cached_has_bits & 0x00000400u) {
+    if (cached_has_bits & 0x00000200u) {
       total_size += 2 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_retention());
     }
@@ -9459,41 +9060,32 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
       }
     }
     if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
-      if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FieldOptions_FeatureSupport>(arena, *from._impl_.feature_support_);
-      } else {
-        _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
-      }
-    }
-    if (cached_has_bits & 0x00000004u) {
       _this->_impl_.ctype_ = from._impl_.ctype_;
     }
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000004u) {
       _this->_impl_.jstype_ = from._impl_.jstype_;
     }
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000008u) {
       _this->_impl_.packed_ = from._impl_.packed_;
     }
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000010u) {
       _this->_impl_.lazy_ = from._impl_.lazy_;
     }
-    if (cached_has_bits & 0x00000040u) {
+    if (cached_has_bits & 0x00000020u) {
       _this->_impl_.unverified_lazy_ = from._impl_.unverified_lazy_;
     }
-    if (cached_has_bits & 0x00000080u) {
+    if (cached_has_bits & 0x00000040u) {
       _this->_impl_.deprecated_ = from._impl_.deprecated_;
     }
-  }
-  if (cached_has_bits & 0x00000700u) {
-    if (cached_has_bits & 0x00000100u) {
+    if (cached_has_bits & 0x00000080u) {
       _this->_impl_.weak_ = from._impl_.weak_;
     }
-    if (cached_has_bits & 0x00000200u) {
+  }
+  if (cached_has_bits & 0x00000300u) {
+    if (cached_has_bits & 0x00000100u) {
       _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
     }
-    if (cached_has_bits & 0x00000400u) {
+    if (cached_has_bits & 0x00000200u) {
       _this->_impl_.retention_ = from._impl_.retention_;
     }
   }
@@ -12156,12 +11748,6 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
   _impl_.features_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
                               arena, *from._impl_.features_)
                         : nullptr;
-  _impl_.overridable_features_ = (cached_has_bits & 0x00000002u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.overridable_features_)
-                        : nullptr;
-  _impl_.fixed_features_ = (cached_has_bits & 0x00000004u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(
-                              arena, *from._impl_.fixed_features_)
-                        : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
@@ -12188,8 +11774,6 @@ FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditi
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   ABSL_DCHECK(GetArena() == nullptr);
   delete _impl_.features_;
-  delete _impl_.overridable_features_;
-  delete _impl_.fixed_features_;
   _impl_.~Impl_();
 }
 
@@ -12210,16 +11794,16 @@ FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
       };
   return _data_.base();
 }
-constexpr ::_pbi::TcParseTable<2, 4, 4, 0, 2> FeatureSetDefaults_FeatureSetEditionDefault::_table_ = {
+constexpr ::_pbi::TcParseTable<1, 2, 2, 0, 2> FeatureSetDefaults_FeatureSetEditionDefault::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_),
     0, // no _extensions_
-    5, 24,  // max_field_number, fast_idx_mask
+    3, 8,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967265,  // skipmap
+    4294967289,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    4,  // num_field_entries
-    4,  // num_aux_entries
+    2,  // num_field_entries
+    2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_._instance,
     nullptr,  // post_loop_handler
@@ -12228,18 +11812,12 @@ constexpr ::_pbi::TcParseTable<2, 4, 4, 0, 2> FeatureSetDefaults_FeatureSetEditi
     ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional .google.protobuf.FeatureSet overridable_features = 4;
-    {::_pbi::TcParser::FastMtS1,
-     {34, 1, 1, PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.overridable_features_)}},
-    // optional .google.protobuf.FeatureSet fixed_features = 5;
-    {::_pbi::TcParser::FastMtS1,
-     {42, 2, 2, PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.fixed_features_)}},
     // optional .google.protobuf.FeatureSet features = 2;
     {::_pbi::TcParser::FastMtS1,
      {18, 0, 0, PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.features_)}},
     // optional .google.protobuf.Edition edition = 3;
     {::_pbi::TcParser::FastEvS1,
-     {24, 3, 3, PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.edition_)}},
+     {24, 1, 1, PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.edition_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -12247,17 +11825,9 @@ constexpr ::_pbi::TcParseTable<2, 4, 4, 0, 2> FeatureSetDefaults_FeatureSetEditi
     {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.features_), _Internal::kHasBitsOffset + 0, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // optional .google.protobuf.Edition edition = 3;
-    {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.edition_), _Internal::kHasBitsOffset + 3, 3,
+    {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.edition_), _Internal::kHasBitsOffset + 1, 1,
     (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-    // optional .google.protobuf.FeatureSet overridable_features = 4;
-    {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.overridable_features_), _Internal::kHasBitsOffset + 1, 1,
-    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-    // optional .google.protobuf.FeatureSet fixed_features = 5;
-    {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.fixed_features_), _Internal::kHasBitsOffset + 2, 2,
-    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
-    {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
     {::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>()},
     {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
   }}, {{
@@ -12272,19 +11842,9 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
-    if (cached_has_bits & 0x00000001u) {
-      ABSL_DCHECK(_impl_.features_ != nullptr);
-      _impl_.features_->Clear();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.overridable_features_ != nullptr);
-      _impl_.overridable_features_->Clear();
-    }
-    if (cached_has_bits & 0x00000004u) {
-      ABSL_DCHECK(_impl_.fixed_features_ != nullptr);
-      _impl_.fixed_features_->Clear();
-    }
+  if (cached_has_bits & 0x00000001u) {
+    ABSL_DCHECK(_impl_.features_ != nullptr);
+    _impl_.features_->Clear();
   }
   _impl_.edition_ = 0;
   _impl_._has_bits_.Clear();
@@ -12311,22 +11871,10 @@ const char* FeatureSetDefaults_FeatureSetEditionDefault::_InternalParse(const ch
   }
 
   // optional .google.protobuf.Edition edition = 3;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000002u) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         3, this->_internal_edition(), target);
-  }
-
-  // optional .google.protobuf.FeatureSet overridable_features = 4;
-  if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        4, *_impl_.overridable_features_, _impl_.overridable_features_->GetCachedSize(), target, stream);
-  }
-
-  // optional .google.protobuf.FeatureSet fixed_features = 5;
-  if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, *_impl_.fixed_features_, _impl_.fixed_features_->GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -12348,27 +11896,15 @@ const char* FeatureSetDefaults_FeatureSetEditionDefault::_InternalParse(const ch
 
   ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (cached_has_bits & 0x00000003u) {
     // optional .google.protobuf.FeatureSet features = 2;
     if (cached_has_bits & 0x00000001u) {
       total_size +=
           1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.features_);
     }
 
-    // optional .google.protobuf.FeatureSet overridable_features = 4;
-    if (cached_has_bits & 0x00000002u) {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.overridable_features_);
-    }
-
-    // optional .google.protobuf.FeatureSet fixed_features = 5;
-    if (cached_has_bits & 0x00000004u) {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.fixed_features_);
-    }
-
     // optional .google.protobuf.Edition edition = 3;
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_edition());
     }
@@ -12388,7 +11924,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
+  if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
@@ -12399,24 +11935,6 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
       }
     }
     if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(from._impl_.overridable_features_ != nullptr);
-      if (_this->_impl_.overridable_features_ == nullptr) {
-        _this->_impl_.overridable_features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.overridable_features_);
-      } else {
-        _this->_impl_.overridable_features_->MergeFrom(*from._impl_.overridable_features_);
-      }
-    }
-    if (cached_has_bits & 0x00000004u) {
-      ABSL_DCHECK(from._impl_.fixed_features_ != nullptr);
-      if (_this->_impl_.fixed_features_ == nullptr) {
-        _this->_impl_.fixed_features_ =
-            ::google::protobuf::Message::CopyConstruct<::google::protobuf::FeatureSet>(arena, *from._impl_.fixed_features_);
-      } else {
-        _this->_impl_.fixed_features_->MergeFrom(*from._impl_.fixed_features_);
-      }
-    }
-    if (cached_has_bits & 0x00000008u) {
       _this->_impl_.edition_ = from._impl_.edition_;
     }
   }
@@ -12434,12 +11952,6 @@ void FeatureSetDefaults_FeatureSetEditionDefault::CopyFrom(const FeatureSetDefau
 PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialized() const {
   if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
     if (!_impl_.features_->IsInitialized()) return false;
-  }
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.overridable_features_->IsInitialized()) return false;
-  }
-  if ((_impl_._has_bits_[0] & 0x00000004u) != 0) {
-    if (!_impl_.fixed_features_->IsInitialized()) return false;
   }
   return true;
 }
