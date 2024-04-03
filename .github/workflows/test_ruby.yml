@@ -27,8 +27,8 @@ jobs:
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           # TODO Re-enable these once flakes are fixed
           #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
     name: Linux ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-904cad5249547845454998ca3837a34c71fabf96', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-a6940b1421a71325ef4c7828ec72d404f56bbf30', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -160,8 +160,8 @@ jobs:
           - { name: Ruby 3.2, ruby: ruby-3.2.0}
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.3.0, ffi: FFI }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
     name: Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
@@ -172,7 +172,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v2
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-904cad5249547845454998ca3837a34c71fabf96
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-a6940b1421a71325ef4c7828ec72d404f56bbf30
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
