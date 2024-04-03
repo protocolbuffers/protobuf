@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
@@ -12,8 +13,8 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
-load("//bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
+load(":py_proto_library.bzl", "py_proto_library")
 
 licenses(["notice"])
 
@@ -450,4 +451,15 @@ py_dist(
     },
     pure_python_wheel = ":pure_python_wheel",
     tags = ["manual"],
+)
+
+# py_proto_library() is private rule, only intended for internal use by upb.
+# Hopefully py_proto_library() will eventually be available in rules_proto or
+# another upstream package.
+bzl_library(
+    name = "py_proto_library_bzl",
+    srcs = ["py_proto_library.bzl"],
+    deps = [
+        "@rules_python//python:py_info_bzl",
+    ],
 )

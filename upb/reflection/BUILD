@@ -5,7 +5,6 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load(
@@ -13,6 +12,7 @@ load(
     "compile_edition_defaults",
     "embed_edition_defaults",
 )
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",

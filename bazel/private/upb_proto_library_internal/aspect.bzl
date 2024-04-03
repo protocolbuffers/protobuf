@@ -1,8 +1,8 @@
 """Implementation of the aspect that powers the upb_*_proto_library() rules."""
 
 load("@rules_proto//proto:defs.bzl", "proto_common")
-load("//bazel:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")
-load("//bazel:upb_proto_library_internal/copts.bzl", "UpbProtoLibraryCoptsInfo")
+load(":upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")
+load(":upb_proto_library_internal/copts.bzl", "UpbProtoLibraryCoptsInfo")
 
 # begin:github_only
 _is_google3 = False

@@ -1,7 +1,7 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",

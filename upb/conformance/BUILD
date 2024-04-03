@@ -6,14 +6,14 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "make_shell_script",
-)
-load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+    "make_shell_script",
 )
 
 # begin:google_only
