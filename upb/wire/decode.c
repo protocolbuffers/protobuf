@@ -47,11 +47,16 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/wire/types.h"
 
 // A few fake field types for our tables.
 enum {
   kUpb_FakeFieldType_FieldNotFound = 0,
   kUpb_FakeFieldType_MessageSetItem = 19,
+};
+
+enum {
+  kUpb_DecodeOp_Group = 0x10,
 };
 
 // DecodeOp: an action to be performed for a wire-type/field-type combination.
@@ -534,7 +539,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
     *arrp = arr;
   }
 
-  switch (op) {
+  switch (op & 0xf) {
     case kUpb_DecodeOp_Scalar1Byte:
     case kUpb_DecodeOp_Scalar4Byte:
     case kUpb_DecodeOp_Scalar8Byte:
@@ -561,8 +566,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
           upb_TaggedMessagePtr);
       upb_Message* submsg = _upb_Decoder_NewSubMessage(d, subs, field, target);
       arr->UPB_PRIVATE(size)++;
-      if (UPB_UNLIKELY(field->UPB_PRIVATE(descriptortype) ==
-                       kUpb_FieldType_Group)) {
+      if (op & kUpb_DecodeOp_Group) {
         return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, subs, field);
       } else {
         return _upb_Decoder_DecodeSubMessage(d, ptr, submsg, subs, field,
@@ -691,7 +695,6 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     const upb_MiniTableSub* subs, const upb_MiniTableField* field, wireval* val,
     int op) {
   void* mem = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
-  int type = field->UPB_PRIVATE(descriptortype);
 
   if (UPB_UNLIKELY(op == kUpb_DecodeOp_Enum) &&
       !_upb_Decoder_CheckEnum(d, ptr, msg,
@@ -714,7 +717,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   }
 
   // Store into message.
-  switch (op) {
+  switch (op & 0xf) {
     case kUpb_DecodeOp_SubMessage: {
       upb_TaggedMessagePtr* submsgp = mem;
       upb_Message* submsg;
@@ -723,7 +726,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
       } else {
         submsg = _upb_Decoder_NewSubMessage(d, subs, field, submsgp);
       }
-      if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
+      if (UPB_UNLIKELY(op & kUpb_DecodeOp_Group)) {
         ptr = _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, subs, field);
       } else {
         ptr = _upb_Decoder_DecodeSubMessage(d, ptr, submsg, subs, field,
@@ -1139,8 +1142,9 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       return ptr;
     case kUpb_WireType_StartGroup:
       val->uint32_val = field->UPB_PRIVATE(number);
-      if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group) {
-        *op = kUpb_DecodeOp_SubMessage;
+      if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Message ||
+          field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group) {
+        *op = kUpb_DecodeOp_Group | kUpb_DecodeOp_SubMessage;
         _upb_Decoder_CheckUnlinked(d, mt, field, op);
       } else if (field->UPB_PRIVATE(descriptortype) ==
                  kUpb_FakeFieldType_MessageSetItem) {
