@@ -239,7 +239,8 @@ inline constexpr bool DebugHardenStringValues() {
 #endif
 }
 
-// Returns true if force clearing oneof message on arena is enabled.
+// Returns true if debug hardening for clearing oneof message on arenas is
+// enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #ifdef NDEBUG
   return false;
