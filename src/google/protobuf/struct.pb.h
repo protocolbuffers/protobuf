@@ -1020,9 +1020,7 @@ inline void Value::clear_struct_value() {
     if (GetArena() == nullptr) {
       delete _impl_.kind_.struct_value_;
     } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
-      if (_impl_.kind_.struct_value_ != nullptr) {
-        _impl_.kind_.struct_value_->Clear();
-      }
+      ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.kind_.struct_value_);
     }
     clear_has_kind();
   }
@@ -1101,9 +1099,7 @@ inline void Value::clear_list_value() {
     if (GetArena() == nullptr) {
       delete _impl_.kind_.list_value_;
     } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
-      if (_impl_.kind_.list_value_ != nullptr) {
-        _impl_.kind_.list_value_->Clear();
-      }
+      ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.kind_.list_value_);
     }
     clear_has_kind();
   }
