@@ -62,6 +62,10 @@ enum Edition {
   // A placeholder for an unknown edition value.
   EDITION_UNKNOWN = 0;
 
+  // A placeholder edition for specifying default behaviors *before* a feature
+  // was first introduced.  This is effectively an "infinite past".
+  EDITION_LEGACY = 900;
+
   // Legacy syntax "editions".  These pre-date editions, but behave much like
   // distinct editions.  These can't be used to specify the edition of proto
   // files, but feature definitions must supply proto2/proto3 defaults for
@@ -966,7 +970,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "EXPLICIT" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "EXPLICIT" },
     edition_defaults = { edition: EDITION_PROTO3, value: "IMPLICIT" },
     edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
@@ -980,7 +987,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "CLOSED" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "CLOSED" },
     edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
   ];
 
@@ -993,7 +1003,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "EXPANDED" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "EXPANDED" },
     edition_defaults = { edition: EDITION_PROTO3, value: "PACKED" }
   ];
 
@@ -1006,7 +1019,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "NONE" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "NONE" },
     edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
@@ -1019,7 +1035,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "LENGTH_PREFIXED" }
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -1032,7 +1051,10 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "LEGACY_BEST_EFFORT" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY_BEST_EFFORT" },
     edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
