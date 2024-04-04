@@ -339,6 +339,12 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // isn't, the result may be garbage.
   void CopyTo(DescriptorProto* proto) const;
 
+  // Fills in the message-level settings of this message (e.g. name, reserved
+  // fields, message options) to `proto`.  This is essentially all of the
+  // metadata owned exclusively by this descriptor, and not any nested
+  // descriptors.
+  void CopyHeadingTo(DescriptorProto* proto) const;
+
   // Write the contents of this descriptor in a human-readable form. Output
   // will be suitable for re-parsing.
   std::string DebugString() const;

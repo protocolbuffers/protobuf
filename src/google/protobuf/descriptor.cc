@@ -2791,7 +2791,7 @@ void FileDescriptor::CopySourceCodeInfoTo(FileDescriptorProto* proto) const {
 }
 
 void Descriptor::CopyTo(DescriptorProto* proto) const {
-  proto->set_name(name());
+  CopyHeadingTo(proto);
 
   for (int i = 0; i < field_count(); i++) {
     field(i)->CopyTo(proto->add_field());
@@ -2811,6 +2811,11 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
   for (int i = 0; i < extension_count(); i++) {
     extension(i)->CopyTo(proto->add_extension());
   }
+}
+
+void Descriptor::CopyHeadingTo(DescriptorProto* proto) const {
+  proto->set_name(name());
+
   for (int i = 0; i < reserved_range_count(); i++) {
     DescriptorProto::ReservedRange* range = proto->add_reserved_range();
     range->set_start(reserved_range(i)->start);
