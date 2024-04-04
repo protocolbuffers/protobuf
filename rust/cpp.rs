@@ -7,7 +7,7 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::__internal::{Enum, Private, PtrAndLen, RawMap, RawMessage, RawRepeatedField};
 use crate::{
     Map, MapIter, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
     RepeatedMut, RepeatedView, SettableValue, View,
@@ -23,66 +23,6 @@ use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
-
-/// A wrapper over a `proto2::Arena`.
-///
-/// This is not a safe wrapper per se, because the allocation functions still
-/// have sharp edges (see their safety docs for more info).
-///
-/// This is an owning type and will automatically free the arena when
-/// dropped.
-///
-/// Note that this type is neither `Sync` nor `Send`.
-#[derive(Debug)]
-pub struct Arena {
-    #[allow(dead_code)]
-    ptr: RawArena,
-    _not_sync: PhantomData<UnsafeCell<()>>,
-}
-
-impl Arena {
-    /// Allocates a fresh arena.
-    #[inline]
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self { ptr: NonNull::dangling(), _not_sync: PhantomData }
-    }
-
-    /// Returns the raw, C++-managed pointer to the arena.
-    #[inline]
-    pub fn raw(&self) -> ! {
-        unimplemented!()
-    }
-
-    /// Allocates some memory on the arena.
-    ///
-    /// # Safety
-    ///
-    /// TODO alignment requirement for layout
-    #[inline]
-    pub unsafe fn alloc(&self, _layout: Layout) -> &mut [MaybeUninit<u8>] {
-        unimplemented!()
-    }
-
-    /// Resizes some memory on the arena.
-    ///
-    /// # Safety
-    ///
-    /// After calling this function, `ptr` is essentially zapped. `old` must
-    /// be the layout `ptr` was allocated with via [`Arena::alloc()`].
-    /// TODO alignment for layout
-    #[inline]
-    pub unsafe fn resize(&self, _ptr: *mut u8, _old: Layout, _new: Layout) -> &[MaybeUninit<u8>] {
-        unimplemented!()
-    }
-}
-
-impl Drop for Arena {
-    #[inline]
-    fn drop(&mut self) {
-        // unimplemented
-    }
-}
 
 /// Serialized Protobuf wire format data. It's typically produced by
 /// `<Message>.serialize()`.
