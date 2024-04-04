@@ -16,7 +16,9 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -341,13 +343,13 @@ uint32_t RecodeTagForFastParsing(uint32_t tag) {
   return tag;
 }
 
-std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
+void PopulateFastFields(
     absl::optional<uint32_t> end_group_tag,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
-    int table_size_log2,
     const TailCallTableInfo::MessageOptions& message_options,
-    absl::Span<const TailCallTableInfo::FieldOptions> fields) {
-  std::vector<TailCallTableInfo::FastFieldInfo> result(1 << table_size_log2);
+    absl::Span<const TailCallTableInfo::FieldOptions> fields,
+    absl::Span<TailCallTableInfo::FastFieldInfo> result,
+    uint32_t& important_fields) {
   const uint32_t idx_mask = static_cast<uint32_t>(result.size() - 1);
   const auto tag_to_idx = [&](uint32_t tag) {
     // The field index is determined by the low bits of the field number, where
@@ -375,6 +377,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
         static_cast<uint16_t>(tag),
         static_cast<uint16_t>(*end_group_tag),
     };
+    important_fields |= uint32_t{1} << fast_idx;
   }
 
   for (int i = 0; i < field_entries.size(); ++i) {
@@ -390,7 +393,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
     if (info.AsNonField() != nullptr) {
-      // Null field means END_GROUP which is guaranteed to be present.
+      // Right now non-field means END_GROUP which is guaranteed to be present.
       continue;
     }
     if (auto* as_field = info.AsField()) {
@@ -411,8 +414,12 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     // If this field does not have presence, then it can set an out-of-bounds
     // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
     fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
+    // 0.05 was selected based on load tests where 0.1 and 0.01 were also
+    // evaluated and worse.
+    constexpr float kMinPresence = 0.05f;
+    important_fields |= uint32_t{options.presence_probability >= kMinPresence}
+                        << fast_idx;
   }
-  return result;
 }
 
 // We only need field names for reporting UTF-8 parsing errors, so we only
@@ -926,57 +933,51 @@ TailCallTableInfo::TailCallTableInfo(
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
                 num_non_cold_subtables);
 
-  table_size_log2 = 0;  // fallback value
-  int num_fast_fields = -1;
   auto end_group_tag = GetEndGroupTag(descriptor);
-  for (int try_size_log2 : {0, 1, 2, 3, 4, 5}) {
-    size_t try_size = 1 << try_size_log2;
-    auto split_fields =
-        SplitFastFieldsForSize(end_group_tag, field_entries, try_size_log2,
-                               message_options, ordered_fields);
-    ABSL_CHECK_EQ(split_fields.size(), try_size);
-    int try_num_fast_fields = 0;
-    for (const auto& info : split_fields) {
-      if (info.is_empty()) continue;
 
-      if (info.AsNonField() != nullptr) {
-        ++try_num_fast_fields;
-        continue;
-      }
-
-      auto* as_field = info.AsField();
-      // 0.05 was selected based on load tests where 0.1 and 0.01 were also
-      // evaluated and worse.
-      constexpr float kMinPresence = 0.05f;
-      if (as_field->presence_probability >= kMinPresence) {
-        ++try_num_fast_fields;
-      }
+  constexpr size_t kMaxFastFields = 32;
+  FastFieldInfo fast_fields[kMaxFastFields];
+  // Bit mask for the fields that are "important". Unimportant fields might be
+  // set but it's ok if we lose them from the fast table. For example, cold
+  // fields.
+  uint32_t important_fields = 0;
+  static_assert(sizeof(important_fields) * 8 >= kMaxFastFields, "");
+  // The largest table we allow has the same number of entries as the
+  // message has fields, rounded up to the next power of 2 (e.g., a message
+  // with 5 fields can have a fast table of size 8). A larger table *might*
+  // cover more fields in certain cases, but a larger table in that case
+  // would have mostly empty entries; so, we cap the size to avoid
+  // pathologically sparse tables.
+  // However, if this message uses group encoding, the tables are sometimes very
+  // sparse because the fields in the group avoid using the same field
+  // numbering as the parent message (even though currently, the proto
+  // compiler allows the overlap, and there is no possible conflict.)
+  // NOTE: The +1 is to maintain the existing behavior that does not match the
+  // documented one. When the number of fields is exactly a power of two we
+  // allow double that.
+  size_t num_fast_fields =
+      end_group_tag.has_value()
+          ? kMaxFastFields
+          : std::max(size_t{1},
+                     std::min(kMaxFastFields,
+                              absl::bit_ceil(ordered_fields.size() + 1)));
+  PopulateFastFields(
+      end_group_tag, field_entries, message_options, ordered_fields,
+      absl::MakeSpan(fast_fields, num_fast_fields), important_fields);
+  // If we can halve the table without dropping important fields, do it.
+  while (num_fast_fields > 1 &&
+         (important_fields & (important_fields >> num_fast_fields / 2)) == 0) {
+    // Half the table by merging fields.
+    num_fast_fields /= 2;
+    for (size_t i = 0; i < num_fast_fields; ++i) {
+      if ((important_fields >> i) & 1) continue;
+      fast_fields[i] = fast_fields[i + num_fast_fields];
     }
-    // Use this size if (and only if) it covers more fields.
-    if (try_num_fast_fields > num_fast_fields) {
-      fast_path_fields = std::move(split_fields);
-      table_size_log2 = try_size_log2;
-      num_fast_fields = try_num_fast_fields;
-    }
-    // The largest table we allow has the same number of entries as the
-    // message has fields, rounded up to the next power of 2 (e.g., a message
-    // with 5 fields can have a fast table of size 8). A larger table *might*
-    // cover more fields in certain cases, but a larger table in that case
-    // would have mostly empty entries; so, we cap the size to avoid
-    // pathologically sparse tables.
-    if (end_group_tag.has_value()) {
-      // If this message uses group encoding, the tables are sometimes very
-      // sparse because the fields in the group avoid using the same field
-      // numbering as the parent message (even though currently, the proto
-      // compiler allows the overlap, and there is no possible conflict.)
-      // As such, this test produces a false negative as far as whether the
-      // large table will be worth it.  So we disable the test in this case.
-    } else {
-      if (try_size > ordered_fields.size()) {
-        break;
-      }
-    }
+    important_fields |= important_fields >> num_fast_fields;
   }
+
+  fast_path_fields.assign(fast_fields, fast_fields + num_fast_fields);
+  table_size_log2 = absl::bit_width(num_fast_fields) - 1;
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());
