@@ -959,6 +959,9 @@ class PROTOBUF_EXPORT TcParser final {
 // Dispatch to the designated parse function
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+#ifdef PROTOBUF_FORCE_MINIPARSE
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+#else
   const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
   const size_t idx = coded_tag & table->fast_idx_mask;
   PROTOBUF_ASSUME((idx & 7) == 0);
@@ -966,6 +969,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
   TcFieldData data = fast_entry->bits;
   data.data ^= coded_tag;
   PROTOBUF_MUSTTAIL return fast_entry->target()(PROTOBUF_TC_PARAM_PASS);
+#endif
 }
 
 // We can only safely call from field to next field if the call is optimized
