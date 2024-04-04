@@ -1164,6 +1164,9 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
             GenerateThunksCc(ctx, *msg.nested_type(i));
           }
+          for (int i = 0; i < msg.enum_type_count(); ++i) {
+            GenerateEnumThunksCc(ctx, *msg.enum_type(i));
+          }
         }},
        {"accessor_thunks",
         [&] {

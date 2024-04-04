@@ -151,7 +151,7 @@ struct MapKeyType {
   absl::string_view cc_to_ffi_key_expr;
 };
 
-extern const MapKeyType kMapKeyTypes[7];
+extern const MapKeyType kMapKeyTypes[6];
 
 }  // namespace rust
 }  // namespace compiler

@@ -337,6 +337,7 @@ rust_test(
         "@crate_index//:paste",
     ],
     deps = [
+        "//rust/test:enums_cc_rust_proto",
         "//rust/test:map_unittest_cc_rust_proto",
         "//rust/test:unittest_cc_rust_proto",
         "@crate_index//:googletest",
@@ -350,6 +351,7 @@ rust_test(
         "@crate_index//:paste",
     ],
     deps = [
+        "//rust/test:enums_upb_rust_proto",
         "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",

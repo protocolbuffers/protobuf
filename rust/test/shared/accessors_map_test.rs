@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use enums_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
@@ -123,6 +124,14 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().get("not found"), eq(None));
     msg.map_string_string_mut().clear();
     assert_that!(msg.map_string_string().len(), eq(0));
+}
+
+#[test]
+fn test_nested_enum_maps() {
+    // Verify that C++ thunks are generated and are with the right name for strings
+    TestMapWithNestedEnum::new()
+        .string_map_mut()
+        .insert("foo", test_map_with_nested_enum::inner_nested::NestedEnum::Foo);
 }
 
 #[test]
