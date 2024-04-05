@@ -180,6 +180,7 @@ namespace Google.Protobuf
             private readonly Stack<ContainerType> containerStack = new Stack<ContainerType>();
             private readonly PushBackReader reader;
             private State state;
+            private readonly char[] numberParsingBuffer = new char[64];
 
             internal JsonTextTokenizer(TextReader reader)
             {
@@ -409,11 +410,11 @@ namespace Google.Protobuf
 
             private double ReadNumber(char initialCharacter)
             {
-                //builder will not be released in case of an exception, but this is not a problem and we will create new on next Acquire
-                var builder = StringBuilderCache.Acquire();
+                int position = 0;
                 if (initialCharacter == '-')
                 {
-                    builder.Append("-");
+                    numberParsingBuffer[0] = '-';
+                    position++;
                 }
                 else
                 {
@@ -422,14 +423,14 @@ namespace Google.Protobuf
                 // Each method returns the character it read that doesn't belong in that part,
                 // so we know what to do next, including pushing the character back at the end.
                 // null is returned for "end of text".
-                int next = ReadInt(builder);
+                int next = ReadInt(numberParsingBuffer, ref position);
                 if (next == '.')
                 {
-                    next = ReadFrac(builder);
+                    next = ReadFrac(numberParsingBuffer, ref position);
                 }
                 if (next == 'e' || next == 'E')
                 {
-                    next = ReadExp(builder);
+                    next = ReadExp(numberParsingBuffer, ref position);
                 }
                 // If we read a character which wasn't part of the number, push it back so we can read it again
                 // to parse the next token.
@@ -439,42 +440,51 @@ namespace Google.Protobuf
                 }
 
                 // TODO: What exception should we throw if the value can't be represented as a double?
-                var builderValue = StringBuilderCache.GetStringAndRelease(builder);
                 try
                 {
-                    double result = double.Parse(builderValue,
-                        NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
-                        CultureInfo.InvariantCulture);
+#if NET5_0_OR_GREATER
+                    if (!double.TryParse(numberParsingBuffer.AsSpan(0, position),
+#else
+                    if (!double.TryParse(new string(numberParsingBuffer, 0, position),
+#endif
+                            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
+                            CultureInfo.InvariantCulture,
+                            out double result))
+
+                    {
+                        throw reader.CreateException("Cannot parse double value: " + new string(numberParsingBuffer, 0, position));
+                    }
 
                     // .NET Core 3.0 and later returns infinity if the number is too large or small to be represented.
                     // For compatibility with other Protobuf implementations the tokenizer should still throw.
                     if (double.IsInfinity(result))
                     {
-                        throw reader.CreateException("Numeric value out of range: " + builderValue);
+                        throw reader.CreateException("Numeric value out of range: " + new string(numberParsingBuffer, 0, position));
                     }
 
                     return result;
                 }
                 catch (OverflowException)
                 {
-                    throw reader.CreateException("Numeric value out of range: " + builderValue);
+                    throw reader.CreateException("Numeric value out of range: " + new string(numberParsingBuffer, 0, position));
                 }
             }
 
             /// <summary>
-            /// Copies an integer into a StringBuilder.
+            /// Copies an integer into a char buffer.
             /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
+            /// <param name="buffer">The char buffer to read the number into</param>
+            /// <param name="position">The position in buffer.</param>
             /// <returns>The character following the integer, or -1 for end-of-text.</returns>
-            private int ReadInt(StringBuilder builder)
+            private int ReadInt(char[] buffer, ref int position)
             {
                 char first = reader.ReadOrFail("Invalid numeric literal");
                 if (first < '0' || first > '9')
                 {
                     throw reader.CreateException("Invalid numeric literal");
                 }
-                builder.Append(first);
-                int next = ConsumeDigits(builder, out int digitCount);
+                buffer[position++] = first;
+                int next = ConsumeDigits(buffer, ref position, out int digitCount);
                 if (first == '0' && digitCount != 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: leading 0 for non-zero value.");
@@ -483,14 +493,15 @@ namespace Google.Protobuf
             }
 
             /// <summary>
-            /// Copies the fractional part of an integer into a StringBuilder, assuming reader is positioned after a period.
+            /// Copies the fractional part of an integer into a buffer, assuming reader is positioned after a period.
             /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
+            /// <param name="buffer">The char buffer to read the number into</param>
+            /// <param name="position">The position in buffer.</param>
             /// <returns>The character following the fractional part, or -1 for end-of-text.</returns>
-            private int ReadFrac(StringBuilder builder)
+            private int ReadFrac(char[] buffer, ref int position)
             {
-                builder.Append('.'); // Already consumed this
-                int next = ConsumeDigits(builder, out int digitCount);
+                buffer[position++] = '.'; // Already consumed this
+                int next = ConsumeDigits(buffer, ref position, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: fraction with no trailing digits");
@@ -499,27 +510,28 @@ namespace Google.Protobuf
             }
 
             /// <summary>
-            /// Copies the exponent part of a number into a StringBuilder, with an assumption that the reader is already positioned after the "e".
+            /// Copies the exponent part of a number into a char buffer, with an assumption that the reader is already positioned after the "e".
             /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
+            /// <param name="buffer">The char buffer to read the number into</param>
+            /// <param name="position">The position in buffer.</param>
             /// <returns>The character following the exponent, or -1 for end-of-text.</returns>
-            private int ReadExp(StringBuilder builder)
+            private int ReadExp(char[] buffer, ref int position)
             {
-                builder.Append('E'); // Already consumed this (or 'e')
-                int next = reader.Read();
+				buffer[position++] = 'E'; // Already consumed this (or 'e')
+				int next = reader.Read();
                 if (next == -1)
                 {
                     throw reader.CreateException("Invalid numeric literal: exponent with no trailing digits");
                 }
                 if (next == '-' || next == '+')
                 {
-                    builder.Append((char) next);
+                    buffer[position++] = (char)next;
                 }
                 else
                 {
                     reader.PushBack((char) next);
                 }
-                next = ConsumeDigits(builder, out int digitCount);
+                next = ConsumeDigits(buffer, ref position, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: exponent without value");
@@ -528,12 +540,13 @@ namespace Google.Protobuf
             }
 
             /// <summary>
-            /// Copies a sequence of digits into a StringBuilder.
+            /// Copies a sequence of digits into a char buffer.
             /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
+            /// <param name="buffer">The char buffer to read the number into</param>
+            /// <param name="position">The position in buffer.</param>
             /// <param name="count">The number of digits appended to the builder</param>
             /// <returns>The character following the digits, or -1 for end-of-text.</returns>
-            private int ConsumeDigits(StringBuilder builder, out int count)
+            private int ConsumeDigits(char[] buffer, ref int position, out int count)
             {
                 count = 0;
                 while (true)
@@ -544,7 +557,8 @@ namespace Google.Protobuf
                         return next;
                     }
                     count++;
-                    builder.Append((char) next);
+                    buffer[position++] = (char)next;
+                    if (position >= buffer.Length) throw reader.CreateException($"Invalid numeric value: exceeds {buffer.Length} digits!");
                 }
             }
 
