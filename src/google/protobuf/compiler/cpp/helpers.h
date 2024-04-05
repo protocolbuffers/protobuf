@@ -511,7 +511,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter);
 
 inline bool IsCrossFileMessage(const FieldDescriptor* field) {
-  return field->type() == FieldDescriptor::TYPE_MESSAGE &&
+  return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
          field->message_type()->file() != field->file();
 }
 

@@ -573,7 +573,7 @@ std::string SanitizeNameForObjC(absl::string_view prefix,
 }
 
 std::string NameFromFieldDescriptor(const FieldDescriptor* field) {
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*field)) {
     return field->message_type()->name();
   } else {
     return field->name();
@@ -1137,7 +1137,7 @@ std::string UnCamelCaseFieldName(absl::string_view name,
   if (field->is_repeated() && absl::EndsWith(worker, "Array")) {
     worker = absl::StripSuffix(worker, "Array");
   }
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*field)) {
     if (!worker.empty()) {
       if (absl::ascii_islower(worker[0])) {
         std::string copy(worker);

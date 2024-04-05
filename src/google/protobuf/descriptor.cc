@@ -9536,6 +9536,25 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
   return Utf8CheckMode::kNone;
 }
 
+bool IsGroupLike(const FieldDescriptor& field) {
+  // Groups are always tag-delimited, currently specified by a TYPE_GROUP type.
+  if (field.type() != FieldDescriptor::TYPE_GROUP) return false;
+  // Group fields always are always the lowercase type name.
+  if (field.name() != absl::AsciiStrToLower(field.message_type()->name())) {
+    return false;
+  }
+
+  if (field.message_type()->file() != field.file()) return false;
+
+  // Group messages are always defined in the same scope as the field.  File
+  // level extensions will compare NULL == NULL here, which is why the file
+  // comparison above is necessary to ensure both come from the same file.
+  return field.is_extension() ? field.message_type()->containing_type() ==
+                                    field.extension_scope()
+                              : field.message_type()->containing_type() ==
+                                    field.containing_type();
+}
+
 bool IsLazilyInitializedFile(absl::string_view filename) {
   if (filename == "third_party/protobuf/cpp_features.proto" ||
       filename == "google/protobuf/cpp_features.proto") {

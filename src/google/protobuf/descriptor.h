@@ -2887,6 +2887,13 @@ enum class Utf8CheckMode {
 PROTOBUF_EXPORT Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
                                                bool is_lite);
 
+// Returns true if the field is a "group-like field" consistent with a proto2
+// group:
+//  - Message encoding is DELIMITED (synonymous with type TYPE_GROUP)
+//  - Field name is exactly the message name lowercased
+//  - Message is defined within the same scope as the field
+PROTOBUF_EXPORT bool IsGroupLike(const FieldDescriptor& field);
+
 // Returns whether or not this file is lazily initialized rather than
 // pre-main via static initialization.  This has to be done for our bootstrapped
 // protos to avoid linker bloat in lite runtimes.

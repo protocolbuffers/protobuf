@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/csharp/csharp_wrapper_field.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -242,14 +243,9 @@ std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
 // Groups in proto2 are hacky: The name of the field is just the lower-cased
 // name of the group type. In C#, though, we would like to retain the original
 // capitalization of the type name. Fields with an encoding of "delimited" in
-// editions are like groups, but have a real name, so we use that. This means
-// upgrading a proto from proto2 to editions *can* be a breaking change for C#,
-// but it's unlikely to cause significant issues (as C# has primarily been used
-// with proto3, and even with proto2 groups, only some group names will cause
-// compatibility issues).
+// editions are like groups, but have a real name, so we use that.
 std::string GetFieldName(const FieldDescriptor* descriptor) {
-  if (descriptor->type() == FieldDescriptor::TYPE_GROUP &&
-      Generator::GetEdition(*descriptor->file()) == Edition::EDITION_PROTO2) {
+  if (internal::cpp::IsGroupLike(*descriptor)) {
     return descriptor->message_type()->name();
   } else {
     return descriptor->name();

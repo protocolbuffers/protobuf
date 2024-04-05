@@ -66,6 +66,8 @@
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/unittest_delimited.pb.h"
+#include "google/protobuf/unittest_delimited_import.pb.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
@@ -7320,6 +7322,50 @@ TEST(EditionsTest, DenseRange) {
        i <= static_cast<int>(PROTOBUF_MAXIMUM_EDITION); ++i) {
     EXPECT_TRUE(Edition_IsValid(i));
   }
+}
+
+TEST(IsGroupLike, GroupLikeDelimited) {
+  using internal::cpp::IsGroupLike;
+  const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+  const FileDescriptor& file =
+      *editions_unittest::TestDelimited::descriptor()->file();
+
+  EXPECT_TRUE(IsGroupLike(*msg.FindFieldByName("grouplike")));
+  EXPECT_TRUE(IsGroupLike(*file.FindExtensionByName("grouplikefilescope")));
+}
+
+TEST(IsGroupLike, GroupLikeNotDelimited) {
+  using internal::cpp::IsGroupLike;
+  const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+
+  EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("lengthprefixed")));
+}
+
+TEST(IsGroupLike, GroupLikeMismatchedName) {
+  using internal::cpp::IsGroupLike;
+  const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+  const FileDescriptor& file =
+      *editions_unittest::TestDelimited::descriptor()->file();
+
+  EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("notgrouplike")));
+  EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("not_group_like_scope")));
+}
+
+TEST(IsGroupLike, GroupLikeMismatchedScope) {
+  using internal::cpp::IsGroupLike;
+  const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+  const FileDescriptor& file =
+      *editions_unittest::TestDelimited::descriptor()->file();
+
+  EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("notgrouplikescope")));
+  EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("grouplike")));
+}
+
+TEST(IsGroupLike, GroupLikeMismatchedFile) {
+  using internal::cpp::IsGroupLike;
+  const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+
+  EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("messageimport")));
 }
 
 using FeaturesBaseTest = ValidationErrorTest;
