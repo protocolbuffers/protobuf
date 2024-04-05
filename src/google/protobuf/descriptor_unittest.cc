@@ -7337,8 +7337,11 @@ TEST(IsGroupLike, GroupLikeDelimited) {
 TEST(IsGroupLike, GroupLikeNotDelimited) {
   using internal::cpp::IsGroupLike;
   const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+  const FileDescriptor& file =
+      *editions_unittest::TestDelimited::descriptor()->file();
 
   EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("lengthprefixed")));
+  EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("lengthprefixed")));
 }
 
 TEST(IsGroupLike, GroupLikeMismatchedName) {
@@ -7364,8 +7367,11 @@ TEST(IsGroupLike, GroupLikeMismatchedScope) {
 TEST(IsGroupLike, GroupLikeMismatchedFile) {
   using internal::cpp::IsGroupLike;
   const Descriptor& msg = *editions_unittest::TestDelimited::descriptor();
+  const FileDescriptor& file =
+      *editions_unittest::TestDelimited::descriptor()->file();
 
   EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("messageimport")));
+  EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("messageimport")));
 }
 
 using FeaturesBaseTest = ValidationErrorTest;

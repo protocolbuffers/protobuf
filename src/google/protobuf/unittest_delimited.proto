@@ -9,6 +9,11 @@ option java_multiple_files = true;
 // Test various scenarios that are now possible in edition 2023 that weren't in
 // google.protobuf.
 
+message LengthPrefixed {
+  int32 a = 1;
+  int32 b = 2;
+}
+
 message NotGroupLikeScope {
   int32 a = 1;
   int32 b = 2;
@@ -52,6 +57,9 @@ message TestDelimited {
 }
 
 extend TestDelimited {
+  // Non-delimited field that otherwise looks group-like.
+  LengthPrefixed lengthprefixed = 1004;
+
   // Truly group-like extension.
   GroupLikeFileScope grouplikefilescope = 1000
       [features.message_encoding = DELIMITED];
@@ -63,4 +71,7 @@ extend TestDelimited {
   // Delimited extension that isn't group-like because of the scope of its type.
   TestDelimited.GroupLike grouplike = 1002
       [features.message_encoding = DELIMITED];
+
+  // Delimited extension that's grouplike except that it's an imported type.
+  MessageImport messageimport = 1003 [features.message_encoding = DELIMITED];
 }
