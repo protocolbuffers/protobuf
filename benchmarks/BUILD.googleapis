@@ -29,7 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "@rules_proto//proto:defs.bzl",
+    "@protobuf//bazel:proto_library.bzl",
     "proto_library",
 )
 

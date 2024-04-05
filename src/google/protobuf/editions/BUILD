@@ -1,7 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_python//python:proto.bzl", "py_proto_library")
 load("//:protobuf.bzl", "internal_objc_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 

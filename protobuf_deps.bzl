@@ -83,6 +83,7 @@ def protobuf_deps():
             sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
         )
 
+    # TODO: remove after toolchain types are moved to protobuf
     if not native.existing_rule("rules_proto"):
         http_archive(
             name = "rules_proto",

@@ -1,8 +1,8 @@
 # Protobuf Rust runtime packages.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 package(
     default_visibility = [

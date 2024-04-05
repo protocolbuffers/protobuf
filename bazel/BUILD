@@ -22,8 +22,5 @@ bzl_library(
         "upb_proto_reflection_library.bzl",
     ],
     visibility = ["//visibility:public"],
-    deps = [
-        "//bazel/private:upb_proto_library_internal_bzl",
-        "@rules_proto//proto:defs",
-    ],
+    deps = ["//bazel/private:upb_proto_library_internal_bzl"],
 )

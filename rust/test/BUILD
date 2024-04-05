@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",

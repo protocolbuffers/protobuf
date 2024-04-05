@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 
 exports_files(
     glob(["*.proto"]) + ["rust_bazel_crate_mapping.txt"],

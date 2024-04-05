@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "@rules_cc//cc:defs.bzl",
+    "//bazel:cc_proto_library.bzl",
     "cc_proto_library",
 )
 load(

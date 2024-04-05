@@ -5,6 +5,10 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
+# Second self-reference that makes it possible to load proto rules from @protobuf.
+# buildifier: disable=duplicated-name
+local_repository(name = "protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(

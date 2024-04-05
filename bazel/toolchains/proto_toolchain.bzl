@@ -19,7 +19,7 @@ def proto_toolchain(*, name, proto_compiler, exec_compatible_with = []):
 
     native.toolchain(
         name = name + "_toolchain",
-        toolchain_type = "//third_party/bazel_rules/rules_proto/proto:toolchain_type",
+        toolchain_type = "@rules_proto//proto:toolchain_type",
         exec_compatible_with = exec_compatible_with,
         target_compatible_with = [],
         toolchain = name,
