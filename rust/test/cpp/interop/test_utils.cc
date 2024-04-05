@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <cstddef>
+#include <cstdint>
 
 #include "absl/strings/string_view.h"
 #include "rust/cpp_kernel/cpp_api.h"
@@ -43,4 +44,11 @@ extern "C" google::protobuf::rust_internal::PtrAndLen GetBytesExtension(
   absl::string_view bytes =
       proto->GetExtension(protobuf_unittest::optional_bytes_extension);
   return {bytes.data(), bytes.size()};
+}
+
+extern "C" int32_t TakeOwnershipAndGetOptionalInt32(
+    protobuf_unittest::TestAllTypes* msg) {
+  int32_t i = msg->optional_int32();
+  delete msg;
+  return i;
 }

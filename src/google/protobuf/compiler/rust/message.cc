@@ -1102,8 +1102,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
           Self { inner: $pbr$::MessageInner { msg } }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
-          self.raw_msg()
+        pub fn __unstable_leak_cpp_repr_grant_permission_to_break(self) -> $pbi$::RawMessage {
+          let s = std::mem::ManuallyDrop::new(self);
+          s.raw_msg()
         }
       }
 
@@ -1116,7 +1117,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
           }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> $pbi$::RawMessage {
           self.raw_msg()
         }
       }
@@ -1128,7 +1129,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           msg: &'a $pbi$::RawMessage) -> Self {
           Self::new($pbi$::Private, *msg)
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&self) -> $pbi$::RawMessage {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> $pbi$::RawMessage {
           self.msg
         }
       }

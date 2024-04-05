@@ -23,6 +23,7 @@ macro_rules! proto_assert_eq {
 // Helper functions invoking C++ Protobuf APIs directly in C++.
 // Defined in `test_utils.cc`.
 extern "C" {
+    fn TakeOwnershipAndGetOptionalInt32(msg: RawMessage) -> i32;
     fn DeserializeTestAllTypes(data: *const u8, len: usize) -> RawMessage;
     fn MutateTestAllTypes(msg: RawMessage);
     fn SerializeTestAllTypes(msg: RawMessage) -> protobuf_cpp::__runtime::SerializedData;
@@ -33,26 +34,20 @@ extern "C" {
 }
 
 #[test]
-fn mutate_message_in_cpp() {
+fn send_to_cpp() {
     let mut msg1 = TestAllTypes::new();
-    unsafe {
-        MutateTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break());
-    }
-
-    let mut msg2 = TestAllTypes::new();
-    msg2.set_optional_int64(42);
-    msg2.set_optional_bytes(b"something mysterious");
-    msg2.set_optional_bool(false);
-
-    proto_assert_eq!(msg1, msg2);
+    msg1.set_optional_int32(7);
+    let i = unsafe {
+        TakeOwnershipAndGetOptionalInt32(msg1.__unstable_leak_cpp_repr_grant_permission_to_break())
+    };
+    assert_eq!(i, 7);
 }
 
 #[test]
 fn mutate_message_mut_in_cpp() {
     let mut msg1 = TestAllTypes::new();
-    let mut msg_mut = msg1.as_mut();
     unsafe {
-        MutateTestAllTypes(msg_mut.__unstable_cpp_repr_grant_permission_to_break());
+        MutateTestAllTypes(msg1.as_mut().__unstable_cpp_repr_grant_permission_to_break());
     }
 
     let mut msg2 = TestAllTypes::new();
@@ -139,7 +134,8 @@ fn smuggle_extension() {
     let data = msg1.serialize();
 
     let mut msg2 = TestAllExtensions::parse(&data).unwrap();
-    let bytes =
-        unsafe { GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref() };
-    assert_eq!(&*bytes, b"smuggled");
+    let bytes = unsafe {
+        GetBytesExtension(msg2.as_mut().__unstable_cpp_repr_grant_permission_to_break()).as_ref()
+    };
+    assert_eq!(bytes, b"smuggled");
 }
