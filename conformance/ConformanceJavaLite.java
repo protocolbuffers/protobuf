@@ -13,11 +13,13 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 import com.google.protobuf.conformance.Conformance;
+import com.google.protobuf_test_messages.edition2023.TestAllTypesEdition2023;
+import com.google.protobuf_test_messages.edition2023.TestMessagesEdition2023;
+import com.google.protobuf_test_messages.editions.proto2.TestMessagesProto2Editions;
+import com.google.protobuf_test_messages.editions.proto3.TestMessagesProto3Editions;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2.TestAllTypesProto2;
 import com.google.protobuf_test_messages.proto3.TestMessagesProto3;
-import com.google.protobuf_test_messages.editions.proto2.TestMessagesProto2Editions;
-import com.google.protobuf_test_messages.editions.proto3.TestMessagesProto3Editions;
 import com.google.protobuf_test_messages.proto3.TestMessagesProto3.TestAllTypesProto3;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -212,6 +214,8 @@ class ConformanceJavaLite {
         return TestAllTypesProto3.class;
       case "protobuf_test_messages.proto2.TestAllTypesProto2":
         return TestAllTypesProto2.class;
+      case "protobuf_test_messages.edition2023.TestAllTypesEdition2023":
+        return TestAllTypesEdition2023.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.TestAllTypesProto3.class;
       case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
@@ -228,6 +232,8 @@ class ConformanceJavaLite {
         return TestMessagesProto3.class;
       case "protobuf_test_messages.proto2.TestAllTypesProto2":
         return TestMessagesProto2.class;
+      case "protobuf_test_messages.edition2023.TestAllTypesEdition2023":
+        return TestMessagesEdition2023.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.class;
       case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
