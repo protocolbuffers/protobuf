@@ -20,7 +20,6 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/dynamic_message.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -1460,108 +1459,46 @@ TEST_F(ParseMiscTest, ParseFileOptions) {
       "}");
 }
 
-TEST_F(ParseMiscTest, InterpretFileOptions) {
-  SetupParser(
-      "import \"google/protobuf/descriptor.proto\";\n"
-      "extend google.protobuf.FileOptions {\n"
-      "  optional float float_a = 10101;\n"
-      "  optional float float_b = 10102;\n"
-      "  optional float float_c = 10103;\n"
-      "  optional float float_d = 10104;\n"
-      "  optional double double_a = 10105;\n"
-      "  optional double double_b = 10106;\n"
-      "  optional double double_c = 10107;\n"
-      "  optional double double_d = 10108;\n"
-      "}\n"
-      "option (float_a) = inf;\n"
-      "option (double_a) = inf;\n"
-      "option (float_b) = -inf;\n"
-      "option (double_b) = -inf;\n"
-      "option (float_c) = nan;\n"
-      "option (double_c) = nan;\n"
-      "option (float_d) = -nan;\n"
-      "option (double_d) = -nan;\n");
-  FileDescriptorProto parsed;
-  parser_->Parse(input_.get(), &parsed);
-  EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
-  ASSERT_EQ("", error_collector_.text_);
-  parsed.set_name("test.proto");
-
-  // We now have a FileDescriptorProto, but we need to link it to
-  // examine interpreted options. This file imports descriptor.proto,
-  // so we need to setup that dependency.
-  const FileDescriptor* import = FileDescriptorProto::descriptor()->file();
-  FileDescriptorProto import_proto;
-  import->CopyTo(&import_proto);
-  ASSERT_TRUE(pool_.BuildFile(import_proto) != nullptr);
-
-  const FileDescriptor* actual = pool_.BuildFile(parsed);
-  ASSERT_TRUE(actual != nullptr) << error_collector_.text_;
-
-  // In order to inspect interpreted options as known values (instead of
-  // poking around unrecognized fields set), we have to copy the options
-  // into a dynamic message via serializing and then de-serializing.
-  const FileOptions& orig_opts = actual->options();
-  const Descriptor* option_descriptor =
-      pool_.FindMessageTypeByName(orig_opts.GetDescriptor()->full_name());
-  ASSERT_TRUE(option_descriptor != nullptr);
-
-  DynamicMessageFactory factory;
-  std::unique_ptr<Message> dynamic_options(
-    factory.GetPrototype(option_descriptor)->New());
-  std::string serialized = orig_opts.SerializeAsString();
-  io::CodedInputStream input(
-      reinterpret_cast<const uint8_t*>(serialized.c_str()),
-      serialized.size());
-  input.SetExtensionRegistry(&pool_, &factory);
-  ASSERT_TRUE(dynamic_options->ParseFromCodedStream(&input));
-  const Reflection* reflect = dynamic_options->GetReflection();
-
-  // Now we can make assertions about some of the interpreted values.
-
-  const FieldDescriptor* float_opt = actual->FindExtensionByName("float_a");
-  ASSERT_TRUE(float_opt != nullptr);
-  const FieldDescriptor* double_opt = actual->FindExtensionByName("double_a");
-  ASSERT_TRUE(double_opt != nullptr);
-
-  float float_val = reflect->GetFloat(*dynamic_options, float_opt);
-  ASSERT_TRUE(std::isinf(float_val));
-  ASSERT_GT(float_val, 0);
-  double double_val = reflect->GetDouble(*dynamic_options, double_opt);
-  ASSERT_TRUE(std::isinf(double_val));
-  ASSERT_GT(double_val, 0);
-
-  float_opt = actual->FindExtensionByName("float_b");
-  ASSERT_TRUE(float_opt != nullptr);
-  double_opt = actual->FindExtensionByName("double_b");
-  ASSERT_TRUE(double_opt != nullptr);
-
-  float_val = reflect->GetFloat(*dynamic_options, float_opt);
-  ASSERT_TRUE(std::isinf(float_val));
-  ASSERT_LT(float_val, 0);
-  double_val = reflect->GetDouble(*dynamic_options, double_opt);
-  ASSERT_TRUE(std::isinf(double_val));
-  ASSERT_LT(double_val, 0);
-
-  float_opt = actual->FindExtensionByName("float_c");
-  ASSERT_TRUE(float_opt != nullptr);
-  double_opt = actual->FindExtensionByName("double_c");
-  ASSERT_TRUE(double_opt != nullptr);
-
-  float_val = reflect->GetFloat(*dynamic_options, float_opt);
-  ASSERT_TRUE(std::isnan(float_val));
-  double_val = reflect->GetDouble(*dynamic_options, double_opt);
-  ASSERT_TRUE(std::isnan(double_val));
-
-  float_opt = actual->FindExtensionByName("float_d");
-  ASSERT_TRUE(float_opt != nullptr);
-  double_opt = actual->FindExtensionByName("double_d");
-  ASSERT_TRUE(double_opt != nullptr);
-
-  float_val = reflect->GetFloat(*dynamic_options, float_opt);
-  ASSERT_TRUE(std::isnan(float_val));
-  double_val = reflect->GetDouble(*dynamic_options, double_opt);
-  ASSERT_TRUE(std::isnan(double_val));
+TEST_F(ParseMiscTest, InterpretedOptions) {
+  // Since we're importing the generated code from parsing/compiling
+  // unittest_custom_options.proto, we can just look at the option
+  // values from that file's descriptor in the generated code.
+  {
+    const MessageOptions& options = protobuf_unittest::SettingRealsFromInf
+                                    ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isinf(float_val));
+    ASSERT_GT(float_val, 0);
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isinf(double_val));
+    ASSERT_GT(double_val, 0);
+  }
+  {
+    const MessageOptions& options = protobuf_unittest::SettingRealsFromNegativeInf
+                                    ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isinf(float_val));
+    ASSERT_LT(float_val, 0);
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isinf(double_val));
+    ASSERT_LT(double_val, 0);
+  }
+  {
+    const MessageOptions& options = protobuf_unittest::SettingRealsFromNan
+                                    ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isnan(float_val));
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isnan(double_val));
+  }
+  {
+    const MessageOptions& options = protobuf_unittest::SettingRealsFromNegativeNan
+                                    ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isnan(float_val));
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isnan(double_val));
+  }
 }
 
 // ===================================================================
