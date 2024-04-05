@@ -45,6 +45,7 @@
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_delimited.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
@@ -372,6 +373,19 @@ TEST_F(TextFormatTest, Utf8DebugString) {
   // Compare.
   EXPECT_EQ(correct_utf8_string, utf8_debug_string);
   EXPECT_EQ(correct_string, debug_string);
+}
+
+TEST_F(TextFormatTest, DelimitedPrintToString) {
+  editions_unittest::TestDelimited proto;
+  proto.mutable_grouplike()->set_a(9);
+  proto.mutable_notgrouplike()->set_b(8);
+  proto.mutable_nested()->mutable_notgrouplike()->set_a(7);
+
+  std::string output;
+  TextFormat::PrintToString(proto, &output);
+  EXPECT_EQ(output,
+            "nested {\n  notgrouplike {\n    a: 7\n  }\n}\nGroupLike {\n  a: "
+            "9\n}\nnotgrouplike {\n  b: 8\n}\n");
 }
 
 TEST_F(TextFormatTest, PrintUnknownFields) {
@@ -2018,13 +2032,12 @@ TEST_F(TextFormatParserTest, InvalidFieldName) {
       1, 14);
 }
 
-TEST_F(TextFormatParserTest, InvalidCapitalization) {
-  // We require that group names be exactly as they appear in the .proto.
-  ExpectFailure(
-      "optionalgroup {\na: 15\n}\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
-      "\"optionalgroup\".",
-      1, 15);
+TEST_F(TextFormatParserTest, GroupCapitalization) {
+  // We allow group names to be the field or message name.
+  unittest::TestAllTypes proto;
+  EXPECT_TRUE(parser_.ParseFromString("optionalgroup {\na: 15\n}\n", &proto));
+  EXPECT_TRUE(parser_.ParseFromString("OptionalGroup {\na: 15\n}\n", &proto));
+
   ExpectFailure(
       "OPTIONALgroup {\na: 15\n}\n",
       "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
@@ -2035,6 +2048,27 @@ TEST_F(TextFormatParserTest, InvalidCapitalization) {
       "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
       "\"Optional_Double\".",
       1, 16);
+}
+
+TEST_F(TextFormatParserTest, DelimitedCapitalization) {
+  editions_unittest::TestDelimited proto;
+  EXPECT_TRUE(parser_.ParseFromString("grouplike {\na: 1\n}\n", &proto));
+  EXPECT_EQ(proto.grouplike().a(), 1);
+  EXPECT_TRUE(parser_.ParseFromString("GroupLike {\na: 12\n}\n", &proto));
+  EXPECT_EQ(proto.grouplike().a(), 12);
+  EXPECT_TRUE(parser_.ParseFromString("notgrouplike {\na: 15\n}\n", &proto));
+  EXPECT_EQ(proto.notgrouplike().a(), 15);
+
+  ExpectFailure(
+      "groupLike {\na: 15\n}\n",
+      "Message type \"editions_unittest.TestDelimited\" has no field named "
+      "\"groupLike\".",
+      1, 11, &proto);
+  ExpectFailure(
+      "notGroupLike {\na: 15\n}\n",
+      "Message type \"editions_unittest.TestDelimited\" has no field named "
+      "\"notGroupLike\".",
+      1, 14, &proto);
 }
 
 TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {

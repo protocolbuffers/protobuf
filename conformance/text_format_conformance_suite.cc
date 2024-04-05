@@ -260,12 +260,11 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunDelimitedTests() {
       "DelimitedFieldExtension", REQUIRED,
       "[protobuf_test_messages.editions.delimited_ext] { c: 1 }");
 
-  // Test that lower-cased group name (i.e. implicit field name) is not accepted
-  // for now.
-  ExpectParseFailure("DelimitedFieldLowercased", REQUIRED,
-                     "groupliketype { group_int32: 1 }");
-  ExpectParseFailure("DelimitedFieldLowercasedDifferent", REQUIRED,
-                     "delimited_field { group_int32: 1 }");
+  // Test that lower-cased group name (i.e. implicit field name) are accepted.
+  RunValidTextFormatTest("DelimitedFieldLowercased", REQUIRED,
+                         "groupliketype { group_int32: 1 }");
+  RunValidTextFormatTest("DelimitedFieldLowercasedDifferent", REQUIRED,
+                         "delimited_field { group_int32: 1 }");
 
   // Extensions always used the field name, and should never accept the message
   // name.
@@ -284,11 +283,11 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
   RunValidTextFormatTest("GroupFieldMultiWord", REQUIRED,
                          "MultiWordGroupField { group_int32: 1 }");
 
-  // Test that lower-cased group name (i.e. implicit field name) is not accepted
-  ExpectParseFailure("GroupFieldLowercased", REQUIRED,
-                     "data { group_int32: 1 }");
-  ExpectParseFailure("GroupFieldLowercasedMultiWord", REQUIRED,
-                     "multiwordgroupfield { group_int32: 1 }");
+  // Test that lower-cased group name (i.e. implicit field name) is accepted
+  RunValidTextFormatTest("GroupFieldLowercased", REQUIRED,
+                         "data { group_int32: 1 }");
+  RunValidTextFormatTest("GroupFieldLowercasedMultiWord", REQUIRED,
+                         "multiwordgroupfield { group_int32: 1 }");
 
   // Test extensions of group type
   RunValidTextFormatTest("GroupFieldExtension", REQUIRED,
