@@ -1,0 +1,11 @@
+# For Protobuf extension declaration test only.
+# DO NOT add extension declaration to this file.
+#
+# proto-file: path/to/my_file.proto
+# proto-message: MyMessage
+
+no_declaration {
+  number: 525000000
+  full_name: ".protoc.extension.declaration.test"
+  type: "string"
+}
