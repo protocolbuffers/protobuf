@@ -666,8 +666,8 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   if (size != 0) {
     char* buf;
     size_t size;
-    uint32_t tag =
-        ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
+    uint32_t tag = ((uint32_t)field->UPB_PRIVATE(number) << 3) |
+                   kUpb_WireType_LengthPrefix;
     upb_EncodeStatus status =
         upb_Encode(&ent.message, entry, 0, &d->arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
@@ -792,7 +792,7 @@ static const char* upb_Decoder_SkipField(upb_Decoder* d, const char* ptr,
       return ptr + 8;
     case kUpb_WireType_32Bit:
       return ptr + 4;
-    case kUpb_WireType_Delimited: {
+    case kUpb_WireType_LengthPrefix: {
       uint32_t size;
       ptr = upb_Decoder_DecodeSize(d, ptr, &size);
       return ptr + size;
@@ -808,7 +808,7 @@ enum {
   kStartItemTag = ((kUpb_MsgSet_Item << 3) | kUpb_WireType_StartGroup),
   kEndItemTag = ((kUpb_MsgSet_Item << 3) | kUpb_WireType_EndGroup),
   kTypeIdTag = ((kUpb_MsgSet_TypeId << 3) | kUpb_WireType_Varint),
-  kMessageTag = ((kUpb_MsgSet_Message << 3) | kUpb_WireType_Delimited),
+  kMessageTag = ((kUpb_MsgSet_Message << 3) | kUpb_WireType_LengthPrefix),
 };
 
 static void upb_Decoder_AddKnownMessageSetItem(
@@ -1133,7 +1133,7 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
         *op = kUpb_DecodeOp_UnknownField;
       }
       return upb_WireReader_ReadFixed64(ptr, &val->uint64_val);
-    case kUpb_WireType_Delimited:
+    case kUpb_WireType_LengthPrefix:
       ptr = upb_Decoder_DecodeSize(d, ptr, &val->size);
       *op = _upb_Decoder_GetDelimitedOp(d, mt, field);
       return ptr;
@@ -1213,11 +1213,11 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
   // significant speedups in benchmarks.
   const char* start = ptr;
 
-  if (wire_type == kUpb_WireType_Delimited) ptr += val.size;
+  if (wire_type == kUpb_WireType_LengthPrefix) ptr += val.size;
   if (msg) {
     switch (wire_type) {
       case kUpb_WireType_Varint:
-      case kUpb_WireType_Delimited:
+      case kUpb_WireType_LengthPrefix:
         start--;
         while (start[-1] & 0x80) start--;
         break;

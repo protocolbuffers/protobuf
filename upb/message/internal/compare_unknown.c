@@ -152,7 +152,7 @@ static upb_UnknownFields* upb_UnknownFields_DoBuild(
       case kUpb_WireType_32Bit:
         ptr = upb_WireReader_ReadFixed32(ptr, &field->data.uint32);
         break;
-      case kUpb_WireType_Delimited: {
+      case kUpb_WireType_LengthPrefix: {
         int size;
         ptr = upb_WireReader_ReadSize(ptr, &size);
         const char* s_ptr = ptr;
@@ -217,7 +217,7 @@ static bool upb_UnknownFields_IsEqual(const upb_UnknownFields* uf1,
       case kUpb_WireType_32Bit:
         if (f1->data.uint32 != f2->data.uint32) return false;
         break;
-      case kUpb_WireType_Delimited:
+      case kUpb_WireType_LengthPrefix:
         if (!upb_StringView_IsEqual(f1->data.delimited, f2->data.delimited)) {
           return false;
         }

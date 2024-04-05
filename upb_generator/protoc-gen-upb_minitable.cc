@@ -77,7 +77,7 @@ const char* kMessagesInit = "messages_layout";
 typedef std::pair<std::string, uint64_t> TableEntry;
 
 uint32_t GetWireTypeForField(upb::FieldDefPtr field) {
-  if (field.packed()) return kUpb_WireType_Delimited;
+  if (field.packed()) return kUpb_WireType_LengthPrefix;
   switch (field.type()) {
     case kUpb_FieldType_Double:
     case kUpb_FieldType_Fixed64:
@@ -101,7 +101,7 @@ uint32_t GetWireTypeForField(upb::FieldDefPtr field) {
     case kUpb_FieldType_Message:
     case kUpb_FieldType_String:
     case kUpb_FieldType_Bytes:
-      return kUpb_WireType_Delimited;
+      return kUpb_WireType_LengthPrefix;
   }
   UPB_UNREACHABLE();
 }

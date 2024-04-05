@@ -79,7 +79,7 @@ std::string ToBinaryPayload(const UnknownFields& fields) {
       ret.back() |= 0x80;
       ret.push_back(0);
     } else if (const auto* val = absl::get_if<Delimited>(&field.value)) {
-      EncodeVarint(field.field_number << 3 | kUpb_WireType_Delimited, &ret);
+      EncodeVarint(field.field_number << 3 | kUpb_WireType_LengthPrefix, &ret);
       EncodeVarint(val->val.size(), &ret);
       ret.append(val->val);
     } else if (const auto* val = absl::get_if<Fixed64>(&field.value)) {

@@ -267,7 +267,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
       upb_StringView view = *(upb_StringView*)field_mem;
       encode_bytes(e, view.data, view.size);
       encode_varint(e, view.size);
-      wire_type = kUpb_WireType_Delimited;
+      wire_type = kUpb_WireType_LengthPrefix;
       break;
     }
     case kUpb_FieldType_Group: {
@@ -296,7 +296,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       encode_TaggedMessagePtr(e, submsg, subm, &size);
       encode_varint(e, size);
-      wire_type = kUpb_WireType_Delimited;
+      wire_type = kUpb_WireType_LengthPrefix;
       e->depth++;
       break;
     }
@@ -372,7 +372,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
         ptr--;
         encode_bytes(e, ptr->data, ptr->size);
         encode_varint(e, ptr->size);
-        encode_tag(e, upb_MiniTableField_Number(f), kUpb_WireType_Delimited);
+        encode_tag(e, upb_MiniTableField_Number(f), kUpb_WireType_LengthPrefix);
       } while (ptr != start);
       return;
     }
@@ -403,7 +403,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
         ptr--;
         encode_TaggedMessagePtr(e, *ptr, subm, &size);
         encode_varint(e, size);
-        encode_tag(e, upb_MiniTableField_Number(f), kUpb_WireType_Delimited);
+        encode_tag(e, upb_MiniTableField_Number(f), kUpb_WireType_LengthPrefix);
       } while (ptr != start);
       e->depth++;
       return;
@@ -413,7 +413,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 
   if (packed) {
     encode_varint(e, e->limit - e->ptr - pre_len);
-    encode_tag(e, upb_MiniTableField_Number(f), kUpb_WireType_Delimited);
+    encode_tag(e, upb_MiniTableField_Number(f), kUpb_WireType_LengthPrefix);
   }
 }
 
@@ -428,7 +428,7 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
   encode_scalar(e, &ent->k, layout->UPB_PRIVATE(subs), key_field);
   size = (e->limit - e->ptr) - pre_len;
   encode_varint(e, size);
-  encode_tag(e, number, kUpb_WireType_Delimited);
+  encode_tag(e, number, kUpb_WireType_LengthPrefix);
 }
 
 static void encode_map(upb_encstate* e, const upb_Message* msg,
@@ -528,7 +528,7 @@ static void encode_msgset_item(upb_encstate* e, const upb_Extension* ext) {
   encode_message(e, ext->data.msg_val,
                  upb_MiniTableExtension_GetSubMessage(ext->ext), &size);
   encode_varint(e, size);
-  encode_tag(e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
+  encode_tag(e, kUpb_MsgSet_Message, kUpb_WireType_LengthPrefix);
   encode_varint(e, upb_MiniTableExtension_Number(ext->ext));
   encode_tag(e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
   encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);

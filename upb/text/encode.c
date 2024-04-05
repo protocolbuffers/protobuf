@@ -436,7 +436,7 @@ static const char* txtenc_unknown(txtenc* e, const char* ptr,
         txtenc_printf(e, "0x%016" PRIu64, val);
         break;
       }
-      case kUpb_WireType_Delimited: {
+      case kUpb_WireType_LengthPrefix: {
         int size;
         char* start = e->ptr;
         size_t start_overflow = e->overflow;

@@ -131,7 +131,7 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       return ptr + 4;
     case kUpb_WireType_64Bit:
       return ptr + 8;
-    case kUpb_WireType_Delimited: {
+    case kUpb_WireType_LengthPrefix: {
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size);
       if (!ptr) return NULL;

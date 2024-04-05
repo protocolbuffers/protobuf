@@ -54,7 +54,7 @@ enum {
   kUpb_MessageSet_StartItemTag = (1 << 3) | kUpb_WireType_StartGroup,
   kUpb_MessageSet_EndItemTag = (1 << 3) | kUpb_WireType_EndGroup,
   kUpb_MessageSet_TypeIdTag = (2 << 3) | kUpb_WireType_Varint,
-  kUpb_MessageSet_MessageTag = (3 << 3) | kUpb_WireType_Delimited,
+  kUpb_MessageSet_MessageTag = (3 << 3) | kUpb_WireType_LengthPrefix,
 };
 
 static const char* PyUpb_UnknownFieldSet_BuildMessageSetItem(
@@ -102,7 +102,7 @@ static const char* PyUpb_UnknownFieldSet_BuildMessageSetItem(
 done:
   if (type_id && msg) {
     PyObject* field = PyObject_CallFunction(
-        s->unknown_field_type, "iiO", type_id, kUpb_WireType_Delimited, msg);
+        s->unknown_field_type, "iiO", type_id, kUpb_WireType_LengthPrefix, msg);
     if (!field) goto err;
     PyList_Append(self->fields, field);
     Py_DECREF(field);
@@ -168,7 +168,7 @@ static const char* PyUpb_UnknownFieldSet_BuildValue(
       *data = PyLong_FromUnsignedLongLong(val);
       return ptr;
     }
-    case kUpb_WireType_Delimited: {
+    case kUpb_WireType_LengthPrefix: {
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size);
       if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size)) {
