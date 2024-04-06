@@ -12,6 +12,7 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
+#include "upb/message/compare.h"
 #include "upb/message/copy.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
@@ -575,7 +576,8 @@ static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
   const bool e2 = PyUpb_Message_IsEmpty(m2_msg, m1_msgdef, symtab);
   if (e1 || e2) return e1 && e2;
 
-  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef, 0);
+  const int options = kUpb_CompareOption_IncludeUnknownFields;
+  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef, options);
 }
 
 static const upb_FieldDef* PyUpb_Message_InitAsMsg(PyUpb_Message* m,
