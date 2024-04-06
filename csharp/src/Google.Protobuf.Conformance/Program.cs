@@ -78,10 +78,10 @@ namespace Google.Protobuf.Conformance
               ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Types
                   .MessageSetCorrectExtension2.Extensions.MessageSetExtension
             };
-            ExtensionRegistry edition2023ExtensionRegistry = new ExtensionRegistry
-            {
+            ExtensionRegistry edition2023ExtensionRegistry = new ExtensionRegistry {
               ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.ExtensionInt32,
-              ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.DelimitedExt
+              ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.DelimitedExt,
+              ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.GroupLikeType
             };
             IMessage message;
             try

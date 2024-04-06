@@ -33,3 +33,8 @@ Recommended.Editions_Proto3.ValueRejectInfNumberValue.JsonOutput
 Recommended.Editions_Proto3.ValueRejectNanNumberValue.JsonOutput
 Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+
+# TODO C# doesn't handle delimited parsing well.
+Required.Editions.ProtobufInput.ValidDelimitedExtension.NotGroupLike.ProtobufOutput
+Required.Editions.ProtobufInput.ValidDelimitedField.NotGroupLike.JsonOutput
+Required.Editions.ProtobufInput.ValidDelimitedField.NotGroupLike.ProtobufOutput

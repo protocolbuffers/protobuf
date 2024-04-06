@@ -26,6 +26,7 @@
 #include "absl/strings/substitute.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
+#include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
 #include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
@@ -47,6 +48,7 @@ using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
 using google::protobuf::internal::little_endian::FromHost;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using TestAllTypesProto2Editions =
@@ -141,6 +143,16 @@ std::string tag(uint32_t fieldnum, char wire_type) {
 
 std::string tag(int fieldnum, char wire_type) {
   return tag(static_cast<uint32_t>(fieldnum), wire_type);
+}
+
+std::string field(uint32_t fieldnum, char wire_type, std::string content) {
+  return absl::StrCat(tag(fieldnum, wire_type), content);
+}
+
+std::string group(uint32_t fieldnum, std::string content) {
+  return absl::StrCat(tag(fieldnum, WireFormatLite::WIRETYPE_START_GROUP),
+                      content,
+                      tag(fieldnum, WireFormatLite::WIRETYPE_END_GROUP));
 }
 
 std::string GetDefaultValue(FieldDescriptor::Type type) {
@@ -263,6 +275,7 @@ bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
                                response.json_payload(), &binary_protobuf);
 
   if (!status.ok()) {
+    ABSL_LOG(ERROR) << status;
     return false;
   }
 
@@ -342,7 +355,35 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/true);
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
+    RunDelimitedFieldTests();
   }
+}
+
+void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
+  TestAllTypesEdition2023 prototype;
+  SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedField.GroupLike"), REQUIRED,
+      group(201, field(202, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb(groupliketype { group_int32: 99 })pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedField.NotGroupLike"), REQUIRED,
+      group(202, field(202, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb(delimited_field { group_int32: 99 })pb");
+
+  // Note: extensions don't work with TypeResolver, which is used by
+  // binary->JSON tests.
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedExtension.GroupLike"), REQUIRED,
+      group(121, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb([protobuf_test_messages.editions.groupliketype] { c: 99 })pb");
+
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
+      group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
 }
 
 template <typename MessageType>
@@ -447,7 +488,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
+void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_protobuf,
     const std::string& equivalent_text_format) {
@@ -456,12 +497,34 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
   ConformanceRequestSetting binary_to_binary(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
       conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-  suite_.RunValidInputTest(binary_to_binary, equivalent_text_format);
+  RunValidInputTest(binary_to_binary, equivalent_text_format);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf,
+    const std::string& equivalent_text_format) {
+  MessageType prototype;
+
+  ConformanceRequestSetting binary_to_binary(
+      level, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST, prototype, test_name, input_protobuf);
+  RunValidInputTest(binary_to_binary, equivalent_text_format);
 
   ConformanceRequestSetting binary_to_json(
       level, conformance::PROTOBUF, conformance::JSON, conformance::BINARY_TEST,
       prototype, test_name, input_protobuf);
-  suite_.RunValidInputTest(binary_to_json, equivalent_text_format);
+  RunValidInputTest(binary_to_json, equivalent_text_format);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf,
+    const std::string& equivalent_text_format) {
+  suite_.RunValidProtobufTest<MessageType>(test_name, level, input_protobuf,
+                                           equivalent_text_format);
 }
 
 template <typename MessageType>

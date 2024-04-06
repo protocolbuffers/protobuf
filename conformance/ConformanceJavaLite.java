@@ -214,7 +214,7 @@ class ConformanceJavaLite {
         return TestAllTypesProto3.class;
       case "protobuf_test_messages.proto2.TestAllTypesProto2":
         return TestAllTypesProto2.class;
-      case "protobuf_test_messages.edition2023.TestAllTypesEdition2023":
+      case "protobuf_test_messages.editions.TestAllTypesEdition2023":
         return TestAllTypesEdition2023.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.TestAllTypesProto3.class;
@@ -232,7 +232,7 @@ class ConformanceJavaLite {
         return TestMessagesProto3.class;
       case "protobuf_test_messages.proto2.TestAllTypesProto2":
         return TestMessagesProto2.class;
-      case "protobuf_test_messages.edition2023.TestAllTypesEdition2023":
+      case "protobuf_test_messages.editions.TestAllTypesEdition2023":
         return TestMessagesEdition2023.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.class;
