@@ -5226,8 +5226,8 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
 // Must be last.
 
-#define kUpb_BaseField_Begin ((size_t) - 1)
-#define kUpb_Extension_Begin ((size_t) - 1)
+#define kUpb_BaseField_Begin ((size_t)-1)
+#define kUpb_Extension_Begin ((size_t)-1)
 
 #ifdef __cplusplus
 extern "C" {
@@ -5432,6 +5432,8 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
 
   if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m, options)) return false;
   if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m, options)) return false;
+
+  if (!(options & kUpb_CompareOption_IncludeUnknownFields)) return true;
 
   // Check the unknown fields.
   size_t usize1, usize2;
