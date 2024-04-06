@@ -151,6 +151,11 @@
 #pragma pop_macro("TYPE_BOOL")
 #endif  // __APPLE__
 
+#if defined(ANDROID) || defined(__ANDROID__)
+#pragma pop_macro("UID_MAX")
+#pragma pop_macro("GID_MAX")
+#endif  // defined(ANDROID) || defined(__ANDROID__)
+
 #ifdef __FreeBSD__
 #pragma pop_macro("TRUE")
 #pragma pop_macro("FALSE")
