@@ -193,7 +193,6 @@ py_extension(
     deps = [
         "//third_party/utf8_range",
         "//upb:base",
-        "//upb:descriptor_upb_proto_reflection",
         "//upb:eps_copy_input_stream",
         "//upb:message",
         "//upb:message_compare",
@@ -203,6 +202,7 @@ py_extension(
         "//upb:text",
         "//upb:wire_reader",
         "//upb/hash",
+        "//upb/reflection:descriptor_upb_proto_reflection",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
     ],

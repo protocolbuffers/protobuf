@@ -203,7 +203,7 @@ pkg_files(
         ":well_known_proto_py_pb2",
         "//upb:descriptor_upb_minitable_proto",
         "//upb:descriptor_upb_proto",
-        "//upb:descriptor_upb_proto_reflection",
+        "//upb/reflection:descriptor_upb_proto_reflection",
     ],
     prefix = "google/protobuf",
 )
