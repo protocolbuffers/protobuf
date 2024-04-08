@@ -54,10 +54,6 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
 upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
                                upb_Arena* arena);
 
-// Returns true if these two messages are equal.
-bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
-                   const upb_MessageDef* m);
-
 // Checks that this Ruby object is a message, and raises an exception if not.
 void Message_CheckClass(VALUE klass);
 
