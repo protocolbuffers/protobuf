@@ -33,7 +33,7 @@ enum {
    * memory during encode. */
   kUpb_EncodeOption_Deterministic = 1,
 
-  // When set, unknown fields are not printed.
+  // When set, unknown fields are not encoded.
   kUpb_EncodeOption_SkipUnknown = 2,
 
   // When set, the encode will fail if any required fields are missing.
