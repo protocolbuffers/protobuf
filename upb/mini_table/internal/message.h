@@ -143,7 +143,7 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_MapValue(
   return f;
 }
 
-UPB_API_INLINE bool upb_MiniTable_MessageFieldIsLinked(
+UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
     const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
   return upb_MiniTable_GetSubMessageTable(m, f) != NULL;
 }
