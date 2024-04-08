@@ -534,6 +534,76 @@ public class CodedInputStreamTest {
     }
   }
 
+  @Test
+  public void testReadStringWithHugeSize() throws Exception {
+    byte[] data = new byte[] {-1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0};
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      try {
+        input.readString();
+        assertWithMessage("%s: Should have thrown an exception!", inputType.name()).fail();
+      } catch (InvalidProtocolBufferException e) {
+        // success.
+      }
+    }
+  }
+
+  @Test
+  public void testReadStringRequireUtf8WithHugeSize() throws Exception {
+    byte[] data = new byte[] {-1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0};
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      try {
+        input.readStringRequireUtf8();
+        assertWithMessage("%s: Should have thrown an exception!", inputType.name()).fail();
+      } catch (InvalidProtocolBufferException e) {
+        // success.
+      }
+    }
+  }
+
+  @Test
+  public void testReadBytesWithHugeSize() throws Exception {
+    byte[] data = new byte[] {-1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0};
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      try {
+        input.readBytes();
+        assertWithMessage("%s: Should have thrown an exception!", inputType.name()).fail();
+      } catch (InvalidProtocolBufferException e) {
+        // success.
+      }
+    }
+  }
+
+  @Test
+  public void testReadByteArrayWithHugeSize() throws Exception {
+    byte[] data = new byte[] {-1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0};
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      try {
+        input.readByteArray();
+        assertWithMessage("%s: Should have thrown an exception!", inputType.name()).fail();
+      } catch (InvalidProtocolBufferException e) {
+        // success.
+      }
+    }
+  }
+
+  @Test
+  public void testReadByteBufferWithHugeSize() throws Exception {
+    byte[] data = new byte[] {-1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0};
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      try {
+        input.readByteBuffer();
+        assertWithMessage("%s: Should have thrown an exception!", inputType.name()).fail();
+      } catch (InvalidProtocolBufferException e) {
+        // success.
+      }
+    }
+  }
+
   /**
    * Test we can do messages that are up to CodedInputStream#DEFAULT_SIZE_LIMIT in size (2G or
    * Integer#MAX_SIZE).
