@@ -192,44 +192,6 @@ std::string GetEnumValueName(absl::string_view enum_name,
   return result;
 }
 
-uint GetGroupEndTag(const Descriptor* descriptor) {
-  const Descriptor* containing_type = descriptor->containing_type();
-  if (containing_type != nullptr) {
-    const FieldDescriptor* field;
-    for (int i = 0; i < containing_type->field_count(); i++) {
-      field = containing_type->field(i);
-      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-          field->message_type() == descriptor) {
-        return internal::WireFormatLite::MakeTag(
-            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-      }
-    }
-    for (int i = 0; i < containing_type->extension_count(); i++) {
-      field = containing_type->extension(i);
-      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-          field->message_type() == descriptor) {
-        return internal::WireFormatLite::MakeTag(
-            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-      }
-    }
-  } else {
-    const FileDescriptor* containing_file = descriptor->file();
-    if (containing_file != nullptr) {
-      const FieldDescriptor* field;
-      for (int i = 0; i < containing_file->extension_count(); i++) {
-        field = containing_file->extension(i);
-        if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-            field->message_type() == descriptor) {
-          return internal::WireFormatLite::MakeTag(
-              field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
 std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
   if (descriptor->extension_scope()) {
     return absl::StrCat(GetClassName(descriptor->extension_scope()),

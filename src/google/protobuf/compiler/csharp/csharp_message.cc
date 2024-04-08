@@ -43,7 +43,6 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     : SourceGeneratorBase(options),
       descriptor_(descriptor),
       has_bit_field_count_(0),
-      end_tag_(GetGroupEndTag(descriptor)),
       has_extension_ranges_(descriptor->extension_range_count() > 0) {
   // fields by number
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -668,18 +667,17 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["maybe_ref_input"] = use_parse_context ? "ref input" : "input";
 
-  printer->Print(
-      "uint tag;\n"
-      "while ((tag = input.ReadTag()) != 0) {\n"
-      "  switch(tag) {\n");
+  printer->Emit(R"csharp(
+    uint tag;
+    while ((tag = input.ReadTag()) != 0) {
+    if ((tag & 7) == 4) {
+      // Abort on any end group tag.
+      return;
+    }
+    switch(tag) {
+  )csharp");
   printer->Indent();
   printer->Indent();
-  if (end_tag_ != 0) {
-    printer->Print(
-        "case $end_tag$:\n"
-        "  return;\n",
-        "end_tag", absl::StrCat(end_tag_));
-  }
   if (has_extension_ranges_) {
     printer->Print(vars,
                    "default:\n"
