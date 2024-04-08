@@ -95,11 +95,11 @@ bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
   return !_upb_Message_NextBaseField(msg, m, &f, &v, &iter);
 }
 
-static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
-                               upb_CType ctype, const upb_MiniTable* m,
-                               int options) {
-  // Check for trivial equality.
+bool upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
+                       upb_CType ctype, const upb_MiniTable* m, int options) {
+  // Check for trivial (in)equality.
   if (arr1 == arr2) return true;
+  if (!arr1 || !arr2) return false;
 
   // Must have identical element counts.
   const size_t size1 = arr1 ? upb_Array_Size(arr1) : 0;
@@ -116,10 +116,11 @@ static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
   return true;
 }
 
-static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
-                             const upb_MiniTable* m, int options) {
-  // Check for trivial equality.
+bool upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
+                     const upb_MiniTable* m, int options) {
+  // Check for trivial (in)equality.
   if (map1 == map2) return true;
+  if (!map1 || !map2) return false;
 
   // Must have identical element counts.
   size_t size1 = map1 ? upb_Map_Size(map1) : 0;
@@ -167,11 +168,11 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
     bool eq;
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f1)) {
       case kUpb_FieldMode_Array:
-        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
-                                options);
+        eq = upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
+                               options);
         break;
       case kUpb_FieldMode_Map:
-        eq = _upb_Map_IsEqual(val1.map_val, val2.map_val, subm, options);
+        eq = upb_Map_IsEqual(val1.map_val, val2.map_val, subm, options);
         break;
       case kUpb_FieldMode_Scalar:
         eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
@@ -209,8 +210,8 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
     bool eq;
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array:
-        eq = _upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
-                                options);
+        eq = upb_Array_IsEqual(val1.array_val, val2.array_val, ctype, subm,
+                               options);
         break;
       case kUpb_FieldMode_Map:
         UPB_UNREACHABLE();  // Maps cannot be extensions.
@@ -227,7 +228,9 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 
 bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
                          const upb_MiniTable* m, int options) {
+  // Check for trivial (in)equality.
   if (UPB_UNLIKELY(msg1 == msg2)) return true;
+  if (UPB_UNLIKELY(!msg1 || !msg2)) return false;
 
   if (!_upb_Message_BaseFieldsAreEqual(msg1, msg2, m, options)) return false;
   if (!_upb_Message_ExtensionsAreEqual(msg1, msg2, m, options)) return false;

@@ -211,22 +211,9 @@ upb_Map* MapField_GetUpbMap(zval* val, MapField_Type type, upb_Arena* arena) {
 }
 
 bool MapEq(const upb_Map* m1, const upb_Map* m2, MapField_Type type) {
-  size_t iter = kUpb_Map_Begin;
-
-  if ((m1 == NULL) != (m2 == NULL)) return false;
-  if (m1 == NULL) return true;
-  if (upb_Map_Size(m1) != upb_Map_Size(m2)) return false;
-
-  while (upb_MapIterator_Next(m1, &iter)) {
-    upb_MessageValue key = upb_MapIterator_Key(m1, iter);
-    upb_MessageValue val1 = upb_MapIterator_Value(m1, iter);
-    upb_MessageValue val2;
-
-    if (!upb_Map_Get(m2, key, &val2)) return false;
-    if (!ValueEq(val1, val2, type.val_type)) return false;
-  }
-
-  return true;
+  const upb_MiniTable* m = upb_MessageDef_MiniTable(type.val_type.desc->msgdef);
+  const int options = 0;
+  return upb_Map_IsEqual(m1, m2, m, options);
 }
 
 // MapField PHP methods ////////////////////////////////////////////////////////

@@ -174,30 +174,9 @@ static bool MessageEq(const upb_Message* m1, const upb_Message* m2,
  * ValueEq()
  */
 bool ValueEq(upb_MessageValue val1, upb_MessageValue val2, TypeInfo type) {
-  switch (type.type) {
-    case kUpb_CType_Bool:
-      return val1.bool_val == val2.bool_val;
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return val1.int32_val == val2.int32_val;
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return val1.int64_val == val2.int64_val;
-    case kUpb_CType_Float:
-      return val1.float_val == val2.float_val;
-    case kUpb_CType_Double:
-      return val1.double_val == val2.double_val;
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return val1.str_val.size == val2.str_val.size &&
-             memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
-                 0;
-    case kUpb_CType_Message:
-      return MessageEq(val1.msg_val, val2.msg_val, type.desc->msgdef);
-    default:
-      return false;
-  }
+  const upb_MiniTable* m = upb_MessageDef_MiniTable(type.desc->msgdef);
+  const int options = 0;
+  return upb_MessageValue_IsEqual(val1, val2, type.type, m, options);
 }
 
 /**

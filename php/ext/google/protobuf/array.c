@@ -192,22 +192,9 @@ upb_Array* RepeatedField_GetUpbArray(zval* val, TypeInfo type,
 }
 
 bool ArrayEq(const upb_Array* a1, const upb_Array* a2, TypeInfo type) {
-  size_t i;
-  size_t n;
-
-  if ((a1 == NULL) != (a2 == NULL)) return false;
-  if (a1 == NULL) return true;
-
-  n = upb_Array_Size(a1);
-  if (n != upb_Array_Size(a2)) return false;
-
-  for (i = 0; i < n; i++) {
-    upb_MessageValue val1 = upb_Array_Get(a1, i);
-    upb_MessageValue val2 = upb_Array_Get(a2, i);
-    if (!ValueEq(val1, val2, type)) return false;
-  }
-
-  return true;
+  const upb_MiniTable* m = upb_MessageDef_MiniTable(type.desc->msgdef);
+  const int options = 0;
+  return upb_Array_IsEqual(a1, a2, type.type, m, options);
 }
 
 // RepeatedField PHP methods ///////////////////////////////////////////////////

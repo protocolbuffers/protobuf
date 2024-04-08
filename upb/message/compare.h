@@ -11,6 +11,8 @@
 #include <stddef.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/message/array.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
@@ -37,6 +39,13 @@ UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
 UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
                                  const upb_Message* msg2,
                                  const upb_MiniTable* m, int options);
+
+UPB_API bool upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
+                               upb_CType ctype, const upb_MiniTable* m,
+                               int options);
+
+UPB_API bool upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
+                             const upb_MiniTable* m, int options);
 
 // If |ctype| is a message then |m| must point to its minitable.
 UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
