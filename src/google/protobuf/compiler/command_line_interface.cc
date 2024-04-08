@@ -1264,7 +1264,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // Enforce extension declarations only when compiling. We want to skip
   // this enforcement when protoc is just being invoked to encode or decode
   // protos.
-  if (mode_ == MODE_COMPILE) {
+  if (mode_ == MODE_COMPILE
+  ) {
     descriptor_pool->EnforceExtensionDeclarations(true);
   }
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
