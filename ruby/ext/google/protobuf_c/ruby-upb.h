@@ -3663,6 +3663,7 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 // Export the newer headers, for legacy users.  New users should include the
 // more specific headers directly.
 // IWYU pragma: begin_exports
+
 #ifndef UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 #define UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 
@@ -3673,20 +3674,11 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 extern "C" {
 #endif
 
-// Builds a upb_MiniTableEnum from an enum MiniDescriptor.  The MiniDescriptor
-// must be for an enum, not a message.
-UPB_API upb_MiniTableEnum* upb_MiniDescriptor_BuildEnum(const char* data,
-                                                        size_t len,
-                                                        upb_Arena* arena,
-                                                        upb_Status* status);
-
-// TODO: Deprecated name; update callers.
-UPB_API_INLINE upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data,
-                                                          size_t len,
-                                                          upb_Arena* arena,
-                                                          upb_Status* status) {
-  return upb_MiniDescriptor_BuildEnum(data, len, arena, status);
-}
+// Builds a upb_MiniTableEnum from an enum mini descriptor.
+// The mini descriptor must be for an enum, not a message.
+UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
+                                                   upb_Arena* arena,
+                                                   upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */
