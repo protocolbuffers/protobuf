@@ -296,7 +296,14 @@ UPB_INLINE bool _upb_Message_SetExtensionField(
 UPB_API_INLINE void upb_Message_Clear(struct upb_Message* msg,
                                       const upb_MiniTable* m) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   memset(msg, 0, m->UPB_PRIVATE(size));
+  if (in) {
+    // Reset the internal buffer to empty.
+    in->unknown_end = sizeof(upb_Message_Internal);
+    in->ext_begin = in->size;
+    UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
+  }
 }
 
 UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
