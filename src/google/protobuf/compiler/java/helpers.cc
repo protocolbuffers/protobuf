@@ -86,22 +86,25 @@ void PrintEnumVerifierLogic(
 }
 
 void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  bool enforce_lite,
                                   absl::string_view java_class_name) {
   const auto& version = GetProtobufJavaVersion(oss_runtime);
   printer->Print(
-      "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "com.google.protobuf.RuntimeVersion.validateProtobuf$lite$GencodeVersion("
+      "\n"
       "  com.google.protobuf.RuntimeVersion.RuntimeDomain.$domain$,\n"
       "  $major$,\n"
       "  $minor$,\n"
       "  $patch$,\n"
       "  $suffix$,\n"
-      "  $location$);\n",
-      "domain", oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "major",
+      "  \"$location$\");\n",
+      "lite", enforce_lite ? "Lite" : "", "domain",
+      oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "major",
       absl::StrCat("/* major= */ ", version.major()), "minor",
       absl::StrCat("/* minor= */ ", version.minor()), "patch",
       absl::StrCat("/* patch= */ ", version.patch()), "suffix",
       absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
-      absl::StrCat(java_class_name, ".class.getName()"));
+      java_class_name);
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,

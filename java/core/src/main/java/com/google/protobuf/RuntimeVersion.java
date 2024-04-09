@@ -38,6 +38,29 @@ public final class RuntimeVersion {
    * Validates that the gencode version is compatible with this runtime version according to
    * https://protobuf.dev/support/cross-version-runtime-guarantee/.
    *
+   * <p>TODO: b/298200443 - Delete this method once it's safe to do so, or re-enable it with lite
+   * and full checks.
+   *
+   * @param domain the domain where Protobuf Java code was generated.
+   * @param major the major version of Protobuf Java gencode.
+   * @param minor the minor version of Protobuf Java gencode.
+   * @param patch the micro/patch version of Protobuf Java gencode.
+   * @param suffix the version suffix e.g. "-rc2", "-dev", etc.
+   * @param location the debugging location e.g. generated Java class to put in the error messages.
+   * @throws ProtobufRuntimeVersionException if versions are incompatible.
+   */
+  public static void validateProtobufLiteGencodeVersion(
+      RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
+    if (checkDisabled()) {
+      return;
+    }
+    validateProtobufGencodeVersionImpl(domain, major, minor, patch, suffix, location);
+  }
+
+  /**
+   * Validates that the gencode version is compatible with this runtime version according to
+   * https://protobuf.dev/support/cross-version-runtime-guarantee/.
+   *
    * <p>This method is currently only used by Protobuf Java **full version** gencode. Do not call it
    * elsewhere.
    *

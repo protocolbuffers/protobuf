@@ -12,11 +12,13 @@
 #include "google/protobuf/compiler/java/file.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -276,14 +278,14 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Annotate("classname", file_->name());
   printer->Indent();
 
-  if (!context_->EnforceLite()) {
-    printer->Print("static {\n");
-    printer->Indent();
-    PrintGencodeVersionValidator(printer, options_.opensource_runtime,
-                                 classname_);
-    printer->Outdent();
-    printer->Print("}\n");
-  }
+  printer->Print("static {\n");
+  printer->Indent();
+  PrintGencodeVersionValidator(
+      printer, options_.opensource_runtime, context_->EnforceLite(),
+      absl::StrReplaceAll(absl::StrCat(java_package_, ".", classname_),
+                          {{".", "/"}}));
+  printer->Outdent();
+  printer->Print("}\n");
 
   // -----------------------------------------------------------------
 

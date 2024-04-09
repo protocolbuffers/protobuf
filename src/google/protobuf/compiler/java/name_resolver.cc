@@ -12,6 +12,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -385,6 +386,18 @@ std::string ClassNameResolver::GetDowngradedClassName(
   return absl::StrCat(FileJavaPackage(descriptor->file(), true, options_), ".",
                       GetDowngradedFileClassName(descriptor->file()), ".",
                       ClassNameWithoutPackage(descriptor, false));
+}
+
+std::string ClassNameResolver::GetJVMImmutableClassName(
+    const Descriptor* descriptor) {
+  return absl::StrReplaceAll(GetJavaImmutableClassName(descriptor),
+                             {{".", "/"}});
+}
+
+std::string ClassNameResolver::GetJVMImmutableClassName(
+    const EnumDescriptor* descriptor) {
+  return absl::StrReplaceAll(GetJavaImmutableClassName(descriptor),
+                             {{".", "/"}});
 }
 
 }  // namespace java
