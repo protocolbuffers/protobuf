@@ -31,6 +31,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -1406,12 +1407,12 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // Preallocate an initial arena block to avoid mallocs during hooked region.
   std::vector<char> arena_block(1024 * 1024);
   Arena arena(arena_block.data(), arena_block.size());
+  const size_t initial_allocated_size = arena.SpaceAllocated();
 
   {
-    internal::NoHeapChecker no_heap;
-
-    // Fill some repeated fields on the arena to test for leaks. Also verify no
-    // memory allocations.
+    // Fill some repeated fields on the arena to test for leaks. Also that the
+    // newly allocated memory is approximately the size of the cleanups for the
+    // repeated messages.
     RepeatedField<int32_t> repeated_int32(&arena);
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1432,10 +1433,12 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     repeated_message.UnsafeArenaExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
     EXPECT_EQ(5, repeated_message.size());
+    const size_t upperbound_cleanup_size = 2 * 110 * internal::cleanup::Size();
+    EXPECT_GT(initial_allocated_size + upperbound_cleanup_size,
+              arena.SpaceAllocated());
   }
 
-  // Now, outside the scope of the NoHeapChecker, test ExtractSubrange's copying
-  // semantics.
+  // Now test ExtractSubrange's copying semantics.
   {
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1610,8 +1613,9 @@ TEST(ArenaTest, MessageLiteOnArena) {
   initial_message.SerializeToString(&serialized);
 
   {
-
     MessageLite* generic_message = prototype->New(&arena);
+
+
     EXPECT_TRUE(generic_message != nullptr);
     EXPECT_EQ(&arena, generic_message->GetArena());
     EXPECT_TRUE(generic_message->ParseFromString(serialized));
@@ -1675,7 +1679,8 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
 
 TEST(ArenaTest, FirstArenaOverhead) {
   Arena arena;
-  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
+  VerifyArenaOverhead(
+      arena, internal::SerialArena::kNonCleanupBlockListChunkInitialSize);
 }
 
 
@@ -1686,7 +1691,9 @@ TEST(ArenaTest, BlockSizeDoubling) {
 
   // Allocate something to get initial block size.
   Arena::CreateArray<char>(&arena, 1);
-  auto first_block_size = arena.SpaceAllocated();
+  auto first_block_size =
+      arena.SpaceAllocated() -
+      internal::SerialArena::kNonCleanupBlockListChunkInitialSize;
 
   // Keep allocating until space used increases.
   while (arena.SpaceAllocated() == first_block_size) {
