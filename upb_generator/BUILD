@@ -100,7 +100,7 @@ bootstrap_cc_library(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//protos_generator:__pkg__"],
+    visibility = ["//upb:friend_generators"],
     deps = [
         ":mangle",
         "//upb:mini_table",
@@ -157,7 +157,7 @@ bootstrap_cc_library(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//protos_generator:__pkg__"],
+    visibility = ["//upb:friend_generators"],
     deps = [
         "//upb:port",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -179,7 +179,7 @@ bootstrap_cc_library(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//protos_generator:__pkg__"],
+    visibility = ["//upb:friend_generators"],
     deps = [
         "//:protobuf",
         "@com_google_absl//absl/base:core_headers",
