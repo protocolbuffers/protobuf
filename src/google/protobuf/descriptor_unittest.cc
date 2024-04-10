@@ -8916,10 +8916,12 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
 
 TEST_F(FeaturesTest, EnumValueFeaturesInherit) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
     edition: EDITION_2023
+    dependency: "google/protobuf/unittest_features.proto"
     options { features { enum_type: CLOSED } }
     enum_type {
       name: "Foo"
@@ -9010,10 +9012,12 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
 
 TEST_F(FeaturesTest, OneofFeaturesInherit) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
     edition: EDITION_2023
+    dependency: "google/protobuf/unittest_features.proto"
     options { features { enum_type: CLOSED } }
     message_type {
       name: "Foo"
@@ -9113,10 +9117,12 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
 
 TEST_F(FeaturesTest, ExtensionRangeFeaturesInherit) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
     syntax: "editions"
     edition: EDITION_2023
+    dependency: "google/protobuf/unittest_features.proto"
     options { features { enum_type: CLOSED } }
     message_type {
       name: "Foo"
@@ -10359,6 +10365,93 @@ TEST_F(FeaturesTest, InvalidGroupLabel) {
       "behavior.\n");
 }
 
+TEST_F(FeaturesTest, DeprecatedFeature) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithWarnings(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          features {
+            [pb.test] { removed_feature: VALUE9 }
+          }
+        }
+      )pb",
+      "foo.proto: foo.proto: NAME: Feature "
+      "pb.TestFeatures.removed_feature has been deprecated in edition 2023: "
+      "Custom feature deprecation warning\n");
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).removed_feature(),
+            pb::VALUE9);
+}
+
+TEST_F(FeaturesTest, RemovedFeature) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          features {
+            [pb.test] { removed_feature: VALUE9 }
+          }
+        }
+      )pb",
+      "foo.proto: foo.proto: NAME: Feature "
+      "pb.TestFeatures.removed_feature has been removed in edition 2024\n");
+}
+
+TEST_F(FeaturesTest, RemovedFeatureDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file =
+      BuildFile(R"pb(
+        name: "foo.proto" syntax: "editions" edition: EDITION_2024
+      )pb");
+  ASSERT_THAT(file, NotNull());
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).removed_feature(),
+            pb::VALUE3);
+}
+
+TEST_F(FeaturesTest, FutureFeature) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          features {
+            [pb.test] { future_feature: VALUE9 }
+          }
+        }
+      )pb",
+      "foo.proto: foo.proto: NAME: Feature "
+      "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
+}
+
+TEST_F(FeaturesTest, FutureFeatureDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file =
+      BuildFile(R"pb(
+        name: "foo.proto" syntax: "editions" edition: EDITION_2023
+      )pb");
+  ASSERT_THAT(file, NotNull());
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).future_feature(),
+            pb::VALUE1);
+}
+
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 class FeaturesDebugStringTest
@@ -11402,7 +11495,7 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
 // DescriptorDatabase
 
 static void AddToDatabase(SimpleDescriptorDatabase* database,
-                          const char* file_text) {
+                          absl::string_view file_text) {
   FileDescriptorProto file_proto;
   EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
   database->Add(file_proto);
@@ -11721,6 +11814,84 @@ TEST_F(DatabaseBackedPoolTest, UnittestProto) {
 
   // Also verify that CopyTo() did not omit any information.
   EXPECT_EQ(original_file->DebugString(), file_from_database->DebugString());
+}
+
+TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
+  FileDescriptorProto proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+  AddToDatabase(&database_, proto.DebugString());
+  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+  AddToDatabase(&database_, proto.DebugString());
+  AddToDatabase(&database_, R"pb(
+    name: "features.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    dependency: "google/protobuf/unittest_features.proto"
+    options {
+      features {
+        enum_type: CLOSED
+        [pb.test] { file_feature: VALUE9 multiple_feature: VALUE9 }
+      }
+    }
+    message_type {
+      name: "FooFeatures"
+      options {
+        features {
+          [pb.test] { message_feature: VALUE8 multiple_feature: VALUE8 }
+        }
+      }
+    }
+  )pb");
+  MockErrorCollector error_collector;
+  DescriptorPool pool(&database_, &error_collector);
+
+  auto default_spec = FeatureResolver::CompileDefaults(
+      FeatureSet::descriptor(),
+      {GetExtensionReflection(pb::cpp), GetExtensionReflection(pb::test)},
+      EDITION_PROTO2, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(default_spec);
+  ASSERT_OK(pool.SetFeatureSetDefaults(std::move(default_spec).value()));
+
+  const Descriptor* foo = pool.FindMessageTypeByName("FooFeatures");
+  ASSERT_TRUE(foo != nullptr);
+  EXPECT_EQ(GetFeatures(foo).enum_type(), FeatureSet::CLOSED);
+  EXPECT_EQ(GetFeatures(foo).repeated_field_encoding(), FeatureSet::PACKED);
+  EXPECT_EQ(GetFeatures(foo).GetExtension(pb::test).enum_feature(), pb::VALUE1);
+  EXPECT_EQ(GetFeatures(foo).GetExtension(pb::test).file_feature(), pb::VALUE9);
+  EXPECT_EQ(GetFeatures(foo).GetExtension(pb::test).message_feature(),
+            pb::VALUE8);
+  EXPECT_EQ(GetFeatures(foo).GetExtension(pb::test).multiple_feature(),
+            pb::VALUE8);
+}
+
+TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
+  FileDescriptorProto proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+  AddToDatabase(&database_, proto.DebugString());
+  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+  AddToDatabase(&database_, proto.DebugString());
+  AddToDatabase(&database_, R"pb(
+    name: "features.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    dependency: "google/protobuf/unittest_features.proto"
+    message_type {
+      name: "FooFeatures"
+      options {
+        features {
+          [pb.test] { future_feature: VALUE9 }
+        }
+      }
+    }
+  )pb");
+  MockErrorCollector error_collector;
+  DescriptorPool pool(&database_, &error_collector);
+
+  EXPECT_TRUE(pool.FindMessageTypeByName("FooFeatures") == nullptr);
+  EXPECT_EQ(
+      error_collector.text_,
+      "features.proto: FooFeatures: NAME: Feature "
+      "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {

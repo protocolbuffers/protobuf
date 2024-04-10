@@ -78,6 +78,79 @@ absl::Status ValidateDescriptor(const Descriptor& descriptor) {
       return Error("Feature field ", field.full_name(),
                    " has no target specified.");
     }
+
+    bool has_legacy_default = false;
+    for (const auto& d : field.options().edition_defaults()) {
+      if (d.edition() == Edition::EDITION_LEGACY ||
+          // TODO Remove this once all features use EDITION_LEGACY.
+          d.edition() == Edition::EDITION_PROTO2) {
+        has_legacy_default = true;
+        continue;
+      }
+    }
+    if (!has_legacy_default) {
+      return Error("Feature field ", field.full_name(),
+                   " has no default specified for EDITION_LEGACY, before it "
+                   "was introduced.");
+    }
+
+    if (!field.options().has_feature_support()) {
+      // TODO Enforce that feature_support is always set.
+      return absl::OkStatus();
+    }
+
+    const FieldOptions::FeatureSupport& support =
+        field.options().feature_support();
+    if (!support.has_edition_introduced()) {
+      return Error("Feature field ", field.full_name(),
+                   " does not specify the edition it was introduced in.");
+    }
+    if (support.has_edition_deprecated()) {
+      if (!support.has_deprecation_warning()) {
+        return Error(
+            "Feature field ", field.full_name(),
+            " is deprecated but does not specify a deprecation warning.");
+      }
+      if (support.edition_deprecated() < support.edition_introduced()) {
+        return Error("Feature field ", field.full_name(),
+                     " was deprecated before it was introduced.");
+      }
+    }
+    if (!support.has_edition_deprecated() &&
+        support.has_deprecation_warning()) {
+      return Error("Feature field ", field.full_name(),
+                   " specifies a deprecation warning but is not marked "
+                   "deprecated in any edition.");
+    }
+    if (support.has_edition_removed()) {
+      if (support.edition_deprecated() >= support.edition_removed()) {
+        return Error("Feature field ", field.full_name(),
+                     " was deprecated after it was removed.");
+      }
+      if (support.edition_removed() < support.edition_introduced()) {
+        return Error("Feature field ", field.full_name(),
+                     " was removed before it was introduced.");
+      }
+    }
+
+    for (const auto& d : field.options().edition_defaults()) {
+      if (d.edition() < Edition::EDITION_2023) {
+        // Allow defaults to be specified in proto2/proto3, predating
+        // editions.
+        continue;
+      }
+      if (d.edition() < support.edition_introduced()) {
+        return Error("Feature field ", field.full_name(),
+                     " has a default specified for edition ", d.edition(),
+                     ", before it was introduced.");
+      }
+      if (support.has_edition_removed() &&
+          d.edition() > support.edition_removed()) {
+        return Error("Feature field ", field.full_name(),
+                     " has a default specified for edition ", d.edition(),
+                     ", after it was removed.");
+      }
+    }
   }
 
   return absl::OkStatus();
@@ -121,6 +194,11 @@ void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
   for (int i = 0; i < descriptor.field_count(); ++i) {
     for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
       if (maximum_edition < def.edition()) continue;
+      // TODO Remove this once all features use EDITION_LEGACY.
+      if (def.edition() == Edition::EDITION_LEGACY) {
+        editions.insert(Edition::EDITION_PROTO2);
+        continue;
+      }
       editions.insert(def.edition());
     }
   }
@@ -141,6 +219,7 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
 
     msg.GetReflection()->ClearField(&msg, &field);
     ABSL_CHECK(!field.is_repeated());
+    ABSL_CHECK(field.cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE);
 
     std::vector<FieldOptions::EditionDefault> defaults{
         field.options().edition_defaults().begin(),
@@ -153,21 +232,10 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
                    " in feature field ", field.full_name());
     }
 
-    if (field.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      for (auto it = defaults.begin(); it != first_nonmatch; ++it) {
-        if (!TextFormat::MergeFromString(
-                it->value(),
-                msg.GetReflection()->MutableMessage(&msg, &field))) {
-          return Error("Parsing error in edition_defaults for feature field ",
-                       field.full_name(), ". Could not parse: ", it->value());
-        }
-      }
-    } else {
-      const std::string& def = std::prev(first_nonmatch)->value();
-      if (!TextFormat::ParseFieldValueFromString(def, &field, &msg)) {
-        return Error("Parsing error in edition_defaults for feature field ",
-                     field.full_name(), ". Could not parse: ", def);
-      }
+    const std::string& def = std::prev(first_nonmatch)->value();
+    if (!TextFormat::ParseFieldValueFromString(def, &field, &msg)) {
+      return Error("Parsing error in edition_defaults for feature field ",
+                   field.full_name(), ". Could not parse: ", def);
     }
   }
 
@@ -200,6 +268,43 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
   return absl::OkStatus();
 }
 
+void CollectLifetimeResults(Edition edition, const Message& message,
+                            FeatureResolver::ValidationResults& results) {
+  std::vector<const FieldDescriptor*> fields;
+  message.GetReflection()->ListFields(message, &fields);
+  for (const FieldDescriptor* field : fields) {
+    // Recurse into message extension.
+    if (field->is_extension() &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      CollectLifetimeResults(
+          edition, message.GetReflection()->GetMessage(message, field),
+          results);
+      continue;
+    }
+
+    // Skip fields that don't have feature support specified.
+    if (!field->options().has_feature_support()) continue;
+
+    const FieldOptions::FeatureSupport& support =
+        field->options().feature_support();
+    if (edition < support.edition_introduced()) {
+      results.errors.emplace_back(absl::StrCat(
+          "Feature ", field->full_name(), " wasn't introduced until edition ",
+          support.edition_introduced()));
+    }
+    if (support.has_edition_removed() && edition >= support.edition_removed()) {
+      results.errors.emplace_back(absl::StrCat("Feature ", field->full_name(),
+                                               " has been removed in edition ",
+                                               support.edition_removed()));
+    } else if (support.has_edition_deprecated() &&
+               edition >= support.edition_deprecated()) {
+      results.warnings.emplace_back(absl::StrCat(
+          "Feature ", field->full_name(), " has been deprecated in edition ",
+          support.edition_deprecated(), ": ", support.deprecation_warning()));
+    }
+  }
+}
+
 }  // namespace
 
 absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
@@ -229,10 +334,14 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   for (const auto* extension : extensions) {
     CollectEditions(*extension->message_type(), maximum_edition, editions);
   }
-  if (editions.empty() || *editions.begin() > minimum_edition) {
-    // Always insert the minimum edition to make sure the full range is covered
-    // in valid defaults.
-    editions.insert(minimum_edition);
+  // Sanity check validation conditions above.
+  ABSL_CHECK(!editions.empty());
+  ABSL_CHECK_LE(*editions.begin(), EDITION_PROTO2);
+
+  if (*editions.begin() > minimum_edition) {
+    return Error("Minimum edition ", minimum_edition,
+                 " is earlier than the oldest valid edition ",
+                 *editions.begin());
   }
 
   // Fill the default spec.
@@ -314,6 +423,33 @@ absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
   RETURN_IF_ERROR(ValidateMergedFeatures(merged));
 
   return merged;
+}
+
+FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
+    Edition edition, const FeatureSet& features,
+    const Descriptor* pool_descriptor) {
+  const Message* pool_features = nullptr;
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> features_storage;
+  if (pool_descriptor == nullptr) {
+    // The FeatureSet descriptor can be null if no custom extensions are defined
+    // in any transitive dependency.  In this case, we can just use the
+    // generated pool for validation, since there wouldn't be any feature
+    // extensions defined anyway.
+    pool_features = &features;
+  } else {
+    // Move the features back to the current pool so that we can reflect on any
+    // extensions.
+    features_storage =
+        absl::WrapUnique(factory.GetPrototype(pool_descriptor)->New());
+    features_storage->ParseFromString(features.SerializeAsString());
+    pool_features = features_storage.get();
+  }
+  ABSL_CHECK(pool_features != nullptr);
+
+  ValidationResults results;
+  CollectLifetimeResults(edition, *pool_features, results);
+  return results;
 }
 
 }  // namespace protobuf
