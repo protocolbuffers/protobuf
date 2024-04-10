@@ -2276,6 +2276,9 @@ public abstract class CodedInputStream {
       if (size == 0) {
         return "";
       }
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
       if (size <= bufferSize) {
         refillBuffer(size);
         String result = new String(buffer, pos, size, UTF_8);
@@ -2300,6 +2303,8 @@ public abstract class CodedInputStream {
         tempPos = oldPos;
       } else if (size == 0) {
         return "";
+      } else if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
       } else if (size <= bufferSize) {
         refillBuffer(size);
         bytes = buffer;
@@ -2394,6 +2399,9 @@ public abstract class CodedInputStream {
       if (size == 0) {
         return ByteString.EMPTY;
       }
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
       return readBytesSlowPath(size);
     }
 
@@ -2406,6 +2414,8 @@ public abstract class CodedInputStream {
         final byte[] result = Arrays.copyOfRange(buffer, pos, pos + size);
         pos += size;
         return result;
+      } else if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
       } else {
         // Slow path: Build a byte array first then copy it.
         // TODO: Do we want to protect from malicious input streams here?
@@ -2424,6 +2434,9 @@ public abstract class CodedInputStream {
       }
       if (size == 0) {
         return Internal.EMPTY_BYTE_BUFFER;
+      }
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
       }
       // Slow path: Build a byte array first then copy it.
       
