@@ -49,7 +49,8 @@ message TestFeatures {
   optional EnumFeature file_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" },
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
     edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
     edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
     edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
@@ -58,42 +59,50 @@ message TestFeatures {
   optional EnumFeature extension_range_feature = 2 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature message_feature = 3 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_MESSAGE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature field_feature = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature oneof_feature = 5 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ONEOF,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature enum_feature = 6 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature enum_entry_feature = 7 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM_ENTRY,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature service_feature = 8 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_SERVICE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature method_feature = 9 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_METHOD,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   optional EnumFeature multiple_feature = 10 [
     retention = RETENTION_RUNTIME,
@@ -106,13 +115,15 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
 
   optional bool bool_field_feature = 11 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
-    edition_defaults = { edition: EDITION_PROTO2, value: "false" },
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" },
     edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "true" }
   ];
 
@@ -127,7 +138,8 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
 
   optional EnumFeature source_feature2 = 16 [
@@ -141,6 +153,43 @@ message TestFeatures {
     targets = TARGET_TYPE_METHOD,
     targets = TARGET_TYPE_ONEOF,
     targets = TARGET_TYPE_EXTENSION_RANGE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "VALUE1" }
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+
+  optional EnumFeature removed_feature = 17 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = {
+      edition_introduced: EDITION_2023
+      edition_deprecated: EDITION_2023
+      deprecation_warning: "Custom feature deprecation warning"
+      edition_removed: EDITION_2024
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE2" },
+    edition_defaults = { edition: EDITION_2024, value: "VALUE3" }
+  ];
+
+  optional EnumFeature future_feature = 18 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = { edition_introduced: EDITION_2024 },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2024, value: "VALUE2" }
+  ];
+
+  optional EnumFeature legacy_feature = 19 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = {
+      edition_introduced: EDITION_PROTO2
+      edition_removed: EDITION_2023
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE2" }
   ];
 }

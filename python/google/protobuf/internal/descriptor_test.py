@@ -1450,6 +1450,7 @@ class FeatureInheritanceTest(unittest.TestCase):
 
     ret = ReturnObject()
     ret.pool = descriptor_pool.DescriptorPool()
+
     defaults = descriptor_pb2.FeatureSetDefaults(
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
@@ -1464,6 +1465,13 @@ class FeatureInheritanceTest(unittest.TestCase):
         unittest_features_pb2.test
     ].multiple_feature = 1
     ret.pool.SetFeatureSetDefaults(defaults)
+
+    # Add dependencies
+    file = descriptor_pb2.FileDescriptorProto()
+    descriptor_pb2.DESCRIPTOR.CopyToProto(file)
+    ret.pool.Add(file)
+    unittest_features_pb2.DESCRIPTOR.CopyToProto(file)
+    ret.pool.Add(file)
 
     ret.file = ret.pool.AddSerializedFile(self.file_proto.SerializeToString())
     ret.top_message = ret.pool.FindMessageTypeByName(
