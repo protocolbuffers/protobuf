@@ -5552,7 +5552,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
   if (!cloned_map) {
     return NULL;
   }
-  _upb_Message_SetNonExtensionField(clone, f, &cloned_map);
+  upb_Message_SetBaseField(clone, f, &cloned_map);
   return cloned_map;
 }
 
@@ -5590,7 +5590,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
       arena);
 
   // Clear out upb_Array* due to parent memcpy.
-  _upb_Message_SetNonExtensionField(clone, field, &cloned_array);
+  upb_Message_SetBaseField(clone, field, &cloned_array);
   return true;
 }
 
@@ -14907,7 +14907,15 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
-  return upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), val, a);
+  const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
+
+  if (upb_MiniTableField_IsExtension(m_f)) {
+    return upb_Message_SetExtension(msg, (const upb_MiniTableExtension*)m_f,
+                                    &val, a);
+  } else {
+    upb_Message_SetBaseField(msg, m_f, &val);
+    return true;
+  }
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
