@@ -66,11 +66,35 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
+      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
+               R"rs(
         let arena = $pbr$::Arena::new();
+        // SAFETY: $minitable$ is a static of a const object.
+        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+        let options = 0;
+        let mut buf: *mut u8 = std::ptr::null_mut();
         let mut len = 0;
+
+        // SAFETY: `mini_table` is the corresponding one that was used to
+        // construct `self.raw_msg()`.
+        let status = unsafe {
+          $pbr$::upb_Encode(self.raw_msg(), mini_table, options, arena.raw(),
+              &mut buf, &mut len)
+        };
+
+        //~ TODO: Currently serialize() on the Rust API is an
+        //~ infallible fn, so if upb signals an error here we can only panic.
+        assert!(status == $pbr$::EncodeStatus::Ok);
+        let data = if len == 0 {
+          std::ptr::NonNull::dangling()
+        } else {
+          std::ptr::NonNull::new(buf).unwrap()
+        };
+
+        // SAFETY:
+        // - `arena` allocated `data`.
+        // - `data` is valid for reads up to `len` and will not be mutated.
         unsafe {
-          let data = $serialize_thunk$(self.raw_msg(), arena.raw(), &mut len);
           $pbr$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -89,6 +113,7 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
           },
           R"rs(
           let success = unsafe {
+            // SAFETY: `data.as_ptr()` is valid to read for `data.len()`.
             let data = $pbr$::SerializedData::from_raw_parts(
               $NonNull$::new(data.as_ptr() as *mut _).unwrap(),
               data.len(),
@@ -101,21 +126,32 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"parse_thunk", ThunkName(ctx, msg, "parse")}}, R"rs(
-        let arena = $pbr$::Arena::new();
-        let msg = unsafe {
-          $parse_thunk$(data.as_ptr(), data.len(), arena.raw())
-        };
+      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
+               R"rs(
+        let mut msg = Self::new();
+        // SAFETY: $minitable$ is a static of a const object.
+        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+        let ext_reg = std::ptr::null();
+        let options = 0;
 
-        match msg {
-          None => Err($pb$::ParseError),
-          Some(msg) => {
-            //~ This assignment causes self.arena to be dropped and to deallocate
-            //~ any previous message pointed/owned to by self.inner.msg.
-            self.inner.arena = arena;
-            self.inner.msg = msg;
+        // SAFETY:
+        // - `data.as_ptr()` is valid to read for `data.len()`
+        // - `mini_table` is the one used to construct `msg.raw_msg()`
+        // - `msg.arena().raw()` is held for the same lifetime as `msg`.
+        let status = unsafe {
+          $pbr$::upb_Decode(
+              data.as_ptr(), data.len(), msg.raw_msg(),
+              mini_table, ext_reg, options, msg.arena().raw())
+        };
+        match status {
+          $pbr$::DecodeStatus::Ok => {
+            //~ This swap causes the old self.inner.arena to be moved into `msg`
+            //~ which we immediately drop, which will release any previous
+            //~ message that was held here.
+            std::mem::swap(self, &mut msg);
             Ok(())
           }
+          _ => Err($pb$::ParseError)
         }
       )rs");
       return;
@@ -184,14 +220,10 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           {
               {"new_thunk", ThunkName(ctx, msg, "new")},
-              {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"minitable", UpbMinitableName(msg)},
           },
           R"rs(
           fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
-          fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
-          fn $parse_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
           /// Opaque wrapper for this message's MiniTable. The only valid way to
           /// reference this static is with `std::ptr::addr_of!(..)`.
           static $minitable$: $pbr$::OpaqueMiniTable;

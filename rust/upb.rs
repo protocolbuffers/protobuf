@@ -332,18 +332,27 @@ fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] 
     }
 }
 
-/// Opaque struct containing a upb_MiniTable.
-///
-/// This wrapper is a workaround until stabilization of [`extern type`].
-/// TODO: convert to extern type once stabilized.
-/// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
-#[repr(C)]
-pub struct OpaqueMiniTable {
-    // TODO: consider importing a minitable struct declared in
-    // google3/third_party/upb/bits.
-    _data: [u8; 0],
-    _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+// A macro for opaque pointees.
+// This wrapper is a workaround until stabilization of [`extern type`].
+// TODO: convert to extern type once stabilized.
+// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
+macro_rules! opaque_pointee {
+    ($name:ident) => {
+        #[repr(C)]
+        pub struct $name {
+            _data: [u8; 0],
+            _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+        }
+    };
 }
+
+// Opaque pointee for upb_MiniTable.
+// TODO: consider importing a minitable struct declared in
+// google3/third_party/upb/bits.
+opaque_pointee!(OpaqueMiniTable);
+
+// Opaque pointee for upb_ExtensionRegistry
+opaque_pointee!(OpaqueExtensionRegistry);
 
 extern "C" {
     pub fn upb_Message_DeepCopy(
@@ -352,11 +361,58 @@ extern "C" {
         mini_table: *const OpaqueMiniTable,
         arena: RawArena,
     );
+
     pub fn upb_Message_DeepClone(
         m: RawMessage,
         mini_table: *const OpaqueMiniTable,
         arena: RawArena,
     ) -> Option<RawMessage>;
+}
+
+// LINT.IfChange(encode_status)
+#[repr(C)]
+#[derive(PartialEq, Eq, Copy, Clone)]
+pub enum EncodeStatus {
+    Ok = 0,
+    OutOfMemory = 1,
+    MaxDepthExceeded = 2,
+    MissingRequired = 3,
+}
+// LINT.ThenChange()
+
+// LINT.IfChange(decode_status)
+#[repr(C)]
+#[derive(PartialEq, Eq, Copy, Clone)]
+pub enum DecodeStatus {
+    Ok = 0,
+    Malformed = 1,
+    OutOfMemory = 2,
+    BadUtf8 = 3,
+    MaxDepthExceeded = 4,
+    MissingRequired = 5,
+    UnlinkedSubMessage = 6,
+}
+// LINT.ThenChange()
+
+extern "C" {
+    pub fn upb_Encode(
+        msg: RawMessage,
+        mini_table: *const OpaqueMiniTable,
+        options: i32,
+        arena: RawArena,
+        buf: *mut *mut u8,
+        buf_size: *mut usize,
+    ) -> EncodeStatus;
+
+    pub fn upb_Decode(
+        buf: *const u8,
+        buf_size: usize,
+        msg: RawMessage,
+        mini_table: *const OpaqueMiniTable,
+        extreg: *const OpaqueExtensionRegistry,
+        options: i32,
+        arena: RawArena,
+    ) -> DecodeStatus;
 }
 
 /// The raw type-erased version of an owned `Repeated`.

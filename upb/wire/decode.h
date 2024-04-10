@@ -110,6 +110,7 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
   return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
 }
 
+// LINT.IfChange
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
   kUpb_DecodeStatus_Malformed = 1,    // Wire format was corrupt
@@ -127,6 +128,7 @@ typedef enum {
   // of options.
   kUpb_DecodeStatus_UnlinkedSubMessage = 6,
 } upb_DecodeStatus;
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
 
 UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
                                     upb_Message* msg, const upb_MiniTable* mt,

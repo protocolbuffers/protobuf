@@ -40,6 +40,7 @@ enum {
   kUpb_EncodeOption_CheckRequired = 4,
 };
 
+// LINT.IfChange
 typedef enum {
   kUpb_EncodeStatus_Ok = 0,
   kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
@@ -48,6 +49,7 @@ typedef enum {
   // kUpb_EncodeOption_CheckRequired failed but the parse otherwise succeeded.
   kUpb_EncodeStatus_MissingRequired = 3,
 } upb_EncodeStatus;
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:encode_status)
 
 UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
