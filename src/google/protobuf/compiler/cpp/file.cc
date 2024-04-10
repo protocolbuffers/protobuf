@@ -1581,12 +1581,17 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   p->Emit(
       {
           {"version", version},
+
+          // Downgrade to warnings if version mismatches for bootstrapped files,
+          // so that release_compiler.h can build protoc_minimal successfully
+          // and update stale files.
+          {"err_level", options_.bootstrap ? "warning" : "error"},
       },
       R"(
     #if PROTOBUF_VERSION != $version$
-    #error "Protobuf C++ gencode is built with an incompatible version of"
-    #error "Protobuf C++ headers/runtime. See"
-    #error "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
+    #$err_level$ "Protobuf C++ gencode is built with an incompatible version of"
+    #$err_level$ "Protobuf C++ headers/runtime. See"
+    #$err_level$ "https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp"
     #endif
   )");
 
