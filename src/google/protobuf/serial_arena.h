@@ -87,14 +87,6 @@ class PROTOBUF_EXPORT SerialArena {
       ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 
   void CleanupList();
-  size_t FreeStringBlocks() {
-    // On the active block delete all strings skipping the unused instances.
-    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
-      return FreeStringBlocks(sb, unused_bytes);
-    }
-    return 0;
-  }
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
   }
@@ -353,10 +345,18 @@ class PROTOBUF_EXPORT SerialArena {
   // The `parent` arena must outlive the serial arena, which is guaranteed
   // because the parent manages the lifetime of the serial arenas.
   static SerialArena* New(SizedPtr mem, ThreadSafeArena& parent);
-  // Free SerialArena returning the memory passed in to New
+  // Free SerialArena returning the memory passed in to New.
   template <typename Deallocator>
   SizedPtr Free(Deallocator deallocator);
 
+  size_t FreeStringBlocks() {
+    // On the active block delete all strings skipping the unused instances.
+    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
+    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
+      return FreeStringBlocks(sb, unused_bytes);
+    }
+    return 0;
+  }
   static size_t FreeStringBlocks(StringBlock* string_block, size_t unused);
 
   // Adds 'used` to space_used_ in relaxed atomic order.

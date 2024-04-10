@@ -60,10 +60,8 @@ ArenaBlock* SentryArenaBlock() {
 }
 #endif
 
-}  // namespace
-
-static SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr,
-                               size_t last_size, size_t min_bytes) {
+SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr, size_t last_size,
+                        size_t min_bytes) {
   AllocationPolicy policy;  // default policy
   if (policy_ptr) policy = *policy_ptr;
   size_t size;
@@ -97,13 +95,17 @@ class GetDeallocator {
     } else {
       internal::SizedDelete(mem.p, mem.n);
     }
-    *space_allocated_ += mem.n;
+    AddSpaceAllocated(mem.n);
   }
+
+  void AddSpaceAllocated(size_t n) const { *space_allocated_ += n; }
 
  private:
   void (*dealloc_)(void*, size_t);
   size_t* space_allocated_;
 };
+
+}  // namespace
 
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
@@ -177,6 +179,8 @@ SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
 
 template <typename Deallocator>
 SizedPtr SerialArena::Free(Deallocator deallocator) {
+  deallocator.AddSpaceAllocated(FreeStringBlocks());
+
   ArenaBlock* b = head();
   SizedPtr mem = {b, b->size};
   while (b->next) {
@@ -255,9 +259,6 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // the microbenchmark.
 
   auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size, n);
-  // We don't want to emit an expensive RMW instruction that requires
-  // exclusive access to a cacheline. Hence we write it in terms of a
-  // regular add.
   AddSpaceAllocated(mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
@@ -716,8 +717,6 @@ SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
       SerialArena* serial = it->load(std::memory_order_relaxed);
       ABSL_DCHECK_NE(serial, nullptr);
-      // Free string blocks
-      *space_allocated += serial->FreeStringBlocks();
       // Always frees the first block of "serial" as it cannot be user-provided.
       SizedPtr mem = serial->Free(deallocator);
       ABSL_DCHECK_NE(mem.p, nullptr);
@@ -730,7 +729,6 @@ SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
   });
 
   // The first block of the first arena is special and let the caller handle it.
-  *space_allocated += first_arena_.FreeStringBlocks();
   return first_arena_.Free(deallocator);
 }
 
