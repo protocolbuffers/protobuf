@@ -9,15 +9,17 @@ load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("@protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
 # For each .proto file, a proto_library target should be defined. This target
 # is not bound to any particular language. Instead, it defines the dependency
 # graph of the .proto files (i.e., proto imports) and serves as the provider
 # of .proto source files to the protocol compiler.
 #
-# Remote repository "com_google_protobuf" must be defined to use this rule.
+# Remote repository "protobuf" must be defined to use this rule.
 proto_library(
     name = "addressbook_proto",
     srcs = ["addressbook.proto"],
@@ -116,11 +118,38 @@ java_binary(
     deps = [":addressbook_java_lite_proto"],
 )
 
+# Python
+
+py_proto_library(
+    name = "addressbook_py_pb2",
+    visibility = ["//visibility:public"],
+    deps = [":addressbook_proto"],
+)
+
+py_binary(
+    name = "add_person",
+    srcs = ["add_person.py"],
+    python_version = "PY3",
+    deps = [
+        ":addressbook_py_pb2",
+    ],
+)
+
+py_binary(
+    name = "list_people",
+    srcs = ["list_people.py"],
+    python_version = "PY3",
+    deps = [
+        ":addressbook_py_pb2",
+    ],
+)
+
 build_test(
     name = "test",
     targets = [
         ":add_person_cpp",
         ":add_person_java",
+        ":add_person",  # Python
     ],
 )
 

@@ -9,6 +9,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
@@ -509,4 +510,14 @@ def build_targets(name):
         ],
         strip_prefix = strip_prefix.from_root(""),
         visibility = ["//pkg:__pkg__"],
+    )
+
+    proto_lang_toolchain(
+        name = "python_toolchain",
+        command_line = "--python_out=%s",
+        progress_message = "Generating Python proto_library %{label}",
+        runtime = ":protobuf_python",
+        # NOTE: This isn't *actually* public. It's an implicit dependency of py_proto_library,
+        # so must be public so user usages of the rule can reference it.
+        visibility = ["//visibility:public"],
     )
