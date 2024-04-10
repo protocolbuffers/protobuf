@@ -29,40 +29,49 @@ namespace Pb {
             "c3NhZ2UaTQoGTmVzdGVkMkMKC3Rlc3RfbmVzdGVkEhsuZ29vZ2xlLnByb3Rv",
             "YnVmLkZlYXR1cmVTZXQYjU4gASgLMhAucGIuVGVzdEZlYXR1cmVzMkQKDHRl",
             "c3RfbWVzc2FnZRIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0GI5OIAEo",
-            "CzIQLnBiLlRlc3RGZWF0dXJlcyLOBwoMVGVzdEZlYXR1cmVzEnUKDGZpbGVf",
-            "ZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQk6IAQGYAQGiAQsSBlZB",
-            "TFVFMRjmB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwSBlZBTFVF",
-            "NBidjQaiAQwSBlZBTFVFNRiejQYSRgoXZXh0ZW5zaW9uX3JhbmdlX2ZlYXR1",
-            "cmUYAiABKA4yDy5wYi5FbnVtRmVhdHVyZUIUiAEBmAECogELEgZWQUxVRTEY",
-            "5gcSPgoPbWVzc2FnZV9mZWF0dXJlGAMgASgOMg8ucGIuRW51bUZlYXR1cmVC",
-            "FIgBAZgBA6IBCxIGVkFMVUUxGOYHEjwKDWZpZWxkX2ZlYXR1cmUYBCABKA4y",
-            "Dy5wYi5FbnVtRmVhdHVyZUIUiAEBmAEEogELEgZWQUxVRTEY5gcSPAoNb25l",
-            "b2ZfZmVhdHVyZRgFIAEoDjIPLnBiLkVudW1GZWF0dXJlQhSIAQGYAQWiAQsS",
-            "BlZBTFVFMRjmBxI7CgxlbnVtX2ZlYXR1cmUYBiABKA4yDy5wYi5FbnVtRmVh",
-            "dHVyZUIUiAEBmAEGogELEgZWQUxVRTEY5gcSQQoSZW51bV9lbnRyeV9mZWF0",
-            "dXJlGAcgASgOMg8ucGIuRW51bUZlYXR1cmVCFIgBAZgBB6IBCxIGVkFMVUUx",
-            "GOYHEj4KD3NlcnZpY2VfZmVhdHVyZRgIIAEoDjIPLnBiLkVudW1GZWF0dXJl",
-            "QhSIAQGYAQiiAQsSBlZBTFVFMRjmBxI9Cg5tZXRob2RfZmVhdHVyZRgJIAEo",
-            "DjIPLnBiLkVudW1GZWF0dXJlQhSIAQGYAQmiAQsSBlZBTFVFMRjmBxJXChBt",
-            "dWx0aXBsZV9mZWF0dXJlGAogASgOMg8ucGIuRW51bUZlYXR1cmVCLIgBAZgB",
-            "AZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGOYHEjwKEmJv",
-            "b2xfZmllbGRfZmVhdHVyZRgLIAEoCEIgiAEBmAEEogEKEgVmYWxzZRjmB6IB",
-            "ChIEdHJ1ZRidjQYSVQoOc291cmNlX2ZlYXR1cmUYDyABKA4yDy5wYi5FbnVt",
-            "RmVhdHVyZUIsiAECmAEBmAEEmAEDmAEGmAEHmAEImAEJmAEFmAECogELEgZW",
-            "QUxVRTEY5gcSVgoPc291cmNlX2ZlYXR1cmUyGBAgASgOMg8ucGIuRW51bUZl",
-            "YXR1cmVCLIgBApgBAZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFM",
-            "VUUxGOYHKuYBCgtFbnVtRmVhdHVyZRIdChlURVNUX0VOVU1fRkVBVFVSRV9V",
-            "TktOT1dOEAASCgoGVkFMVUUxEAESCgoGVkFMVUUyEAISCgoGVkFMVUUzEAMS",
-            "CgoGVkFMVUU0EAQSCgoGVkFMVUU1EAUSCgoGVkFMVUU2EAYSCgoGVkFMVUU3",
-            "EAcSCgoGVkFMVUU4EAgSCgoGVkFMVUU5EAkSCwoHVkFMVUUxMBAKEgsKB1ZB",
-            "TFVFMTEQCxILCgdWQUxVRTEyEAwSCwoHVkFMVUUxMxANEgsKB1ZBTFVFMTQQ",
-            "DhILCgdWQUxVRTE1EA86PAoEdGVzdBIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0",
-            "dXJlU2V0GI9OIAEoCzIQLnBiLlRlc3RGZWF0dXJlcw=="));
+            "CzIQLnBiLlRlc3RGZWF0dXJlcyLbCgoMVGVzdEZlYXR1cmVzEnsKDGZpbGVf",
+            "ZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQlSIAQGYAQGiAQsSBlZB",
+            "TFVFMRiEB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwSBlZBTFVF",
+            "NBidjQaiAQwSBlZBTFVFNRiejQayAQMI6AcSTAoXZXh0ZW5zaW9uX3Jhbmdl",
+            "X2ZlYXR1cmUYAiABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAECogELEgZW",
+            "QUxVRTEYhAeyAQMI6AcSRAoPbWVzc2FnZV9mZWF0dXJlGAMgASgOMg8ucGIu",
+            "RW51bUZlYXR1cmVCGogBAZgBA6IBCxIGVkFMVUUxGIQHsgEDCOgHEkIKDWZp",
+            "ZWxkX2ZlYXR1cmUYBCABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAEEogEL",
+            "EgZWQUxVRTEYhAeyAQMI6AcSQgoNb25lb2ZfZmVhdHVyZRgFIAEoDjIPLnBi",
+            "LkVudW1GZWF0dXJlQhqIAQGYAQWiAQsSBlZBTFVFMRiEB7IBAwjoBxJBCgxl",
+            "bnVtX2ZlYXR1cmUYBiABKA4yDy5wYi5FbnVtRmVhdHVyZUIaiAEBmAEGogEL",
+            "EgZWQUxVRTEYhAeyAQMI6AcSRwoSZW51bV9lbnRyeV9mZWF0dXJlGAcgASgO",
+            "Mg8ucGIuRW51bUZlYXR1cmVCGogBAZgBB6IBCxIGVkFMVUUxGIQHsgEDCOgH",
+            "EkQKD3NlcnZpY2VfZmVhdHVyZRgIIAEoDjIPLnBiLkVudW1GZWF0dXJlQhqI",
+            "AQGYAQiiAQsSBlZBTFVFMRiEB7IBAwjoBxJDCg5tZXRob2RfZmVhdHVyZRgJ",
+            "IAEoDjIPLnBiLkVudW1GZWF0dXJlQhqIAQGYAQmiAQsSBlZBTFVFMRiEB7IB",
+            "AwjoBxJdChBtdWx0aXBsZV9mZWF0dXJlGAogASgOMg8ucGIuRW51bUZlYXR1",
+            "cmVCMogBAZgBAZgBBJgBA5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUx",
+            "GIQHsgEDCOgHEkIKEmJvb2xfZmllbGRfZmVhdHVyZRgLIAEoCEImiAEBmAEE",
+            "ogEKEgVmYWxzZRiEB6IBChIEdHJ1ZRidjQayAQMI6AcSWwoOc291cmNlX2Zl",
+            "YXR1cmUYDyABKA4yDy5wYi5FbnVtRmVhdHVyZUIyiAECmAEBmAEEmAEDmAEG",
+            "mAEHmAEImAEJmAEFmAECogELEgZWQUxVRTEYhAeyAQMI6AcSXAoPc291cmNl",
+            "X2ZlYXR1cmUyGBAgASgOMg8ucGIuRW51bUZlYXR1cmVCMogBApgBAZgBBJgB",
+            "A5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGIQHsgEDCOgHEo0BCg9y",
+            "ZW1vdmVkX2ZlYXR1cmUYESABKA4yDy5wYi5FbnVtRmVhdHVyZUJjiAEBmAEB",
+            "mAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB6IBCxIGVkFMVUUzGOkH",
+            "sgEtCOgHEOgHGiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5n",
+            "IOkHElQKDmZ1dHVyZV9mZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVC",
+            "K4gBAZgBAZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcS",
+            "VwoObGVnYWN5X2ZlYXR1cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUIuiAEB",
+            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjmByDoByrm",
+            "AQoLRW51bUZlYXR1cmUSHQoZVEVTVF9FTlVNX0ZFQVRVUkVfVU5LTk9XThAA",
+            "EgoKBlZBTFVFMRABEgoKBlZBTFVFMhACEgoKBlZBTFVFMxADEgoKBlZBTFVF",
+            "NBAEEgoKBlZBTFVFNRAFEgoKBlZBTFVFNhAGEgoKBlZBTFVFNxAHEgoKBlZB",
+            "TFVFOBAIEgoKBlZBTFVFORAJEgsKB1ZBTFVFMTAQChILCgdWQUxVRTExEAsS",
+            "CwoHVkFMVUUxMhAMEgsKB1ZBTFVFMTMQDRILCgdWQUxVRTE0EA4SCwoHVkFM",
+            "VUUxNRAPOjwKBHRlc3QSGy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldBiP",
+            "TiABKAsyEC5wYi5UZXN0RmVhdHVyZXM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage), global::Pb.TestMessage.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Extensions.TestMessage }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage.Types.Nested), global::Pb.TestMessage.Types.Nested.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Types.Nested.Extensions.TestNested }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "FutureFeature", "LegacyFeature" }, null, null, null, null)
           }));
     }
     #endregion
@@ -497,6 +506,9 @@ namespace Pb {
       boolFieldFeature_ = other.boolFieldFeature_;
       sourceFeature_ = other.sourceFeature_;
       sourceFeature2_ = other.sourceFeature2_;
+      removedFeature_ = other.removedFeature_;
+      futureFeature_ = other.futureFeature_;
+      legacyFeature_ = other.legacyFeature_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -857,6 +869,87 @@ namespace Pb {
       _hasBits0 &= ~4096;
     }
 
+    /// <summary>Field number for the "removed_feature" field.</summary>
+    public const int RemovedFeatureFieldNumber = 17;
+    private readonly static global::Pb.EnumFeature RemovedFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature removedFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature RemovedFeature {
+      get { if ((_hasBits0 & 8192) != 0) { return removedFeature_; } else { return RemovedFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 8192;
+        removedFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "removed_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasRemovedFeature {
+      get { return (_hasBits0 & 8192) != 0; }
+    }
+    /// <summary>Clears the value of the "removed_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearRemovedFeature() {
+      _hasBits0 &= ~8192;
+    }
+
+    /// <summary>Field number for the "future_feature" field.</summary>
+    public const int FutureFeatureFieldNumber = 18;
+    private readonly static global::Pb.EnumFeature FutureFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature futureFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature FutureFeature {
+      get { if ((_hasBits0 & 16384) != 0) { return futureFeature_; } else { return FutureFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 16384;
+        futureFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "future_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasFutureFeature {
+      get { return (_hasBits0 & 16384) != 0; }
+    }
+    /// <summary>Clears the value of the "future_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearFutureFeature() {
+      _hasBits0 &= ~16384;
+    }
+
+    /// <summary>Field number for the "legacy_feature" field.</summary>
+    public const int LegacyFeatureFieldNumber = 19;
+    private readonly static global::Pb.EnumFeature LegacyFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature legacyFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature LegacyFeature {
+      get { if ((_hasBits0 & 32768) != 0) { return legacyFeature_; } else { return LegacyFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 32768;
+        legacyFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "legacy_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasLegacyFeature {
+      get { return (_hasBits0 & 32768) != 0; }
+    }
+    /// <summary>Clears the value of the "legacy_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearLegacyFeature() {
+      _hasBits0 &= ~32768;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -885,6 +978,9 @@ namespace Pb {
       if (BoolFieldFeature != other.BoolFieldFeature) return false;
       if (SourceFeature != other.SourceFeature) return false;
       if (SourceFeature2 != other.SourceFeature2) return false;
+      if (RemovedFeature != other.RemovedFeature) return false;
+      if (FutureFeature != other.FutureFeature) return false;
+      if (LegacyFeature != other.LegacyFeature) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -905,6 +1001,9 @@ namespace Pb {
       if (HasBoolFieldFeature) hash ^= BoolFieldFeature.GetHashCode();
       if (HasSourceFeature) hash ^= SourceFeature.GetHashCode();
       if (HasSourceFeature2) hash ^= SourceFeature2.GetHashCode();
+      if (HasRemovedFeature) hash ^= RemovedFeature.GetHashCode();
+      if (HasFutureFeature) hash ^= FutureFeature.GetHashCode();
+      if (HasLegacyFeature) hash ^= LegacyFeature.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -975,6 +1074,18 @@ namespace Pb {
         output.WriteRawTag(128, 1);
         output.WriteEnum((int) SourceFeature2);
       }
+      if (HasRemovedFeature) {
+        output.WriteRawTag(136, 1);
+        output.WriteEnum((int) RemovedFeature);
+      }
+      if (HasFutureFeature) {
+        output.WriteRawTag(144, 1);
+        output.WriteEnum((int) FutureFeature);
+      }
+      if (HasLegacyFeature) {
+        output.WriteRawTag(152, 1);
+        output.WriteEnum((int) LegacyFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1037,6 +1148,18 @@ namespace Pb {
         output.WriteRawTag(128, 1);
         output.WriteEnum((int) SourceFeature2);
       }
+      if (HasRemovedFeature) {
+        output.WriteRawTag(136, 1);
+        output.WriteEnum((int) RemovedFeature);
+      }
+      if (HasFutureFeature) {
+        output.WriteRawTag(144, 1);
+        output.WriteEnum((int) FutureFeature);
+      }
+      if (HasLegacyFeature) {
+        output.WriteRawTag(152, 1);
+        output.WriteEnum((int) LegacyFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1085,6 +1208,15 @@ namespace Pb {
       }
       if (HasSourceFeature2) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SourceFeature2);
+      }
+      if (HasRemovedFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RemovedFeature);
+      }
+      if (HasFutureFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) FutureFeature);
+      }
+      if (HasLegacyFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) LegacyFeature);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1136,6 +1268,15 @@ namespace Pb {
       }
       if (other.HasSourceFeature2) {
         SourceFeature2 = other.SourceFeature2;
+      }
+      if (other.HasRemovedFeature) {
+        RemovedFeature = other.RemovedFeature;
+      }
+      if (other.HasFutureFeature) {
+        FutureFeature = other.FutureFeature;
+      }
+      if (other.HasLegacyFeature) {
+        LegacyFeature = other.LegacyFeature;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1208,6 +1349,18 @@ namespace Pb {
             SourceFeature2 = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
+          case 136: {
+            RemovedFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 144: {
+            FutureFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 152: {
+            LegacyFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -1277,6 +1430,18 @@ namespace Pb {
           }
           case 128: {
             SourceFeature2 = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 136: {
+            RemovedFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 144: {
+            FutureFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 152: {
+            LegacyFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
         }
