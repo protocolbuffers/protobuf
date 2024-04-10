@@ -236,16 +236,17 @@ namespace Google.Protobuf.Reflection {
             "Cgtzb3VyY2VfZmlsZRgCIAEoCRINCgViZWdpbhgDIAEoBRILCgNlbmQYBCAB",
             "KAUSSAoIc2VtYW50aWMYBSABKA4yNi5nb29nbGUucHJvdG9idWYuR2VuZXJh",
             "dGVkQ29kZUluZm8uQW5ub3RhdGlvbi5TZW1hbnRpYyIoCghTZW1hbnRpYxII",
-            "CgROT05FEAASBwoDU0VUEAESCQoFQUxJQVMQAiqSAgoHRWRpdGlvbhITCg9F",
-            "RElUSU9OX1VOS05PV04QABITCg5FRElUSU9OX1BST1RPMhDmBxITCg5FRElU",
-            "SU9OX1BST1RPMxDnBxIRCgxFRElUSU9OXzIwMjMQ6AcSEQoMRURJVElPTl8y",
-            "MDI0EOkHEhcKE0VESVRJT05fMV9URVNUX09OTFkQARIXChNFRElUSU9OXzJf",
-            "VEVTVF9PTkxZEAISHQoXRURJVElPTl85OTk5N19URVNUX09OTFkQnY0GEh0K",
-            "F0VESVRJT05fOTk5OThfVEVTVF9PTkxZEJ6NBhIdChdFRElUSU9OXzk5OTk5",
-            "X1RFU1RfT05MWRCfjQYSEwoLRURJVElPTl9NQVgQ/////wdCfgoTY29tLmdv",
-            "b2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRvclByb3Rvc0gBWi1nb29nbGUuZ29s",
-            "YW5nLm9yZy9wcm90b2J1Zi90eXBlcy9kZXNjcmlwdG9ycGL4AQGiAgNHUEKq",
-            "AhpHb29nbGUuUHJvdG9idWYuUmVmbGVjdGlvbg=="));
+            "CgROT05FEAASBwoDU0VUEAESCQoFQUxJQVMQAiqnAgoHRWRpdGlvbhITCg9F",
+            "RElUSU9OX1VOS05PV04QABITCg5FRElUSU9OX0xFR0FDWRCEBxITCg5FRElU",
+            "SU9OX1BST1RPMhDmBxITCg5FRElUSU9OX1BST1RPMxDnBxIRCgxFRElUSU9O",
+            "XzIwMjMQ6AcSEQoMRURJVElPTl8yMDI0EOkHEhcKE0VESVRJT05fMV9URVNU",
+            "X09OTFkQARIXChNFRElUSU9OXzJfVEVTVF9PTkxZEAISHQoXRURJVElPTl85",
+            "OTk5N19URVNUX09OTFkQnY0GEh0KF0VESVRJT05fOTk5OThfVEVTVF9PTkxZ",
+            "EJ6NBhIdChdFRElUSU9OXzk5OTk5X1RFU1RfT05MWRCfjQYSEwoLRURJVElP",
+            "Tl9NQVgQ/////wdCfgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv",
+            "clByb3Rvc0gBWi1nb29nbGUuZ29sYW5nLm9yZy9wcm90b2J1Zi90eXBlcy9k",
+            "ZXNjcmlwdG9ycGL4AQGiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYuUmVmbGVj",
+            "dGlvbg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -288,6 +289,11 @@ namespace Google.Protobuf.Reflection {
     /// A placeholder for an unknown edition value.
     /// </summary>
     [pbr::OriginalName("EDITION_UNKNOWN")] Unknown = 0,
+    /// <summary>
+    /// A placeholder edition for specifying default behaviors *before* a feature
+    /// was first introduced.  This is effectively an "infinite past".
+    /// </summary>
+    [pbr::OriginalName("EDITION_LEGACY")] Legacy = 900,
     /// <summary>
     /// Legacy syntax "editions".  These pre-date editions, but behave much like
     /// distinct editions.  These can't be used to specify the edition of proto

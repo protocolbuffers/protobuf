@@ -4947,6 +4947,7 @@ typedef enum {
   google_protobuf_EDITION_UNKNOWN = 0,
   google_protobuf_EDITION_1_TEST_ONLY = 1,
   google_protobuf_EDITION_2_TEST_ONLY = 2,
+  google_protobuf_EDITION_LEGACY = 900,
   google_protobuf_EDITION_PROTO2 = 998,
   google_protobuf_EDITION_PROTO3 = 999,
   google_protobuf_EDITION_2023 = 1000,

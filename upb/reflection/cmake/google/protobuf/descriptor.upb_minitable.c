@@ -1171,10 +1171,11 @@ static const upb_MiniTable *messages_layout[33] = {
 
 const upb_MiniTableEnum google_protobuf_Edition_enum_init = {
     64,
-    8,
+    9,
     {
         0x7,
         0x0,
+        0x384,
         0x3e6,
         0x3e7,
         0x3e8,
