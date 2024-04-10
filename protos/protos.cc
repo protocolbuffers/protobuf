@@ -164,7 +164,7 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
     extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
                           message_arena);
   }
-  return _upb_Message_SetExtensionField(message, ext, &extension, message_arena)
+  return upb_Message_SetExtension(message, ext, &extension, message_arena)
              ? absl::OkStatus()
              : MessageAllocationError();
 }
@@ -175,7 +175,7 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
   // Clone extension into target message arena.
   extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
                         message_arena);
-  return _upb_Message_SetExtensionField(message, ext, &extension, message_arena)
+  return upb_Message_SetExtension(message, ext, &extension, message_arena)
              ? absl::OkStatus()
              : MessageAllocationError();
 }

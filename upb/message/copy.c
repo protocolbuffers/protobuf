@@ -132,7 +132,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
   if (!cloned_map) {
     return NULL;
   }
-  _upb_Message_SetNonExtensionField(clone, f, &cloned_map);
+  upb_Message_SetBaseField(clone, f, &cloned_map);
   return cloned_map;
 }
 
@@ -170,7 +170,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
       arena);
 
   // Clear out upb_Array* due to parent memcpy.
-  _upb_Message_SetNonExtensionField(clone, field, &cloned_array);
+  upb_Message_SetBaseField(clone, field, &cloned_array);
   return true;
 }
 

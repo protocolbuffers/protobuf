@@ -202,7 +202,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
 //   bool FooMessage_set_bool_field(const upb_Message* msg, bool val) {
 //     const upb_MiniTableField field = {1, 0, 0, /* etc... */};
 //     // All value in "field" are compile-time known.
-//     _upb_Message_SetNonExtensionField(msg, &field, &value);
+//     upb_Message_SetBaseField(msg, &field, &value);
 //   }
 //
 //   // Via UPB_ASSUME().
@@ -271,25 +271,26 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   }
 }
 
-UPB_INLINE void _upb_Message_SetNonExtensionField(
-    struct upb_Message* msg, const upb_MiniTableField* field, const void* val) {
+UPB_API_INLINE void upb_Message_SetBaseField(struct upb_Message* msg,
+                                             const upb_MiniTableField* f,
+                                             const void* val) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
-  UPB_PRIVATE(_upb_Message_SetPresence)(msg, field);
+  UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
+  UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (field, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, field), val);
+  (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), val);
 }
 
-UPB_INLINE bool _upb_Message_SetExtensionField(
-    struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
-    const void* val, upb_Arena* a) {
+UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
+                                             const upb_MiniTableExtension* e,
+                                             const void* val, upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
-      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, mt_ext, a);
+      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, e, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (&mt_ext->UPB_PRIVATE(field), &ext->data, val);
+  (&e->UPB_PRIVATE(field), &ext->data, val);
   return true;
 }
 
@@ -358,7 +359,7 @@ UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
     map = _upb_Map_New(arena, key_size, val_size);
     // Check again due to: https://godbolt.org/z/7WfaoKG1r
     UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
-    _upb_Message_SetNonExtensionField(msg, field, &map);
+    upb_Message_SetBaseField(msg, field, &map);
   }
   return map;
 }

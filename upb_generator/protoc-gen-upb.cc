@@ -306,7 +306,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $5);
-            bool ok = _upb_Message_SetExtensionField((upb_Message*)msg, ext, &val, arena);
+            bool ok = upb_Message_SetExtension((upb_Message*)msg, ext, &val, arena);
             UPB_ASSERT(ok);
           }
         )cc",
@@ -764,7 +764,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
     output(R"cc(
              UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
                const upb_MiniTableField field = $3;
-               _upb_Message_SetNonExtensionField((upb_Message *)msg, &field, &value);
+               upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
              }
            )cc",
            msg_name, field_name, CType(field),

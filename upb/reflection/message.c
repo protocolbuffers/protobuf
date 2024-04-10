@@ -103,7 +103,15 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
-  return upb_Message_SetField(msg, upb_FieldDef_MiniTable(f), val, a);
+  const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
+
+  if (upb_MiniTableField_IsExtension(m_f)) {
+    return upb_Message_SetExtension(msg, (const upb_MiniTableExtension*)m_f,
+                                    &val, a);
+  } else {
+    upb_Message_SetBaseField(msg, m_f, &val);
+    return true;
+  }
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
