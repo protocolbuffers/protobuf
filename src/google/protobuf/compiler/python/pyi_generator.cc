@@ -195,6 +195,12 @@ void PyiGenerator::PrintImports() const {
   for (int i = 0; i < file_->message_type_count(); i++) {
     CheckImportModules(file_->message_type(i), &import_modules);
   }
+  for (int i = 0; i < file_->service_count(); i++) {
+    for (int j = 0; j < file_->service(i)->method_count(); j++) {
+      CheckImportModules(file_->service(i)->method(j)->input_type(),
+                         &import_modules);
+    }
+  }
 
   // Prints modules (e.g. _containers, _messages, typing) that are
   // required in the proto file.
@@ -380,6 +386,66 @@ std::string PyiGenerator::GetFieldType(
   return "";
 }
 
+void PyiGenerator::PrintFields(const Descriptor& message_descriptor) const {
+  bool has_key_words = false;
+  bool is_first = true;
+  for (int i = 0; i < message_descriptor.field_count(); ++i) {
+    const FieldDescriptor* field_des = message_descriptor.field(i);
+    if (IsPythonKeyword(field_des->name())) {
+      has_key_words = true;
+      continue;
+    }
+    std::string field_name = field_des->name();
+    if (is_first && field_name == "self") {
+      // See b/144146793 for an example of real code that generates a (self,
+      // self) method signature. Since repeating a parameter name is illegal in
+      // Python, we rename the duplicate self.
+      field_name = "self_";
+    }
+    is_first = false;
+    printer_->Print(", $field_name$: ", "field_name", field_name);
+    Annotate("field_name", field_des);
+    if (field_des->is_repeated() ||
+        field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
+      printer_->Print("_Optional[");
+    }
+    if (field_des->is_map()) {
+      const Descriptor* map_entry = field_des->message_type();
+      printer_->Print("_Mapping[$key_type$, $value_type$]", "key_type",
+                      GetFieldType(*map_entry->field(0), message_descriptor),
+                      "value_type",
+                      GetFieldType(*map_entry->field(1), message_descriptor));
+    } else {
+      if (field_des->is_repeated()) {
+        printer_->Print("_Iterable[");
+      }
+      if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        printer_->Print("_Union[$type_name$, _Mapping]", "type_name",
+                        GetFieldType(*field_des, message_descriptor));
+      } else {
+        if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+          printer_->Print("_Union[$type_name$, str]", "type_name",
+                          ModuleLevelName(*field_des->enum_type()));
+        } else {
+          printer_->Print("$type_name$", "type_name",
+                          GetFieldType(*field_des, message_descriptor));
+        }
+      }
+      if (field_des->is_repeated()) {
+        printer_->Print("]");
+      }
+    }
+    if (field_des->is_repeated() ||
+        field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
+      printer_->Print("]");
+    }
+    printer_->Print(" = ...");
+  }
+  if (has_key_words) {
+    printer_->Print(", **kwargs");
+  }
+}
+
 void PyiGenerator::PrintMessage(
     const Descriptor& message_descriptor, bool is_nested) const {
   if (!is_nested) {
@@ -476,66 +542,7 @@ void PyiGenerator::PrintMessage(
 
   // Prints __init__
   printer_->Print("def __init__(self");
-  bool has_key_words = false;
-  bool is_first = true;
-  for (int i = 0; i < message_descriptor.field_count(); ++i) {
-    const FieldDescriptor* field_des = message_descriptor.field(i);
-    if (IsPythonKeyword(field_des->name())) {
-      has_key_words = true;
-      continue;
-    }
-    std::string field_name = field_des->name();
-    if (is_first && field_name == "self") {
-      // See b/144146793 for an example of real code that generates a (self,
-      // self) method signature. Since repeating a parameter name is illegal in
-      // Python, we rename the duplicate self.
-      field_name = "self_";
-    }
-    is_first = false;
-    printer_->Print(", $field_name$: ", "field_name", field_name);
-    Annotate("field_name", field_des);
-    if (field_des->is_repeated() ||
-        field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
-      printer_->Print("_Optional[");
-    }
-    if (field_des->is_map()) {
-      const Descriptor* map_entry = field_des->message_type();
-      printer_->Print(
-          "_Mapping[$key_type$, $value_type$]", "key_type",
-          GetFieldType(*map_entry->field(0), message_descriptor),
-          "value_type",
-          GetFieldType(*map_entry->field(1), message_descriptor));
-    } else {
-      if (field_des->is_repeated()) {
-        printer_->Print("_Iterable[");
-      }
-      if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        printer_->Print(
-            "_Union[$type_name$, _Mapping]", "type_name",
-            GetFieldType(*field_des, message_descriptor));
-      } else {
-        if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-          printer_->Print("_Union[$type_name$, str]", "type_name",
-                          ModuleLevelName(*field_des->enum_type()));
-        } else {
-          printer_->Print(
-              "$type_name$", "type_name",
-              GetFieldType(*field_des, message_descriptor));
-        }
-      }
-      if (field_des->is_repeated()) {
-        printer_->Print("]");
-      }
-    }
-    if (field_des->is_repeated() ||
-        field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
-      printer_->Print("]");
-    }
-    printer_->Print(" = ...");
-  }
-  if (has_key_words) {
-    printer_->Print(", **kwargs");
-  }
+  PrintFields(message_descriptor);
   printer_->Print(") -> None: ...\n");
   printer_->Outdent();
 }

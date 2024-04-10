@@ -69,6 +69,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports() const;
   void PrintTopLevelEnums() const;
+  void PrintFields(const Descriptor& message_descriptor) const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;
   void PrintEnumValues(const EnumDescriptor& enum_descriptor,
                        bool is_classvar = false) const;
