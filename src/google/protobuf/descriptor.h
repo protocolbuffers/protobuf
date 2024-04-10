@@ -284,6 +284,8 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
 
 PROTOBUF_EXPORT absl::string_view ShortEditionName(Edition edition);
 
+bool IsEnumFullySequential(const EnumDescriptor* enum_desc);
+
 }  // namespace internal
 
 // Provide an Abseil formatter for edition names.
@@ -1387,6 +1389,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
+  friend bool internal::IsEnumFullySequential(const EnumDescriptor* enum_desc);
   typedef EnumOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -2796,6 +2799,10 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
 }
 
 namespace internal {
+
+inline bool IsEnumFullySequential(const EnumDescriptor* enum_desc) {
+  return enum_desc->sequential_value_limit_ == enum_desc->value_count() - 1;
+}
 
 // FieldRange(desc) provides an iterable range for the fields of a
 // descriptor type, appropriate for range-for loops.
