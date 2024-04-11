@@ -32,3 +32,11 @@ bzl_library(
     ],
     visibility = ["//bazel:__subpackages__"],
 )
+
+bzl_library(
+    name = "proto_toolchain_rule_bzl",
+    srcs = [
+        "proto_toolchain_rule.bzl",
+    ],
+    visibility = ["//bazel:__subpackages__"],
+)
