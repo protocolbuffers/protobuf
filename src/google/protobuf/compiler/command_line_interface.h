@@ -193,6 +193,11 @@ class PROTOC_EXPORT CommandLineInterface {
   void SetVersionInfo(const std::string& text) { version_info_ = text; }
 
 
+  // Configure protoc to act as if we're in opensource.
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
  private:
   // -----------------------------------------------------------------
 
@@ -463,6 +468,8 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
+
+  bool opensource_runtime_ = PROTO2_IS_OSS;
 };
 
 }  // namespace compiler

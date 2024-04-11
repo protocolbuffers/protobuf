@@ -10,6 +10,7 @@ load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_librar
 load("//conformance:defs.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
 load("//src/google/protobuf/editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 LITE_SRCS = [
     # Keep in sync with `//java/lite:pom.xml`.
@@ -106,6 +107,15 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Writer.java",
 ]
 
+FULL_SRCS = glob(
+    [
+        "src/main/java/com/google/protobuf/*.java",
+    ],
+    exclude = LITE_SRCS,
+) + [
+    ":gen_well_known_protos_java",
+]
+
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_javalite",
     javalite = True,
@@ -190,6 +200,32 @@ filegroup(
     visibility = ["//pkg:__pkg__"],
 )
 
+compile_edition_defaults(
+    name = "java_edition_defaults",
+    srcs = [
+        "//:descriptor_proto",
+        "//java/core:java_features_proto",
+    ],
+    maximum_edition = "2023",
+    minimum_edition = "PROTO2",
+)
+
+embed_edition_defaults(
+    name = "embedded_java_edition_defaults_generate",
+    defaults = "java_edition_defaults",
+    output = "generated/src/main/java/com/google/protobuf/JavaEditionDefaults.java",
+    placeholder = "DEFAULTS_VALUE",
+    template = "src/main/java/com/google/protobuf/JavaEditionDefaults.java.template",
+)
+
+staleness_test(
+    name = "generated_java_defaults_staleness_test",
+    outs = ["src/main/java/com/google/protobuf/JavaEditionDefaults.java"],
+    generated_pattern = "generated/%s",
+    tags = ["manual"],
+    target_files = ["src/main/java/com/google/protobuf/JavaEditionDefaults.java"],
+)
+
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_java",
     deps = [
@@ -211,14 +247,7 @@ internal_gen_well_known_protos_java(
 
 java_library(
     name = "core",
-    srcs = glob(
-        [
-            "src/main/java/com/google/protobuf/*.java",
-        ],
-        exclude = LITE_SRCS,
-    ) + [
-        ":gen_well_known_protos_java",
-    ],
+    srcs = FULL_SRCS,
     visibility = ["//visibility:public"],
     exports = [
         ":lite_runtime_only",
@@ -230,14 +259,7 @@ java_library(
 
 protobuf_versioned_java_library(
     name = "core_bundle",
-    srcs = glob(
-        [
-            "src/main/java/com/google/protobuf/*.java",
-        ],
-        exclude = LITE_SRCS,
-    ) + [
-        ":gen_well_known_protos_java",
-    ],
+    srcs = FULL_SRCS,
     automatic_module_name = "com.google.protobuf",
     bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
                          "are a way of encoding structured data in an " +

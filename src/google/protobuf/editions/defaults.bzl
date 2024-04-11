@@ -31,7 +31,7 @@ def _compile_edition_defaults_impl(ctx):
     ctx.actions.run(
         outputs = [out_file],
         inputs = sources,
-        executable = ctx.executable._protoc,
+        executable = ctx.executable.protoc or ctx.executable._protoc_minimal,
         arguments = [args],
         progress_message = "Generating edition defaults",
     )
@@ -45,7 +45,12 @@ compile_edition_defaults = rule(
         ),
         "minimum_edition": attr.string(mandatory = True),
         "maximum_edition": attr.string(mandatory = True),
-        "_protoc": attr.label(
+        "protoc": attr.label(
+            mandatory = False,
+            executable = True,
+            cfg = "exec",
+        ),
+        "_protoc_minimal": attr.label(
             default = "//src/google/protobuf/compiler:protoc_minimal",
             executable = True,
             cfg = "exec",

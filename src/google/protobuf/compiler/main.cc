@@ -39,6 +39,9 @@ int ProtobufMain(int argc, char* argv[]) {
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+  cli.set_opensource_runtime(true);
+#endif
 
   // Proto2 C++
   cpp::CppGenerator cpp_generator;

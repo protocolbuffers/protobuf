@@ -3006,8 +3006,12 @@ bool CommandLineInterface::WriteDescriptorSet(
 }
 
 bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
-  const Descriptor* feature_set =
-      pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  const Descriptor* feature_set;
+  if (opensource_runtime_) {
+    feature_set = pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  } else {
+    feature_set = pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  }
   if (feature_set == nullptr) {
     std::cerr << edition_defaults_out_name_
               << ": Could not find FeatureSet in descriptor pool.  Please make "
