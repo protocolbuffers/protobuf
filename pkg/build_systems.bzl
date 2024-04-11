@@ -2,6 +2,7 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_pkg//pkg:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(":cc_dist_library.bzl", "CcFileList")
 
 ################################################################################

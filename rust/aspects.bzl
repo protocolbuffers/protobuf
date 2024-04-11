@@ -12,6 +12,7 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 visibility(["//rust/..."])
 
