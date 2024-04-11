@@ -27,6 +27,15 @@ message JavaFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
+    // TODO Enable this in google3 once protoc rolls out.
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_deprecated: EDITION_2023,
+      deprecation_warning: "The legacy closed enum treatment in Java is "
+                           "deprecated and is scheduled to be removed in "
+                           "edition 2025.  Mark enum type on the enum "
+                           "definitions themselves rather than on fields.",
+    },
     edition_defaults = { edition: EDITION_PROTO2, value: "true" },
     edition_defaults = { edition: EDITION_PROTO3, value: "false" }
   ];
@@ -47,6 +56,16 @@ message JavaFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
+    // TODO Enable this in google3 once protoc rolls out.
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_deprecated: EDITION_2023,
+      deprecation_warning: "The Java-specific utf8 validation feature is "
+                           "deprecated and is scheduled to be removed in "
+                           "edition 2025.  Utf8 validation behavior should "
+                           "use the global cross-language utf8_validation "
+                           "feature.",
+    },
     edition_defaults = { edition: EDITION_PROTO2, value: "DEFAULT" }
   ];
 }
