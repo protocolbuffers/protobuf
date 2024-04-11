@@ -1084,6 +1084,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   bool has_json_name_ : 1;
   bool is_extension_ : 1;
   bool is_oneof_ : 1;
+  bool is_repeated_ : 1;  // Redundant with label_, but it is queried a lot.
 
   // Actually a `Label` but stored as uint8_t to save space.
   uint8_t label_ : 2;
@@ -2686,7 +2687,8 @@ inline bool FieldDescriptor::is_optional() const {
 }
 
 inline bool FieldDescriptor::is_repeated() const {
-  return label() == LABEL_REPEATED;
+  ABSL_DCHECK_EQ(is_repeated_, label() == LABEL_REPEATED);
+  return is_repeated_;
 }
 
 inline bool FieldDescriptor::is_packable() const {

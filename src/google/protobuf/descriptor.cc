@@ -6500,6 +6500,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
       absl::implicit_cast<int>(proto.type()));
   result->label_ = static_cast<FieldDescriptor::Label>(
       absl::implicit_cast<int>(proto.label()));
+  result->is_repeated_ = result->label_ == FieldDescriptor::LABEL_REPEATED;
 
   if (result->label() == FieldDescriptor::LABEL_REQUIRED) {
     // An extension cannot have a required field (b/13365836).
