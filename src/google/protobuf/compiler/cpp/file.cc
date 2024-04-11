@@ -949,6 +949,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
         )cc");
   }
 
+
   if (IsAnyMessage(file_)) {
     MuteWuninitialized(p);
   }
