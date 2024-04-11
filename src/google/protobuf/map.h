@@ -457,7 +457,7 @@ inline size_t SpaceUsedInValues(const void*) { return 0; }
 
 class UntypedMapBase;
 
-class UntypedMapIterator {
+class ABSL_ATTRIBUTE_TRIVIAL_ABI UntypedMapIterator {
  public:
   // Invariants:
   // node_ is always correct. This is handy because the most common
