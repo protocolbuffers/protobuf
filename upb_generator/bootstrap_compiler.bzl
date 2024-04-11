@@ -126,7 +126,7 @@ def _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs):
             name = name + "_copy_gencode_%d" % genrule,
             outs = ["generated_sources/" + src],
             srcs = [name, name + "_minitable"],
-            cmd = "for src in $(SRCS); do cp -f $$src $(@D) || echo 'copy failed!'; done",
+            cmd = "mkdir -p $(@D); for src in $(SRCS); do cp -f $$src $(@D) || echo 'copy failed!'; done",
         )
 
     # Keep bazel gencode in sync with our checked-in sources needed for cmake builds.
