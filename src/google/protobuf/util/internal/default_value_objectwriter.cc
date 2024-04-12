@@ -254,6 +254,8 @@ DefaultValueObjectWriter::Node* DefaultValueObjectWriter::Node::FindChild(
 
 void DefaultValueObjectWriter::Node::WriteTo(ObjectWriter* ow) {
   if (kind_ == PRIMITIVE) {
+    // Empty strings should be rendered for the JSON key.
+    ow->empty_name_ok_for_next_key();
     ObjectWriter::RenderDataPieceTo(data_, name_, ow);
     return;
   }

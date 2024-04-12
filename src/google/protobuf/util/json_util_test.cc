@@ -266,6 +266,19 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   EXPECT_EQ(message.DebugString(), other.DebugString());
 }
 
+TEST_F(JsonUtilTest, PrintEmptyMapKey) {
+  MapIn message;
+  (*message.mutable_map_input())[""] = "";
+  JsonPrintOptions print_options;
+  print_options.always_print_primitive_fields = true;
+  JsonParseOptions parse_options;
+  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{\"\":\"\"}}",
+            ToJson(message, print_options));
+  MapIn other;
+  ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
+  EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
 TEST_F(JsonUtilTest, PrintPrimitiveOneof) {
   TestOneof message;
   JsonPrintOptions options;
