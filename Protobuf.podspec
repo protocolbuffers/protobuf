@@ -11,6 +11,10 @@ Pod::Spec.new do |s|
   s.license  = 'BSD-3-Clause'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
   s.cocoapods_version = '>= 1.0'
+  
+  s.resource_bundles = {
+    "Protobuf_Privacy" => "PrivacyInfo.xcprivacy"
+  }
 
   s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
                :tag => "v#{s.version}" }
