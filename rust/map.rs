@@ -527,7 +527,7 @@ mod tests {
         // compare with each other.
         // googletest-rust matchers also do not currently implement Clone.
         assert_that!(
-            map.as_view().iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
@@ -535,7 +535,7 @@ mod tests {
             ]
         );
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
@@ -543,7 +543,7 @@ mod tests {
             ]
         );
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
@@ -559,10 +559,7 @@ mod tests {
         assert!(map_mut.insert(0, "fizz"));
         // insert should return false when the key is already present
         assert!(!map_mut.insert(0, "buzz"));
-        assert_that!(
-            map.as_mut().iter().collect::<Vec<_>>(),
-            unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]
-        );
+        assert_that!(map.as_mut(), unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]);
     }
 
     #[test]
@@ -576,7 +573,7 @@ mod tests {
         map_mut.extend([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((0, ProtoStr::from_str("fizz"))),
                 eq((1, ProtoStr::from_str("buzz"))),
@@ -592,7 +589,7 @@ mod tests {
         map_mut.extend(&map_2);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((0, ProtoStr::from_str("fizz"))),
                 eq((1, ProtoStr::from_str("buzz"))),
@@ -609,7 +606,7 @@ mod tests {
         map_mut.copy_from([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((0, ProtoStr::from_str("fizz"))),
                 eq((1, ProtoStr::from_str("buzz"))),
@@ -625,7 +622,7 @@ mod tests {
         map_mut.copy_from(&map_2);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((2, ProtoStr::from_str("bing"))),
                 eq((3, ProtoStr::from_str("bong")))

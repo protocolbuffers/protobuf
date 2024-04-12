@@ -425,7 +425,7 @@ mod tests {
         my_mut.set("Hello indeed".to_string());
 
         let val_after_set = my_mut.as_view().val().to_string();
-        assert_that!(my_proxied.val, eq(val_after_set));
+        assert_that!(my_proxied.val, eq(&val_after_set));
         assert_that!(my_proxied.val, eq("Hello indeed"));
     }
 
