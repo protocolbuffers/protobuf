@@ -169,6 +169,7 @@ class MessageReflectionFriend;
 }  // namespace python
 namespace expr {
 class CelMapReflectionFriend;  // field_backed_map_impl.cc
+class SudoMapReflectionFriend;
 }
 
 namespace internal {
