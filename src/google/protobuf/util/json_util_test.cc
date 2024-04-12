@@ -52,7 +52,9 @@ using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
 using proto3::TestOneof;
+using google::protobuf::testing::MapM;
 using google::protobuf::testing::MapIn;
+using google::protobuf::testing::MapOut;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -264,6 +266,35 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, PrintEmptyMapKey) {
+  MapIn message_in;
+  message_in.add_things("test");
+  (*message_in.mutable_map_input())[""] = "";
+  JsonPrintOptions print_options;
+  print_options.always_print_primitive_fields = true;
+  JsonParseOptions parse_options;
+  EXPECT_EQ("{\"other\":\"\",\"things\":[\"test\"],\"mapInput\":{\"\":\"\"}}",
+            ToJson(message_in, print_options));
+  MapIn other_in;
+  ASSERT_TRUE(FromJson(
+              ToJson(message_in, print_options), &other_in, parse_options));
+  EXPECT_EQ(message_in.DebugString(), other_in.DebugString());
+
+  MapM message_m;
+  message_m.set_foo("foo_value");
+
+  MapOut message_out;
+  (*message_out.mutable_map1())[""] = message_m;
+  (*message_out.mutable_map3())[0] = "map3";
+  EXPECT_EQ("{\"map1\":{\"\":{\"foo\":\"foo_value\"}},"
+            "\"map2\":{},\"map3\":{\"0\":\"map3\"},\"map4\":{},\"bar\":\"\"}",
+            ToJson(message_out, print_options));
+  MapOut other_out;
+  ASSERT_TRUE(FromJson(
+              ToJson(message_out, print_options), &other_out, parse_options));
+  EXPECT_EQ(message_out.DebugString(), other_out.DebugString());
 }
 
 TEST_F(JsonUtilTest, PrintPrimitiveOneof) {

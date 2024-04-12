@@ -290,6 +290,10 @@ void DefaultValueObjectWriter::Node::WriteTo(ObjectWriter* ow) {
 void DefaultValueObjectWriter::Node::WriteChildren(ObjectWriter* ow) {
   for (int i = 0; i < children_.size(); ++i) {
     Node* child = children_[i];
+    if (kind_ == MAP) {
+      // Empty strings should be rendered for the JSON key.
+      ow->empty_name_ok_for_next_key();
+    }
     child->WriteTo(ow);
   }
 }
