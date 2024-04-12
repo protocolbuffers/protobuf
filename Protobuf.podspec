@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
   # left out, as it's an umbrella implementation file.
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
 
-  s.resource_bundle = {
+  s.resource_bundles = {
     "Protobuf_Privacy" => "PrivacyInfo.xcprivacy"
   }
 
