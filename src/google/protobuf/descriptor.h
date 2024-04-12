@@ -1090,7 +1090,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   uint8_t label_ : 2;
 
   // Actually a `Type`, but stored as uint8_t to save space.
-  mutable uint8_t type_;
+  mutable std::atomic<uint8_t> type_;
 
   // Logically:
   //   all_names_ = [name, full_name, lower, camel, json]
@@ -1111,17 +1111,19 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // The once_flag is followed by a NUL terminated string for the type name and
   // enum default value (or empty string if no default enum).
   absl::once_flag* type_once_;
-  static void TypeOnceInit(const FieldDescriptor* to_init);
+#ifndef SWIG
+  PROTOBUF_COLD_FALLBACK Type
+      TypeOnceInit(PROTOBUF_COLD_FALLBACK_ARG = {}) const;
+  PROTOBUF_COLD_FALLBACK const void* TypeDescriptorOnceInit(
+      PROTOBUF_COLD_FALLBACK_ARG = {}) const;
+#endif
   void InternalTypeOnceInit() const;
   const Descriptor* containing_type_;
   union {
     const OneofDescriptor* containing_oneof;
     const Descriptor* extension_scope;
   } scope_;
-  union {
-    mutable const Descriptor* message_type;
-    mutable const EnumDescriptor* enum_type;
-  } type_descriptor_;
+  mutable std::atomic<const void*> type_descriptor_;
   const FieldOptions* options_;
   const FeatureSet* proto_features_;
   const FeatureSet* merged_features_;
@@ -2676,10 +2678,36 @@ inline FieldDescriptor::Label FieldDescriptor::label() const {
 }
 
 inline FieldDescriptor::Type FieldDescriptor::type() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, &FieldDescriptor::TypeOnceInit, this);
+  uint8_t res = type_.load(std::memory_order_relaxed);
+  if (ABSL_PREDICT_FALSE(res == 0)) {
+    res = TypeOnceInit();
+    ABSL_DCHECK_NE(res, 0);
   }
-  return static_cast<Type>(type_);
+  return static_cast<Type>(res);
+}
+
+inline const Descriptor* FieldDescriptor::message_type() const {
+  auto* res = type_descriptor_.load(std::memory_order_acquire);
+  if (ABSL_PREDICT_FALSE(res == nullptr)) {
+    res = TypeDescriptorOnceInit();
+  }
+  // At this point `type_` is inited too.
+  uint8_t t = type_.load(std::memory_order_relaxed);
+  ABSL_DCHECK_NE(t, 0);
+  return t == TYPE_MESSAGE || t == TYPE_GROUP
+             ? static_cast<const Descriptor*>(res)
+             : nullptr;
+}
+
+inline const EnumDescriptor* FieldDescriptor::enum_type() const {
+  auto* res = type_descriptor_.load(std::memory_order_acquire);
+  if (ABSL_PREDICT_FALSE(res == nullptr)) {
+    res = TypeDescriptorOnceInit();
+  }
+  // At this point `type_` is inited too.
+  uint8_t t = type_.load(std::memory_order_relaxed);
+  ABSL_DCHECK_NE(t, 0);
+  return t == TYPE_ENUM ? static_cast<const EnumDescriptor*>(res) : nullptr;
 }
 
 inline bool FieldDescriptor::is_optional() const {

@@ -235,6 +235,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 # define PROTOBUF_NOINLINE __declspec(noinline)
 #endif
 
+// For fallback functions in very cold paths. Eg once-init calls.
+#ifdef PROTOBUF_COLD_FALLBACK
+#error PROTOBUF_COLD_FALLBACK was previously defined
+#endif
+#if !defined(PROTOBUF_COLD_FALLBACK)
+#define PROTOBUF_COLD_FALLBACK
+#define PROTOBUF_COLD_FALLBACK_ARG ::std::false_type
+#endif
+
 #ifdef PROTOBUF_MUSTTAIL
 #error PROTOBUF_MUSTTAIL was previously defined
 #endif
