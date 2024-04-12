@@ -16,8 +16,8 @@ use std::marker::PhantomData;
 
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
-    __internal::{Private, RawRepeatedField},
-    __runtime::{InnerRepeated, InnerRepeatedMut},
+    __internal::Private,
+    __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
 
 /// Views the elements in a `repeated` field of `T`.

@@ -109,15 +109,15 @@ void SingularScalar::InExternC(Context& ctx,
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(R"rs(
-                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
-                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+                  fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
+                  fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
                 )rs");
                }
              }}},
            R"rs(
           $with_presence_fields_thunks$
-          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
-          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
+          fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $Scalar$;
+          fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $Scalar$);
         )rs");
 }
 

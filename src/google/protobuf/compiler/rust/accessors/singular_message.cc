@@ -161,32 +161,32 @@ void SingularMessage::InExternC(Context& ctx,
              if (ctx.is_cpp()) {
                ctx.Emit(
                    R"rs(
-                    fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage)
-                       -> $pbi$::RawMessage;)rs");
+                    fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage)
+                       -> $pbr$::RawMessage;)rs");
              } else {
                ctx.Emit(
-                   R"rs(fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
-                                               arena: $pbi$::RawArena)
-                            -> $pbi$::RawMessage;)rs");
+                   R"rs(fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage,
+                                               arena: $pbr$::RawArena)
+                            -> $pbr$::RawMessage;)rs");
              }
            }},
           {"ReturnType",
            [&] {
              if (ctx.is_cpp()) {
                // guaranteed to have a nonnull submsg for the cpp kernel
-               ctx.Emit({}, "$pbi$::RawMessage;");
+               ctx.Emit({}, "$pbr$::RawMessage;");
              } else {
                // upb kernel may return NULL for a submsg, we can detect this
                // in terra rust if the option returned is None
-               ctx.Emit({}, "Option<$pbi$::RawMessage>;");
+               ctx.Emit({}, "Option<$pbr$::RawMessage>;");
              }
            }},
       },
       R"rs(
-                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
+                  fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $ReturnType$;
                   $getter_mut$
-                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
-                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+                  fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
+                  fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
                )rs");
 }
 

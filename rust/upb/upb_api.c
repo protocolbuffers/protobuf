@@ -6,6 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 //
 
+#include <stddef.h>
+
 #define UPB_BUILD_API
 
 #include "upb/mem/arena.h"      // IWYU pragma: keep

@@ -114,15 +114,15 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
            [&] {
              if (ctx.is_upb()) {
                ctx.Emit({}, R"rs(
-                fn $getter_thunk$(raw_msg: $pbi$::RawMessage)
-                  -> Option<$pbi$::RawMap>;
-                fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
-                  arena: $pbi$::RawArena) -> $pbi$::RawMap;
+                fn $getter_thunk$(raw_msg: $pbr$::RawMessage)
+                  -> Option<$pbr$::RawMap>;
+                fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage,
+                  arena: $pbr$::RawArena) -> $pbr$::RawMap;
               )rs");
              } else {
                ctx.Emit({}, R"rs(
-                fn $getter_thunk$(msg: $pbi$::RawMessage) -> $pbi$::RawMap;
-                fn $getter_mut_thunk$(msg: $pbi$::RawMessage,) -> $pbi$::RawMap;
+                fn $getter_thunk$(msg: $pbr$::RawMessage) -> $pbr$::RawMap;
+                fn $getter_mut_thunk$(msg: $pbr$::RawMessage,) -> $pbr$::RawMap;
               )rs");
              }
            }},

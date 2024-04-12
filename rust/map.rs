@@ -7,8 +7,8 @@
 
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
-    __internal::{Private, RawMap},
-    __runtime::{InnerMap, InnerMapMut, RawMapIter},
+    __internal::Private,
+    __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
 use std::marker::PhantomData;
 

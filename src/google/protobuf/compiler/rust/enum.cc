@@ -73,14 +73,14 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                  .WithSuffix("")},
             R"rs(
       extern "C" {
-        fn $map_new_thunk$() -> $pbi$::RawMap;
-        fn $map_free_thunk$(m: $pbi$::RawMap);
-        fn $map_clear_thunk$(m: $pbi$::RawMap);
-        fn $map_size_thunk$(m: $pbi$::RawMap) -> usize;
-        fn $map_insert_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: $name$) -> bool;
-        fn $map_get_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
-        fn $map_remove_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
-        fn $map_iter_thunk$(m: $pbi$::RawMap) -> $pbr$::UntypedMapIterator;
+        fn $map_new_thunk$() -> $pbr$::RawMap;
+        fn $map_free_thunk$(m: $pbr$::RawMap);
+        fn $map_clear_thunk$(m: $pbr$::RawMap);
+        fn $map_size_thunk$(m: $pbr$::RawMap) -> usize;
+        fn $map_insert_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: $name$) -> bool;
+        fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
+        fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
+        fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
         fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $name$);
       }
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
@@ -170,7 +170,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                   $pbr$::upb_Map_New(
                       arena.raw(),
                       <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                      $pbr$::UpbCType::Enum)
+                      $pbr$::CType::Enum)
               };
               $pb$::Map::from_inner(
                   $pbi$::Private,

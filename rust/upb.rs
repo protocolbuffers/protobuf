@@ -7,7 +7,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Enum, Private, PtrAndLen, RawArena, RawMap, RawMessage, RawRepeatedField};
+use crate::__internal::{Enum, Private};
 use crate::{
     Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
     Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
@@ -16,7 +16,6 @@ use core::fmt::Debug;
 use std::alloc;
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
-use std::ffi::c_int;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::{align_of, size_of, ManuallyDrop, MaybeUninit};
@@ -24,6 +23,25 @@ use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
 use std::sync::OnceLock;
+
+extern crate upb;
+
+// Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
+// fns.
+pub use upb::*;
+
+pub type RawArena = upb::RawArena;
+pub type RawMessage = upb::RawMessage;
+pub type RawRepeatedField = upb::RawArray;
+pub type RawMap = upb::RawMap;
+pub type PtrAndLen = upb::StringView;
+
+impl From<&ProtoStr> for PtrAndLen {
+    fn from(s: &ProtoStr) -> Self {
+        let bytes = s.as_bytes();
+        Self { ptr: bytes.as_ptr(), len: bytes.len() }
+    }
+}
 
 /// See `upb/port/def.inc`.
 const UPB_MALLOC_ALIGN: usize = 8;
@@ -44,14 +62,6 @@ pub struct Arena {
     // Safety invariant: this must always be a valid arena
     raw: RawArena,
     _not_sync: PhantomData<UnsafeCell<()>>,
-}
-
-extern "C" {
-    // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
-    pub fn upb_Arena_New() -> Option<RawArena>;
-    pub fn upb_Arena_Free(arena: RawArena);
-    pub fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
-    pub fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
 }
 
 impl Arena {
@@ -332,89 +342,6 @@ fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] 
     }
 }
 
-// A macro for opaque pointees.
-// This wrapper is a workaround until stabilization of [`extern type`].
-// TODO: convert to extern type once stabilized.
-// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
-macro_rules! opaque_pointee {
-    ($name:ident) => {
-        #[repr(C)]
-        pub struct $name {
-            _data: [u8; 0],
-            _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
-        }
-    };
-}
-
-// Opaque pointee for upb_MiniTable.
-// TODO: consider importing a minitable struct declared in
-// google3/third_party/upb/bits.
-opaque_pointee!(OpaqueMiniTable);
-
-// Opaque pointee for upb_ExtensionRegistry
-opaque_pointee!(OpaqueExtensionRegistry);
-
-extern "C" {
-    pub fn upb_Message_DeepCopy(
-        dst: RawMessage,
-        src: RawMessage,
-        mini_table: *const OpaqueMiniTable,
-        arena: RawArena,
-    );
-
-    pub fn upb_Message_DeepClone(
-        m: RawMessage,
-        mini_table: *const OpaqueMiniTable,
-        arena: RawArena,
-    ) -> Option<RawMessage>;
-}
-
-// LINT.IfChange(encode_status)
-#[repr(C)]
-#[derive(PartialEq, Eq, Copy, Clone)]
-pub enum EncodeStatus {
-    Ok = 0,
-    OutOfMemory = 1,
-    MaxDepthExceeded = 2,
-    MissingRequired = 3,
-}
-// LINT.ThenChange()
-
-// LINT.IfChange(decode_status)
-#[repr(C)]
-#[derive(PartialEq, Eq, Copy, Clone)]
-pub enum DecodeStatus {
-    Ok = 0,
-    Malformed = 1,
-    OutOfMemory = 2,
-    BadUtf8 = 3,
-    MaxDepthExceeded = 4,
-    MissingRequired = 5,
-    UnlinkedSubMessage = 6,
-}
-// LINT.ThenChange()
-
-extern "C" {
-    pub fn upb_Encode(
-        msg: RawMessage,
-        mini_table: *const OpaqueMiniTable,
-        options: i32,
-        arena: RawArena,
-        buf: *mut *mut u8,
-        buf_size: *mut usize,
-    ) -> EncodeStatus;
-
-    pub fn upb_Decode(
-        buf: *const u8,
-        buf_size: usize,
-        msg: RawMessage,
-        mini_table: *const OpaqueMiniTable,
-        extreg: *const OpaqueExtensionRegistry,
-        options: i32,
-        arena: RawArena,
-    ) -> DecodeStatus;
-}
-
 /// The raw type-erased version of an owned `Repeated`.
 #[derive(Debug)]
 pub struct InnerRepeated {
@@ -442,70 +369,13 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
-// Transcribed from google3/third_party/upb/upb/message/value.h
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub union upb_MessageValue {
-    pub bool_val: bool,
-    pub float_val: std::ffi::c_float,
-    pub double_val: std::ffi::c_double,
-    pub uint32_val: u32,
-    pub int32_val: i32,
-    pub uint64_val: u64,
-    pub int64_val: i64,
-    pub array_val: Option<RawRepeatedField>,
-    pub map_val: Option<RawMap>,
-    // TODO: Replace this `RawMessage` with the const type.
-    pub msg_val: Option<RawMessage>,
-    pub str_val: PtrAndLen,
-
-    tagged_msg_val: *const std::ffi::c_void,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub union upb_MutableMessageValue {
-    pub array: Option<RawRepeatedField>,
-    pub map: Option<RawMap>,
-    pub msg: Option<RawMessage>,
-}
-
-// Transcribed from google3/third_party/upb/upb/base/descriptor_constants.h
-#[repr(C)]
-#[allow(dead_code)]
-pub enum UpbCType {
-    Bool = 1,
-    Float = 2,
-    Int32 = 3,
-    UInt32 = 4,
-    Enum = 5,
-    Message = 6,
-    Double = 7,
-    Int64 = 8,
-    UInt64 = 9,
-    String = 10,
-    Bytes = 11,
-}
-
-extern "C" {
-    fn upb_Array_New(a: RawArena, r#type: std::ffi::c_int) -> RawRepeatedField;
-    pub fn upb_Array_Size(arr: RawRepeatedField) -> usize;
-    pub fn upb_Array_Set(arr: RawRepeatedField, i: usize, val: upb_MessageValue);
-    pub fn upb_Array_Get(arr: RawRepeatedField, i: usize) -> upb_MessageValue;
-    pub fn upb_Array_Append(arr: RawRepeatedField, val: upb_MessageValue, arena: RawArena);
-    pub fn upb_Array_Resize(arr: RawRepeatedField, size: usize, arena: RawArena) -> bool;
-    fn upb_Array_MutableDataPtr(arr: RawRepeatedField) -> *mut std::ffi::c_void;
-    fn upb_Array_DataPtr(arr: RawRepeatedField) -> *const std::ffi::c_void;
-    pub fn upb_Array_GetMutable(arr: RawRepeatedField, i: usize) -> upb_MutableMessageValue;
-}
-
 macro_rules! impl_repeated_base {
     ($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr) => {
         #[allow(dead_code)]
         fn repeated_new(_: Private) -> Repeated<$t> {
             let arena = Arena::new();
             Repeated::from_inner(InnerRepeated {
-                raw: unsafe { upb_Array_New(arena.raw(), $upb_tag as c_int) },
+                raw: unsafe { upb_Array_New(arena.raw(), $upb_tag) },
                 arena,
             })
         }
@@ -519,11 +389,11 @@ macro_rules! impl_repeated_base {
         fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
-                upb_Array_Append(
+                assert!(upb_Array_Append(
                     f.as_raw(Private),
                     <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v),
                     arena,
-                )
+                ));
             }
         }
         fn repeated_clear(mut f: Mut<Repeated<$t>>) {
@@ -624,17 +494,17 @@ impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
 }
 
 impl_repeated_primitives!(
-    // proxied type, element type, upb_MessageValue field name, UpbCType variant
-    (bool, bool, bool_val, UpbCType::Bool),
-    (f32, f32, float_val, UpbCType::Float),
-    (f64, f64, double_val, UpbCType::Double),
-    (i32, i32, int32_val, UpbCType::Int32),
-    (u32, u32, uint32_val, UpbCType::UInt32),
-    (i64, i64, int64_val, UpbCType::Int64),
-    (u64, u64, uint64_val, UpbCType::UInt64),
+    // proxied type, element type, upb_MessageValue field name, upb::CType variant
+    (bool, bool, bool_val, upb::CType::Bool),
+    (f32, f32, float_val, upb::CType::Float),
+    (f64, f64, double_val, upb::CType::Double),
+    (i32, i32, int32_val, upb::CType::Int32),
+    (u32, u32, uint32_val, upb::CType::UInt32),
+    (i64, i64, int64_val, upb::CType::Int64),
+    (u64, u64, uint64_val, upb::CType::UInt64),
 );
 
-impl_repeated_bytes!((ProtoStr, UpbCType::String), ([u8], UpbCType::Bytes),);
+impl_repeated_bytes!((ProtoStr, upb::CType::String), ([u8], upb::CType::Bytes),);
 
 /// Copy the contents of `src` into `dest`.
 ///
@@ -643,7 +513,7 @@ impl_repeated_bytes!((ProtoStr, UpbCType::String), ([u8], UpbCType::Bytes),);
 pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
     src: View<Repeated<T>>,
     mut dest: Mut<Repeated<T>>,
-    minitable: *const OpaqueMiniTable,
+    minitable: *const upb_MiniTable,
 ) {
     // SAFETY:
     // - `src.as_raw()` is a valid `const upb_Array*`.
@@ -801,7 +671,7 @@ impl<'msg> InnerMapMut<'msg> {
 }
 
 pub trait UpbTypeConversions: Proxied {
-    fn upb_type() -> UpbCType;
+    fn upb_type() -> upb::CType;
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
 
     /// # Safety
@@ -822,7 +692,7 @@ macro_rules! impl_upb_type_conversions_for_scalars {
         $(
             impl UpbTypeConversions for $t {
                 #[inline(always)]
-                fn upb_type() -> UpbCType {
+                fn upb_type() -> upb::CType {
                     $upb_tag
                 }
 
@@ -846,18 +716,18 @@ macro_rules! impl_upb_type_conversions_for_scalars {
 }
 
 impl_upb_type_conversions_for_scalars!(
-    f32, float_val, UpbCType::Float, 0f32;
-    f64, double_val, UpbCType::Double, 0f64;
-    i32, int32_val, UpbCType::Int32, 0i32;
-    u32, uint32_val, UpbCType::UInt32, 0u32;
-    i64, int64_val, UpbCType::Int64, 0i64;
-    u64, uint64_val, UpbCType::UInt64, 0u64;
-    bool, bool_val, UpbCType::Bool, false;
+    f32, float_val, upb::CType::Float, 0f32;
+    f64, double_val, upb::CType::Double, 0f64;
+    i32, int32_val, upb::CType::Int32, 0i32;
+    u32, uint32_val, upb::CType::UInt32, 0u32;
+    i64, int64_val, upb::CType::Int64, 0i64;
+    u64, uint64_val, upb::CType::UInt64, 0u64;
+    bool, bool_val, upb::CType::Bool, false;
 );
 
 impl UpbTypeConversions for [u8] {
-    fn upb_type() -> UpbCType {
-        UpbCType::Bytes
+    fn upb_type() -> upb::CType {
+        upb::CType::Bytes
     }
 
     fn to_message_value(val: View<'_, [u8]>) -> upb_MessageValue {
@@ -881,8 +751,8 @@ impl UpbTypeConversions for [u8] {
 }
 
 impl UpbTypeConversions for ProtoStr {
-    fn upb_type() -> UpbCType {
-        UpbCType::String
+    fn upb_type() -> upb::CType {
+        upb::CType::String
     }
 
     fn to_message_value(val: View<'_, ProtoStr>) -> upb_MessageValue {
@@ -1033,14 +903,6 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
 
 impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoStr);
 
-#[repr(C)]
-#[allow(dead_code)]
-pub enum upb_MapInsertStatus {
-    Inserted = 0,
-    Replaced = 1,
-    OutOfMemory = 2,
-}
-
 /// `upb_Map_Insert`, but returns a `bool` for whether insert occurred.
 ///
 /// Returns `true` if the entry was newly inserted.
@@ -1061,37 +923,10 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
     arena: RawArena,
 ) -> bool {
     match unsafe { upb_Map_Insert(map, key, value, arena) } {
-        upb_MapInsertStatus::Inserted => true,
-        upb_MapInsertStatus::Replaced => false,
-        upb_MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
+        upb::MapInsertStatus::Inserted => true,
+        upb::MapInsertStatus::Replaced => false,
+        upb::MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
     }
-}
-
-extern "C" {
-    pub fn upb_Map_New(arena: RawArena, key_type: UpbCType, value_type: UpbCType) -> RawMap;
-    pub fn upb_Map_Size(map: RawMap) -> usize;
-    pub fn upb_Map_Insert(
-        map: RawMap,
-        key: upb_MessageValue,
-        value: upb_MessageValue,
-        arena: RawArena,
-    ) -> upb_MapInsertStatus;
-    pub fn upb_Map_Get(map: RawMap, key: upb_MessageValue, value: *mut upb_MessageValue) -> bool;
-    pub fn upb_Map_Delete(
-        map: RawMap,
-        key: upb_MessageValue,
-        removed_value: *mut upb_MessageValue,
-    ) -> bool;
-    pub fn upb_Map_Clear(map: RawMap);
-
-    static __rust_proto_kUpb_Map_Begin: usize;
-
-    pub fn upb_Map_Next(
-        map: RawMap,
-        key: *mut upb_MessageValue,
-        value: *mut upb_MessageValue,
-        iter: &mut usize,
-    ) -> bool;
 }
 
 #[cfg(test)]

@@ -5,9 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::__internal::{Private, PtrAndLen, RawMessage};
+use crate::__internal::Private;
 use crate::__runtime::{
-    copy_bytes_in_arena_if_needed_by_runtime, InnerPrimitiveMut, MutatorMessageRef,
+    copy_bytes_in_arena_if_needed_by_runtime, InnerPrimitiveMut, MutatorMessageRef, PtrAndLen,
+    RawMessage,
 };
 use crate::{
     AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, PrimitiveMut, Proxied,

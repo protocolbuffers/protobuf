@@ -78,7 +78,7 @@ rust_library(
     ],
     deps = [
         ":utf8",
-        "//rust/upb_kernel:upb_c_api",
+        "//rust/upb",
     ],
 )
 

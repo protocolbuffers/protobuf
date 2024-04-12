@@ -421,7 +421,7 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
      /*cc_to_ffi_key_expr=*/"cpp_key"},
     {/*thunk_ident=*/"ProtoStr",
      /*rs_key_t=*/"$pb$::ProtoStr",
-     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
+     /*rs_ffi_key_t=*/"$pbr$::PtrAndLen",
      /*rs_to_ffi_key_expr=*/"key.as_bytes().into()",
      /*rs_from_ffi_key_expr=*/
      "$pb$::ProtoStr::from_utf8_unchecked(ffi_key.as_ref())",

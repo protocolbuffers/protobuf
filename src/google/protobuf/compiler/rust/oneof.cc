@@ -231,7 +231,7 @@ void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
           {"case_thunk", ThunkName(ctx, oneof, "case")},
       },
       R"rs(
-        fn $case_thunk$(raw_msg: $pbi$::RawMessage) -> $oneof_enum_module$$case_enum_rs_name$;
+        fn $case_thunk$(raw_msg: $pbr$::RawMessage) -> $oneof_enum_module$$case_enum_rs_name$;
       )rs");
 }
 

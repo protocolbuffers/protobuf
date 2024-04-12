@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use protobuf_cpp::__internal::{PtrAndLen, RawMessage};
+use protobuf_cpp::__runtime::{PtrAndLen, RawMessage};
 use unittest_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
 
 macro_rules! proto_assert_eq {
