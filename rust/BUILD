@@ -85,7 +85,9 @@ rust_library(
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
-    rustc_flags = ["--cfg=upb_kernel"],
+    rustc_flags = [
+        "--cfg=upb_kernel",
+    ],
     deps = [
         "@crate_index//:googletest",
     ],
@@ -113,7 +115,9 @@ rust_library(
 rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+    ],
     deps = [
         "@crate_index//:googletest",
     ],

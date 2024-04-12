@@ -543,7 +543,7 @@ mod tests {
             ]
         );
         assert_that!(
-            map.as_mut().iter().collect::<Vec<_>>(),
+            map.as_view().into_iter().collect::<Vec<_>>(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
@@ -559,7 +559,6 @@ mod tests {
         assert!(map_mut.insert(0, "fizz"));
         // insert should return false when the key is already present
         assert!(!map_mut.insert(0, "buzz"));
-
         assert_that!(
             map.as_mut().iter().collect::<Vec<_>>(),
             unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]
