@@ -9,8 +9,10 @@
 //!
 //! This file forwards to `shared.rs`, which exports a kernel-specific
 //! `__runtime`. Rust Protobuf gencode actually depends directly on kernel
-//! specific crates. The only reason this crate exists is to be able to use
-//! `protobuf` as a crate name for both cpp and upb kernels from user code.
+//! specific crates. This crate exists for two reasons:
+//! - To be able to use `protobuf` as a crate name for both cpp and upb kernels
+//!   from user code.
+//! - To make it more difficult to access internal-only items by default.
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;

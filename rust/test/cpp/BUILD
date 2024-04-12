@@ -8,7 +8,8 @@
 #
 # To do that use:
 # * `rust_cc_proto_library` instead of `rust_proto_library`.
-# * `//rust:protobuf_cpp` instead of `//rust:protobuf``.
+# * `//rust:protobuf_cpp_export` instead of
+#   `//rust:protobuf`.
 
 load("@rules_rust//rust:defs.bzl", "rust_test")
 load(
