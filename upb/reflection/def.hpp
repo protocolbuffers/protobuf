@@ -419,6 +419,7 @@ class EnumDefPtr {
   const upb_EnumDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
+  FileDefPtr file() const;
   const char* full_name() const { return upb_EnumDef_FullName(ptr_); }
   const char* name() const { return upb_EnumDef_Name(ptr_); }
   bool is_closed() const { return upb_EnumDef_IsClosed(ptr_); }
@@ -571,6 +572,10 @@ class DefPool {
  private:
   std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
+
+inline FileDefPtr EnumDefPtr::file() const {
+  return FileDefPtr(upb_EnumDef_File(ptr_));
+}
 
 inline FileDefPtr FieldDefPtr::file() const {
   return FileDefPtr(upb_FieldDef_File(ptr_));
