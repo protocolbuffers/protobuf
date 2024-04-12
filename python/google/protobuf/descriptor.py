@@ -211,7 +211,8 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
           self._features = features
     else:
       if not self._serialized_options:
-        options = self._options
+        options = options_class()
+        options.CopyFrom(self._options)
       else:
         options = _ParseOptions(options_class(), self._serialized_options)
 

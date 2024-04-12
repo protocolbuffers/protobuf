@@ -29,6 +29,7 @@ from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import no_package_pb2
 from google.protobuf.internal import testing_refleaks
 
+from google.protobuf.internal import _parameterized
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
@@ -1118,6 +1119,207 @@ class AddDescriptorTest(unittest.TestCase):
         pool._AddExtensionDescriptor(0)
       with self.assertRaises(TypeError):
         pool._AddFileDescriptor(0)
+
+
+@unittest.skipIf(
+    api_implementation.Type() == 'upb',
+    "upb doesn't support feature lifetime validation yet",
+)
+@testing_refleaks.TestCase
+class FeatureLifetimes(_parameterized.TestCase):
+
+  def setUp(self):
+    super(FeatureLifetimes, self).setUp()
+    self.pool = descriptor_pool.DescriptorPool()
+    self.pool.AddSerializedFile(descriptor_pb2.DESCRIPTOR.serialized_pb)
+    self.pool.AddSerializedFile(unittest_features_pb2.DESCRIPTOR.serialized_pb)
+
+    self.protos = dict()
+    self.protos['file'] = descriptor_pb2.FileDescriptorProto(
+        name='some/file.proto',
+        package='package',
+        dependency=[unittest_features_pb2.DESCRIPTOR.name],
+        edition=descriptor_pb2.Edition.EDITION_2023,
+        syntax='editions',
+    )
+    self.protos['top_extension'] = self.protos['file'].extension.add(
+        name='top_extension',
+        number=10,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        extendee='.package.TopMessage',
+    )
+    self.protos['top_enum'] = self.protos['file'].enum_type.add(name='TopEnum')
+    self.protos['enum_value'] = self.protos['top_enum'].value.add(
+        name='TOP_VALUE', number=0
+    )
+    self.protos['top_message'] = self.protos['file'].message_type.add(
+        name='TopMessage'
+    )
+    self.protos['field'] = self.protos['top_message'].field.add(
+        name='field',
+        number=1,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+    )
+    self.protos['extension_range'] = self.protos[
+        'top_message'
+    ].extension_range.add(start=10, end=20)
+    self.protos['nested_extension'] = self.protos['top_message'].extension.add(
+        name='nested_extension',
+        number=11,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        extendee='.package.TopMessage',
+    )
+    self.protos['nested_message'] = self.protos['top_message'].nested_type.add(
+        name='NestedMessage'
+    )
+    self.protos['nested_enum'] = self.protos['top_message'].enum_type.add(
+        name='NestedEnum'
+    )
+    self.protos['nested_enum'].value.add(name='NESTED_VALUE', number=0)
+    self.protos['oneof'] = self.protos['top_message'].oneof_decl.add(
+        name='Oneof'
+    )
+    self.protos['top_message'].field.add(
+        name='oneof_field',
+        number=2,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        oneof_index=0,
+    )
+
+    self.protos['service'] = self.protos['file'].service.add(name='TestService')
+    self.protos['method'] = self.protos['service'].method.add(
+        name='CallMethod',
+        input_type='.package.TopMessage',
+        output_type='.package.TopMessage',
+    )
+
+  def BuildFile(self):
+    return self.pool.AddSerializedFile(self.protos['file'].SerializeToString())
+
+  TESTCASES = [
+      ('File', 'file', 'some/file.proto'),
+      ('TopMessage', 'top_message', 'package.TopMessage'),
+      ('Field', 'field', 'package.TopMessage.field'),
+      ('ExtensionRange', 'extension_range', 'package.TopMessage'),
+      ('Oneof', 'oneof', 'package.TopMessage.Oneof'),
+      ('TopEnum', 'top_enum', 'package.TopEnum'),
+      ('EnumValue', 'enum_value', 'package.TOP_VALUE'),
+      ('TopExtension', 'top_extension', 'package.top_extension'),
+      ('NestedMessage', 'nested_message', 'package.TopMessage.NestedMessage'),
+      ('NestedEnum', 'nested_enum', 'package.TopMessage.NestedEnum'),
+      (
+          'NestedExtension',
+          'nested_extension',
+          'package.TopMessage.nested_extension',
+      ),
+      ('Service', 'service', 'TestService'),
+      ('Method', 'method', 'TestService.CallMethod'),
+  ]
+
+  @_parameterized.named_parameters(TESTCASES)
+  def testFeatureRemoved(self, field, path):
+    self.protos[field].options.features.Extensions[
+        unittest_features_pb2.test
+    ].legacy_feature = unittest_features_pb2.VALUE9
+    with self.assertRaisesRegex(
+        TypeError,
+        '%s: Feature pb.TestFeatures.legacy_feature has been removed in edition'
+        ' 2023' % path,
+    ):
+      self.BuildFile()
+
+  @_parameterized.named_parameters(TESTCASES)
+  def testFutureFeature(self, field, path):
+    self.protos[field].options.features.Extensions[
+        unittest_features_pb2.test
+    ].future_feature = unittest_features_pb2.VALUE9
+    with self.assertRaisesRegex(
+        TypeError,
+        "%s: Feature pb.TestFeatures.future_feature wasn't introduced until"
+        ' edition 2024' % path,
+    ):
+      self.BuildFile()
+
+  def testMultipleFeatureErrors(self):
+    self.protos['file'].options.features.Extensions[
+        unittest_features_pb2.test
+    ].legacy_feature = unittest_features_pb2.VALUE9
+    self.protos['top_message'].options.features.Extensions[
+        unittest_features_pb2.test
+    ].future_feature = unittest_features_pb2.VALUE9
+    with self.assertRaisesRegex(
+        TypeError,
+        '(?imsux)some/file.proto:.*TopMessage:',
+    ):
+      self.BuildFile()
+
+  def testBuildTwiceFeatureErrors(self):
+    self.protos['file'].options.features.Extensions[
+        unittest_features_pb2.test
+    ].legacy_feature = unittest_features_pb2.VALUE9
+    with self.assertRaisesRegex(
+        TypeError,
+        'some/file.proto: Feature pb.TestFeatures.legacy_feature has been'
+        ' removed in edition 2023',
+    ):
+      self.BuildFile()
+    with self.assertRaises(TypeError):
+      self.BuildFile()
+
+  def testNoFeatureSupport(self):
+    self.protos['file'].options.features.Extensions[
+        unittest_features_pb2.test
+    ].no_support_window_feature = unittest_features_pb2.VALUE9
+    file = self.BuildFile()
+    self.assertEqual(
+        file._GetFeatures()
+        .Extensions[unittest_features_pb2.test]
+        .no_support_window_feature,
+        unittest_features_pb2.VALUE9,
+    )
+
+  def testDeferredDependencyError(self):
+    db = descriptor_database.DescriptorDatabase()
+    pool = descriptor_pool.DescriptorPool(db)
+    descriptor_file = descriptor_pb2.FileDescriptorProto()
+    descriptor_pb2.DESCRIPTOR.CopyToProto(descriptor_file)
+    db.Add(descriptor_file)
+    unittest_features = descriptor_pb2.FileDescriptorProto()
+    unittest_features_pb2.DESCRIPTOR.CopyToProto(unittest_features)
+    db.Add(unittest_features)
+
+    self.protos['file'].options.features.Extensions[
+        unittest_features_pb2.test
+    ].legacy_feature = unittest_features_pb2.VALUE9
+    db.Add(self.protos['file'])
+
+    file = descriptor_pb2.FileDescriptorProto(
+        name='some/other/file.proto',
+        dependency=['some/file.proto'],
+        package='package',
+        edition=descriptor_pb2.Edition.EDITION_2023,
+        syntax='editions',
+    )
+    message = file.message_type.add(name='OtherMessage')
+    message.field.add(
+        name='field',
+        number=1,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type_name='.package.TopMessage',
+    )
+    db.Add(file)
+
+    with self.assertRaisesRegex(
+        (TypeError, KeyError),
+        'some/file.proto: Feature pb.TestFeatures.legacy_feature has been'
+        ' removed in edition 2023',
+    ):
+      pool.FindMessageTypeByName('package.TopMessage')
 
 
 @testing_refleaks.TestCase

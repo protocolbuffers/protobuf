@@ -192,4 +192,12 @@ message TestFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
     edition_defaults = { edition: EDITION_2023, value: "VALUE2" }
   ];
+
+  optional EnumFeature no_support_window_feature = 20 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE2" }
+  ];
 }

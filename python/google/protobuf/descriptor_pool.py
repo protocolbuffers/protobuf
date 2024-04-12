@@ -85,9 +85,9 @@ class DescriptorPool(object):
 
   if _USE_C_DESCRIPTORS:
 
-   def __new__(cls, descriptor_db=None):
-     # pylint: disable=protected-access
-     return descriptor._message.DescriptorPool(descriptor_db)
+     def __new__(cls, descriptor_db=None):
+       # pylint: disable=protected-access
+       return descriptor._message.DescriptorPool(descriptor_db)
 
   def __init__(
       self, descriptor_db=None, use_deprecated_legacy_json_field_conflicts=False
@@ -668,7 +668,6 @@ class DescriptorPool(object):
     if not isinstance(defaults, descriptor_pb2.FeatureSetDefaults):
       raise TypeError('SetFeatureSetDefaults called with invalid type')
 
-
     if defaults.minimum_edition > defaults.maximum_edition:
       raise ValueError(
           'Invalid edition range %s to %s'
@@ -880,6 +879,15 @@ class DescriptorPool(object):
       self._AddExtensionDescriptor(extension)
     for message_type in file_desc.message_types_by_name.values():
       AddExtensionForNested(message_type)
+
+    validator = _FeatureLifetimesValidator(self, file_proto.edition)
+    validator.Validate(file_proto)
+    if validator.errors:
+      # del self._file_descriptors[file_proto.name]
+      raise TypeError(
+          'Invalid proto descriptor for file: %s\n  %s'
+          % (file_proto.name, '\n  '.join(validator.errors))
+      )
 
     return file_desc
 
@@ -1339,6 +1347,180 @@ class DescriptorPool(object):
 
 def _PrefixWithDot(name):
   return name if name.startswith('.') else '.%s' % name
+
+
+def _FeaturesOrNone(descriptor_proto):
+  """Returns the value of the field `options`, or None if it is not set."""
+  if not descriptor_proto.HasField('options'):
+    return None
+  if not descriptor_proto.options.HasField('features'):
+    return None
+  return descriptor_proto.options.features
+
+
+class _FeatureLifetimesValidator:
+  """Helper class for validating feature lifetime constraints."""
+
+  def __init__(
+      self,
+      pool,
+      edition,
+  ):
+    """Initializes the validator.
+
+    Args:
+      pool: The pool to do the validation in.
+      edition: The edition to compare against support windows.
+    """
+    self._edition = edition
+    self._errors = []
+    self._scope = []
+    if hasattr(pool, '_feature_set_descriptor'):
+      self._feature_set = pool._feature_set_descriptor
+    else:
+      try:
+        self._feature_set = pool.FindMessageTypeByName('google.protobuf.FeatureSet')
+        pool._feature_set_descriptor = self._feature_set
+      except KeyError:
+        # pylint: disable=g-import-not-at-top
+        from google.protobuf import descriptor_pb2
+
+        self._feature_set = descriptor_pb2.FeatureSet.DESCRIPTOR
+
+  @property
+  def errors(self):
+    return self._errors
+
+  def Validate(self, file_proto):
+    """Runs validation checks recursively over an entire file.
+
+    Args:
+      file_proto: The original file proto specified by the user
+    """
+    self._ValidateFeatures(file_proto.name, file_proto)
+    self._scope.append(file_proto.package)
+    for message_type in file_proto.message_type:
+      self._ValidateMessage(message_type)
+    for enum_type in file_proto.enum_type:
+      self._ValidateEnum(enum_type)
+    for ext in file_proto.extension:
+      self._ValidateFeatures(ext.name, ext)
+    for service in file_proto.service:
+      self._ValidateFeatures(service.name, service)
+      self._scope.append(service.name)
+      for method in service.method:
+        self._ValidateFeatures(method.name, method)
+      self._scope.pop()
+
+  def _ValidateMessage(self, message):
+    """Validates the features of a message descriptor recursively.
+
+    Args:
+      message: The DescriptorProto to validate
+    """
+    self._ValidateFeatures(message.name, message)
+    for r in message.extension_range:
+      self._ValidateFeatures(message.name, r)
+
+    self._scope.append(message.name)
+    for nested in message.nested_type:
+      self._ValidateMessage(nested)
+    for enum in message.enum_type:
+      self._ValidateEnum(enum)
+    for field in message.field:
+      self._ValidateFeatures(field.name, field)
+    for extension in message.extension:
+      self._ValidateFeatures(extension.name, extension)
+    for oneof in message.oneof_decl:
+      self._ValidateFeatures(oneof.name, oneof)
+    self._scope.pop()
+
+  def _ValidateEnum(self, enum):
+    """Validates the features of a enum descriptor recursively.
+
+    Args:
+      enum: The EnumDescriptorProto to validate
+    """
+    self._ValidateFeatures(enum.name, enum)
+    for value in enum.value:
+      self._ValidateFeatures(value.name, value)
+
+  def _ValidateFeatures(self, name, proto):
+    """Validates the features specified on a descriptor proto.
+
+    Args:
+      name: The name of this descriptor for error messages
+      proto: The descriptor proto
+    """
+    if not proto.HasField('options'):
+      return
+    if not proto.options.HasField('features'):
+      return
+    features_generated = proto.options.features
+
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import message_factory
+
+    # Move the features to the descriptor pool for validation.
+    features = message_factory.GetMessageClass(self._feature_set)()
+    features.ParseFromString(features_generated.SerializeToString())
+    self._ValidateFeaturesInPool(name, features)
+
+  def _GetEditionName(self, edition):
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+
+    name = descriptor_pb2.Edition.Name(edition)
+    if name.startswith('EDITION_'):
+      name = name[len('EDITION_') :]
+    return name
+
+  def _ValidateFeaturesInPool(self, name, features):
+    """Validate features from within the pool.
+
+    The reason we need to move them onto the pool for validation is because
+    feature extensions may not be present in the generated pool linked into this
+    binary.  Even the ones that are may have version skew, and won't represent
+    what the user is actually trying to build.
+
+    Args:
+      name: The name of this descriptor for error messages
+      features: The features proto serialized into a dynamic message in the pool
+    """
+    for feature, _ in features.ListFields():
+      if (
+          feature.is_extension
+          and feature.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE
+      ):
+        self._ValidateFeaturesInPool(name, features.Extensions[feature])
+        continue
+
+      # Skip fields that don't have feature support specified.
+      if not feature.GetOptions().HasField('feature_support'):
+        continue
+
+      support = feature.GetOptions().feature_support
+      if self._edition < support.edition_introduced:
+        self._errors.append(
+            "%s: Feature %s wasn't introduced until edition %s"
+            % (
+                '.'.join(self._scope + [name]),
+                feature.full_name,
+                self._GetEditionName(support.edition_introduced),
+            )
+        )
+      if (
+          support.HasField('edition_removed')
+          and self._edition >= support.edition_removed
+      ):
+        self._errors.append(
+            '%s: Feature %s has been removed in edition %s'
+            % (
+                '.'.join(self._scope + [name]),
+                feature.full_name,
+                self._GetEditionName(support.edition_removed),
+            )
+        )
 
 
 if _USE_C_DESCRIPTORS:
