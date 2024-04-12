@@ -3,7 +3,6 @@
 // source: google/protobuf/any.proto
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
-#import "GPBWellKnownTypes.h"
 #import "GPBAny.pbobjc.h"
 
 #if GOOGLE_PROTOBUF_OBJC_VERSION < 30007
@@ -29,8 +28,8 @@ GPBObjCClassDeclaration(GPBAny);
 
 @implementation GPBAnyRoot
 
-// No extensions in the file and no imports or none of the imports (direct or
-// indirect) defined extensions, so no need to generate +extensionRegistry.
+// No extensions in the file and no imports, so no need to generate
+// +extensionRegistry.
 
 @end
 
@@ -39,13 +38,6 @@ static GPBFileDescription GPBAnyRoot_FileDescription = {
   .prefix = "GPB",
   .syntax = GPBFileSyntaxProto3
 };
-
-// This is to help make sure that the GPBWellKnownTypes.* categories get linked and
-// developers do not have to use the `-ObjC` linker flag. More information
-// here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
-__attribute__((used)) static NSString* any_importCategories(void) {
-  return GPBWellKnownTypesErrorDomain;
-}
 
 #pragma mark - GPBAny
 
@@ -94,11 +86,11 @@ typedef struct GPBAny__storage_ {
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBAny__storage_)
                                          flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown | GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
-    #if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
-      static const char *extraTextFormatInfo =
+#if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
+    static const char *extraTextFormatInfo =
         "\001\001\004\241!!\000";
-      [localDescriptor setupExtraTextInfo:extraTextFormatInfo];
-    #endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
+    [localDescriptor setupExtraTextInfo:extraTextFormatInfo];
+#endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG

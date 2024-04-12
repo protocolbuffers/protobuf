@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -18,7 +41,7 @@
 // process is run with a variety of block sizes for both the input and
 // the output.
 //
-// TODO:  Rewrite this test to bring it up to the standards of all
+// TODO(kenton):  Rewrite this test to bring it up to the standards of all
 //   the other proto2 tests.  May want to wait for gTest to implement
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
@@ -45,6 +68,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -131,7 +155,7 @@ const int IoTest::kBlockSizeCount = ABSL_ARRAYSIZE(IoTest::kBlockSizes);
 
 bool IoTest::WriteToOutput(ZeroCopyOutputStream* output, const void* data,
                            int size) {
-  const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
+  const uint8* in = reinterpret_cast<const uint8*>(data);
   int in_size = size;
 
   void* out;
@@ -158,7 +182,7 @@ bool IoTest::WriteToOutput(ZeroCopyOutputStream* output, const void* data,
 #define MAX_REPEATED_ZEROS 100
 
 int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
-  uint8_t* out = reinterpret_cast<uint8_t*>(data);
+  uint8* out = reinterpret_cast<uint8*>(data);
   int out_size = size;
 
   const void* in;
@@ -232,7 +256,7 @@ void IoTest::ReadStuff(ZeroCopyInputStream* input, bool read_eof) {
   EXPECT_EQ(input->ByteCount(), 68);
 
   if (read_eof) {
-    uint8_t byte;
+    uint8 byte;
     EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
   }
 }
@@ -264,7 +288,7 @@ void IoTest::ReadStuffLarge(ZeroCopyInputStream* input) {
 
   EXPECT_EQ(input->ByteCount(), 200055);
 
-  uint8_t byte;
+  uint8 byte;
   EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
 }
 
@@ -272,7 +296,7 @@ void IoTest::ReadStuffLarge(ZeroCopyInputStream* input) {
 
 TEST_F(IoTest, ArrayIo) {
   const int kBufferSize = 256;
-  uint8_t buffer[kBufferSize];
+  uint8 buffer[kBufferSize];
 
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
@@ -295,7 +319,7 @@ TEST_F(IoTest, TwoSessionWrite) {
   static const char* strA = "0123456789";
   static const char* strB = "WhirledPeas";
   const int kBufferSize = 2 * 1024;
-  uint8_t* buffer = new uint8_t[kBufferSize];
+  uint8* buffer = new uint8[kBufferSize];
   char* temp_buffer = new char[40];
 
   for (int i = 0; i < kBlockSizeCount; i++) {
@@ -306,7 +330,7 @@ TEST_F(IoTest, TwoSessionWrite) {
       coded_output->WriteVarint32(strlen(strA));
       coded_output->WriteRaw(strA, strlen(strA));
       delete coded_output;  // flush
-      int64_t pos = output->ByteCount();
+      int64 pos = output->ByteCount();
       delete output;
       output = new ArrayOutputStream(buffer + pos, kBufferSize - pos,
                                      kBlockSizes[i]);
@@ -314,13 +338,13 @@ TEST_F(IoTest, TwoSessionWrite) {
       coded_output->WriteVarint32(strlen(strB));
       coded_output->WriteRaw(strB, strlen(strB));
       delete coded_output;  // flush
-      int64_t size = pos + output->ByteCount();
+      int64 size = pos + output->ByteCount();
       delete output;
 
       ArrayInputStream* input =
           new ArrayInputStream(buffer, size, kBlockSizes[j]);
       CodedInputStream* coded_input = new CodedInputStream(input);
-      uint32_t insize;
+      uint32 insize;
       EXPECT_TRUE(coded_input->ReadVarint32(&insize));
       EXPECT_EQ(strlen(strA), insize);
       EXPECT_TRUE(coded_input->ReadRaw(temp_buffer, insize));
@@ -558,7 +582,7 @@ TEST_F(IoTest, CompressionOptions) {
   // Some ad-hoc testing of compression options.
 
   std::string golden_filename =
-      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
+      TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
   std::string golden;
   ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
 
@@ -705,6 +729,26 @@ TEST_F(IoTest, StringIo) {
   }
 }
 
+// Verifies that outputs up to kint32max can be created.
+TEST_F(IoTest, LargeOutput) {
+  // Filter out this test on 32-bit architectures and builds where our test
+  // infrastructure can't handle it.
+  if(sizeof(void*) < 8) return;
+#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(_MSC_VER)
+  std::string str;
+  StringOutputStream output(&str);
+  void* unused_data;
+  int size;
+  // Repeatedly calling Next should eventually grow the buffer to kint32max.
+  do {
+    EXPECT_TRUE(output.Next(&unused_data, &size));
+  } while (str.size() < std::numeric_limits<int>::max());
+  // Further increases should be possible.
+  output.Next(&unused_data, &size);
+  EXPECT_GT(size, 0);
+#endif  // !THREAD_SANITIZER && !MEMORY_SANITIZER
+}
 
 TEST(DefaultReadCordTest, ReadSmallCord) {
   std::string source = "abcdefghijk";
@@ -1402,7 +1446,7 @@ TEST_F(IoTest, CordOutputBufferEndsAtSizeHint) {
 // To test files, we create a temporary file, write, read, truncate, repeat.
 TEST_F(IoTest, FileIo) {
   std::string filename =
-      absl::StrCat(::testing::TempDir(), "/zero_copy_stream_test_file");
+      absl::StrCat(TestTempDir(), "/zero_copy_stream_test_file");
 
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
@@ -1490,7 +1534,7 @@ TEST_F(IoTest, BlockingFileIoWithTimeout) {
     };
     ASSERT_EQ(setsockopt(fd[0], SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)), 0);
     FileInputStream input(fd[0], kBlockSizes[i]);
-    uint8_t byte;
+    uint8 byte;
     EXPECT_EQ(ReadFromInput(&input, &byte, 1), 0);
     EXPECT_EQ(EAGAIN, input.GetErrno());
   }
@@ -1500,7 +1544,7 @@ TEST_F(IoTest, BlockingFileIoWithTimeout) {
 #if HAVE_ZLIB
 TEST_F(IoTest, GzipFileIo) {
   std::string filename =
-      absl::StrCat(::testing::TempDir(), "/zero_copy_stream_test_file");
+      absl::StrCat(TestTempDir(), "/zero_copy_stream_test_file");
 
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
@@ -1669,7 +1713,7 @@ TEST_F(IoTest, IostreamIo) {
 // covering a buffer and then concatenate them.
 TEST_F(IoTest, ConcatenatingInputStream) {
   const int kBufferSize = 256;
-  uint8_t buffer[kBufferSize];
+  uint8 buffer[kBufferSize];
 
   // Fill the buffer.
   ArrayOutputStream output(buffer, kBufferSize);
@@ -1702,7 +1746,7 @@ TEST_F(IoTest, ConcatenatingInputStream) {
 // bytes written.
 TEST_F(IoTest, LimitingInputStream) {
   const int kBufferSize = 256;
-  uint8_t buffer[kBufferSize];
+  uint8 buffer[kBufferSize];
 
   // Fill the buffer.
   ArrayOutputStream output(buffer, kBufferSize);
@@ -1720,7 +1764,7 @@ TEST_F(IoTest, LimitingInputStream) {
 TEST_F(IoTest, LimitingInputStreamByteCount) {
   const int kHalfBufferSize = 128;
   const int kBufferSize = kHalfBufferSize * 2;
-  uint8_t buffer[kBufferSize] = {};
+  uint8 buffer[kBufferSize] = {};
 
   // Set up input. Only allow half to be read at once.
   ArrayInputStream array_input(buffer, kBufferSize, kHalfBufferSize);
@@ -1737,14 +1781,14 @@ TEST_F(IoTest, LimitingInputStreamByteCount) {
 
 // Check that a zero-size array doesn't confuse the code.
 TEST(ZeroSizeArray, Input) {
-  ArrayInputStream input(nullptr, 0);
+  ArrayInputStream input(NULL, 0);
   const void* data;
   int size;
   EXPECT_FALSE(input.Next(&data, &size));
 }
 
 TEST(ZeroSizeArray, Output) {
-  ArrayOutputStream output(nullptr, 0);
+  ArrayOutputStream output(NULL, 0);
   void* data;
   int size;
   EXPECT_FALSE(output.Next(&data, &size));

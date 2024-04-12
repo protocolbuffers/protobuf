@@ -1,17 +1,39 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: pbogle@google.com (Phil Bogle)
 
-edition = "2023";
+syntax = "proto2";
 
 package protobuf_unittest.lite_equals_and_hash;
 
-option features.utf8_validation = NONE;
 
 message TestOneofEquals {
   oneof oneof_field {
@@ -21,18 +43,15 @@ message TestOneofEquals {
 }
 
 message Foo {
-  int32 value = 1;
+  optional int32 value = 1;
   repeated Bar bar = 2;
   map<string, string> my_map = 3;
-
   oneof Single {
     sint64 sint64 = 4;
-    MyGroup mygroup = 5 [features.message_encoding = DELIMITED];
-  }
-
-  // LINT: ALLOW_GROUPS
-  message MyGroup {
-    int32 value = 1;
+    // LINT: ALLOW_GROUPS
+    group MyGroup = 5 {
+      optional int32 value = 1;
+    }
   }
 
   extensions 100 to max;
@@ -40,27 +59,25 @@ message Foo {
 
 message Bar {
   extend Foo {
-    Bar foo_ext = 100;
+    optional Bar foo_ext = 100;
   }
 
-  string name = 1;
+  optional string name = 1;
 }
 
 message BarPrime {
-  string name = 1;
+  optional string name = 1;
 }
 
 message Empty {}
 
 extend Foo {
-  int32 varint = 101;
-  fixed32 fixed32 = 102;
-  fixed64 fixed64 = 103;
-  MyGroup mygroup = 104 [features.message_encoding = DELIMITED];
-}
-
-message MyGroup {
-  string group_value = 1;
+  optional int32 varint = 101;
+  optional fixed32 fixed32 = 102;
+  optional fixed64 fixed64 = 103;
+  optional group MyGroup = 104 {
+    optional string group_value = 1;
+  }
 }
 
 message TestRecursiveOneof {

@@ -1,10 +1,33 @@
 #!/usr/bin/env python3
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
+# https://developers.google.com/protocol-buffers/
 #
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """A conformance test implementation for the Python protobuf library.
 
@@ -19,9 +42,6 @@ from google.protobuf import text_format
 from google.protobuf import test_messages_proto2_pb2
 from google.protobuf import test_messages_proto3_pb2
 from conformance import conformance_pb2
-from conformance.test_protos import test_messages_edition2023_pb2
-from google.protobuf.editions.golden import test_messages_proto2_editions_pb2
-from google.protobuf.editions.golden import test_messages_proto3_editions_pb2
 
 test_count = 0
 verbose = False
@@ -31,27 +51,13 @@ class ProtocolError(Exception):
   pass
 
 
-def _create_test_message(type):
-  if type == "protobuf_test_messages.proto2.TestAllTypesProto2":
-    return test_messages_proto2_pb2.TestAllTypesProto2()
-  if type == "protobuf_test_messages.proto3.TestAllTypesProto3":
-    return test_messages_proto3_pb2.TestAllTypesProto3()
-  if type == "protobuf_test_messages.editions.TestAllTypesEdition2023":
-    return test_messages_edition2023_pb2.TestAllTypesEdition2023()
-  if type == "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
-    return test_messages_proto2_editions_pb2.TestAllTypesProto2()
-  if type == "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
-    return test_messages_proto3_editions_pb2.TestAllTypesProto3()
-  return None
-
-
 def do_test(request):
   response = conformance_pb2.ConformanceResponse()
 
   if request.message_type == "conformance.FailureSet":
     failure_set = conformance_pb2.FailureSet()
     failures = []
-    # TODO: Remove, this is a hack to detect if the old vs new
+    # TODO(gerbens): Remove, this is a hack to detect if the old vs new
     # parser is used by the cpp code. Relying on a bug in the old parser.
     hack_proto = test_messages_proto2_pb2.TestAllTypesProto2()
     old_parser = True
@@ -102,11 +108,15 @@ def do_test(request):
     response.protobuf_payload = failure_set.SerializeToString()
     return response
 
+  isProto3 = (request.message_type == "protobuf_test_messages.proto3.TestAllTypesProto3")
   isJson = (request.WhichOneof('payload') == 'json_payload')
-  test_message = _create_test_message(request.message_type)
+  isProto2 = (request.message_type == "protobuf_test_messages.proto2.TestAllTypesProto2")
 
-  if (not isJson) and (test_message is None):
+  if (not isProto3) and (not isJson) and (not isProto2):
     raise ProtocolError("Protobuf request doesn't have specific payload type")
+
+  test_message = test_messages_proto2_pb2.TestAllTypesProto2() if isProto2 else \
+    test_messages_proto3_pb2.TestAllTypesProto3()
 
   try:
     if request.WhichOneof('payload') == 'protobuf_payload':

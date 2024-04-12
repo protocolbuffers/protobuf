@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -19,27 +42,20 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include <gmock/gmock.h>
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
-#include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/test_util2.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/wire_format.h"
-
-
-// Must be included last.
-#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -96,9 +112,8 @@ class ParserTest : public testing::Test {
   ParserTest() : require_syntax_identifier_(false) {}
 
   // Set up the parser to parse the given text.
-  void SetupParser(absl::string_view text) {
-    raw_input_ =
-        absl::make_unique<io::ArrayInputStream>(text.data(), text.size());
+  void SetupParser(const char* text) {
+    raw_input_ = absl::make_unique<io::ArrayInputStream>(text, strlen(text));
     input_ =
         absl::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
     parser_ = absl::make_unique<Parser>();
@@ -113,13 +128,12 @@ class ParserTest : public testing::Test {
     SetupParser(input);
     FileDescriptorProto actual, expected;
 
-    EXPECT_TRUE(parser_->Parse(input_.get(), &actual));
+    parser_->Parse(input_.get(), &actual);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
     ASSERT_EQ("", error_collector_.text_);
 
     // We don't cover SourceCodeInfo in these tests.
     actual.clear_source_code_info();
-
 
     // Parse the ASCII representation in order to canonicalize it.  We could
     // just compare directly to actual.DebugString(), but that would require
@@ -128,13 +142,12 @@ class ParserTest : public testing::Test {
     ASSERT_TRUE(TextFormat::ParseFromString(output, &expected));
 
     // Compare by comparing debug strings.
-    // TODO:  Use differencer, once it is available.
+    // TODO(kenton):  Use differencer, once it is available.
     EXPECT_EQ(expected.DebugString(), actual.DebugString());
   }
 
   // Parse the text and expect that the given errors are reported.
-  void ExpectHasErrors(absl::string_view text,
-                       const testing::Matcher<std::string>& expected_errors) {
+  void ExpectHasErrors(const char* text, const char* expected_errors) {
     ExpectHasEarlyExitErrors(text, expected_errors);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
   }
@@ -151,22 +164,17 @@ class ParserTest : public testing::Test {
 
   // Same as above but does not expect that the parser parses the complete
   // input.
-  void ExpectHasEarlyExitErrors(
-      absl::string_view text,
-      const testing::Matcher<std::string>& expected_errors) {
+  void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
     SetupParser(text);
-    SourceLocationTable source_locations;
-    parser_->RecordSourceLocationsTo(&source_locations);
     FileDescriptorProto file;
-    EXPECT_FALSE(parser_->Parse(input_.get(), &file));
-    EXPECT_THAT(error_collector_.text_, expected_errors);
+    parser_->Parse(input_.get(), &file);
+    EXPECT_EQ(expected_errors, error_collector_.text_);
   }
 
   // Parse the text as a file and validate it (with a DescriptorPool), and
   // expect that the validation step reports the given errors.
-  void ExpectHasValidationErrors(
-      absl::string_view text,
-      const testing::Matcher<std::string>& expected_errors) {
+  void ExpectHasValidationErrors(const char* text,
+                                 const char* expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
@@ -181,7 +189,7 @@ class ParserTest : public testing::Test {
                                                             &error_collector_);
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(
                     file, &validation_error_collector) == nullptr);
-    EXPECT_THAT(error_collector_.text_, expected_errors);
+    EXPECT_EQ(expected_errors, error_collector_.text_);
   }
 
   MockErrorCollector error_collector_;
@@ -271,15 +279,6 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
                   "song_name_1.") != std::string::npos);
 }
 
-TEST_F(ParserTest, RegressionNestedOpenBraceDoNotStackOverflow) {
-  std::string input("edition=\"a\000;", 12);
-  input += std::string(100000, '{');
-  ExpectHasEarlyExitErrors(
-      input,
-      "0:10: Unexpected end of string.\n"
-      "0:10: Invalid control characters encountered in text.\n"
-      "0:8: Unknown edition \"a\".\n");
-}
 
 // ===================================================================
 
@@ -866,22 +865,6 @@ TEST_F(ParseMessageTest, ReservedNames) {
       "}");
 }
 
-TEST_F(ParseMessageTest, ReservedIdentifiers) {
-  ExpectParsesTo(
-      "edition = \"2023\";\n"
-      "message TestMessage {\n"
-      "  reserved foo, bar;\n"
-      "}\n",
-
-      "syntax: \"editions\" "
-      "edition: EDITION_2023 "
-      "message_type {"
-      "  name: \"TestMessage\""
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"bar\""
-      "}");
-}
-
 TEST_F(ParseMessageTest, ExtensionRange) {
   ExpectParsesTo(
       "message TestMessage {\n"
@@ -934,35 +917,6 @@ TEST_F(ParseMessageTest, CompoundExtensionRange) {
       "  extension_range { start:100 end:536870912 }"
       "  extension_range { start:3   end:4         }"
       "}");
-}
-
-TEST_F(ParseMessageTest, MaxIntExtensionDoesNotOverflow) {
-  ExpectHasErrors(
-      R"(
-        syntax = "proto2";
-        message TestMessage {
-          extensions 2147483647;
-        }
-      )",
-      "3:31: Field number out of bounds.\n");
-  error_collector_.text_.clear();
-  ExpectHasErrors(
-      R"(
-        syntax = "proto2";
-        message TestMessage {
-          extensions 1 to 2147483647;
-        }
-      )",
-      "3:36: Field number out of bounds.\n");
-  error_collector_.text_.clear();
-  ExpectHasErrors(
-      R"(
-        syntax = "proto2";
-        message TestMessage {
-          extensions 2147483647 to 2147483647;
-        }
-      )",
-      "3:32: Field number out of bounds.\n");
 }
 
 TEST_F(ParseMessageTest, CompoundExtensionRangeWithOptions) {
@@ -1158,19 +1112,6 @@ TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
       "}");
 }
 
-TEST_F(ParseMessageTest, CanHandleErrorOnFirstToken) {
-  require_syntax_identifier_ = false;
-  ExpectHasEarlyExitErrors(
-      "/", "0:0: Expected top-level statement (e.g. \"message\").\n");
-
-  require_syntax_identifier_ = true;
-  ExpectHasEarlyExitErrors(
-      "/",
-      "0:0: Expected top-level statement (e.g. \"message\").\n"
-      "0:0: File must begin with a syntax statement, e.g. 'syntax = "
-      "\"proto2\";'.\n");
-}
-
 // ===================================================================
 
 typedef ParserTest ParseEnumTest;
@@ -1274,24 +1215,6 @@ TEST_F(ParseEnumTest, ReservedNames) {
       "  reserved \"foo\", \"bar\";\n"
       "}\n",
 
-      "enum_type {"
-      "  name: \"TestEnum\""
-      "  value { name:\"FOO\" number:0 }"
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"bar\""
-      "}");
-}
-
-TEST_F(ParseEnumTest, ReservedIdentifiers) {
-  ExpectParsesTo(
-      "edition = \"2023\";\n"
-      "enum TestEnum {\n"
-      "  FOO = 0;\n"
-      "  reserved foo, bar;\n"
-      "}\n",
-
-      "syntax: \"editions\" "
-      "edition: EDITION_2023 "
       "enum_type {"
       "  name: \"TestEnum\""
       "  value { name:\"FOO\" number:0 }"
@@ -1459,41 +1382,6 @@ TEST_F(ParseErrorTest, EofInMessage) {
       "0:21: Reached end of input in message definition (missing '}').\n");
 }
 
-TEST_F(ParseErrorTest, NestingIsLimitedWithoutCrashing) {
-  std::string start = "syntax = \"proto2\";\n";
-  std::string end;
-
-  const auto add = [&] {
-    absl::StrAppend(&start, "message M {");
-    absl::StrAppend(&end, "}");
-  };
-  const auto input = [&] { return absl::StrCat(start, end); };
-
-  // The first ones work correctly.
-  for (int i = 1; i < internal::cpp::MaxMessageDeclarationNestingDepth(); ++i) {
-    add();
-    const std::string str = input();
-    SetupParser(str);
-    FileDescriptorProto proto;
-    proto.set_name("foo.proto");
-    EXPECT_TRUE(parser_->Parse(input_.get(), &proto)) << input();
-    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
-    ASSERT_EQ("", error_collector_.text_);
-    DescriptorPool pool;
-    ASSERT_TRUE(pool.BuildFile(proto));
-  }
-  // The rest have parsing errors but they don't crash no matter how deep we
-  // make them.
-  const auto error = testing::HasSubstr(
-      "Reached maximum recursion limit for nested messages.");
-  add();
-  ExpectHasErrors(input(), error);
-  for (int i = 0; i < 100000; ++i) {
-    add();
-  }
-  ExpectHasErrors(input(), error);
-}
-
 TEST_F(ParseErrorTest, MissingFieldNumber) {
   ExpectHasErrors(
       "message TestMessage {\n"
@@ -1606,44 +1494,6 @@ TEST_F(ParseErrorTest, DuplicateJsonName) {
       "  optional uint32 foo = 1 [json_name=\"a\",json_name=\"b\"];\n"
       "}\n",
       "1:41: Already set option \"json_name\".\n");
-}
-
-TEST_F(ParseErrorTest, MsgReservedIdentifierOnlyInEditions) {
-  ExpectHasErrors(
-      "message TestMessage {\n"
-      "  reserved foo, bar;\n"
-      "}\n",
-      "1:11: Reserved names must be string literals. (Only editions supports "
-      "identifiers.)\n");
-}
-TEST_F(ParseErrorTest, MsgReservedNameStringNotInEditions) {
-  ExpectHasErrors(
-      "edition = \"2023\";\n"
-      "message TestMessage {\n"
-      "  reserved \"foo\", \"bar\";\n"
-      "}\n",
-      "2:11: Reserved names must be identifiers in editions, not string "
-      "literals.\n");
-}
-
-TEST_F(ParseErrorTest, EnumReservedIdentifierOnlyInEditions) {
-  ExpectHasErrors(
-      "enum TestEnum {\n"
-      "  FOO = 0;\n"
-      "  reserved foo, bar;\n"
-      "}\n",
-      "2:11: Reserved names must be string literals. (Only editions supports "
-      "identifiers.)\n");
-}
-TEST_F(ParseErrorTest, EnumReservedNameStringNotInEditions) {
-  ExpectHasErrors(
-      "edition = \"2023\";\n"
-      "enum TestEnum {\n"
-      "  FOO = 0;\n"
-      "  reserved \"foo\", \"bar\";\n"
-      "}\n",
-      "3:11: Reserved names must be identifiers in editions, not string "
-      "literals.\n");
 }
 
 TEST_F(ParseErrorTest, EnumValueOutOfRange) {
@@ -1845,16 +1695,13 @@ TEST_F(ParseErrorTest, EnumValueMissingNumber) {
       "1:5: Missing numeric value for enum constant.\n");
 }
 
-// NB: with editions, this would be accepted and would reserve a value name of
-// "max"
 TEST_F(ParseErrorTest, EnumReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
       "enum TestEnum {\n"
       "  FOO = 1;\n"
       "  reserved max;\n"
       "}\n",
-      "2:11: Reserved names must be string literals. (Only editions supports "
-      "identifiers.)\n");
+      "2:11: Expected enum value or number range.\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
@@ -1864,15 +1711,6 @@ TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
       "  reserved 10, \"foo\";\n"
       "}\n",
       "2:15: Expected enum number range.\n");
-}
-TEST_F(ParseErrorTest, EnumReservedMixNameAndNumberEditions) {
-  ExpectHasErrors(
-      "edition = \"2023\";\n"
-      "enum TestEnum {\n"
-      "  FOO = 1;\n"
-      "  reserved 10, foo;\n"
-      "}\n",
-      "3:15: Expected enum number range.\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedPositiveNumberOutOfRange) {
@@ -1899,33 +1737,29 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
       "  FOO = 1;\n"
       "  reserved foo;\n"
       "}\n",
-      "2:11: Reserved names must be string literals. (Only editions supports "
-      "identifiers.)\n");
+      "2:11: Expected enum value or number range.\n");
 }
 
 TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"schema(
-        enum TestEnum {
-          FOO = 1;
-          reserved "foo bar";
-        }
-      )schema",
-      "3:19: Reserved name \"foo bar\" is not a valid identifier.\n");
+      R"pb(
+      enum TestEnum {
+        FOO = 1;
+        reserved "foo bar";
+      }
+      )pb",
+      "3:17: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 // -------------------------------------------------------------------
 // Reserved field number errors
 
-// NB: with editions, this would be accepted and would reserve a field name of
-// "max"
 TEST_F(ParseErrorTest, ReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
       "message Foo {\n"
       "  reserved max;\n"
       "}\n",
-      "1:11: Reserved names must be string literals. (Only editions supports "
-      "identifiers.)\n");
+      "1:11: Expected field name or number range.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
@@ -1935,32 +1769,23 @@ TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
       "}\n",
       "1:15: Expected field number range.\n");
 }
-TEST_F(ParseErrorTest, ReservedMixNameAndNumberEditions) {
-  ExpectHasErrors(
-      "edition = \"2023\";\n"
-      "message Foo {\n"
-      "  reserved 10, foo;\n"
-      "}\n",
-      "2:15: Expected field number range.\n");
-}
 
 TEST_F(ParseErrorTest, ReservedMissingQuotes) {
   ExpectHasErrors(
       "message Foo {\n"
       "  reserved foo;\n"
       "}\n",
-      "1:11: Reserved names must be string literals. (Only editions supports "
-      "identifiers.)\n");
+      "1:11: Expected field name or number range.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
   ExpectHasWarnings(
-      R"schema(
-        message Foo {
-          reserved "foo bar";
-        }
-      )schema",
-      "2:19: Reserved name \"foo bar\" is not a valid identifier.\n");
+      R"pb(
+      message Foo {
+        reserved "foo bar";
+      }
+      )pb",
+      "2:17: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedNegativeNumber) {
@@ -2209,22 +2034,6 @@ TEST_F(ParserValidationErrorTest, ExtensionRangeNumberError) {
       "1:13: Suggested field numbers for Foo: 1\n");
 }
 
-TEST_F(ParserValidationErrorTest, ExtensionRangeNumberOrderError) {
-  ExpectHasValidationErrors(
-      "message Foo {\n"
-      "  extensions 2 to 1;\n"
-      "}\n",
-      "1:13: Extension range end number must be greater than start number.\n");
-}
-
-TEST_F(ParserValidationErrorTest, ReservedRangeError) {
-  ExpectHasValidationErrors(
-      "message Foo {\n"
-      "  reserved 2 to 1;\n"
-      "}\n",
-      "1:11: Reserved range end number must be greater than start number.\n");
-}
-
 TEST_F(ParserValidationErrorTest, Proto3ExtensionError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
@@ -2347,32 +2156,15 @@ TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
 }
 
 TEST_F(ParserValidationErrorTest, Proto3JsonConflictLegacy) {
-  ExpectParsesTo(
+  ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
       "message TestMessage {\n"
       "  option deprecated_legacy_json_field_conflicts = true;\n"
       "  uint32 fooBar = 1;\n"
       "  uint32 foo_bar = 2;\n"
       "}\n",
-      "syntax: 'proto3'\n"
-      "message_type {\n"
-      "  name: 'TestMessage'\n"
-      "  field {\n"
-      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'fooBar' number: 1\n"
-      "  }\n"
-      "  field {\n"
-      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo_bar' number: 2\n"
-      "  }\n"
-      "  options {\n"
-      "    uninterpreted_option {\n"
-      "      name {\n"
-      "        name_part: 'deprecated_legacy_json_field_conflicts'\n"
-      "        is_extension: false\n"
-      "      }\n"
-      "      identifier_value: 'true'\n"
-      "    }\n"
-      "  }\n"
-      "}\n");
+      "4:9: The default JSON name of field \"foo_bar\" (\"fooBar\") conflicts "
+      "with the default JSON name of field \"fooBar\".\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto2JsonConflictLegacy) {
@@ -2415,7 +2207,7 @@ TEST_F(ParserValidationErrorTest, Proto3EnumError) {
   ExpectHasValidationErrors(
       "syntax = 'proto3';\n"
       "enum Foo {A = 1;}\n",
-      "1:14: The first enum value must be zero for open enums.\n");
+      "1:14: The first enum value must be zero in proto3.\n");
 }
 
 TEST_F(ParserValidationErrorTest, EnumValueNameError) {
@@ -2435,20 +2227,11 @@ TEST_F(ParserValidationErrorTest, EnumValueAliasError) {
       "}\n",
       "2:8: \"BAZ\" uses the same enum value as \"BAR\". If this is "
       "intended, set 'option allow_alias = true;' to the enum "
-      "definition. The next available enum value is 2.\n");
-}
-
-TEST_F(ParserValidationErrorTest, EnumReservedRangeError) {
-  ExpectHasValidationErrors(
-      "enum Foo {\n"
-      "  BAR = 1;\n"
-      "  reserved 2 to 1;\n"
-      "}\n",
-      "2:11: Reserved range end number must be greater than start number.\n");
+      "definition.\n");
 }
 
 TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
-  ExpectHasErrors(
+  ExpectHasValidationErrors(
       "message Foo {\n"
       "  message ValueEntry {\n"
       "    option map_entry = true;\n"
@@ -2456,8 +2239,9 @@ TEST_F(ParserValidationErrorTest, ExplicitlyMapEntryError) {
       "    optional int32 value = 2;\n"
       "    extensions 99 to 999;\n"
       "  }\n"
+      "  repeated ValueEntry value = 1;\n"
       "}",
-      "2:11: map_entry should not be set explicitly. Use "
+      "7:11: map_entry should not be set explicitly. Use "
       "map<KeyType, ValueType> instead.\n");
 }
 
@@ -2530,7 +2314,7 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
 
   // base2.proto:
   //   package baz
-  //   import google/protobuf/descriptor.proto
+  //   import net/proto2/proto/descriptor.proto
   //   message Bar { optional int32 foo = 1; }
   //   extend FileOptions { optional Bar bar = 7672757; }
   FileDescriptorProto other_file;
@@ -2635,29 +2419,11 @@ void StripFieldTypeName(FileDescriptorProto* file_proto) {
   }
 }
 
-void StripEmptyOptions(DescriptorProto& proto) {
-  for (auto& ext : *proto.mutable_extension_range()) {
-    if (ext.has_options() && ext.options().DebugString().empty()) {
-      ext.clear_options();
-    }
-  }
-}
-
-void StripEmptyOptions(FileDescriptorProto& file_proto) {
-  if (file_proto.message_type_size() == 0) {
-    return;
-  }
-  for (auto& msg : *file_proto.mutable_message_type()) {
-    StripEmptyOptions(msg);
-  }
-}
-
 TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   const FileDescriptor* original_file =
       protobuf_unittest::TestAllTypes::descriptor()->file();
   FileDescriptorProto expected;
   original_file->CopyTo(&expected);
-  StripEmptyOptions(expected);
 
   // Get the DebugString of the unittest.proto FileDecriptor, which includes
   // all other descriptor types
@@ -2673,7 +2439,8 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   // We now have a FileDescriptorProto, but to compare with the expected we
   // need to link to a FileDecriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
-  parsed.set_name("google/protobuf/unittest.proto");
+  parsed.set_name(
+      TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
   // We need the imported dependency before we can build our parsed proto
   const FileDescriptor* public_import =
       protobuf_unittest_import::PublicImportMessage::descriptor()->file();
@@ -2734,7 +2501,7 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
 
   const FileDescriptor* actual = pool_.BuildFile(parsed);
-  ASSERT_TRUE(actual != nullptr) << error_collector_.text_;
+  ASSERT_TRUE(actual != nullptr);
   parsed.Clear();
   actual->CopyTo(&parsed);
 
@@ -3162,7 +2929,7 @@ class SourceInfoTest : public ParserTest {
       }
     }
 
-    return false;
+      return false;
   }
 
  private:
@@ -4126,288 +3893,8 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 
 // ===================================================================
 
-typedef ParserTest ParseEditionsTest;
-
-TEST_F(ParseEditionsTest, Editions) {
-  ExpectParsesTo(
-      R"schema(
-        edition = "2023";
-        message A {
-          int32 b = 1;
-        })schema",
-      "message_type \t {"
-      "  name: \"A\""
-      "  field {"
-      "    name: \"b\""
-      "    number: 1"
-      "    label: LABEL_OPTIONAL"
-      "    type: TYPE_INT32"
-      "  }"
-      "}"
-      "syntax: \"editions\""
-      "edition: EDITION_2023\n");
-}
-
-TEST_F(ParseEditionsTest, TestEdition) {
-  ExpectParsesTo(
-      R"schema(
-        edition = "99998_TEST_ONLY";
-      )schema",
-      "syntax: \"editions\""
-      "edition: EDITION_99998_TEST_ONLY\n");
-}
-
-TEST_F(ParseEditionsTest, ExtensionsParse) {
-  ExpectParsesTo(
-      R"schema(
-        edition = '2023';
-        message Foo {
-          extensions 100 to 199;
-        }
-        extend Foo { string foo = 101; })schema",
-      "message_type \t {"
-      "  name: \"Foo\""
-      "  extension_range {"
-      "    start: 100"
-      "    end: 200"
-      "  }"
-      "}"
-      "extension {"
-      "  name: \"foo\""
-      "  extendee: \"Foo\""
-      "  number: 101"
-      "  label: LABEL_OPTIONAL"
-      "  type: TYPE_STRING"
-      "}"
-      "syntax: \"editions\""
-      "edition: EDITION_2023\n");
-}
-
-TEST_F(ParseEditionsTest, MapFeatures) {
-  ExpectParsesTo(
-      R"schema(
-        edition = '2023';
-        message Foo {
-          map<string, int> map_field = 1 [
-            features.my_feature = SOMETHING
-          ];
-        })schema",
-      R"pb(message_type {
-             name: "Foo"
-             field {
-               name: "map_field"
-               number: 1
-               label: LABEL_REPEATED
-               type_name: "MapFieldEntry"
-               options {
-                 uninterpreted_option {
-                   name { name_part: "features" is_extension: false }
-                   name { name_part: "my_feature" is_extension: false }
-                   identifier_value: "SOMETHING"
-                 }
-               }
-             }
-             nested_type {
-               name: "MapFieldEntry"
-               field {
-                 name: "key"
-                 number: 1
-                 label: LABEL_OPTIONAL
-                 type: TYPE_STRING
-                 options {
-                   uninterpreted_option {
-                     name { name_part: "features" is_extension: false }
-                     name { name_part: "my_feature" is_extension: false }
-                     identifier_value: "SOMETHING"
-                   }
-                 }
-               }
-               field {
-                 name: "value"
-                 number: 2
-                 label: LABEL_OPTIONAL
-                 type_name: "int"
-                 options {
-                   uninterpreted_option {
-                     name { name_part: "features" is_extension: false }
-                     name { name_part: "my_feature" is_extension: false }
-                     identifier_value: "SOMETHING"
-                   }
-                 }
-               }
-               options { map_entry: true }
-             }
-           }
-           syntax: "editions"
-           edition: EDITION_2023)pb");
-}
-
-TEST_F(ParseEditionsTest, EmptyEdition) {
-  ExpectHasEarlyExitErrors(
-      R"schema(
-        edition = "";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "1:18: Unknown edition \"\".\n");
-}
-
-TEST_F(ParseEditionsTest, InvalidEdition) {
-  ExpectHasEarlyExitErrors(
-      R"schema(
-        edition = "2023_INVALID";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "1:18: Unknown edition \"2023_INVALID\".\n");
-}
-
-TEST_F(ParseEditionsTest, UnknownEdition) {
-  ExpectHasEarlyExitErrors(
-      R"schema(
-        edition = "UNKNOWN";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "1:18: Unknown edition \"UNKNOWN\".\n");
-}
-
-TEST_F(ParseEditionsTest, LegacyProto2Edition) {
-  ExpectHasEarlyExitErrors(
-      R"schema(
-        edition = "PROTO2";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "1:18: Unknown edition \"PROTO2\".\n");
-}
-
-TEST_F(ParseEditionsTest, LegacyProto3Edition) {
-  ExpectHasEarlyExitErrors(
-      R"schema(
-        edition = "PROTO3";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "1:18: Unknown edition \"PROTO3\".\n");
-}
-
-TEST_F(ParseEditionsTest, SyntaxEditions) {
-  ExpectHasEarlyExitErrors(
-      R"schema(
-        syntax = "editions";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "1:17: Unrecognized syntax identifier \"editions\".  This parser only "
-      "recognizes \"proto2\" and \"proto3\".\n");
-}
-
-TEST_F(ParseEditionsTest, MixedSyntaxAndEdition) {
-  ExpectHasErrors(
-      R"schema(
-        syntax = "proto2";
-        edition = "2023";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "2:8: Expected top-level statement (e.g. \"message\").\n");
-}
-
-TEST_F(ParseEditionsTest, MixedEditionAndSyntax) {
-  ExpectHasErrors(
-      R"schema(
-        edition = "2023";
-        syntax = "proto2";
-        message A {
-          int32 b = 1;
-        })schema",
-      "2:8: Expected top-level statement (e.g. \"message\").\n");
-}
-
-TEST_F(ParseEditionsTest, OptionalKeywordBanned) {
-  ExpectHasErrors(
-      R"schema(
-        edition = "2023";
-        message A {
-          optional int32 b = 1;
-        })schema",
-      "3:10: Label \"optional\" is not supported in editions. By default, all "
-      "singular fields have presence unless features.field_presence is set.\n");
-}
-
-TEST_F(ParseEditionsTest, RequiredKeywordBanned) {
-  ExpectHasErrors(
-      R"schema(
-        edition = "2023";
-        message A {
-          required int32 b = 1;
-        })schema",
-      "3:10: Label \"required\" is not supported in editions, use "
-      "features.field_presence = LEGACY_REQUIRED.\n");
-}
-
-TEST_F(ParseEditionsTest, GroupsBanned) {
-  ExpectHasErrors(
-      R"schema(
-        edition = "2023";
-        message TestMessage {
-          group TestGroup = 1 {};
-        })schema",
-      "3:10: Group syntax is no longer supported in editions. To get group "
-      "behavior you can specify features.message_encoding = DELIMITED on a "
-      "message field.\n");
-}
-
-TEST_F(ParseEditionsTest, ValidationError) {
-  ExpectHasValidationErrors(
-      R"schema(
-        edition = "2023";
-        option features.field_presence = IMPLICIT;
-        option java_package = "blah";
-        message TestMessage {
-          string foo = 1 [default = "hello"];
-        })schema",
-      "5:17: Implicit presence fields can't specify defaults.\n");
-}
-
-TEST_F(ParseEditionsTest, InvalidMerge) {
-  ExpectHasValidationErrors(
-      R"schema(
-        edition = "2023";
-        option features.field_presence = IMPLICIT;
-        option java_package = "blah";
-        message TestMessage {
-          string foo = 1 [
-            default = "hello",
-            features.field_presence = FIELD_PRESENCE_UNKNOWN,
-            features.enum_type = ENUM_TYPE_UNKNOWN
-          ];
-        })schema",
-      "5:17: Feature field `field_presence` must resolve to a known value, "
-      "found FIELD_PRESENCE_UNKNOWN\n");
-}
-
-TEST_F(ParseEditionsTest, FeaturesWithoutEditions) {
-  ExpectHasValidationErrors(
-      R"schema(
-        syntax = "proto3";
-        option features.field_presence = IMPLICIT;
-        message TestMessage {
-          string foo = 1 [
-            default = "hello",
-            features.field_presence = EXPLICIT
-          ];
-        })schema",
-      "1:8: Features are only valid under editions.\n"
-      "4:17: Features are only valid under editions.\n");
-}
-
-
 }  // anonymous namespace
 
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"

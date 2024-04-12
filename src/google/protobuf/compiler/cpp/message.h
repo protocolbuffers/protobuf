@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -12,7 +35,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
-#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -21,7 +43,6 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -47,8 +68,6 @@ class MessageGenerator {
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
   ~MessageGenerator() = default;
-
-  int index_in_file_messages() const { return index_in_file_messages_; }
 
   // Append the two types of nested generators to the corresponding vector.
   void AddGenerators(
@@ -84,9 +103,6 @@ class MessageGenerator {
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
-  using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
-  enum class InitType { kConstexpr, kArena, kArenaCopy };
-
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);
@@ -94,20 +110,12 @@ class MessageGenerator {
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
 
-  void GenerateZeroInitFields(io::Printer* p) const;
-  void GenerateCopyInitFields(io::Printer* p) const;
-
-  void GenerateImplMemberInit(io::Printer* p, InitType init_type);
-
-  void GenerateArenaEnabledCopyConstructor(io::Printer* p);
-
   // The compiler typically generates multiple copies of each constructor and
   // destructor: http://gcc.gnu.org/bugs.html#nonbugs_cxx
   // Placing common code in a separate method reduces the generated code size.
   //
   // Generate the shared constructor code.
   void GenerateSharedConstructorCode(io::Printer* p);
-
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* p);
   // Generate the arena-specific destructor code.
@@ -122,10 +130,6 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBody(io::Printer* p);
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
-  void GenerateClassData(io::Printer* p);
-  void GenerateMapEntryClassDefinition(io::Printer* p);
-  void GenerateAnyMethodDefinition(io::Printer* p);
-  void GenerateImplDefinition(io::Printer* p);
   void GenerateMergeFrom(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateCopyFrom(io::Printer* p);
@@ -143,7 +147,8 @@ class MessageGenerator {
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(
       io::Printer* p, const std::vector<const FieldDescriptor*>& fields);
-  void GenerateSerializeOneExtensionRange(io::Printer* p, int start, int end);
+  void GenerateSerializeOneExtensionRange(
+      io::Printer* p, const Descriptor::ExtensionRange* range);
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,
@@ -156,12 +161,8 @@ class MessageGenerator {
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
 
-  // Returns true if any of the fields needs an `arena` variable containing
-  // the current message's arena, reducing `GetArena()` call churn.
-  bool RequiresArena(GeneratorFunction function) const;
-
-  // Returns whether impl_ has a copy ctor.
-  bool ImplHasCopyCtor() const;
+  // Generates the body of the message's copy constructor.
+  void GenerateCopyConstructorBody(io::Printer* p) const;
 
   // Returns the level that this message needs ArenaDtor. If the message has
   // a field that is not arena-exclusive, it needs an ArenaDtor
@@ -177,8 +178,6 @@ class MessageGenerator {
 
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;
-  absl::flat_hash_map<absl::string_view, std::string> HasBitVars(
-      const FieldDescriptor* field) const;
   int HasBitIndex(const FieldDescriptor* field) const;
   int HasByteIndex(const FieldDescriptor* field) const;
   int HasWordIndex(const FieldDescriptor* field) const;

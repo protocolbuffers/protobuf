@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -120,7 +143,7 @@ int64_t ArrayOutputStream::ByteCount() const { return position_; }
 StringOutputStream::StringOutputStream(std::string* target) : target_(target) {}
 
 bool StringOutputStream::Next(void** data, int* size) {
-  ABSL_CHECK(target_ != nullptr);
+  ABSL_CHECK(target_ != NULL);
   size_t old_size = target_->size();
 
   // Grow the string.
@@ -148,13 +171,13 @@ bool StringOutputStream::Next(void** data, int* size) {
 
 void StringOutputStream::BackUp(int count) {
   ABSL_CHECK_GE(count, 0);
-  ABSL_CHECK(target_ != nullptr);
+  ABSL_CHECK(target_ != NULL);
   ABSL_CHECK_LE(static_cast<size_t>(count), target_->size());
   target_->resize(target_->size() - count);
 }
 
 int64_t StringOutputStream::ByteCount() const {
-  ABSL_CHECK(target_ != nullptr);
+  ABSL_CHECK(target_ != NULL);
   return target_->size();
 }
 
@@ -617,7 +640,7 @@ bool CordOutputStream::Next(void** data, int* size) {
     case State::kFull:
       assert(buffer_.length() > 0);
       cord_.Append(std::move(buffer_));
-      ABSL_FALLTHROUGH_INTENDED;
+      PROTOBUF_FALLTHROUGH_INTENDED;
     case State::kEmpty:
       assert(buffer_.length() == 0);
       buffer_ = absl::CordBuffer::CreateWithDefaultLimit(desired_size);

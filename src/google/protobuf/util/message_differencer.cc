@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: jschorr@google.com (Joseph Schorr)
 //  Based on original Protocol Buffers design by
@@ -20,6 +43,12 @@
 #include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_enum_reflection.h"
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/text_format.h"
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -28,15 +57,9 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/map_field.h"
-#include "google/protobuf/message.h"
-#include "google/protobuf/text_format.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -68,7 +91,7 @@ std::string PrintShortTextFormat(const google::protobuf::Message& message) {
 }  // namespace
 
 // A reporter to report the total number of diffs.
-// TODO: we can improve this to take into account the value differencers.
+// TODO(ykzhu): we can improve this to take into account the value differencers.
 class NumDiffsReporter : public google::protobuf::util::MessageDifferencer::Reporter {
  public:
   NumDiffsReporter() : num_diffs_(0) {}
@@ -200,7 +223,7 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
 // implementation is to find the longest matching sequence from the first
 // element. The optimal solution requires to use //util/diff/lcs.h, which is
 // not open sourced yet. Overwrite this method if you want to have that.
-// TODO: change to use LCS once it is open sourced.
+// TODO(ykzhu): change to use LCS once it is open sourced.
 void MatchIndicesPostProcessorForSmartList(std::vector<int>* match_list1,
                                            std::vector<int>* match_list2) {
   int last_matched_index = -1;
@@ -300,7 +323,7 @@ bool MessageDifferencer::ApproximatelyEquivalent(const Message& message1,
 // ===========================================================================
 
 MessageDifferencer::MessageDifferencer()
-    : reporter_(nullptr),
+    : reporter_(NULL),
       message_field_comparison_(EQUAL),
       scope_(FULL),
       repeated_field_comparison_(AS_LIST),
@@ -319,14 +342,14 @@ MessageDifferencer::~MessageDifferencer() {
 }
 
 void MessageDifferencer::set_field_comparator(FieldComparator* comparator) {
-  ABSL_CHECK(comparator) << "Field comparator can't be nullptr.";
+  ABSL_CHECK(comparator) << "Field comparator can't be NULL.";
   field_comparator_kind_ = kFCBase;
   field_comparator_.base = comparator;
 }
 
 void MessageDifferencer::set_field_comparator(
     DefaultFieldComparator* comparator) {
-  ABSL_CHECK(comparator) << "Field comparator can't be nullptr.";
+  ABSL_CHECK(comparator) << "Field comparator can't be NULL.";
   field_comparator_kind_ = kFCDefault;
   field_comparator_.default_impl = comparator;
 }
@@ -344,10 +367,6 @@ MessageDifferencer::message_field_comparison() const {
 void MessageDifferencer::set_scope(Scope scope) { scope_ = scope; }
 
 MessageDifferencer::Scope MessageDifferencer::scope() const { return scope_; }
-
-void MessageDifferencer::set_force_compare_no_presence(bool value) {
-  force_compare_no_presence_ = value;
-}
 
 void MessageDifferencer::set_float_comparison(FloatComparison comparison) {
   default_field_comparator_.set_float_comparison(
@@ -530,8 +549,6 @@ bool MessageDifferencer::FieldBefore(const FieldDescriptor* field1,
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2) {
   std::vector<SpecificField> parent_fields;
-  force_compare_no_presence_fields_.clear();
-  force_compare_failure_triggering_fields_.clear();
 
   bool result = false;
   // Setup the internal reporter if need be.
@@ -559,15 +576,11 @@ bool MessageDifferencer::CompareWithFields(
   }
 
   std::vector<SpecificField> parent_fields;
-  force_compare_no_presence_fields_.clear();
-  force_compare_failure_triggering_fields_.clear();
 
   bool result = false;
 
-  std::vector<const FieldDescriptor*> message1_fields(
-      message1_fields_arg.size() + 1);
-  std::vector<const FieldDescriptor*> message2_fields(
-      message2_fields_arg.size() + 1);
+  FieldDescriptorArray message1_fields(message1_fields_arg.size() + 1);
+  FieldDescriptorArray message2_fields(message2_fields_arg.size() + 1);
 
   std::copy(message1_fields_arg.cbegin(), message1_fields_arg.cend(),
             message1_fields.begin());
@@ -616,13 +629,13 @@ bool MessageDifferencer::Compare(const Message& message1,
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (unpack_any_field_.UnpackAny(message1, &data1) &&
-        unpack_any_field_.UnpackAny(message2, &data2) &&
-        data1->GetDescriptor() == data2->GetDescriptor()) {
+        unpack_any_field_.UnpackAny(message2, &data2)) {
+      // Avoid DFATAL for different descriptors in google.protobuf.Any payloads.
+      if (data1->GetDescriptor() != data2->GetDescriptor()) {
+        return false;
+      }
       return Compare(*data1, *data2, unpacked_any + 1, parent_fields);
     }
-    // If the Any payload is unparsable, or the payload types are different
-    // between message1 and message2, fall through and treat Any as a regular
-    // proto.
   }
 
   bool unknown_compare_result = true;
@@ -643,10 +656,8 @@ bool MessageDifferencer::Compare(const Message& message1,
     }
   }
 
-  std::vector<const FieldDescriptor*> message1_fields =
-      RetrieveFields(message1, true);
-  std::vector<const FieldDescriptor*> message2_fields =
-      RetrieveFields(message2, false);
+  FieldDescriptorArray message1_fields = RetrieveFields(message1, true);
+  FieldDescriptorArray message2_fields = RetrieveFields(message2, false);
 
   return CompareRequestedFieldsUsingSettings(message1, message2, unpacked_any,
                                              message1_fields, message2_fields,
@@ -654,8 +665,8 @@ bool MessageDifferencer::Compare(const Message& message1,
          unknown_compare_result;
 }
 
-std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
-    const Message& message, bool base_message) {
+FieldDescriptorArray MessageDifferencer::RetrieveFields(const Message& message,
+                                                        bool base_message) {
   const Descriptor* descriptor = message.GetDescriptor();
 
   tmp_message_fields_.clear();
@@ -679,24 +690,24 @@ std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
   // each list are different.
   tmp_message_fields_.push_back(nullptr);
 
-  std::vector<const FieldDescriptor*> message_fields(
-      tmp_message_fields_.begin(), tmp_message_fields_.end());
+  FieldDescriptorArray message_fields(tmp_message_fields_.begin(),
+                                      tmp_message_fields_.end());
 
   return message_fields;
 }
 
 bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
     const Message& message1, const Message& message2, int unpacked_any,
-    const std::vector<const FieldDescriptor*>& message1_fields,
-    const std::vector<const FieldDescriptor*>& message2_fields,
+    const FieldDescriptorArray& message1_fields,
+    const FieldDescriptorArray& message2_fields,
     std::vector<SpecificField>* parent_fields) {
   if (scope_ == FULL) {
     if (message_field_comparison_ == EQUIVALENT) {
       // We need to merge the field lists of both messages (i.e.
       // we are merely checking for a difference in field values,
       // rather than the addition or deletion of fields).
-      std::vector<const FieldDescriptor*> fields_union =
-          CombineFields(message1, message1_fields, FULL, message2_fields, FULL);
+      FieldDescriptorArray fields_union =
+          CombineFields(message1_fields, FULL, message2_fields, FULL);
       return CompareWithFieldsInternal(message1, message2, unpacked_any,
                                        fields_union, fields_union,
                                        parent_fields);
@@ -719,8 +730,8 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
       // but only the intersection for message2.  This way, any fields
       // only present in message2 will be ignored, but any fields only
       // present in message1 will be marked as a difference.
-      std::vector<const FieldDescriptor*> fields_intersection = CombineFields(
-          message1, message1_fields, PARTIAL, message2_fields, PARTIAL);
+      FieldDescriptorArray fields_intersection =
+          CombineFields(message1_fields, PARTIAL, message2_fields, PARTIAL);
       return CompareWithFieldsInternal(message1, message2, unpacked_any,
                                        message1_fields, fields_intersection,
                                        parent_fields);
@@ -728,48 +739,9 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
   }
 }
 
-namespace {
-bool ValidMissingField(const FieldDescriptor& f) {
-  switch (f.cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32:
-    case FieldDescriptor::CPPTYPE_UINT32:
-    case FieldDescriptor::CPPTYPE_INT64:
-    case FieldDescriptor::CPPTYPE_UINT64:
-    case FieldDescriptor::CPPTYPE_FLOAT:
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-    case FieldDescriptor::CPPTYPE_STRING:
-    case FieldDescriptor::CPPTYPE_BOOL:
-    case FieldDescriptor::CPPTYPE_ENUM:
-      return true;
-    default:
-      return false;
-  }
-}
-}  // namespace
-
-bool MessageDifferencer::ShouldCompareNoPresence(
-    const Message& message1, const Reflection& reflection1,
-    const FieldDescriptor* field2) const {
-  const bool compare_no_presence_by_field = force_compare_no_presence_ &&
-                                            !field2->has_presence() &&
-                                            !field2->is_repeated();
-  if (compare_no_presence_by_field) {
-    return true;
-  }
-  const bool compare_no_presence_by_address =
-      !field2->is_repeated() && !field2->has_presence() &&
-      ValidMissingField(*field2) &&
-      require_no_presence_fields_.ids_.contains(
-          TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(message1,
-                                                                   *field2));
-  return compare_no_presence_by_address;
-}
-
-std::vector<const FieldDescriptor*> MessageDifferencer::CombineFields(
-    const Message& message1, const std::vector<const FieldDescriptor*>& fields1,
-    Scope fields1_scope, const std::vector<const FieldDescriptor*>& fields2,
-    Scope fields2_scope) {
-  const Reflection* reflection1 = message1.GetReflection();
+FieldDescriptorArray MessageDifferencer::CombineFields(
+    const FieldDescriptorArray& fields1, Scope fields1_scope,
+    const FieldDescriptorArray& fields2, Scope fields2_scope) {
   size_t index1 = 0;
   size_t index2 = 0;
 
@@ -781,27 +753,16 @@ std::vector<const FieldDescriptor*> MessageDifferencer::CombineFields(
 
     if (FieldBefore(field1, field2)) {
       if (fields1_scope == FULL) {
-        tmp_message_fields_.push_back(field1);
+        tmp_message_fields_.push_back(fields1[index1]);
       }
       ++index1;
     } else if (FieldBefore(field2, field1)) {
       if (fields2_scope == FULL) {
-        tmp_message_fields_.push_back(field2);
-      } else if (fields2_scope == PARTIAL &&
-                 ShouldCompareNoPresence(message1, *reflection1, field2)) {
-        // In order to make MessageDifferencer play nicely with no-presence
-        // fields in unit tests, we want to check if the expected proto
-        // (message1) has some fields which are set to their default value but
-        // are not set to their default value in message2 (the actual message).
-        // Those fields will appear in fields2 (since they have non default
-        // value) but will not appear in fields1 (since they have the default
-        // value or were never set).
-        force_compare_no_presence_fields_.insert(field2);
-        tmp_message_fields_.push_back(field2);
+        tmp_message_fields_.push_back(fields2[index2]);
       }
       ++index2;
     } else {
-      tmp_message_fields_.push_back(field1);
+      tmp_message_fields_.push_back(fields1[index1]);
       ++index1;
       ++index2;
     }
@@ -809,24 +770,16 @@ std::vector<const FieldDescriptor*> MessageDifferencer::CombineFields(
 
   tmp_message_fields_.push_back(nullptr);
 
-  std::vector<const FieldDescriptor*> combined_fields(
-      tmp_message_fields_.begin(), tmp_message_fields_.end());
+  FieldDescriptorArray combined_fields(tmp_message_fields_.begin(),
+                                       tmp_message_fields_.end());
 
   return combined_fields;
 }
 
-// We push an element via a NOINLINE function to avoid using stack space on
-// the caller for a temporary SpecificField object. They are quite large.
-static PROTOBUF_NOINLINE MessageDifferencer::SpecificField& PushSpecificField(
-    std::vector<MessageDifferencer::SpecificField>* fields) {
-  fields->emplace_back();
-  return fields->back();
-}
-
 bool MessageDifferencer::CompareWithFieldsInternal(
     const Message& message1, const Message& message2, int unpacked_any,
-    const std::vector<const FieldDescriptor*>& message1_fields,
-    const std::vector<const FieldDescriptor*>& message2_fields,
+    const FieldDescriptorArray& message1_fields,
+    const FieldDescriptorArray& message2_fields,
     std::vector<SpecificField>* parent_fields) {
   bool isDifferent = false;
   int field_index1 = 0;
@@ -851,11 +804,12 @@ bool MessageDifferencer::CompareWithFieldsInternal(
         // We are ignoring field1. Report the ignore and move on to
         // the next field in message1_fields.
         if (reporter_ != NULL) {
-          SpecificField& specific_field = PushSpecificField(parent_fields);
+          SpecificField specific_field;
           specific_field.message1 = &message1;
           specific_field.message2 = &message2;
           specific_field.unpacked_any = unpacked_any;
           specific_field.field = field1;
+          parent_fields->push_back(specific_field);
           if (report_ignores_) {
             reporter_->ReportIgnored(message1, message2, *parent_fields);
           }
@@ -872,7 +826,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
                         : 1;
 
         for (int i = 0; i < count; ++i) {
-          SpecificField& specific_field = PushSpecificField(parent_fields);
+          SpecificField specific_field;
           specific_field.message1 = &message1;
           specific_field.message2 = &message2;
           specific_field.unpacked_any = unpacked_any;
@@ -883,6 +837,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
             specific_field.index = -1;
           }
 
+          parent_fields->push_back(specific_field);
           reporter_->ReportDeleted(message1, message2, *parent_fields);
           parent_fields->pop_back();
         }
@@ -895,22 +850,17 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       ++field_index1;
       continue;
     } else if (FieldBefore(field2, field1)) {
-      const bool ignore_field =
-          IsIgnored(message1, message2, field2, *parent_fields);
-      if (!ignore_field && force_compare_no_presence_fields_.contains(field2)) {
-        force_compare_failure_triggering_fields_.insert(field2->full_name());
-      }
-
       // Field 2 is not in the field list for message 1.
-      if (ignore_field) {
+      if (IsIgnored(message1, message2, field2, *parent_fields)) {
         // We are ignoring field2. Report the ignore and move on to
         // the next field in message2_fields.
         if (reporter_ != NULL) {
-          SpecificField& specific_field = PushSpecificField(parent_fields);
+          SpecificField specific_field;
           specific_field.message1 = &message1;
           specific_field.message2 = &message2;
           specific_field.unpacked_any = unpacked_any;
           specific_field.field = field2;
+          parent_fields->push_back(specific_field);
           if (report_ignores_) {
             reporter_->ReportIgnored(message1, message2, *parent_fields);
           }
@@ -926,7 +876,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
                         : 1;
 
         for (int i = 0; i < count; ++i) {
-          SpecificField& specific_field = PushSpecificField(parent_fields);
+          SpecificField specific_field;
           specific_field.message1 = &message1,
           specific_field.message2 = &message2;
           specific_field.unpacked_any = unpacked_any;
@@ -939,10 +889,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
             specific_field.new_index = -1;
           }
 
-          specific_field.forced_compare_no_presence_ =
-              force_compare_no_presence_ &&
-              force_compare_no_presence_fields_.contains(specific_field.field);
-
+          parent_fields->push_back(specific_field);
           reporter_->ReportAdded(message1, message2, *parent_fields);
           parent_fields->pop_back();
         }
@@ -961,11 +908,12 @@ bool MessageDifferencer::CompareWithFieldsInternal(
     if (IsIgnored(message1, message2, field1, *parent_fields)) {
       // Ignore this field. Report and move on.
       if (reporter_ != NULL) {
-        SpecificField& specific_field = PushSpecificField(parent_fields);
+        SpecificField specific_field;
         specific_field.message1 = &message1;
         specific_field.message2 = &message2;
         specific_field.unpacked_any = unpacked_any;
         specific_field.field = field1;
+        parent_fields->push_back(specific_field);
         if (report_ignores_) {
           reporter_->ReportIgnored(message1, message2, *parent_fields);
         }
@@ -989,20 +937,13 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       fieldDifferent = !CompareFieldValueUsingParentFields(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
 
-      if (force_compare_no_presence_fields_.contains(field1)) {
-        force_compare_failure_triggering_fields_.insert(field1->full_name());
-      }
-
       if (reporter_ != nullptr) {
-        SpecificField& specific_field = PushSpecificField(parent_fields);
+        SpecificField specific_field;
         specific_field.message1 = &message1;
         specific_field.message2 = &message2;
         specific_field.unpacked_any = unpacked_any;
         specific_field.field = field1;
-        specific_field.forced_compare_no_presence_ =
-            force_compare_no_presence_ &&
-            force_compare_no_presence_fields_.contains(field1);
-
+        parent_fields->push_back(specific_field);
         if (fieldDifferent) {
           reporter_->ReportModified(message1, message2, *parent_fields);
           isDifferent = true;
@@ -1183,7 +1124,7 @@ bool MessageDifferencer::CompareMapField(
   // When both map fields are on map, do not sync to repeated field.
   if (reflection1->GetMapData(message1, repeated_field)->IsMapValid() &&
       reflection2->GetMapData(message2, repeated_field)->IsMapValid() &&
-      // TODO: Add support for reporter
+      // TODO(jieluo): Add support for reporter
       reporter_ == nullptr &&
       // Users didn't set custom map field key comparator
       map_field_key_comparator_.find(repeated_field) ==
@@ -1411,13 +1352,14 @@ bool MessageDifferencer::CompareFieldValueUsingParentFields(
     // parent_fields is used in calls to Reporter methods.
     if (parent_fields != NULL) {
       // Append currently compared field to the end of parent_fields.
-      SpecificField& specific_field = PushSpecificField(parent_fields);
+      SpecificField specific_field;
       specific_field.message1 = &message1;
       specific_field.message2 = &message2;
       specific_field.unpacked_any = unpacked_any;
       specific_field.field = field;
       AddSpecificIndex(&specific_field, message1, field, index1);
       AddSpecificNewIndex(&specific_field, message2, field, index2);
+      parent_fields->push_back(specific_field);
       const bool compare_result = Compare(m1, m2, false, parent_fields);
       parent_fields->pop_back();
       return compare_result;
@@ -2106,9 +2048,6 @@ void MessageDifferencer::StreamReporter::PrintPath(
         printer_->Print("($name$)", "name", specific_field.field->full_name());
       } else {
         printer_->PrintRaw(specific_field.field->name());
-        if (specific_field.forced_compare_no_presence_) {
-          printer_->Print(" (added for better PARTIAL comparison)");
-        }
       }
 
       if (specific_field.field->is_map()) {
@@ -2202,7 +2141,7 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
           "\"%s\"", absl::CEscape(unknown_field->length_delimited()).c_str());
       break;
     case UnknownField::TYPE_GROUP:
-      // TODO:  Print the contents of the group like we do for
+      // TODO(kenton):  Print the contents of the group like we do for
       //   messages.  Requires an equivalent of ShortDebugString() for
       //   UnknownFieldSet.
       output = "{ ... }";

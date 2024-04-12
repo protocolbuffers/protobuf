@@ -87,7 +87,7 @@
              "string" "bytes" "group"))
 
 (c-lang-defconst c-modifier-kwds
-  protobuf '("required" "optional" "repeated" "oneof"))
+  protobuf '("required" "optional" "repeated"))
 
 (c-lang-defconst c-class-decl-kwds
   protobuf '("message" "enum" "service"))
@@ -96,7 +96,7 @@
   protobuf '("true" "false"))
 
 (c-lang-defconst c-other-decl-kwds
-  protobuf '("package" "import" "syntax"))
+  protobuf '("package" "import"))
 
 (c-lang-defconst c-other-kwds
   protobuf '("default" "max"))
@@ -112,7 +112,7 @@
   protobuf '("extensions" "to" "reserved"))
 
 (c-lang-defconst c-typeless-decl-kwds
-  protobuf '("extend" "rpc" "stream" "option" "returns"))
+  protobuf '("extend" "rpc" "option" "returns"))
 
 
 ;; Here we remove default syntax for loops, if-statements and other C
@@ -206,6 +206,7 @@ Key bindings:
   (c-initialize-cc-mode t)
   (c-init-language-vars protobuf-mode)
   (c-common-init 'protobuf-mode)
+  (easy-menu-add protobuf-menu)
   (setq imenu-generic-expression
 	    '(("Message" "^[[:space:]]*message[[:space:]]+\\([[:alnum:]]+\\)" 1)
           ("Enum" "^[[:space:]]*enum[[:space:]]+\\([[:alnum:]]+\\)" 1)

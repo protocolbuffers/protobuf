@@ -1,12 +1,34 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-#include "google/protobuf/reflection_tester.h"
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <array>
+#include "google/protobuf/reflection_tester.h"
 
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -184,10 +206,6 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
       EXPECT_EQ(fdesc->containing_type()->map_value(), fdesc);
     }
   }
-
-  // Must be heap allocated.
-  EXPECT_NE(long_string().capacity(), std::string().capacity());
-  EXPECT_NE(long_string_2().capacity(), std::string().capacity());
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.
@@ -276,14 +294,14 @@ void MapReflectionTester::SetMapFieldsViaReflection(Message* message) {
 
   sub_message = reflection->AddMessage(message, F("map_string_string"));
   sub_message->GetReflection()->SetString(sub_message, map_string_string_key_,
-                                          long_string());
+                                          "0");
   sub_message->GetReflection()->SetString(sub_message, map_string_string_val_,
-                                          long_string());
+                                          "0");
 
   sub_message = reflection->AddMessage(message, F("map_int32_bytes"));
   sub_message->GetReflection()->SetInt32(sub_message, map_int32_bytes_key_, 0);
   sub_message->GetReflection()->SetString(sub_message, map_int32_bytes_val_,
-                                          long_string());
+                                          "0");
 
   sub_message = reflection->AddMessage(message, F("map_int32_enum"));
   sub_message->GetReflection()->SetInt32(sub_message, map_int32_enum_key_, 0);
@@ -371,14 +389,14 @@ void MapReflectionTester::SetMapFieldsViaReflection(Message* message) {
 
   sub_message = reflection->AddMessage(message, F("map_string_string"));
   sub_message->GetReflection()->SetString(sub_message, map_string_string_key_,
-                                          long_string_2());
+                                          "1");
   sub_message->GetReflection()->SetString(sub_message, map_string_string_val_,
-                                          long_string_2());
+                                          "1");
 
   sub_message = reflection->AddMessage(message, F("map_int32_bytes"));
   sub_message->GetReflection()->SetInt32(sub_message, map_int32_bytes_key_, 1);
   sub_message->GetReflection()->SetString(sub_message, map_int32_bytes_val_,
-                                          long_string_2());
+                                          "1");
 
   sub_message = reflection->AddMessage(message, F("map_int32_enum"));
   sub_message->GetReflection()->SetInt32(sub_message, map_int32_enum_key_, 1);
@@ -476,19 +494,19 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
                                                  map_key, &map_val));
   map_val.SetBoolValue(false);
 
-  map_key.SetStringValue(long_string());
+  map_key.SetStringValue("0");
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_string_string"),
                                           map_key, &map_val_const));
   EXPECT_TRUE(reflection->InsertOrLookupMapValue(
       message, F("map_string_string"), map_key, &map_val));
-  map_val.SetStringValue(long_string());
+  map_val.SetStringValue("0");
 
   map_key.SetInt32Value(0);
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_int32_bytes"),
                                           map_key, &map_val_const));
   EXPECT_TRUE(reflection->InsertOrLookupMapValue(message, F("map_int32_bytes"),
                                                  map_key, &map_val));
-  map_val.SetStringValue(long_string());
+  map_val.SetStringValue("0");
 
   map_key.SetInt32Value(0);
   EXPECT_FALSE(reflection->LookupMapValue(*message, F("map_int32_enum"),
@@ -576,15 +594,15 @@ void MapReflectionTester::SetMapFieldsViaMapReflection(Message* message) {
                                      &map_val);
   map_val.SetBoolValue(true);
 
-  map_key.SetStringValue(long_string_2());
+  map_key.SetStringValue("1");
   reflection->InsertOrLookupMapValue(message, F("map_string_string"), map_key,
                                      &map_val);
-  map_val.SetStringValue(long_string_2());
+  map_val.SetStringValue("1");
 
   map_key.SetInt32Value(1);
   reflection->InsertOrLookupMapValue(message, F("map_int32_bytes"), map_key,
                                      &map_val);
-  map_val.SetStringValue(long_string_2());
+  map_val.SetStringValue("1");
 
   map_key.SetInt32Value(1);
   reflection->InsertOrLookupMapValue(message, F("map_int32_enum"), map_key,
@@ -725,7 +743,7 @@ void MapReflectionTester::ModifyMapFieldsViaReflection(Message* message) {
                                      &map_val);
   map_val.SetBoolValue(false);
 
-  map_key.SetStringValue(long_string_2());
+  map_key.SetStringValue("1");
   reflection->InsertOrLookupMapValue(message, F("map_string_string"), map_key,
                                      &map_val);
   map_val.SetStringValue("2");
@@ -1213,9 +1231,9 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::array<bool, 2> map;
-    map[0] = false;
-    map[1] = true;
+    absl::flat_hash_map<bool, bool> map;
+    map[false] = false;
+    map[true] = true;
     std::vector<bool> keys = {false, true};
     std::vector<bool> vals = {false, true};
     for (int i = 0; i < 2; i++) {
@@ -1230,7 +1248,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
                                                          map_bool_bool_key_);
         bool val = sub_message->GetReflection()->GetBool(*sub_message,
                                                          map_bool_bool_val_);
-        EXPECT_EQ(map[key ? 1 : 0], val);
+        EXPECT_EQ(map[key], val);
       } else {
         // Check with Map Reflection
         map_key.SetBoolValue(keys[i]);
@@ -1244,10 +1262,10 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
   }
   {
     absl::flat_hash_map<std::string, std::string> map;
-    map[long_string()] = long_string();
-    map[long_string_2()] = long_string_2();
-    std::vector<std::string> keys = {long_string(), long_string_2()};
-    std::vector<std::string> vals = {long_string(), long_string_2()};
+    map["0"] = "0";
+    map["1"] = "1";
+    std::vector<std::string> keys = {"0", "1"};
+    std::vector<std::string> vals = {"0", "1"};
     for (int i = 0; i < 2; i++) {
       const internal::MapFieldBase& map_field =
           reflection->GetRaw<internal::MapFieldBase>(message,
@@ -1274,8 +1292,8 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
   }
   {
     absl::flat_hash_map<int32_t, std::string> map;
-    map[0] = long_string();
-    map[1] = long_string_2();
+    map[0] = "0";
+    map[1] = "1";
     for (int i = 0; i < 2; i++) {
       const internal::MapFieldBase& map_field =
           reflection->GetRaw<internal::MapFieldBase>(message,
@@ -1520,19 +1538,19 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::array<bool, 2> map;
-    map[0] = false;
-    map[1] = true;
+    absl::flat_hash_map<bool, bool> map;
+    map[false] = false;
+    map[true] = true;
     for (MapIterator iter = reflection->MapBegin(message, F("map_bool_bool"));
          iter != reflection->MapEnd(message, F("map_bool_bool")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetBoolValue() ? 1 : 0],
+      EXPECT_EQ(map[iter.GetKey().GetBoolValue()],
                 iter.GetValueRef().GetBoolValue());
     }
   }
   {
     absl::flat_hash_map<std::string, std::string> map;
-    map[long_string()] = long_string();
-    map[long_string_2()] = long_string_2();
+    map["0"] = "0";
+    map["1"] = "1";
     int size = 0;
     for (MapIterator iter =
              reflection->MapBegin(message, F("map_string_string"));
@@ -1551,8 +1569,8 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
   }
   {
     absl::flat_hash_map<int32_t, std::string> map;
-    map[0] = long_string();
-    map[1] = long_string_2();
+    map[0] = "0";
+    map[1] = "1";
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_bytes"));
          iter != reflection->MapEnd(message, F("map_int32_bytes")); ++iter) {
       EXPECT_EQ(map[iter.GetKey().GetInt32Value()],

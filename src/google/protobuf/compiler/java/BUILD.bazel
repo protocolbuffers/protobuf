@@ -3,18 +3,18 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "names",
     hdrs = ["names.h"],
     copts = COPTS,
-    strip_include_prefix = "/src",
+    include_prefix = "google/protobuf/compiler/java",
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
-        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_nowkt",
     ],
 )
 
@@ -26,43 +26,18 @@ cc_library(
         "names.cc",
     ],
     hdrs = [
-        "generator.h",
         "helpers.h",
         "name_resolver.h",
         "names.h",
         "options.h",
     ],
     copts = COPTS,
-    strip_include_prefix = "/src",
+    include_prefix = "google/protobuf/compiler/java",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        ":java_features_bootstrap",
-        "//src/google/protobuf",
-        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/compiler:versions",
-        "//src/google/protobuf/io:printer",
-        "//src/google/protobuf/io:tokenizer",
-        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-    ],
-)
-
-cc_library(
-    name = "java_features_bootstrap",
-    srcs = ["java_features.pb.cc"],
-    hdrs = ["java_features.pb.h"],
-    strip_include_prefix = "/src",
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf:arena",
-        "//src/google/protobuf:port",
-        "//src/google/protobuf:protobuf_lite",
-        "//src/google/protobuf/io",
     ],
 )
 
@@ -111,7 +86,6 @@ cc_library(
         "file.h",
         "generator.h",
         "generator_factory.h",
-        "java_features.pb.h",
         "kotlin_generator.h",
         "map_field.h",
         "map_field_lite.h",
@@ -130,31 +104,20 @@ cc_library(
         "string_field_lite.h",
     ],
     copts = COPTS,
-    strip_include_prefix = "/src",
+    include_prefix = "google/protobuf/compiler/java",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        ":java_features_bootstrap",
         ":names",
         ":names_internal",
-        "//src/google/protobuf",
-        "//src/google/protobuf:arena",
-        "//src/google/protobuf:port",
-        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
-        "//src/google/protobuf/compiler:versions",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -181,11 +144,8 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/io:printer",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -205,12 +165,9 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob(
-        [
-            "*_test.cc",
-            "*unittest.cc",
-        ],
-        allow_empty = True,
-    ),
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ], allow_empty = True),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

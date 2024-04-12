@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: jschorr@google.com (Joseph Schorr)
 //  Based on original Protocol Buffers design by
@@ -20,9 +43,8 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/port.h"
 #include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -44,57 +66,15 @@ namespace internal {
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
+PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction_marker;
+PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_random_marker;
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_detection;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction;
-PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
-PROTOBUF_EXPORT bool ShouldRedactField(const FieldDescriptor* field);
-
-// This enum contains all the APIs that convert protos to human-readable
-// formats. A higher-level API must correspond to a greater number than any
-// lower-level APIs it calls under the hood (e.g kDebugString >
-// kMemberPrintToString > kPrintWithStream).
-PROTOBUF_EXPORT enum class FieldReporterLevel {
-  kNoReport = 0,
-  kPrintMessage = 1,
-  kPrintWithGenerator = 2,
-  kPrintWithStream = 3,
-  kMemberPrintToString = 4,
-  kStaticPrintToString = 5,
-  kAbslStringify = 6,
-  kShortFormat = 7,
-  kUtf8Format = 8,
-  kDebugString = 12,
-  kShortDebugString = 13,
-  kUtf8DebugString = 14,
-  kUnredactedDebugFormatForTest = 15,
-  kUnredactedShortDebugFormatForTest = 16,
-  kUnredactedUtf8DebugFormatForTest = 17
-};
 
 }  // namespace internal
 
 namespace io {
 class ErrorCollector;  // tokenizer.h
 }
-
-namespace python {
-namespace cmessage {
-class PythonFieldValuePrinter;
-}
-}  // namespace python
-
-namespace internal {
-// Enum used to set printing options for StringifyMessage.
-PROTOBUF_EXPORT enum class Option;
-
-// Converts a protobuf message to a string with redaction enabled.
-PROTOBUF_EXPORT std::string StringifyMessage(const Message& message,
-                                             Option option);
-
-class UnsetFieldsMetadataTextFormatTestUtil;
-class UnsetFieldsMetadataMessageDifferencerTestUtil;
-}  // namespace internal
 
 // This class implements protocol buffer text format, colloquially known as text
 // proto.  Printing and parsing protocol messages in text format is useful for
@@ -161,7 +141,7 @@ class PROTOBUF_EXPORT TextFormat {
     // Print text to the output stream.
     virtual void Print(const char* text, size_t size) = 0;
 
-    void PrintString(absl::string_view str) { Print(str.data(), str.size()); }
+    void PrintString(const std::string& str) { Print(str.data(), str.size()); }
 
     template <size_t n>
     void PrintLiteral(const char (&text)[n]) {
@@ -312,10 +292,6 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Like TextFormat::Print
     bool Print(const Message& message, io::ZeroCopyOutputStream* output) const;
-    // Like TextFormat::Printer::Print but takes an additional
-    // internal::FieldReporterLevel
-    bool Print(const Message& message, io::ZeroCopyOutputStream* output,
-               internal::FieldReporterLevel reporter) const;
     // Like TextFormat::PrintUnknownFields
     bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                             io::ZeroCopyOutputStream* output) const;
@@ -368,8 +344,8 @@ class PROTOBUF_EXPORT TextFormat {
     // Takes ownership of the printer.
     void SetDefaultFieldValuePrinter(const FastFieldValuePrinter* printer);
 
-    [[deprecated("Please use FastFieldValuePrinter")]] void
-    SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
+    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
+    void SetDefaultFieldValuePrinter(const FieldValuePrinter* printer);
 
     // Sets whether we want to hide unknown fields or not.
     // Usually unknown fields are printed in a generic way that includes the
@@ -406,20 +382,12 @@ class PROTOBUF_EXPORT TextFormat {
     // this threshold.  This is useful when the proto message has very long
     // strings, e.g., dump of encoded image file.
     //
-    // NOTE:  Setting a non-zero value breaks round-trip safe
+    // NOTE(hfgong):  Setting a non-zero value breaks round-trip safe
     // property of TextFormat::Printer.  That is, from the printed message, we
     // cannot fully recover the original string field any more.
     void SetTruncateStringFieldLongerThan(
         const int64_t truncate_string_field_longer_than) {
       truncate_string_field_longer_than_ = truncate_string_field_longer_than;
-    }
-
-    // Sets whether sensitive fields found in the message will be reported or
-    // not.
-    void SetReportSensitiveFields(internal::FieldReporterLevel reporter) {
-      if (report_sensitive_fields_ < reporter) {
-        report_sensitive_fields_ = reporter;
-      }
     }
 
     // Register a custom field-specific FastFieldValuePrinter for fields
@@ -430,9 +398,9 @@ class PROTOBUF_EXPORT TextFormat {
     bool RegisterFieldValuePrinter(const FieldDescriptor* field,
                                    const FastFieldValuePrinter* printer);
 
-    [[deprecated("Please use FastFieldValuePrinter")]] bool
-    RegisterFieldValuePrinter(const FieldDescriptor* field,
-                              const FieldValuePrinter* printer);
+    PROTOBUF_DEPRECATED_MSG("Please use FastFieldValuePrinter")
+    bool RegisterFieldValuePrinter(const FieldDescriptor* field,
+                                   const FieldValuePrinter* printer);
 
     // Register a custom message-specific MessagePrinter for messages with a
     // particular Descriptor.
@@ -453,8 +421,9 @@ class PROTOBUF_EXPORT TextFormat {
     friend std::string Message::DebugString() const;
     friend std::string Message::ShortDebugString() const;
     friend std::string Message::Utf8DebugString() const;
-    friend std::string internal::StringifyMessage(const Message& message,
-                                                  internal::Option option);
+    friend void internal::PerformAbslStringify(
+        const Message& message,
+        absl::FunctionRef<void(absl::string_view)> append);
 
     // Sets whether silent markers will be inserted.
     void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }
@@ -518,23 +487,12 @@ class PROTOBUF_EXPORT TextFormat {
 
     bool PrintAny(const Message& message, BaseTextGenerator* generator) const;
 
-    // Try to redact a field value based on the annotations associated with
-    // the field. This function returns true if it redacts the field value.
-    bool TryRedactFieldValue(const Message& message,
-                             const FieldDescriptor* field,
-                             BaseTextGenerator* generator,
-                             bool insert_value_separator) const;
-
     const FastFieldValuePrinter* GetFieldPrinter(
         const FieldDescriptor* field) const {
       auto it = custom_printers_.find(field);
       return it == custom_printers_.end() ? default_field_value_printer_.get()
                                           : it->second.get();
     }
-
-    friend class google::protobuf::python::cmessage::PythonFieldValuePrinter;
-    static void HardenedPrintString(absl::string_view src,
-                                    TextFormat::BaseTextGenerator* generator);
 
     int initial_indent_level_;
     bool single_line_mode_;
@@ -543,7 +501,6 @@ class PROTOBUF_EXPORT TextFormat {
     bool insert_silent_marker_;
     bool redact_debug_string_;
     bool randomize_debug_string_;
-    internal::FieldReporterLevel report_sensitive_fields_;
     bool hide_unknown_fields_;
     bool print_message_fields_in_index_order_;
     bool expand_any_;
@@ -578,8 +535,6 @@ class PROTOBUF_EXPORT TextFormat {
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
   static bool ParseFromString(absl::string_view input, Message* output);
-  // Like Parse(), but reads directly from a Cord.
-  static bool ParseFromCord(const absl::Cord& input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
@@ -590,7 +545,7 @@ class PROTOBUF_EXPORT TextFormat {
   // Parse the given text as a single field value and store it into the
   // given field of the given message. If the field is a repeated field,
   // the new value will be added to the end
-  static bool ParseFieldValueFromString(absl::string_view input,
+  static bool ParseFieldValueFromString(const std::string& input,
                                         const FieldDescriptor* field,
                                         Message* message);
 
@@ -671,8 +626,6 @@ class PROTOBUF_EXPORT TextFormat {
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
     bool ParseFromString(absl::string_view input, Message* output);
-    // Like TextFormat::ParseFromCord().
-    bool ParseFromCord(const absl::Cord& input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
@@ -707,7 +660,7 @@ class PROTOBUF_EXPORT TextFormat {
     }
 
     // Like TextFormat::ParseFieldValueFromString
-    bool ParseFieldValueFromString(absl::string_view input,
+    bool ParseFieldValueFromString(const std::string& input,
                                    const FieldDescriptor* field,
                                    Message* output);
 
@@ -736,42 +689,6 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
-    // Metadata representing all the fields that were explicitly unset in
-    // textproto. Example:
-    // "some_int_field: 0"
-    // where some_int_field has implicit presence.
-    //
-    // This class should only be used to pass data between TextFormat and the
-    // MessageDifferencer.
-    class UnsetFieldsMetadata {
-     public:
-      UnsetFieldsMetadata() = default;
-
-     private:
-      using Id = std::pair<const Message*, const FieldDescriptor*>;
-      // Return an id representing the unset field in the given message.
-      static Id GetUnsetFieldId(const Message& message,
-                                const FieldDescriptor& fd);
-
-      // List of ids of explicitly unset proto fields.
-      absl::flat_hash_set<Id> ids_;
-
-      friend class ::google::protobuf::internal::
-          UnsetFieldsMetadataMessageDifferencerTestUtil;
-      friend class ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
-      friend class ::google::protobuf::util::MessageDifferencer;
-      friend class ::google::protobuf::TextFormat::Parser;
-    };
-
-    // If called, the parser will report the parsed fields that had no
-    // effect on the resulting proto (for example, fields with no presence that
-    // were set to their default value). These can be passed to the Partially()
-    // matcher as an indicator to explicitly check these fields are missing
-    // in the actual.
-    void OutputNoOpFields(UnsetFieldsMetadata* no_op_fields) {
-      no_op_fields_ = no_op_fields;
-    }
-
    private:
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
@@ -794,7 +711,6 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
     int recursion_limit_;
-    UnsetFieldsMetadata* no_op_fields_ = nullptr;
   };
 
 
@@ -808,11 +724,6 @@ class PROTOBUF_EXPORT TextFormat {
                                     ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
-  // To reduce stack frame bloat we use an out-of-line function to print
-  // strings. This avoid local std::string temporaries.
-  template <typename... T>
-  static void OutOfLinePrintString(BaseTextGenerator* generator,
-                                   const T&... values);
 };
 
 

@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 
@@ -12,6 +35,7 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_split.h"
@@ -51,13 +75,6 @@ class TestGenerator : public CodeGenerator {
     io::Printer printer(output.get(), '$');
     printer.Print("// inserted $name$\n", "name", insertion_point);
   }
-
-  uint64_t GetSupportedFeatures() const override {
-    return CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
-  }
-
-  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
 };
 
 // This test verifies that all the expected insertion points exist.  It does
@@ -65,18 +82,15 @@ class TestGenerator : public CodeGenerator {
 // compiling the output which is a bit more than I care to do for this test.
 TEST(JavaPluginTest, PluginTest) {
   ABSL_CHECK_OK(
-      File::SetContents(absl::StrCat(::testing::TempDir(), "/test.proto"),
-                        "edition = \"2023\";\n"
+      File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
+                        "syntax = \"proto2\";\n"
                         "package foo;\n"
                         "option java_package = \"\";\n"
                         "option java_outer_classname = \"Test\";\n"
                         "message Bar {\n"
                         "  message Baz {}\n"
                         "}\n"
-                        "enum Qux {\n"
-                        "  option features.enum_type = CLOSED;\n"
-                        "  BLAH = 1;\n"
-                        "}\n",
+                        "enum Qux { BLAH = 1; }\n",
                         true));
 
   CommandLineInterface cli;
@@ -87,9 +101,9 @@ TEST(JavaPluginTest, PluginTest) {
   cli.RegisterGenerator("--java_out", &java_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
-  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
-  std::string test_out = absl::StrCat("--test_out=", ::testing::TempDir());
+  std::string proto_path = absl::StrCat("-I", TestTempDir());
+  std::string java_out = absl::StrCat("--java_out=", TestTempDir());
+  std::string test_out = absl::StrCat("--test_out=", TestTempDir());
 
   const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
                         test_out.c_str(), "test.proto"};
@@ -100,9 +114,8 @@ TEST(JavaPluginTest, PluginTest) {
   // expect
 
   std::string output;
-  ABSL_CHECK_OK(
-      File::GetContents(absl::StrCat(::testing::TempDir(), "/Test.java"),
-                        &output, true));
+  ABSL_CHECK_OK(File::GetContents(absl::StrCat(TestTempDir(), "/Test.java"),
+                                  &output, true));
   std::vector<std::string> lines = absl::StrSplit(output, "\n");
   bool found_generated_annotation = false;
   bool found_do_not_edit = false;

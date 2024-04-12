@@ -64,7 +64,6 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
   }
 
   #region Messages
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FooOptions : pb::IExtendableMessage<FooOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -306,11 +305,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
               _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
@@ -335,11 +330,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
               _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);

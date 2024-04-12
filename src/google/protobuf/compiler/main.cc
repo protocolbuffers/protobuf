@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "absl/log/initialize.h"
 #include "google/protobuf/compiler/command_line_interface.h"
@@ -16,19 +39,9 @@
 #include "google/protobuf/compiler/python/generator.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/compiler/ruby/ruby_generator.h"
-#include "google/protobuf/compiler/rust/generator.h"
-
-#ifdef DISABLE_PROTOC_CONFIG
-#include "google/protobuf/compiler/allowlists/allowlist.h"
-#endif  // DISABLE_PROTOC_CONFIG
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
-
-#ifdef _MSC_VER
-#include <windows.h>
-#include <shellapi.h>
-#endif
 
 namespace google {
 namespace protobuf {
@@ -39,9 +52,6 @@ int ProtobufMain(int argc, char* argv[]) {
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
-#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
-  cli.set_opensource_runtime(true);
-#endif
 
   // Proto2 C++
   cpp::CppGenerator cpp_generator;
@@ -102,13 +112,6 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective-C header and source.");
 
-  // Rust
-  rust::RustGenerator rust_generator;
-  cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
-                        "Generate Rust sources.");
-#ifdef DISABLE_PROTOC_CONFIG
-  auto cleanup = internal::DisableAllowlistInternalOnly();
-#endif  // DISABLE_PROTOC_CONFIG
   return cli.Run(argc, argv);
 }
 
@@ -116,28 +119,6 @@ int ProtobufMain(int argc, char* argv[]) {
 }  // namespace protobuf
 }  // namespace google
 
-#ifdef _MSC_VER
-std::string ToMultiByteUtf8String(const wchar_t* input) {
-  int size = WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), 0, 0,
-                                 nullptr, nullptr);
-  std::string result(size, 0);
-  if (size)
-    WideCharToMultiByte(CP_UTF8, 0, input, wcslen(input), &result[0], size,
-                        nullptr, nullptr);
-  return result;
-}
-
 int main(int argc, char* argv[]) {
-  wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
-  char** argv_mbcs = new char*[argc];
-  for (int i = 0; i < argc; i++) {
-    std::string* multibyte_string = new auto(ToMultiByteUtf8String(wargv[i]));
-    argv_mbcs[i] = const_cast<char*>(multibyte_string->c_str());
-  }
-  return google::protobuf::compiler::ProtobufMain(argc, argv);
+  return PROTOBUF_NAMESPACE_ID::compiler::ProtobufMain(argc, argv);
 }
-#else
-int main(int argc, char* argv[]) {
-  return google::protobuf::compiler::ProtobufMain(argc, argv);
-}
-#endif

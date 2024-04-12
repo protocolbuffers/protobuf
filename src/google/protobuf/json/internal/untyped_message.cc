@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/json/internal/untyped_message.h"
 
@@ -20,7 +43,6 @@
 #include "google/protobuf/type.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -159,52 +181,10 @@ absl::StatusOr<const ResolverPool::Enum*> ResolverPool::FindEnum(
       .first->second.get();
 }
 
-PROTOBUF_NOINLINE static absl::Status MakeEndGroupWithoutGroupError(
-    int field_number) {
-  return absl::InvalidArgumentError(absl::StrFormat(
-      "attempted to close group %d before SGROUP tag", field_number));
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeEndGroupMismatchError(
-    int field_number, int current_group) {
-  return absl::InvalidArgumentError(
-      absl::StrFormat("attempted to close group %d while inside group %d",
-                      field_number, current_group));
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeFieldNotGroupError(int field_number) {
-  return absl::InvalidArgumentError(
-      absl::StrFormat("field number %d is not a group", field_number));
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeUnexpectedEofError() {
-  return absl::InvalidArgumentError("unexpected EOF");
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeUnknownWireTypeError(int wire_type) {
-  return absl::InvalidArgumentError(
-      absl::StrCat("unknown wire type: ", wire_type));
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeProto3Utf8Error() {
-  return absl::InvalidArgumentError("proto3 strings must be UTF-8");
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeInvalidLengthDelimType(
-    int kind, int field_number) {
-  return absl::InvalidArgumentError(absl::StrFormat(
-      "field type %d (number %d) does not support type 2 records", kind,
-      field_number));
-}
-
-PROTOBUF_NOINLINE static absl::Status MakeTooDeepError() {
-  return absl::InvalidArgumentError("allowed depth exceeded");
-}
-
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
-  std::vector<int32_t> group_stack;
   while (true) {
+    std::vector<int32_t> group_stack;
     uint32_t tag = stream.ReadTag();
     if (tag == 0) {
       return absl::OkStatus();
@@ -216,13 +196,15 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
     // EGROUP markers can show up as "unknown fields", so we need to handle them
     // before we even do field lookup. Being inside of a group behaves as if a
     // special field has been added to the message.
-    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP &&
-        group_stack.empty()) {
+    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP) {
       if (!current_group.has_value()) {
-        return MakeEndGroupWithoutGroupError(field_number);
+        return absl::InvalidArgumentError(absl::StrFormat(
+            "attempted to close group %d before SGROUP tag", field_number));
       }
       if (field_number != *current_group) {
-        return MakeEndGroupMismatchError(field_number, *current_group);
+        return absl::InvalidArgumentError(
+            absl::StrFormat("attempted to close group %d while inside group %d",
+                            field_number, *current_group));
       }
       return absl::OkStatus();
     }
@@ -235,28 +217,28 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         case WireFormatLite::WIRETYPE_VARINT: {
           uint64_t x;
           if (!stream.ReadVarint64(&x)) {
-            return MakeUnexpectedEofError();
+            return absl::InvalidArgumentError("unexpected EOF");
           }
           continue;
         }
         case WireFormatLite::WIRETYPE_FIXED64: {
           uint64_t x;
           if (!stream.ReadLittleEndian64(&x)) {
-            return MakeUnexpectedEofError();
+            return absl::InvalidArgumentError("unexpected EOF");
           }
           continue;
         }
         case WireFormatLite::WIRETYPE_FIXED32: {
           uint32_t x;
           if (!stream.ReadLittleEndian32(&x)) {
-            return MakeUnexpectedEofError();
+            return absl::InvalidArgumentError("unexpected EOF");
           }
           continue;
         }
         case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
           uint32_t x;
           if (!stream.ReadVarint32(&x)) {
-            return MakeUnexpectedEofError();
+            return absl::InvalidArgumentError("unexpected EOF");
           }
           stream.Skip(x);
           continue;
@@ -267,16 +249,20 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         }
         case WireFormatLite::WIRETYPE_END_GROUP: {
           if (group_stack.empty()) {
-            return MakeEndGroupWithoutGroupError(field_number);
+            return absl::InvalidArgumentError(absl::StrFormat(
+                "attempted to close group %d before SGROUP tag", field_number));
           }
           if (field_number != group_stack.back()) {
-            return MakeEndGroupMismatchError(field_number, group_stack.back());
+            return absl::InvalidArgumentError(absl::StrFormat(
+                "attempted to close group %d while inside group %d",
+                field_number, *current_group));
           }
           group_stack.pop_back();
           continue;
         }
         default:
-          return MakeUnknownWireTypeError(wire_type);
+          return absl::InvalidArgumentError(
+              absl::StrCat("unknown wire type: ", wire_type));
       }
     }
     switch (wire_type) {
@@ -294,21 +280,23 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         break;
       case WireFormatLite::WIRETYPE_START_GROUP: {
         if (field->proto().kind() != Field::TYPE_GROUP) {
-          return MakeFieldNotGroupError(field->proto().number());
+          return absl::InvalidArgumentError(absl::StrFormat(
+              "field number %d is not a group", field->proto().number()));
         }
         auto group_desc = field->MessageType();
         RETURN_IF_ERROR(group_desc.status());
 
         UntypedMessage group(*group_desc);
         RETURN_IF_ERROR(group.Decode(stream, field_number));
-        RETURN_IF_ERROR(InsertField(*field, std::move(group)));
+        RETURN_IF_ERROR(InsertField<UntypedMessage>(*field, std::move(group)));
         break;
       }
       case WireFormatLite::WIRETYPE_END_GROUP:
-        ABSL_LOG(FATAL) << "unreachable";
+        ABSL_CHECK(false) << "unreachable";
         break;
       default:
-        return MakeUnknownWireTypeError(wire_type);
+        return absl::InvalidArgumentError(
+            absl::StrCat("unknown wire type: ", wire_type));
     }
   }
 
@@ -452,12 +440,9 @@ absl::Status UntypedMessage::Decode32Bit(io::CodedInputStream& stream,
 
 absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
                                              const ResolverPool::Field& field) {
-  if (!stream.IncrementRecursionDepth()) {
-    return MakeTooDeepError();
-  }
   auto limit = stream.ReadLengthAndPushLimit();
   if (limit == 0) {
-    return MakeUnexpectedEofError();
+    return absl::InvalidArgumentError("unexpected EOF");
   }
 
   switch (field.proto().kind()) {
@@ -465,16 +450,16 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
     case Field::TYPE_BYTES: {
       std::string buf;
       if (!stream.ReadString(&buf, stream.BytesUntilLimit())) {
-        return MakeUnexpectedEofError();
+        return absl::InvalidArgumentError("unexpected EOF");
       }
       if (field.proto().kind() == Field::TYPE_STRING) {
         if (desc_->proto().syntax() == google::protobuf::SYNTAX_PROTO3 &&
-            !utf8_range::IsStructurallyValid(buf)) {
-          return MakeProto3Utf8Error();
+            utf8_range::IsStructurallyValid(buf)) {
+          return absl::InvalidArgumentError("proto3 strings must be UTF-8");
         }
       }
 
-      RETURN_IF_ERROR(InsertField(field, std::move(buf)));
+      RETURN_IF_ERROR(InsertField<std::string>(field, std::move(buf)));
       break;
     }
     case Field::TYPE_MESSAGE: {
@@ -483,7 +468,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
 
       auto inner = ParseFromStream(*inner_desc, stream);
       RETURN_IF_ERROR(inner.status());
-      RETURN_IF_ERROR(InsertField(field, std::move(*inner)));
+      RETURN_IF_ERROR(InsertField<UntypedMessage>(field, std::move(*inner)));
       break;
     }
     default: {
@@ -511,22 +496,23 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
             RETURN_IF_ERROR(Decode32Bit(stream, field));
             break;
           default:
-            return MakeInvalidLengthDelimType(field.proto().kind(),
-                                              field.proto().number());
+            return absl::InvalidArgumentError(absl::StrFormat(
+                "field type %d (number %d) does not support type 2 records",
+                field.proto().kind(), field.proto().number()));
         }
       }
       break;
     }
   }
-  stream.DecrementRecursionDepthAndPopLimit(limit);
+  stream.PopLimit(limit);
   return absl::OkStatus();
 }
 
 template <typename T>
 absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
-                                         T&& value) {
+                                         T value) {
   int32_t number = field.proto().number();
-  auto emplace_result = fields_.try_emplace(number, std::forward<T>(value));
+  auto emplace_result = fields_.try_emplace(number, std::move(value));
   if (emplace_result.second) {
     return absl::OkStatus();
   }
@@ -538,18 +524,17 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
   }
 
   Value& slot = emplace_result.first->second;
-  using value_type = std::decay_t<T>;
-  if (auto* extant = absl::get_if<value_type>(&slot)) {
-    std::vector<value_type> repeated;
+  if (auto* extant = absl::get_if<T>(&slot)) {
+    std::vector<T> repeated;
     repeated.push_back(std::move(*extant));
-    repeated.push_back(std::forward<T>(value));
+    repeated.push_back(std::move(value));
 
     slot = std::move(repeated);
-  } else if (auto* extant = absl::get_if<std::vector<value_type>>(&slot)) {
-    extant->push_back(std::forward<T>(value));
+  } else if (auto* extant = absl::get_if<std::vector<T>>(&slot)) {
+    extant->push_back(std::move(value));
   } else {
     absl::optional<absl::string_view> name =
-        google::protobuf::internal::RttiTypeName<value_type>();
+        google::protobuf::internal::RttiTypeName<T>();
     if (!name.has_value()) {
       name = "<unknown>";
     }

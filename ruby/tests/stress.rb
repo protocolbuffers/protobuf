@@ -1,12 +1,22 @@
 #!/usr/bin/ruby
 
 require 'google/protobuf'
-require 'stress_pb'
 require 'test/unit'
 
 module StressTest
-  TestMessage = StressTestProtos::TestMessage
-  M = StressTestProtos::M
+  pool = Google::Protobuf::DescriptorPool.new
+  pool.build do
+    add_message "TestMessage" do
+      optional :a,  :int32,        1
+      repeated :b,  :message,      2, "M"
+    end
+    add_message "M" do
+      optional :foo, :string, 1
+    end
+  end
+
+  TestMessage = pool.lookup("TestMessage").msgclass
+  M = pool.lookup("M").msgclass
 
   class StressTest < Test::Unit::TestCase
     def get_msg
@@ -19,11 +29,9 @@ module StressTest
       data = TestMessage.encode(m)
       100_000.times do
         mnew = TestMessage.decode(data)
-        mnew2 = mnew.dup
+        mnew = mnew.dup
         assert_equal m.inspect, mnew.inspect
-        assert_equal data, TestMessage.encode(mnew)
-        assert_equal m.inspect, mnew2.inspect
-        assert_equal data, TestMessage.encode(mnew2)
+        assert TestMessage.encode(mnew) == data
       end
     end
   end

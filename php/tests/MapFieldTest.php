@@ -533,7 +533,7 @@ class MapFieldTest extends TestBase {
     # Test memory leak
     #########################################################
 
-    // TODO: Add it back.
+    // TODO(teboring): Add it back.
     // public function testCycleLeak()
     // {
     //     $arr = new MapField(GPBType::INT32,

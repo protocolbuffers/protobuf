@@ -56,4 +56,4 @@ constructor(private val delegate: List<E>) : List<E> by delegate {
   override fun toString(): String = delegate.toString()
 }
 
-// TODO: investigate making this an inline class
+// TODO(lowasser): investigate making this an inline class

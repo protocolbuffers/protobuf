@@ -2,11 +2,7 @@
   global:
     extern "C++" {
       *google*;
-      pb::*;
-      upb::*;
     };
-    scc_info_*;
-    descriptor_table_*;
 
   local:
     *;

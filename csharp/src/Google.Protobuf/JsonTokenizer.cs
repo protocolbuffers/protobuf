@@ -1,10 +1,33 @@
-#region Copyright notice and license
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 using System;
@@ -204,13 +227,14 @@ namespace Google.Protobuf
                 while (true)
                 {
                     var next = reader.Read();
-                    switch (next)
+                    if (next == null)
                     {
-                        case -1:
-                            ValidateState(State.ExpectedEndOfDocument, "Unexpected end of document in state: ");
-                            state = State.ReaderExhausted;
-                            return JsonToken.EndDocument;
-
+                        ValidateState(State.ExpectedEndOfDocument, "Unexpected end of document in state: ");
+                        state = State.ReaderExhausted;
+                        return JsonToken.EndDocument;
+                    }
+                    switch (next.Value)
+                    {
                         // Skip whitespace between tokens
                         case ' ':
                         case '\t':
@@ -278,11 +302,11 @@ namespace Google.Protobuf
                         case '7':
                         case '8':
                         case '9':
-                            double number = ReadNumber((char) next);
+                            double number = ReadNumber(next.Value);
                             ValidateAndModifyStateForValue("Invalid state to read a number token: ");
                             return JsonToken.Value(number);
                         default:
-                            throw new InvalidJsonException($"Invalid first character of token: {(char) next}");
+                            throw new InvalidJsonException("Invalid first character of token: " + next.Value);
                     }
                 }
             }
@@ -300,8 +324,7 @@ namespace Google.Protobuf
             /// </summary>
             private string ReadString()
             {
-                //builder will not be released in case of an exception, but this is not a problem and we will create new on next Acquire
-                var builder = StringBuilderCache.Acquire();
+                var value = new StringBuilder();
                 bool haveHighSurrogate = false;
                 while (true)
                 {
@@ -316,7 +339,7 @@ namespace Google.Protobuf
                         {
                             throw reader.CreateException("Invalid use of surrogate pair code units");
                         }
-                        return StringBuilderCache.GetStringAndRelease(builder);
+                        return value.ToString();
                     }
                     if (c == '\\')
                     {
@@ -330,7 +353,7 @@ namespace Google.Protobuf
                         throw reader.CreateException("Invalid use of surrogate pair code units");
                     }
                     haveHighSurrogate = char.IsHighSurrogate(c);
-                    builder.Append(c);
+                    value.Append(c);
                 }
             }
 
@@ -394,23 +417,21 @@ namespace Google.Protobuf
             {
                 for (int i = 1; i < text.Length; i++)
                 {
-                    int next = reader.Read();
-                    if (next != text[i])
+                    char? next = reader.Read();
+                    if (next == null)
                     {
-                        // Only check for "end of text" when we've detected that the character differs from the
-                        // expected one.
-                        var message = next == -1
-                            ? $"Unexpected end of text while reading literal token {text}"
-                            : $"Unexpected character while reading literal token {text}";
-                        throw reader.CreateException(message);
+                        throw reader.CreateException("Unexpected end of text while reading literal token " + text);
+                    }
+                    if (next.Value != text[i])
+                    {
+                        throw reader.CreateException("Unexpected character while reading literal token " + text);
                     }
                 }
             }
 
             private double ReadNumber(char initialCharacter)
             {
-                //builder will not be released in case of an exception, but this is not a problem and we will create new on next Acquire
-                var builder = StringBuilderCache.Acquire();
+                StringBuilder builder = new StringBuilder();
                 if (initialCharacter == '-')
                 {
                     builder.Append("-");
@@ -422,7 +443,7 @@ namespace Google.Protobuf
                 // Each method returns the character it read that doesn't belong in that part,
                 // so we know what to do next, including pushing the character back at the end.
                 // null is returned for "end of text".
-                int next = ReadInt(builder);
+                char? next = ReadInt(builder);
                 if (next == '.')
                 {
                     next = ReadFrac(builder);
@@ -433,16 +454,15 @@ namespace Google.Protobuf
                 }
                 // If we read a character which wasn't part of the number, push it back so we can read it again
                 // to parse the next token.
-                if (next != -1)
+                if (next != null)
                 {
-                    reader.PushBack((char) next);
+                    reader.PushBack(next.Value);
                 }
 
                 // TODO: What exception should we throw if the value can't be represented as a double?
-                var builderValue = StringBuilderCache.GetStringAndRelease(builder);
                 try
                 {
-                    double result = double.Parse(builderValue,
+                    double result = double.Parse(builder.ToString(),
                         NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
                         CultureInfo.InvariantCulture);
 
@@ -450,23 +470,18 @@ namespace Google.Protobuf
                     // For compatibility with other Protobuf implementations the tokenizer should still throw.
                     if (double.IsInfinity(result))
                     {
-                        throw reader.CreateException("Numeric value out of range: " + builderValue);
+                        throw reader.CreateException("Numeric value out of range: " + builder);
                     }
 
                     return result;
                 }
                 catch (OverflowException)
                 {
-                    throw reader.CreateException("Numeric value out of range: " + builderValue);
+                    throw reader.CreateException("Numeric value out of range: " + builder);
                 }
             }
 
-            /// <summary>
-            /// Copies an integer into a StringBuilder.
-            /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
-            /// <returns>The character following the integer, or -1 for end-of-text.</returns>
-            private int ReadInt(StringBuilder builder)
+            private char? ReadInt(StringBuilder builder)
             {
                 char first = reader.ReadOrFail("Invalid numeric literal");
                 if (first < '0' || first > '9')
@@ -474,7 +489,7 @@ namespace Google.Protobuf
                     throw reader.CreateException("Invalid numeric literal");
                 }
                 builder.Append(first);
-                int next = ConsumeDigits(builder, out int digitCount);
+                char? next = ConsumeDigits(builder, out int digitCount);
                 if (first == '0' && digitCount != 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: leading 0 for non-zero value.");
@@ -482,15 +497,10 @@ namespace Google.Protobuf
                 return next;
             }
 
-            /// <summary>
-            /// Copies the fractional part of an integer into a StringBuilder, assuming reader is positioned after a period.
-            /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
-            /// <returns>The character following the fractional part, or -1 for end-of-text.</returns>
-            private int ReadFrac(StringBuilder builder)
+            private char? ReadFrac(StringBuilder builder)
             {
                 builder.Append('.'); // Already consumed this
-                int next = ConsumeDigits(builder, out int digitCount);
+                char? next = ConsumeDigits(builder, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: fraction with no trailing digits");
@@ -498,26 +508,21 @@ namespace Google.Protobuf
                 return next;
             }
 
-            /// <summary>
-            /// Copies the exponent part of a number into a StringBuilder, with an assumption that the reader is already positioned after the "e".
-            /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
-            /// <returns>The character following the exponent, or -1 for end-of-text.</returns>
-            private int ReadExp(StringBuilder builder)
+            private char? ReadExp(StringBuilder builder)
             {
                 builder.Append('E'); // Already consumed this (or 'e')
-                int next = reader.Read();
-                if (next == -1)
+                char? next = reader.Read();
+                if (next == null)
                 {
                     throw reader.CreateException("Invalid numeric literal: exponent with no trailing digits");
                 }
                 if (next == '-' || next == '+')
                 {
-                    builder.Append((char) next);
+                    builder.Append(next.Value);
                 }
                 else
                 {
-                    reader.PushBack((char) next);
+                    reader.PushBack(next.Value);
                 }
                 next = ConsumeDigits(builder, out int digitCount);
                 if (digitCount == 0)
@@ -527,24 +532,18 @@ namespace Google.Protobuf
                 return next;
             }
 
-            /// <summary>
-            /// Copies a sequence of digits into a StringBuilder.
-            /// </summary>
-            /// <param name="builder">The builder to read the number into</param>
-            /// <param name="count">The number of digits appended to the builder</param>
-            /// <returns>The character following the digits, or -1 for end-of-text.</returns>
-            private int ConsumeDigits(StringBuilder builder, out int count)
+            private char? ConsumeDigits(StringBuilder builder, out int count)
             {
                 count = 0;
                 while (true)
                 {
-                    int next = reader.Read();
-                    if (next == -1 || next < '0' || next > '9')
+                    char? next = reader.Read();
+                    if (next == null || next.Value < '0' || next.Value > '9')
                     {
                         return next;
                     }
                     count++;
-                    builder.Append((char) next);
+                    builder.Append(next.Value);
                 }
             }
 
@@ -704,41 +703,39 @@ namespace Google.Protobuf
                 }
 
                 /// <summary>
-                /// The buffered next character, if we have one, or -1 if there is no buffered character.
+                /// The buffered next character, if we have one.
                 /// </summary>
-                private int nextChar = -1;
+                private char? nextChar;
 
                 /// <summary>
-                /// Returns the next character in the stream, or -1 if we have reached the end of the stream.
+                /// Returns the next character in the stream, or null if we have reached the end.
                 /// </summary>
-                internal int Read()
+                /// <returns></returns>
+                internal char? Read()
                 {
-                    if (nextChar != -1)
+                    if (nextChar != null)
                     {
-                        int tmp = nextChar;
-                        nextChar = -1;
+                        char? tmp = nextChar;
+                        nextChar = null;
                         return tmp;
                     }
-                    return reader.Read();
+                    int next = reader.Read();
+                    return next == -1 ? null : (char?) next;
                 }
 
-                /// <summary>
-                /// Reads the next character from the underlying reader, throwing an <see cref="InvalidJsonException" />
-                /// with the specified message if there are no more characters available.
-                /// </summary>
                 internal char ReadOrFail(string messageOnFailure)
                 {
-                    int next = Read();
-                    if (next == -1)
+                    char? next = Read();
+                    if (next == null)
                     {
                         throw CreateException(messageOnFailure);
                     }
-                    return (char) next;
+                    return next.Value;
                 }
 
                 internal void PushBack(char c)
                 {
-                    if (nextChar != -1)
+                    if (nextChar != null)
                     {
                         throw new InvalidOperationException("Cannot push back when already buffering a character");
                     }
@@ -752,59 +749,6 @@ namespace Google.Protobuf
                 {
                     // TODO: Keep track of and use the location.
                     return new InvalidJsonException(message);
-                }
-            }
-
-            /// <summary>
-            /// Provide a cached reusable instance of stringbuilder per thread.
-            /// Copied from https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Text/StringBuilderCache.cs
-            /// </summary>
-            private static class StringBuilderCache
-            {
-                private const int MaxCachedStringBuilderSize = 360;
-                private const int DefaultStringBuilderCapacity = 16; // == StringBuilder.DefaultCapacity
-
-                [ThreadStatic]
-                private static StringBuilder cachedInstance;
-
-                /// <summary>Get a StringBuilder for the specified capacity.</summary>
-                /// <remarks>If a StringBuilder of an appropriate size is cached, it will be returned and the cache emptied.</remarks>
-                public static StringBuilder Acquire(int capacity = DefaultStringBuilderCapacity)
-                {
-                    if (capacity <= MaxCachedStringBuilderSize)
-                    {
-                        StringBuilder sb = cachedInstance;
-                        if (sb != null)
-                        {
-                            // Avoid stringbuilder block fragmentation by getting a new StringBuilder
-                            // when the requested size is larger than the current capacity
-                            if (capacity <= sb.Capacity)
-                            {
-                                cachedInstance = null;
-                                sb.Clear();
-                                return sb;
-                            }
-                        }
-                    }
-
-                    return new StringBuilder(capacity);
-                }
-
-                /// <summary>Place the specified builder in the cache if it is not too big.</summary>
-                private static void Release(StringBuilder sb)
-                {
-                    if (sb.Capacity <= MaxCachedStringBuilderSize)
-                    {
-                        cachedInstance = cachedInstance?.Capacity >= sb.Capacity ? cachedInstance : sb;
-                    }
-                }
-
-                /// <summary>ToString() the stringbuilder, Release it to the cache, and return the resulting string.</summary>
-                public static string GetStringAndRelease(StringBuilder sb)
-                {
-                    string result = sb.ToString();
-                    Release(sb);
-                    return result;
                 }
             }
         }

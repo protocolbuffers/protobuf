@@ -237,8 +237,9 @@ methods where required.
 Old:
 
 ```c++
-bool MessageHasPresence(const google::protobuf::FieldDescriptor* field) {
-  return field->has_presence();
+bool MessageHasPresence(const google::protobuf::Descriptor* message) {
+  return message->file()->syntax() ==
+         google::protobuf::FileDescriptor::SYNTAX_PROTO2;
 }
 ```
 

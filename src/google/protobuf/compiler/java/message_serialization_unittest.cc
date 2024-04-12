@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstddef>
 #include <string>
@@ -13,6 +36,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include <gmock/gmock.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
@@ -39,8 +63,8 @@ int CompileJavaProto(std::string proto_file_name) {
 
   std::string proto_path = absl::StrCat(
       "--proto_path=",
-      TestUtil::GetTestDataPath("google/protobuf/compiler/java"));
-  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
+      TestUtil::GetTestDataPath("third_party/protobuf/compiler/java"));
+  std::string java_out = absl::StrCat("--java_out=", TestTempDir());
 
   const char* argv[] = {
       "protoc",
@@ -59,7 +83,7 @@ TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {
   ABSL_CHECK_OK(File::GetContents(
       // Open-source codebase does not support file::JoinPath, so we manually
       // concatenate instead.
-      absl::StrCat(::testing::TempDir(),
+      absl::StrCat(TestTempDir(),
                    "/TestMessageWithManyExtensionRanges.java"),
       &java_source, true));
 

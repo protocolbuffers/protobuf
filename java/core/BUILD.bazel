@@ -1,16 +1,12 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library")
+load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
-load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
-load("//bazel:java_proto_library.bzl", "java_proto_library")
-load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
-load("//conformance:defs.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
-load("//src/google/protobuf/editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
-load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 LITE_SRCS = [
     # Keep in sync with `//java/lite:pom.xml`.
@@ -78,6 +74,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/NewInstanceSchema.java",
     "src/main/java/com/google/protobuf/NewInstanceSchemaLite.java",
     "src/main/java/com/google/protobuf/NewInstanceSchemas.java",
+    "src/main/java/com/google/protobuf/NioByteString.java",
     "src/main/java/com/google/protobuf/OneofInfo.java",
     "src/main/java/com/google/protobuf/Parser.java",
     "src/main/java/com/google/protobuf/PrimitiveNonBoxingCollection.java",
@@ -88,7 +85,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/RawMessageInfo.java",
     "src/main/java/com/google/protobuf/Reader.java",
     "src/main/java/com/google/protobuf/RopeByteString.java",
-    "src/main/java/com/google/protobuf/RuntimeVersion.java",
     "src/main/java/com/google/protobuf/Schema.java",
     "src/main/java/com/google/protobuf/SchemaFactory.java",
     "src/main/java/com/google/protobuf/SchemaUtil.java",
@@ -107,23 +103,12 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Writer.java",
 ]
 
-FULL_SRCS = glob(
-    [
-        "src/main/java/com/google/protobuf/*.java",
-    ],
-    exclude = LITE_SRCS,
-) + [
-    ":gen_well_known_protos_java",
-]
-
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_javalite",
     javalite = True,
     deps = [
-        ":java_features_proto",
         "//:any_proto",
         "//:api_proto",
-        "//:descriptor_proto",
         "//:duration_proto",
         "//:empty_proto",
         "//:field_mask_proto",
@@ -136,27 +121,11 @@ internal_gen_well_known_protos_java(
 )
 
 # Should be used as `//java/lite`.
-java_library(
+protobuf_java_library(
     name = "lite",
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
-    visibility = [
-        "//java/lite:__pkg__",
-    ],
-)
-
-protobuf_versioned_java_library(
-    name = "lite_bundle",
-    srcs = LITE_SRCS + [
-        ":gen_well_known_protos_javalite",
-    ],
-    automatic_module_name = "com.google.protobuf",
-    bundle_description = "Lite version of Protocol Buffers library. This " +
-                         "version is optimized for code size, but does not " +
-                         "guarantee API/ABI stability.",
-    bundle_name = "Protocol Buffers [Lite]",
-    bundle_symbolic_name = "com.google.protobuf",
     visibility = [
         "//java/lite:__pkg__",
     ],
@@ -168,12 +137,10 @@ protobuf_java_export(
     maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/lite:pom_template.xml",
     resources = [
-        ":java_features_proto",
         "//:lite_well_known_protos",
-        "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
-    runtime_deps = [":lite_bundle"],
+    runtime_deps = [":lite"],
 )
 
 protobuf_java_library(
@@ -181,55 +148,9 @@ protobuf_java_library(
     srcs = LITE_SRCS,
 )
 
-proto_library(
-    name = "java_features_proto",
-    srcs = ["src/main/resources/google/protobuf/java_features.proto"],
-    strip_import_prefix = "/java/core/src/main/resources",
-    visibility = [
-        "//java/kotlin:__pkg__",
-        "//java/kotlin-lite:__pkg__",
-        "//java/lite:__pkg__",
-        "//pkg:__pkg__",
-    ],
-    deps = ["//:descriptor_proto"],
-)
-
-filegroup(
-    name = "java_features_proto_srcs",
-    srcs = ["src/main/resources/google/protobuf/java_features.proto"],
-    visibility = ["//pkg:__pkg__"],
-)
-
-compile_edition_defaults(
-    name = "java_edition_defaults",
-    srcs = [
-        "//:descriptor_proto",
-        "//java/core:java_features_proto",
-    ],
-    maximum_edition = "2023",
-    minimum_edition = "PROTO2",
-)
-
-embed_edition_defaults(
-    name = "embedded_java_edition_defaults_generate",
-    defaults = "java_edition_defaults",
-    output = "generated/src/main/java/com/google/protobuf/JavaEditionDefaults.java",
-    placeholder = "DEFAULTS_VALUE",
-    template = "src/main/java/com/google/protobuf/JavaEditionDefaults.java.template",
-)
-
-staleness_test(
-    name = "generated_java_defaults_staleness_test",
-    outs = ["src/main/java/com/google/protobuf/JavaEditionDefaults.java"],
-    generated_pattern = "generated/%s",
-    tags = ["manual"],
-    target_files = ["src/main/java/com/google/protobuf/JavaEditionDefaults.java"],
-)
-
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_java",
     deps = [
-        ":java_features_proto",
         "//:any_proto",
         "//:api_proto",
         "//:compiler_plugin_proto",
@@ -245,27 +166,16 @@ internal_gen_well_known_protos_java(
     ],
 )
 
-java_library(
+protobuf_java_library(
     name = "core",
-    srcs = FULL_SRCS,
-    visibility = ["//visibility:public"],
-    exports = [
-        ":lite_runtime_only",
+    srcs = glob(
+        [
+            "src/main/java/com/google/protobuf/*.java",
+        ],
+        exclude = LITE_SRCS,
+    ) + [
+        ":gen_well_known_protos_java",
     ],
-    deps = [
-        ":lite_runtime_only",
-    ],
-)
-
-protobuf_versioned_java_library(
-    name = "core_bundle",
-    srcs = FULL_SRCS,
-    automatic_module_name = "com.google.protobuf",
-    bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
-                         "are a way of encoding structured data in an " +
-                         "efficient yet extensible format.",
-    bundle_name = "Protocol Buffers [Core]",
-    bundle_symbolic_name = "com.google.protobuf",
     visibility = ["//visibility:public"],
     exports = [
         ":lite_runtime_only",
@@ -281,12 +191,11 @@ protobuf_java_export(
     maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "pom_template.xml",
     resources = [
-        ":java_features_proto_srcs",
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
-    runtime_deps = [":core_bundle"],
+    runtime_deps = [":core"],
 )
 
 filegroup(
@@ -308,7 +217,6 @@ proto_lang_toolchain(
     name = "toolchain",
     # keep this in sync w/ WELL_KNOWN_PROTO_MAP in //:BUILD
     blacklisted_protos = [
-        ":java_features_proto",
         "//:any_proto",
         "//:api_proto",
         "//:compiler_plugin_proto",
@@ -346,14 +254,6 @@ java_proto_library(
         "//java:__subpackages__",
     ],
     deps = ["//src/google/protobuf:generic_test_protos"],
-)
-
-java_proto_library(
-    name = "generic_test_protos_editions_java_proto",
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = ["//src/google/protobuf:generic_test_editions_protos"],
 )
 
 java_proto_library(
@@ -406,7 +306,6 @@ build_test(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_java.txt",
-    maximum_edition = "2023",
     testee = "//conformance:conformance_java",
     text_format_failure_list = "//conformance:text_format_failure_list_java.txt",
 )
@@ -421,13 +320,11 @@ junit_tests(
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
-            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
         ],
     ),
     data = ["//src/google/protobuf:testdata"],
     deps = [
         ":core",
-        ":generic_test_protos_editions_java_proto",
         ":generic_test_protos_java_proto",
         ":java_test_protos_java_proto",
         ":lite_test_protos_java_proto",
@@ -527,7 +424,6 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
-    "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
     "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
     "src/test/java/com/google/protobuf/MapForProto2Test.java",
@@ -540,9 +436,9 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2SchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java",
-    "src/test/java/com/google/protobuf/RepeatedFieldBuilderTest.java",
+    "src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java",
     "src/test/java/com/google/protobuf/ServiceTest.java",
-    "src/test/java/com/google/protobuf/SingleFieldBuilderTest.java",
+    "src/test/java/com/google/protobuf/SingleFieldBuilderV3Test.java",
     "src/test/java/com/google/protobuf/TestBadIdentifiers.java",
     "src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java",
     "src/test/java/com/google/protobuf/TextFormatParseLocationTest.java",
@@ -584,7 +480,6 @@ pkg_files(
     name = "dist_files",
     srcs = glob([
         "src/main/java/com/google/protobuf/*.java",
-        "src/main/resources/google/protobuf/*.proto",
         "src/test/java/**/*.java",
         "src/test/proto/**/*.proto",
     ]) + [

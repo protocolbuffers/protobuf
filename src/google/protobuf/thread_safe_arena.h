@@ -1,25 +1,49 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2022 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // This file defines the internal class ThreadSafeArena
 
 #ifndef GOOGLE_PROTOBUF_THREAD_SAFE_ARENA_H__
 #define GOOGLE_PROTOBUF_THREAD_SAFE_ARENA_H__
 
+#include <algorithm>
 #include <atomic>
-#include <cstddef>
-#include <cstdint>
+#include <string>
 #include <type_traits>
-#include <vector>
+#include <utility>
 
-#include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
+#include "google/protobuf/arena_config.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -102,8 +126,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   void* AllocateFromStringBlock();
 
-  std::vector<void*> PeekCleanupListForTesting();
-
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
@@ -128,8 +150,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   // Adds SerialArena to the chunked list. May create a new chunk.
   void AddSerialArena(void* id, SerialArena* serial);
-
-  void UnpoisonAllArenaBlocks() const;
 
   // Members are declared here to track sizeof(ThreadSafeArena) and hotness
   // centrally.
@@ -184,39 +204,32 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // create a big enough block to accommodate n bytes.
   SerialArena* GetSerialArenaFallback(size_t n);
 
-  SerialArena* GetSerialArena();
-
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.
-  template <typename Callback>
-  void WalkConstSerialArenaChunk(Callback fn) const;
+  template <typename Functor>
+  void WalkConstSerialArenaChunk(Functor fn) const;
 
   // Executes callback function over SerialArenaChunk.
-  template <typename Callback>
-  void WalkSerialArenaChunk(Callback fn);
+  template <typename Functor>
+  void WalkSerialArenaChunk(Functor fn);
 
-  // Visits SerialArena and calls "fn", including "first_arena" and ones on
-  // chunks. Do not rely on the order of visit. The callback function should
-  // accept `const SerialArena*`.
-  template <typename Callback>
-  void VisitSerialArena(Callback fn) const;
+  // Executes callback function over SerialArena in chunked list in reverse
+  // chronological order. Passes const SerialArena*.
+  template <typename Functor>
+  void PerConstSerialArenaInChunk(Functor fn) const;
 
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
   SizedPtr Free(size_t* space_allocated);
 
-  // ThreadCache is accessed very frequently, so we align it such that it's
-  // located within a single cache line.
-  static constexpr size_t kThreadCacheAlignment = 32;
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)
 #endif
-  struct alignas(kThreadCacheAlignment) ThreadCache {
+  struct alignas(kCacheAlignment) ThreadCache {
     // Number of per-thread lifecycle IDs to reserve. Must be power of two.
     // To reduce contention on a global atomic, each thread reserves a batch of
     // IDs.  The following number is calculated based on a stress test with
@@ -230,8 +243,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     uint64_t last_lifecycle_id_seen{static_cast<uint64_t>(-1)};
     SerialArena* last_serial_arena{nullptr};
   };
-  static_assert(sizeof(ThreadCache) <= kThreadCacheAlignment,
-                "ThreadCache may span several cache lines");
 
   // Lifecycle_id can be highly contended variable in a situation of lots of
   // arena creation. Make sure that other global variables are not sharing the
@@ -246,9 +257,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // iOS does not support __thread keyword so we use a custom thread local
   // storage class we implemented.
   static ThreadCache& thread_cache();
-#elif defined(PROTOBUF_USE_DLLS) && defined(_WIN32)
-  // Thread local variables cannot be exposed through MSVC DLL interface but we
-  // can wrap them in static functions.
+#elif defined(PROTOBUF_USE_DLLS)
+  // Thread local variables cannot be exposed through DLL interface but we can
+  // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
   PROTOBUF_CONSTINIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;

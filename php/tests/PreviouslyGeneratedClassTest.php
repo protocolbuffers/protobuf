@@ -11,14 +11,8 @@ class PreviouslyGeneratedClassTest extends TestBase
 
     public function testPrefixForReservedWords()
     {
-        // In newer versions of PHP, we cannot reference the old class name.
-        if (version_compare(phpversion(), '8.1.0', '>=')) return;
+        $m = new \Previous\readonly();
 
-        // For older versions of PHP, verify that we can reference the
-        // original class name.
-        eval('
-          $m = new \Previous\readonly();
-          $this->assertTrue(true);
-        ');
+        $this->assertTrue(true);
     }
 }

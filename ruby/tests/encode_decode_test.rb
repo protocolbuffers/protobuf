@@ -19,7 +19,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     m = A::B::C::TestMessage.decode(from)
     Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m)
-    assert_empty to
+    assert_equal '', to
+
     # Test discard unknown for singular message field.
     unknown_msg = A::B::C::TestUnknown.new(
             :optional_unknown =>
@@ -28,7 +29,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     m = A::B::C::TestMessage.decode(from)
     Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.optional_msg)
-    assert_empty to
+    assert_equal '', to
+
     # Test discard unknown for repeated message field.
     unknown_msg = A::B::C::TestUnknown.new(
             :repeated_unknown =>
@@ -37,7 +39,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     m = A::B::C::TestMessage.decode(from)
     Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.repeated_msg[0])
-    assert_empty to
+    assert_equal '', to
+
     # Test discard unknown for map value message field.
     unknown_msg = A::B::C::TestUnknown.new(
             :map_unknown =>
@@ -46,7 +49,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     m = A::B::C::TestMessage.decode(from)
     Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.map_string_msg[''])
-    assert_empty to
+    assert_equal '', to
+
     # Test discard unknown for oneof message field.
     unknown_msg = A::B::C::TestUnknown.new(
             :oneof_unknown =>
@@ -55,7 +59,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     m = A::B::C::TestMessage.decode(from)
     Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.oneof_msg)
-    assert_empty to
+    assert_equal '', to
   end
 
   def test_encode_json
@@ -63,7 +67,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     json = msg.to_json
 
     to = A::B::C::TestMessage.decode_json(json)
-    assert_equal 22, to.optional_int32
+    assert_equal to.optional_int32, 22
+
     msg = A::B::C::TestMessage.new({ optional_int32: 22 })
     json = msg.to_json({ preserve_proto_fieldnames: true })
 
@@ -79,38 +84,10 @@ class EncodeDecodeTest < Test::Unit::TestCase
     )
 
     assert_match 'optional_int32', json
-
-
-    # Test for enums printing as ints.
-    msg = A::B::C::TestMessage.new({ optional_enum: 1 })
-    json = A::B::C::TestMessage.encode_json(
-      msg, 
-      { :format_enums_as_integers => true }
-    )
-
-    assert_match '"optionalEnum":1', json
-
-    # Test for default enum being printed as int.
-    msg = A::B::C::TestMessage.new({ optional_enum: 0 })
-    json = A::B::C::TestMessage.encode_json(
-      msg, 
-      { :format_enums_as_integers => true, :emit_defaults => true }
-    )
-
-    assert_match '"optionalEnum":0', json
-
-    # Test for repeated enums printing as ints.
-    msg = A::B::C::TestMessage.new({ repeated_enum: [0,1,2,3] })
-    json = A::B::C::TestMessage.encode_json(
-      msg, 
-      { :format_enums_as_integers => true }
-    )
-
-    assert_match '"repeatedEnum":[0,1,2,3]', json
   end
 
   def test_encode_wrong_msg
-    assert_raises ::ArgumentError do
+    assert_raise ::ArgumentError do
       m = A::B::C::TestMessage.new(
           :optional_int32 => 1,
       )
@@ -141,7 +118,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     msg_out = A::B::C::TestMessage.decode(msg_encoded)
     assert_match msg.to_json, msg_out.to_json
 
-    assert_raises Google::Protobuf::ParseError do
+    assert_raise Google::Protobuf::ParseError do
       A::B::C::TestMessage.decode(msg_encoded, { recursion_limit: 4 })
     end
 
@@ -166,7 +143,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     msg_out = A::B::C::TestMessage.decode(msg_encoded)
     assert_match msg.to_json, msg_out.to_json
 
-    assert_raises RuntimeError do
+    assert_raise RuntimeError do
       A::B::C::TestMessage.encode(msg, { recursion_limit: 5 })
     end
 

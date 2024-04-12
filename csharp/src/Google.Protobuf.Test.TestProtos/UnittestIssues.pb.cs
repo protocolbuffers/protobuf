@@ -63,12 +63,11 @@ namespace UnitTest.Issues.TestProtos {
             "EQoJdG9fc3RyaW5nGAUgASgFEhUKDWdldF9oYXNoX2NvZGUYBiABKAUSEAoI",
             "d3JpdGVfdG8YByABKAUSDQoFY2xvbmUYCCABKAUSFgoOY2FsY3VsYXRlX3Np",
             "emUYCSABKAUSEgoKbWVyZ2VfZnJvbRgKIAEoBRIXCg9vbl9jb25zdHJ1Y3Rp",
-            "b24YCyABKAUSDgoGcGFyc2VyGAwgASgFIj0KEUlzc3VlMTE5ODdNZXNzYWdl",
-            "EgwKAWEYASABKAVSAWISDAoBYhgCIAEoBVIBYRIMCgFjGAMgASgFUgFkKlUK",
-            "DE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglGaXZl",
-            "QmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKjYKDkRl",
-            "cHJlY2F0ZWRFbnVtEhcKD0RFUFJFQ0FURURfWkVSTxAAGgIIARIHCgNvbmUQ",
-            "ARoCGAFCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
+            "b24YCyABKAUSDgoGcGFyc2VyGAwgASgFKlUKDE5lZ2F0aXZlRW51bRIWChJO",
+            "RUdBVElWRV9FTlVNX1pFUk8QABIWCglGaXZlQmVsb3cQ+///////////ARIV",
+            "CghNaW51c09uZRD///////////8BKjYKDkRlcHJlY2F0ZWRFbnVtEhcKD0RF",
+            "UFJFQ0FURURfWkVSTxAAGgIIARIHCgNvbmUQARoCGAFCHaoCGlVuaXRUZXN0",
+            "Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -86,8 +85,7 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.MixedRegularAndOptional), global::UnitTest.Issues.TestProtos.MixedRegularAndOptional.Parser, new[]{ "RegularField", "OptionalField" }, new[]{ "OptionalField" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneField), global::UnitTest.Issues.TestProtos.OneofWithNoneField.Parser, new[]{ "X", "None" }, new[]{ "Test" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneName), global::UnitTest.Issues.TestProtos.OneofWithNoneName.Parser, new[]{ "X", "Y" }, new[]{ "None" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers), global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers.Parser, new[]{ "DisambiguateCommonMembers_", "Types_", "Descriptor_", "Equals_", "ToString_", "GetHashCode_", "WriteTo_", "Clone_", "CalculateSize_", "MergeFrom_", "OnConstruction_", "Parser_" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue11987Message), global::UnitTest.Issues.TestProtos.Issue11987Message.Parser, new[]{ "A", "B", "C" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers), global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers.Parser, new[]{ "DisambiguateCommonMembers_", "Types_", "Descriptor_", "Equals_", "ToString_", "GetHashCode_", "WriteTo_", "Clone_", "CalculateSize_", "MergeFrom_", "OnConstruction_", "Parser_" }, null, null, null, null)
           }));
     }
     #endregion
@@ -114,7 +112,6 @@ namespace UnitTest.Issues.TestProtos {
   /// Issue 307: when generating doubly-nested types, any references
   /// should be of the form A.Types.B.Types.C.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Issue307 : pb::IMessage<Issue307>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -241,11 +238,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -260,11 +253,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -278,7 +267,6 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedOnce : pb::IMessage<NestedOnce>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -405,11 +393,7 @@ namespace UnitTest.Issues.TestProtos {
         #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
@@ -424,11 +408,7 @@ namespace UnitTest.Issues.TestProtos {
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;
@@ -442,7 +422,6 @@ namespace UnitTest.Issues.TestProtos {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static partial class Types {
-          [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
           public sealed partial class NestedTwice : pb::IMessage<NestedTwice>
           #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
               , pb::IBufferMessage
@@ -569,11 +548,7 @@ namespace UnitTest.Issues.TestProtos {
             #else
               uint tag;
               while ((tag = input.ReadTag()) != 0) {
-              if ((tag & 7) == 4) {
-                // Abort on any end group tag.
-                return;
-              }
-              switch(tag) {
+                switch(tag) {
                   default:
                     _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                     break;
@@ -588,11 +563,7 @@ namespace UnitTest.Issues.TestProtos {
             void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
               uint tag;
               while ((tag = input.ReadTag()) != 0) {
-              if ((tag & 7) == 4) {
-                // Abort on any end group tag.
-                return;
-              }
-              switch(tag) {
+                switch(tag) {
                   default:
                     _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                     break;
@@ -613,7 +584,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -805,11 +775,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -838,11 +804,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -868,7 +830,6 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.ObsoleteAttribute]
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -995,11 +956,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1014,11 +971,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1029,7 +982,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1306,11 +1258,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1354,11 +1302,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1401,7 +1345,6 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ItemField : pb::IMessage<ItemField>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1557,11 +1500,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1580,11 +1519,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1599,7 +1534,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ReservedNames : pb::IMessage<ReservedNames>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1784,11 +1718,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1811,11 +1741,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1840,7 +1766,6 @@ namespace UnitTest.Issues.TestProtos {
       /// <summary>
       /// Force a nested type called Types
       /// </summary>
-      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -1967,11 +1892,7 @@ namespace UnitTest.Issues.TestProtos {
         #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
@@ -1986,11 +1907,7 @@ namespace UnitTest.Issues.TestProtos {
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;
@@ -2018,7 +1935,6 @@ namespace UnitTest.Issues.TestProtos {
   /// Alternatively, consider just adding this to
   /// unittest_proto3.proto if multiple platforms want it.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2099,24 +2015,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string O1String {
-      get { return HasO1String ? (string) o1_ : ""; }
+      get { return o1Case_ == O1OneofCase.O1String ? (string) o1_ : ""; }
       set {
         o1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o1Case_ = O1OneofCase.O1String;
-      }
-    }
-    /// <summary>Gets whether the "o1_string" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasO1String {
-      get { return o1Case_ == O1OneofCase.O1String; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "o1_string" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearO1String() {
-      if (HasO1String) {
-        ClearO1();
       }
     }
 
@@ -2125,24 +2027,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int O1Int32 {
-      get { return HasO1Int32 ? (int) o1_ : 0; }
+      get { return o1Case_ == O1OneofCase.O1Int32 ? (int) o1_ : 0; }
       set {
         o1_ = value;
         o1Case_ = O1OneofCase.O1Int32;
-      }
-    }
-    /// <summary>Gets whether the "o1_int32" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasO1Int32 {
-      get { return o1Case_ == O1OneofCase.O1Int32; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "o1_int32" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearO1Int32() {
-      if (HasO1Int32) {
-        ClearO1();
       }
     }
 
@@ -2163,24 +2051,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int O2Int32 {
-      get { return HasO2Int32 ? (int) o2_ : 0; }
+      get { return o2Case_ == O2OneofCase.O2Int32 ? (int) o2_ : 0; }
       set {
         o2_ = value;
         o2Case_ = O2OneofCase.O2Int32;
-      }
-    }
-    /// <summary>Gets whether the "o2_int32" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasO2Int32 {
-      get { return o2Case_ == O2OneofCase.O2Int32; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "o2_int32" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearO2Int32() {
-      if (HasO2Int32) {
-        ClearO2();
       }
     }
 
@@ -2189,24 +2063,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string O2String {
-      get { return HasO2String ? (string) o2_ : ""; }
+      get { return o2Case_ == O2OneofCase.O2String ? (string) o2_ : ""; }
       set {
         o2_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o2Case_ = O2OneofCase.O2String;
-      }
-    }
-    /// <summary>Gets whether the "o2_string" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasO2String {
-      get { return o2Case_ == O2OneofCase.O2String; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "o2_string" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearO2String() {
-      if (HasO2String) {
-        ClearO2();
       }
     }
 
@@ -2283,11 +2143,11 @@ namespace UnitTest.Issues.TestProtos {
     public override int GetHashCode() {
       int hash = 1;
       if (PlainInt32 != 0) hash ^= PlainInt32.GetHashCode();
-      if (HasO1String) hash ^= O1String.GetHashCode();
-      if (HasO1Int32) hash ^= O1Int32.GetHashCode();
+      if (o1Case_ == O1OneofCase.O1String) hash ^= O1String.GetHashCode();
+      if (o1Case_ == O1OneofCase.O1Int32) hash ^= O1Int32.GetHashCode();
       if (PlainString.Length != 0) hash ^= PlainString.GetHashCode();
-      if (HasO2Int32) hash ^= O2Int32.GetHashCode();
-      if (HasO2String) hash ^= O2String.GetHashCode();
+      if (o2Case_ == O2OneofCase.O2Int32) hash ^= O2Int32.GetHashCode();
+      if (o2Case_ == O2OneofCase.O2String) hash ^= O2String.GetHashCode();
       hash ^= (int) o1Case_;
       hash ^= (int) o2Case_;
       if (_unknownFields != null) {
@@ -2312,11 +2172,11 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(10);
         output.WriteString(PlainString);
       }
-      if (HasO1String) {
+      if (o1Case_ == O1OneofCase.O1String) {
         output.WriteRawTag(18);
         output.WriteString(O1String);
       }
-      if (HasO2String) {
+      if (o2Case_ == O2OneofCase.O2String) {
         output.WriteRawTag(26);
         output.WriteString(O2String);
       }
@@ -2324,11 +2184,11 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(32);
         output.WriteInt32(PlainInt32);
       }
-      if (HasO1Int32) {
+      if (o1Case_ == O1OneofCase.O1Int32) {
         output.WriteRawTag(40);
         output.WriteInt32(O1Int32);
       }
-      if (HasO2Int32) {
+      if (o2Case_ == O2OneofCase.O2Int32) {
         output.WriteRawTag(48);
         output.WriteInt32(O2Int32);
       }
@@ -2346,11 +2206,11 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(10);
         output.WriteString(PlainString);
       }
-      if (HasO1String) {
+      if (o1Case_ == O1OneofCase.O1String) {
         output.WriteRawTag(18);
         output.WriteString(O1String);
       }
-      if (HasO2String) {
+      if (o2Case_ == O2OneofCase.O2String) {
         output.WriteRawTag(26);
         output.WriteString(O2String);
       }
@@ -2358,11 +2218,11 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(32);
         output.WriteInt32(PlainInt32);
       }
-      if (HasO1Int32) {
+      if (o1Case_ == O1OneofCase.O1Int32) {
         output.WriteRawTag(40);
         output.WriteInt32(O1Int32);
       }
-      if (HasO2Int32) {
+      if (o2Case_ == O2OneofCase.O2Int32) {
         output.WriteRawTag(48);
         output.WriteInt32(O2Int32);
       }
@@ -2379,19 +2239,19 @@ namespace UnitTest.Issues.TestProtos {
       if (PlainInt32 != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(PlainInt32);
       }
-      if (HasO1String) {
+      if (o1Case_ == O1OneofCase.O1String) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(O1String);
       }
-      if (HasO1Int32) {
+      if (o1Case_ == O1OneofCase.O1Int32) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(O1Int32);
       }
       if (PlainString.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(PlainString);
       }
-      if (HasO2Int32) {
+      if (o2Case_ == O2OneofCase.O2Int32) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(O2Int32);
       }
-      if (HasO2String) {
+      if (o2Case_ == O2OneofCase.O2String) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(O2String);
       }
       if (_unknownFields != null) {
@@ -2441,11 +2301,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2484,11 +2340,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2523,7 +2375,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestJsonName : pb::IMessage<TestJsonName>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2740,11 +2591,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2771,11 +2618,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2803,7 +2646,6 @@ namespace UnitTest.Issues.TestProtos {
   /// oneof case, which is itself a message type, the submessages should
   /// be merged.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofMerging : pb::IMessage<OneofMerging>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2861,24 +2703,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Text {
-      get { return HasText ? (string) value_ : ""; }
+      get { return valueCase_ == ValueOneofCase.Text ? (string) value_ : ""; }
       set {
         value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         valueCase_ = ValueOneofCase.Text;
-      }
-    }
-    /// <summary>Gets whether the "text" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasText {
-      get { return valueCase_ == ValueOneofCase.Text; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "text" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearText() {
-      if (HasText) {
-        ClearValue();
       }
     }
 
@@ -2940,7 +2768,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasText) hash ^= Text.GetHashCode();
+      if (valueCase_ == ValueOneofCase.Text) hash ^= Text.GetHashCode();
       if (valueCase_ == ValueOneofCase.Nested) hash ^= Nested.GetHashCode();
       hash ^= (int) valueCase_;
       if (_unknownFields != null) {
@@ -2961,7 +2789,7 @@ namespace UnitTest.Issues.TestProtos {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasText) {
+      if (valueCase_ == ValueOneofCase.Text) {
         output.WriteRawTag(10);
         output.WriteString(Text);
       }
@@ -2979,7 +2807,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasText) {
+      if (valueCase_ == ValueOneofCase.Text) {
         output.WriteRawTag(10);
         output.WriteString(Text);
       }
@@ -2997,7 +2825,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasText) {
+      if (valueCase_ == ValueOneofCase.Text) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Text);
       }
       if (valueCase_ == ValueOneofCase.Nested) {
@@ -3038,11 +2866,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3070,11 +2894,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -3101,7 +2921,6 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Nested : pb::IMessage<Nested>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -3286,11 +3105,7 @@ namespace UnitTest.Issues.TestProtos {
         #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
@@ -3313,11 +3128,7 @@ namespace UnitTest.Issues.TestProtos {
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;
@@ -3341,7 +3152,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NullValueOutsideStruct : pb::IMessage<NullValueOutsideStruct>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3399,24 +3209,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringValue {
-      get { return HasStringValue ? (string) value_ : ""; }
+      get { return valueCase_ == ValueOneofCase.StringValue ? (string) value_ : ""; }
       set {
         value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         valueCase_ = ValueOneofCase.StringValue;
-      }
-    }
-    /// <summary>Gets whether the "string_value" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasStringValue {
-      get { return valueCase_ == ValueOneofCase.StringValue; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "string_value" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearStringValue() {
-      if (HasStringValue) {
-        ClearValue();
       }
     }
 
@@ -3425,24 +3221,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
-      get { return HasNullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) value_ : global::Google.Protobuf.WellKnownTypes.NullValue.NullValue; }
+      get { return valueCase_ == ValueOneofCase.NullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) value_ : global::Google.Protobuf.WellKnownTypes.NullValue.NullValue; }
       set {
         value_ = value;
         valueCase_ = ValueOneofCase.NullValue;
-      }
-    }
-    /// <summary>Gets whether the "null_value" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasNullValue {
-      get { return valueCase_ == ValueOneofCase.NullValue; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "null_value" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearNullValue() {
-      if (HasNullValue) {
-        ClearValue();
       }
     }
 
@@ -3492,8 +3274,8 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasStringValue) hash ^= StringValue.GetHashCode();
-      if (HasNullValue) hash ^= NullValue.GetHashCode();
+      if (valueCase_ == ValueOneofCase.StringValue) hash ^= StringValue.GetHashCode();
+      if (valueCase_ == ValueOneofCase.NullValue) hash ^= NullValue.GetHashCode();
       hash ^= (int) valueCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -3513,11 +3295,11 @@ namespace UnitTest.Issues.TestProtos {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasStringValue) {
+      if (valueCase_ == ValueOneofCase.StringValue) {
         output.WriteRawTag(10);
         output.WriteString(StringValue);
       }
-      if (HasNullValue) {
+      if (valueCase_ == ValueOneofCase.NullValue) {
         output.WriteRawTag(16);
         output.WriteEnum((int) NullValue);
       }
@@ -3531,11 +3313,11 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasStringValue) {
+      if (valueCase_ == ValueOneofCase.StringValue) {
         output.WriteRawTag(10);
         output.WriteString(StringValue);
       }
-      if (HasNullValue) {
+      if (valueCase_ == ValueOneofCase.NullValue) {
         output.WriteRawTag(16);
         output.WriteEnum((int) NullValue);
       }
@@ -3549,10 +3331,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasStringValue) {
+      if (valueCase_ == ValueOneofCase.StringValue) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(StringValue);
       }
-      if (HasNullValue) {
+      if (valueCase_ == ValueOneofCase.NullValue) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NullValue);
       }
       if (_unknownFields != null) {
@@ -3587,11 +3369,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3615,11 +3393,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -3639,7 +3413,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NullValueNotInOneof : pb::IMessage<NullValueNotInOneof>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3795,11 +3568,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3818,11 +3587,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -3837,7 +3602,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MixedRegularAndOptional : pb::IMessage<MixedRegularAndOptional>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3897,13 +3661,11 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "optional_field" field.</summary>
     public const int OptionalFieldFieldNumber = 2;
-    private readonly static string OptionalFieldDefaultValue = "";
-
     private string optionalField_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string OptionalField {
-      get { return optionalField_ ?? OptionalFieldDefaultValue; }
+      get { return optionalField_ ?? ""; }
       set {
         optionalField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
@@ -4036,11 +3798,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -4063,11 +3821,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -4086,7 +3840,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofWithNoneField : pb::IMessage<OneofWithNoneField>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4144,24 +3897,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string X {
-      get { return HasX ? (string) test_ : ""; }
+      get { return testCase_ == TestOneofCase.X ? (string) test_ : ""; }
       set {
         test_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         testCase_ = TestOneofCase.X;
-      }
-    }
-    /// <summary>Gets whether the "x" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasX {
-      get { return testCase_ == TestOneofCase.X; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "x" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearX() {
-      if (HasX) {
-        ClearTest();
       }
     }
 
@@ -4170,24 +3909,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string None {
-      get { return HasNone ? (string) test_ : ""; }
+      get { return testCase_ == TestOneofCase.None_ ? (string) test_ : ""; }
       set {
         test_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         testCase_ = TestOneofCase.None_;
-      }
-    }
-    /// <summary>Gets whether the "none" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasNone {
-      get { return testCase_ == TestOneofCase.None_; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "none" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearNone() {
-      if (HasNone) {
-        ClearTest();
       }
     }
 
@@ -4237,8 +3962,8 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasX) hash ^= X.GetHashCode();
-      if (HasNone) hash ^= None.GetHashCode();
+      if (testCase_ == TestOneofCase.X) hash ^= X.GetHashCode();
+      if (testCase_ == TestOneofCase.None_) hash ^= None.GetHashCode();
       hash ^= (int) testCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -4258,11 +3983,11 @@ namespace UnitTest.Issues.TestProtos {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasX) {
+      if (testCase_ == TestOneofCase.X) {
         output.WriteRawTag(10);
         output.WriteString(X);
       }
-      if (HasNone) {
+      if (testCase_ == TestOneofCase.None_) {
         output.WriteRawTag(18);
         output.WriteString(None);
       }
@@ -4276,11 +4001,11 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasX) {
+      if (testCase_ == TestOneofCase.X) {
         output.WriteRawTag(10);
         output.WriteString(X);
       }
-      if (HasNone) {
+      if (testCase_ == TestOneofCase.None_) {
         output.WriteRawTag(18);
         output.WriteString(None);
       }
@@ -4294,10 +4019,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasX) {
+      if (testCase_ == TestOneofCase.X) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(X);
       }
-      if (HasNone) {
+      if (testCase_ == TestOneofCase.None_) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(None);
       }
       if (_unknownFields != null) {
@@ -4332,11 +4057,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -4359,11 +4080,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -4382,7 +4099,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofWithNoneName : pb::IMessage<OneofWithNoneName>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4440,24 +4156,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string X {
-      get { return HasX ? (string) none_ : ""; }
+      get { return noneCase_ == NoneOneofCase.X ? (string) none_ : ""; }
       set {
         none_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         noneCase_ = NoneOneofCase.X;
-      }
-    }
-    /// <summary>Gets whether the "x" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasX {
-      get { return noneCase_ == NoneOneofCase.X; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "x" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearX() {
-      if (HasX) {
-        ClearNone();
       }
     }
 
@@ -4466,24 +4168,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Y {
-      get { return HasY ? (string) none_ : ""; }
+      get { return noneCase_ == NoneOneofCase.Y ? (string) none_ : ""; }
       set {
         none_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         noneCase_ = NoneOneofCase.Y;
-      }
-    }
-    /// <summary>Gets whether the "y" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasY {
-      get { return noneCase_ == NoneOneofCase.Y; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "y" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearY() {
-      if (HasY) {
-        ClearNone();
       }
     }
 
@@ -4533,8 +4221,8 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasX) hash ^= X.GetHashCode();
-      if (HasY) hash ^= Y.GetHashCode();
+      if (noneCase_ == NoneOneofCase.X) hash ^= X.GetHashCode();
+      if (noneCase_ == NoneOneofCase.Y) hash ^= Y.GetHashCode();
       hash ^= (int) noneCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -4554,11 +4242,11 @@ namespace UnitTest.Issues.TestProtos {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasX) {
+      if (noneCase_ == NoneOneofCase.X) {
         output.WriteRawTag(10);
         output.WriteString(X);
       }
-      if (HasY) {
+      if (noneCase_ == NoneOneofCase.Y) {
         output.WriteRawTag(18);
         output.WriteString(Y);
       }
@@ -4572,11 +4260,11 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasX) {
+      if (noneCase_ == NoneOneofCase.X) {
         output.WriteRawTag(10);
         output.WriteString(X);
       }
-      if (HasY) {
+      if (noneCase_ == NoneOneofCase.Y) {
         output.WriteRawTag(18);
         output.WriteString(Y);
       }
@@ -4590,10 +4278,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasX) {
+      if (noneCase_ == NoneOneofCase.X) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(X);
       }
-      if (HasY) {
+      if (noneCase_ == NoneOneofCase.Y) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Y);
       }
       if (_unknownFields != null) {
@@ -4628,11 +4316,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -4655,11 +4339,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -4681,7 +4361,6 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Issue 8810
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DisambiguateCommonMembers : pb::IMessage<DisambiguateCommonMembers>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -5156,11 +4835,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -5223,11 +4898,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -5277,278 +4948,6 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 96: {
             Parser_ = input.ReadInt32();
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class Issue11987Message : pb::IMessage<Issue11987Message>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<Issue11987Message> _parser = new pb::MessageParser<Issue11987Message>(() => new Issue11987Message());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Issue11987Message> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[15]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Issue11987Message() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Issue11987Message(Issue11987Message other) : this() {
-      a_ = other.a_;
-      b_ = other.b_;
-      c_ = other.c_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Issue11987Message Clone() {
-      return new Issue11987Message(this);
-    }
-
-    /// <summary>Field number for the "a" field.</summary>
-    public const int AFieldNumber = 1;
-    private int a_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int A {
-      get { return a_; }
-      set {
-        a_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "b" field.</summary>
-    public const int BFieldNumber = 2;
-    private int b_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int B {
-      get { return b_; }
-      set {
-        b_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "c" field.</summary>
-    public const int CFieldNumber = 3;
-    private int c_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int C {
-      get { return c_; }
-      set {
-        c_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as Issue11987Message);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Issue11987Message other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (A != other.A) return false;
-      if (B != other.B) return false;
-      if (C != other.C) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (A != 0) hash ^= A.GetHashCode();
-      if (B != 0) hash ^= B.GetHashCode();
-      if (C != 0) hash ^= C.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (A != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(A);
-      }
-      if (B != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(B);
-      }
-      if (C != 0) {
-        output.WriteRawTag(24);
-        output.WriteInt32(C);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (A != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(A);
-      }
-      if (B != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(B);
-      }
-      if (C != 0) {
-        output.WriteRawTag(24);
-        output.WriteInt32(C);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int CalculateSize() {
-      int size = 0;
-      if (A != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(A);
-      }
-      if (B != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(B);
-      }
-      if (C != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(C);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Issue11987Message other) {
-      if (other == null) {
-        return;
-      }
-      if (other.A != 0) {
-        A = other.A;
-      }
-      if (other.B != 0) {
-        B = other.B;
-      }
-      if (other.C != 0) {
-        C = other.C;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 8: {
-            A = input.ReadInt32();
-            break;
-          }
-          case 16: {
-            B = input.ReadInt32();
-            break;
-          }
-          case 24: {
-            C = input.ReadInt32();
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 8: {
-            A = input.ReadInt32();
-            break;
-          }
-          case 16: {
-            B = input.ReadInt32();
-            break;
-          }
-          case 24: {
-            C = input.ReadInt32();
             break;
           }
         }

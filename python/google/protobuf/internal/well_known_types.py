@@ -1,9 +1,32 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
+# https://developers.google.com/protocol-buffers/
 #
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Contains well known classes.
 
@@ -20,7 +43,6 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import calendar
 import collections.abc
 import datetime
-import warnings
 
 from google.protobuf.internal import field_mask
 
@@ -34,13 +56,6 @@ _MILLIS_PER_SECOND = 1000
 _MICROS_PER_SECOND = 1000000
 _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
-_TIMESTAMP_SECONDS_MIN = -62135596800
-_TIMESTAMP_SECONDS_MAX = 253402300799
-
-_EPOCH_DATETIME_NAIVE = datetime.datetime(1970, 1, 1, tzinfo=None)
-_EPOCH_DATETIME_AWARE = _EPOCH_DATETIME_NAIVE.replace(
-    tzinfo=datetime.timezone.utc
-)
 
 
 class Any(object):
@@ -75,6 +90,11 @@ class Any(object):
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
+_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
+_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
+    0, tz=datetime.timezone.utc)
+
+
 class Timestamp(object):
   """Class for Timestamp message type."""
 
@@ -88,10 +108,10 @@ class Timestamp(object):
       and uses 3, 6 or 9 fractional digits as required to represent the
       exact time. Example of the return format: '1972-01-01T10:00:20.021Z'
     """
-    _CheckTimestampValid(self.seconds, self.nanos)
-    nanos = self.nanos
-    seconds = self.seconds % _SECONDS_PER_DAY
-    days = (self.seconds - seconds) // _SECONDS_PER_DAY
+    nanos = self.nanos % _NANOS_PER_SECOND
+    total_sec = self.seconds + (self.nanos - nanos) // _NANOS_PER_SECOND
+    seconds = total_sec % _SECONDS_PER_DAY
+    days = (total_sec - seconds) // _SECONDS_PER_DAY
     dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(days, seconds)
 
     result = dt.isoformat()
@@ -169,7 +189,6 @@ class Timestamp(object):
       else:
         seconds += (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
     # Set seconds and nanos
-    _CheckTimestampValid(seconds, nanos)
     self.seconds = int(seconds)
     self.nanos = int(nanos)
 
@@ -179,53 +198,39 @@ class Timestamp(object):
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
-    _CheckTimestampValid(self.seconds, self.nanos)
     return self.seconds * _NANOS_PER_SECOND + self.nanos
 
   def ToMicroseconds(self):
     """Converts Timestamp to microseconds since epoch."""
-    _CheckTimestampValid(self.seconds, self.nanos)
     return (self.seconds * _MICROS_PER_SECOND +
             self.nanos // _NANOS_PER_MICROSECOND)
 
   def ToMilliseconds(self):
     """Converts Timestamp to milliseconds since epoch."""
-    _CheckTimestampValid(self.seconds, self.nanos)
     return (self.seconds * _MILLIS_PER_SECOND +
             self.nanos // _NANOS_PER_MILLISECOND)
 
   def ToSeconds(self):
     """Converts Timestamp to seconds since epoch."""
-    _CheckTimestampValid(self.seconds, self.nanos)
     return self.seconds
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds since epoch to Timestamp."""
-    seconds = nanos // _NANOS_PER_SECOND
-    nanos = nanos % _NANOS_PER_SECOND
-    _CheckTimestampValid(seconds, nanos)
-    self.seconds = seconds
-    self.nanos = nanos
+    self.seconds = nanos // _NANOS_PER_SECOND
+    self.nanos = nanos % _NANOS_PER_SECOND
 
   def FromMicroseconds(self, micros):
     """Converts microseconds since epoch to Timestamp."""
-    seconds = micros // _MICROS_PER_SECOND
-    nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
-    _CheckTimestampValid(seconds, nanos)
-    self.seconds = seconds
-    self.nanos = nanos
+    self.seconds = micros // _MICROS_PER_SECOND
+    self.nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds since epoch to Timestamp."""
-    seconds = millis // _MILLIS_PER_SECOND
-    nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
-    _CheckTimestampValid(seconds, nanos)
-    self.seconds = seconds
-    self.nanos = nanos
+    self.seconds = millis // _MILLIS_PER_SECOND
+    self.nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
 
   def FromSeconds(self, seconds):
     """Converts seconds since epoch to Timestamp."""
-    _CheckTimestampValid(seconds, 0)
     self.seconds = seconds
     self.nanos = 0
 
@@ -241,22 +246,13 @@ class Timestamp(object):
 
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
-    # Using datetime.fromtimestamp for this would avoid constructing an extra
-    # timedelta object and possibly an extra datetime. Unfortuantely, that has
-    # the disadvantage of not handling the full precision (on all platforms, see
-    # https://github.com/python/cpython/issues/109849) or full range (on some
-    # platforms, see https://github.com/python/cpython/issues/110042) of
-    # datetime.
-    _CheckTimestampValid(self.seconds, self.nanos)
     delta = datetime.timedelta(
         seconds=self.seconds,
-        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
-    )
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
     if tzinfo is None:
       return _EPOCH_DATETIME_NAIVE + delta
     else:
-      # Note the tz conversion has to come after the timedelta arithmetic.
-      return (_EPOCH_DATETIME_AWARE + delta).astimezone(tzinfo)
+      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp.
@@ -271,22 +267,8 @@ class Timestamp(object):
     # manipulated into a long value of seconds.  During the conversion from
     # struct_time to long, the source date in UTC, and so it follows that the
     # correct transformation is calendar.timegm()
-    seconds = calendar.timegm(dt.utctimetuple())
-    nanos = dt.microsecond * _NANOS_PER_MICROSECOND
-    _CheckTimestampValid(seconds, nanos)
-    self.seconds = seconds
-    self.nanos = nanos
-
-
-def _CheckTimestampValid(seconds, nanos):
-  if seconds < _TIMESTAMP_SECONDS_MIN or seconds > _TIMESTAMP_SECONDS_MAX:
-    raise ValueError(
-        'Timestamp is not valid: Seconds {0} must be in range '
-        '[-62135596800, 253402300799].'.format(seconds))
-  if nanos < 0 or nanos >= _NANOS_PER_SECOND:
-    raise ValueError(
-        'Timestamp is not valid: Nanos {} must be in a range '
-        '[0, 999999].'.format(nanos))
+    self.seconds = calendar.timegm(dt.utctimetuple())
+    self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
 
 
 class Duration(object):
@@ -400,7 +382,7 @@ class Duration(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToTimedelta(self) -> datetime.timedelta:
+  def ToTimedelta(self):
     """Converts Duration to timedelta."""
     return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(
@@ -464,7 +446,7 @@ def _SetStructValue(struct_value, value):
   elif isinstance(value, (dict, Struct)):
     struct_value.struct_value.Clear()
     struct_value.struct_value.update(value)
-  elif isinstance(value, (list, tuple, ListValue)):
+  elif isinstance(value, (list, ListValue)):
     struct_value.list_value.Clear()
     struct_value.list_value.extend(value)
   else:

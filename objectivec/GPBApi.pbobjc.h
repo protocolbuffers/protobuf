@@ -120,7 +120,7 @@ GPB_FINAL @interface GPBApi : GPBMessage
 @property(nonatomic, readonly) NSUInteger mixinsArray_Count;
 
 /** The source syntax of the service. */
-@property(nonatomic, readwrite) GPBSyntax syntax;
+@property(nonatomic, readwrite) enum GPBSyntax syntax;
 
 @end
 
@@ -174,7 +174,7 @@ GPB_FINAL @interface GPBMethod : GPBMessage
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /** The source syntax of this method. */
-@property(nonatomic, readwrite) GPBSyntax syntax;
+@property(nonatomic, readwrite) enum GPBSyntax syntax;
 
 @end
 
@@ -245,7 +245,7 @@ typedef GPB_ENUM(GPBMixin_FieldNumber) {
  * The mixin construct implies that all methods in `AccessControl` are
  * also declared with same name and request/response types in
  * `Storage`. A documentation generator or annotation processor will
- * see the effective `Storage.GetAcl` method after inherting
+ * see the effective `Storage.GetAcl` method after inheriting
  * documentation and annotations as follows:
  *
  *     service Storage {

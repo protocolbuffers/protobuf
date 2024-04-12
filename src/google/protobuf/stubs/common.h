@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda) and others
 //
@@ -26,9 +49,7 @@
 #include <TargetConditionals.h>  // for TARGET_OS_IPHONE
 #endif
 
-#if defined(__ANDROID__) || defined(GOOGLE_PROTOBUF_OS_ANDROID) || \
-    (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) ||             \
-    defined(GOOGLE_PROTOBUF_OS_IPHONE)
+#if defined(__ANDROID__) || defined(GOOGLE_PROTOBUF_OS_ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
 #include <pthread.h>
 #endif
 
@@ -45,14 +66,27 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 5027000
+#define GOOGLE_PROTOBUF_VERSION 4022005
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
-#define GOOGLE_PROTOBUF_VERSION_SUFFIX "-dev"
+#define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
 
-// Verifies that the protobuf version a program was compiled with matches what
-// it is linked/running with. Use the macro below to call this function.
-void PROTOBUF_EXPORT VerifyVersion(int protobufVersionCompiledWith,
+// The minimum header version which works with the current version of
+// the library.  This constant should only be used by protoc's C++ code
+// generator.
+static const int kMinHeaderVersionForLibrary = 4022000;
+
+// The minimum protoc version which works with the current version of the
+// headers.
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 4022000
+
+// The minimum header version which works with the current version of
+// protoc.  This constant should only be used in VerifyVersion().
+static const int kMinHeaderVersionForProtoc = 4022000;
+
+// Verifies that the headers and libraries are compatible.  Use the macro
+// below to call this.
+void PROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
                                    const char* filename);
 
 // Converts a numeric version number to a string.
@@ -69,8 +103,11 @@ ProtocVersionString(int version);  // NOLINT(runtime/string)
 // to use the protobuf library) to verify that the version you link against
 // matches the headers you compiled against.  If a version mismatch is
 // detected, the process will abort.
-#define GOOGLE_PROTOBUF_VERIFY_VERSION \
-  ::google::protobuf::internal::VerifyVersion(GOOGLE_PROTOBUF_VERSION, __FILE__)
+#define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
+  ::google::protobuf::internal::VerifyVersion(                            \
+    GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
+    __FILE__)
+
 
 // This lives in message_lite.h now, but we leave this here for any users that
 // #include common.h and not message_lite.h.

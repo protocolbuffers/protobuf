@@ -29,13 +29,9 @@ protobuf Java Lite runtime. If you are using Maven, include the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-javalite</artifactId>
-  <version><!--version--></version>
+  <version>3.22.5</version>
 </dependency>
 ```
-
-And **replace `<!--version-->` with a version from the
-[Maven Protocol Buffers \[Lite\] Repository](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-javalite).**
-For example, `3.25.3`.
 
 ## R8 rule to make production app builds work
 

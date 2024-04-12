@@ -1,9 +1,32 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
+# https://developers.google.com/protocol-buffers/
 #
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Code for decoding protocol buffer primitives.
 
@@ -386,12 +409,18 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
 
           message._unknown_fields.append(
               (tag_bytes, buffer[value_start_pos:pos].tobytes()))
+          if message._unknown_field_set is None:
+            message._unknown_field_set = containers.UnknownFieldSet()
+          message._unknown_field_set._add(
+              field_number, wire_format.WIRETYPE_VARINT, element)
           # pylint: enable=protected-access
       if pos > endpoint:
         if element in enum_type.values_by_number:
           del value[-1]   # Discard corrupt value.
         else:
           del message._unknown_fields[-1]
+          # pylint: disable=protected-access
+          del message._unknown_field_set._values[-1]
           # pylint: enable=protected-access
         raise _DecodeError('Packed element was truncated.')
       return pos
@@ -425,6 +454,10 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
             message._unknown_fields = []
           message._unknown_fields.append(
               (tag_bytes, buffer[pos:new_pos].tobytes()))
+          if message._unknown_field_set is None:
+            message._unknown_field_set = containers.UnknownFieldSet()
+          message._unknown_field_set._add(
+              field_number, wire_format.WIRETYPE_VARINT, element)
         # pylint: enable=protected-access
         # Predict that the next tag is another copy of the same repeated
         # field.
@@ -466,6 +499,10 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
                                      wire_format.WIRETYPE_VARINT)
         message._unknown_fields.append(
             (tag_bytes, buffer[value_start_pos:pos].tobytes()))
+        if message._unknown_field_set is None:
+          message._unknown_field_set = containers.UnknownFieldSet()
+        message._unknown_field_set._add(
+            field_number, wire_format.WIRETYPE_VARINT, enum_value)
         # pylint: enable=protected-access
       return pos
     return DecodeField
@@ -781,6 +818,12 @@ def MessageSetItemDecoder(descriptor):
         message._unknown_fields = []
       message._unknown_fields.append(
           (MESSAGE_SET_ITEM_TAG, buffer[message_set_item_start:pos].tobytes()))
+      if message._unknown_field_set is None:
+        message._unknown_field_set = containers.UnknownFieldSet()
+      message._unknown_field_set._add(
+          type_id,
+          wire_format.WIRETYPE_LENGTH_DELIMITED,
+          buffer[message_start:message_end].tobytes())
       # pylint: enable=protected-access
 
     return pos

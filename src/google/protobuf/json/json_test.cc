@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/json/json.h"
 
@@ -26,7 +49,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
@@ -51,13 +73,12 @@ using ::proto3::TestMap;
 using ::proto3::TestMessage;
 using ::proto3::TestOneof;
 using ::proto3::TestWrapper;
-using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::SizeIs;
 
-// TODO: Use the gtest versions once that's available in OSS.
+// TODO(b/234474291): Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
           absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
   if (!arg.ok()) {
@@ -173,78 +194,99 @@ TEST_P(JsonTest, TestWhitespaces) {
 )"));
 }
 
-
-TEST_P(JsonTest, TestAlwaysPrintFieldsWithNoPresence) {
+TEST_P(JsonTest, TestDefaultValues) {
   TestMessage m;
   EXPECT_THAT(ToJson(m), IsOkAndHolds("{}"));
 
   PrintOptions options;
-  options.always_print_fields_with_no_presence = true;
-  EXPECT_THAT(ToJson(m, options), IsOkAndHolds(R"({"boolValue":false,)"
-                                               R"("int32Value":0,)"
-                                               R"("int64Value":"0",)"
-                                               R"("uint32Value":0,)"
-                                               R"("uint64Value":"0",)"
-                                               R"("floatValue":0,)"
-                                               R"("doubleValue":0,)"
-                                               R"("stringValue":"",)"
-                                               R"("bytesValue":"",)"
-                                               R"("enumValue":"FOO",)"
-                                               R"("repeatedBoolValue":[],)"
-                                               R"("repeatedInt32Value":[],)"
-                                               R"("repeatedInt64Value":[],)"
-                                               R"("repeatedUint32Value":[],)"
-                                               R"("repeatedUint64Value":[],)"
-                                               R"("repeatedFloatValue":[],)"
-                                               R"("repeatedDoubleValue":[],)"
-                                               R"("repeatedStringValue":[],)"
-                                               R"("repeatedBytesValue":[],)"
-                                               R"("repeatedEnumValue":[],)"
-                                               R"("repeatedMessageValue":[])"
+  options.always_print_primitive_fields = true;
+  EXPECT_THAT(ToJson(m, options), IsOkAndHolds("{\"boolValue\":false,"
+                                               "\"int32Value\":0,"
+                                               "\"int64Value\":\"0\","
+                                               "\"uint32Value\":0,"
+                                               "\"uint64Value\":\"0\","
+                                               "\"floatValue\":0,"
+                                               "\"doubleValue\":0,"
+                                               "\"stringValue\":\"\","
+                                               "\"bytesValue\":\"\","
+                                               "\"enumValue\":\"FOO\","
+                                               "\"repeatedBoolValue\":[],"
+                                               "\"repeatedInt32Value\":[],"
+                                               "\"repeatedInt64Value\":[],"
+                                               "\"repeatedUint32Value\":[],"
+                                               "\"repeatedUint64Value\":[],"
+                                               "\"repeatedFloatValue\":[],"
+                                               "\"repeatedDoubleValue\":[],"
+                                               "\"repeatedStringValue\":[],"
+                                               "\"repeatedBytesValue\":[],"
+                                               "\"repeatedEnumValue\":[],"
+                                               "\"repeatedMessageValue\":[]"
                                                "}"));
 
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
-  m.set_optional_bool_value(false);
-  m.set_optional_string_value("");
-  m.set_optional_bytes_value("");
-  EXPECT_THAT(ToJson(m, options),
-              IsOkAndHolds(R"({"boolValue":false,)"
-                           R"("int32Value":0,)"
-                           R"("int64Value":"0",)"
-                           R"("uint32Value":0,)"
-                           R"("uint64Value":"0",)"
-                           R"("floatValue":0,)"
-                           R"("doubleValue":0,)"
-                           R"("stringValue":"i am a test string value",)"
-                           R"("bytesValue":"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=",)"
-                           R"("enumValue":"FOO",)"
-                           R"("repeatedBoolValue":[],)"
-                           R"("repeatedInt32Value":[],)"
-                           R"("repeatedInt64Value":[],)"
-                           R"("repeatedUint32Value":[],)"
-                           R"("repeatedUint64Value":[],)"
-                           R"("repeatedFloatValue":[],)"
-                           R"("repeatedDoubleValue":[],)"
-                           R"("repeatedStringValue":[],)"
-                           R"("repeatedBytesValue":[],)"
-                           R"("repeatedEnumValue":[],)"
-                           R"("repeatedMessageValue":[],)"
-                           R"("optionalBoolValue":false,)"
-                           R"("optionalStringValue":"",)"
-                           R"("optionalBytesValue":"")"
-                           "}"));
+  EXPECT_THAT(
+      ToJson(m, options),
+      IsOkAndHolds("{\"boolValue\":false,"
+                   "\"int32Value\":0,"
+                   "\"int64Value\":\"0\","
+                   "\"uint32Value\":0,"
+                   "\"uint64Value\":\"0\","
+                   "\"floatValue\":0,"
+                   "\"doubleValue\":0,"
+                   "\"stringValue\":\"i am a test string value\","
+                   "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
+                   "\"enumValue\":\"FOO\","
+                   "\"repeatedBoolValue\":[],"
+                   "\"repeatedInt32Value\":[],"
+                   "\"repeatedInt64Value\":[],"
+                   "\"repeatedUint32Value\":[],"
+                   "\"repeatedUint64Value\":[],"
+                   "\"repeatedFloatValue\":[],"
+                   "\"repeatedDoubleValue\":[],"
+                   "\"repeatedStringValue\":[],"
+                   "\"repeatedBytesValue\":[],"
+                   "\"repeatedEnumValue\":[],"
+                   "\"repeatedMessageValue\":[]"
+                   "}"));
 
   EXPECT_THAT(
       ToJson(protobuf_unittest::TestAllTypes(), options),
       IsOkAndHolds(
-          R"({"repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
+          R"({"optionalInt32":0,"optionalInt64":"0","optionalUint32":0,)"
+          R"("optionalUint64":"0","optionalSint32":0,"optionalSint64":"0","optionalFixed32":0,)"
+          R"("optionalFixed64":"0","optionalSfixed32":0,"optionalSfixed64":"0",)"
+          R"("optionalFloat":0,"optionalDouble":0,"optionalBool":false,"optionalString":"",)"
+          R"("optionalBytes":"","optionalgroup":null,"optionalNestedEnum":"FOO","optionalForeignEnum":"FOREIGN_FOO",)"
+          R"("optionalImportEnum":"IMPORT_FOO","optionalStringPiece":"","optionalCord":"",)"
+          R"("repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
           R"("repeatedSint32":[],"repeatedSint64":[],"repeatedFixed32":[],"repeatedFixed64":[],)"
           R"("repeatedSfixed32":[],"repeatedSfixed64":[],"repeatedFloat":[],"repeatedDouble":[],)"
           R"("repeatedBool":[],"repeatedString":[],"repeatedBytes":[],"repeatedgroup":[],)"
           R"("repeatedNestedMessage":[],"repeatedForeignMessage":[],"repeatedImportMessage":[],)"
           R"("repeatedNestedEnum":[],"repeatedForeignEnum":[],"repeatedImportEnum":[],)"
-          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[]})"));
+          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[],"defaultInt32":41,)"
+          R"("defaultInt64":"42","defaultUint32":43,"defaultUint64":"44","defaultSint32":-45,)"
+          R"("defaultSint64":"46","defaultFixed32":47,"defaultFixed64":"48","defaultSfixed32":49,)"
+          R"("defaultSfixed64":"-50","defaultFloat":51.5,"defaultDouble":52000,"defaultBool":true,)"
+          R"("defaultString":"hello","defaultBytes":"d29ybGQ=","defaultNestedEnum":"BAR",)"
+          R"("defaultForeignEnum":"FOREIGN_BAR","defaultImportEnum":"IMPORT_BAR",)"
+          R"("defaultStringPiece":"abc","defaultCord":"123"})"));
+
+  EXPECT_THAT(
+      ToJson(protobuf_unittest::TestExtremeDefaultValues(), options),
+      IsOkAndHolds(
+          R"({"escapedBytes":"XDAwMFwwMDFcMDA3XDAxMFwwMTRcblxyXHRcMDEzXFxcJ1wiXDM3Ng==")"
+          R"(,"largeUint32":4294967295,"largeUint64":"18446744073709551615",)"
+          R"("smallInt32":-2147483647,"smallInt64":"-9223372036854775807",)"
+          R"("utf8String":"ሴ","zeroFloat":0,"oneFloat":1,"smallFloat":1.5,)"
+          R"("negativeOneFloat":-1,"negativeFloat":-1.5,"largeFloat":2e+08,)"
+          R"("smallNegativeFloat":-8e-28,"infDouble":0,"negInfDouble":0,)"
+          R"("nanDouble":0,"infFloat":0,"negInfFloat":0,"nanFloat":0,)"
+          R"("cppTrigraph":"? ? ?? ?? ??? ??/ ??-","reallySmallInt32":-2147483648)"
+          R"(,"reallySmallInt64":"-9223372036854775808","stringWithZero":"hel\u0000lo")"
+          R"(,"bytesWithZero":"d29yXDAwMGxk","stringPieceWithZero":"ab\u0000c")"
+          R"(,"cordWithZero":"12\u00003","replacementString":"${unknown}"})"));
 }
 
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
@@ -271,28 +313,6 @@ TEST_P(JsonTest, EvilString) {
                                 "\"}");
   ASSERT_OK(m);
   EXPECT_EQ(m->string_value(), "\n\r\b\f\1\2\3");
-}
-
-TEST_P(JsonTest, Unquoted64) {
-  TestMessage m;
-  m.add_repeated_int64_value(0);
-  m.add_repeated_int64_value(42);
-  m.add_repeated_int64_value(-((int64_t{1} << 60) + 1));
-  m.add_repeated_int64_value(INT64_MAX);
-  // This is a power of two and is therefore representable.
-  m.add_repeated_int64_value(INT64_MIN);
-  m.add_repeated_uint64_value(0);
-  m.add_repeated_uint64_value(42);
-  m.add_repeated_uint64_value((uint64_t{1} << 60) + 1);
-  // This will be UB without the min/max check in RoundTripsThroughDouble().
-  m.add_repeated_uint64_value(UINT64_MAX);
-
-  PrintOptions opts;
-  opts.unquote_int64_if_possible = true;
-  EXPECT_THAT(
-      ToJson(m, opts),
-      R"({"repeatedInt64Value":[0,42,"-1152921504606846977","9223372036854775807",-9223372036854775808],)"
-      R"("repeatedUint64Value":[0,42,"1152921504606846977","18446744073709551615"]})");
 }
 
 TEST_P(JsonTest, TestAlwaysPrintEnumsAsInts) {
@@ -324,7 +344,7 @@ TEST_P(JsonTest, TestPrintEnumsAsIntsWithDefaultValue) {
 
   PrintOptions print_options;
   print_options.always_print_enums_as_ints = true;
-  print_options.always_print_fields_with_no_presence = true;
+  print_options.always_print_primitive_fields = true;
 
   auto printed = ToJson(orig, print_options);
   ASSERT_THAT(
@@ -338,6 +358,21 @@ TEST_P(JsonTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(parsed->enum_value3(), proto3::BAR);
 }
 
+TEST_P(JsonTest, TestPrintProto2EnumAsIntWithDefaultValue) {
+  protobuf_unittest::TestDefaultEnumValue orig;
+
+  PrintOptions print_options;
+  print_options.always_print_enums_as_ints = true;
+  print_options.always_print_primitive_fields = true;
+
+  auto printed = ToJson(orig, print_options);
+  ASSERT_THAT(printed, IsOkAndHolds("{\"enumValue\":2}"));
+
+  auto parsed = ToProto<protobuf_unittest::TestDefaultEnumValue>(*printed);
+  ASSERT_OK(parsed);
+
+  EXPECT_EQ(parsed->enum_value(), protobuf_unittest::DEFAULT);
+}
 
 TEST_P(JsonTest, QuotedEnumValue) {
   auto m = ToProto<TestEnumValue>(R"json(
@@ -520,7 +555,7 @@ TEST_P(JsonTest, RepeatedMapKey) {
 TEST_P(JsonTest, ParsePrimitiveMapIn) {
   MapIn message;
   PrintOptions print_options;
-  print_options.always_print_fields_with_no_presence = true;
+  print_options.always_print_primitive_fields = true;
   auto printed = ToJson(message, print_options);
   ASSERT_THAT(
       ToJson(message, print_options),
@@ -534,7 +569,7 @@ TEST_P(JsonTest, ParsePrimitiveMapIn) {
 TEST_P(JsonTest, PrintPrimitiveOneof) {
   TestOneof message;
   PrintOptions options;
-  options.always_print_fields_with_no_presence = true;
+  options.always_print_primitive_fields = true;
   message.mutable_oneof_message_value();
   EXPECT_THAT(ToJson(message, options),
               IsOkAndHolds(R"({"oneofMessageValue":{"value":0}})"));
@@ -1108,7 +1143,7 @@ TEST_P(JsonTest, TestDuration) {
   EXPECT_THAT(ToJson(m5->value()), IsOkAndHolds("\"0.500s\""));
 }
 
-// These tests are not exhaustive; tests in //google/protobuf/conformance
+// These tests are not exhaustive; tests in //third_party/protobuf/conformance
 // are more comprehensive.
 TEST_P(JsonTest, TestTimestamp) {
   auto m = ToProto<proto3::TestTimestamp>(R"json(
@@ -1261,6 +1296,15 @@ TEST_P(JsonTest, HtmlEscape) {
   EXPECT_THAT(ToJson(m),
               IsOkAndHolds(R"({"stringValue":"\u003c/script\u003e"})"));
 
+  proto3::TestEvilJson m2;
+  PrintOptions opts;
+  opts.always_print_primitive_fields = true;
+  EXPECT_THAT(
+      ToJson(m2, opts),
+      IsOkAndHolds(
+          R"({"regular_name":0,"\u003c/script\u003e":0,)"
+          R"("unbalanced\"quotes":0,)"
+          R"("\"\u003cscript\u003ealert('hello!);\u003c/script\u003e":0})"));
 }
 
 TEST_P(JsonTest, FieldOrder) {
@@ -1272,16 +1316,6 @@ TEST_P(JsonTest, FieldOrder) {
   ASSERT_OK(s);
   EXPECT_EQ(
       out, R"({"boolValue":true,"int64Value":"3","repeatedInt32Value":[2,2]})");
-}
-
-TEST_P(JsonTest, UnknownGroupField) {
-  // $ protoscope -s <<< "999: !{1: 99}"
-  std::string out;
-  absl::Status s = BinaryToJsonString(resolver_.get(),
-                                      "type.googleapis.com/proto3.TestMessage",
-                                      "\273>\010c\274>", &out);
-  ASSERT_OK(s);
-  EXPECT_EQ(out, "{}");
 }
 
 // JSON values get special treatment when it comes to pre-existing values in
@@ -1296,24 +1330,6 @@ TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {
   (*s.mutable_fields())["hello"].set_string_value("world");
   ASSERT_OK(JsonStringToMessage("{}", &s));
   EXPECT_THAT(s.fields(), IsEmpty());
-}
-
-TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
-  std::unique_ptr<TypeResolver> resolver{
-      google::protobuf::util::NewTypeResolverForDescriptorPool(
-          "type.googleapis.com", DescriptorPool::generated_pool())};
-  io::internal::TestZeroCopyInputStream input_stream(
-      {"{\"bool_value\":", "5}"});
-  std::string result;
-  io::StringOutputStream output_stream(&result);
-  absl::Status s = JsonToBinaryStream(
-      resolver.get(), "type.googleapis.com/proto3.TestMessage", &input_stream,
-      &output_stream, ParseOptions{});
-  ASSERT_FALSE(s.ok());
-  EXPECT_THAT(
-      s.message(),
-      ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
-                    "*@ *bool_value"));
 }
 
 }  // namespace

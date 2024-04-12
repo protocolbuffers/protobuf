@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.google.protobuf;
 
@@ -263,8 +286,9 @@ final class ArrayDecoders {
     // A group field must has a MessageSchema (the only other subclass of Schema is MessageSetSchema
     // and it can't be used in group fields).
     final MessageSchema messageSchema = (MessageSchema) schema;
+    // It's OK to directly use parseProto2Message since proto3 doesn't have group.
     final int endPosition =
-        messageSchema.parseMessage(msg, data, position, limit, endGroup, registers);
+        messageSchema.parseProto2Message(msg, data, position, limit, endGroup, registers);
     registers.object1 = msg;
     return endPosition;
   }
@@ -760,7 +784,7 @@ final class ArrayDecoders {
       return decodeUnknownField(
           tag, data, position, limit, getMutableUnknownFields(message), registers);
     } else  {
-      // TODO: remove the unused variable
+      // TODO(b/230609037): remove the unused variable
       FieldSet<ExtensionDescriptor> unused =
           ((GeneratedMessageLite.ExtendableMessage<?, ?>) message).ensureExtensionsAreMutable();
       return decodeExtension(

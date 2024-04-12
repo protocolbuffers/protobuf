@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2024 Google LLC.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -24,11 +47,9 @@
 
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
-#include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -74,7 +95,7 @@ class PROTOBUF_EXPORT AnnotationCollector {
     AddAnnotation(begin_offset, end_offset, file_path, path);
   }
 
-  // TODO I don't see why we need virtuals here. Just a vector of
+  // TODO(gerbens) I don't see why we need virtuals here. Just a vector of
   // range, payload pairs stored in a context should suffice.
   virtual void AddAnnotationNew(Annotation&) {}
 };
@@ -149,12 +170,12 @@ class AnnotationProtoCollector : public AnnotationCollector {
 
 // A source code printer for assisting in code generation.
 //
-// This type implements a simple templating language for substituting variables
+// This type implements a simple templating language for substiting variables
 // into static, user-provided strings, and also tracks indentation
 // automatically.
 //
 // The main entry-point for this type is the Emit function, which can be used
-// as thus:
+// thus:
 //
 //   Printer p(output);
 //   p.Emit({{"class", my_class_name}}, R"cc(
@@ -198,8 +219,9 @@ class AnnotationProtoCollector : public AnnotationCollector {
 //
 // Substitutions can be configured to "chomp" a single character after them, to
 // help make indentation work out. This can be configured by passing a
-// io::Printer::Sub().WithSuffix() into Emit's substitution map:
-//   p.Emit({io::Printer::Sub("var", var_decl).WithSuffix(";")}, R"cc(
+// two-argument io::Printer::Value into Emit's substitution map:
+//
+//   p.Emit({{"var", io::Printer::Value{var_decl, ";"}}}, R"cc(
 //     class $class$ {
 //      public:
 //       $var$;
@@ -364,7 +386,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // `indent`, which is an RAII object much like the return value of `WithVars()`.
 //
 // # Old API
-// TODO: Delete this documentation.
+// TODO(b/242326974): Delete this documentation.
 //
 // Printer supports an older-style API that is in the process of being
 // re-written. The old documentation is reproduced here until all use-cases are
@@ -443,17 +465,17 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // call_ descriptor.
 class PROTOBUF_EXPORT Printer {
  private:
-  struct AnnotationRecord;
-
- public:
   // This type exists to work around an absl type that has not yet been
   // released.
   struct SourceLocation {
     static SourceLocation current() { return {}; }
-    absl::string_view file_name() const { return "<unknown>"; }
-    int line() const { return 0; }
+    absl::string_view file_name() { return "<unknown>"; }
+    int line() { return 0; }
   };
 
+  struct AnnotationRecord;
+
+ public:
   static constexpr char kDefaultVariableDelimiter = '$';
   static constexpr absl::string_view kProtocCodegenTrace =
       "PROTOC_CODEGEN_TRACE";
@@ -496,7 +518,7 @@ class PROTOBUF_EXPORT Printer {
 
   // Constructs a new Printer with the default options to output to
   // `output`.
-  explicit Printer(ZeroCopyOutputStream* output);
+  explicit Printer(ZeroCopyOutputStream* output) : Printer(output, Options{}) {}
 
   // Constructs a new printer with the given set of options to output to
   // `output`.
@@ -506,7 +528,8 @@ class PROTOBUF_EXPORT Printer {
   //
   // Will eventually be marked as deprecated.
   Printer(ZeroCopyOutputStream* output, char variable_delimiter,
-          AnnotationCollector* annotation_collector = nullptr);
+          AnnotationCollector* annotation_collector = nullptr)
+      : Printer(output, Options{variable_delimiter, annotation_collector}) {}
 
   Printer(const Printer&) = delete;
   Printer& operator=(const Printer&) = delete;
@@ -594,7 +617,7 @@ class PROTOBUF_EXPORT Printer {
   bool failed() const { return failed_; }
 
   // -- Old-style API below; to be deprecated and removed. --
-  // TODO: Deprecate these APIs.
+  // TODO(b/242326974): Deprecate these APIs.
 
   template <typename Map = absl::flat_hash_map<std::string, std::string>>
   void Print(const Map& vars, absl::string_view text);
@@ -605,10 +628,8 @@ class PROTOBUF_EXPORT Printer {
   // Link a substitution variable emitted by the last call to Print to the
   // object described by descriptor.
   template <typename SomeDescriptor>
-  void Annotate(
-      absl::string_view varname, const SomeDescriptor* descriptor,
-      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
-    Annotate(varname, varname, descriptor, semantic);
+  void Annotate(absl::string_view varname, const SomeDescriptor* descriptor) {
+    Annotate(varname, varname, descriptor);
   }
 
   // Link the output range defined by the substitution variables as emitted by
@@ -616,32 +637,26 @@ class PROTOBUF_EXPORT Printer {
   // begins at begin_varname's value and ends after the last character of the
   // value substituted for end_varname.
   template <typename Desc>
-  void Annotate(
-      absl::string_view begin_varname, absl::string_view end_varname,
-      const Desc* descriptor,
-      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt);
+  void Annotate(absl::string_view begin_varname, absl::string_view end_varname,
+                const Desc* descriptor);
 
   // Link a substitution variable emitted by the last call to Print to the file
   // with path file_name.
-  void Annotate(
-      absl::string_view varname, absl::string_view file_name,
-      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
-    Annotate(varname, varname, file_name, semantic);
+  void Annotate(absl::string_view varname, absl::string_view file_name) {
+    Annotate(varname, varname, file_name);
   }
 
   // Link the output range defined by the substitution variables as emitted by
   // the last call to Print to the file with path file_name. The range begins
   // at begin_varname's value and ends after the last character of the value
   // substituted for end_varname.
-  void Annotate(
-      absl::string_view begin_varname, absl::string_view end_varname,
-      absl::string_view file_name,
-      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
+  void Annotate(absl::string_view begin_varname, absl::string_view end_varname,
+                absl::string_view file_name) {
     if (options_.annotation_collector == nullptr) {
       return;
     }
 
-    Annotate(begin_varname, end_varname, file_name, {}, semantic);
+    Annotate(begin_varname, end_varname, file_name, {});
   }
 
   // Indent text by `options.spaces_per_indent`; undone by Outdent().
@@ -655,18 +670,6 @@ class PROTOBUF_EXPORT Printer {
   template <typename Map = absl::flat_hash_map<std::string, std::string>>
   void FormatInternal(absl::Span<const std::string> args, const Map& vars,
                       absl::string_view format);
-
-  // Injects a substitution listener for the lifetime of the RAII object
-  // returned.
-  // While the listener is active it will receive a callback on each
-  // substitution label found.
-  // This can be used to add basic verification on top of emit routines.
-  auto WithSubstitutionListener(
-      absl::AnyInvocable<void(absl::string_view, SourceLocation)> listener) {
-    ABSL_CHECK(substitution_listener_ == nullptr);
-    substitution_listener_ = std::move(listener);
-    return absl::MakeCleanup([this] { substitution_listener_ = nullptr; });
-  }
 
  private:
   struct PrintOptions;
@@ -714,8 +717,7 @@ class PROTOBUF_EXPORT Printer {
   //
   // `begin_varname` and `end_varname may` refer to the same variable.
   void Annotate(absl::string_view begin_varname, absl::string_view end_varname,
-                absl::string_view file_path, const std::vector<int>& path,
-                absl::optional<AnnotationCollector::Semantic> semantic);
+                absl::string_view file_path, const std::vector<int>& path);
 
   // The core printing implementation. There are three public entry points,
   // which enable different slices of functionality that are controlled by the
@@ -756,20 +758,12 @@ class PROTOBUF_EXPORT Printer {
   bool at_start_of_line_ = true;
   bool failed_ = false;
 
-  size_t paren_depth_ = 0;
-  std::vector<size_t> paren_depth_to_omit_;
-
   std::vector<std::function<absl::optional<ValueView>(absl::string_view)>>
       var_lookups_;
 
   std::vector<
       std::function<absl::optional<AnnotationRecord>(absl::string_view)>>
       annotation_lookups_;
-
-  // If set, we invoke this when we do a label substitution. This can be used to
-  // verify consistency of the generated code while we generate it.
-  absl::AnyInvocable<void(absl::string_view, SourceLocation)>
-      substitution_listener_;
 
   // A map from variable name to [start, end) offsets in the output buffer.
   //
@@ -860,7 +854,6 @@ struct Printer::ValueImpl {
 
   StringOrCallback value;
   std::string consume_after;
-  bool consume_parens_if_empty = false;
 
  private:
   // go/ranked-overloads
@@ -905,7 +898,6 @@ Printer::ValueImpl<owned>& Printer::ValueImpl<owned>::operator=(
   }
 
   consume_after = that.consume_after;
-  consume_parens_if_empty = that.consume_parens_if_empty;
   return *this;
 }
 
@@ -973,11 +965,6 @@ class Printer::Sub {
 
   Sub WithSuffix(std::string sub_suffix) && {
     value_.consume_after = std::move(sub_suffix);
-    return std::move(*this);
-  }
-
-  Sub ConditionalFunctionCall() && {
-    value_.consume_parens_if_empty = true;
     return std::move(*this);
   }
 
@@ -1085,16 +1072,14 @@ void Printer::Print(absl::string_view text, const Args&... args) {
 
 template <typename Desc>
 void Printer::Annotate(absl::string_view begin_varname,
-                       absl::string_view end_varname, const Desc* descriptor,
-                       absl::optional<AnnotationCollector::Semantic> semantic) {
+                       absl::string_view end_varname, const Desc* descriptor) {
   if (options_.annotation_collector == nullptr) {
     return;
   }
 
   std::vector<int> path;
   descriptor->GetLocationPath(&path);
-  Annotate(begin_varname, end_varname, descriptor->file()->name(), path,
-           semantic);
+  Annotate(begin_varname, end_varname, descriptor->file()->name(), path);
 }
 
 template <typename Map>

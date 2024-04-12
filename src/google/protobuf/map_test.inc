@@ -1,10 +1,33 @@
 // -*- c++ -*-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // A hack to include windows.h first, which ensures the GetMessage macro can
 // be undefined when we include <google/protobuf/stubs/common.h>
@@ -26,14 +49,12 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/substitute.h"
-#include "absl/time/time.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
@@ -43,14 +64,13 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
-#include "google/protobuf/map_proto2_unittest.pb.h"
-#include "google/protobuf/map_proto3_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "google/protobuf/util/time_util.h"
 #include "google/protobuf/wire_format.h"
 
 
@@ -161,55 +181,6 @@ struct is_internal_map_value_type<ArenaConstructible> : std::true_type {};
 template <>
 struct is_internal_map_value_type<CountedInstance> : std::true_type {};
 
-struct MapTestPeer {
-  template <typename T>
-  static typename T::KeyMapBase& GetKeyMapBase(T& value) {
-    return value;
-  }
-
-  template <typename T>
-  static bool InsertOrReplaceNode(T& map, typename T::key_type key,
-                                  typename T::mapped_type value) {
-    using Node = typename T::Node;
-    auto* node = static_cast<Node*>(map.AllocNode(sizeof(Node)));
-    ::new (static_cast<void*>(&node->kv)) typename T::value_type{key, value};
-    node = static_cast<Node*>(GetKeyMapBase(map).InsertOrReplaceNode(node));
-    if (node) {
-      node->~Node();
-      GetKeyMapBase(map).DeallocNode(node, sizeof(Node));
-      return false;
-    }
-    return true;
-  }
-
-  template <typename T>
-  static size_t NumBuckets(T& map) {
-    return map.num_buckets_;
-  }
-
-  template <typename T>
-  static size_t BucketNumber(T& map, typename T::key_type key) {
-    return map.BucketNumber(key);
-  }
-
-  template <typename T>
-  static void Resize(T& map, size_t num_buckets) {
-    map.Resize(num_buckets);
-  }
-
-  template <typename T>
-  static bool HasTreeBuckets(T& map) {
-    for (size_t i = 0; i < map.num_buckets_; ++i) {
-      if (TableEntryIsTree(map.table_[i])) return true;
-    }
-    return false;
-  }
-
-  static int CalculateHiCutoff(int num_buckets) {
-    return Map<int, int>::CalculateHiCutoff(num_buckets);
-  }
-};
-
 namespace {
 using internal::DownCast;
 
@@ -318,7 +289,7 @@ namespace std {
 template <>  // NOLINT
 struct hash<google::protobuf::internal::MoveTestKey> {
   size_t operator()(const google::protobuf::internal::MoveTestKey& key) const {
-    return hash<uint64_t>{}(key.data);
+    return hash<int>{}(key.data);
   }
 };
 }  // namespace std
@@ -326,14 +297,6 @@ struct hash<google::protobuf::internal::MoveTestKey> {
 namespace google {
 namespace protobuf {
 namespace internal {
-
-template <>
-struct RealKeyToVariantKey<MoveTestKey> {
-  VariantKey operator()(const MoveTestKey& value) const {
-    return VariantKey(value.data);
-  }
-};
-
 namespace {
 
 TEST_F(MapImplTest, OperatorBracketRValue) {
@@ -475,53 +438,58 @@ TEST_F(MapImplTest, IteratorBasic) {
   EXPECT_TRUE(it == cit);
 }
 
+template <typename Iterator>
+static int64_t median(Iterator i0, Iterator i1) {
+  std::vector<int64_t> v(i0, i1);
+  std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
+  return v[v.size() / 2];
+}
+
+static int64_t Now() {
+  return util::TimeUtil::TimestampToNanoseconds(
+      util::TimeUtil::GetCurrentTime());
+}
+
 // Arbitrary odd integers for creating test data.
 static int k0 = 812398771;
 static int k1 = 1312938717;
 static int k2 = 1321555333;
 
-// Finds inputs that will fall in the first few buckets for this particular map
-// (with the random seed it has) and this particular size.
-static std::vector<int> FindBadInputs(Map<int, int>& map, int num_inputs) {
-  // Make sure the seed and the size is set so that BucketNumber works.
-  while (map.size() < num_inputs) map[map.size()];
-  map.clear();
-
-  std::vector<int> out;
-
-  for (int i = 0; out.size() < num_inputs; ++i) {
-    if (MapTestPeer::BucketNumber(map, i) < 3) {
-      out.push_back(i);
+// Try to create kTestSize keys that will land in just a few buckets, and
+// time the insertions, to get a rough estimate of whether an O(n^2) worst case
+// was triggered.  This test is a hacky, but probably better than nothing.
+TEST_F(MapImplTest, HashFlood) {
+  const int kTestSize = 1024;  // must be a power of 2
+  absl::btree_set<int> s;
+  for (int i = 0; s.size() < kTestSize; i++) {
+    if ((map_.hash_function()(i) & (kTestSize - 1)) < 3) {
+      s.insert(i);
     }
   }
-
-  // Reset the table to get it to grow from scratch again.
-  // The capacity will be lost, but we will get it again on insertion.
-  // It will also keep the seed.
-  map.clear();
-  MapTestPeer::Resize(map, 8);
-
-  return out;
+  // Create hash table with kTestSize entries that hash flood a table with
+  // 1024 (or 512 or 2048 or ...) entries.  This assumes that map_ uses powers
+  // of 2 for table sizes, and that it's sufficient to "flood" with respect to
+  // the low bits of the output of map_.hash_function().
+  std::vector<int64_t> times;
+  auto it = s.begin();
+  int count = 0;
+  do {
+    const int64_t start = Now();
+    map_[*it] = 0;
+    const int64_t end = Now();
+    if (end > start) {
+      times.push_back(end - start);
+    }
+    ++count;
+    ++it;
+  } while (it != s.end());
+  if (times.size() < .99 * count) return;
+  int64_t x0 = median(times.begin(), times.begin() + 9);
+  int64_t x1 = median(times.begin() + times.size() - 9, times.end());
+  // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
+  // But we want to allow O(n log n).  A factor of 20 should be generous enough.
+  EXPECT_LE(x1, x0 * 20);
 }
-
-TEST_F(MapImplTest, TreePathWorksAsExpected) {
-  const std::vector<int> s = FindBadInputs(map_, 1000);
-
-  for (int i : s) {
-    map_[i] = 0;
-  }
-  // Make sure we are testing what we think we are testing.
-  ASSERT_TRUE(MapTestPeer::HasTreeBuckets(map_));
-  for (int i : s) {
-    ASSERT_NE(map_.find(i), map_.end()) << i;
-  }
-  for (int i : s) {
-    ASSERT_EQ(1, map_.erase(i)) << i;
-  }
-  EXPECT_FALSE(MapTestPeer::HasTreeBuckets(map_));
-  EXPECT_TRUE(map_.empty());
-}
-
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;
@@ -1106,6 +1074,34 @@ TEST_F(MapImplTest, Clear) {
   EXPECT_TRUE(map_.begin() == map_.end());
 }
 
+static void CopyConstructorHelper(Arena* arena, Map<int32_t, int32_t>* m) {
+  int32_t key1 = 0;
+  int32_t key2 = 1;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
+
+  absl::flat_hash_map<int32_t, int32_t> map;
+  map[key1] = value1;
+  map[key2] = value2;
+
+  m->insert(map.begin(), map.end());
+
+  Map<int32_t, int32_t> other(*m);
+
+  EXPECT_EQ(2, other.size());
+  EXPECT_EQ(value1, other.at(key1));
+  EXPECT_EQ(value2, other.at(key2));
+}
+
+TEST_F(MapImplTest, CopyConstructorWithArena) {
+  Arena a;
+  CopyConstructorHelper(&a, &map_);
+}
+
+TEST_F(MapImplTest, CopyConstructorWithoutArena) {
+  CopyConstructorHelper(nullptr, &map_);
+}
+
 TEST_F(MapImplTest, IterConstructor) {
   int32_t key1 = 0;
   int32_t key2 = 1;
@@ -1244,6 +1240,7 @@ TEST_F(MapImplTest, SwapArena) {
 
 TEST_F(MapImplTest, SwapFieldArenaReflection) {
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  Arena arena;
 
   {
     // Tests filled lfs and empty rhs.
@@ -1252,7 +1249,7 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
     {
       // Use local_arena to allocate lhs to trigger use-after-free error.
       Arena local_arena;
-      auto* lhs = Arena::Create<TestMap>(&local_arena);
+      auto* lhs = Arena::CreateMessage<TestMap>(&local_arena);
       const auto* reflection = lhs->GetReflection();
       std::vector<const FieldDescriptor*> fields;
 
@@ -1262,15 +1259,9 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
       reflection->SwapFields(lhs, &rhs, fields);
 
       reflection_tester.ExpectClearViaReflection(*lhs);
-
-      // Add an entry to make sure it is using the right arena.
-      (*lhs->mutable_map_int32_int32())[1234] = 1234;
     }
 
     reflection_tester.ExpectMapFieldsSetViaReflection(rhs);
-
-      // Add an entry to make sure it is using the right arena.
-    (*rhs.mutable_map_int32_int32())[1234] = 1234;
   }
 }
 
@@ -1285,7 +1276,7 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
 }
 
 TEST_F(MapImplTest, SpaceUsed) {
-  constexpr size_t kMinCap = 16 / sizeof(void*);
+  constexpr size_t kMinCap = 8;
 
   Map<int32_t, int32_t> m;
   // An newly constructed map should have no space used.
@@ -1295,11 +1286,15 @@ TEST_F(MapImplTest, SpaceUsed) {
     std::pair<int32_t, int32_t> kv;
   };
 
+  size_t capacity = kMinCap;
   for (int i = 0; i < 100; ++i) {
     m[i];
+    static constexpr double kMaxLoadFactor = .75;
+    if (m.size() >= capacity * kMaxLoadFactor) {
+      capacity *= 2;
+    }
     EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-              sizeof(void*) * MapTestPeer::NumBuckets(m) +
-                  m.size() * sizeof(IntIntNode));
+              sizeof(void*) * capacity + m.size() * sizeof(IntIntNode));
   }
 
   // Test string, and non-scalar keys.
@@ -1365,9 +1360,10 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   const auto& cm = m;
 
   m.insert({"ABC", 1});
-  m.insert({"DEF", 2});
 
-  const auto abc_it = m.find("ABC");
+  const auto abc_it = m.begin();
+
+  m.insert({"DEF", 2});
 
   using testing::Pair;
   using testing::UnorderedElementsAre;
@@ -2150,7 +2146,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     EXPECT_EQ(int32_value0a, int32_value9b);
   }
 
-  // TODO: After supporting arena agnostic delete or let map entry
+  // TODO(b/181148674): After supporting arena agnostic delete or let map entry
   // handle heap allocation, this could be removed.
   if (message.GetArena() != nullptr) {
     entry_int32_int32.release();
@@ -2263,7 +2259,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
     EXPECT_EQ(Func(i, 26), m2.map_int32_foreign_message().at(i + 20).c());
   }
 
-  // TODO: add test for duplicated key
+  // TODO(teboring): add test for duplicated key
 }
 
 TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
@@ -2325,18 +2321,31 @@ class MyMapEntry
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
   constexpr MyMapEntry() {}
-  using MyMapEntry::MapEntry::MapEntry;
-  const ClassData* GetClassData() const override { ABSL_CHECK(false); }
+  MyMapEntry(Arena*) { ABSL_CHECK(false); }
+  Metadata GetMetadata() const override { ABSL_CHECK(false); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+class MyMapEntryLite
+    : public internal::MapEntryLite<MyMapEntryLite, ::int32_t, ::int32_t,
+                                    internal::WireFormatLite::TYPE_INT32,
+                                    internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntryLite() {}
+  explicit MyMapEntryLite(Arena*) { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
 
 TEST(MapEntryTest, ConstInit) {
-  // This verifies that `MapEntry` can be constant initialized.
+  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
+  // constant initialized.
   PROTOBUF_CONSTINIT static MyMapEntry entry{};
-  // Use the object in some way to make sure the vtable is there.
-  const google::protobuf::Message* volatile m = &entry;
-  delete m->New();
+  EXPECT_NE(entry.SpaceUsed(), 0);
+
+  PROTOBUF_CONSTINIT static MyMapEntryLite entry_lite{};  // NOLINT
+  EXPECT_TRUE(entry_lite.IsInitialized());
 }
 
 // Generated Message Test ===========================================
@@ -2731,86 +2740,6 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 }
 
-TEST(GeneratedMapFieldTest, Proto2UknownEnumThrowsAwayUnknownData) {
-  UNITTEST::TestEnumMap to;
-  // 101: {
-  //   1: 2
-  //   2: 3     # this is an unknown enum. It should be kept.
-  //   3: 120   # this is an extra field that will be discarded.
-  // }
-  constexpr absl::string_view data = "\252\006\006\010\002\020\003\030x";
-  // Same as above, but without the extra field.
-  constexpr absl::string_view expected = "\252\006\004\010\002\020\003";
-  ASSERT_TRUE(to.ParseFromString(data));
-  EXPECT_EQ(expected, to.SerializeAsString());
-
-  // Test the same behavior with the reflection based parser.
-  to.Clear();
-  const char* ptr;
-  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
-                             false, &ptr, data);
-  ptr = WireFormat::_InternalParse(&to, ptr, &ctx);
-  ASSERT_TRUE(ptr);
-  ASSERT_TRUE(ctx.EndedAtLimit());
-  EXPECT_EQ(expected, to.SerializeAsString());
-}
-
-TEST(GeneratedMapFieldTest, Proto2UnknownEnumAllKeyTypesWork) {
-#define PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(Type, ...)                        \
-  ABSL_LOG(INFO) << "Testing " << #Type;                                      \
-  for (auto value : {__VA_ARGS__}) {                                          \
-    UNITTEST::TestEnumMapPlusExtra from;                                      \
-    (*from.mutable_unknown_map_field_##Type())[value] =                       \
-        UNITTEST::E_PROTO2_MAP_ENUM_EXTRA;                                    \
-    UNITTEST::TestEnumMap to;                                                 \
-    ASSERT_TRUE(to.ParseFromString(from.SerializeAsString()));                \
-    EXPECT_EQ(0, to.unknown_map_field_##Type().size())                        \
-        << testing::PrintToString(to.unknown_map_field_##Type());             \
-    const UnknownFieldSet& unknown_field_set =                                \
-        to.GetReflection()->GetUnknownFields(to);                             \
-    EXPECT_EQ(1, unknown_field_set.field_count());                            \
-    from.Clear();                                                             \
-    EXPECT_EQ(from.unknown_map_field_##Type().size(), 0);                     \
-    EXPECT_TRUE(from.ParseFromString(to.SerializeAsString()));                \
-    EXPECT_THAT(from.unknown_map_field_##Type(),                              \
-                ElementsAre(Pair(value, UNITTEST::E_PROTO2_MAP_ENUM_EXTRA))); \
-    EXPECT_EQ(from.SerializeAsString(), to.SerializeAsString());              \
-  }
-
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(int64, int64_t{17},
-                                      std::numeric_limits<int64_t>::min(),
-                                      std::numeric_limits<int64_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(uint64, uint64_t{17},
-                                      std::numeric_limits<uint64_t>::min(),
-                                      std::numeric_limits<uint64_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(int32, int32_t{17},
-                                      std::numeric_limits<int32_t>::min(),
-                                      std::numeric_limits<int32_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(uint32, uint32_t{17},
-                                      std::numeric_limits<uint32_t>::min(),
-                                      std::numeric_limits<uint32_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(fixed32, uint32_t{17},
-                                      std::numeric_limits<uint32_t>::min(),
-                                      std::numeric_limits<uint32_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(fixed64, uint64_t{17},
-                                      std::numeric_limits<uint64_t>::min(),
-                                      std::numeric_limits<uint64_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(bool, true);
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(string, "17");
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sint32, int32_t{17},
-                                      std::numeric_limits<int32_t>::min(),
-                                      std::numeric_limits<int32_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sint64, int64_t{17},
-                                      std::numeric_limits<int64_t>::min(),
-                                      std::numeric_limits<int64_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sfixed32, int32_t{17},
-                                      std::numeric_limits<int32_t>::min(),
-                                      std::numeric_limits<int32_t>::max());
-  PROTOBUF_INTERNAL_TEST_MAP_KEY_TYPE(sfixed64, int64_t{17},
-                                      std::numeric_limits<int64_t>::min(),
-                                      std::numeric_limits<int64_t>::max());
-}
-
 TEST(GeneratedMapFieldTest, StandardWireFormat) {
   UNITTEST::TestMap message;
   std::string data = "\x0A\x04\x08\x01\x10\x01";
@@ -2981,41 +2910,6 @@ TEST(GeneratedMapFieldTest, UnknownFieldWireFormat) {
   EXPECT_TRUE(message.ParseFromString(data));
   EXPECT_EQ(1, message.map_int32_int32().size());
   EXPECT_EQ(3, message.map_int32_int32().at(2));
-}
-
-TEST(GeneratedMapFieldTest, ToplevelTagNotLengthPrefixed) {
-  UNITTEST::TestMap message;
-
-  // The toplevel matches a field number, but does not match the wire type.
-  std::string data = "\x08\x81\x04";
-  EXPECT_TRUE(message.ParseFromString(data));
-  EXPECT_EQ(0, message.map_int32_int32().size());
-
-  const UnknownFieldSet& unknown_field_set =
-      message.GetReflection()->GetUnknownFields(message);
-  ASSERT_EQ(1, unknown_field_set.field_count());
-  auto& field = unknown_field_set.field(0);
-  ASSERT_EQ(field.TYPE_VARINT, field.type());
-  EXPECT_EQ(((0x1 << 0) | (0x04 << 7)), field.varint());
-}
-
-TEST(GeneratedMapFieldTest, InnerTagsInLongForm) {
-  UNITTEST::TestMap message;
-
-  // First, control
-  absl::string_view data("\012\004\010\007\020\005", 6);
-  ASSERT_TRUE(message.ParseFromString(data));
-  EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(7, 5)));
-
-  // Now we make the key tag long form
-  data = absl::string_view("\012\005\210\000\007\020\005", 7);
-  ASSERT_TRUE(message.ParseFromString(data));
-  EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(7, 5)));
-
-  // Now we make the value tag long form
-  data = absl::string_view("\012\005\010\007\220\000\005", 7);
-  ASSERT_TRUE(message.ParseFromString(data));
-  EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(7, 5)));
 }
 
 TEST(GeneratedMapFieldTest, CorruptedWireFormat) {
@@ -3473,7 +3367,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapValueReferernceValidAfterSerialize) {
 
   message->SerializeToString(&data);
   TestMap to;
-  ASSERT_TRUE(to.ParseFromString(data));
+  to.ParseFromString(data);
   EXPECT_EQ(128, to.map_int32_foreign_message().at(0).c());
 }
 
@@ -3930,7 +3824,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   std::string golden;
   ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath(absl::StrCat(
-                            "google/protobuf/testdata/", filename)),
+                            "third_party/protobuf/testdata/", filename)),
                         &golden, true));
   t.ParseFromString(golden);
   *(p.mutable_m()) = t;
@@ -3972,7 +3866,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
 
   std::string expected_text;
   ABSL_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("google/protobuf/"
+      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
@@ -3988,7 +3882,7 @@ TEST(TextFormatMapTest, Sorted) {
 
   std::string expected_text;
   ABSL_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("google/protobuf/"
+      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
@@ -4009,7 +3903,7 @@ TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
   ABSL_CHECK_OK(File::GetContents(
       TestUtil::GetTestDataPath(
-          "google/protobuf/testdata/golden_message_maps"),
+          "third_party/protobuf/testdata/golden_message_maps"),
       &serialized_message, true));
   UNITTEST::TestMaps message;
   ABSL_CHECK(message.ParseFromString(serialized_message));
@@ -4100,15 +3994,16 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
   data.reserve(128 * 1024);
 
   {
-    // TODO: Enable no heap check when ArenaStringPtr is used in map.
+    // TODO(teboring): Enable no heap check when ArenaStringPtr is used in map.
     // NoHeapChecker no_heap;
 
     UNITTEST::TestArenaMap* from =
-        Arena::Create<UNITTEST::TestArenaMap>(&arena);
+        Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
     MapTestUtil::SetArenaMapFields(from);
     from->SerializeToString(&data);
 
-    UNITTEST::TestArenaMap* to = Arena::Create<UNITTEST::TestArenaMap>(&arena);
+    UNITTEST::TestArenaMap* to =
+        Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
     to->ParseFromString(data);
     MapTestUtil::ExpectArenaMapFieldsSet(*to);
   }
@@ -4131,8 +4026,10 @@ TEST(ArenaTest, ReflectionInTextFormat) {
   TextFormat::Printer printer;
   TextFormat::Parser parser;
 
-  UNITTEST::TestArenaMap* from = Arena::Create<UNITTEST::TestArenaMap>(&arena);
-  UNITTEST::TestArenaMap* to = Arena::Create<UNITTEST::TestArenaMap>(&arena);
+  UNITTEST::TestArenaMap* from =
+      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
+  UNITTEST::TestArenaMap* to =
+      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
 
   MapTestUtil::SetArenaMapFields(from);
   printer.PrintToString(*from, &data);
@@ -4145,7 +4042,7 @@ TEST(ArenaTest, ReflectionInTextFormat) {
 TEST(ArenaTest, StringMapNoLeak) {
   Arena arena;
   UNITTEST::TestArenaMap* message =
-      Arena::Create<UNITTEST::TestArenaMap>(&arena);
+      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
   std::string data;
   // String with length less than 16 will not be allocated from heap.
   int original_capacity = data.capacity();
@@ -4153,15 +4050,8 @@ TEST(ArenaTest, StringMapNoLeak) {
     data.append("a");
   }
   (*message->mutable_map_string_string())[data] = data;
-  // Now we recreate the map via parsing
-  message->ParseFromString(message->SerializeAsString());
-  // And we cause value strings to grow to make sure they are handled correctly.
-  std::string& value = (*message->mutable_map_string_string())[data];
-  ASSERT_EQ(value, data);
-  // Consume all the capacity.
-  while (value.size() < value.capacity()) value.append("a");
-  // And then grow the value.
-  value.append("a");
+  // We rely on heap checkers to detect memory leak for us.
+  ASSERT_FALSE(message == nullptr);
 }
 
 TEST(ArenaTest, IsInitialized) {
@@ -4175,7 +4065,7 @@ TEST(ArenaTest, IsInitialized) {
   Arena arena(options);
 
   UNITTEST::TestArenaMap* message =
-      Arena::Create<UNITTEST::TestArenaMap>(&arena);
+      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 
@@ -4244,63 +4134,6 @@ TEST(MoveTest, MoveAssignmentWorks) {
   // should be pointer stability.
   EXPECT_EQ(nested_msg42_ptr, &moved_to_map[42].optional_nested_message());
   EXPECT_EQ(nested_msg43_ptr, &moved_to_map[43].optional_nested_message());
-}
-
-TEST(KeyMapBaseTest, InsertOrReplaceNodeWorks) {
-  using M = Map<int32_t, std::string>;
-  M map;
-  EXPECT_TRUE(MapTestPeer::InsertOrReplaceNode(map, 10, "Foo"));
-  EXPECT_EQ(map.size(), 1);
-  EXPECT_EQ(map[10], "Foo");
-  EXPECT_FALSE(MapTestPeer::InsertOrReplaceNode(map, 10, "Bar"));
-  EXPECT_EQ(map.size(), 1);
-  EXPECT_EQ(map[10], "Bar");
-  map[100] = "BAD";
-  EXPECT_EQ(map.size(), 2);
-  EXPECT_EQ(map[10], "Bar");
-  EXPECT_EQ(map[100], "BAD");
-  EXPECT_FALSE(MapTestPeer::InsertOrReplaceNode(map, 100, "GOOD"));
-  EXPECT_EQ(map.size(), 2);
-  EXPECT_EQ(map[10], "Bar");
-  EXPECT_EQ(map[100], "GOOD");
-}
-
-TEST(NonUtf8Test, StringValuePassesInProto2) {
-  protobuf_unittest::TestProto2BytesMap message;
-  (*message.mutable_map_string())[1] = "\xFF";
-
-  auto serialized = message.SerializeAsString();
-  // Parsing passes, but a failure is logged in debug mode.
-  ASSERT_TRUE(message.ParseFromString(serialized));
-  EXPECT_EQ((*message.mutable_map_string())[1], "\xFF");
-}
-
-TEST(NonUtf8Test, BytesValuePassesInProto2) {
-  protobuf_unittest::TestProto2BytesMap message;
-  (*message.mutable_map_bytes())[1] = "\xFF";
-
-  auto serialized = message.SerializeAsString();
-  ASSERT_TRUE(message.ParseFromString(serialized));
-  EXPECT_EQ((*message.mutable_map_bytes())[1], "\xFF");
-}
-
-TEST(NonUtf8Test, StringValueFailsInProto3) {
-  proto3_unittest::TestProto3BytesMap message;
-  (*message.mutable_map_string())[1] = "\xFF";
-
-  auto serialized = message.SerializeAsString();
-  // It will fail, and log an error.
-  ASSERT_FALSE(message.ParseFromString(serialized));
-}
-
-
-TEST(NonUtf8Test, BytesValuePassesInProto3) {
-  proto3_unittest::TestProto3BytesMap message;
-  (*message.mutable_map_bytes())[1] = "\xFF";
-
-  auto serialized = message.SerializeAsString();
-  ASSERT_TRUE(message.ParseFromString(serialized));
-  EXPECT_EQ((*message.mutable_map_bytes())[1], "\xFF");
 }
 
 }  // namespace

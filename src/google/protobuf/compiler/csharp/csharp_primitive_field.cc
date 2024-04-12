@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/compiler/csharp/csharp_primitive_field.h"
 
@@ -28,7 +51,7 @@ namespace csharp {
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
-  // TODO: Make this cleaner...
+  // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
   if (!is_value_type && !SupportsPresenceApi(descriptor_)) {
@@ -44,16 +67,18 @@ PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
 }
 
 void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
+  
   // Note: in multiple places, this code assumes that all fields
   // that support presence are either nullable, or use a presence field bit.
   // Fields which are oneof members are not generated here; they're generated in PrimitiveOneofFieldGenerator below.
   // Extensions are not generated here either.
 
-  // Explicit presence allows different default values to be specified. These
-  // are retained via static fields. They don't particularly need to be, but we
-  // don't need to change that. Under implicit presence we don't use static
-  // fields for default values and just use the literals instead.
-  if (descriptor_->has_presence()) {
+
+  // Proto2 allows different default values to be specified. These are retained
+  // via static fields. They don't particularly need to be, but we don't need
+  // to change that. In Proto3 the default value we don't generate these
+  // fields, just using the literal instead.
+  if (IsProto2(descriptor_->file())) {
     // Note: "private readonly static" isn't as idiomatic as
     // "private static readonly", but changing this now would create a lot of
     // churn in generated code with near-to-zero benefit.
@@ -73,7 +98,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "private $type_name$ $name_def_message$;\n");
 
-  WritePropertyDocComment(printer, options(), descriptor_);
+  WritePropertyDocComment(printer, descriptor_);
   AddPublicMemberAttributes(printer);
 
   // Most of the work is done in the property:
@@ -239,7 +264,7 @@ void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 void PrimitiveFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, options(), descriptor_);
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
@@ -259,7 +284,7 @@ PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
 }
 
 void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
-  WritePropertyDocComment(printer, options(), descriptor_);
+  WritePropertyDocComment(printer, descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,

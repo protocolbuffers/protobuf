@@ -38,18 +38,18 @@ namespace UnitTest.Issues.TestProtos {
             "X09QVElPTl9FTlVNX1VOU1BFQ0lGSUVEEAASGgoWVEVTVF9PUFRJT05fRU5V",
             "TV9UWVBFMRAWEiMKFlRFU1RfT1BUSU9OX0VOVU1fVFlQRTIQ6f//////////",
             "ASIhCh9EdW1teU1lc3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlIooBChxDdXN0",
-            "b21PcHRpb25NaW5JbnRlZ2VyVmFsdWVzOmqZ1qgdAAAAAAAAAICtja8dAAAA",
-            "gJHurx0AAAAAAAAAAJ31rx0AAAAA+JewHf///////////wGAxLAd/////w/4",
-            "9bAdAICTsh0AsLyyHYCAgICAgICAgAHoxrIdgICAgPj/////AdDesh0AIpEB",
-            "ChxDdXN0b21PcHRpb25NYXhJbnRlZ2VyVmFsdWVzOnGZ1qgd/////////3+t",
-            "ja8d////f5Hurx3//////////531rx3/////+JewHf7//////////wGAxLAd",
-            "/v///w/49bAd////////////AYCTsh3/////D7C8sh3//////////3/oxrId",
-            "/////wfQ3rIdASJuChdDdXN0b21PcHRpb25PdGhlclZhbHVlczpTiNmiHen/",
-            "/////////wGy2aIdC0hlbGxvAFdvcmxkqtyiHQ5IZWxsbywgIldvcmxkIunc",
-            "oh37WYxCysDzP/Xfox3nh0VB6MayHZz//////////wEiNAocU2V0dGluZ1Jl",
-            "YWxzRnJvbVBvc2l0aXZlSW50czoU6dyiHQAAAAAAQGNA9d+jHQAAQEEiNAoc",
-            "U2V0dGluZ1JlYWxzRnJvbU5lZ2F0aXZlSW50czoU6dyiHQAAAAAAQGPA9d+j",
-            "HQAAQMEiSwoSQ29tcGxleE9wdGlvblR5cGUxEgsKA2ZvbxgBIAEoBRIMCgRm",
+            "b21PcHRpb25NaW5JbnRlZ2VyVmFsdWVzOmrQ3rIdAOjGsh2AgICA+P////8B",
+            "sLyyHYCAgICAgICAgAGAk7IdAPj1sB0AgMSwHf////8P+JewHf//////////",
+            "/wGd9a8dAAAAAJHurx0AAAAAAAAAAK2Nrx0AAACAmdaoHQAAAAAAAACAIpEB",
+            "ChxDdXN0b21PcHRpb25NYXhJbnRlZ2VyVmFsdWVzOnHQ3rIdAejGsh3/////",
+            "B7C8sh3//////////3+Ak7Id/////w/49bAd////////////AYDEsB3+////",
+            "D/iXsB3+//////////8BnfWvHf////+R7q8d//////////+tja8d////f5nW",
+            "qB3/////////fyJuChdDdXN0b21PcHRpb25PdGhlclZhbHVlczpT6MayHZz/",
+            "/////////wH136Md54dFQencoh37WYxCysDzP6rcoh0OSGVsbG8sICJXb3Js",
+            "ZCKy2aIdC0hlbGxvAFdvcmxkiNmiHen//////////wEiNAocU2V0dGluZ1Jl",
+            "YWxzRnJvbVBvc2l0aXZlSW50czoU9d+jHQAAQEHp3KIdAAAAAABAY0AiNAoc",
+            "U2V0dGluZ1JlYWxzRnJvbU5lZ2F0aXZlSW50czoU9d+jHQAAQMHp3KIdAAAA",
+            "AABAY8AiSwoSQ29tcGxleE9wdGlvblR5cGUxEgsKA2ZvbxgBIAEoBRIMCgRm",
             "b28yGAIgASgFEgwKBGZvbzMYAyABKAUSDAoEZm9vNBgEIAMoBSKBAwoSQ29t",
             "cGxleE9wdGlvblR5cGUyEjIKA2JhchgBIAEoCzIlLnByb3RvYnVmX3VuaXR0",
             "ZXN0LkNvbXBsZXhPcHRpb25UeXBlMRILCgNiYXoYAiABKAUSRgoEZnJlZBgD",
@@ -60,82 +60,83 @@ namespace UnitTest.Issues.TestProtos {
             "bXBsZXhfb3B0NBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxiK",
             "9dEDIAEoCzI4LnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBl",
             "Mi5Db21wbGV4T3B0aW9uVHlwZTQiIQoSQ29tcGxleE9wdGlvblR5cGUzEgsK",
-            "A3F1eBgBIAEoBSJOChVWYXJpb3VzQ29tcGxleE9wdGlvbnM6NdKojx0DCLMP",
-            "+t6QHQIICar9kB0WCgMI5wUQ2wcaAwjBAiICCGUiAwjUAaLilR0GCCoiAmNY",
-            "IkwKCUFnZ3JlZ2F0ZRIJCgFpGAEgASgFEgkKAXMYAiABKAkSKQoDc3ViGAMg",
-            "ASgLMhwucHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlIlkKEEFnZ3JlZ2F0",
-            "ZU1lc3NhZ2USKQoJZmllbGRuYW1lGAEgASgFQhbyoYc7ERIPRmllbGRBbm5v",
-            "dGF0aW9uOhrC0YY7FQhlEhFNZXNzYWdlQW5ub3RhdGlvbiKXAQoQTmVzdGVk",
-            "T3B0aW9uVHlwZRo7Cg1OZXN0ZWRNZXNzYWdlEiIKDG5lc3RlZF9maWVsZBgB",
-            "IAEoBUIMweDDHeoDAAAAAAAAOgbg6cId6QciRgoKTmVzdGVkRW51bRIPCgtV",
-            "TlNQRUNJRklFRBAAEh0KEU5FU1RFRF9FTlVNX1ZBTFVFEAEaBrCG+gXsBxoI",
-            "xfbJHesDAAAqUgoKTWV0aG9kT3B0MRIaChZNRVRIT0RPUFQxX1VOU1BFQ0lG",
-            "SUVEEAASEwoPTUVUSE9ET1BUMV9WQUwxEAESEwoPTUVUSE9ET1BUMV9WQUwy",
-            "EAIqXgoNQWdncmVnYXRlRW51bRIPCgtVTlNQRUNJRklFRBAAEiUKBVZBTFVF",
-            "EAEaGsr8iTsVEhNFbnVtVmFsdWVBbm5vdGF0aW9uGhWSlYg7EBIORW51bUFu",
-            "bm90YXRpb24yjgEKHFRlc3RTZXJ2aWNlV2l0aEN1c3RvbU9wdGlvbnMSYwoD",
-            "Rm9vEikucHJvdG9idWZfdW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVxdWVz",
-            "dBoqLnByb3RvYnVmX3VuaXR0ZXN0LkN1c3RvbU9wdGlvbkZvb1Jlc3BvbnNl",
-            "IgXg+oweAhoJkLKLHtPbgMtJMpkBChBBZ2dyZWdhdGVTZXJ2aWNlEmsKBk1l",
-            "dGhvZBIjLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZU1lc3NhZ2UaIy5w",
-            "cm90b2J1Zl91bml0dGVzdC5BZ2dyZWdhdGVNZXNzYWdlIhfKyJY7EhIQTWV0",
-            "aG9kQW5ub3RhdGlvbhoYyvuOOxMSEVNlcnZpY2VBbm5vdGF0aW9uOjIKCWZp",
-            "bGVfb3B0MRIcLmdvb2dsZS5wcm90b2J1Zi5GaWxlT3B0aW9ucxiOndgDIAEo",
-            "BDo4CgxtZXNzYWdlX29wdDESHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9w",
-            "dGlvbnMYnK3YAyABKAU6NAoKZmllbGRfb3B0MRIdLmdvb2dsZS5wcm90b2J1",
-            "Zi5GaWVsZE9wdGlvbnMYiLzYAyABKAY6NAoKb25lb2Zfb3B0MRIdLmdvb2ds",
-            "ZS5wcm90b2J1Zi5PbmVvZk9wdGlvbnMYz7XYAyABKAU6MgoJZW51bV9vcHQx",
-            "EhwuZ29vZ2xlLnByb3RvYnVmLkVudW1PcHRpb25zGOie2QMgASgPOjwKD2Vu",
-            "dW1fdmFsdWVfb3B0MRIhLmdvb2dsZS5wcm90b2J1Zi5FbnVtVmFsdWVPcHRp",
-            "b25zGOagXyABKAU6OAoMc2VydmljZV9vcHQxEh8uZ29vZ2xlLnByb3RvYnVm",
-            "LlNlcnZpY2VPcHRpb25zGKK24QMgASgSOlUKC21ldGhvZF9vcHQxEh4uZ29v",
-            "Z2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMYrM/hAyABKA4yHS5wcm90b2J1",
-            "Zl91bml0dGVzdC5NZXRob2RPcHQxOjQKCGJvb2xfb3B0Eh8uZ29vZ2xlLnBy",
-            "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGOqr1gMgASgIOjUKCWludDMyX29wdBIf",
-            "Lmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjtqNYDIAEoBTo1Cglp",
-            "bnQ2NF9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYxqfW",
-            "AyABKAM6NgoKdWludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl",
-            "T3B0aW9ucxiwotYDIAEoDTo2Cgp1aW50NjRfb3B0Eh8uZ29vZ2xlLnByb3Rv",
-            "YnVmLk1lc3NhZ2VPcHRpb25zGN+O1gMgASgEOjYKCnNpbnQzMl9vcHQSHy5n",
-            "b29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYwIjWAyABKBE6NgoKc2lu",
-            "dDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxj/gtYD",
-            "IAEoEjo3CgtmaXhlZDMyX29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdl",
-            "T3B0aW9ucxjT/tUDIAEoBzo3CgtmaXhlZDY0X29wdBIfLmdvb2dsZS5wcm90",
-            "b2J1Zi5NZXNzYWdlT3B0aW9ucxji/dUDIAEoBjo4CgxzZml4ZWQzMl9vcHQS",
-            "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY1fHVAyABKA86OAoM",
-            "c2ZpeGVkNjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25z",
-            "GOOK1QMgASgQOjUKCWZsb2F0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNz",
-            "YWdlT3B0aW9ucxj+u9QDIAEoAjo2Cgpkb3VibGVfb3B0Eh8uZ29vZ2xlLnBy",
-            "b3RvYnVmLk1lc3NhZ2VPcHRpb25zGM2r1AMgASgBOjYKCnN0cmluZ19vcHQS",
-            "Hy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYxavUAyABKAk6NQoJ",
-            "Ynl0ZXNfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGJar",
-            "1AMgASgMOnAKCGVudW1fb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VP",
-            "cHRpb25zGJGr1AMgASgOMjoucHJvdG9idWZfdW5pdHRlc3QuRHVtbXlNZXNz",
-            "YWdlQ29udGFpbmluZ0VudW0uVGVzdEVudW1UeXBlOnAKEG1lc3NhZ2VfdHlw",
-            "ZV9vcHQSHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYr/LTAyAB",
-            "KAsyMi5wcm90b2J1Zl91bml0dGVzdC5EdW1teU1lc3NhZ2VJbnZhbGlkQXNP",
-            "cHRpb25UeXBlOl8KDGNvbXBsZXhfb3B0MRIfLmdvb2dsZS5wcm90b2J1Zi5N",
-            "ZXNzYWdlT3B0aW9ucxik3NIDIAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNv",
-            "bXBsZXhPcHRpb25UeXBlMTpfCgxjb21wbGV4X29wdDISHy5nb29nbGUucHJv",
-            "dG9idWYuTWVzc2FnZU9wdGlvbnMY1Y/SAyABKAsyJS5wcm90b2J1Zl91bml0",
-            "dGVzdC5Db21wbGV4T3B0aW9uVHlwZTI6XwoMY29tcGxleF9vcHQzEh8uZ29v",
-            "Z2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGO+L0gMgASgLMiUucHJvdG9i",
-            "dWZfdW5pdHRlc3QuQ29tcGxleE9wdGlvblR5cGUzOk4KB2ZpbGVvcHQSHC5n",
-            "b29nbGUucHJvdG9idWYuRmlsZU9wdGlvbnMYz92wByABKAsyHC5wcm90b2J1",
-            "Zl91bml0dGVzdC5BZ2dyZWdhdGU6UAoGbXNnb3B0Eh8uZ29vZ2xlLnByb3Rv",
-            "YnVmLk1lc3NhZ2VPcHRpb25zGJjqsAcgASgLMhwucHJvdG9idWZfdW5pdHRl",
-            "c3QuQWdncmVnYXRlOlAKCGZpZWxkb3B0Eh0uZ29vZ2xlLnByb3RvYnVmLkZp",
-            "ZWxkT3B0aW9ucxie9LAHIAEoCzIcLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3Jl",
-            "Z2F0ZTpOCgdlbnVtb3B0EhwuZ29vZ2xlLnByb3RvYnVmLkVudW1PcHRpb25z",
-            "GNKCsQcgASgLMhwucHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlOlYKCmVu",
-            "dW12YWxvcHQSIS5nb29nbGUucHJvdG9idWYuRW51bVZhbHVlT3B0aW9ucxjJ",
-            "n7EHIAEoCzIcLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZTpUCgpzZXJ2",
-            "aWNlb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VPcHRpb25zGLnvsQcg",
-            "ASgLMhwucHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlOlIKCW1ldGhvZG9w",
-            "dBIeLmdvb2dsZS5wcm90b2J1Zi5NZXRob2RPcHRpb25zGInpsgcgASgLMhwu",
-            "cHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlQlWqAhpVbml0VGVzdC5Jc3N1",
-            "ZXMuVGVzdFByb3Rvc/DowR3qrcDlJPrshTsqCGQSDkZpbGVBbm5vdGF0aW9u",
-            "GhYSFE5lc3RlZEZpbGVBbm5vdGF0aW9uYgZwcm90bzM="));
+            "A3F1eBgBIAEoBSJsChVWYXJpb3VzQ29tcGxleE9wdGlvbnM6U6LilR0CCCqi",
+            "4pUdAiBjouKVHQIgWKr9kB0DENsHqv2QHQUKAwjnBdKojx0DCLMPqv2QHQUa",
+            "AwjBAqr9kB0EIgIIZar9kB0FIgMI1AH63pAdAggJIkwKCUFnZ3JlZ2F0ZRIJ",
+            "CgFpGAEgASgFEgkKAXMYAiABKAkSKQoDc3ViGAMgASgLMhwucHJvdG9idWZf",
+            "dW5pdHRlc3QuQWdncmVnYXRlIlkKEEFnZ3JlZ2F0ZU1lc3NhZ2USKQoJZmll",
+            "bGRuYW1lGAEgASgFQhbyoYc7ERIPRmllbGRBbm5vdGF0aW9uOhrC0YY7FQhl",
+            "EhFNZXNzYWdlQW5ub3RhdGlvbiKXAQoQTmVzdGVkT3B0aW9uVHlwZRo7Cg1O",
+            "ZXN0ZWRNZXNzYWdlEiIKDG5lc3RlZF9maWVsZBgBIAEoBUIMweDDHeoDAAAA",
+            "AAAAOgbg6cId6QciRgoKTmVzdGVkRW51bRIPCgtVTlNQRUNJRklFRBAAEh0K",
+            "EU5FU1RFRF9FTlVNX1ZBTFVFEAEaBrCG+gXsBxoIxfbJHesDAAAqUgoKTWV0",
+            "aG9kT3B0MRIaChZNRVRIT0RPUFQxX1VOU1BFQ0lGSUVEEAASEwoPTUVUSE9E",
+            "T1BUMV9WQUwxEAESEwoPTUVUSE9ET1BUMV9WQUwyEAIqXgoNQWdncmVnYXRl",
+            "RW51bRIPCgtVTlNQRUNJRklFRBAAEiUKBVZBTFVFEAEaGsr8iTsVEhNFbnVt",
+            "VmFsdWVBbm5vdGF0aW9uGhWSlYg7EBIORW51bUFubm90YXRpb24yjgEKHFRl",
+            "c3RTZXJ2aWNlV2l0aEN1c3RvbU9wdGlvbnMSYwoDRm9vEikucHJvdG9idWZf",
+            "dW5pdHRlc3QuQ3VzdG9tT3B0aW9uRm9vUmVxdWVzdBoqLnByb3RvYnVmX3Vu",
+            "aXR0ZXN0LkN1c3RvbU9wdGlvbkZvb1Jlc3BvbnNlIgXg+oweAhoJkLKLHtPb",
+            "gMtJMpkBChBBZ2dyZWdhdGVTZXJ2aWNlEmsKBk1ldGhvZBIjLnByb3RvYnVm",
+            "X3VuaXR0ZXN0LkFnZ3JlZ2F0ZU1lc3NhZ2UaIy5wcm90b2J1Zl91bml0dGVz",
+            "dC5BZ2dyZWdhdGVNZXNzYWdlIhfKyJY7EhIQTWV0aG9kQW5ub3RhdGlvbhoY",
+            "yvuOOxMSEVNlcnZpY2VBbm5vdGF0aW9uOjIKCWZpbGVfb3B0MRIcLmdvb2ds",
+            "ZS5wcm90b2J1Zi5GaWxlT3B0aW9ucxiOndgDIAEoBDo4CgxtZXNzYWdlX29w",
+            "dDESHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYnK3YAyABKAU6",
+            "NAoKZmllbGRfb3B0MRIdLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMY",
+            "iLzYAyABKAY6NAoKb25lb2Zfb3B0MRIdLmdvb2dsZS5wcm90b2J1Zi5PbmVv",
+            "Zk9wdGlvbnMYz7XYAyABKAU6MgoJZW51bV9vcHQxEhwuZ29vZ2xlLnByb3Rv",
+            "YnVmLkVudW1PcHRpb25zGOie2QMgASgPOjwKD2VudW1fdmFsdWVfb3B0MRIh",
+            "Lmdvb2dsZS5wcm90b2J1Zi5FbnVtVmFsdWVPcHRpb25zGOagXyABKAU6OAoM",
+            "c2VydmljZV9vcHQxEh8uZ29vZ2xlLnByb3RvYnVmLlNlcnZpY2VPcHRpb25z",
+            "GKK24QMgASgSOlUKC21ldGhvZF9vcHQxEh4uZ29vZ2xlLnByb3RvYnVmLk1l",
+            "dGhvZE9wdGlvbnMYrM/hAyABKA4yHS5wcm90b2J1Zl91bml0dGVzdC5NZXRo",
+            "b2RPcHQxOjQKCGJvb2xfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VP",
+            "cHRpb25zGOqr1gMgASgIOjUKCWludDMyX29wdBIfLmdvb2dsZS5wcm90b2J1",
+            "Zi5NZXNzYWdlT3B0aW9ucxjtqNYDIAEoBTo1CglpbnQ2NF9vcHQSHy5nb29n",
+            "bGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYxqfWAyABKAM6NgoKdWludDMy",
+            "X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxiwotYDIAEo",
+            "DTo2Cgp1aW50NjRfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRp",
+            "b25zGN+O1gMgASgEOjYKCnNpbnQzMl9vcHQSHy5nb29nbGUucHJvdG9idWYu",
+            "TWVzc2FnZU9wdGlvbnMYwIjWAyABKBE6NgoKc2ludDY0X29wdBIfLmdvb2ds",
+            "ZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxj/gtYDIAEoEjo3CgtmaXhlZDMy",
+            "X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxjT/tUDIAEo",
+            "Bzo3CgtmaXhlZDY0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0",
+            "aW9ucxji/dUDIAEoBjo4CgxzZml4ZWQzMl9vcHQSHy5nb29nbGUucHJvdG9i",
+            "dWYuTWVzc2FnZU9wdGlvbnMY1fHVAyABKA86OAoMc2ZpeGVkNjRfb3B0Eh8u",
+            "Z29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGOOK1QMgASgQOjUKCWZs",
+            "b2F0X29wdBIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxj+u9QD",
+            "IAEoAjo2Cgpkb3VibGVfb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VP",
+            "cHRpb25zGM2r1AMgASgBOjYKCnN0cmluZ19vcHQSHy5nb29nbGUucHJvdG9i",
+            "dWYuTWVzc2FnZU9wdGlvbnMYxavUAyABKAk6NQoJYnl0ZXNfb3B0Eh8uZ29v",
+            "Z2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGJar1AMgASgMOnAKCGVudW1f",
+            "b3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRpb25zGJGr1AMgASgO",
+            "MjoucHJvdG9idWZfdW5pdHRlc3QuRHVtbXlNZXNzYWdlQ29udGFpbmluZ0Vu",
+            "dW0uVGVzdEVudW1UeXBlOnAKEG1lc3NhZ2VfdHlwZV9vcHQSHy5nb29nbGUu",
+            "cHJvdG9idWYuTWVzc2FnZU9wdGlvbnMYr/LTAyABKAsyMi5wcm90b2J1Zl91",
+            "bml0dGVzdC5EdW1teU1lc3NhZ2VJbnZhbGlkQXNPcHRpb25UeXBlOl8KDGNv",
+            "bXBsZXhfb3B0MRIfLmdvb2dsZS5wcm90b2J1Zi5NZXNzYWdlT3B0aW9ucxik",
+            "3NIDIAEoCzIlLnByb3RvYnVmX3VuaXR0ZXN0LkNvbXBsZXhPcHRpb25UeXBl",
+            "MTpfCgxjb21wbGV4X29wdDISHy5nb29nbGUucHJvdG9idWYuTWVzc2FnZU9w",
+            "dGlvbnMY1Y/SAyABKAsyJS5wcm90b2J1Zl91bml0dGVzdC5Db21wbGV4T3B0",
+            "aW9uVHlwZTI6XwoMY29tcGxleF9vcHQzEh8uZ29vZ2xlLnByb3RvYnVmLk1l",
+            "c3NhZ2VPcHRpb25zGO+L0gMgASgLMiUucHJvdG9idWZfdW5pdHRlc3QuQ29t",
+            "cGxleE9wdGlvblR5cGUzOk4KB2ZpbGVvcHQSHC5nb29nbGUucHJvdG9idWYu",
+            "RmlsZU9wdGlvbnMYz92wByABKAsyHC5wcm90b2J1Zl91bml0dGVzdC5BZ2dy",
+            "ZWdhdGU6UAoGbXNnb3B0Eh8uZ29vZ2xlLnByb3RvYnVmLk1lc3NhZ2VPcHRp",
+            "b25zGJjqsAcgASgLMhwucHJvdG9idWZfdW5pdHRlc3QuQWdncmVnYXRlOlAK",
+            "CGZpZWxkb3B0Eh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxie9LAH",
+            "IAEoCzIcLnByb3RvYnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZTpOCgdlbnVtb3B0",
+            "EhwuZ29vZ2xlLnByb3RvYnVmLkVudW1PcHRpb25zGNKCsQcgASgLMhwucHJv",
+            "dG9idWZfdW5pdHRlc3QuQWdncmVnYXRlOlYKCmVudW12YWxvcHQSIS5nb29n",
+            "bGUucHJvdG9idWYuRW51bVZhbHVlT3B0aW9ucxjJn7EHIAEoCzIcLnByb3Rv",
+            "YnVmX3VuaXR0ZXN0LkFnZ3JlZ2F0ZTpUCgpzZXJ2aWNlb3B0Eh8uZ29vZ2xl",
+            "LnByb3RvYnVmLlNlcnZpY2VPcHRpb25zGLnvsQcgASgLMhwucHJvdG9idWZf",
+            "dW5pdHRlc3QuQWdncmVnYXRlOlIKCW1ldGhvZG9wdBIeLmdvb2dsZS5wcm90",
+            "b2J1Zi5NZXRob2RPcHRpb25zGInpsgcgASgLMhwucHJvdG9idWZfdW5pdHRl",
+            "c3QuQWdncmVnYXRlQlWqAhpVbml0VGVzdC5Jc3N1ZXMuVGVzdFByb3Rvc/Do",
+            "wR3qrcDlJPrshTsqCGQSDkZpbGVBbm5vdGF0aW9uGhYSFE5lc3RlZEZpbGVB",
+            "bm5vdGF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.MethodOpt1), typeof(global::UnitTest.Issues.TestProtos.AggregateEnum), }, new pb::Extension[] { UnittestCustomOptionsProto3Extensions.FileOpt1, UnittestCustomOptionsProto3Extensions.MessageOpt1, UnittestCustomOptionsProto3Extensions.FieldOpt1, UnittestCustomOptionsProto3Extensions.OneofOpt1, UnittestCustomOptionsProto3Extensions.EnumOpt1, UnittestCustomOptionsProto3Extensions.EnumValueOpt1, UnittestCustomOptionsProto3Extensions.ServiceOpt1, UnittestCustomOptionsProto3Extensions.MethodOpt1, UnittestCustomOptionsProto3Extensions.BoolOpt, UnittestCustomOptionsProto3Extensions.Int32Opt, UnittestCustomOptionsProto3Extensions.Int64Opt, UnittestCustomOptionsProto3Extensions.Uint32Opt, UnittestCustomOptionsProto3Extensions.Uint64Opt, UnittestCustomOptionsProto3Extensions.Sint32Opt, UnittestCustomOptionsProto3Extensions.Sint64Opt, UnittestCustomOptionsProto3Extensions.Fixed32Opt, UnittestCustomOptionsProto3Extensions.Fixed64Opt, UnittestCustomOptionsProto3Extensions.Sfixed32Opt, UnittestCustomOptionsProto3Extensions.Sfixed64Opt, UnittestCustomOptionsProto3Extensions.FloatOpt, UnittestCustomOptionsProto3Extensions.DoubleOpt, UnittestCustomOptionsProto3Extensions.StringOpt, UnittestCustomOptionsProto3Extensions.BytesOpt, UnittestCustomOptionsProto3Extensions.EnumOpt, UnittestCustomOptionsProto3Extensions.MessageTypeOpt, UnittestCustomOptionsProto3Extensions.ComplexOpt1, UnittestCustomOptionsProto3Extensions.ComplexOpt2, UnittestCustomOptionsProto3Extensions.ComplexOpt3, UnittestCustomOptionsProto3Extensions.Fileopt, UnittestCustomOptionsProto3Extensions.Msgopt, UnittestCustomOptionsProto3Extensions.Fieldopt, UnittestCustomOptionsProto3Extensions.Enumopt, UnittestCustomOptionsProto3Extensions.Enumvalopt, UnittestCustomOptionsProto3Extensions.Serviceopt, UnittestCustomOptionsProto3Extensions.Methodopt }, new pbr::GeneratedClrTypeInfo[] {
@@ -256,7 +257,6 @@ namespace UnitTest.Issues.TestProtos {
   /// A test message with custom options at all possible locations (and also some
   /// regular options, to make sure they interact nicely).
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMessageWithCustomOptions : pb::IMessage<TestMessageWithCustomOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -324,24 +324,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OneofField {
-      get { return HasOneofField ? (int) anOneof_ : 0; }
+      get { return anOneofCase_ == AnOneofOneofCase.OneofField ? (int) anOneof_ : 0; }
       set {
         anOneof_ = value;
         anOneofCase_ = AnOneofOneofCase.OneofField;
-      }
-    }
-    /// <summary>Gets whether the "oneof_field" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasOneofField {
-      get { return anOneofCase_ == AnOneofOneofCase.OneofField; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_field" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearOneofField() {
-      if (HasOneofField) {
-        ClearAnOneof();
       }
     }
 
@@ -391,7 +377,7 @@ namespace UnitTest.Issues.TestProtos {
     public override int GetHashCode() {
       int hash = 1;
       if (Field1.Length != 0) hash ^= Field1.GetHashCode();
-      if (HasOneofField) hash ^= OneofField.GetHashCode();
+      if (anOneofCase_ == AnOneofOneofCase.OneofField) hash ^= OneofField.GetHashCode();
       hash ^= (int) anOneofCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -415,7 +401,7 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(10);
         output.WriteString(Field1);
       }
-      if (HasOneofField) {
+      if (anOneofCase_ == AnOneofOneofCase.OneofField) {
         output.WriteRawTag(16);
         output.WriteInt32(OneofField);
       }
@@ -433,7 +419,7 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(10);
         output.WriteString(Field1);
       }
-      if (HasOneofField) {
+      if (anOneofCase_ == AnOneofOneofCase.OneofField) {
         output.WriteRawTag(16);
         output.WriteInt32(OneofField);
       }
@@ -450,7 +436,7 @@ namespace UnitTest.Issues.TestProtos {
       if (Field1.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Field1);
       }
-      if (HasOneofField) {
+      if (anOneofCase_ == AnOneofOneofCase.OneofField) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(OneofField);
       }
       if (_unknownFields != null) {
@@ -485,11 +471,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -512,11 +494,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -553,7 +531,6 @@ namespace UnitTest.Issues.TestProtos {
   /// A test RPC service with custom options at all possible locations (and also
   /// some regular options, to make sure they interact nicely).
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooRequest : pb::IMessage<CustomOptionFooRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -680,11 +657,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -699,11 +672,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -714,7 +683,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooResponse : pb::IMessage<CustomOptionFooResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -841,11 +809,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -860,11 +824,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -875,7 +835,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooClientMessage : pb::IMessage<CustomOptionFooClientMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1002,11 +961,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1021,11 +976,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1036,7 +987,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooServerMessage : pb::IMessage<CustomOptionFooServerMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1163,11 +1113,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1182,11 +1128,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1197,7 +1139,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DummyMessageContainingEnum : pb::IMessage<DummyMessageContainingEnum>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1324,11 +1265,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1343,11 +1280,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1372,7 +1305,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DummyMessageInvalidAsOptionType : pb::IMessage<DummyMessageInvalidAsOptionType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1499,11 +1431,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1518,11 +1446,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1533,7 +1457,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionMinIntegerValues : pb::IMessage<CustomOptionMinIntegerValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1660,11 +1583,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1679,11 +1598,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1694,7 +1609,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionMaxIntegerValues : pb::IMessage<CustomOptionMaxIntegerValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1821,11 +1735,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1840,11 +1750,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -1855,7 +1761,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionOtherValues : pb::IMessage<CustomOptionOtherValues>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1982,11 +1887,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2001,11 +1902,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2016,7 +1913,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SettingRealsFromPositiveInts : pb::IMessage<SettingRealsFromPositiveInts>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2143,11 +2039,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2162,11 +2054,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2177,7 +2065,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SettingRealsFromNegativeInts : pb::IMessage<SettingRealsFromNegativeInts>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2304,11 +2191,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2323,11 +2206,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2338,7 +2217,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ComplexOptionType1 : pb::IMessage<ComplexOptionType1>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2570,11 +2448,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2606,11 +2480,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2638,7 +2508,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ComplexOptionType2 : pb::IMessage<ComplexOptionType2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2876,11 +2745,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -2917,11 +2782,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -2957,7 +2818,6 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class ComplexOptionType4 : pb::IMessage<ComplexOptionType4>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -3113,11 +2973,7 @@ namespace UnitTest.Issues.TestProtos {
         #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
@@ -3136,11 +2992,7 @@ namespace UnitTest.Issues.TestProtos {
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;
@@ -3170,7 +3022,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ComplexOptionType3 : pb::IMessage<ComplexOptionType3>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3326,11 +3177,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3349,11 +3196,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -3371,7 +3214,6 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Note that we try various different ways of naming the same extension.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class VariousComplexOptions : pb::IMessage<VariousComplexOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3498,11 +3340,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3517,11 +3355,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -3535,7 +3369,6 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// A helper type used to test aggregate option parsing
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Aggregate : pb::IMessage<Aggregate>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3755,11 +3588,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3789,11 +3618,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -3819,7 +3644,6 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class AggregateMessage : pb::IMessage<AggregateMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -3975,11 +3799,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -3998,11 +3818,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -4020,7 +3836,6 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>
   /// Test custom options for nested type.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NestedOptionType : pb::IMessage<NestedOptionType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -4147,11 +3962,7 @@ namespace UnitTest.Issues.TestProtos {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -4166,11 +3977,7 @@ namespace UnitTest.Issues.TestProtos {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -4189,7 +3996,6 @@ namespace UnitTest.Issues.TestProtos {
         [pbr::OriginalName("NESTED_ENUM_VALUE")] Value = 1,
       }
 
-      [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           , pb::IBufferMessage
@@ -4345,11 +4151,7 @@ namespace UnitTest.Issues.TestProtos {
         #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
@@ -4368,11 +4170,7 @@ namespace UnitTest.Issues.TestProtos {
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
-          if ((tag & 7) == 4) {
-            // Abort on any end group tag.
-            return;
-          }
-          switch(tag) {
+            switch(tag) {
               default:
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;

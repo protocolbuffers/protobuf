@@ -1,20 +1,41 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 
 #include <climits>
-#include <cstdint>
 #include <iostream>
 #include <limits>
 #include <string>
 #include <utility>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -105,7 +126,7 @@ void SetSomeTypesInEmptyMessageUnknownFields(
 
 TEST(ParseVarintTest, Varint32) {
   auto test_value = [](uint32_t value, int varint_length) {
-    uint8_t buffer[10] = {0};
+    uint8_t buffer[10];
     uint8_t* p = io::CodedOutputStream::WriteVarint32ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -132,7 +153,7 @@ TEST(ParseVarintTest, Varint32) {
 
 TEST(ParseVarintTest, Varint64) {
   auto test_value = [](uint64_t value, int varint_length) {
-    uint8_t buffer[10] = {0};
+    uint8_t buffer[10];
     uint8_t* p = io::CodedOutputStream::WriteVarint64ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -1095,7 +1116,7 @@ TYPED_TEST(LiteTest, AllLite47) {
 TYPED_TEST(LiteTest, MapCrash) {
   // See b/113635730
   Arena arena;
-  auto msg = Arena::Create<protobuf_unittest::TestMapLite>(&arena);
+  auto msg = Arena::CreateMessage<protobuf_unittest::TestMapLite>(&arena);
   // Payload for the map<string, Enum> with a enum varint that's longer >
   // 10 bytes. This causes a parse fail and a subsequent delete. field 16
   // (map<int32, MapEnumLite>) tag = 128+2 = \202 \1

@@ -55,7 +55,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// `NullValue` is a singleton enumeration to represent the null value for the
   /// `Value` type union.
   ///
-  /// The JSON representation for `NullValue` is JSON `null`.
+  ///  The JSON representation for `NullValue` is JSON `null`.
   /// </summary>
   public enum NullValue {
     /// <summary>
@@ -77,7 +77,6 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Struct` is JSON object.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Struct : pb::IMessage<Struct>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -225,11 +224,7 @@ namespace Google.Protobuf.WellKnownTypes {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -248,11 +243,7 @@ namespace Google.Protobuf.WellKnownTypes {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -275,7 +266,6 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Value` is JSON value.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Value : pb::IMessage<Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -348,24 +338,10 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
-      get { return HasNullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) kind_ : global::Google.Protobuf.WellKnownTypes.NullValue.NullValue; }
+      get { return kindCase_ == KindOneofCase.NullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) kind_ : global::Google.Protobuf.WellKnownTypes.NullValue.NullValue; }
       set {
         kind_ = value;
         kindCase_ = KindOneofCase.NullValue;
-      }
-    }
-    /// <summary>Gets whether the "null_value" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasNullValue {
-      get { return kindCase_ == KindOneofCase.NullValue; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "null_value" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearNullValue() {
-      if (HasNullValue) {
-        ClearKind();
       }
     }
 
@@ -377,24 +353,10 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double NumberValue {
-      get { return HasNumberValue ? (double) kind_ : 0D; }
+      get { return kindCase_ == KindOneofCase.NumberValue ? (double) kind_ : 0D; }
       set {
         kind_ = value;
         kindCase_ = KindOneofCase.NumberValue;
-      }
-    }
-    /// <summary>Gets whether the "number_value" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasNumberValue {
-      get { return kindCase_ == KindOneofCase.NumberValue; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "number_value" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearNumberValue() {
-      if (HasNumberValue) {
-        ClearKind();
       }
     }
 
@@ -406,24 +368,10 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringValue {
-      get { return HasStringValue ? (string) kind_ : ""; }
+      get { return kindCase_ == KindOneofCase.StringValue ? (string) kind_ : ""; }
       set {
         kind_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         kindCase_ = KindOneofCase.StringValue;
-      }
-    }
-    /// <summary>Gets whether the "string_value" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasStringValue {
-      get { return kindCase_ == KindOneofCase.StringValue; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "string_value" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearStringValue() {
-      if (HasStringValue) {
-        ClearKind();
       }
     }
 
@@ -435,24 +383,10 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool BoolValue {
-      get { return HasBoolValue ? (bool) kind_ : false; }
+      get { return kindCase_ == KindOneofCase.BoolValue ? (bool) kind_ : false; }
       set {
         kind_ = value;
         kindCase_ = KindOneofCase.BoolValue;
-      }
-    }
-    /// <summary>Gets whether the "bool_value" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool HasBoolValue {
-      get { return kindCase_ == KindOneofCase.BoolValue; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "bool_value" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void ClearBoolValue() {
-      if (HasBoolValue) {
-        ClearKind();
       }
     }
 
@@ -540,10 +474,10 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasNullValue) hash ^= NullValue.GetHashCode();
-      if (HasNumberValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(NumberValue);
-      if (HasStringValue) hash ^= StringValue.GetHashCode();
-      if (HasBoolValue) hash ^= BoolValue.GetHashCode();
+      if (kindCase_ == KindOneofCase.NullValue) hash ^= NullValue.GetHashCode();
+      if (kindCase_ == KindOneofCase.NumberValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(NumberValue);
+      if (kindCase_ == KindOneofCase.StringValue) hash ^= StringValue.GetHashCode();
+      if (kindCase_ == KindOneofCase.BoolValue) hash ^= BoolValue.GetHashCode();
       if (kindCase_ == KindOneofCase.StructValue) hash ^= StructValue.GetHashCode();
       if (kindCase_ == KindOneofCase.ListValue) hash ^= ListValue.GetHashCode();
       hash ^= (int) kindCase_;
@@ -565,19 +499,19 @@ namespace Google.Protobuf.WellKnownTypes {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (HasNullValue) {
+      if (kindCase_ == KindOneofCase.NullValue) {
         output.WriteRawTag(8);
         output.WriteEnum((int) NullValue);
       }
-      if (HasNumberValue) {
+      if (kindCase_ == KindOneofCase.NumberValue) {
         output.WriteRawTag(17);
         output.WriteDouble(NumberValue);
       }
-      if (HasStringValue) {
+      if (kindCase_ == KindOneofCase.StringValue) {
         output.WriteRawTag(26);
         output.WriteString(StringValue);
       }
-      if (HasBoolValue) {
+      if (kindCase_ == KindOneofCase.BoolValue) {
         output.WriteRawTag(32);
         output.WriteBool(BoolValue);
       }
@@ -599,19 +533,19 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (HasNullValue) {
+      if (kindCase_ == KindOneofCase.NullValue) {
         output.WriteRawTag(8);
         output.WriteEnum((int) NullValue);
       }
-      if (HasNumberValue) {
+      if (kindCase_ == KindOneofCase.NumberValue) {
         output.WriteRawTag(17);
         output.WriteDouble(NumberValue);
       }
-      if (HasStringValue) {
+      if (kindCase_ == KindOneofCase.StringValue) {
         output.WriteRawTag(26);
         output.WriteString(StringValue);
       }
-      if (HasBoolValue) {
+      if (kindCase_ == KindOneofCase.BoolValue) {
         output.WriteRawTag(32);
         output.WriteBool(BoolValue);
       }
@@ -633,16 +567,16 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (HasNullValue) {
+      if (kindCase_ == KindOneofCase.NullValue) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NullValue);
       }
-      if (HasNumberValue) {
+      if (kindCase_ == KindOneofCase.NumberValue) {
         size += 1 + 8;
       }
-      if (HasStringValue) {
+      if (kindCase_ == KindOneofCase.StringValue) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(StringValue);
       }
-      if (HasBoolValue) {
+      if (kindCase_ == KindOneofCase.BoolValue) {
         size += 1 + 1;
       }
       if (kindCase_ == KindOneofCase.StructValue) {
@@ -701,11 +635,7 @@ namespace Google.Protobuf.WellKnownTypes {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -755,11 +685,7 @@ namespace Google.Protobuf.WellKnownTypes {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -810,7 +736,6 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `ListValue` is JSON array.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ListValue : pb::IMessage<ListValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -958,11 +883,7 @@ namespace Google.Protobuf.WellKnownTypes {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -981,11 +902,7 @@ namespace Google.Protobuf.WellKnownTypes {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;

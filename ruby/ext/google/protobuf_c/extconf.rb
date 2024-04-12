@@ -22,7 +22,6 @@ $INCFLAGS += " -I$(srcdir)/third_party/utf8_range"
 
 $srcs = ["protobuf.c", "convert.c", "defs.c", "message.c",
          "repeated_field.c", "map.c", "ruby-upb.c", "wrap_memcpy.c",
-         "utf8_range.c", "shared_convert.c",
-         "shared_message.c"]
+         "naive.c", "range2-neon.c", "range2-sse.c"]
 
 create_makefile(ext_name)

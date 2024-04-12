@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef GOOGLE_PROTOBUF_STUBS_PORT_H_
 #define GOOGLE_PROTOBUF_STUBS_PORT_H_
@@ -20,6 +43,42 @@
 
 // Must be last.
 #include "google/protobuf/port_def.inc"  // NOLINT
+
+#undef PROTOBUF_LITTLE_ENDIAN
+#ifdef _WIN32
+  // Assuming windows is always little-endian.
+  // TODO(xiaofeng): The PROTOBUF_LITTLE_ENDIAN is not only used for
+  // optimization but also for correctness. We should define an
+  // different macro to test the big-endian code path in coded_stream.
+  #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+    #define PROTOBUF_LITTLE_ENDIAN 1
+  #endif
+#if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
+// If MSVC has "/RTCc" set, it will complain about truncating casts at
+// runtime.  This file contains some intentional truncating casts.
+#pragma runtime_checks("c", off)
+#endif
+#else
+#ifdef __APPLE__
+#include <machine/endian.h>  // __BYTE_ORDER
+#elif defined(__FreeBSD__)
+#include <sys/endian.h>  // __BYTE_ORDER
+#elif (defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__))
+#include <sys/isa_defs.h>  // __BYTE_ORDER
+#elif defined(_AIX) || defined(__TOS_AIX__)
+#include <sys/machine.h>  // BYTE_ORDER
+#elif defined(__QNX__)
+#include <sys/param.h>  // BYTE_ORDER
+#else
+#include <endian.h>  // __BYTE_ORDER
+#endif
+#if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||   \
+     (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
+     (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) &&      \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#endif
+#endif
 
 // These #includes are for the byte swap functions declared later on.
 #ifdef _MSC_VER
@@ -49,8 +108,9 @@
   #define LIBPROTOC_EXPORT
 #endif
 
-#define PROTOBUF_RUNTIME_DEPRECATED(message) [[deprecated]] (message)
-#define GOOGLE_PROTOBUF_RUNTIME_DEPRECATED(message) [[deprecated]] (message)
+#define PROTOBUF_RUNTIME_DEPRECATED(message) PROTOBUF_DEPRECATED_MSG(message)
+#define GOOGLE_PROTOBUF_RUNTIME_DEPRECATED(message) \
+  PROTOBUF_DEPRECATED_MSG(message)
 
 // ===================================================================
 // from google3/base/port.h
@@ -176,7 +236,7 @@ PROTOBUF_EXPORT uint32_t ghtonl(uint32_t x);
 
 class BigEndian {
  public:
-#ifdef ABSL_IS_LITTLE_ENDIAN
+#ifdef PROTOBUF_LITTLE_ENDIAN
 
   static uint16_t FromHost16(uint16_t x) { return bswap_16(x); }
   static uint16_t ToHost16(uint16_t x) { return bswap_16(x); }

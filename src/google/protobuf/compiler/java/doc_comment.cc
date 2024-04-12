@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -11,15 +34,9 @@
 
 #include "google/protobuf/compiler/java/doc_comment.h"
 
-#include <stddef.h>
-
-#include <algorithm>
-#include <cctype>
-#include <string>
 #include <vector>
 
 #include "absl/strings/str_split.h"
-#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -124,14 +141,7 @@ static std::string EscapeKdoc(const std::string& input) {
 
 static void WriteDocCommentBodyForLocation(io::Printer* printer,
                                            const SourceLocation& location,
-                                           const Options options,
                                            const bool kdoc) {
-  if (options.strip_nonfunctional_codegen) {
-    // TODO: Remove once prototiller can avoid making
-    // extraneous formatting changes to comments.
-    return;
-  }
-
   std::string comments = location.leading_comments.empty()
                              ? location.trailing_comments
                              : location.leading_comments;
@@ -153,20 +163,14 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
       printer->Print(" * <pre>\n");
     }
 
-    for (size_t i = 0; i < lines.size(); i++) {
-      // Lines should start with a single space and any extraneous leading
-      // spaces should be stripped. For lines starting with a /, the leading
-      // space will prevent putting it right after the leading asterick from
-      // closing the comment.
-      std::string line = lines[i];
-      line.erase(line.begin(),
-                 std::find_if(line.begin(), line.end(), [](unsigned char ch) {
-                   return !std::isspace(ch);
-                 }));
-      if (!line.empty()) {
-        printer->Print(" * $line$\n", "line", line);
+    for (int i = 0; i < lines.size(); i++) {
+      // Most lines should start with a space.  Watch out for lines that start
+      // with a /, since putting that right after the leading asterisk will
+      // close the comment.
+      if (!lines[i].empty() && lines[i][0] == '/') {
+        printer->Print(" * $line$\n", "line", lines[i]);
       } else {
-        printer->Print(" *\n");
+        printer->Print(" *$line$\n", "line", lines[i]);
       }
     }
 
@@ -182,10 +186,10 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
 template <typename DescriptorType>
 static void WriteDocCommentBody(io::Printer* printer,
                                 const DescriptorType* descriptor,
-                                const Options options, const bool kdoc) {
+                                const bool kdoc) {
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
-    WriteDocCommentBodyForLocation(printer, location, options, kdoc);
+    WriteDocCommentBodyForLocation(printer, location, kdoc);
   }
 }
 
@@ -206,23 +210,20 @@ static std::string FirstLineOf(const std::string& value) {
 }
 
 static void WriteDebugString(io::Printer* printer, const FieldDescriptor* field,
-                             const Options options, const bool kdoc) {
-  std::string field_comment = FirstLineOf(field->DebugString());
-  if (options.strip_nonfunctional_codegen) {
-    field_comment = field->name();
-  }
+                      const bool kdoc) {
   if (kdoc) {
-    printer->Print(" * `$def$`\n", "def", EscapeKdoc(field_comment));
+    printer->Print(" * `$def$`\n", "def",
+                   EscapeKdoc(FirstLineOf(field->DebugString())));
   } else {
     printer->Print(" * <code>$def$</code>\n", "def",
-                   EscapeJavadoc(field_comment));
+                   EscapeJavadoc(FirstLineOf(field->DebugString())));
   }
 }
 
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message,
-                            const Options options, const bool kdoc) {
+                            const bool kdoc) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, message, options, kdoc);
+  WriteDocCommentBody(printer, message, kdoc);
   if (kdoc) {
     printer->Print(
         " * Protobuf type `$fullname$`\n"
@@ -237,7 +238,7 @@ void WriteMessageDocComment(io::Printer* printer, const Descriptor* message,
 }
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                          const Options options, const bool kdoc) {
+                          const bool kdoc) {
   // We start the comment with the main body based on the comments from the
   // .proto file (if present). We then continue with the field declaration,
   // e.g.:
@@ -245,14 +246,19 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   // And then we end with the javadoc tags if applicable.
   // If the field is a group, the debug string might end with {.
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, field, options, kdoc);
-  WriteDebugString(printer, field, options, kdoc);
+  WriteDocCommentBody(printer, field, kdoc);
+  if (kdoc) {
+    printer->Print(" * `$def$`\n", "def",
+                   EscapeKdoc(FirstLineOf(field->DebugString())));
+  } else {
+    printer->Print(" * <code>$def$</code>\n", "def",
+                   EscapeJavadoc(FirstLineOf(field->DebugString())));
+  }
   printer->Print(" */\n");
 }
 
 void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
-                            const FieldAccessorType type,
-                            const Options options) {
+                            const FieldAccessorType type) {
   if (!field->options().deprecated()) {
     return;
   }
@@ -271,21 +277,18 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
 
   printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
                  field->full_name());
-  if (!options.strip_nonfunctional_codegen) {
-    printer->Print(" *     See $file$;l=$line$\n", "file",
-                   field->file()->name(), "line", startLine);
-  }
+  printer->Print(" *     See $file$;l=$line$\n", "file", field->file()->name(),
+                 "line", startLine);
 }
 
 void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
                                   const FieldAccessorType type,
-                                  const Options options, const bool builder,
-                                  const bool kdoc) {
+                                  const bool builder, const bool kdoc) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, field, options, kdoc);
-  WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
+  WriteDocCommentBody(printer, field, kdoc);
+  WriteDebugString(printer, field, kdoc);
+  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
       printer->Print(" * @return Whether the $name$ field is set.\n", "name",
@@ -339,13 +342,12 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
 void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                                            const FieldDescriptor* field,
                                            const FieldAccessorType type,
-                                           const Options options,
                                            const bool builder,
                                            const bool kdoc) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, field, options, kdoc);
-  WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
+  WriteDocCommentBody(printer, field, kdoc);
+  WriteDebugString(printer, field, kdoc);
+  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
       // Should never happen
@@ -410,13 +412,12 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
 void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
                                              const FieldDescriptor* field,
                                              const FieldAccessorType type,
-                                             const Options options,
                                              const bool builder,
                                              const bool kdoc) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, field, options, kdoc);
-  WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
+  WriteDocCommentBody(printer, field, kdoc);
+  WriteDebugString(printer, field, kdoc);
+  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
       // Should never happen
@@ -468,9 +469,9 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
 // Enum
 
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
-                         const Options options, const bool kdoc) {
+                         const bool kdoc) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, enum_, options, kdoc);
+  WriteDocCommentBody(printer, enum_, kdoc);
   if (kdoc) {
     printer->Print(
         " * Protobuf enum `$fullname$`\n"
@@ -485,10 +486,9 @@ void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
 }
 
 void WriteEnumValueDocComment(io::Printer* printer,
-                              const EnumValueDescriptor* value,
-                              const Options options) {
+                              const EnumValueDescriptor* value) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, value, options, /* kdoc */ false);
+  WriteDocCommentBody(printer, value, /* kdoc */ false);
 
   printer->Print(
       " * <code>$def$</code>\n"
@@ -497,20 +497,19 @@ void WriteEnumValueDocComment(io::Printer* printer,
 }
 
 void WriteServiceDocComment(io::Printer* printer,
-                            const ServiceDescriptor* service,
-                            const Options options) {
+                            const ServiceDescriptor* service) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, service, options, /* kdoc */ false);
+  WriteDocCommentBody(printer, service, /* kdoc */ false);
   printer->Print(
       " * Protobuf service {@code $fullname$}\n"
       " */\n",
       "fullname", EscapeJavadoc(service->full_name()));
 }
 
-void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method,
-                           const Options options) {
+void WriteMethodDocComment(io::Printer* printer,
+                           const MethodDescriptor* method) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, method, options, /* kdoc */ false);
+  WriteDocCommentBody(printer, method, /* kdoc */ false);
   printer->Print(
       " * <code>$def$</code>\n"
       " */\n",

@@ -1,10 +1,33 @@
-#region Copyright notice and license
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 using Google.Protobuf.Reflection;
@@ -13,7 +36,6 @@ using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using ProtobufTestMessages.Proto2;
 using ProtobufTestMessages.Proto3;
-using ProtobufUnittest;
 using System;
 using UnitTest.Issues.TestProtos;
 
@@ -472,11 +494,11 @@ namespace Google.Protobuf
 
         // Assume that anything non-bounds-related is covered in the Int32 case
         [Test]
-        // Runtime implementation differences produce different results for values just outside
-        // (long.MinValue, long.MaxValue) which cannot be exactly represented as a double. Use the
-        // next values exactly representable as doubles to ensure consistency.
-        [TestCase("9223372036854777856")]
-        [TestCase("-9223372036854777856")]
+        [TestCase("9223372036854775808")]
+        // Theoretical bound would be -9223372036854775809, but when that is parsed to a double
+        // we end up with the exact value of long.MinValue due to lack of precision. The value here
+        // is the "next double down".
+        [TestCase("-9223372036854780000")]
         public void NumberToInt64_Invalid(string jsonValue)
         {
             string json = "{ \"singleInt64\": " + jsonValue + "}";
@@ -499,10 +521,7 @@ namespace Google.Protobuf
         // Assume that anything non-bounds-related is covered in the Int32 case
         [Test]
         [TestCase("-1")]
-        // Runtime implementation differences produce different results for values just beyond
-        // ulong.MaxValue which cannot be exactly represented as a double. Use the  next value
-        // exactly representable as a double to ensure consistency.
-        [TestCase("18446744073709555712")]
+        [TestCase("18446744073709551616")]
         public void NumberToUInt64_Invalid(string jsonValue)
         {
             string json = "{ \"singleUint64\": " + jsonValue + "}";
@@ -923,52 +942,6 @@ namespace Google.Protobuf
         {
             string json = "{ \"singleForeignEnum\": " + value + " }";
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
-        }
-
-        [Test]
-        public void Enum_InvalidString_IgnoreUnknownFields()
-        {
-            // When ignoring unknown fields, invalid enum value strings are ignored too.
-            // This test uses TestProto3Optional so we can check we're not just setting the field to the 0 value.
-            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
-            string json = "{ \"optionalNestedEnum\": \"NOT_A_VALID_VALUE\" }";
-            var parsed = parser.Parse<TestProto3Optional>(json);
-            Assert.IsFalse(parsed.HasOptionalNestedEnum);
-        }
-
-        [Test]
-        public void RepeatedEnum_InvalidString_IgnoreUnknownFields()
-        {
-            // When ignoring unknown fields, invalid enum value strings are ignored too.
-            // For a repeated field, the value is removed entirely.
-            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
-            string json = "{ \"repeatedForeignEnum\": [ \"FOREIGN_FOO\", \"NOT_A_VALID_VALUE\", \"FOREIGN_BAR\" ] }";
-            var parsed = parser.Parse<TestAllTypes>(json);
-            var expected = new[] { TestProtos.ForeignEnum.ForeignFoo, TestProtos.ForeignEnum.ForeignBar };
-            Assert.AreEqual(expected, parsed.RepeatedForeignEnum);
-        }
-
-        [Test]
-        public void EnumValuedMap_InvalidString_IgnoreUnknownFields()
-        {
-            // When ignoring unknown fields, invalid enum value strings are ignored too.
-            // For a map field, the entry is removed entirely.
-            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
-            string json = "{ \"mapInt32Enum\": { \"1\": \"MAP_ENUM_BAR\", \"2\": \"NOT_A_VALID_VALUE\" } }";
-            var parsed = parser.Parse<TestMap>(json);
-            Assert.AreEqual(1, parsed.MapInt32Enum.Count);
-            Assert.AreEqual(MapEnum.Bar, parsed.MapInt32Enum[1]);
-            Assert.False(parsed.MapInt32Enum.ContainsKey(2));
-        }
-
-        [Test]
-        public void Enum_InvalidNumber_IgnoreUnknownFields()
-        {
-            // Even when ignoring unknown fields, fail for non-integer numeric values, because
-            // they could *never* be valid.
-            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
-            string json = "{ \"singleForeignEnum\": 5.5 }";
-            Assert.Throws<InvalidProtocolBufferException>(() => parser.Parse<TestAllTypes>(json));
         }
 
         [Test]

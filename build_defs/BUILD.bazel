@@ -1,8 +1,8 @@
 # Internal Starlark definitions for Protobuf.
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//bazel:cc_proto_library.bzl", starlark_cc_proto_library = "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", starlark_cc_proto_library = "cc_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
@@ -35,17 +35,9 @@ config_setting(
 # For more info on the various crosstool_tops used by NDK Bazel builds, see:
 # https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
 
-# When using https://bazel.build/concepts/platforms
 config_setting(
     name = "config_android",
-    constraint_values = ["@platforms//os:android"],
-)
-
-# When using legacy flags like --android_crosstool_top, --android_cpu, and --fat_apk_cpu
-config_setting(
-    name = "config_android-legacy-default-crosstool",
     values = {
-        # Default of `--android_crosstool_top`
         "crosstool_top": "//external:android/crosstool",
     },
 )
@@ -97,7 +89,7 @@ selects.config_setting_group(
     match_any = [
         ":config_win32",
         ":config_win64",
-    ],
+    ]
 )
 
 config_setting(
@@ -115,7 +107,7 @@ selects.config_setting_group(
     match_any = [
         ":config_osx_aarch64",
         ":config_osx_x86_64",
-    ],
+    ]
 )
 
 # Internal testing:

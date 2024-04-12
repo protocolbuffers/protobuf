@@ -745,7 +745,7 @@ class EncodeDecodeTest extends TestBase
     {
         // Test preserve unknown for varint.
         $m = new TestMessage();
-        $from = hex2bin('F80601');  // TODO: Add a util to encode
+        $from = hex2bin('F80601');  // TODO(teboring): Add a util to encode
                                     // varint for better readability
         $m->mergeFromString($from);
         $to = $m->serializeToString();
@@ -990,16 +990,6 @@ class EncodeDecodeTest extends TestBase
         $m->setNanos(123456789);
         $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
                             $m->serializeToJsonString());
-    }
-
-    public function testEncodeDecodeTimestampConsistency()
-    {
-        $m = new Google\Protobuf\Timestamp();
-        $m->setSeconds(946684800);
-        $m->setNanos(123000000);
-        $m->mergeFromJsonString($m->serializeToJsonString());
-        $this->assertEquals(946684800, $m->getSeconds());
-        $this->assertEquals(123000000, $m->getNanos());
     }
 
     public function testDecodeTopLevelValue()

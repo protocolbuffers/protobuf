@@ -1,16 +1,38 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.google.protobuf.Descriptors.Descriptor;
@@ -310,7 +332,7 @@ public class MapTest {
     assertThat(builder.build().getInt32ToInt32Field()).isEqualTo(newMap(1, 2));
     try {
       intMap.put(2, 3);
-      assertWithMessage("expected exception intMap").fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
@@ -324,7 +346,7 @@ public class MapTest {
         .isEqualTo(newMap(1, TestMap.EnumValue.BAR));
     try {
       enumMap.put(2, TestMap.EnumValue.FOO);
-      assertWithMessage("expected exception enumMap").fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
@@ -338,7 +360,7 @@ public class MapTest {
     assertThat(builder.build().getInt32ToStringField()).isEqualTo(newMap(1, "1"));
     try {
       stringMap.put(2, "2");
-      assertWithMessage("expected exception stringMap").fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
@@ -346,15 +368,18 @@ public class MapTest {
     builder.putInt32ToStringField(2, "2");
     assertThat(builder.getInt32ToStringField()).isEqualTo(newMap(1, "1", 2, "2"));
 
-    // Message maps are handled differently, and don't freeze old mutable collections.
     Map<Integer, TestMap.MessageValue> messageMap = builder.getMutableInt32ToMessageField();
     messageMap.put(1, TestMap.MessageValue.getDefaultInstance());
-    assertThat(builder.build().getInt32ToMessageField())
+    assertThat( builder.build().getInt32ToMessageField())
         .isEqualTo(newMap(1, TestMap.MessageValue.getDefaultInstance()));
-    // Mutations on old mutable maps don't affect the builder state.
-    messageMap.put(2, TestMap.MessageValue.getDefaultInstance());
-    assertThat(builder.getInt32ToMessageField()).isEqualTo(
-        newMap(1, TestMap.MessageValue.getDefaultInstance()));
+    try {
+      messageMap.put(2, TestMap.MessageValue.getDefaultInstance());
+      assertWithMessage("expected exception").fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertThat(builder.getInt32ToMessageField())
+        .isEqualTo(newMap(1, TestMap.MessageValue.getDefaultInstance()));
     builder.putInt32ToMessageField(2, TestMap.MessageValue.getDefaultInstance());
     assertThat(builder.getInt32ToMessageField()).isEqualTo(
         newMap(1, TestMap.MessageValue.getDefaultInstance(),
@@ -548,22 +573,6 @@ public class MapTest {
     } catch (NullPointerException e) {
       // expected.
     }
-  }
-
-  @Test
-  public void testPutBuilderIfAbsent() {
-    TestMap.Builder builder = TestMap.newBuilder();
-    MessageValue.Builder subBuilder = builder.putInt32ToMessageFieldBuilderIfAbsent(1);
-
-    assertThat(builder.putInt32ToMessageFieldBuilderIfAbsent(1)).isSameInstanceAs(subBuilder);
-
-    subBuilder.setValue(11);
-    assertThat(builder.getInt32ToMessageFieldOrThrow(1).getValue()).isEqualTo(11);
-    builder.putInt32ToMessageFieldBuilderIfAbsent(1).setValue(22);
-    assertThat(builder.getInt32ToMessageFieldOrThrow(1).getValue()).isEqualTo(22);
-
-    builder.putInt32ToMessageField(2, MessageValue.newBuilder().setValue(33).build());
-    assertThat(builder.putInt32ToMessageFieldBuilderIfAbsent(2).getValue()).isEqualTo(33);
   }
 
   @Test
@@ -1592,39 +1601,5 @@ public class MapTest {
     } catch (NullPointerException expected) {
       assertThat(expected).hasMessageThat().isNotNull();
     }
-  }
-
-  @Test
-  public void getAllFields_mapEntryListMutability() {
-    TestMap testMap =
-        TestMap.newBuilder()
-            .putInt32ToInt32Field(1, 11)
-            .putInt32ToInt32Field(2, 22)
-            .putInt32ToMessageField(1, TestMap.MessageValue.newBuilder().setValue(111).build())
-            .build();
-    FieldDescriptor int2IntMapField =
-        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_INT32_FIELD_FIELD_NUMBER);
-    FieldDescriptor int2MessageMapField =
-        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_MESSAGE_FIELD_FIELD_NUMBER);
-    Map<FieldDescriptor, Object> allFields = testMap.getAllFields();
-    List<?> mapEntries = (List<?>) allFields.get(int2IntMapField);
-    assertThat(mapEntries).hasSize(2);
-    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
-    mapEntries = (List<?>) allFields.get(int2MessageMapField);
-    assertThat(mapEntries).hasSize(1);
-    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
-
-    TestMap.Builder builder = testMap.toBuilder();
-    allFields = builder.getAllFields();
-    mapEntries = (List<?>) allFields.get(int2IntMapField);
-    assertThat(mapEntries).hasSize(2);
-    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
-    builder.clearField(int2IntMapField);
-    assertThat(mapEntries).hasSize(2);
-    mapEntries = (List<?>) allFields.get(int2MessageMapField);
-    assertThat(mapEntries).hasSize(1);
-    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
-    builder.clearField(int2MessageMapField);
-    assertThat(mapEntries).hasSize(1);
   }
 }

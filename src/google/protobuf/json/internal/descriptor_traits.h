@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_DESCRIPTOR_TRAITS_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_DESCRIPTOR_TRAITS_H__
@@ -18,6 +41,9 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/message.h"
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -26,11 +52,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/untyped_message.h"
-#include "google/protobuf/message.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 
@@ -243,7 +266,7 @@ struct Proto2Descriptor {
 
   static bool IsRepeated(Field f) { return f->is_repeated(); }
 
-  static bool IsExplicitPresence(Field f) { return f->has_presence(); }
+  static bool IsOptional(Field f) { return f->has_presence(); }
 
   static bool IsImplicitPresence(Field f) {
     return !f->is_repeated() && !f->has_presence();
@@ -430,17 +453,12 @@ struct Proto3Type {
            google::protobuf::Field::CARDINALITY_REPEATED;
   }
 
-  static bool IsExplicitPresence(Field f) {
-    // Implicit presence requires this weird check: in proto3 the following
-    // cases support presence:
-    // 1) Anything contained in a oneof (including things explicitly declared
-    //    'optional' which are represented as as synthetic oneof in proto3).
-    // 2) Fields that are a message type (but not map fields which are also
-    //    TYPE_MESSAGE here).
+  static bool IsOptional(Field f) {
+    // Implicit presence requires this weird check: in proto3, everything is
+    // implicit presence, except for things that are members of oneofs,
+    // which is how proto3 optional is represented.
     if (f->parent().proto().syntax() == google::protobuf::SYNTAX_PROTO3) {
-      return f->proto().oneof_index() != 0 ||
-             (f->proto().kind() == google::protobuf::Field::TYPE_MESSAGE &&
-              !IsRepeated(f));
+      return f->proto().oneof_index() != 0;
     }
 
     return f->proto().cardinality() ==
@@ -449,7 +467,7 @@ struct Proto3Type {
   }
 
   static bool IsImplicitPresence(Field f) {
-    return !IsRepeated(f) && !IsExplicitPresence(f);
+    return !IsRepeated(f) && !IsOptional(f);
   }
 
   static bool IsExtension(Field f) { return false; }

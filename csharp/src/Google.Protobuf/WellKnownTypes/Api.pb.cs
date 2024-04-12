@@ -64,7 +64,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// this message itself. See https://cloud.google.com/apis/design/glossary for
   /// detailed terminology.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Api : pb::IMessage<Api>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -405,11 +404,7 @@ namespace Google.Protobuf.WellKnownTypes {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -455,11 +450,7 @@ namespace Google.Protobuf.WellKnownTypes {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -504,7 +495,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   /// Method represents a method of an API interface.
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Method : pb::IMessage<Method>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -844,11 +834,7 @@ namespace Google.Protobuf.WellKnownTypes {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -891,11 +877,7 @@ namespace Google.Protobuf.WellKnownTypes {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
@@ -982,7 +964,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// The mixin construct implies that all methods in `AccessControl` are
   /// also declared with same name and request/response types in
   /// `Storage`. A documentation generator or annotation processor will
-  /// see the effective `Storage.GetAcl` method after inherting
+  /// see the effective `Storage.GetAcl` method after inheriting
   /// documentation and annotations as follows:
   ///
   ///     service Storage {
@@ -1014,7 +996,6 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       ...
   ///     }
   /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Mixin : pb::IMessage<Mixin>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -1206,11 +1187,7 @@ namespace Google.Protobuf.WellKnownTypes {
     #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
@@ -1233,11 +1210,7 @@ namespace Google.Protobuf.WellKnownTypes {
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
+        switch(tag) {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;

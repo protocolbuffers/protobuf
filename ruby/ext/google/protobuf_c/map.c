@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2014 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "convert.h"
 #include "defs.h"
@@ -38,11 +61,9 @@ static void Map_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
-static size_t Map_memsize(const void* _self) { return sizeof(Map); }
-
 const rb_data_type_t Map_type = {
     "Google::Protobuf::Map",
-    {Map_mark, RUBY_DEFAULT_FREE, Map_memsize},
+    {Map_mark, RUBY_DEFAULT_FREE, NULL},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
@@ -72,6 +93,7 @@ VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
   if (val == Qnil) {
     val = Map_alloc(cMap);
     Map* self;
+    ObjectCache_Add(map, val);
     TypedData_Get_Struct(val, Map, &Map_type, self);
     self->map = map;
     self->arena = arena;
@@ -81,7 +103,6 @@ VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
       const upb_MessageDef* val_m = self->value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
     }
-    return ObjectCache_TryAdd(map, val);
   }
 
   return val;
@@ -214,7 +235,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     Map* self = ruby_to_Map(_self);
     Map* other = ruby_to_Map(hashmap);
     upb_Arena* arena = Arena_get(self->arena);
-    upb_Map* self_map = Map_GetMutable(_self);
+    upb_Message* self_msg = Map_GetMutable(_self);
 
     Arena_fuse(other->arena, arena);
 
@@ -227,7 +248,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
     while (upb_Map_Next(other->map, &key, &val, &iter)) {
-      upb_Map_Set(self_map, key, val, arena);
+      upb_Map_Set(self_msg, key, val, arena);
     }
   } else {
     rb_raise(rb_eArgError, "Unknown type merging into Map");
@@ -298,9 +319,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_Map_New(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  VALUE stored = ObjectCache_TryAdd(self->map, _self);
-  (void)stored;
-  PBRUBY_ASSERT(stored == _self);
+  ObjectCache_Add(self->map, _self);
 
   if (init_arg != Qnil) {
     Map_merge_into_self(_self, init_arg);
@@ -446,7 +465,7 @@ static VALUE Map_delete(VALUE _self, VALUE key) {
       Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
   upb_MessageValue val_upb;
 
-  if (upb_Map_Delete(Map_GetMutable(_self), key_upb, &val_upb)) {
+  if (upb_Map_Delete(self->map, key_upb, &val_upb)) {
     return Convert_UpbToRuby(val_upb, self->value_type_info, self->arena);
   } else {
     return Qnil;
@@ -565,22 +584,11 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
  * Freezes the message object. We have to intercept this so we can pin the
  * Ruby object into memory so we don't forget it's frozen.
  */
-VALUE Map_freeze(VALUE _self) {
+static VALUE Map_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-
-  if (RB_OBJ_FROZEN(_self)) return _self;
-  Arena_Pin(self->arena, _self);
-  RB_OBJ_FREEZE(_self);
-
-  if (self->value_type_info.type == kUpb_CType_Message) {
-    size_t iter = kUpb_Map_Begin;
-    upb_MessageValue key, val;
-
-    while (upb_Map_Next(self->map, &key, &val, &iter)) {
-      VALUE val_val =
-          Convert_UpbToRuby(val, self->value_type_info, self->arena);
-      Message_freeze(val_val);
-    }
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
   }
   return _self;
 }

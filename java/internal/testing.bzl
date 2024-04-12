@@ -2,9 +2,6 @@
 Generates a side-car JUnit suite test runner class for each
 input src.
 """
-
-load("@rules_java//java:defs.bzl", "java_library", "java_test")
-
 _template = """import org.junit.runners.Suite;
 import org.junit.runner.RunWith;
 
@@ -39,7 +36,7 @@ _gen_suite = rule(
 
 def junit_tests(name, srcs, data = [], deps = [], package_name = "com.google.protobuf", test_prefix = None, **kwargs):
     testlib_name = "%s_lib" % name
-    java_library(
+    native.java_library(
         name = testlib_name,
         srcs = srcs,
         deps = deps,
@@ -55,14 +52,14 @@ def junit_tests(name, srcs, data = [], deps = [], package_name = "com.google.pro
         if test_prefix:
             test_name = "%s%s" % (test_prefix, test_name)
         test_names = test_names + [test_name]
-        suite_name = prefix + "_" + test_name
+        suite_name = prefix + '_' + test_name
         _gen_suite(
             name = suite_name,
             srcs = [src],
             package_name = package_name,
             outname = suite_name,
         )
-        java_test(
+        native.java_test(
             name = test_name,
             test_class = suite_name,
             srcs = [src] + [":" + suite_name],

@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>4.27.0</version>
+  <version>3.22.5</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -33,7 +33,6 @@
     <!-- These are relative to the submodules -->
     <protobuf.basedir>${project.basedir}/../..</protobuf.basedir>
     <protobuf.source.dir>${protobuf.basedir}/src</protobuf.source.dir>
-    <protobuf.java_source.dir>${protobuf.basedir}/java/core/src/main/resources</protobuf.java_source.dir>
     <protoc>${protobuf.basedir}/protoc</protoc>
     <test.proto.dir>src/test/proto</test.proto.dir>
     <generated.sources.dir>${project.build.directory}/generated-sources</generated.sources.dir>
@@ -88,12 +87,12 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>32.0.1-android</version>
+        <version>31.1-android</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>32.0.1-android</version>
+        <version>31.1-android</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -112,8 +111,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.6.1</version>
           <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
         <plugin>
@@ -179,14 +178,9 @@
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <configuration>
           <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java18</artifactId>
-            <version>1.0</version>
-          </signature>
-          <signature>
             <groupId>net.sf.androidscents.signature</groupId>
-            <artifactId>android-api-level-21</artifactId>
-            <version>5.0.1_r2</version>
+            <artifactId>android-api-level-14</artifactId>
+            <version>4.0_r4</version>
           </signature>
           <ignores>
             <ignore>sun.misc.Unsafe</ignore>

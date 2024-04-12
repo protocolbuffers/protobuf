@@ -55,8 +55,6 @@ public class ProtobufJavaService implements BasicLibraryService {
     RubyMap.createRubyMap(ruby);
     RubyOneofDescriptor.createRubyOneofDescriptor(ruby);
     RubyDescriptor.createRubyDescriptor(ruby);
-    RubyMethodDescriptor.createRubyMethodDescriptor(ruby);
-    RubyServiceDescriptor.createRubyServiceDescriptor(ruby);
     RubyDescriptorPool.createRubyDescriptorPool(ruby);
     return true;
   }

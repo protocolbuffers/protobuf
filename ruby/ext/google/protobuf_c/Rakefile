@@ -1,3 +1,0 @@
-import '../../../lib/google/tasks/ffi.rake'
-
-task default: ['ffi-protobuf:default']

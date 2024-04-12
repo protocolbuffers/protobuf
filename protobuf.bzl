@@ -1,7 +1,8 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
+load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
-load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -267,6 +268,7 @@ _proto_gen = rule(
             default = "all",
         ),
     },
+    output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
 
@@ -408,7 +410,8 @@ def internal_objc_proto_library(
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
-    """Bazel rule to create a Objective-C protobuf library from proto sources
+    """Bazel rule to create a Objective-C protobuf library from proto source
+    files
 
     NOTE: the rule is only an internal workaround to generate protos. The
     interface may change and the rule may be removed when bazel has introduced
@@ -421,7 +424,7 @@ def internal_objc_proto_library(
       outs: a list of expected output files.
       proto_deps: a list of proto file dependencies that don't have a
         objc_proto_library rule.
-      includes: a string indicating the include path of the .proto files.
+      include: a string indicating the include path of the .proto files.
       default_runtime: the Objective-C Protobuf runtime
       protoc: the label of the protocol compiler to generate the sources.
       testonly: common rule attribute (see:
@@ -487,7 +490,6 @@ def internal_objc_proto_library(
 
 def internal_ruby_proto_library(
         name,
-        ruby_library,
         srcs = [],
         deps = [],
         includes = ["."],
@@ -504,7 +506,6 @@ def internal_ruby_proto_library(
 
     Args:
       name: the name of the ruby_proto_library.
-      ruby_library: the ruby library rules to use.
       srcs: the .proto files to compile.
       deps: a list of dependency labels; must be a internal_ruby_proto_library.
       includes: a string indicating the include path of the .proto files.

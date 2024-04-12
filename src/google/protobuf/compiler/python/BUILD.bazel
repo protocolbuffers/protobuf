@@ -3,7 +3,7 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
@@ -19,28 +19,16 @@ cc_library(
         "pyi_generator.h",
     ],
     copts = COPTS,
-    strip_include_prefix = "/src",
+    include_prefix = "google/protobuf/compiler/python",
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
         "@com_github_grpc_grpc//tools/distrib/python/grpcio_tools:__subpackages__",
     ],
     deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/compiler:retention",
-        "//src/google/protobuf/compiler:versions",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:printer",
-        "//src/google/protobuf/io:tokenizer",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
     ],
 )
@@ -53,10 +41,7 @@ cc_test(
         ":python",
         "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/io:printer",
         "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -76,12 +61,9 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob(
-        [
-            "*_test.cc",
-            "*unittest.cc",
-        ],
-        allow_empty = True,
-    ),
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ], allow_empty = True),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

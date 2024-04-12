@@ -43,9 +43,6 @@ typedef GPB_ENUM(GPBSyntax) {
 
   /** Syntax `proto3`. */
   GPBSyntax_SyntaxProto3 = 1,
-
-  /** Syntax `editions`. */
-  GPBSyntax_SyntaxEditions = 2,
 };
 
 GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void);
@@ -187,7 +184,6 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
   GPBType_FieldNumber_OptionsArray = 4,
   GPBType_FieldNumber_SourceContext = 5,
   GPBType_FieldNumber_Syntax = 6,
-  GPBType_FieldNumber_Edition = 7,
 };
 
 /**
@@ -220,9 +216,6 @@ GPB_FINAL @interface GPBType : GPBMessage
 
 /** The source syntax. */
 @property(nonatomic, readwrite) GPBSyntax syntax;
-
-/** The source edition string, only valid when syntax is SYNTAX_EDITIONS. */
-@property(nonatomic, readwrite, copy, null_resettable) NSString *edition;
 
 @end
 
@@ -330,7 +323,6 @@ typedef GPB_ENUM(GPBEnum_FieldNumber) {
   GPBEnum_FieldNumber_OptionsArray = 3,
   GPBEnum_FieldNumber_SourceContext = 4,
   GPBEnum_FieldNumber_Syntax = 5,
-  GPBEnum_FieldNumber_Edition = 6,
 };
 
 /**
@@ -358,9 +350,6 @@ GPB_FINAL @interface GPBEnum : GPBMessage
 
 /** The source syntax. */
 @property(nonatomic, readwrite) GPBSyntax syntax;
-
-/** The source edition string, only valid when syntax is SYNTAX_EDITIONS. */
-@property(nonatomic, readwrite, copy, null_resettable) NSString *edition;
 
 @end
 

@@ -1,0 +1,26 @@
+require "rake/testtask"
+
+# Proto for tests.
+genproto_output = []
+
+genproto_output << "tests/generated_code.rb"
+genproto_output << "tests/test_import.rb"
+file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
+  sh "./protoc --ruby_out=. tests/generated_code.proto"
+end
+
+file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
+  sh "./protoc --ruby_out=. tests/test_import.proto"
+end
+
+task :genproto => genproto_output
+
+task :clean do
+  sh "rm -f #{genproto_output.join(' ')}"
+end
+
+Rake::TestTask.new(:test => :genproto) do |t|
+  t.test_files = FileList["tests/*.rb"]
+end
+
+task :default => [:test]

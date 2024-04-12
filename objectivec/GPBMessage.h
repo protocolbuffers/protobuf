@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import <Foundation/Foundation.h>
 
@@ -38,12 +61,6 @@ typedef NS_ENUM(NSInteger, GPBMessageErrorCode) {
  **/
 extern NSString *const GPBErrorReasonKey;
 
-/**
- * An exception name raised during serialization when the message would be
- * larger than the 2GB limit.
- **/
-extern NSString *const GPBMessageExceptionMessageTooLarge;
-
 CF_EXTERN_C_END
 
 /**
@@ -71,6 +88,9 @@ CF_EXTERN_C_END
 
 /**
  * The set of unknown fields for this message.
+ *
+ * Only messages from proto files declared with "proto2" syntax support unknown
+ * fields.
  **/
 @property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 
@@ -256,25 +276,7 @@ CF_EXTERN_C_END
  *                                         unsuccessful.
  **/
 - (void)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
-    __attribute__((deprecated(
-        "Use -mergeFromData:extensionRegistry:error: instead, especaily if calling from Swift.")));
-
-/**
- * Parses the given data as this message's class, and merges those values into
- * this message.
- *
- * @param data              The binary representation of the message to merge.
- * @param extensionRegistry The extension registry to use to look up extensions.
- * @param errorPtr          An optional error pointer to fill in with a failure
- *                          reason if the data can not be parsed. Will only be
- *                          filled in if the data failed to be parsed.
- *
- * @return Boolean indicating success. errorPtr will only be fill in on failure.
- **/
-- (BOOL)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
-                error:(NSError **)errorPtr;
+    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
 
 /**
  * Merges the fields from another message (of the same type) into this
@@ -291,10 +293,6 @@ CF_EXTERN_C_END
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
  *
- * @note The most common cause of this failing is from one thread calling this
- *       while another thread has a reference to this message or a message used
- *       within a field and that other thread mutating the message while this
- *       serialization is taking place.
  **/
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output;
 
@@ -304,11 +302,6 @@ CF_EXTERN_C_END
  * @param output The output stream into which to write the message.
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
- *
- * @note The most common cause of this failing is from one thread calling this
- *       while another thread has a reference to this message or a message used
- *       within a field and that other thread mutating the message while this
- *       serialization is taking place.
  **/
 - (void)writeToOutputStream:(NSOutputStream *)output;
 
@@ -319,11 +312,6 @@ CF_EXTERN_C_END
  * @param output The coded output stream into which to write the message.
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
- *
- * @note The most common cause of this failing is from one thread calling this
- *       while another thread has a reference to this message or a message used
- *       within a field and that other thread mutating the message while this
- *       serialization is taking place.
  **/
 - (void)writeDelimitedToCodedOutputStream:(GPBCodedOutputStream *)output;
 
@@ -334,11 +322,6 @@ CF_EXTERN_C_END
  * @param output The output stream into which to write the message.
  *
  * @note This can raise the GPBCodedOutputStreamException_* exceptions.
- *
- * @note The most common cause of this failing is from one thread calling this
- *       while another thread has a reference to this message or a message used
- *       within a field and that other thread mutating the message while this
- *       serialization is taking place.
  **/
 - (void)writeDelimitedToOutputStream:(NSOutputStream *)output;
 
@@ -353,11 +336,6 @@ CF_EXTERN_C_END
  * @note In DEBUG ONLY, the message is also checked for all required field,
  *       if one is missing, nil will be returned.
  *
- * @note The most common cause of this failing is from one thread calling this
- *       while another thread has a reference to this message or a message used
- *       within a field and that other thread mutating the message while this
- *       serialization is taking place.
- *
  * @return The binary representation of the message.
  **/
 - (nullable NSData *)data;
@@ -368,11 +346,6 @@ CF_EXTERN_C_END
  *
  * @note This value is not cached, so if you are using it repeatedly, it is
  *       recommended to keep a local copy.
- *
- * @note The most common cause of this failing is from one thread calling this
- *       while another thread has a reference to this message or a message used
- *       within a field and that other thread mutating the message while this
- *       serialization is taking place.
  *
  * @return The binary representation of the size along with the message.
  **/

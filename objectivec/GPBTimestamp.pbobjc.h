@@ -132,7 +132,7 @@ typedef GPB_ENUM(GPBTimestamp_FieldNumber) {
  * [`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
  * the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
  * the Joda Time's [`ISODateTimeFormat.dateTime()`](
- * http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
+ * http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime%2D%2D
  * ) to obtain a formatter capable of generating timestamps in this format.
  **/
 GPB_FINAL @interface GPBTimestamp : GPBMessage
@@ -151,9 +151,6 @@ GPB_FINAL @interface GPBTimestamp : GPBMessage
  * inclusive.
  **/
 @property(nonatomic, readwrite) int32_t nanos;
-
-// NOTE: There are some Objective-C specific methods/properties in
-// GPBWellKnownTypes.h that will likey be useful.
 
 @end
 

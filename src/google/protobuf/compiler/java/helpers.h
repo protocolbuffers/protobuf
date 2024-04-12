@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -16,8 +39,6 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/java/generator.h"
-#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -59,11 +80,6 @@ void PrintEnumVerifierLogic(
     absl::string_view var_name, absl::string_view terminating_string,
     bool enforce_lite);
 
-// Prints the Protobuf Java Version validator checking that the runtime and
-// gencode versions are compatible.
-void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
-                                  absl::string_view java_class_name);
-
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
 std::string ToCamelCase(absl::string_view input, bool lower_first);
@@ -80,7 +96,7 @@ std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
-// TODO: remove the default value after updating client code.
+// TODO(xiaofeng): remove the default value after updating client code.
 std::string FileClassName(const FileDescriptor* file, bool immutable = true);
 
 // Returns the file's Java package name.
@@ -154,7 +170,7 @@ inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
 // `immutable` should be set to true if we're generating for the immutable API.
 template <typename Descriptor>
 bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
-  return descriptor->containing_type() == nullptr &&
+  return descriptor->containing_type() == NULL &&
          MultipleJavaFiles(descriptor->file(), immutable);
 }
 
@@ -316,7 +332,7 @@ struct FieldOrderingByNumber {
 struct ExtensionRangeOrdering {
   bool operator()(const Descriptor::ExtensionRange* a,
                   const Descriptor::ExtensionRange* b) const {
-    return a->start_number() < b->start_number();
+    return a->start < b->start;
   }
 };
 
@@ -338,22 +354,45 @@ inline bool HasPackedFields(const Descriptor* descriptor) {
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);
 
-bool IsRealOneof(const FieldDescriptor* descriptor);
+inline bool IsProto2(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
+inline bool IsRealOneof(const FieldDescriptor* descriptor) {
+  return descriptor->containing_oneof() &&
+         !descriptor->containing_oneof()->is_synthetic();
+}
+
+inline bool HasHazzer(const FieldDescriptor* descriptor) {
+  return !descriptor->is_repeated() &&
+         (descriptor->message_type() || descriptor->has_optional_keyword() ||
+          IsProto2(descriptor->file()) || IsRealOneof(descriptor));
+}
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
-  return internal::cpp::HasHasbit(descriptor);
+  // Note that currently message fields inside oneofs have hasbits. This is
+  // surprising, as the oneof case should avoid any need for a hasbit. But if
+  // you change this method to remove hasbits for oneofs, a few tests fail.
+  // TODO(b/124347790): remove hasbits for oneofs
+  return !descriptor->is_repeated() &&
+         (descriptor->has_optional_keyword() || IsProto2(descriptor->file()));
+}
+
+// Whether generate classes expose public PARSER instances.
+inline bool ExposePublicParser(const FileDescriptor* descriptor) {
+  // TODO(liujisi): Mark the PARSER private in 3.1.x releases.
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.
+inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  if (JavaGenerator::GetResolvedSourceFeatures(*field)
-          .GetExtension(pb::java)
-          .legacy_closed_enum()) {
-    return false;
-  }
-  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 // Check whether a message has repeated fields.
@@ -376,15 +415,12 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
 }
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
-  if (JavaGenerator::GetResolvedSourceFeatures(*descriptor)
-          .GetExtension(pb::java)
-          .utf8_validation() == pb::JavaFeatures::VERIFY) {
-    return true;
-  }
-  return JavaGenerator::GetResolvedSourceFeatures(*descriptor)
-                 .utf8_validation() == FeatureSet::VERIFY ||
-         // For legacy syntax. This is not allowed under Editions.
+  return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
          descriptor->file()->options().java_string_check_utf8();
+}
+
+inline std::string GeneratedCodeVersionSuffix() {
+  return "V3";
 }
 
 void WriteUInt32ToUtf16CharSequence(uint32_t number,
@@ -412,11 +448,6 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field);
 // and the first field number that are not in the table part
 std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
     const FieldDescriptor** fields, int count);
-
-const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor);
-
-const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor);
-
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

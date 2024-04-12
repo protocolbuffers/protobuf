@@ -6,11 +6,11 @@
 set -e
 
 if [[ -z "${PROTOC}" ]]; then
-  PROTOC=$(pwd)/protoc
+  PROTOC=$(realpath protoc)
 fi
 if [ ! -f $PROTOC ]; then
   ${BAZEL:-bazel} $BAZEL_STARTUP_FLAGS build -c opt //:protoc $BAZEL_FLAGS
-  PROTOC=$(pwd)/bazel-bin/protoc
+  PROTOC=$(realpath bazel-bin/protoc)
 fi
 
 if test ! -e src/google/protobuf/stubs/common.h; then

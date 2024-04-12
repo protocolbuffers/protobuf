@@ -7,6 +7,7 @@ Name: Protocol Buffers
 Description: Google's Data Interchange Format
 Version: @protobuf_VERSION@
 Requires: @_protobuf_PC_REQUIRES@
+Requires.private: @_protobuf_PC_REQUIRES_PRIVATE@
 Libs: -L${libdir} -lprotobuf @CMAKE_THREAD_LIBS_INIT@
 Cflags: -I${includedir} @_protobuf_PC_CFLAGS@
 Conflicts: protobuf-lite

@@ -1,10 +1,33 @@
 # -*- coding: utf-8 -*-
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
+# https://developers.google.com/protocol-buffers/
 #
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unittest for reflection.py, which also indirectly tests the output of the
 pure-Python protocol compiler.
@@ -190,7 +213,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(3, message.ByteSize())
 
     message = message_module.TestAllTypes(repeated_int32=[12])
-    # TODO: Add this test back for proto3
+    # TODO(jieluo): Add this test back for proto3
     if message_module is unittest_pb2:
       self.assertEqual(3, message.ByteSize())
 
@@ -353,7 +376,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(TypeError, setattr, proto, 'optional_bool', 'foo')
     self.assertRaises(TypeError, setattr, proto, 'optional_float', 'foo')
     self.assertRaises(TypeError, setattr, proto, 'optional_double', 'foo')
-    # TODO: Fix type checking difference for python and c extension
+    # TODO(jieluo): Fix type checking difference for python and c extension
     if (api_implementation.Type() == 'python' or
         (sys.version_info.major, sys.version_info.minor) >= (3, 10)):
       self.assertRaises(TypeError, setattr, proto, 'optional_bool', 1.1)
@@ -469,7 +492,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(TypeError, proto.repeated_string.__setitem__, 0, 10)
 
     # Repeated enums tests.
-    # proto.repeated_nested_enum.append(0)
+    #proto.repeated_nested_enum.append(0)
 
   def testSingleScalarGettersAndSetters(self, message_module):
     proto = message_module.TestAllTypes()
@@ -481,7 +504,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(0xffffffffffff, proto.optional_uint64)
     proto.optional_uint64 = 0xffffffffffffffff
     self.assertEqual(0xffffffffffffffff, proto.optional_uint64)
-    # TODO: Test all other scalar field types.
+    # TODO(robinson): Test all other scalar field types.
 
   def testEnums(self, message_module):
     proto = message_module.TestAllTypes()
@@ -594,14 +617,9 @@ class ReflectionTest(unittest.TestCase):
 
   def testEnum_KeysAndValues(self, message_module):
     if message_module == unittest_pb2:
-      keys = ['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ', 'FOREIGN_BAX']
-      values = [4, 5, 6, 32]
-      items = [
-          ('FOREIGN_FOO', 4),
-          ('FOREIGN_BAR', 5),
-          ('FOREIGN_BAZ', 6),
-          ('FOREIGN_BAX', 32),
-      ]
+      keys = ['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ']
+      values = [4, 5, 6]
+      items = [('FOREIGN_FOO', 4), ('FOREIGN_BAR', 5), ('FOREIGN_BAZ', 6)]
     else:
       keys = ['FOREIGN_ZERO', 'FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ']
       values = [0, 4, 5, 6]
@@ -789,12 +807,7 @@ class ReflectionTest(unittest.TestCase):
     messages.remove(messages[0])
     self.assertEqual(len(messages), 0)
 
-  def testEmptyDeepCopy(self, message_module):
-    proto1 = message_module.TestAllTypes()
-    nested2 = copy.deepcopy(proto1.optional_nested_message)
-    self.assertEqual(0, nested2.bb)
-
-    # TODO: Implement deepcopy for extension dict
+    # TODO(anuraag): Implement deepcopy for extension dict
 
   def testDisconnectingBeforeClear(self, message_module):
     proto = message_module.TestAllTypes()
@@ -1167,7 +1180,7 @@ class Proto2ReflectionTest(unittest.TestCase):
     proto.ClearField('optional_int32')
     self.assertEqual(0, proto.optional_int32)
     self.assertFalse(proto.HasField('optional_int32'))
-    # TODO: Test all other scalar field types.
+    # TODO(robinson): Test all other scalar field types.
 
   def testRepeatedScalars(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1467,7 +1480,6 @@ class Proto2ReflectionTest(unittest.TestCase):
     if api_implementation.Type() != 'python':
       return
 
-    file = descriptor.FileDescriptor(name='foo.proto', package='')
     FieldDescriptor = descriptor.FieldDescriptor
     foo_field_descriptor = FieldDescriptor(
         name='foo_field', full_name='MyProto.foo_field',
@@ -1476,7 +1488,7 @@ class Proto2ReflectionTest(unittest.TestCase):
         label=FieldDescriptor.LABEL_OPTIONAL, default_value=0,
         containing_type=None, message_type=None, enum_type=None,
         is_extension=False, extension_scope=None,
-        options=descriptor_pb2.FieldOptions(), file=file,
+        options=descriptor_pb2.FieldOptions(),
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
     mydescriptor = descriptor.Descriptor(
@@ -1484,7 +1496,6 @@ class Proto2ReflectionTest(unittest.TestCase):
         containing_type=None, nested_types=[], enum_types=[],
         fields=[foo_field_descriptor], extensions=[],
         options=descriptor_pb2.MessageOptions(),
-        file=file,
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
 
@@ -2042,49 +2053,6 @@ class Proto2ReflectionTest(unittest.TestCase):
       # dependency on the C++ logging code.
       self.assertIn('test_file_descriptor_errors.msg1', str(cm.exception))
 
-  def testDescriptorProtoHasFileOptions(self):
-    self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
-    self.assertEqual(
-        descriptor_pb2.DESCRIPTOR.GetOptions().java_package,
-        'com.google.protobuf',
-    )
-
-  def testDescriptorProtoHasFieldOptions(self):
-    self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
-    self.assertEqual(
-        descriptor_pb2.DESCRIPTOR.GetOptions().java_package,
-        'com.google.protobuf',
-    )
-    packed_desc = (
-        descriptor_pb2.SourceCodeInfo.DESCRIPTOR.nested_types_by_name.get(
-            'Location'
-        ).fields_by_name.get('path')
-    )
-    self.assertTrue(packed_desc.has_options)
-    self.assertTrue(packed_desc.GetOptions().packed)
-
-  def testDescriptorProtoHasFeatureOptions(self):
-    self.assertTrue(descriptor_pb2.DESCRIPTOR.has_options)
-    self.assertEqual(
-        descriptor_pb2.DESCRIPTOR.GetOptions().java_package,
-        'com.google.protobuf',
-    )
-    presence_desc = descriptor_pb2.FeatureSet.DESCRIPTOR.fields_by_name.get(
-        'field_presence'
-    )
-    self.assertTrue(presence_desc.has_options)
-    self.assertEqual(
-        presence_desc.GetOptions().retention,
-        descriptor_pb2.FieldOptions.OptionRetention.RETENTION_RUNTIME,
-    )
-    self.assertListsEqual(
-        presence_desc.GetOptions().targets,
-        [
-            descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FIELD,
-            descriptor_pb2.FieldOptions.OptionTargetType.TARGET_TYPE_FILE,
-        ],
-    )
-
   def testStringUTF8Serialization(self):
     proto = message_set_extensions_pb2.TestMessageSet()
     extension_message = message_set_extensions_pb2.TestMessageSetExtension2
@@ -2468,11 +2436,11 @@ class ByteSizeTest(unittest.TestCase):
 
     self.assertEqual(2, len(repeated_nested_message))
     del repeated_nested_message[0:1]
-    # TODO: Fix cpp extension bug when delete repeated message.
+    # TODO(jieluo): Fix cpp extension bug when delete repeated message.
     if api_implementation.Type() == 'python':
       self.assertEqual(1, len(repeated_nested_message))
     del repeated_nested_message[-1]
-    # TODO: Fix cpp extension bug when delete repeated message.
+    # TODO(jieluo): Fix cpp extension bug when delete repeated message.
     if api_implementation.Type() == 'python':
       self.assertEqual(0, len(repeated_nested_message))
 
@@ -3351,7 +3319,7 @@ class ClassAPITest(unittest.TestCase):
   # conflicting message descriptors.
   def testParsingFlatClassWithExplicitClassDeclaration(self):
     """Test that the generated class can parse a flat message."""
-    # TODO: This test fails with cpp implementation in the call
+    # TODO(xiaofeng): This test fails with cpp implementation in the call
     # of six.with_metaclass(). The other two callsites of with_metaclass
     # in this file are both excluded from cpp test, so it might be expected
     # to fail. Need someone more familiar with the python code to take a

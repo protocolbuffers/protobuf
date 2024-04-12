@@ -28,10 +28,9 @@ else
 fi
 # --- end runfiles.bash initialization ---
 
-TESTEE=
-FAILURE_LIST=
-TEXT_FORMAT_FAILURE_LIST=
-MAXIMUM_EDITION=
+TESTEE=unset
+FAILURE_LIST=unset
+TEXT_FORMAT_FAILURE_LIST=unset
 
 while [[ -n "$@" ]]; do
   arg="$1"; shift
@@ -40,7 +39,6 @@ while [[ -n "$@" ]]; do
     "--testee") TESTEE="$val" ;;
     "--failure_list") FAILURE_LIST="$val" ;;
     "--text_format_failure_list") TEXT_FORMAT_FAILURE_LIST="$val" ;;
-    "--maximum_edition") MAXIMUM_EDITION="$val" ;;
     *) echo "Flag $arg is not recognized." && exit 1 ;;
   esac
 done
@@ -57,10 +55,6 @@ fi
 text_format_failure_list=$(rlocation $TEXT_FORMAT_FAILURE_LIST) || unset
 if [ -n "$text_format_failure_list" ]; then
   args+=(--text_format_failure_list $text_format_failure_list)
-fi
-
-if [ -n "$MAXIMUM_EDITION" ]; then
-  args+=(--maximum_edition $MAXIMUM_EDITION)
 fi
 
 $conformance_test_runner "${args[@]}" $conformance_testee

@@ -1,9 +1,32 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
@@ -36,19 +59,16 @@ struct WriterOptions {
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace = false;
-  // Whether to always print fields which do not support presence if they would
-  // otherwise be omitted, namely:
-  // - Implicit presence fields set to their 0 value
-  // - Empty lists and maps
-  bool always_print_fields_with_no_presence = false;
+  // Whether to always print primitive fields. By default proto3 primitive
+  // fields with default values will be omitted in JSON output. For example, an
+  // int32 field set to 0 will be omitted. Set this flag to true will override
+  // the default behavior and print primitive fields regardless of their values.
+  bool always_print_primitive_fields = false;
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints = false;
   // Whether to preserve proto field names
   bool preserve_proto_field_names = false;
-  // If set, int64 values that can be represented exactly as a double are
-  // printed without quotes.
-  bool unquote_int64_if_possible = false;
   // The original parser used by json_util2 accepted a number of non-standard
   // options. Setting this flag enables them.
   //
@@ -133,19 +153,8 @@ class JsonWriter {
     Write(view);
   }
 
-  void Write(int64_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
-  }
-
-  void Write(uint64_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
-  }
+  void Write(int64_t) = delete;
+  void Write(uint64_t) = delete;
 
   template <typename... Ts>
   void Write(Quoted<Ts...> val) {
@@ -196,6 +205,20 @@ class JsonWriter {
   }
 
   void WriteQuoted(absl::string_view val) { WriteEscapedUtf8(val); }
+
+  void WriteQuoted(int64_t val) {
+    char buf[22];
+    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
+    absl::string_view view(buf, static_cast<size_t>(len));
+    Write(view);
+  }
+
+  void WriteQuoted(uint64_t val) {
+    char buf[22];
+    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
+    absl::string_view view(buf, static_cast<size_t>(len));
+    Write(view);
+  }
 
   // Tries to write a non-finite double if necessary; returns false if
   // nothing was written.

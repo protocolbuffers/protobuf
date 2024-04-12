@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>4.27.0</version>
+    <version>3.22.5</version>
   </parent>
 
   <artifactId>protobuf-java-util</artifactId>
@@ -30,7 +30,7 @@
     <dependency>
       <groupId>com.google.j2objc</groupId>
       <artifactId>j2objc-annotations</artifactId>
-      <version>2.8</version>
+      <version>1.3</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
@@ -88,7 +88,6 @@
                   <arg value="--proto_path=${protobuf.source.dir}"/>
                   <arg value="--proto_path=src/test/proto"/>
                   <arg value="src/test/proto/com/google/protobuf/util/json_test.proto"/>
-                  <arg value="src/test/proto/com/google/protobuf/util/json_test_proto2.proto"/>
                 </exec>
               </target>
             </configuration>
@@ -124,14 +123,9 @@
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <configuration>
           <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java18</artifactId>
-            <version>1.0</version>
-          </signature>
-          <signature>
             <groupId>net.sf.androidscents.signature</groupId>
-            <artifactId>android-api-level-21</artifactId>
-            <version>5.0.1_r2</version>
+            <artifactId>android-api-level-19</artifactId>
+            <version>4.4.2_r4</version>
           </signature>
         </configuration>
         <executions>
