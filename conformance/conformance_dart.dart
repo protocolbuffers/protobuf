@@ -49,8 +49,8 @@ ConformanceResponse doTest(ConformanceRequest request) {
     case ConformanceRequest_payload.protobufPayload:
       try {
         testMessage = isProto3
-            ? TestAllTypesProto3.fromBinary(request.protobufPayload)
-            : TestAllTypesProto2.fromBinary(request.protobufPayload);
+            ? TestAllTypesProto3.fromBuffer(request.protobufPayload)
+            : TestAllTypesProto2.fromBuffer(request.protobufPayload);
       } catch (e) {
         final parseErrorResponse = ConformanceResponse();
         parseErrorResponse.parseError = '$e';
@@ -65,7 +65,7 @@ ConformanceResponse doTest(ConformanceRequest request) {
   switch (request.requestedOutputFormat) {
     case WireFormat.PROTOBUF:
       try {
-        response.protobufPayload = pb.GeneratedMessage.toBinary(testMessage);
+        response.protobufPayload = pb.GeneratedMessage.toBuffer(testMessage);
       } catch (e) {
         response.serializeError = '$e';
       }
@@ -84,9 +84,9 @@ Future<bool> doTestIo() async {
   if (serializedMsg == null) {
     throw 'Unexpected EOF from test program.';
   }
-  final request = ConformanceRequest.fromBinary(serializedMsg);
+  final request = ConformanceRequest.fromBuffer(serializedMsg);
   final response = doTest(request);
-  final serializedOutput = pb.GeneratedMessage.toBinary(response);
+  final serializedOutput = pb.GeneratedMessage.toBuffer(response);
   writeLittleEndianIntToStdout(serializedOutput.length);
   stdout.add(serializedOutput);
   await stdout.flush();

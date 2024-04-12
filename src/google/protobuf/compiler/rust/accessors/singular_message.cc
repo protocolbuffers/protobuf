@@ -73,7 +73,18 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  return;
                }
                ctx.Emit({}, R"rs(
-                pub fn $raw_field_name$_mut(&mut self)
+                  pub fn $raw_field_name$_mut(&mut self) -> $msg_type$Mut<'_> {
+                    self.$raw_field_name$_entry().or_default()
+                  }
+                )rs");
+             }},
+            {"private_getter_entry",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) {
+                 return;
+               }
+               ctx.Emit({}, R"rs(
+                fn $raw_field_name$_entry(&mut self)
                     -> $pb$::FieldEntry<'_, $msg_type$> {
                   static VTABLE: $pbr$::MessageVTable =
                     $pbr$::MessageVTable::new($pbi$::Private,
@@ -81,7 +92,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                               $getter_mut_thunk$,
                                               $clearer_thunk$);
                   unsafe {
-                    let has = $hazzer_thunk$(self.raw_msg());
+                    let has = self.has_$raw_field_name$();
                     $pbi$::new_vtable_field_entry($pbi$::Private,
                       self.as_mutator_message_ref(),
                       &VTABLE,
@@ -96,9 +107,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 pub fn $raw_field_name$_opt($view_self$) ->
                 $pb$::Optional<$msg_type$View<$view_lifetime$>> {
                   let view = self.$field$();
-                  $pb$::Optional::new(view, unsafe {
-                    $hazzer_thunk$(self.raw_msg())
-                  })
+                  $pb$::Optional::new(view, self.has_$raw_field_name$())
             }
             )rs");
              }},
@@ -109,9 +118,16 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 pub fn set_$raw_field_name$(&mut self, val: impl $pb$::SettableValue<$msg_type$>) {
                   //~ TODO: Optimize this to not go through the
                   //~ FieldEntry.
-                  self.$raw_field_name$_mut().set(val);
+                  self.$raw_field_name$_entry().set(val);
                 }
               )rs");
+             }},
+            {"hazzer",
+             [&] {
+               ctx.Emit({}, R"rs(
+                  pub fn has_$raw_field_name$($view_self$) -> bool {
+                    unsafe { $hazzer_thunk$(self.raw_msg()) }
+                  })rs");
              }},
             {"clearer",
              [&] {
@@ -124,8 +140,10 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            R"rs(
             $getter$
             $getter_mut$
+            $private_getter_entry$
             $getter_opt$
             $setter$
+            $hazzer$
             $clearer$
         )rs");
 }
@@ -143,32 +161,32 @@ void SingularMessage::InExternC(Context& ctx,
              if (ctx.is_cpp()) {
                ctx.Emit(
                    R"rs(
-                    fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage)
-                       -> $pbi$::RawMessage;)rs");
+                    fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage)
+                       -> $pbr$::RawMessage;)rs");
              } else {
                ctx.Emit(
-                   R"rs(fn $getter_mut_thunk$(raw_msg: $pbi$::RawMessage,
-                                               arena: $pbi$::RawArena)
-                            -> $pbi$::RawMessage;)rs");
+                   R"rs(fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage,
+                                               arena: $pbr$::RawArena)
+                            -> $pbr$::RawMessage;)rs");
              }
            }},
           {"ReturnType",
            [&] {
              if (ctx.is_cpp()) {
                // guaranteed to have a nonnull submsg for the cpp kernel
-               ctx.Emit({}, "$pbi$::RawMessage;");
+               ctx.Emit({}, "$pbr$::RawMessage;");
              } else {
                // upb kernel may return NULL for a submsg, we can detect this
                // in terra rust if the option returned is None
-               ctx.Emit({}, "Option<$pbi$::RawMessage>;");
+               ctx.Emit({}, "Option<$pbr$::RawMessage>;");
              }
            }},
       },
       R"rs(
-                  fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $ReturnType$;
+                  fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $ReturnType$;
                   $getter_mut$
-                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
-                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
+                  fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
+                  fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
                )rs");
 }
 

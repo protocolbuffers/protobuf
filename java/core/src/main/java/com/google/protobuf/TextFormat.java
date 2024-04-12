@@ -554,7 +554,7 @@ public final class TextFormat {
         }
         generator.print("]");
       } else {
-        if (field.getType() == FieldDescriptor.Type.GROUP) {
+        if (field.isGroupLike()) {
           // Groups must be serialized with their original capitalization.
           generator.print(field.getMessageType().getName());
         } else {
@@ -1720,15 +1720,12 @@ public final class TextFormat {
           final String lowerName = name.toLowerCase(Locale.US);
           field = type.findFieldByName(lowerName);
           // If the case-insensitive match worked but the field is NOT a group,
-          if (field != null && field.getType() != FieldDescriptor.Type.GROUP) {
+          if (field != null && !field.isGroupLike()) {
             field = null;
           }
-        }
-        // Again, special-case group names as described above.
-        if (field != null
-            && field.getType() == FieldDescriptor.Type.GROUP
-            && !field.getMessageType().getName().equals(name)) {
-          field = null;
+          if (field != null && !field.getMessageType().getName().equals(name)) {
+            field = null;
+          }
         }
 
         if (field == null) {

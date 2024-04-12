@@ -515,6 +515,7 @@ class StructTest(unittest.TestCase):
     self.assertEqual(False, struct_list[3])
     self.assertEqual(None, struct_list[4])
     self.assertEqual(inner_struct, struct_list[5])
+    self.assertIn(6, struct_list)
 
     struct_list[1] = 7
     self.assertEqual(7, struct_list[1])

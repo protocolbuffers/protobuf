@@ -258,7 +258,8 @@ public class FeatureInheritanceTest
     }
 
     private static int GetTestFeature(FeatureSetDescriptor features) =>
-        (features.Proto.GetExtension(UnittestFeaturesExtensions.Test) ?? new TestFeatures()).IntMultipleFeature;
+        (int)(features.Proto.GetExtension(UnittestFeaturesExtensions.Test) ?? new TestFeatures())
+            .MultipleFeature;
 
     private static void SetTestFeature(FileDescriptorProto proto, int value)
     {
@@ -317,7 +318,8 @@ public class FeatureInheritanceTest
     }
 
     private static void SetTestFeature(FeatureSet features, int value) =>
-        features.SetExtension(UnittestFeaturesExtensions.Test, new TestFeatures { IntMultipleFeature = value });
+        features.SetExtension(UnittestFeaturesExtensions.Test,
+                              new TestFeatures { MultipleFeature = (Pb.EnumFeature)value });
 
     private static FileDescriptor Build(FileDescriptorProto fileProto) =>
         FileDescriptor.BuildFromByteStrings(new[] { fileProto.ToByteString() }, new ExtensionRegistry { UnittestFeaturesExtensions.Test })[0];

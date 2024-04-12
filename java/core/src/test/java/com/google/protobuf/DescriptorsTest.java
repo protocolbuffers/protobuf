@@ -54,6 +54,7 @@ import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.UnittestRetention;
 import proto3_unittest.UnittestProto3;
+import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -1201,6 +1202,25 @@ public class DescriptorsTest {
       assertThat(features.getExtension(JavaFeaturesProto.java).getUtf8Validation())
           .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.DEFAULT);
     }
+
+    @Test
+    public void testProto3ExtensionPresence() {
+      FileDescriptorProto.Builder file = FileDescriptorProto.newBuilder();
+
+      assertThat(file.getOptions().hasExtension(Proto3FileExtensions.singularInt)).isFalse();
+      assertThat(file.getOptions().getExtension(Proto3FileExtensions.singularInt)).isEqualTo(0);
+
+      file.getOptionsBuilder().setExtension(Proto3FileExtensions.singularInt, 1);
+
+      assertThat(file.getOptions().hasExtension(Proto3FileExtensions.singularInt)).isTrue();
+      assertThat(file.getOptions().getExtension(Proto3FileExtensions.singularInt)).isEqualTo(1);
+    }
+
+    @Test
+    public void testProto3ExtensionHasPresence() {
+      assertThat(Proto3FileExtensions.singularInt.getDescriptor().hasPresence()).isTrue();
+      assertThat(Proto3FileExtensions.repeatedInt.getDescriptor().hasPresence()).isFalse();
+    }
   }
 
   public static class FeatureInheritanceTest {
@@ -1295,12 +1315,12 @@ public class DescriptorsTest {
       features.setExtension(
           UnittestFeatures.test,
           features.getExtension(UnittestFeatures.test).toBuilder()
-              .setIntMultipleFeature(value)
+              .setMultipleFeature(UnittestFeatures.EnumFeature.forNumber(value))
               .build());
     }
 
     int getTestFeature(DescriptorProtos.FeatureSet features) {
-      return features.getExtension(UnittestFeatures.test).getIntMultipleFeature();
+      return features.getExtension(UnittestFeatures.test).getMultipleFeature().getNumber();
     }
 
     FileDescriptor buildFrom(FileDescriptorProto fileProto) throws Exception {

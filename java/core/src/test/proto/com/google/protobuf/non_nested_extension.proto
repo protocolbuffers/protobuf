@@ -9,10 +9,13 @@
 //
 // A proto file with extensions.
 
-syntax = "proto2";
+// LINT: LEGACY_NAMES
+
+edition = "2023";
 
 package protobuf_unittest;
 
+option features.utf8_validation = NONE;
 
 message MessageToBeExtended {
   extensions 1 to max;
@@ -21,6 +24,6 @@ message MessageToBeExtended {
 message MyNonNestedExtension {}
 
 extend MessageToBeExtended {
-  optional MyNonNestedExtension nonNestedExtension = 1;
-  optional string if = 2000;
+  MyNonNestedExtension nonNestedExtension = 1;
+  string if = 2000;
 }

@@ -134,14 +134,6 @@ void ExtensionGenerator::DetermineNeededFiles(
   }
 }
 
-void ExtensionGenerator::GenerateRegistrationSource(
-    io::Printer* printer) const {
-  printer->Emit({{"full_method_name", full_method_name_}},
-                R"objc(
-                  [registry addExtension:$full_method_name$];
-                )objc");
-}
-
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

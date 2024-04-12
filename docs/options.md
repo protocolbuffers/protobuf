@@ -496,3 +496,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/mercari/grpc-federation
     *   Extensions: 1187
+
+1.  protoc-gen-openapi
+
+    *   Website: https://github.com/solo-io/protoc-gen-openapi
+    *   Extensions: 1188-1189

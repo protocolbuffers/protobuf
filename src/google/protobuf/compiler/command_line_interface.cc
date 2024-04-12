@@ -1264,7 +1264,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // Enforce extension declarations only when compiling. We want to skip
   // this enforcement when protoc is just being invoked to encode or decode
   // protos.
-  if (mode_ == MODE_COMPILE) {
+  if (mode_ == MODE_COMPILE
+  ) {
     descriptor_pool->EnforceExtensionDeclarations(true);
   }
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
@@ -1386,8 +1387,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (!experimental_edition_defaults_out_name_.empty()) {
-    if (!WriteExperimentalEditionDefaults(*descriptor_pool)) {
+  if (!edition_defaults_out_name_.empty()) {
+    if (!WriteEditionDefaults(*descriptor_pool)) {
       return 1;
     }
   }
@@ -1615,22 +1616,6 @@ bool CommandLineInterface::ParseInputFiles(
     }
     parsed_files->push_back(parsed_file);
 
-    if (!experimental_editions_ &&
-        !absl::StartsWith(parsed_file->name(), "google/protobuf/") &&
-        !absl::StartsWith(parsed_file->name(), "upb/")) {
-      if (::google::protobuf::internal::InternalFeatureHelper::GetEdition(*parsed_file) >=
-          Edition::EDITION_2023) {
-        std::cerr
-            << parsed_file->name()
-            << ": This file uses editions, but --experimental_editions has not "
-               "been enabled. This syntax is experimental and should be "
-               "avoided."
-            << std::endl;
-        result = false;
-        break;
-      }
-    }
-
     // Enforce --disallow_services.
     if (disallow_services_ && parsed_file->service_count() > 0) {
       std::cerr << parsed_file->name()
@@ -1681,9 +1666,9 @@ void CommandLineInterface::Clear() {
   dependency_out_name_.clear();
 
   experimental_editions_ = false;
-  experimental_edition_defaults_out_name_.clear();
-  experimental_edition_defaults_minimum_ = EDITION_UNKNOWN;
-  experimental_edition_defaults_maximum_ = EDITION_UNKNOWN;
+  edition_defaults_out_name_.clear();
+  edition_defaults_minimum_ = EDITION_UNKNOWN;
+  edition_defaults_maximum_ = EDITION_UNKNOWN;
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -1928,8 +1913,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     return PARSE_ARGUMENT_FAIL;
   }
   if (mode_ == MODE_COMPILE && output_directives_.empty() &&
-      descriptor_set_out_name_.empty() &&
-      experimental_edition_defaults_out_name_.empty()) {
+      descriptor_set_out_name_.empty() && edition_defaults_out_name_.empty()) {
     std::cerr << "Missing output directives." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -2351,8 +2335,8 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // experimental, undocumented, unsupported flag. Enable it at your own risk
     // (or, just don't!).
     experimental_editions_ = true;
-  } else if (name == "--experimental_edition_defaults_out") {
-    if (!experimental_edition_defaults_out_name_.empty()) {
+  } else if (name == "--edition_defaults_out") {
+    if (!edition_defaults_out_name_.empty()) {
       std::cerr << name << " may only be passed once." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
@@ -2367,24 +2351,24 @@ CommandLineInterface::InterpretArgument(const std::string& name,
           << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    experimental_edition_defaults_out_name_ = value;
-  } else if (name == "--experimental_edition_defaults_minimum") {
-    if (experimental_edition_defaults_minimum_ != EDITION_UNKNOWN) {
+    edition_defaults_out_name_ = value;
+  } else if (name == "--edition_defaults_minimum") {
+    if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
       std::cerr << name << " may only be passed once." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
     if (!Edition_Parse(absl::StrCat("EDITION_", value),
-                       &experimental_edition_defaults_minimum_)) {
+                       &edition_defaults_minimum_)) {
       std::cerr << name << " unknown edition \"" << value << "\"." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
-  } else if (name == "--experimental_edition_defaults_maximum") {
-    if (experimental_edition_defaults_maximum_ != EDITION_UNKNOWN) {
+  } else if (name == "--edition_defaults_maximum") {
+    if (edition_defaults_maximum_ != EDITION_UNKNOWN) {
       std::cerr << name << " may only be passed once." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
     if (!Edition_Parse(absl::StrCat("EDITION_", value),
-                       &experimental_edition_defaults_maximum_)) {
+                       &edition_defaults_maximum_)) {
       std::cerr << name << " unknown edition \"" << value << "\"." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
@@ -2674,14 +2658,6 @@ bool CommandLineInterface::GenerateOutput(
       return false;
     }
 
-    // TODO: Remove once Java lite supports editions.
-    if (output_directive.name == "--java_out" && experimental_editions_) {
-      if (!parameters.empty()) {
-        parameters.append(",");
-      }
-      parameters.append("experimental_editions");
-    }
-
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
@@ -2724,8 +2700,8 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     output_filenames.push_back(descriptor_set_out_name_);
   }
 
-  if (!experimental_edition_defaults_out_name_.empty()) {
-    output_filenames.push_back(experimental_edition_defaults_out_name_);
+  if (!edition_defaults_out_name_.empty()) {
+    output_filenames.push_back(edition_defaults_out_name_);
   }
 
   // Create the depfile, even if it will be empty.
@@ -3029,12 +3005,15 @@ bool CommandLineInterface::WriteDescriptorSet(
   return true;
 }
 
-bool CommandLineInterface::WriteExperimentalEditionDefaults(
-    const DescriptorPool& pool) {
-  const Descriptor* feature_set =
-      pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
+  const Descriptor* feature_set;
+  if (opensource_runtime_) {
+    feature_set = pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  } else {
+    feature_set = pool.FindMessageTypeByName("google.protobuf.FeatureSet");
+  }
   if (feature_set == nullptr) {
-    std::cerr << experimental_edition_defaults_out_name_
+    std::cerr << edition_defaults_out_name_
               << ": Could not find FeatureSet in descriptor pool.  Please make "
                  "sure descriptor.proto is in your import path"
               << std::endl;
@@ -3044,31 +3023,31 @@ bool CommandLineInterface::WriteExperimentalEditionDefaults(
   pool.FindAllExtensions(feature_set, &extensions);
 
   Edition minimum = PROTOBUF_MINIMUM_EDITION;
-  if (experimental_edition_defaults_minimum_ != EDITION_UNKNOWN) {
-    minimum = experimental_edition_defaults_minimum_;
+  if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
+    minimum = edition_defaults_minimum_;
   }
   Edition maximum = PROTOBUF_MAXIMUM_EDITION;
-  if (experimental_edition_defaults_maximum_ != EDITION_UNKNOWN) {
-    maximum = experimental_edition_defaults_maximum_;
+  if (edition_defaults_maximum_ != EDITION_UNKNOWN) {
+    maximum = edition_defaults_maximum_;
   }
 
   absl::StatusOr<FeatureSetDefaults> defaults =
       FeatureResolver::CompileDefaults(feature_set, extensions, minimum,
                                        maximum);
   if (!defaults.ok()) {
-    std::cerr << experimental_edition_defaults_out_name_ << ": "
+    std::cerr << edition_defaults_out_name_ << ": "
               << defaults.status().message() << std::endl;
     return false;
   }
 
   int fd;
   do {
-    fd = open(experimental_edition_defaults_out_name_.c_str(),
+    fd = open(edition_defaults_out_name_.c_str(),
               O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
   } while (fd < 0 && errno == EINTR);
 
   if (fd < 0) {
-    perror(experimental_edition_defaults_out_name_.c_str());
+    perror(edition_defaults_out_name_.c_str());
     return false;
   }
 
@@ -3080,7 +3059,7 @@ bool CommandLineInterface::WriteExperimentalEditionDefaults(
     // into version control.
     coded_out.SetSerializationDeterministic(true);
     if (!defaults->SerializeToCodedStream(&coded_out)) {
-      std::cerr << experimental_edition_defaults_out_name_ << ": "
+      std::cerr << edition_defaults_out_name_ << ": "
                 << strerror(out.GetErrno()) << std::endl;
       out.Close();
       return false;
@@ -3088,8 +3067,8 @@ bool CommandLineInterface::WriteExperimentalEditionDefaults(
   }
 
   if (!out.Close()) {
-    std::cerr << experimental_edition_defaults_out_name_ << ": "
-              << strerror(out.GetErrno()) << std::endl;
+    std::cerr << edition_defaults_out_name_ << ": " << strerror(out.GetErrno())
+              << std::endl;
     return false;
   }
 

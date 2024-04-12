@@ -1,0 +1,71 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package pb;
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "JavaFeaturesProto";
+
+extend google.protobuf.FeatureSet {
+  optional JavaFeatures java = 1001;
+}
+
+message JavaFeatures {
+  // Whether or not to treat an enum field as closed.  This option is only
+  // applicable to enum fields, and will be removed in the future.  It is
+  // consistent with the legacy behavior of using proto3 enum types for proto2
+  // fields.
+  optional bool legacy_closed_enum = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    // TODO Enable this in google3 once protoc rolls out.
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_deprecated: EDITION_2023,
+      deprecation_warning: "The legacy closed enum treatment in Java is "
+                           "deprecated and is scheduled to be removed in "
+                           "edition 2025.  Mark enum type on the enum "
+                           "definitions themselves rather than on fields.",
+    },
+    edition_defaults = { edition: EDITION_PROTO2, value: "true" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "false" }
+  ];
+
+  // The UTF8 validation strategy to use.  See go/editions-utf8-validation for
+  // more information on this feature.
+  enum Utf8Validation {
+    // Invalid default, which should never be used.
+    UTF8_VALIDATION_UNKNOWN = 0;
+    // Respect the UTF8 validation behavior specified by the global
+    // utf8_validation feature.
+    DEFAULT = 1;
+    // Verifies UTF8 validity overriding the global utf8_validation
+    // feature. This represents the legacy java_string_check_utf8 option.
+    VERIFY = 2;
+  }
+  optional Utf8Validation utf8_validation = 2 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    // TODO Enable this in google3 once protoc rolls out.
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_deprecated: EDITION_2023,
+      deprecation_warning: "The Java-specific utf8 validation feature is "
+                           "deprecated and is scheduled to be removed in "
+                           "edition 2025.  Utf8 validation behavior should "
+                           "use the global cross-language utf8_validation "
+                           "feature.",
+    },
+    edition_defaults = { edition: EDITION_PROTO2, value: "DEFAULT" }
+  ];
+}

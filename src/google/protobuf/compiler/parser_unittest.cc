@@ -19,11 +19,13 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/retention.h"
@@ -131,7 +133,8 @@ class ParserTest : public testing::Test {
   }
 
   // Parse the text and expect that the given errors are reported.
-  void ExpectHasErrors(const char* text, const char* expected_errors) {
+  void ExpectHasErrors(absl::string_view text,
+                       const testing::Matcher<std::string>& expected_errors) {
     ExpectHasEarlyExitErrors(text, expected_errors);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
   }
@@ -148,20 +151,22 @@ class ParserTest : public testing::Test {
 
   // Same as above but does not expect that the parser parses the complete
   // input.
-  void ExpectHasEarlyExitErrors(absl::string_view text,
-                                absl::string_view expected_errors) {
+  void ExpectHasEarlyExitErrors(
+      absl::string_view text,
+      const testing::Matcher<std::string>& expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
     FileDescriptorProto file;
     EXPECT_FALSE(parser_->Parse(input_.get(), &file));
-    EXPECT_EQ(expected_errors, error_collector_.text_);
+    EXPECT_THAT(error_collector_.text_, expected_errors);
   }
 
   // Parse the text as a file and validate it (with a DescriptorPool), and
   // expect that the validation step reports the given errors.
-  void ExpectHasValidationErrors(const char* text,
-                                 const char* expected_errors) {
+  void ExpectHasValidationErrors(
+      absl::string_view text,
+      const testing::Matcher<std::string>& expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
@@ -176,7 +181,7 @@ class ParserTest : public testing::Test {
                                                             &error_collector_);
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(
                     file, &validation_error_collector) == nullptr);
-    EXPECT_EQ(expected_errors, error_collector_.text_);
+    EXPECT_THAT(error_collector_.text_, expected_errors);
   }
 
   MockErrorCollector error_collector_;
@@ -1452,6 +1457,41 @@ TEST_F(ParseErrorTest, EofInMessage) {
   ExpectHasErrors(
       "message TestMessage {",
       "0:21: Reached end of input in message definition (missing '}').\n");
+}
+
+TEST_F(ParseErrorTest, NestingIsLimitedWithoutCrashing) {
+  std::string start = "syntax = \"proto2\";\n";
+  std::string end;
+
+  const auto add = [&] {
+    absl::StrAppend(&start, "message M {");
+    absl::StrAppend(&end, "}");
+  };
+  const auto input = [&] { return absl::StrCat(start, end); };
+
+  // The first ones work correctly.
+  for (int i = 1; i < internal::cpp::MaxMessageDeclarationNestingDepth(); ++i) {
+    add();
+    const std::string str = input();
+    SetupParser(str);
+    FileDescriptorProto proto;
+    proto.set_name("foo.proto");
+    EXPECT_TRUE(parser_->Parse(input_.get(), &proto)) << input();
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_);
+    DescriptorPool pool;
+    ASSERT_TRUE(pool.BuildFile(proto));
+  }
+  // The rest have parsing errors but they don't crash no matter how deep we
+  // make them.
+  const auto error = testing::HasSubstr(
+      "Reached maximum recursion limit for nested messages.");
+  add();
+  ExpectHasErrors(input(), error);
+  for (int i = 0; i < 100000; ++i) {
+    add();
+  }
+  ExpectHasErrors(input(), error);
 }
 
 TEST_F(ParseErrorTest, MissingFieldNumber) {

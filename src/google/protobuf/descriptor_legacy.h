@@ -1,8 +1,8 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_EDITION_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_EDITION_H__
 
-#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {

@@ -713,6 +713,44 @@ TEST_F(PrinterTest, EmitWithIndent) {
             "  };\n");
 }
 
+TEST_F(PrinterTest, EmitWithPreprocessor) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"value",
+                   [&] {
+                     printer.Emit(R"cc(
+#if FOO
+                       0,
+#else
+                       1,
+#endif
+                     )cc");
+                   }},
+                  {"on_new_line",
+                   [&] {
+                     printer.Emit(R"cc(
+#pragma foo
+                     )cc");
+                   }}},
+                 R"cc(
+                   int val = ($value$, 0);
+                   $on_new_line$;
+                 )cc");
+  }
+
+  EXPECT_EQ(written(),
+            R"(  int val = (
+  #if FOO
+                         0,
+  #else
+                         1,
+  #endif
+   0);
+  #pragma foo
+)");
+}
+
 
 TEST_F(PrinterTest, EmitSameNameAnnotation) {
   FakeAnnotationCollector collector;

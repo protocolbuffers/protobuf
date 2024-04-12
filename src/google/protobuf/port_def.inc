@@ -165,18 +165,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #endif
 
-// Defines the Protobuf C++ Version for checking version compatibility at
-// compilation time.
-#ifdef PROTOBUF_VERSION
-#error PROTOBUF_VERSION was previously defined
-#endif
-#define PROTOBUF_VERSION 5027000
-
-#ifdef PROTOBUF_VERSION_SUFFIX
-#error PROTOBUF_VERSION_SUFFIX was previously defined
-#endif
-#define PROTOBUF_VERSION_SUFFIX "-dev"
-
 #ifdef PROTOBUF_MINIMUM_EDITION
 #error PROTOBUF_MINIMUM_EDITION was previously defined
 #endif
@@ -377,18 +365,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 # define PROTOC_EXPORT __attribute__((visibility("default")))
 #else
 # define PROTOC_EXPORT
-#endif
-
-#if defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
-# if defined(LIBPROTOBUF_TEST_EXPORTS)
-#  define PROTOBUF_TEST_EXPORTS __declspec(dllexport)
-# else
-#  define PROTOBUF_TEST_EXPORTS __declspec(dllimport)
-# endif  // defined(LIBPROTOBUF_TEST_EXPORTS)
-#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOBUF_TEST_EXPORTS)
-# define PROTOBUF_TEST_EXPORTS __attribute__((visibility("default")))
-#else
-# define PROTOBUF_TEST_EXPORTS
 #endif
 
 #if defined(PROTOBUF_PREDICT_TRUE) || defined(PROTOBUF_PREDICT_FALSE)
@@ -636,13 +612,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
 #endif  // PROTOBUF_ASAN
 
-#ifdef PROTOBUF_TSAN_READ
-#error PROTOBUF_TSAN_READ was previously defined
-#endif
-#ifdef PROTOBUF_TSAN_WRITE
-#error PROTOBUF_TSAN_WRITE was previously defined
-#endif
-
 #ifdef PROTOBUF_TSAN
 #define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
 #else
@@ -856,6 +825,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma push_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 #endif  // __APPLE__
+
+#if defined(ANDROID) || defined(__ANDROID__)
+// Inconvenient macro names from usr/include/limits.h in some Android NDKs.
+#pragma push_macro("UID_MAX")
+#undef UID_MAX
+#pragma push_macro("GID_MAX")
+#undef GID_MAX
+#endif  // defined(ANDROID) || defined(__ANDROID__)
 
 #ifdef __FreeBSD__
 // Inconvenient macro names from /usr/include/sys/param.h.

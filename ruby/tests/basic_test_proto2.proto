@@ -46,6 +46,20 @@ message TestMessage {
   repeated TestEnum repeated_enum = 22;
 }
 
+message TestPackedMessage {
+  repeated int32 repeated_int32 = 12 [packed = true];
+}
+
+message TestGroupMessage {
+  optional group GroupField = 1 {
+    optional int32 a = 1;
+  }
+}
+
+message TestRequiredMessage {
+  required int32 required_int32 = 1;
+}
+
 message TestMessage2 {
   optional int32 foo = 1;
 }

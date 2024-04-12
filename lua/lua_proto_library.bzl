@@ -124,7 +124,6 @@ _lua_proto_library_aspect = aspect(
 )
 
 lua_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _lua_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(

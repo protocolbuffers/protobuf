@@ -7,8 +7,8 @@
 
 use crate::{
     Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
-    __internal::{Private, RawMap},
-    __runtime::{InnerMapMut, RawMapIter},
+    __internal::Private,
+    __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
 use std::marker::PhantomData;
 
@@ -60,7 +60,7 @@ impl<'msg, K: ?Sized, V: ?Sized> std::fmt::Debug for MapMut<'msg, K, V> {
 }
 
 pub struct Map<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> {
-    inner: InnerMapMut<'static>,
+    inner: InnerMap,
     _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
 }
 
@@ -163,34 +163,35 @@ where
     K: Proxied + ?Sized,
     V: ProxiedInMapValue<K> + ?Sized,
 {
-    #[allow(dead_code)]
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         V::map_new(Private)
     }
 
     pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
-        MapMut { inner: self.inner, _phantom: PhantomData }
+        MapMut { inner: self.inner.as_mut(), _phantom: PhantomData }
     }
 
     pub fn as_view(&self) -> MapView<'_, K, V> {
         MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
 
-    /// # Safety
-    /// - `inner` must be valid to read and write from for `'static`.
-    /// - There must be no aliasing references or mutations on the same
-    ///   underlying object.
     #[doc(hidden)]
-    pub unsafe fn from_inner(_private: Private, inner: InnerMapMut<'static>) -> Self {
+    pub fn from_inner(_private: Private, inner: InnerMap) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
     pub fn as_raw(&self, _private: Private) -> RawMap {
-        self.inner.as_raw(Private)
+        self.inner.raw
     }
+}
 
-    pub fn inner(&self, _private: Private) -> InnerMapMut<'static> {
-        self.inner
+impl<K, V> Default for Map<K, V>
+where
+    K: Proxied + ?Sized,
+    V: ProxiedInMapValue<K> + ?Sized,
+{
+    fn default() -> Self {
+        Map::new()
     }
 }
 
@@ -272,11 +273,11 @@ where
     K: Proxied + ?Sized + 'msg,
     V: ProxiedInMapValue<K> + ?Sized + 'msg,
 {
-    pub fn len(self) -> usize {
+    pub fn len(&self) -> usize {
         self.as_view().len()
     }
 
-    pub fn is_empty(self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
@@ -313,8 +314,18 @@ where
         V::map_get(self.as_view(), key.into())
     }
 
-    pub fn copy_from(&mut self, _src: MapView<'_, K, V>) {
-        todo!("implement b/28530933");
+    pub fn copy_from<'a, 'b>(
+        &mut self,
+        src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl Into<View<'b, V>>)>,
+    ) where
+        K: 'a,
+        V: 'b,
+    {
+        //TODO
+        self.clear();
+        for (k, v) in src.into_iter() {
+            self.insert(k, v);
+        }
     }
 
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
@@ -431,6 +442,20 @@ where
     }
 }
 
+impl<'msg, 'k, 'v, KView, VView, K, V> Extend<(KView, VView)> for MapMut<'msg, K, V>
+where
+    K: Proxied + ?Sized + 'msg + 'k,
+    V: ProxiedInMapValue<K> + ?Sized + 'msg + 'v,
+    KView: Into<View<'k, K>>,
+    VView: Into<View<'v, V>>,
+{
+    fn extend<T: IntoIterator<Item = (KView, VView)>>(&mut self, iter: T) {
+        for (k, v) in iter.into_iter() {
+            self.insert(k, v);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -518,11 +543,92 @@ mod tests {
             ]
         );
         assert_that!(
-            map.as_mut().iter().collect::<Vec<_>>(),
+            map.as_view().into_iter().collect::<Vec<_>>(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
                 eq((15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+    }
+
+    #[test]
+    fn test_overwrite_insert() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        assert!(map_mut.insert(0, "fizz"));
+        // insert should return false when the key is already present
+        assert!(!map_mut.insert(0, "buzz"));
+        assert_that!(
+            map.as_mut().iter().collect::<Vec<_>>(),
+            unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]
+        );
+    }
+
+    #[test]
+    fn test_extend() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+
+        map_mut.extend([(0, ""); 0]);
+        assert_that!(map_mut.len(), eq(0));
+
+        map_mut.extend([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((0, ProtoStr::from_str("fizz"))),
+                eq((1, ProtoStr::from_str("buzz"))),
+                eq((2, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+
+        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2_mut = map_2.as_mut();
+        map_2_mut.extend([(2, "bing"), (3, "bong")]);
+
+        let mut map_mut = map.as_mut();
+        map_mut.extend(&map_2);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((0, ProtoStr::from_str("fizz"))),
+                eq((1, ProtoStr::from_str("buzz"))),
+                eq((2, ProtoStr::from_str("bing"))),
+                eq((3, ProtoStr::from_str("bong")))
+            ]
+        );
+    }
+
+    #[test]
+    fn test_copy_from() {
+        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map_mut = map.as_mut();
+        map_mut.copy_from([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((0, ProtoStr::from_str("fizz"))),
+                eq((1, ProtoStr::from_str("buzz"))),
+                eq((2, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+
+        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2_mut = map_2.as_mut();
+        map_2_mut.copy_from([(2, "bing"), (3, "bong")]);
+
+        let mut map_mut = map.as_mut();
+        map_mut.copy_from(&map_2);
+
+        assert_that!(
+            map.as_view().into_iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq((2, ProtoStr::from_str("bing"))),
+                eq((3, ProtoStr::from_str("bong")))
             ]
         );
     }

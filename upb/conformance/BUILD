@@ -6,14 +6,14 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "make_shell_script",
-)
-load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+    "make_shell_script",
 )
 
 # begin:google_only
@@ -43,18 +43,14 @@ upb_proto_reflection_library(
 upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
-    visibility = [
-        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-    ],
+    visibility = ["//visibility:private"],
     deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto3_upbdefs",
     testonly = 1,
-    visibility = [
-        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-    ],
+    visibility = ["//visibility:private"],
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 

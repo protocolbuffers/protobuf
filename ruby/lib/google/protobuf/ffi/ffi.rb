@@ -95,11 +95,6 @@ module Google
         :repeated
       )
 
-      Syntax = enum(
-        :Proto2, 2,
-        :Proto3
-      )
-
       # All the different kind of well known type messages. For simplicity of check,
       # number wrappers and string wrappers are grouped together. Make sure the
       # order and merber of these groups are not changed.

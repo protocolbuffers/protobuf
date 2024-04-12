@@ -302,7 +302,6 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   auto& set = ExtensionSet(reflection, message);
   auto* extendee = reflection->descriptor_;
   auto* pool = reflection->descriptor_pool_;
-  auto* arena = message.GetArena();
 
   set.ForEach([&](int number, auto& ext) {
     ABSL_DCHECK_GT(ext.type, 0);

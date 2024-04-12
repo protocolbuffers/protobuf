@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use enums_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
@@ -126,6 +127,14 @@ fn test_string_maps() {
 }
 
 #[test]
+fn test_nested_enum_maps() {
+    // Verify that C++ thunks are generated and are with the right name for strings
+    TestMapWithNestedEnum::new()
+        .string_map_mut()
+        .insert("foo", test_map_with_nested_enum::inner_nested::NestedEnum::Foo);
+}
+
+#[test]
 fn test_bytes_and_string_copied() {
     let mut msg = TestMap::new();
 
@@ -167,7 +176,7 @@ macro_rules! generate_map_with_msg_values_tests {
                 // this block makes sure `insert` copies/moves, not borrows.
                 {
                     let mut msg_val = TestAllTypes::new();
-                    msg_val.optional_int32_mut().set(1001);
+                    msg_val.set_optional_int32(1001);
                     assert_that!(
                         msg
                             .[< map_ $k_field _all_types_mut >]()

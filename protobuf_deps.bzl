@@ -1,7 +1,7 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
@@ -82,7 +82,8 @@ def protobuf_deps():
             urls = ["https://github.com/bazelbuild/rules_java/releases/download/7.3.2/rules_java-7.3.2.tar.gz"],
             sha256 = "3121a00588b1581bd7c1f9b550599629e5adcc11ba9c65f482bbd5cfe47fdf30",
         )
-        
+
+    # TODO: remove after toolchain types are moved to protobuf
     if not native.existing_rule("rules_proto"):
         http_archive(
             name = "rules_proto",

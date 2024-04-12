@@ -16,4 +16,5 @@ message Proto3Packed {
     int32 int32_field = 1;
   }
   repeated SubMessage sub_message_field = 3;
+  repeated int32 explicitly_packed = 4 [packed = true];
 }

@@ -5,6 +5,10 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
+# Second self-reference that makes it possible to load proto rules from @protobuf.
+# buildifier: disable=duplicated-name
+local_repository(name = "protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -145,7 +149,7 @@ ruby_bundle(
 
 http_archive(
     name = "lua",
-    build_file = "//bazel:lua.BUILD",
+    build_file = "//python/dist:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -163,14 +167,14 @@ http_archive(
 
 http_archive(
     name = "com_google_googleapis",
-    urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
-    strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
-    sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
+    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
+    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
+    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
     build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//bazel:system_python.bzl", "system_python")
+load("//python/dist:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",

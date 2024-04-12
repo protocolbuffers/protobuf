@@ -19,9 +19,9 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-large }
-          - { name: TSAN, flags: --config=tsan }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
@@ -108,7 +108,9 @@ jobs:
           command: >
             -c "set -ex;
             sccache -z;
-            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
+            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            -Dprotobuf_BUILD_LIBUPB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14
+            -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
             cmake --build . --parallel 20;
             ctest --parallel 20;
             sccache -s"
@@ -175,7 +177,9 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
             /test.sh
             ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON

@@ -99,9 +99,6 @@ typedef struct CMessage : public ContainerBase {
   typedef std::unordered_map<const Message*, CMessage*> SubMessagesMap;
   SubMessagesMap* child_submessages;
 
-  // A reference to PyUnknownFields.
-  PyObject* unknown_field_set;
-
   // Implements the "weakref" protocol for this object.
   PyObject* weakreflist;
 

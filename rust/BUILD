@@ -1,8 +1,8 @@
 # Protobuf Rust runtime packages.
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 package(
     default_visibility = [
@@ -78,14 +78,16 @@ rust_library(
     ],
     deps = [
         ":utf8",
-        "//rust/upb_kernel:upb_c_api",
+        "//rust/upb",
     ],
 )
 
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
-    rustc_flags = ["--cfg=upb_kernel"],
+    rustc_flags = [
+        "--cfg=upb_kernel",
+    ],
     deps = [
         "@crate_index//:googletest",
     ],
@@ -113,7 +115,9 @@ rust_library(
 rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+    ],
     deps = [
         "@crate_index//:googletest",
     ],

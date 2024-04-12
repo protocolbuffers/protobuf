@@ -9,8 +9,10 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::__internal::{Private, PtrAndLen, RawMessage};
-use crate::__runtime::{BytesAbsentMutData, BytesPresentMutData, InnerBytesMut};
+use crate::__internal::Private;
+use crate::__runtime::{
+    BytesAbsentMutData, BytesPresentMutData, InnerBytesMut, PtrAndLen, RawMessage,
+};
 use crate::macros::impl_forwarding_settable_value;
 use crate::{
     AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, Proxied, ProxiedWithPresence,

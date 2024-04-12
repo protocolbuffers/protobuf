@@ -32,7 +32,7 @@ module Google
             raise TypeError.new "Invalid argument for boolean field '#{name}' (given #{value.class})." unless [TrueClass, FalseClass].include? value.class
             return_value[:bool_val] = value
           when :string
-            raise TypeError.new "Invalid argument for string field '#{name}' (given #{value.class})." unless [Symbol, String].include? value.class
+            raise TypeError.new "Invalid argument for string field '#{name}' (given #{value.class})." unless value.is_a?(String) or value.is_a?(Symbol)
             begin
               string_value = value.to_s.encode("UTF-8")
             rescue Encoding::UndefinedConversionError

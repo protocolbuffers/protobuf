@@ -34,8 +34,6 @@
 #undef PROTOBUF_IGNORE_DEPRECATION_START
 #undef PROTOBUF_IGNORE_DEPRECATION_STOP
 #undef PROTOBUF_RTTI
-#undef PROTOBUF_VERSION
-#undef PROTOBUF_VERSION_SUFFIX
 #undef PROTOBUF_MINIMUM_EDITION
 #undef PROTOBUF_MAXIMUM_EDITION
 #undef PROTOBUF_FIELD_OFFSET
@@ -152,6 +150,11 @@
 #pragma pop_macro("GID_MAX")
 #pragma pop_macro("TYPE_BOOL")
 #endif  // __APPLE__
+
+#if defined(ANDROID) || defined(__ANDROID__)
+#pragma pop_macro("UID_MAX")
+#pragma pop_macro("GID_MAX")
+#endif  // defined(ANDROID) || defined(__ANDROID__)
 
 #ifdef __FreeBSD__
 #pragma pop_macro("TRUE")

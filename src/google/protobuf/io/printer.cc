@@ -24,6 +24,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
@@ -126,6 +127,12 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       format_string = orig;
       format.is_raw_string = false;
       raw_string_indent = 0;
+    }
+
+    // This means we have a preprocessor directive and we should not have eaten
+    // the newline.
+    if (!at_start_of_line_ && absl::StartsWith(format_string, "#")) {
+      format_string = orig;
     }
   }
 

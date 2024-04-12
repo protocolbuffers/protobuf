@@ -1,9 +1,9 @@
-load("@rules_python//python:proto.bzl", "py_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("@rules_python//python:proto.bzl", "py_proto_library")
 load("//:protobuf.bzl", "internal_objc_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
+load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 
 bzl_library(
     name = "defaults",
@@ -122,12 +122,18 @@ internal_objc_proto_library(
     name = "test_messages_proto2_editions_objc_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto2_editions.proto"],
-    enable_editions = True,
     visibility = ["//conformance:__pkg__"],
 )
 
 java_proto_library(
     name = "test_messages_proto2_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2_editions_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto2_editions_java_proto_lite",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto2_editions_proto"],
@@ -179,7 +185,6 @@ internal_objc_proto_library(
     name = "test_messages_proto3_editions_objc_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto3_editions.proto"],
-    enable_editions = True,
     includes = [
         ".",
         "src",
@@ -190,6 +195,13 @@ internal_objc_proto_library(
 
 java_proto_library(
     name = "test_messages_proto3_editions_java_proto",
+    testonly = True,
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3_editions_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto3_editions_java_proto_lite",
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
@@ -223,6 +235,7 @@ exports_files(
     ],
     visibility = [
         "//python:__pkg__",
+        "//ruby:__pkg__",
     ],
 )
 

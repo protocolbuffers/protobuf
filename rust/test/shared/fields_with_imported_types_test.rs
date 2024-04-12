@@ -30,8 +30,8 @@ fn test_enum_field_generated() {
 
 #[test]
 fn test_oneof_message_field_generated() {
+    use fields_with_imported_types_proto::msg_with_fields_with_imported_types::ImportedTypesOneof::not_set;
     use fields_with_imported_types_proto::MsgWithFieldsWithImportedTypes;
-    use fields_with_imported_types_proto::MsgWithFieldsWithImportedTypes_::ImportedTypesOneof::not_set;
     use imported_types_proto::ImportedEnum;
     use imported_types_proto::ImportedMessageView;
 

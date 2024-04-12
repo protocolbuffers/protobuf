@@ -356,7 +356,6 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   auto edition = GetEdition(*file);
-  absl::string_view filename = file->name();
 
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
@@ -387,11 +386,7 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
     }
 
     if (unresolved_features.has_string_type()) {
-      if (!CanSkipEditionCheck(filename) && edition < Edition::EDITION_2024) {
-        status = absl::FailedPreconditionError(absl::StrCat(
-            "Field ", field.full_name(),
-            " specifies string_type which is not currently allowed."));
-      } else if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
             " specifies string_type, but is not a string nor bytes field."));

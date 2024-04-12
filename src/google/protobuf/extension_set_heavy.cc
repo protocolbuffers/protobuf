@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -23,6 +24,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -271,6 +274,8 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
     if (extension->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       output->message_info.prototype =
           factory_->GetPrototype(extension->message_type());
+      output->message_info.tc_table =
+          output->message_info.prototype->GetTcParseTable();
       ABSL_CHECK(output->message_info.prototype != nullptr)
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
@@ -420,6 +425,18 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
 }
+
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+bool ExtensionSet::ShouldRegisterAtThisTime(
+    std::initializer_list<WeakPrototypeRef> messages, bool is_preregistration) {
+  bool has_all = true;
+  for (auto ref : messages) {
+    has_all = has_all && GetPrototypeForWeakDescriptor(ref.table, ref.index,
+                                                       false) != nullptr;
+  }
+  return has_all == is_preregistration;
+}
+#endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
 }  // namespace internal
 }  // namespace protobuf

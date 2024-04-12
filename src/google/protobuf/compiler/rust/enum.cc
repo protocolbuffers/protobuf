@@ -73,14 +73,14 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                  .WithSuffix("")},
             R"rs(
       extern "C" {
-        fn $map_new_thunk$() -> $pbi$::RawMap;
-        fn $map_free_thunk$(m: $pbi$::RawMap);
-        fn $map_clear_thunk$(m: $pbi$::RawMap);
-        fn $map_size_thunk$(m: $pbi$::RawMap) -> usize;
-        fn $map_insert_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: $name$) -> bool;
-        fn $map_get_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
-        fn $map_remove_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
-        fn $map_iter_thunk$(m: $pbi$::RawMap) -> $pbr$::UntypedMapIterator;
+        fn $map_new_thunk$() -> $pbr$::RawMap;
+        fn $map_free_thunk$(m: $pbr$::RawMap);
+        fn $map_clear_thunk$(m: $pbr$::RawMap);
+        fn $map_size_thunk$(m: $pbr$::RawMap) -> usize;
+        fn $map_insert_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: $name$) -> bool;
+        fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
+        fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
+        fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
         fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $name$);
       }
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
@@ -88,7 +88,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             unsafe {
                 $pb$::Map::from_inner(
                     $pbi$::Private,
-                    $pbr$::InnerMapMut::new($pbi$::Private, $map_new_thunk$())
+                    $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
                 )
             }
         }
@@ -166,29 +166,19 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
           fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
               let arena = $pbr$::Arena::new();
-              let raw_arena = arena.raw();
-              std::mem::forget(arena);
-
-              unsafe {
-                  $pb$::Map::from_inner(
-                      $pbi$::Private,
-                      $pbr$::InnerMapMut::new(
-                          $pbi$::Private,
-                          $pbr$::upb_Map_New(
-                              raw_arena,
-                              <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                              $pbr$::UpbCType::Enum),
-                          raw_arena))
-              }
+              let raw = unsafe {
+                  $pbr$::upb_Map_New(
+                      arena.raw(),
+                      <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
+                      $pbr$::CType::Enum)
+              };
+              $pb$::Map::from_inner(
+                  $pbi$::Private,
+                  $pbr$::InnerMap::new($pbi$::Private, raw, arena))
           }
 
-          unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-              // SAFETY:
-              // - `map.raw_arena($pbi$::Private)` is a live `upb_Arena*`
-              // - This function is only called once for `map` in `Drop`.
-              unsafe {
-                  $pbr$::upb_Arena_Free(map.inner($pbi$::Private).raw_arena($pbi$::Private));
-              }
+          unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
+              // No-op: the memory will be dropped by the arena.
           }
 
           fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
@@ -507,7 +497,7 @@ void GenerateEnumThunksCc(Context& ctx, const EnumDescriptor& desc) {
   ctx.Emit(
       {
           {"cpp_t", cpp::QualifiedClassName(&desc)},
-          {"rs_t", GetUnderscoreDelimitedFullName(ctx, desc)},
+          {"rs_t", UnderscoreDelimitFullName(ctx, desc.full_name())},
           {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
       },
       R"cc(

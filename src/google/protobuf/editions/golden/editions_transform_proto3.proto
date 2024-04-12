@@ -9,6 +9,8 @@ edition = "2023";
 
 package protobuf_editions_test;
 
+import "net/proto/proto1_features.proto";
+
 option features.field_presence = IMPLICIT;
 
 enum TestEnumProto3 {
@@ -20,7 +22,10 @@ message TestMessageProto3 {
   string string_field = 1;
   map<string, string> string_map_field = 4;
   repeated int32 int_field = 7;
-  repeated int32 int_field_packed = 8;
+  repeated int32 int_field_packed = 8 [
+    features.(pb.proto1).legacy_packed = true
+  ];
+
   repeated int32 int_field_unpacked = 9 [
     features.repeated_field_encoding = EXPANDED
   ];

@@ -394,6 +394,10 @@ inline bool IsExplicitLazy(const FieldDescriptor* field) {
   return field->options().lazy() || field->options().unverified_lazy();
 }
 
+internal::field_layout::TransformValidation GetLazyStyle(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer);
+
 bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
                            MessageSCCAnalyzer* scc_analyzer);
 
@@ -507,7 +511,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter);
 
 inline bool IsCrossFileMessage(const FieldDescriptor* field) {
-  return field->type() == FieldDescriptor::TYPE_MESSAGE &&
+  return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
          field->message_type()->file() != field->file();
 }
 
@@ -786,7 +790,11 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);
 
-// Generate the section name to be used for a data object when using implicit
+// Generates a strong reference to the message in `desc`, as a statement.
+std::string StrongReferenceToType(const Descriptor* desc,
+                                  const Options& options);
+
+// Generates the section name to be used for a data object when using implicit
 // weak descriptors. The prefix determines the kind of object and the section it
 // will be merged into afterwards.
 // See `UsingImplicitWeakDescriptor` above.
@@ -1171,6 +1179,12 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
 // `&ClassName::PostLoopHandler` which should be a static function of the right
 // signature.
 bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
+
+// Priority used for static initializers.
+enum InitPriority {
+  kInitPriority101,
+  kInitPriority102,
+};
 
 }  // namespace cpp
 }  // namespace compiler

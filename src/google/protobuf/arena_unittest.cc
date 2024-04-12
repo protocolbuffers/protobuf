@@ -7,13 +7,17 @@
 
 #include "google/protobuf/arena.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <new>  // IWYU pragma: keep for operator new
 #include <string>
 #include <thread>
 #include <type_traits>
@@ -54,6 +58,7 @@ using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestRepeatedString;
+using ::testing::ElementsAreArray;
 
 namespace google {
 namespace protobuf {
@@ -156,6 +161,89 @@ TEST(ArenaTest, DestructorSkippable) {
   EXPECT_TRUE(Arena::is_destructor_skippable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_destructor_skippable<const TestAllTypes>::type::value);
   EXPECT_FALSE(Arena::is_destructor_skippable<Arena>::type::value);
+}
+
+template <int>
+struct EmptyBase {};
+struct ArenaCtorBase {
+  using InternalArenaConstructable_ = void;
+};
+struct ArenaDtorBase {
+  using DestructorSkippable_ = void;
+};
+
+template <bool arena_ctor, bool arena_dtor>
+void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
+                           std::vector<absl::string_view> copy,
+                           std::vector<absl::string_view> with_int) {
+  static auto& actions = *new std::vector<absl::string_view>;
+  struct TraitsProber
+      : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
+        std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
+        Message {
+    TraitsProber() { actions.push_back("()"); }
+    TraitsProber(const TraitsProber&) { actions.push_back("(const T&)"); }
+    explicit TraitsProber(int) { actions.push_back("(int)"); }
+    explicit TraitsProber(Arena* arena) { actions.push_back("(Arena)"); }
+    TraitsProber(Arena* arena, const TraitsProber&) {
+      actions.push_back("(Arena, const T&)");
+    }
+    TraitsProber(Arena* arena, int) { actions.push_back("(Arena, int)"); }
+    ~TraitsProber() override { actions.push_back("~()"); }
+
+    TraitsProber* New(Arena*) const final {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+    const ClassData* GetClassData() const final {
+      ABSL_LOG(FATAL);
+      return nullptr;
+    }
+  };
+
+  static_assert(
+      !arena_ctor || Arena::is_arena_constructable<TraitsProber>::value, "");
+  static_assert(
+      !arena_dtor || Arena::is_destructor_skippable<TraitsProber>::value, "");
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(def));
+
+  const TraitsProber p;
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, p);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(copy));
+
+  {
+    actions.clear();
+    Arena arena;
+    Arena::Create<TraitsProber>(&arena, 17);
+  }
+  EXPECT_THAT(actions, ElementsAreArray(with_int));
+}
+
+TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
+  TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
+                                      {"(int)", "~()"});
+  // If the object is not arena constructible, then the destructor is always
+  // called even if marked as skippable.
+  TestCtorAndDtorTraits<false, true>({"()", "~()"}, {"(const T&)", "~()"},
+                                     {"(int)", "~()"});
+
+  // Some types are arena constructible but we can't skip the destructor. Those
+  // are constructed with an arena but still destroyed.
+  TestCtorAndDtorTraits<true, false>({"(Arena)", "~()"},
+                                     {"(Arena, const T&)", "~()"},
+                                     {"(Arena, int)", "~()"});
+  TestCtorAndDtorTraits<true, true>({"(Arena)"}, {"(Arena, const T&)"},
+                                    {"(Arena, int)"});
 }
 
 TEST(ArenaTest, BasicCreate) {
@@ -420,6 +508,7 @@ TEST(ArenaTest, GetConstructTypeWorks) {
 class DispatcherTestProto : public Message {
  public:
   using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
   // For the test below to construct.
   explicit DispatcherTestProto(absl::in_place_t) {}
   explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
@@ -789,7 +878,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
     const Reflection* r = arena_message->GetReflection();
     const FieldDescriptor* f = arena_message->GetDescriptor()->FindFieldByName(
         "optional_nested_message");
-    nested_msg = static_cast<TestAllTypes::NestedMessage*>(
+    nested_msg = DownCastToGenerated<TestAllTypes::NestedMessage>(
         r->ReleaseMessage(arena_message, f));
   }
   EXPECT_EQ(42, nested_msg->bb());
@@ -1397,7 +1486,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* submessage =
-      static_cast<TestAllTypes::NestedMessage*>(
+      DownCastToGenerated<TestAllTypes::NestedMessage>(
           r->MutableMessage(message, field));
   TestAllTypes::NestedMessage* submessage_expected =
       message->mutable_optional_nested_message();
@@ -1407,7 +1496,7 @@ TEST(ArenaTest, MutableMessageReflection) {
 
   const FieldDescriptor* oneof_field =
       d->FindFieldByName("oneof_nested_message");
-  submessage = static_cast<TestAllTypes::NestedMessage*>(
+  submessage = DownCastToGenerated<TestAllTypes::NestedMessage>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
 
@@ -1416,6 +1505,45 @@ TEST(ArenaTest, MutableMessageReflection) {
 }
 #endif  // PROTOBUF_RTTI
 
+
+TEST(ArenaTest, ClearOneofMessageOnArena) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestOneof2>(&arena);
+  // Intentionally nested to force poisoning recursively to catch the access.
+  auto* child =
+      message->mutable_foo_message()->mutable_child()->mutable_child();
+  child->set_moo_int(100);
+  message->clear_foo_message();
+
+#ifndef PROTOBUF_ASAN
+  EXPECT_NE(child->moo_int(), 100);
+#else
+#if GTEST_HAS_DEATH_TEST && defined(__cpp_if_constexpr)
+  EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
+#endif
+#endif
+}
+
+TEST(ArenaTest, CopyValuesWithinOneof) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto* message = Arena::Create<unittest::TestOneof>(&arena);
+  auto* foo = message->mutable_foogroup();
+  foo->set_a(100);
+  foo->set_b("hello world");
+  message->set_foo_string(message->foogroup().b());
+
+  // As a debug hardening measure, `set_foo_string` would clear `foo` in
+  // (!NDEBUG && !ASAN) and the copy wouldn't work.
+  EXPECT_TRUE(message->foo_string().empty()) << message->foo_string();
+}
 
 void FillArenaAwareFields(TestAllTypes* message) {
   std::string test_string = "hello world";
@@ -1437,6 +1565,10 @@ void FillArenaAwareFields(TestAllTypes* message) {
 
 // Test: no allocations occur on heap while touching all supported field types.
 TEST(ArenaTest, NoHeapAllocationsTest) {
+  if (internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "debug hardening may cause heap allocation.";
+  }
+
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
@@ -1570,7 +1702,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0u) << i << ": " << p;
   }
 }
 

@@ -15,6 +15,8 @@ import com.google.protobuf.TextFormat;
 import com.google.protobuf.conformance.Conformance;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
+import com.google.protobuf_test_messages.edition2023.TestAllTypesEdition2023;
+import com.google.protobuf_test_messages.edition2023.TestMessagesEdition2023;
 import com.google.protobuf_test_messages.editions.proto2.TestMessagesProto2Editions;
 import com.google.protobuf_test_messages.editions.proto3.TestMessagesProto3Editions;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
@@ -213,6 +215,8 @@ class ConformanceJava {
         return TestAllTypesProto3.class;
       case "protobuf_test_messages.proto2.TestAllTypesProto2":
         return TestAllTypesProto2.class;
+      case "protobuf_test_messages.editions.TestAllTypesEdition2023":
+        return TestAllTypesEdition2023.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.TestAllTypesProto3.class;
       case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
@@ -229,6 +233,8 @@ class ConformanceJava {
         return TestMessagesProto3.class;
       case "protobuf_test_messages.proto2.TestAllTypesProto2":
         return TestMessagesProto2.class;
+      case "protobuf_test_messages.editions.TestAllTypesEdition2023":
+        return TestMessagesEdition2023.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
         return TestMessagesProto3Editions.class;
       case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
@@ -244,14 +250,19 @@ class ConformanceJava {
     AbstractMessage testMessage;
     String messageType = request.getMessageType();
 
+    ExtensionRegistry extensions = ExtensionRegistry.newInstance();
+    try {
+      createTestFile(messageType)
+          .getMethod("registerAllExtensions", ExtensionRegistry.class)
+          .invoke(null, extensions);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD:
         {
           try {
-            ExtensionRegistry extensions = ExtensionRegistry.newInstance();
-            createTestFile(messageType)
-                .getMethod("registerAllExtensions", ExtensionRegistry.class)
-                .invoke(null, extensions);
             testMessage =
                 parseBinary(
                     request.getProtobufPayload(),
@@ -295,7 +306,7 @@ class ConformanceJava {
             AbstractMessage.Builder<?> builder =
                 (AbstractMessage.Builder<?>)
                     createTestMessage(messageType).getMethod("newBuilder").invoke(null);
-            TextFormat.merge(request.getTextPayload(), builder);
+            TextFormat.merge(request.getTextPayload(), extensions, builder);
             testMessage = (AbstractMessage) builder.build();
             } catch (TextFormat.ParseException e) {
               return Conformance.ConformanceResponse.newBuilder()

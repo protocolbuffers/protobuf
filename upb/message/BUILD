@@ -5,7 +5,6 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
@@ -15,6 +14,7 @@ load(
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
     name = "message",
@@ -154,7 +154,6 @@ cc_library(
     name = "split64",
     hdrs = [
         "accessors_split64.h",
-        "array_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -248,7 +247,7 @@ cc_test(
         "//upb:port",
         "//upb:wire_reader",
         "//upb/base:internal",
-        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:variant",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -412,17 +411,18 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["promote_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_protos",
     srcs = glob(
         [
-            "**/*test.proto",
+            "**/*.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

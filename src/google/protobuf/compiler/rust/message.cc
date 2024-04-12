@@ -66,11 +66,35 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
+      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
+               R"rs(
         let arena = $pbr$::Arena::new();
+        // SAFETY: $minitable$ is a static of a const object.
+        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+        let options = 0;
+        let mut buf: *mut u8 = std::ptr::null_mut();
         let mut len = 0;
+
+        // SAFETY: `mini_table` is the corresponding one that was used to
+        // construct `self.raw_msg()`.
+        let status = unsafe {
+          $pbr$::upb_Encode(self.raw_msg(), mini_table, options, arena.raw(),
+              &mut buf, &mut len)
+        };
+
+        //~ TODO: Currently serialize() on the Rust API is an
+        //~ infallible fn, so if upb signals an error here we can only panic.
+        assert!(status == $pbr$::EncodeStatus::Ok);
+        let data = if len == 0 {
+          std::ptr::NonNull::dangling()
+        } else {
+          std::ptr::NonNull::new(buf).unwrap()
+        };
+
+        // SAFETY:
+        // - `arena` allocated `data`.
+        // - `data` is valid for reads up to `len` and will not be mutated.
         unsafe {
-          let data = $serialize_thunk$(self.raw_msg(), arena.raw(), &mut len);
           $pbr$::SerializedData::from_raw_parts(arena, data, len)
         }
       )rs");
@@ -80,43 +104,77 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageDeserialize(Context& ctx, const Descriptor& msg) {
+void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit(
           {
-              {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+              {"parse_thunk", ThunkName(ctx, msg, "parse")},
           },
           R"rs(
           let success = unsafe {
+            // SAFETY: `data.as_ptr()` is valid to read for `data.len()`.
             let data = $pbr$::SerializedData::from_raw_parts(
               $NonNull$::new(data.as_ptr() as *mut _).unwrap(),
               data.len(),
             );
 
-            $deserialize_thunk$(self.raw_msg(), data)
+            $parse_thunk$(self.raw_msg(), data)
           };
           success.then_some(()).ok_or($pb$::ParseError)
         )rs");
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"deserialize_thunk", ThunkName(ctx, msg, "parse")}}, R"rs(
-        let arena = $pbr$::Arena::new();
-        let msg = unsafe {
-          $deserialize_thunk$(data.as_ptr(), data.len(), arena.raw())
-        };
+      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
+               R"rs(
+        let mut msg = Self::new();
+        // SAFETY: $minitable$ is a static of a const object.
+        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+        let ext_reg = std::ptr::null();
+        let options = 0;
 
-        match msg {
-          None => Err($pb$::ParseError),
-          Some(msg) => {
-            //~ This assignment causes self.arena to be dropped and to deallocate
-            //~ any previous message pointed/owned to by self.inner.msg.
-            self.inner.arena = arena;
-            self.inner.msg = msg;
+        // SAFETY:
+        // - `data.as_ptr()` is valid to read for `data.len()`
+        // - `mini_table` is the one used to construct `msg.raw_msg()`
+        // - `msg.arena().raw()` is held for the same lifetime as `msg`.
+        let status = unsafe {
+          $pbr$::upb_Decode(
+              data.as_ptr(), data.len(), msg.raw_msg(),
+              mini_table, ext_reg, options, msg.arena().raw())
+        };
+        match status {
+          $pbr$::DecodeStatus::Ok => {
+            //~ This swap causes the old self.inner.arena to be moved into `msg`
+            //~ which we immediately drop, which will release any previous
+            //~ message that was held here.
+            std::mem::swap(self, &mut msg);
             Ok(())
           }
+          _ => Err($pb$::ParseError)
         }
+      )rs");
+      return;
+  }
+
+  ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageDebug(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({},
+               R"rs(
+        $pbr$::debug_string($pbi$::Private, self.raw_msg(), f)
+      )rs");
+      return;
+
+    case Kernel::kUpb:
+      ctx.Emit({},
+               R"rs(
+        f.debug_struct(std::any::type_name::<Self>())
+          .field("raw_msg", &self.raw_msg())
+          .finish()
       )rs");
       return;
   }
@@ -132,7 +190,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"new_thunk", ThunkName(ctx, msg, "new")},
               {"delete_thunk", ThunkName(ctx, msg, "delete")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+              {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
               {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
               {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
@@ -144,17 +202,17 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
                ThunkName(ctx, msg, "repeated_copy_from")},
           },
           R"rs(
-          fn $new_thunk$() -> $pbi$::RawMessage;
-          fn $delete_thunk$(raw_msg: $pbi$::RawMessage);
-          fn $serialize_thunk$(raw_msg: $pbi$::RawMessage) -> $pbr$::SerializedData;
-          fn $deserialize_thunk$(raw_msg: $pbi$::RawMessage, data: $pbr$::SerializedData) -> bool;
-          fn $copy_from_thunk$(dst: $pbi$::RawMessage, src: $pbi$::RawMessage);
-          fn $repeated_len_thunk$(raw: $pbi$::RawRepeatedField) -> usize;
-          fn $repeated_add_thunk$(raw: $pbi$::RawRepeatedField) -> $pbi$::RawMessage;
-          fn $repeated_get_thunk$(raw: $pbi$::RawRepeatedField, index: usize) -> $pbi$::RawMessage;
-          fn $repeated_get_mut_thunk$(raw: $pbi$::RawRepeatedField, index: usize) -> $pbi$::RawMessage;
-          fn $repeated_clear_thunk$(raw: $pbi$::RawRepeatedField);
-          fn $repeated_copy_from_thunk$(dst: $pbi$::RawRepeatedField, src: $pbi$::RawRepeatedField);
+          fn $new_thunk$() -> $pbr$::RawMessage;
+          fn $delete_thunk$(raw_msg: $pbr$::RawMessage);
+          fn $serialize_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::SerializedData;
+          fn $parse_thunk$(raw_msg: $pbr$::RawMessage, data: $pbr$::SerializedData) -> bool;
+          fn $copy_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
+          fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
+          fn $repeated_add_thunk$(raw: $pbr$::RawRepeatedField) -> $pbr$::RawMessage;
+          fn $repeated_get_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
+          fn $repeated_get_mut_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
+          fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
+          fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
         )rs");
       return;
 
@@ -162,17 +220,13 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           {
               {"new_thunk", ThunkName(ctx, msg, "new")},
-              {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"deserialize_thunk", ThunkName(ctx, msg, "parse")},
               {"minitable", UpbMinitableName(msg)},
           },
           R"rs(
-          fn $new_thunk$(arena: $pbi$::RawArena) -> $pbi$::RawMessage;
-          fn $serialize_thunk$(msg: $pbi$::RawMessage, arena: $pbi$::RawArena, len: &mut usize) -> $NonNull$<u8>;
-          fn $deserialize_thunk$(data: *const u8, size: usize, arena: $pbi$::RawArena) -> Option<$pbi$::RawMessage>;
+          fn $new_thunk$(arena: $pbr$::RawArena) -> $pbr$::RawMessage;
           /// Opaque wrapper for this message's MiniTable. The only valid way to
           /// reference this static is with `std::ptr::addr_of!(..)`.
-          static $minitable$: $pbr$::OpaqueMiniTable;
+          static $minitable$: $pbr$::upb_MiniTable;
       )rs");
       return;
   }
@@ -433,22 +487,22 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                  .WithSuffix("")},
             R"rs(
             extern "C" {
-                fn $map_new_thunk$() -> $pbi$::RawMap;
-                fn $map_free_thunk$(m: $pbi$::RawMap);
-                fn $map_clear_thunk$(m: $pbi$::RawMap);
-                fn $map_size_thunk$(m: $pbi$::RawMap) -> usize;
-                fn $map_insert_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: $pbi$::RawMessage) -> bool;
-                fn $map_get_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $pbi$::RawMessage) -> bool;
-                fn $map_remove_thunk$(m: $pbi$::RawMap, key: $ffi_key_t$, value: *mut $pbi$::RawMessage) -> bool;
-                fn $map_iter_thunk$(m: $pbi$::RawMap) -> $pbr$::UntypedMapIterator;
-                fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $pbi$::RawMessage);
+                fn $map_new_thunk$() -> $pbr$::RawMap;
+                fn $map_free_thunk$(m: $pbr$::RawMap);
+                fn $map_clear_thunk$(m: $pbr$::RawMap);
+                fn $map_size_thunk$(m: $pbr$::RawMap) -> usize;
+                fn $map_insert_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: $pbr$::RawMessage) -> bool;
+                fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $pbr$::RawMessage) -> bool;
+                fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $pbr$::RawMessage) -> bool;
+                fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
+                fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $pbr$::RawMessage);
             }
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
                     unsafe {
                         $pb$::Map::from_inner(
                             $pbi$::Private,
-                            $pbr$::InnerMapMut::new($pbi$::Private, $map_new_thunk$())
+                            $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
                         )
                     }
                 }
@@ -526,8 +580,8 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
           },
           R"rs(
             impl $pbr$::UpbTypeConversions for $Msg$ {
-                fn upb_type() -> $pbr$::UpbCType {
-                    $pbr$::UpbCType::Message
+                fn upb_type() -> $pbr$::CType {
+                    $pbr$::CType::Message
                 }
 
                 fn to_message_value(
@@ -536,7 +590,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 unsafe fn to_message_value_copy_if_required(
-                  arena: $pbi$::RawArena,
+                  arena: $pbr$::RawArena,
                   val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
                   // Self::to_message_value(val)
                   // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
@@ -563,29 +617,20 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
                     let arena = $pbr$::Arena::new();
-                    let raw_arena = arena.raw();
-                    std::mem::forget(arena);
+                    let raw = unsafe {
+                      $pbr$::upb_Map_New(
+                        arena.raw(),
+                        <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
+                        <Self as $pbr$::UpbTypeConversions>::upb_type())
+                    };
 
-                    unsafe {
-                        $pb$::Map::from_inner(
-                            $pbi$::Private,
-                            $pbr$::InnerMapMut::new(
-                                $pbi$::Private,
-                                $pbr$::upb_Map_New(
-                                    raw_arena,
-                                    <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                                    <Self as $pbr$::UpbTypeConversions>::upb_type()),
-                                raw_arena))
-                    }
+                    $pb$::Map::from_inner(
+                        $pbi$::Private,
+                        $pbr$::InnerMap::new($pbi$::Private, raw, arena))
                 }
 
-                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    // SAFETY:
-                    // - `map.raw_arena($pbi$::Private)` is a live `upb_Arena*`
-                    // - This function is only called once for `map` in `Drop`.
-                    unsafe {
-                        $pbr$::upb_Arena_Free(map.inner($pbi$::Private).raw_arena($pbi$::Private));
-                    }
+                unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
+                    // No-op: the memory will be dropped by the arena.
                 }
 
                 fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
@@ -670,8 +715,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
       {{"Msg", RsSafeName(msg.name())},
        {"Msg::new", [&] { MessageNew(ctx, msg); }},
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
-       {"Msg::deserialize", [&] { MessageDeserialize(ctx, msg); }},
+       {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
+       {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
        {"accessor_fns",
         [&] {
@@ -698,12 +744,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"nested_in_msg",
         [&] {
           // If we have no nested types, enums, or oneofs, bail out without
-          // emitting an empty mod SomeMsg_.
+          // emitting an empty mod some_msg.
           if (msg.nested_type_count() == 0 && msg.enum_type_count() == 0 &&
               msg.real_oneof_decl_count() == 0) {
             return;
           }
-          ctx.Emit({{"Msg", RsSafeName(msg.name())},
+          ctx.Emit({{"mod_name", RsSafeName(CamelToSnakeCase(msg.name()))},
                     {"nested_msgs",
                      [&] {
                        for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -723,13 +769,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                        }
                      }}},
                    R"rs(
-                 #[allow(non_snake_case)]
-                 pub mod $Msg$_ {
+                 pub mod $mod_name$ {
                    $nested_msgs$
                    $nested_enums$
 
                    $oneofs$
-                 }  // mod $Msg$_
+                 }  // mod $mod_name$
                 )rs");
         }},
        {"raw_arena_getter_for_message",
@@ -792,10 +837,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }}},
       R"rs(
         #[allow(non_camel_case_types)]
-        //~ TODO: Implement support for debug redaction
-        #[derive(Debug)]
         pub struct $Msg$ {
           inner: $pbr$::MessageInner
+        }
+
+        impl std::fmt::Debug for $Msg$ {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
+        }
+
+        impl std::default::Default for $Msg$ {
+          fn default() -> Self {
+            Self::new()
+          }
         }
 
         // SAFETY:
@@ -813,21 +868,27 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type Mut<'msg> = $Msg$Mut<'msg>;
         }
 
-        #[derive(Debug, Copy, Clone)]
+        #[derive(Copy, Clone)]
         #[allow(dead_code)]
         pub struct $Msg$View<'msg> {
-          msg: $pbi$::RawMessage,
+          msg: $pbr$::RawMessage,
           _phantom: $Phantom$<&'msg ()>,
+        }
+
+        impl std::fmt::Debug for $Msg$View<'_> {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         #[allow(dead_code)]
         impl<'msg> $Msg$View<'msg> {
           #[doc(hidden)]
-          pub fn new(_private: $pbi$::Private, msg: $pbi$::RawMessage) -> Self {
+          pub fn new(_private: $pbi$::Private, msg: $pbr$::RawMessage) -> Self {
             Self { msg, _phantom: $std$::marker::PhantomData }
           }
 
-          fn raw_msg(&self) -> $pbi$::RawMessage {
+          fn raw_msg(&self) -> $pbr$::RawMessage {
             self.msg
           }
 
@@ -931,11 +992,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         $repeated_impl$
         $map_value_impl$
 
-        #[derive(Debug)]
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
         pub struct $Msg$Mut<'msg> {
           inner: $pbr$::MutatorMessageRef<'msg>,
+        }
+
+        impl std::fmt::Debug for $Msg$Mut<'_> {
+          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            $Msg::debug$
+          }
         }
 
         #[allow(dead_code)]
@@ -944,7 +1010,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn from_parent(
                      _private: $pbi$::Private,
                      parent: $pbr$::MutatorMessageRef<'msg>,
-                     msg: $pbi$::RawMessage)
+                     msg: $pbr$::RawMessage)
             -> Self {
             Self {
               inner: $pbr$::MutatorMessageRef::from_parent(
@@ -957,7 +1023,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
 
-          fn raw_msg(&self) -> $pbi$::RawMessage {
+          #[deprecated = "This .or_default() is a no-op, usages can be safely removed"]
+          pub fn or_default(self) -> Self { self }
+
+          fn raw_msg(&self) -> $pbr$::RawMessage {
             self.inner.msg()
           }
 
@@ -1003,7 +1072,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $Msg::new$
           }
 
-          fn raw_msg(&self) -> $pbi$::RawMessage {
+          fn raw_msg(&self) -> $pbr$::RawMessage {
             self.inner.msg
           }
 
@@ -1016,8 +1085,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn serialize(&self) -> $pbr$::SerializedData {
             self.as_view().serialize()
           }
+          #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]
           pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
-            $Msg::deserialize$
+            self.clear_and_parse(data)
+          }
+          pub fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
+            $Msg::clear_and_parse$
+          }
+          pub fn parse(data: &[u8]) -> Result<Self, $pb$::ParseError> {
+            let mut msg = Self::new();
+            msg.clear_and_parse(data).map(|_| msg)
           }
 
           pub fn as_view(&self) -> $Msg$View {
@@ -1054,11 +1131,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
     ctx.printer().PrintRaw("\n");
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
       impl $Msg$ {
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbi$::RawMessage) -> Self {
+        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbr$::RawMessage) -> Self {
           Self { inner: $pbr$::MessageInner { msg } }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
-          self.raw_msg()
+        pub fn __unstable_leak_cpp_repr_grant_permission_to_break(self) -> $pbr$::RawMessage {
+          let s = std::mem::ManuallyDrop::new(self);
+          s.raw_msg()
         }
       }
 
@@ -1066,12 +1144,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         //~ msg is a &mut so that the borrow checker enforces exclusivity to
         //~ prevent constructing multiple Muts/Views from the same RawMessage.
         pub fn __unstable_wrap_cpp_grant_permission_to_break(
-            msg: &'a mut $pbi$::RawMessage) -> Self {
+            msg: &'a mut $pbr$::RawMessage) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
           }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&mut self) -> $pbi$::RawMessage {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> $pbr$::RawMessage {
           self.raw_msg()
         }
       }
@@ -1080,10 +1158,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         //~ msg is a & so that the caller can claim the message is live for the
         //~ corresponding lifetime.
         pub fn __unstable_wrap_cpp_grant_permission_to_break(
-          msg: &'a $pbi$::RawMessage) -> Self {
+          msg: &'a $pbr$::RawMessage) -> Self {
           Self::new($pbi$::Private, *msg)
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(&self) -> $pbi$::RawMessage {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> $pbr$::RawMessage {
           self.msg
         }
       }
@@ -1106,7 +1184,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"new_thunk", ThunkName(ctx, msg, "new")},
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-       {"deserialize_thunk", ThunkName(ctx, msg, "deserialize")},
+       {"parse_thunk", ThunkName(ctx, msg, "parse")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
        {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
@@ -1118,6 +1196,9 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
             GenerateThunksCc(ctx, *msg.nested_type(i));
+          }
+          for (int i = 0; i < msg.enum_type_count(); ++i) {
+            GenerateEnumThunksCc(ctx, *msg.enum_type(i));
           }
         }},
        {"accessor_thunks",
@@ -1143,7 +1224,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
           return google::protobuf::rust_internal::SerializeMsg(msg);
         }
-        bool $deserialize_thunk$($QualifiedMsg$* msg,
+        bool $parse_thunk$($QualifiedMsg$* msg,
                                  google::protobuf::rust_internal::SerializedData data) {
           return msg->ParseFromArray(data.data, data.len);
         }

@@ -131,28 +131,6 @@ std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
   return thunkName;
 }
 
-std::string RustModule(Context& ctx, const Descriptor* containing_type) {
-  std::vector<std::string> modules;
-
-  // Innermost to outermost order.
-  const Descriptor* parent = containing_type;
-  while (parent != nullptr) {
-    modules.push_back(absl::StrCat(parent->name(), "_"));
-    parent = parent->containing_type();
-  }
-
-  // Reverse the vector to get submodules in outer-to-inner order).
-  std::reverse(modules.begin(), modules.end());
-
-  // If there are any modules at all, push an empty string on the end so that
-  // we get the trailing ::
-  if (!modules.empty()) {
-    modules.push_back("");
-  }
-
-  return absl::StrJoin(modules, "::");
-}
-
 }  // namespace
 
 std::string ThunkName(Context& ctx, const FieldDescriptor& field,
@@ -179,32 +157,23 @@ std::string VTableName(const FieldDescriptor& field) {
   return absl::StrCat("__", absl::AsciiStrToUpper(field.name()), "_VTABLE");
 }
 
-std::string GetFullyQualifiedPath(Context& ctx, const Descriptor& msg) {
-  auto rel_path = GetCrateRelativeQualifiedPath(ctx, msg);
-  if (IsInCurrentlyGeneratingCrate(ctx, msg)) {
+template <typename Desc>
+std::string GetFullyQualifiedPath(Context& ctx, const Desc& desc) {
+  auto rel_path = GetCrateRelativeQualifiedPath(ctx, desc);
+  if (IsInCurrentlyGeneratingCrate(ctx, desc)) {
     return absl::StrCat("crate::", rel_path);
   }
-  return absl::StrCat(GetCrateName(ctx, *msg.file()), "::", rel_path);
+  return absl::StrCat(GetCrateName(ctx, *desc.file()), "::", rel_path);
 }
 
-std::string GetFullyQualifiedPath(Context& ctx, const EnumDescriptor& enum_) {
-  auto rel_path = GetCrateRelativeQualifiedPath(ctx, enum_);
-  if (IsInCurrentlyGeneratingCrate(ctx, enum_)) {
-    return absl::StrCat("crate::", rel_path);
-  }
-  return absl::StrCat(GetCrateName(ctx, *enum_.file()), "::", rel_path);
+template <typename Desc>
+std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc) {
+  return UnderscoreDelimitFullName(ctx, desc.full_name());
 }
 
-std::string GetUnderscoreDelimitedFullName(Context& ctx,
-                                           const Descriptor& msg) {
-  std::string result = msg.full_name();
-  absl::StrReplaceAll({{".", "_"}}, &result);
-  return result;
-}
-
-std::string GetUnderscoreDelimitedFullName(Context& ctx,
-                                           const EnumDescriptor& enum_) {
-  std::string result = enum_.full_name();
+std::string UnderscoreDelimitFullName(Context& ctx,
+                                      absl::string_view full_name) {
+  std::string result = std::string(full_name);
   absl::StrReplaceAll({{".", "_"}}, &result);
   return result;
 }
@@ -237,12 +206,39 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
 }
 
+std::string RustModuleForContainingType(Context& ctx,
+                                        const Descriptor* containing_type) {
+  std::vector<std::string> modules;
+
+  // Innermost to outermost order.
+  const Descriptor* parent = containing_type;
+  while (parent != nullptr) {
+    modules.push_back(RsSafeName(CamelToSnakeCase(parent->name())));
+    parent = parent->containing_type();
+  }
+
+  // Reverse the vector to get submodules in outer-to-inner order).
+  std::reverse(modules.begin(), modules.end());
+
+  // If there are any modules at all, push an empty string on the end so that
+  // we get the trailing ::
+  if (!modules.empty()) {
+    modules.push_back("");
+  }
+
+  return absl::StrJoin(modules, "::");
+}
+
 std::string RustModule(Context& ctx, const Descriptor& msg) {
-  return RustModule(ctx, msg.containing_type());
+  return RustModuleForContainingType(ctx, msg.containing_type());
 }
 
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_) {
-  return RustModule(ctx, enum_.containing_type());
+  return RustModuleForContainingType(ctx, enum_.containing_type());
+}
+
+std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
+  return RustModuleForContainingType(ctx, oneof.containing_type());
 }
 
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file) {
@@ -314,10 +310,6 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof) {
   return RsSafeName(SnakeToUpperCamelCase(oneof.name()));
-}
-
-std::string OneofMutEnumRsName(const OneofDescriptor& oneof) {
-  return SnakeToUpperCamelCase(oneof.name()) + "Mut";
 }
 
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof) {
@@ -427,22 +419,12 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
      /*cc_key_t=*/"bool", /*cc_ffi_key_t=*/"bool",
      /*cc_from_ffi_key_expr=*/"key",
      /*cc_to_ffi_key_expr=*/"cpp_key"},
-    {/*thunk_ident=*/"string",
+    {/*thunk_ident=*/"ProtoStr",
      /*rs_key_t=*/"$pb$::ProtoStr",
-     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
+     /*rs_ffi_key_t=*/"$pbr$::PtrAndLen",
      /*rs_to_ffi_key_expr=*/"key.as_bytes().into()",
      /*rs_from_ffi_key_expr=*/
      "$pb$::ProtoStr::from_utf8_unchecked(ffi_key.as_ref())",
-     /*cc_key_t=*/"std::string",
-     /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
-     /*cc_from_ffi_key_expr=*/
-     "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
-     "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"},
-    {/*thunk_ident=*/"bytes",
-     /*rs_key_t=*/"[u8]",
-     /*rs_ffi_key_t=*/"$pbi$::PtrAndLen",
-     /*rs_to_ffi_key_expr=*/"key.into()",
-     /*rs_from_ffi_key_expr=*/"ffi_key.as_ref()",
      /*cc_key_t=*/"std::string",
      /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
      /*cc_from_ffi_key_expr=*/

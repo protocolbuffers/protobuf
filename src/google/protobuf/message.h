@@ -149,6 +149,11 @@ class ReflectionVisit;
 class SwapFieldHelper;
 class CachedSize;
 struct TailCallTableInfo;
+
+namespace field_layout {
+enum TransformValidation : uint16_t;
+}  // namespace field_layout
+
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -221,6 +226,8 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 
 // Returns true if "message" is a descendant of "root".
 PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
+
+inline void MaybePoisonAfterClear(Message* root);
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -1018,15 +1025,23 @@ class PROTOBUF_EXPORT Reflection final {
 
   bool IsLazilyVerifiedLazyField(const FieldDescriptor* field) const;
   bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
+  internal::field_layout::TransformValidation GetLazyStyle(
+      const FieldDescriptor* field) const;
 
   bool IsSplit(const FieldDescriptor* field) const {
     return schema_.IsSplit(field);
   }
 
+  // Walks the message tree from "root" and poisons (under ASAN) the memory to
+  // force subsequent accesses to fail. Always calls Clear beforehand to clear
+  // strings, etc.
+  void MaybePoisonAfterClear(Message& root) const;
+
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
   friend class internal::ReflectionVisit;
   friend bool internal::IsDescendant(Message& root, const Message& message);
+  friend void internal::MaybePoisonAfterClear(Message* root);
 
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;
@@ -1308,6 +1323,14 @@ class PROTOBUF_EXPORT Reflection final {
                                              internal::ParseContext* ctx);
 };
 
+extern template void Reflection::SwapFieldsImpl<true>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
+extern template void Reflection::SwapFieldsImpl<false>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
 // Abstract interface for a factory for message objects.
 //
 // The thread safety for this class is implementation dependent, see comments
@@ -1418,7 +1441,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   (void)unused;
 
 #if PROTOBUF_RTTI
-  internal::StrongReference(T::default_instance());
+  internal::StrongReferenceToType<T>();
   return dynamic_cast<const T*>(from);
 #else
   bool ok = from != nullptr &&
@@ -1457,7 +1480,7 @@ T& DynamicCastToGenerated(Message& from) {
 // instance T and T is a type derived from base Message class.
 template <typename T>
 const T* DownCastToGenerated(const Message* from) {
-  internal::StrongReference(T::default_instance());
+  internal::StrongReferenceToType<T>();
   ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
       << T::default_instance().GetTypeName();
@@ -1505,7 +1528,7 @@ T& DownCastToGenerated(Message& from) {
 // of loops (on x86-64 it compiles into two "mov" instructions).
 template <typename T>
 void LinkMessageReflection() {
-  internal::StrongReference(T::default_instance);
+  internal::StrongReferenceToType<T>();
 }
 
 // =============================================================================
@@ -1611,6 +1634,16 @@ class RawMessageBase : public Message {
   virtual size_t SpaceUsedLong() const = 0;
 };
 
+inline void MaybePoisonAfterClear(Message* root) {
+  if (root == nullptr) return;
+#ifndef PROTOBUF_ASAN
+  root->Clear();
+#else
+  const Reflection* reflection = root->GetReflection();
+  reflection->MaybePoisonAfterClear(*root);
+#endif
+}
+
 }  // namespace internal
 
 template <typename Type>
@@ -1664,6 +1697,8 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   return MutableRepeatedFieldRef<T>(message, field);
 }
+
+
 }  // namespace protobuf
 }  // namespace google
 

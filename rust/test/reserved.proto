@@ -23,14 +23,16 @@ message Self {
   optional string false = 4;
 }
 
-message pub {
+message Pub {
   enum Self {
     enum = 0;
   }
 }
 
-message enum {
+message enum {}
+
+message Ref {
   oneof self {
-    .type.type.pub.Self const = 3;
+    .type.type.Pub.Self const = 3;
   }
 }

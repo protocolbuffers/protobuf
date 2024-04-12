@@ -69,10 +69,9 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
             pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
-                let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                 $pb$::Optional::new(
-                  $transform_view$,
-                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                  self.$field$(),
+                  self.has_$raw_field_name$()
                 )
               }
           )rs");
@@ -87,6 +86,14 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   self.$raw_field_name$_mut().set(val);
                 }
               )rs");
+           }},
+          {"hazzer",
+           [&] {
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                pub fn has_$raw_field_name$($view_self$) -> bool {
+                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                })rs");
            }},
           {"clearer",
            [&] {
@@ -135,7 +142,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              }
              if (field.has_presence()) {
                ctx.Emit(R"rs(
-            pub fn $raw_field_name$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
+            fn $raw_field_name$_mut(&mut self) -> $pb$::FieldEntry<'_, $proxied_type$> {
               let out = unsafe {
                 let has = $hazzer_thunk$(self.raw_msg());
                 $pbi$::new_vtable_field_entry(
@@ -150,7 +157,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           )rs");
              } else {
                ctx.Emit(R"rs(
-              pub fn $raw_field_name$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
+              fn $raw_field_name$_mut(&mut self) -> $pb$::Mut<'_, $proxied_type$> {
                 unsafe {
                   <$pb$::Mut<$proxied_type$>>::from_inner(
                     $pbi$::Private,
@@ -170,6 +177,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
         $getter$
         $getter_opt$
         $setter$
+        $hazzer$
         $clearer$
         $vtable$
         $field_mutator_getter$
@@ -186,15 +194,15 @@ void SingularString::InExternC(Context& ctx,
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(R"rs(
-                     fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
-                     fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+                     fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
+                     fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
                    )rs");
                }
              }}},
            R"rs(
           $with_presence_fields_thunks$
-          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $pbi$::PtrAndLen;
-          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $pbi$::PtrAndLen);
+          fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::PtrAndLen;
+          fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $pbr$::PtrAndLen);
         )rs");
 }
 

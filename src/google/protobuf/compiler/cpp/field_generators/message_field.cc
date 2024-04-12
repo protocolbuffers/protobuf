@@ -15,6 +15,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -72,9 +73,8 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
       {"_weak", weak ? "_weak" : ""},
       Sub("StrongRef",
           !weak ? ""
-                : absl::Substitute("::google::protobuf::internal::StrongReference("
-                                   "reinterpret_cast<const $0&>($1));\n",
-                                   qualified_type, default_ref))
+                : absl::StrCat(
+                      StrongReferenceToType(field->message_type(), opts), ";"))
           .WithSuffix(";"),
   };
 }
@@ -593,10 +593,27 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void OneofMessage::GenerateClearingCode(io::Printer* p) const {
-  p->Emit(R"cc(
-    if (GetArena() == nullptr) {
-      delete $field_$;
-    })cc");
+  p->Emit({{"poison_or_clear",
+            [&] {
+              if (HasDescriptorMethods(field_->file(), options_)) {
+                p->Emit(R"cc(
+                  $pbi$::MaybePoisonAfterClear($field_$);
+                )cc");
+              } else {
+                p->Emit(R"cc(
+                  if ($field_$ != nullptr) {
+                    $field_$->Clear();
+                  }
+                )cc");
+              }
+            }}},
+          R"cc(
+            if (GetArena() == nullptr) {
+              delete $field_$;
+            } else if ($pbi$::DebugHardenClearOneofMessageOnArena()) {
+              $poison_or_clear$;
+            }
+          )cc");
 }
 
 void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {
