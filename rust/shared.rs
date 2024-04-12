@@ -68,6 +68,8 @@ mod vtable;
 #[derive(Debug, Clone)]
 pub struct ParseError;
 
+impl std::error::Error for ParseError {}
+
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Couldn't deserialize given bytes into a proto")
