@@ -716,11 +716,11 @@ module BasicTest
       message.freeze
 
       assert_raise FrozenError do
-        message.map_string_msg["message"].foo = "bar"
+        message.map_string_msg["message"].foo = nested_message_2
       end
 
       assert_raise FrozenError do
-        message.repeated_msg[0].foo = "bar"
+        message.repeated_msg[0].foo = nested_message_2
       end
     end
 
