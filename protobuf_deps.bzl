@@ -69,29 +69,27 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_cc"):
-        _github_archive(
+        http_archive(
             name = "rules_cc",
-            repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",  # 0.0.9
-            sha256 = "5f862a44bbd032e1b48ed53c9c211ba2a1da60e10c5baa01c97369c249299ecb",
+            urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz"],
+            sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
+            strip_prefix = "rules_cc-0.0.9",
         )
 
     if not native.existing_rule("rules_java"):
         http_archive(
             name = "rules_java",
-            url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
-            sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
+            urls = ["https://github.com/bazelbuild/rules_java/releases/download/7.3.2/rules_java-7.3.2.tar.gz"],
+            sha256 = "3121a00588b1581bd7c1f9b550599629e5adcc11ba9c65f482bbd5cfe47fdf30",
         )
 
     # TODO: remove after toolchain types are moved to protobuf
     if not native.existing_rule("rules_proto"):
         http_archive(
             name = "rules_proto",
-            sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
-            strip_prefix = "rules_proto-5.3.0-21.7",
-            urls = [
-                "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
-            ],
+            sha256 = "71fdbed00a0709521ad212058c60d13997b922a5d01dbfd997f0d57d689e7b67",
+            strip_prefix = "rules_proto-6.0.0-rc2",
+            url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc2/rules_proto-6.0.0-rc2.tar.gz",
         )
 
     if not native.existing_rule("rules_python"):
@@ -103,11 +101,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_jvm_external"):
-        _github_archive(
+        http_archive(
             name = "rules_jvm_external",
-            repo = "https://github.com/bazelbuild/rules_jvm_external",
-            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            strip_prefix = "rules_jvm_external-5.3",
+            sha256 = "d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac",
+            url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/5.3/rules_jvm_external-5.3.tar.gz",
         )
 
     if not native.existing_rule("rules_pkg"):
