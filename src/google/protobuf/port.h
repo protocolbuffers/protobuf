@@ -249,6 +249,10 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
+// Returns true if pointers are 8B aligned, leaving least significant 3 bits
+// available.
+inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
 // chosen to give a better benchmark results. E.g. this is ~20%
