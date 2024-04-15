@@ -70,6 +70,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       uint16_t coded_tag;
       uint8_t hasbit_idx;
       uint8_t aux_idx;
+
+      // For internal caching.
       float presence_probability;
     };
     struct NonField {
@@ -92,6 +94,9 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     int inlined_string_idx;
     uint16_t aux_idx;
     uint16_t type_card;
+
+    // For internal caching.
+    cpp::Utf8CheckMode utf8_check_mode : 8;
   };
   std::vector<FieldEntryInfo> field_entries;
 

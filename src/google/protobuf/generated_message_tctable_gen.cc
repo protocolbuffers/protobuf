@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <string>
 #include <utility>
@@ -19,6 +20,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
@@ -235,14 +237,14 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
       break;
     case FieldDescriptor::TYPE_STRING:
-      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
-        case internal::cpp::Utf8CheckMode::kStrict:
+      switch (entry.utf8_check_mode) {
+        case cpp::Utf8CheckMode::kStrict:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
           break;
-        case internal::cpp::Utf8CheckMode::kVerify:
+        case cpp::Utf8CheckMode::kVerify:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastS);
           break;
-        case internal::cpp::Utf8CheckMode::kNone:
+        case cpp::Utf8CheckMode::kNone:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
           break;
       }
@@ -463,69 +465,81 @@ void PopulateFastFields(
   }
 }
 
-// We only need field names for reporting UTF-8 parsing errors, so we only
-// emit them for string fields with Utf8 transform specified.
-bool NeedsFieldNameForTable(const FieldDescriptor* field, bool is_lite) {
-  return cpp::GetUtf8CheckMode(field, is_lite) != cpp::Utf8CheckMode::kNone;
-}
-
-absl::string_view FieldNameForTable(
-    const TailCallTableInfo::FieldEntryInfo& entry,
-    const TailCallTableInfo::MessageOptions& message_options) {
-  if (NeedsFieldNameForTable(entry.field, message_options.is_lite)) {
-    return entry.field->name();
-  }
-  return "";
-}
-
 std::vector<uint8_t> GenerateFieldNames(
     const Descriptor* descriptor,
-    const std::vector<TailCallTableInfo::FieldEntryInfo>& entries,
+    const absl::Span<const TailCallTableInfo::FieldEntryInfo> entries,
     const TailCallTableInfo::MessageOptions& message_options,
     absl::Span<const TailCallTableInfo::FieldOptions> fields) {
-  static constexpr int kMaxNameLength = 255;
-  std::vector<uint8_t> out;
+  static constexpr size_t kMaxNameLength = 255;
 
-  std::vector<absl::string_view> names;
-  bool found_needed_name = false;
-  for (const auto& entry : entries) {
-    names.push_back(FieldNameForTable(entry, message_options));
-    if (!names.back().empty()) found_needed_name = true;
-  }
+  size_t field_name_total_size = 0;
+  const auto for_each_field_name = [&](auto with_name, auto no_name) {
+    for (const auto& entry : entries) {
+      // We only need field names for reporting UTF-8 parsing errors, so we only
+      // emit them for string fields with Utf8 transform specified.
+      if (entry.utf8_check_mode != cpp::Utf8CheckMode::kNone) {
+        with_name(absl::string_view(entry.field->name()));
+      } else {
+        no_name();
+      }
+    }
+  };
+
+  for_each_field_name([&](auto name) { field_name_total_size += name.size(); },
+                      [] {});
 
   // No names needed. Omit the whole table.
-  if (!found_needed_name) {
-    return out;
+  if (field_name_total_size == 0) {
+    return {};
   }
+
+  const absl::string_view message_name = descriptor->full_name();
+  uint8_t message_name_size =
+      static_cast<uint8_t>(std::min(message_name.size(), kMaxNameLength));
+  size_t total_byte_size =
+      ((/* message */ 1 + /* fields */ entries.size() + /* round up */ 7) &
+       ~7) +
+      message_name_size + field_name_total_size;
+
+  std::vector<uint8_t> out_vec(total_byte_size, uint8_t{0});
+  uint8_t* out_it = out_vec.data();
 
   // First, we output the size of each string, as an unsigned byte. The first
   // string is the message name.
   int count = 1;
-  out.push_back(std::min(static_cast<int>(descriptor->full_name().size()),
-                         kMaxNameLength));
-  for (auto field_name : names) {
-    out.push_back(field_name.size());
-    ++count;
-  }
-  while (count & 7) {  // align to an 8-byte boundary
-    out.push_back(0);
-    ++count;
-  }
+  *out_it++ = message_name_size;
+  for_each_field_name(
+      [&](auto name) {
+        *out_it++ = static_cast<uint8_t>(name.size());
+        ++count;
+      },
+      [&] {
+        ++out_it;
+        ++count;
+      });
+  // align to an 8-byte boundary
+  out_it += -count & 7;
+
+  const auto append = [&](absl::string_view str) {
+    if (!str.empty()) {
+      memcpy(out_it, str.data(), str.size());
+      out_it += str.size();
+    }
+  };
+
   // The message name is stored at the beginning of the string
-  std::string message_name = descriptor->full_name();
   if (message_name.size() > kMaxNameLength) {
     static constexpr int kNameHalfLength = (kMaxNameLength - 3) / 2;
-    message_name = absl::StrCat(
-        message_name.substr(0, kNameHalfLength), "...",
-        message_name.substr(message_name.size() - kNameHalfLength));
+    append(message_name.substr(0, kNameHalfLength));
+    append("...");
+    append(message_name.substr(message_name.size() - kNameHalfLength));
+  } else {
+    append(message_name);
   }
-  out.insert(out.end(), message_name.begin(), message_name.end());
   // Then we output the actual field names
-  for (auto field_name : names) {
-    out.insert(out.end(), field_name.begin(), field_name.end());
-  }
+  for_each_field_name([&](auto name) { append(name); }, [] {});
 
-  return out;
+  return out_vec;
 }
 
 TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
@@ -593,7 +607,8 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
 uint16_t MakeTypeCardForField(
     const FieldDescriptor* field, bool has_hasbit,
     const TailCallTableInfo::MessageOptions& message_options,
-    const TailCallTableInfo::FieldOptions& options) {
+    const TailCallTableInfo::FieldOptions& options,
+    cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
   if (has_hasbit) {
@@ -696,14 +711,14 @@ uint16_t MakeTypeCardForField(
       type_card |= fl::kBytes;
       break;
     case FieldDescriptor::TYPE_STRING: {
-      switch (internal::cpp::GetUtf8CheckMode(field, message_options.is_lite)) {
-        case internal::cpp::Utf8CheckMode::kStrict:
+      switch (utf8_check_mode) {
+        case cpp::Utf8CheckMode::kStrict:
           type_card |= fl::kUtf8String;
           break;
-        case internal::cpp::Utf8CheckMode::kVerify:
+        case cpp::Utf8CheckMode::kVerify:
           type_card |= fl::kRawString;
           break;
-        case internal::cpp::Utf8CheckMode::kNone:
+        case cpp::Utf8CheckMode::kNone:
           type_card |= fl::kBytes;
           break;
       }
@@ -881,8 +896,11 @@ TailCallTableInfo::TailCallTableInfo(
     auto* field = options.field;
     field_entries.push_back({field, options.has_bit_index});
     auto& entry = field_entries.back();
-    entry.type_card = MakeTypeCardForField(field, entry.hasbit_idx >= 0,
-                                           message_options, options);
+    entry.utf8_check_mode =
+        cpp::GetUtf8CheckMode(field, message_options.is_lite);
+    entry.type_card =
+        MakeTypeCardForField(field, entry.hasbit_idx >= 0, message_options,
+                             options, entry.utf8_check_mode);
 
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->type() == FieldDescriptor::TYPE_GROUP) {
