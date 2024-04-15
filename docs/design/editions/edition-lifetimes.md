@@ -201,50 +201,54 @@ is to implement this ASAP, before we start rolling out 2024.
 #### Runtimes with Dynamic Messages
 
 None of the generators where editions have already been rolled out require any
-changes. We will need to add validation layers to runtimes that support dynamic
-messages though, to make sure there are no invalid descriptors floating around.
-Any runtime that supports dynamic messages should have reflection, and the same
-reflection-based algorithm will need to be duplicated everywhere. For each
-`FeatureSet` specified on a descriptor:
+changes. We likely will want to add validation layers to runtimes that support
+dynamic messages though, to make sure there are no invalid descriptors floating
+around. Since they all have access to protoc's compiled defaults IR, we can pack
+as much information in there as possible to minimize duplication. Specifically,
+we will add two new `FeatureSet` fields to `FeatureSetEditionDefault` in
+addition to the existing `features` field.
 
-```
-absl::Status Validate(Edition edition, Message& features) {
-  std::vector<const FieldDescriptor*> fields;
-  features.GetReflection()->ListFields(features, &fields);
-  for (const FieldDescriptor* field : fields) {
-    // Recurse into message extension.
-    if (field->is_extension() &&
-        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      CollectLifetimeResults(
-          edition, message.GetReflection()->GetMessage(message, field),
-          results);
-      continue;
-    }
+*   overridable_features - The default values that users **are** allowed to
+    override in a given edition
+*   fixed_features - The default values that users **are not** allowed to
+    override in a given edition
 
-    // Skip fields that don't have feature support specified.
-    if (!field->options().has_feature_support()) continue;
+We will keep the existing `features` field as a migration tool, to avoid
+breaking plugins and runtimes that already use it to calculate defaults. We can
+strip it from OSS prior to the 27.0 release though, and remove it once everyone
+has been migrated.
 
-    // Check lifetime constrains
-    const FieldOptions::FeatureSupport& support =
-        field->options().feature_support();
-    if (edition < support.edition_introduced()) {
-      return absl::FailedPrecondition(absl::StrCat(
-          "Feature ", field->full_name(), " wasn't introduced until edition ",
-          support.edition_introduced()));
-    }
-    if (support.has_edition_removed() && edition >= support.edition_removed()) {
-      return absl::FailedPrecondition(absl::StrCat(
-          "Feature ", field->full_name(), " has been removed in edition ",
-          support.edition_removed()));
-    } else if (support.has_edition_deprecated() &&
-               edition >= support.edition_deprecated()) {
-      ABSL_LOG(WARNING) << absl::StrCat(
-          "Feature ", field->full_name(), " has been deprecated in edition ",
-          support.edition_deprecated(), ": ", support.deprecation_warning());
-    }
-  }
-}
-```
+In order to calculate the full defaults of any edition, each language will
+simply need to merge the two `FeatureSet` objects. The advantage to splitting
+them means that we can fairly easily implement validation checks in every
+language that needs it for dynamic messages. The algorithm is as follows, for
+some incoming unresolved `FeatureSet` user_features:
+
+1.  Strip all unknown fields from user_features
+2.  Strip all extensions from user_features that the runtime doesn't handle
+3.  merged_features := user_features.Merge(overridable_defaults)
+4.  assert merged_features == overridable_defaults
+
+This will work as long as every feature is a scalar value (making merge a simple
+override). We already ban oneof and repeated features, and we plan to ban
+message features before the OSS release.
+
+Note, that there is a slight gap here in that we perform no validation for
+features owned by *other* languages. Dynamic messages in language A will naively
+be allowed to specify whatever language B features they want. This isn't
+optimal, but it is in line with our current situation where validation of
+dynamic messages is substantially more permissive than descriptors processed by
+protoc.
+
+On the other hand, owners of language A will have the *option* of easily adding
+validation for language B's features, without having to reimplement the
+reflective inspection of imports that protoc does. This can be done by simply
+adding those features to the compilation of the defaults IR, and then not
+stripping those extensions during validation. This will have the effect of tying
+the edition support window of A to that of B though, and A won't be able to
+extend its maximum edition until B does (at least for dynamic messages). For
+generators in a monorepo like Protobuf's this seems fine, but may not be
+desirable elsewhere.
 
 ### Patching Old Editions
 
@@ -302,61 +306,68 @@ problems listed in the overview of this topic.
 *   High cognitive overhead for our users. They'd need to track the progress of
     every feature individually across releases.
 
-### "Simplified" Algorithm for Dynamic Messages
-
-**Below is from the original proposal, and has been replaced with a simpler and
-more accurate reflection-based approach.**
+### Full Validation for Dynamic Messages
 
 None of the generators where editions have already been rolled out require any
-changes. We likely will want to add validation layers to runtimes that support
-dynamic messages though, to make sure there are no invalid descriptors floating
-around. Since they all have access to protoc's compiled defaults IR, we can pack
-as much information in there as possible to minimize duplication. Specifically,
-we will add two new `FeatureSet` fields to `FeatureSetEditionDefault` in
-addition to the existing `features` field.
+changes. We will need to add validation layers to runtimes that support dynamic
+messages though, to make sure there are no invalid descriptors floating around.
+Any runtime that supports dynamic messages should have reflection, and the same
+reflection-based algorithm will need to be duplicated everywhere. For each
+`FeatureSet` specified on a descriptor:
 
-*   overridable_features - The default values that users **are** allowed to
-    override in a given edition
-*   fixed_features - The default values that users **are not** allowed to
-    override in a given edition
+```
+absl::Status Validate(Edition edition, Message& features) {
+  std::vector<const FieldDescriptor*> fields;
+  features.GetReflection()->ListFields(features, &fields);
+  for (const FieldDescriptor* field : fields) {
+    // Recurse into message extension.
+    if (field->is_extension() &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      CollectLifetimeResults(
+          edition, message.GetReflection()->GetMessage(message, field),
+          results);
+      continue;
+    }
 
-We will keep the existing `features` field as a migration tool, to avoid
-breaking plugins and runtimes that already use it to calculate defaults. We can
-strip it from OSS prior to the 27.0 release though, and remove it once everyone
-has been migrated.
+    // Skip fields that don't have feature support specified.
+    if (!field->options().has_feature_support()) continue;
 
-In order to calculate the full defaults of any edition, each language will
-simply need to merge the two `FeatureSet` objects. The advantage to splitting
-them means that we can fairly easily implement validation checks in every
-language that needs it for dynamic messages. The algorithm is as follows, for
-some incoming unresolved `FeatureSet` user_features:
+    // Check lifetime constrains
+    const FieldOptions::FeatureSupport& support =
+        field->options().feature_support();
+    if (edition < support.edition_introduced()) {
+      return absl::FailedPrecondition(absl::StrCat(
+          "Feature ", field->full_name(), " wasn't introduced until edition ",
+          support.edition_introduced()));
+    }
+    if (support.has_edition_removed() && edition >= support.edition_removed()) {
+      return absl::FailedPrecondition(absl::StrCat(
+          "Feature ", field->full_name(), " has been removed in edition ",
+          support.edition_removed()));
+    } else if (support.has_edition_deprecated() &&
+               edition >= support.edition_deprecated()) {
+      ABSL_LOG(WARNING) << absl::StrCat(
+          "Feature ", field->full_name(), " has been deprecated in edition ",
+          support.edition_deprecated(), ": ", support.deprecation_warning());
+    }
+  }
+}
+```
 
-1.  Strip all unknown fields from user_features within our extensible range
-    (fields 1000+)
-2.  Strip all extensions from user_features that the runtime doesn't handle
-3.  merged_features := user_features.Merge(overridable_defaults)
-4.  assert merged_features == overridable_defaults
+#### Pros
 
-This will work as long as every feature is a scalar value (making merge a simple
-override). We already ban oneof and repeated features, and we plan to ban
-message features before the OSS release.
+*   Prevents any feature lifetime violations for any language, in any language
+*   Easier to understand
+*   Less error-prone
+*   Easy to test with fake features
 
-Note, that there is a slight gap here in that we perform no validation for
-features owned by *other* languages. Dynamic messages in language A will naively
-be allowed to specify whatever language B features they want. This isn't
-optimal, but it is in line with our current situation where validation of
-dynamic messages is substantially more permissive than descriptors processed by
-protoc.
+#### Cons
 
-On the other hand, owners of language A will have the *option* of easily adding
-validation for language B's features, without having to reimplement the
-reflective inspection of imports that protoc does. This can be done by simply
-adding those features to the compilation of the defaults IR, and then not
-stripping those extensions during validation. This will have the effect of tying
-the edition support window of A to that of B though, and A won't be able to
-extend its maximum edition until B does (at least for dynamic messages). For
-generators in a monorepo like Protobuf's this seems fine, but may not be
-desirable elsewhere.
+*   Only works post-build, which requires a huge amount of code in every
+    language to walk the descriptor tree applying these checks
+*   Performance concerns, especially in upb
+*   Duplicates protoc validation, even though most languages perform
+    significantly looser checks on dynamic messages
 
 #### Pros
 
