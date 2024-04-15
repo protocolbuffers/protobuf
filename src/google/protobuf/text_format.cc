@@ -28,6 +28,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -40,7 +41,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -489,6 +489,70 @@ class TextFormat::Parser::ParserImpl {
   }
 
 
+  absl::string_view GetNamedExtensionName(
+      const google::protobuf::Descriptor::ExtensionRange* range) {
+    // A named extension field_name annotation is only relevant if the range
+    // size is 1; otherwise it would be impossible to guarantee that the range
+    // resolves to a specific extension. This should be enforced at build time.
+    if (range->start_number() == range->end_number() - 1) {
+      if (range->options().metadata().has_name()) {
+        ReportWarning(
+            absl::StrCat("GHM: return GetNamedExtensionName extension_name \"",
+                         range->options().metadata().name()));
+        return range->options().metadata().name();
+      }
+    }
+    return absl::string_view();
+  }
+
+  absl::string_view GetFieldName(absl::string_view full_name) {
+    size_t pos = full_name.find('.');
+    absl::string_view extension;
+
+    if (pos != std::string::npos) {
+      extension = full_name.substr(pos + 1);
+    } else {
+      extension = full_name;
+    }
+    return extension;
+  }
+
+  const google::protobuf::Descriptor::ExtensionRange*
+  FindNamedExtensionRangeByNameIgnoreCase(const google::protobuf::Descriptor* descriptor,
+                                          absl::string_view name) {
+    // We don't bother looking for multiple names that match.
+    // Protos with duplicate named extensions (case insensitively) do not
+    // compile in c++ or java, so we don't worry about them.
+    // TODO: b/77601441: Consider caching named extension ranges per
+    // type because iterating through all ranges may potentially be expensive.
+    for (int i = 0; i < descriptor->extension_range_count(); ++i) {
+      const google::protobuf::Descriptor::ExtensionRange* range =
+          descriptor->extension_range(i);
+      absl::string_view extension_name = GetNamedExtensionName(range);
+      if (!extension_name.empty() &&
+          absl::EqualsIgnoreCase(extension_name,
+                                 GetFieldName(absl::string_view(name)))) {
+        return range;
+      }
+    }
+    return nullptr;
+  }
+
+  // Returns typed extension type name if the extension range has a valid
+  // typed extension attribute; otherwise returns an empty string.
+  absl::string_view GetTypedExtensionTypeName(
+      const google::protobuf::Descriptor::ExtensionRange* range) {
+    if (range->start_number() == range->end_number() - 1) {
+      if (range->options().metadata().has_type()) {
+        ReportWarning(absl::StrCat(
+            "GHM: return GetTypedExtensionTypeName extension_type \"",
+            range->options().metadata().type()));
+        return range->options().metadata().type();
+      }
+    }
+    return absl::string_view();
+  }
+
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
   bool ConsumeField(Message* message) {
@@ -608,6 +672,17 @@ class TextFormat::Parser::ParserImpl {
         if (field == nullptr) {
           reserved_field = descriptor->IsReservedName(field_name);
         }
+      }
+      const google::protobuf::Descriptor::ExtensionRange* range =
+          FindNamedExtensionRangeByNameIgnoreCase(descriptor, field_name);
+      if (range != nullptr) {
+        ReportError(absl::StrCat("Range is not nullptr \"", field_name,
+                                 range->start_number(), "\"."));
+        field = descriptor->file()->pool()->FindExtensionByNumber(
+            descriptor, range->start_number());
+        ReportError(absl::StrCat("Field from range\"",
+                                 field->PrintableNameForExtension(), "|",
+                                 range->start_number(), "\"."));
       }
 
       if (field == nullptr && !reserved_field) {

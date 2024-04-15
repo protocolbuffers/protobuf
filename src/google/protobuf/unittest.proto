@@ -212,7 +212,16 @@ enum TestReservedEnumFields {
 }
 
 message TestAllExtensions {
-  extensions 1 to max;
+  extensions 2 to 170;
+  extensions 172 to max;
+  extensions 1 [metadata = {
+    type: "int32",
+    name: "optional_int32_extension",
+  }];
+  extensions 171 [metadata = {
+    type: "protobuf_unittest.ForeignMessage",
+    name: "foreign_message_extension",
+  }];
 }
 
 extend TestAllExtensions {
@@ -232,6 +241,8 @@ extend TestAllExtensions {
   optional     bool optional_bool_extension     = 13;
   optional   string optional_string_extension   = 14;
   optional    bytes optional_bytes_extension    = 15;
+
+  optional protobuf_unittest.ForeignMessage foreign_message_extension = 171;
 
   optional group OptionalGroup_extension = 16 {
     optional int32 a = 17;

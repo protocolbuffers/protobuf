@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
@@ -39,6 +40,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
@@ -979,6 +981,29 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
                                     proto_text_format_.size());
   TextFormat::Parse(&input_stream, &proto_);
   TestUtil::ExpectAllExtensionsSet(proto_);
+}
+
+TEST_F(TextFormatExtensionsTest, ParseExtensionPrimitiveWithMetaDataFields) {
+  std::string parse_string =
+      absl::Substitute("optional_int32_extension: $0", 101);
+  io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
+  TextFormat::Parse(&input_stream, &proto_);
+  EXPECT_TRUE(proto_.HasExtension(unittest::optional_int32_extension));
+  EXPECT_EQ(101, proto_.GetExtension(unittest::optional_int32_extension));
+}
+
+TEST_F(TextFormatExtensionsTest, ParseExtensionMessageWithMetaDataFields) {
+  const absl::string_view parse_string = R"pb(
+    foreign_message_extension { c: 600 d: 674 }
+  )pb";
+  io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
+  TextFormat::Parse(&input_stream, &proto_);
+  EXPECT_TRUE(proto_.HasExtension(unittest::foreign_message_extension));
+  EXPECT_EQ(600, proto_.GetExtension(unittest::foreign_message_extension).c());
+  EXPECT_EQ(674, proto_.GetExtension(unittest::foreign_message_extension).d());
+  EXPECT_TRUE(proto_.GetExtension(unittest::foreign_message_extension).has_c());
+  proto_.MutableExtension(unittest::foreign_message_extension)->set_c(119);
+  EXPECT_EQ(119, proto_.GetExtension(unittest::foreign_message_extension).c());
 }
 
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
