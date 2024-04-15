@@ -248,6 +248,148 @@ TEST(FeatureResolverTest, DefaultsMiddleEdition) {
   EXPECT_TRUE(ext.bool_field_feature());
 }
 
+TEST(FeatureResolverTest, CompileDefaultsFixedFutureFeature) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_PROTO2,
+                                       EDITION_2023);
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults_size(), 3);
+
+  const auto& edition_defaults = defaults->defaults(2);
+  ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
+
+  EXPECT_TRUE(
+      edition_defaults.features().GetExtension(pb::test).has_future_feature());
+  EXPECT_EQ(edition_defaults.features().GetExtension(pb::test).future_feature(),
+            pb::VALUE1);
+  EXPECT_TRUE(edition_defaults.fixed_features()
+                  .GetExtension(pb::test)
+                  .has_future_feature());
+  EXPECT_EQ(
+      edition_defaults.fixed_features().GetExtension(pb::test).future_feature(),
+      pb::VALUE1);
+  EXPECT_FALSE(edition_defaults.overridable_features()
+                   .GetExtension(pb::test)
+                   .has_future_feature());
+}
+
+TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_PROTO2,
+                                       EDITION_2024);
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults_size(), 4);
+
+  const auto& edition_defaults = defaults->defaults(3);
+  ASSERT_EQ(edition_defaults.edition(), EDITION_2024);
+
+  EXPECT_TRUE(
+      edition_defaults.features().GetExtension(pb::test).has_removed_feature());
+  EXPECT_EQ(
+      edition_defaults.features().GetExtension(pb::test).removed_feature(),
+      pb::VALUE3);
+  EXPECT_TRUE(edition_defaults.fixed_features()
+                  .GetExtension(pb::test)
+                  .has_removed_feature());
+  EXPECT_EQ(edition_defaults.fixed_features()
+                .GetExtension(pb::test)
+                .removed_feature(),
+            pb::VALUE3);
+  EXPECT_FALSE(edition_defaults.overridable_features()
+                   .GetExtension(pb::test)
+                   .has_removed_feature());
+}
+
+TEST(FeatureResolverTest, CompileDefaultsOverridableNoSupportWindow) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_PROTO2,
+                                       EDITION_2023);
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults_size(), 3);
+
+  const auto& edition_defaults = defaults->defaults(2);
+  ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
+
+  EXPECT_TRUE(edition_defaults.features()
+                  .GetExtension(pb::test)
+                  .has_no_support_window_feature());
+  EXPECT_EQ(edition_defaults.features()
+                .GetExtension(pb::test)
+                .no_support_window_feature(),
+            pb::VALUE2);
+  EXPECT_FALSE(edition_defaults.fixed_features()
+                   .GetExtension(pb::test)
+                   .has_no_support_window_feature());
+  EXPECT_TRUE(edition_defaults.overridable_features()
+                  .GetExtension(pb::test)
+                  .has_no_support_window_feature());
+  EXPECT_EQ(edition_defaults.overridable_features()
+                .GetExtension(pb::test)
+                .no_support_window_feature(),
+            pb::VALUE2);
+}
+
+TEST(FeatureResolverTest, CompileDefaultsOverridableEmptySupportWindow) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_PROTO2,
+                                       EDITION_2023);
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults_size(), 3);
+
+  const auto& edition_defaults = defaults->defaults(2);
+  ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
+
+  EXPECT_TRUE(edition_defaults.features()
+                  .GetExtension(pb::test)
+                  .has_empty_support_window_feature());
+  EXPECT_EQ(edition_defaults.features()
+                .GetExtension(pb::test)
+                .empty_support_window_feature(),
+            pb::VALUE2);
+  EXPECT_FALSE(edition_defaults.fixed_features()
+                   .GetExtension(pb::test)
+                   .has_empty_support_window_feature());
+  EXPECT_TRUE(edition_defaults.overridable_features()
+                  .GetExtension(pb::test)
+                  .has_empty_support_window_feature());
+  EXPECT_EQ(edition_defaults.overridable_features()
+                .GetExtension(pb::test)
+                .empty_support_window_feature(),
+            pb::VALUE2);
+}
+
+TEST(FeatureResolverTest, CompileDefaultsOverridable) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_PROTO2,
+                                       EDITION_2023);
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults_size(), 3);
+
+  const auto& edition_defaults = defaults->defaults(2);
+  ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
+
+  EXPECT_TRUE(
+      edition_defaults.features().GetExtension(pb::test).has_removed_feature());
+  EXPECT_EQ(
+      edition_defaults.features().GetExtension(pb::test).removed_feature(),
+      pb::VALUE2);
+  EXPECT_FALSE(edition_defaults.fixed_features()
+                   .GetExtension(pb::test)
+                   .has_removed_feature());
+  EXPECT_TRUE(edition_defaults.overridable_features()
+                  .GetExtension(pb::test)
+                  .has_removed_feature());
+  EXPECT_EQ(edition_defaults.overridable_features()
+                .GetExtension(pb::test)
+                .removed_feature(),
+            pb::VALUE2);
+}
+
 TEST(FeatureResolverTest, CreateFromUnsortedDefaults) {
   auto valid_defaults = FeatureResolver::CompileDefaults(
       FeatureSet::descriptor(), {}, EDITION_PROTO2, EDITION_2023);
@@ -1231,10 +1373,34 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: LEGACY_BEST_EFFORT
         [pb.test] { file_feature: VALUE1 }
       }
+      overridable_features {
+        [pb.test] {}
+      }
+      fixed_features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        [pb.test] { file_feature: VALUE1 }
+      }
     }
     defaults {
       edition: EDITION_PROTO3
       features {
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { file_feature: VALUE1 }
+      }
+      overridable_features {
+        [pb.test] {}
+      }
+      fixed_features {
         field_presence: IMPLICIT
         enum_type: OPEN
         repeated_field_encoding: PACKED
@@ -1255,6 +1421,18 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: ALLOW
         [pb.test] { file_feature: VALUE2 }
       }
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { file_feature: VALUE2 }
+      }
+      fixed_features {
+        [pb.test] {}
+      }
     }
     defaults {
       edition: EDITION_99998_TEST_ONLY
@@ -1266,6 +1444,18 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         [pb.test] { file_feature: VALUE3 }
+      }
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] { file_feature: VALUE3 }
+      }
+      fixed_features {
+        [pb.test] {}
       }
     }
   )pb"));

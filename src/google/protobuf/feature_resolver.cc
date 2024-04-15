@@ -204,8 +204,10 @@ void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
   }
 }
 
-absl::Status FillDefaults(Edition edition, Message& msg) {
-  const Descriptor& descriptor = *msg.GetDescriptor();
+absl::Status FillDefaults(Edition edition, Message& fixed,
+                          Message& overridable) {
+  const Descriptor& descriptor = *fixed.GetDescriptor();
+  ABSL_CHECK(&descriptor == overridable.GetDescriptor());
 
   auto comparator = [](const FieldOptions::EditionDefault& a,
                        const FieldOptions::EditionDefault& b) {
@@ -216,8 +218,17 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
 
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
+    Message* msg = &overridable;
+    if (field.options().has_feature_support()) {
+      if ((field.options().feature_support().has_edition_introduced() &&
+           edition < field.options().feature_support().edition_introduced()) ||
+          (field.options().feature_support().has_edition_removed() &&
+           edition >= field.options().feature_support().edition_removed())) {
+        msg = &fixed;
+      }
+    }
 
-    msg.GetReflection()->ClearField(&msg, &field);
+    msg->GetReflection()->ClearField(msg, &field);
     ABSL_CHECK(!field.is_repeated());
     ABSL_CHECK(field.cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE);
 
@@ -233,7 +244,7 @@ absl::Status FillDefaults(Edition edition, Message& msg) {
     }
 
     const std::string& def = std::prev(first_nonmatch)->value();
-    if (!TextFormat::ParseFieldValueFromString(def, &field, &msg)) {
+    if (!TextFormat::ParseFieldValueFromString(def, &field, msg)) {
       return Error("Parsing error in edition_defaults for feature field ",
                    field.full_name(), ". Could not parse: ", def);
     }
@@ -350,18 +361,31 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   defaults.set_maximum_edition(maximum_edition);
   auto message_factory = absl::make_unique<DynamicMessageFactory>();
   for (const auto& edition : editions) {
-    auto defaults_dynamic =
+    auto fixed_defaults_dynamic =
         absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
-    RETURN_IF_ERROR(FillDefaults(edition, *defaults_dynamic));
+    auto overridable_defaults_dynamic =
+        absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
+    RETURN_IF_ERROR(FillDefaults(edition, *fixed_defaults_dynamic,
+                                 *overridable_defaults_dynamic));
     for (const auto* extension : extensions) {
       RETURN_IF_ERROR(FillDefaults(
-          edition, *defaults_dynamic->GetReflection()->MutableMessage(
-                       defaults_dynamic.get(), extension)));
+          edition,
+          *fixed_defaults_dynamic->GetReflection()->MutableMessage(
+              fixed_defaults_dynamic.get(), extension),
+          *overridable_defaults_dynamic->GetReflection()->MutableMessage(
+              overridable_defaults_dynamic.get(), extension)));
     }
     auto* edition_defaults = defaults.mutable_defaults()->Add();
     edition_defaults->set_edition(edition);
+    edition_defaults->mutable_fixed_features()->MergeFromString(
+        fixed_defaults_dynamic->SerializeAsString());
+    edition_defaults->mutable_overridable_features()->MergeFromString(
+        overridable_defaults_dynamic->SerializeAsString());
+    // TODO Remove this once `features` is deprecated.
     edition_defaults->mutable_features()->MergeFromString(
-        defaults_dynamic->SerializeAsString());
+        fixed_defaults_dynamic->SerializeAsString());
+    edition_defaults->mutable_features()->MergeFromString(
+        overridable_defaults_dynamic->SerializeAsString());
   }
   return defaults;
 }
