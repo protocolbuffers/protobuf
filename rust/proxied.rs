@@ -285,6 +285,10 @@ where
     }
 }
 
+pub trait IntoProxied<T: Proxied> {
+    fn into(self, _private: Private) -> T;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

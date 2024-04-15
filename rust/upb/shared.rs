@@ -40,6 +40,7 @@ extern "C" {
     pub fn upb_Arena_Free(arena: RawArena);
     pub fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
     pub fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
+    pub fn upb_Arena_Fuse(a: RawArena, b: RawArena);
 }
 
 extern "C" {
