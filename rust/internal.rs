@@ -9,6 +9,9 @@
 //! exposed to through the `protobuf` path but must be public for use by
 //! generated code.
 
+// Used by the proto! macro
+pub use paste::paste;
+
 pub use crate::r#enum::Enum;
 pub use crate::vtable::{
     new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, PrimitiveOptionalMutVTable,

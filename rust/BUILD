@@ -57,6 +57,7 @@ PROTOBUF_SHARED = [
     "string.rs",
     "vtable.rs",
     "map.rs",
+    "proto_macro.rs",
 ]
 
 # The Rust Protobuf runtime using the upb kernel.

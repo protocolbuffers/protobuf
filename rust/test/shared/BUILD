@@ -397,3 +397,33 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "proto_macro_cpp_test",
+    srcs = ["proto_macro_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+        "//rust/test/shared:matchers_cpp": "matchers",
+    },
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test/shared:matchers_cpp",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "proto_macro_upb_test",
+    srcs = ["proto_macro_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+        "//rust/test/shared:matchers_upb": "matchers",
+    },
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+        "//rust/test/shared:matchers_upb",
+        "@crate_index//:googletest",
+    ],
+)
