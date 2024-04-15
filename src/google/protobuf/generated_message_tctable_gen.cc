@@ -145,8 +145,8 @@ EnumRangeInfo GetEnumRangeInfo(const FieldDescriptor* field,
 // We can't trust the `lazy=true` annotation.
 bool HasLazyRep(const FieldDescriptor* field,
                 const TailCallTableInfo::FieldOptions& options) {
-  return field->type() == field->TYPE_MESSAGE && !field->is_repeated() &&
-         options.lazy_opt != 0;
+  return options.lazy_opt != 0 && !field->is_repeated() &&
+         field->type() == field->TYPE_MESSAGE;
 }
 
 TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
@@ -176,12 +176,11 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
-  if (field->type() == FieldDescriptor::TYPE_BYTES ||
-      field->type() == FieldDescriptor::TYPE_STRING) {
-    if (options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
-    }
+  if (options.is_string_inlined) {
+    ABSL_DCHECK(field->type() == FieldDescriptor::TYPE_BYTES ||
+                field->type() == FieldDescriptor::TYPE_STRING);
+    ABSL_CHECK(!field->is_repeated());
+    info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
   }
 
   TcParseFunction picked = TcParseFunction::kNone;
@@ -280,26 +279,32 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::FieldOptions& options,
     const TailCallTableInfo::MessageOptions& message_options) {
   const auto* field = entry.field;
-  // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak() || options.is_implicitly_weak ||
-      options.should_split) {
-    return false;
-  }
 
-  if (HasLazyRep(field, options) && !message_options.uses_codegen) {
-    // Can't use TDP on lazy fields if we can't do codegen.
-    return false;
-  }
-
-  if (HasLazyRep(field, options) && options.lazy_opt == field_layout::kTvLazy) {
-    // We only support eagerly verified lazy fields in the fast path.
-    return false;
-  }
+  // The tailcall parser can only update the first 32 hasbits. Fields with
+  // has-bits beyond the first 32 are handled by mini parsing/fallback.
+  if (entry.hasbit_idx >= 32) return false;
 
   // We will check for a valid auxiliary index range later. However, we might
   // want to change the value we check for inlined string fields.
   int aux_idx = entry.aux_idx;
+
+  // If the field needs auxiliary data, then the aux index is needed. This
+  // must fit in a uint8_t.
+  if (aux_idx > std::numeric_limits<uint8_t>::max()) {
+    return false;
+  }
+
+  // The largest tag that can be read by the tailcall parser is two bytes
+  // when varint-coded. This allows 14 bits for the numeric tag value:
+  //   byte 0   byte 1
+  //   1nnnnttt 0nnnnnnn
+  //    ^^^^^^^  ^^^^^^^
+  if (field->number() >= 1 << 11) return false;
+
+  // Map, oneof, weak, and split fields are not handled on the fast path.
+  if (field->real_containing_oneof() || options.should_split) {
+    return false;
+  }
 
   switch (field->type()) {
       // Some bytes fields can be handled on fast path.
@@ -334,26 +339,29 @@ bool IsFieldEligibleForFastParsing(
       break;
     }
 
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      // Map and weak are not handled on the fast path.
+      if (field->is_map() || field->options().weak() ||
+          options.is_implicitly_weak) {
+        return false;
+      }
+
+      if (HasLazyRep(field, options)) {
+        if (!message_options.uses_codegen) {
+          // Can't use TDP on lazy fields if we can't do codegen.
+          return false;
+        }
+        if (options.lazy_opt == field_layout::kTvLazy) {
+          // We only support eagerly verified lazy fields in the fast path.
+          return false;
+        }
+      }
+      break;
+
     default:
       break;
   }
-
-  // The tailcall parser can only update the first 32 hasbits. Fields with
-  // has-bits beyond the first 32 are handled by mini parsing/fallback.
-  if (entry.hasbit_idx >= 32) return false;
-
-  // If the field needs auxiliary data, then the aux index is needed. This
-  // must fit in a uint8_t.
-  if (aux_idx > std::numeric_limits<uint8_t>::max()) {
-    return false;
-  }
-
-  // The largest tag that can be read by the tailcall parser is two bytes
-  // when varint-coded. This allows 14 bits for the numeric tag value:
-  //   byte 0   byte 1
-  //   1nnnnttt 0nnnnnnn
-  //    ^^^^^^^  ^^^^^^^
-  if (field->number() >= 1 << 11) return false;
 
   return true;
 }
