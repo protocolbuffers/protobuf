@@ -13,10 +13,12 @@ class TimestampBase extends \Google\Protobuf\Internal\Message
      *
      * @param \DateTime $datetime
      */
-    public function fromDateTime(\DateTime $datetime)
+    public function fromDateTime(\DateTimeInterface $datetime): static
     {
         $this->seconds = $datetime->getTimestamp();
         $this->nanos = 1000 * $datetime->format('u');
+
+        return $this;
     }
 
     /**
