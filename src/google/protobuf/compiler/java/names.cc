@@ -144,6 +144,10 @@ std::string CapitalizedFieldName(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), true);
 }
 
+std::string CapitalizedOneofName(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCase(oneof->name(), true);
+}
+
 std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), false);
 }
