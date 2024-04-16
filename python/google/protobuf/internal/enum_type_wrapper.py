@@ -99,3 +99,7 @@ class EnumTypeWrapper(object):
       pass  # fall out to break exception chaining
     raise AttributeError('Enum {} has no value defined for name {!r}'.format(
         self._enum_type.name, name))
+
+  def __or__(self, other):
+    """Returns the union type of self and other."""
+    return type(self) | other
