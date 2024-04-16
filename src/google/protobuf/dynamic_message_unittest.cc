@@ -19,11 +19,12 @@
 
 #include "google/protobuf/dynamic_message.h"
 
+#include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_util.h"
