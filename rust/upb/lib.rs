@@ -1,23 +1,11 @@
 use std::ptr::NonNull;
 use std::slice;
 
-// Macro to create structs that will act as opaque pointees. These structs are
-// never intended to be dereferenced in Rust.
-// This is a workaround until stabilization of [`extern type`].
-// TODO: convert to extern type once stabilized.
-// [`extern type`]: https://github.com/rust-lang/rust/issues/43467
-macro_rules! opaque_pointee {
-    ($name: ident) => {
-        #[repr(C)]
-        pub struct $name {
-            _data: [u8; 0],
-            _marker: std::marker::PhantomData<(*mut u8, std::marker::PhantomPinned)>,
-        }
-    };
-}
+mod opaque_pointee;
+use opaque_pointee::opaque_pointee;
 
-opaque_pointee!(upb_Arena);
-pub type RawArena = NonNull<upb_Arena>;
+mod arena;
+pub use arena::{upb_Arena, Arena, RawArena};
 
 opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
@@ -33,14 +21,6 @@ pub type RawMap = NonNull<upb_Map>;
 
 opaque_pointee!(upb_Array);
 pub type RawArray = NonNull<upb_Array>;
-
-extern "C" {
-    // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
-    pub fn upb_Arena_New() -> Option<RawArena>;
-    pub fn upb_Arena_Free(arena: RawArena);
-    pub fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
-    pub fn upb_Arena_Realloc(arena: RawArena, ptr: *mut u8, old: usize, new: usize) -> *mut u8;
-}
 
 extern "C" {
     pub fn upb_Message_DeepCopy(
@@ -254,34 +234,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn arena_ffi_test() {
-        // SAFETY: FFI unit test uses C API under expected patterns.
-        unsafe {
-            let arena = upb_Arena_New().unwrap();
-            let bytes = upb_Arena_Malloc(arena, 3);
-            let bytes = upb_Arena_Realloc(arena, bytes, 3, 512);
-            *bytes.add(511) = 7;
-            upb_Arena_Free(arena);
-        }
-    }
-
-    #[test]
     fn array_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
-            let arena = upb_Arena_New().unwrap();
-            let array = upb_Array_New(arena, CType::Float);
+            let arena = Arena::new();
+            let raw_arena = arena.raw();
+            let array = upb_Array_New(raw_arena, CType::Float);
 
-            assert!(upb_Array_Append(array, upb_MessageValue { float_val: 7.0 }, arena));
-            assert!(upb_Array_Append(array, upb_MessageValue { float_val: 42.0 }, arena));
+            assert!(upb_Array_Append(array, upb_MessageValue { float_val: 7.0 }, raw_arena));
+            assert!(upb_Array_Append(array, upb_MessageValue { float_val: 42.0 }, raw_arena));
             assert_eq!(upb_Array_Size(array), 2);
             assert!(matches!(upb_Array_Get(array, 1), upb_MessageValue { float_val: 42.0 }));
 
-            assert!(upb_Array_Resize(array, 3, arena));
+            assert!(upb_Array_Resize(array, 3, raw_arena));
             assert_eq!(upb_Array_Size(array), 3);
             assert!(matches!(upb_Array_Get(array, 2), upb_MessageValue { float_val: 0.0 }));
-
-            upb_Arena_Free(arena);
         }
     }
 
@@ -289,15 +256,16 @@ mod tests {
     fn map_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
-            let arena = upb_Arena_New().unwrap();
-            let map = upb_Map_New(arena, CType::Bool, CType::Double);
+            let arena = Arena::new();
+            let raw_arena = arena.raw();
+            let map = upb_Map_New(raw_arena, CType::Bool, CType::Double);
             assert_eq!(upb_Map_Size(map), 0);
             assert_eq!(
                 upb_Map_Insert(
                     map,
                     upb_MessageValue { bool_val: true },
                     upb_MessageValue { double_val: 2.0 },
-                    arena
+                    raw_arena
                 ),
                 MapInsertStatus::Inserted
             );
@@ -306,7 +274,7 @@ mod tests {
                     map,
                     upb_MessageValue { bool_val: true },
                     upb_MessageValue { double_val: 3.0 },
-                    arena,
+                    raw_arena,
                 ),
                 MapInsertStatus::Replaced,
             );
@@ -318,7 +286,7 @@ mod tests {
                     map,
                     upb_MessageValue { bool_val: true },
                     upb_MessageValue { double_val: 4.0 },
-                    arena
+                    raw_arena
                 ),
                 MapInsertStatus::Inserted
             );
@@ -326,8 +294,6 @@ mod tests {
             let mut out = upb_MessageValue::zeroed();
             assert!(upb_Map_Get(map, upb_MessageValue { bool_val: true }, &mut out));
             assert!(matches!(out, upb_MessageValue { double_val: 4.0 }));
-
-            upb_Arena_Free(arena);
         }
     }
 }
