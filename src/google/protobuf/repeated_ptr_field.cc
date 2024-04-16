@@ -96,12 +96,12 @@ void RepeatedPtrFieldBase::DestroyProtos() {
 template <typename F>
 void* RepeatedPtrFieldBase::AddInternal(F factory) {
   Arena* const arena = GetArena();
-  absl::PrefetchToLocalCache(tagged_rep_or_elem_);
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     tagged_rep_or_elem_ = factory(arena);
     return tagged_rep_or_elem_;
   }
+  absl::PrefetchToLocalCache(tagged_rep_or_elem_);
   if (using_sso()) {
     if (current_size_ == 0) {
       ExchangeCurrentSize(1);
