@@ -515,6 +515,10 @@ class FileDefPtr {
     return FieldDefPtr(upb_FileDef_TopLevelExtension(ptr_, index));
   }
 
+  bool resolves(const char* path) const {
+    return upb_FileDef_Resolves(ptr_, path);
+  }
+
   explicit operator bool() const { return ptr_ != nullptr; }
 
   friend bool operator==(FileDefPtr lhs, FileDefPtr rhs) {
