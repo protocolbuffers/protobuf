@@ -1726,11 +1726,30 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           }
 
+          if (NeedsIsInitialized()) {
+            p->Emit(R"cc(
+              bool IsInitialized() const {
+                $WeakDescriptorSelfPin$;
+                return IsInitializedImpl(*this);
+              }
+
+              private:
+              static bool IsInitializedImpl(const MessageLite& msg);
+
+              public:
+            )cc");
+          } else {
+            p->Emit(R"cc(
+              bool IsInitialized() const {
+                $WeakDescriptorSelfPin$;
+                return true;
+              }
+            )cc");
+          }
+
           if (!HasSimpleBaseClass(descriptor_, options_)) {
             p->Emit(R"cc(
               ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-              bool IsInitialized() const final;
-
               ::size_t ByteSizeLong() const final;
               $uint8$* _InternalSerialize(
                   $uint8$* target,
@@ -3515,6 +3534,17 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
       )cc");
     }
   };
+  const auto is_initialized = [&] {
+    if (NeedsIsInitialized()) {
+      p->Emit(R"cc(
+        $classname$::IsInitializedImpl,
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        nullptr,  // IsInitialized
+      )cc");
+    }
+  };
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     const auto pin_weak_descriptor = [&] {
@@ -3541,6 +3571,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     p->Emit(
         {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
+            {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"table",
              [&] {
@@ -3577,6 +3608,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     {
                         $table$,
                         $on_demand_register_arena_dtor$,
+                        $is_initialized$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,
                     },
@@ -3595,6 +3627,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         {
             {"type_size", descriptor_->full_name().size() + 1},
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
+            {"is_initialized", is_initialized},
         },
         R"cc(
           const ::$proto_ns$::MessageLite::ClassData*
@@ -3604,6 +3637,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     {
                         &_table_.header,
                         $on_demand_register_arena_dtor$,
+                        $is_initialized$,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         true,
                     },
@@ -4631,8 +4665,27 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   format("}\n");
 }
 
+bool MessageGenerator::NeedsIsInitialized() {
+  if (HasSimpleBaseClass(descriptor_, options_)) return false;
+  if (descriptor_->extension_range_count() != 0) return true;
+  if (num_required_fields_ != 0) return true;
+
+  for (const auto* field : optimized_order_) {
+    if (field_generators_.get(field).NeedsIsInitialized()) return true;
+  }
+  if (num_weak_fields_ != 0) return true;
+
+  for (const auto* oneof : OneOfRange(descriptor_)) {
+    for (const auto* field : FieldRange(oneof)) {
+      if (field_generators_.get(field).NeedsIsInitialized()) return true;
+    }
+  }
+
+  return false;
+}
+
 void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
+  if (!NeedsIsInitialized()) return;
 
   auto has_required_field = [&](const auto* oneof) {
     for (const auto* field : FieldRange(oneof)) {
@@ -4651,7 +4704,8 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              if (descriptor_->extension_range_count() == 0) return;
              p->Emit(R"cc(
-               if (!$extensions$.IsInitialized(internal_default_instance())) {
+               if (!this_.$extensions$.IsInitialized(
+                       internal_default_instance())) {
                  return false;
                }
              )cc");
@@ -4660,7 +4714,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              if (num_required_fields_ == 0) return;
              p->Emit(R"cc(
-               if (_Internal::MissingRequiredFields($has_bits$)) {
+               if (_Internal::MissingRequiredFields(this_.$has_bits$)) {
                  return false;
                }
              )cc");
@@ -4668,14 +4722,27 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
           {"test_ordinary_fields",
            [&] {
              for (const auto* field : optimized_order_) {
-               field_generators_.get(field).GenerateIsInitialized(p);
+               auto& f = field_generators_.get(field);
+               // XXX REMOVE? XXX
+               const auto needs_verifier =
+                   !f.NeedsIsInitialized()
+                       ? absl::make_optional(p->WithSubstitutionListener(
+                             [&](auto label, auto loc) {
+                               ABSL_LOG(FATAL)
+                                   << "Field generated output but is marked as "
+                                      "!NeedsIsInitialized"
+                                   << field->full_name();
+                             }))
+                       : absl::nullopt;
+               f.GenerateIsInitialized(p);
              }
            }},
           {"test_weak_fields",
            [&] {
              if (num_weak_fields_ == 0) return;
              p->Emit(R"cc(
-               if (!$weak_field_map$.IsInitialized()) return false;
+               if (!this_.$weak_field_map$.IsInitialized())
+                 return false;
              )cc");
            }},
           {"test_oneof_fields",
@@ -4703,7 +4770,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
                            }
                          }}},
                        R"cc(
-                         switch ($name$_case()) {
+                         switch (this_.$name$_case()) {
                            $cases$;
                            case $NAME$_NOT_SET: {
                              break;
@@ -4714,8 +4781,9 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            }},
       },
       R"cc(
-        PROTOBUF_NOINLINE bool $classname$::IsInitialized() const {
-          $WeakDescriptorSelfPin$;
+        PROTOBUF_NOINLINE bool $classname$::IsInitializedImpl(
+            const MessageLite& msg) {
+          auto& this_ = static_cast<const $classname$&>(msg);
           $test_extensions$;
           $test_required_fields$;
           $test_ordinary_fields$;

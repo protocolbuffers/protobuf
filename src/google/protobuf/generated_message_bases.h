@@ -30,7 +30,6 @@ namespace internal {
 class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final { return true; }
   size_t ByteSizeLong() const final;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
   ::uint8_t* _InternalSerialize(::uint8_t* target,

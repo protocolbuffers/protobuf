@@ -184,6 +184,7 @@ CppFeatures::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
               false,
           },
@@ -339,9 +340,6 @@ void CppFeatures::CopyFrom(const CppFeatures& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool CppFeatures::IsInitialized() const {
-  return true;
-}
 
 void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;

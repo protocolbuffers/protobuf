@@ -54,6 +54,7 @@ const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
       {
           &table.header,
           nullptr,  // on_demand_register_arena_dtor
+          nullptr,  // is_initialized (always true)
           PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
           true,
       },

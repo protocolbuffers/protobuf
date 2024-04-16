@@ -182,7 +182,10 @@ class FieldGeneratorBase {
 
   virtual void GenerateByteSize(io::Printer* p) const = 0;
 
-  virtual void GenerateIsInitialized(io::Printer* p) const {}
+  virtual void GenerateIsInitialized(io::Printer* p) const {
+    ABSL_CHECK(!NeedsIsInitialized());
+  }
+  virtual bool NeedsIsInitialized() const { return false; }
 
   virtual bool IsInlined() const { return false; }
 
@@ -473,6 +476,8 @@ class FieldGenerator {
     auto vars = PushVarsForCall(p);
     impl_->GenerateIsInitialized(p);
   }
+
+  bool NeedsIsInitialized() const { return impl_->NeedsIsInitialized(); }
 
   // TODO: Document this properly.
   bool IsInlined() const { return impl_->IsInlined(); }

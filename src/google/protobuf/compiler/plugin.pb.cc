@@ -365,6 +365,7 @@ Version::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
               false,
           },
@@ -572,9 +573,6 @@ void Version::CopyFrom(const Version& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Version::IsInitialized() const {
-  return true;
-}
 
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -674,6 +672,7 @@ CodeGeneratorRequest::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              CodeGeneratorRequest::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
               false,
           },
@@ -920,9 +919,13 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_proto_file())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_source_file_descriptors())) return false;
+PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const CodeGeneratorRequest&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_proto_file()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_source_file_descriptors()))
+    return false;
   return true;
 }
 
@@ -1019,6 +1022,7 @@ CodeGeneratorResponse_File::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
               false,
           },
@@ -1243,9 +1247,6 @@ void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool CodeGeneratorResponse_File::IsInitialized() const {
-  return true;
-}
 
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1337,6 +1338,7 @@ CodeGeneratorResponse::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
               false,
           },
@@ -1572,9 +1574,6 @@ void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool CodeGeneratorResponse::IsInitialized() const {
-  return true;
-}
 
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT other) {
   using std::swap;

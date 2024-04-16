@@ -792,9 +792,15 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -983,9 +989,10 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -1252,9 +1259,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -1510,9 +1518,10 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -1727,9 +1736,10 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -1918,9 +1928,15 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -2456,9 +2472,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -2692,9 +2709,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -2877,9 +2895,10 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -3062,9 +3081,15 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -3337,9 +3362,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -3515,9 +3541,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -3693,9 +3720,15 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -3916,9 +3949,15 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -4304,9 +4343,15 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -4679,9 +4724,15 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -5100,9 +5151,15 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -5540,9 +5597,15 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -6242,9 +6305,15 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -6880,9 +6949,15 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -7085,9 +7160,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -7512,9 +7593,15 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -7913,9 +8000,15 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -8327,9 +8420,15 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -8522,9 +8621,15 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -8781,9 +8886,15 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -9172,9 +9283,15 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -9380,9 +9497,15 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -9582,9 +9705,15 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -9796,9 +9925,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -10060,9 +10195,15 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -10420,9 +10561,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -10829,9 +10976,15 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,

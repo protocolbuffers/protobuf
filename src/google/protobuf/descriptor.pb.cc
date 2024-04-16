@@ -2454,6 +2454,7 @@ FileDescriptorSet::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FileDescriptorSet::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
               false,
           },
@@ -2575,8 +2576,11 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_file())) return false;
+PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FileDescriptorSet&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_file()))
+    return false;
   return true;
 }
 
@@ -2685,6 +2689,7 @@ FileDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FileDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -3144,13 +3149,19 @@ void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_message_type())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_enum_type())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_service())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_extension())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000008u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FileDescriptorProto&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_message_type()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_enum_type()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_service()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_extension()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000008u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -3257,6 +3268,7 @@ DescriptorProto_ExtensionRange::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              DescriptorProto_ExtensionRange::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
               false,
           },
@@ -3445,9 +3457,11 @@ void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRan
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const DescriptorProto_ExtensionRange&>(msg);
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -3517,6 +3531,7 @@ DescriptorProto_ReservedRange::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
               false,
           },
@@ -3672,9 +3687,6 @@ void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool DescriptorProto_ReservedRange::IsInitialized() const {
-  return true;
-}
 
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -3773,6 +3785,7 @@ DescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              DescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -4153,15 +4166,23 @@ void DescriptorProto::CopyFrom(const DescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool DescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_field())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_nested_type())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_enum_type())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_extension_range())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_extension())) return false;
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_oneof_decl())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool DescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const DescriptorProto&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_field()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_nested_type()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_enum_type()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_extension_range()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_extension()))
+    return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_oneof_decl()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -4263,6 +4284,7 @@ ExtensionRangeOptions_Declaration::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
               false,
           },
@@ -4499,9 +4521,6 @@ void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Dec
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool ExtensionRangeOptions_Declaration::IsInitialized() const {
-  return true;
-}
 
 void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -4594,6 +4613,7 @@ ExtensionRangeOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              ExtensionRangeOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
               false,
           },
@@ -4822,13 +4842,17 @@ void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const ExtensionRangeOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -4943,6 +4967,7 @@ FieldDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FieldDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -5348,9 +5373,11 @@ void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000020u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FieldDescriptorProto&>(msg);
+  if ((this_._impl_._has_bits_[0] & 0x00000020u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -5443,6 +5470,7 @@ OneofDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              OneofDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -5612,9 +5640,11 @@ void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const OneofDescriptorProto&>(msg);
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -5682,6 +5712,7 @@ EnumDescriptorProto_EnumReservedRange::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
               false,
           },
@@ -5837,9 +5868,6 @@ void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_E
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool EnumDescriptorProto_EnumReservedRange::IsInitialized() const {
-  return true;
-}
 
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -5928,6 +5956,7 @@ EnumDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              EnumDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -6175,10 +6204,13 @@ void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_value())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const EnumDescriptorProto&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_value()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -6271,6 +6303,7 @@ EnumValueDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              EnumValueDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -6464,9 +6497,11 @@ void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const EnumValueDescriptorProto&>(msg);
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -6557,6 +6592,7 @@ ServiceDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              ServiceDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -6753,10 +6789,13 @@ void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_method())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const ServiceDescriptorProto&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_method()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -6859,6 +6898,7 @@ MethodDescriptorProto::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              MethodDescriptorProto::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
               false,
           },
@@ -7129,9 +7169,11 @@ void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000008u) != 0) {
-    if (!_impl_.options_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const MethodDescriptorProto&>(msg);
+  if ((this_._impl_._has_bits_[0] & 0x00000008u) != 0) {
+    if (!this_._impl_.options_->IsInitialized()) return false;
   }
   return true;
 }
@@ -7268,6 +7310,7 @@ FileOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FileOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
               false,
           },
@@ -7932,13 +7975,17 @@ void FileOptions::CopyFrom(const FileOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FileOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FileOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000400u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000400u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -8052,6 +8099,7 @@ MessageOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              MessageOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
               false,
           },
@@ -8332,13 +8380,17 @@ void MessageOptions::CopyFrom(const MessageOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool MessageOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool MessageOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const MessageOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -8422,6 +8474,7 @@ FieldOptions_EditionDefault::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
               false,
           },
@@ -8580,9 +8633,6 @@ void FieldOptions_EditionDefault::CopyFrom(const FieldOptions_EditionDefault& fr
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FieldOptions_EditionDefault::IsInitialized() const {
-  return true;
-}
 
 void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -8670,6 +8720,7 @@ FieldOptions_FeatureSupport::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
               false,
           },
@@ -8878,9 +8929,6 @@ void FieldOptions_FeatureSupport::CopyFrom(const FieldOptions_FeatureSupport& fr
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FieldOptions_FeatureSupport::IsInitialized() const {
-  return true;
-}
 
 void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -8988,6 +9036,7 @@ FieldOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FieldOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
               false,
           },
@@ -9453,13 +9502,17 @@ void FieldOptions::CopyFrom(const FieldOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FieldOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool FieldOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FieldOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -9551,6 +9604,7 @@ OneofOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              OneofOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
               false,
           },
@@ -9722,13 +9776,17 @@ void OneofOptions::CopyFrom(const OneofOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool OneofOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool OneofOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const OneofOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -9825,6 +9883,7 @@ EnumOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              EnumOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
               false,
           },
@@ -10065,13 +10124,17 @@ void EnumOptions::CopyFrom(const EnumOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool EnumOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool EnumOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const EnumOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -10173,6 +10236,7 @@ EnumValueOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              EnumValueOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
               false,
           },
@@ -10395,13 +10459,17 @@ void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool EnumValueOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool EnumValueOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const EnumValueOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -10497,6 +10565,7 @@ ServiceOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              ServiceOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
               false,
           },
@@ -10694,13 +10763,17 @@ void ServiceOptions::CopyFrom(const ServiceOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool ServiceOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool ServiceOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const ServiceOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -10802,6 +10875,7 @@ MethodOptions::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              MethodOptions::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
               false,
           },
@@ -11029,13 +11103,17 @@ void MethodOptions::CopyFrom(const MethodOptions& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool MethodOptions::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool MethodOptions::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const MethodOptions&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_uninterpreted_option())) return false;
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
+    return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -11122,6 +11200,7 @@ UninterpretedOption_NamePart::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              UninterpretedOption_NamePart::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
               false,
           },
@@ -11279,8 +11358,10 @@ void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& 
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitialized() const {
-  if (_Internal::MissingRequiredFields(_impl_._has_bits_)) {
+PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const UninterpretedOption_NamePart&>(msg);
+  if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
     return false;
   }
   return true;
@@ -11380,6 +11461,7 @@ UninterpretedOption::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              UninterpretedOption::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
               false,
           },
@@ -11664,8 +11746,11 @@ void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool UninterpretedOption::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_name())) return false;
+PROTOBUF_NOINLINE bool UninterpretedOption::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const UninterpretedOption&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_name()))
+    return false;
   return true;
 }
 
@@ -11763,6 +11848,7 @@ FeatureSet::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FeatureSet::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
               false,
           },
@@ -12020,8 +12106,11 @@ void FeatureSet::CopyFrom(const FeatureSet& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FeatureSet::IsInitialized() const {
-  if (!_impl_._extensions_.IsInitialized(internal_default_instance())) {
+PROTOBUF_NOINLINE bool FeatureSet::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FeatureSet&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(
+          internal_default_instance())) {
     return false;
   }
   return true;
@@ -12120,6 +12209,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
               false,
           },
@@ -12348,15 +12438,17 @@ void FeatureSetDefaults_FeatureSetEditionDefault::CopyFrom(const FeatureSetDefau
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitialized() const {
-  if ((_impl_._has_bits_[0] & 0x00000001u) != 0) {
-    if (!_impl_.features_->IsInitialized()) return false;
+PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(msg);
+  if ((this_._impl_._has_bits_[0] & 0x00000001u) != 0) {
+    if (!this_._impl_.features_->IsInitialized()) return false;
   }
-  if ((_impl_._has_bits_[0] & 0x00000002u) != 0) {
-    if (!_impl_.overridable_features_->IsInitialized()) return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000002u) != 0) {
+    if (!this_._impl_.overridable_features_->IsInitialized()) return false;
   }
-  if ((_impl_._has_bits_[0] & 0x00000004u) != 0) {
-    if (!_impl_.fixed_features_->IsInitialized()) return false;
+  if ((this_._impl_._has_bits_[0] & 0x00000004u) != 0) {
+    if (!this_._impl_.fixed_features_->IsInitialized()) return false;
   }
   return true;
 }
@@ -12448,6 +12540,7 @@ FeatureSetDefaults::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              FeatureSetDefaults::IsInitializedImpl,
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
               false,
           },
@@ -12627,8 +12720,11 @@ void FeatureSetDefaults::CopyFrom(const FeatureSetDefaults& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitialized() const {
-  if (!::google::protobuf::internal::AllAreInitialized(_internal_defaults())) return false;
+PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const FeatureSetDefaults&>(msg);
+  if (!::google::protobuf::internal::AllAreInitialized(this_._internal_defaults()))
+    return false;
   return true;
 }
 
@@ -12721,6 +12817,7 @@ SourceCodeInfo_Location::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
               false,
           },
@@ -12971,9 +13068,6 @@ void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool SourceCodeInfo_Location::IsInitialized() const {
-  return true;
-}
 
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -13046,6 +13140,7 @@ SourceCodeInfo::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
               false,
           },
@@ -13167,9 +13262,6 @@ void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitialized() const {
-  return true;
-}
 
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -13257,6 +13349,7 @@ GeneratedCodeInfo_Annotation::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
               false,
           },
@@ -13496,9 +13589,6 @@ void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& 
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool GeneratedCodeInfo_Annotation::IsInitialized() const {
-  return true;
-}
 
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -13574,6 +13664,7 @@ GeneratedCodeInfo::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
               false,
           },
@@ -13695,9 +13786,6 @@ void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool GeneratedCodeInfo::IsInitialized() const {
-  return true;
-}
 
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT other) {
   using std::swap;

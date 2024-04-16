@@ -189,6 +189,7 @@ JavaFeatures::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
               false,
           },
@@ -344,9 +345,6 @@ void JavaFeatures::CopyFrom(const JavaFeatures& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool JavaFeatures::IsInitialized() const {
-  return true;
-}
 
 void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT other) {
   using std::swap;

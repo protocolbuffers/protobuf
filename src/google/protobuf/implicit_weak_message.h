@@ -64,8 +64,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   void Clear() override { data_->clear(); }
 
-  bool IsInitialized() const override { return true; }
-
   void CheckTypeAndMergeFrom(const MessageLite& other) override {
     const std::string* other_data =
         static_cast<const ImplicitWeakMessage&>(other).data_;

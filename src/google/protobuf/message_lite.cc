@@ -46,6 +46,11 @@
 namespace google {
 namespace protobuf {
 
+bool MessageLite::IsInitialized() const {
+  auto* data = GetClassData();
+  return data->is_initialized != nullptr ? data->is_initialized(*this) : true;
+}
+
 const char* MessageLite::_InternalParse(const char* ptr,
                                         internal::ParseContext* ctx) {
   return internal::TcParser::ParseLoop(this, ptr, ctx, GetTcParseTable());

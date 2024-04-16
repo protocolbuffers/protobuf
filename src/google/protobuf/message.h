@@ -345,10 +345,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   void Clear() override;
 
-  // Returns whether all required fields have been set. Note that required
-  // fields no longer exist starting in proto3.
-  bool IsInitialized() const override;
-
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
@@ -373,6 +369,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
   static Metadata GetMetadataImpl(const ClassDataFull& data);
+
+  // For CODE_SIZE types
+  static bool IsInitializedImpl(const MessageLite&);
 
   inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,

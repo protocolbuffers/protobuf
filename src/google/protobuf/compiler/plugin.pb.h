@@ -206,9 +206,10 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -423,9 +424,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -656,9 +658,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,
@@ -913,9 +916,15 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
 
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,

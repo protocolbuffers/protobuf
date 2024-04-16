@@ -116,6 +116,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
+  bool NeedsIsInitialized() const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
   void GenerateAggregateInitializer(io::Printer* p) const override;
   void GenerateCopyAggregateInitializer(io::Printer* p) const override;
@@ -418,22 +419,24 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
-  if (!has_required_) return;
+  if (!NeedsIsInitialized()) return;
 
   if (HasHasbit(field_)) {
     p->Emit(R"cc(
-      if (($has_hasbit$) != 0) {
-        if (!$field_$->IsInitialized()) return false;
+      if ((this_.$has_hasbit$) != 0) {
+        if (!this_.$field_$->IsInitialized()) return false;
       }
     )cc");
   } else {
     p->Emit(R"cc(
-      if (_internal_has_$name$()) {
-        if (!$field_$->IsInitialized()) return false;
+      if (this_._internal_has_$name$()) {
+        if (!this_.$field_$->IsInitialized()) return false;
       }
     )cc");
   }
 }
+
+bool SingularMessage::NeedsIsInitialized() const { return has_required_; }
 
 void SingularMessage::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
@@ -477,6 +480,7 @@ class OneofMessage : public SingularMessage {
   void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
+  bool NeedsIsInitialized() const override;
   void GenerateMergingCode(io::Printer* p) const override;
   bool RequiresArena(GeneratorFunction func) const override;
 };
@@ -645,12 +649,15 @@ void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
-  if (!has_required_) return;
+  if (!NeedsIsInitialized()) return;
 
   p->Emit(R"cc(
-    if ($has_field$ && !$field_$->IsInitialized()) return false;
+    if (this_.$has_field$ && !this_.$field_$->IsInitialized())
+      return false;
   )cc");
 }
+
+bool OneofMessage::NeedsIsInitialized() const { return has_required_; }
 
 void OneofMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
@@ -706,6 +713,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
+  bool NeedsIsInitialized() const override;
 
  private:
   const Options* opts_;
@@ -995,20 +1003,24 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
-  if (!has_required_) return;
+  if (!NeedsIsInitialized()) return;
 
   if (is_weak()) {
     p->Emit(
         R"cc(
-          if (!$pbi$::AllAreInitializedWeak($field_$.weak)) return false;
+          if (!$pbi$::AllAreInitializedWeak(this_.$field_$.weak))
+            return false;
         )cc");
   } else {
     p->Emit(
         R"cc(
-          if (!$pbi$::AllAreInitialized(_internal_$name$())) return false;
+          if (!$pbi$::AllAreInitialized(this_._internal_$name$()))
+            return false;
         )cc");
   }
 }
+
+bool RepeatedMessage::NeedsIsInitialized() const { return has_required_; }
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(

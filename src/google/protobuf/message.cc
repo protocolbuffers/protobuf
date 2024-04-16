@@ -112,8 +112,8 @@ void Message::CopyFrom(const Message& from) {
 
 void Message::Clear() { ReflectionOps::Clear(this); }
 
-bool Message::IsInitialized() const {
-  return ReflectionOps::IsInitialized(*this);
+bool Message::IsInitializedImpl(const MessageLite& msg) {
+  return ReflectionOps::IsInitialized(DownCast<const Message&>(msg));
 }
 
 void Message::FindInitializationErrors(std::vector<std::string>* errors) const {

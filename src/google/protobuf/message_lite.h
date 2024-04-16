@@ -240,7 +240,7 @@ class PROTOBUF_EXPORT MessageLite {
   virtual void Clear() = 0;
 
   // Quickly check if all required fields have values set.
-  virtual bool IsInitialized() const = 0;
+  bool IsInitialized() const;
 
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
@@ -551,6 +551,7 @@ class PROTOBUF_EXPORT MessageLite {
   struct ClassData {
     const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+    bool (*is_initialized)(const MessageLite&);
 
     // Offset of the CachedSize member.
     uint32_t cached_size_offset;
@@ -558,22 +559,25 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
-    // Temporary constructor while we migrate existing classes to populate the
-    // `tc_table` field.
-    constexpr ClassData(void (*on_demand_register_arena_dtor)(MessageLite&,
-                                                              Arena&),
-                        uint32_t cached_size_offset, bool is_lite)
-        : tc_table(),
-          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
-          cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {}
-
+    // XXX REMOVE XXX
     constexpr ClassData(const internal::TcParseTableBase* tc_table,
                         void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
                         uint32_t cached_size_offset, bool is_lite)
         : tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          is_initialized(nullptr),
+          cached_size_offset(cached_size_offset),
+          is_lite(is_lite) {}
+
+    constexpr ClassData(const internal::TcParseTableBase* tc_table,
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
+                                                              Arena&),
+                        bool (*is_initialized)(const MessageLite&),
+                        uint32_t cached_size_offset, bool is_lite)
+        : tc_table(tc_table),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          is_initialized(is_initialized),
           cached_size_offset(cached_size_offset),
           is_lite(is_lite) {}
 
