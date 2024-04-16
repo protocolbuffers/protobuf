@@ -61,7 +61,6 @@ namespace {
 using ::google::protobuf::internal::WireFormat;
 using ::google::protobuf::internal::WireFormatLite;
 using ::google::protobuf::internal::cpp::HasHasbit;
-using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -75,7 +74,7 @@ std::string ConditionalToCheckBitmasks(
     const std::vector<uint32_t>& masks, bool return_success = true,
     absl::string_view has_bits_var = "_impl_._has_bits_") {
   std::vector<std::string> parts;
-  for (int i = 0; i < masks.size(); i++) {
+  for (size_t i = 0; i < masks.size(); ++i) {
     if (masks[i] == 0) continue;
     std::string m = absl::StrCat("0x", absl::Hex(masks[i], absl::kZeroPad8));
     // Each xor evaluates to 0 if the expected bits are present.
@@ -126,7 +125,7 @@ struct FieldOrderingByNumber {
 std::vector<const FieldDescriptor*> SortFieldsByNumber(
     const Descriptor* descriptor) {
   std::vector<const FieldDescriptor*> fields(descriptor->field_count());
-  for (int i = 0; i < descriptor->field_count(); i++) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
     fields[i] = descriptor->field(i);
   }
   std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
@@ -380,7 +379,7 @@ uint32_t GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
     ABSL_CHECK_EQ(first_index_offset, index / 32);
     chunk_mask |= static_cast<uint32_t>(1) << (index % 32);
   }
-  ABSL_CHECK_NE(0, chunk_mask);
+  ABSL_CHECK_NE(0u, chunk_mask);
   return chunk_mask;
 }
 
@@ -564,7 +563,7 @@ MessageGenerator::MessageGenerator(
   field_generators_.Build(options_, scc_analyzer_, has_bit_indices_,
                           inlined_string_indices_);
 
-  for (int i = 0; i < descriptor->field_count(); i++) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
     if (descriptor->field(i)->is_required()) {
       ++num_required_fields_;
     }
@@ -612,12 +611,12 @@ int MessageGenerator::HasWordIndex(const FieldDescriptor* field) const {
 void MessageGenerator::AddGenerators(
     std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
     std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators) {
-  for (int i = 0; i < descriptor_->enum_type_count(); i++) {
+  for (int i = 0; i < descriptor_->enum_type_count(); ++i) {
     enum_generators->emplace_back(
         std::make_unique<EnumGenerator>(descriptor_->enum_type(i), options_));
     enum_generators_.push_back(enum_generators->back().get());
   }
-  for (int i = 0; i < descriptor_->extension_count(); i++) {
+  for (int i = 0; i < descriptor_->extension_count(); ++i) {
     extension_generators->emplace_back(std::make_unique<ExtensionGenerator>(
         descriptor_->extension(i), options_, scc_analyzer_));
     extension_generators_.push_back(extension_generators->back().get());
@@ -1834,7 +1833,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           // Import all nested message classes into this class's scope with
           // typedefs.
-          for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+          for (int i = 0; i < descriptor_->nested_type_count(); ++i) {
             const Descriptor* nested_type = descriptor_->nested_type(i);
             if (!IsMapEntryMessage(nested_type)) {
               p->Emit(
@@ -1854,7 +1853,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           // Import all nested enums and their values into this class's
           // scope with typedefs and constants.
-          for (int i = 0; i < descriptor_->enum_type_count(); i++) {
+          for (int i = 0; i < descriptor_->enum_type_count(); ++i) {
             enum_generators_[i]->GenerateSymbolImports(p);
           }
         }},
@@ -1866,7 +1865,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
        {"decl_extension_ids",
         [&] {
           // Declare extension identifiers.
-          for (int i = 0; i < descriptor_->extension_count(); i++) {
+          for (int i = 0; i < descriptor_->extension_count(); ++i) {
             extension_generators_[i]->GenerateDeclaration(p);
           }
         }},
@@ -2331,7 +2330,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
              ShouldSplit(field, options_) ? "::Impl_::Split" : "",
              ShouldSplit(field, options_)
                  ? absl::StrCat(FieldName(field), "_")
-                 : FieldMemberName(field, /*cold=*/false));
+                 : FieldMemberName(field, /*split=*/false));
     }
 
     // Some information about a field is in the pdproto profile. The profile is
@@ -2368,7 +2367,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
         "1,\n");
   } else if (!has_bit_indices_.empty()) {
     entries += has_bit_indices_.size();
-    for (int i = 0; i < has_bit_indices_.size(); i++) {
+    for (size_t i = 0; i < has_bit_indices_.size(); ++i) {
       const std::string index =
           has_bit_indices_[i] >= 0 ? absl::StrCat(has_bit_indices_[i]) : "~0u";
       format("$1$,\n", index);
@@ -2550,7 +2549,7 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
       separator();
       if (init_type == InitType::kArenaCopy) {
         auto cases = [&] {
-          for (int i = 0; i < count; i++) {
+          for (int i = 0; i < count; ++i) {
             p->Emit({{"index", i}, {"comma", i ? ", " : ""}},
                     "$comma$from._oneof_case_[$index$]");
           }
@@ -3408,7 +3407,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
     format(
         "}\n"
         "\n");
-    i++;
+    ++i;
   }
 }
 
@@ -3439,7 +3438,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
     format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
 
     if (!has_bit_indices_.empty()) {
-      for (int i = 0; i < HasBitsSize(); ++i) {
+      for (size_t i = 0; i < HasBitsSize(); ++i) {
         format("swap($has_bits$[$1$], other->$has_bits$[$1$]);\n", i);
       }
     }
@@ -3465,9 +3464,9 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
         // Use a memswap, then skip run_length fields.
         const size_t run_length = it->second;
         const std::string first_field_name =
-            FieldMemberName(field, /*cold=*/false);
+            FieldMemberName(field, /*split=*/false);
         const std::string last_field_name = FieldMemberName(
-            optimized_order_[i + run_length - 1], /*cold=*/false);
+            optimized_order_[i + run_length - 1], /*split=*/false);
 
         auto v = p->WithVars({
             {"first", first_field_name},
@@ -3496,7 +3495,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
       format("swap(_impl_.$1$_, other->_impl_.$1$_);\n", oneof->name());
     }
 
-    for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
+    for (int i = 0; i < descriptor_->real_oneof_decl_count(); ++i) {
       format("swap($oneof_case$[$1$], other->$oneof_case$[$1$]);\n", i);
     }
 
@@ -4281,11 +4280,11 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
              LazySerializerEmitter e(this, p);
              LazyExtensionRangeEmitter re(this, p);
              LargestWeakFieldHolder largest_weak_field;
-             int i, j;
+             size_t i, j;
              for (i = 0, j = 0;
                   i < ordered_fields.size() || j < sorted_extensions.size();) {
                if ((j == sorted_extensions.size()) ||
-                   (i < descriptor_->field_count() &&
+                   (i < static_cast<size_t>(descriptor_->field_count()) &&
                     ordered_fields[i]->number() <
                         sorted_extensions[j]->start_number())) {
                  const FieldDescriptor* field = ordered_fields[i++];
