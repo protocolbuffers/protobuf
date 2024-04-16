@@ -232,6 +232,12 @@ impl SettableValue<[u8]> for SerializedData {
     }
 }
 
+impl AsRef<[u8]> for SerializedData {
+    fn as_ref(&self) -> &[u8] {
+        &*self
+    }
+}
+
 // TODO: Investigate replacing this with direct access to UPB bits.
 pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
 pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;

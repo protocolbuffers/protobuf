@@ -194,6 +194,12 @@ impl SettableValue<[u8]> for SerializedData {
     }
 }
 
+impl AsRef<[u8]> for SerializedData {
+    fn as_ref(&self) -> &[u8] {
+        &*self
+    }
+}
+
 /// A type to transfer an owned Rust string across the FFI boundary:
 ///   * This struct is ABI-compatible with the equivalent C struct.
 ///   * It owns its data but does not drop it. Immediately turn it into a

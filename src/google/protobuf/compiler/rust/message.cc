@@ -250,6 +250,20 @@ void MessageSettableValueForView(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"copy_from_thunk", ThunkName(ctx, msg, "copy_from")}}, R"rs(
+        impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            let dst = $Msg$::new();
+            unsafe { $copy_from_thunk$(dst.inner.msg, self.msg) };
+            dst
+          }
+        }
+
+        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            self
+          } 
+        }
+
         impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
           fn set_on<'dst>(
             self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
@@ -263,6 +277,25 @@ void MessageSettableValueForView(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       // TODO: Add owned SettableValue impl for upb messages.
       ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
+        impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            let dst = $Msg$::new();
+            unsafe { $pbr$::upb_Message_DeepCopy(
+              dst.inner.msg,
+              self.msg,
+              $std$::ptr::addr_of!($minitable$),
+              dst.inner.arena.raw(),
+            ) };
+            dst
+          }
+        }
+
+        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            self
+          }
+        }
+
         impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
           fn set_on<'dst>(
             self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
@@ -1030,7 +1063,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner.msg()
           }
 
-          fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef<'msg> {
+          pub fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef<'msg> {
             self.inner
           }
 
@@ -1076,7 +1109,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner.msg
           }
 
-          fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef {
+          pub fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef {
             $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner)
           }
 

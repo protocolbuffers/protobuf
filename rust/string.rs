@@ -805,6 +805,24 @@ impl_bytes_partial_cmp!(
     <('a)> str => ProtoStrMut<'a>,
 );
 
+impl AsRef<ProtoStr> for String {
+    fn as_ref(&self) -> &ProtoStr {
+        ProtoStr::from_str(self.as_str())
+    }
+}
+
+impl AsRef<ProtoStr> for &str {
+    fn as_ref(&self) -> &ProtoStr {
+        ProtoStr::from_str(self)
+    }
+}
+
+impl AsRef<ProtoStr> for &ProtoStr {
+    fn as_ref(&self) -> &ProtoStr {
+        *self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
