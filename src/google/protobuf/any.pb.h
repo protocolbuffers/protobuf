@@ -204,9 +204,10 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
       const ::google::protobuf::MessageLite& from_msg);
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
   ::size_t ByteSizeLong() const final;
   ::uint8_t* _InternalSerialize(
       ::uint8_t* target,

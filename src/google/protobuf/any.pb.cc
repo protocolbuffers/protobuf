@@ -184,6 +184,7 @@ Any::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
               false,
           },
@@ -330,9 +331,6 @@ void Any::CopyFrom(const Any& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Any::IsInitialized() const {
-  return true;
-}
 
 void Any::InternalSwap(Any* PROTOBUF_RESTRICT other) {
   using std::swap;

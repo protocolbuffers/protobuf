@@ -154,6 +154,7 @@ FieldMask::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
               false,
           },
@@ -276,9 +277,6 @@ void FieldMask::CopyFrom(const FieldMask& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FieldMask::IsInitialized() const {
-  return true;
-}
 
 void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT other) {
   using std::swap;

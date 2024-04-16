@@ -119,6 +119,7 @@ Empty::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
               false,
           },

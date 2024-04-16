@@ -222,6 +222,7 @@ Struct_FieldsEntry_DoNotUse::GetClassData() const {
           {
               nullptr,  // tc_table
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _cached_size_),
               false,
           },
@@ -289,6 +290,7 @@ Struct::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
               false,
           },
@@ -433,9 +435,6 @@ void Struct::CopyFrom(const Struct& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Struct::IsInitialized() const {
-  return true;
-}
 
 void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -600,6 +599,7 @@ Value::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
               false,
           },
@@ -851,9 +851,6 @@ void Value::CopyFrom(const Value& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Value::IsInitialized() const {
-  return true;
-}
 
 void Value::InternalSwap(Value* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -920,6 +917,7 @@ ListValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
               false,
           },
@@ -1042,9 +1040,6 @@ void ListValue::CopyFrom(const ListValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool ListValue::IsInitialized() const {
-  return true;
-}
 
 void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT other) {
   using std::swap;

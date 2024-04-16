@@ -148,6 +148,7 @@ Duration::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
               false,
           },
@@ -292,9 +293,6 @@ void Duration::CopyFrom(const Duration& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Duration::IsInitialized() const {
-  return true;
-}
 
 void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT other) {
   using std::swap;

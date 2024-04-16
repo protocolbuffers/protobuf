@@ -148,6 +148,7 @@ Timestamp::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
               false,
           },
@@ -292,9 +293,6 @@ void Timestamp::CopyFrom(const Timestamp& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Timestamp::IsInitialized() const {
-  return true;
-}
 
 void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT other) {
   using std::swap;

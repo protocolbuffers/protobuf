@@ -157,6 +157,7 @@ SourceContext::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
               false,
           },
@@ -280,9 +281,6 @@ void SourceContext::CopyFrom(const SourceContext& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool SourceContext::IsInitialized() const {
-  return true;
-}
 
 void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT other) {
   using std::swap;

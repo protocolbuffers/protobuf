@@ -494,6 +494,7 @@ Type::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
               false,
           },
@@ -780,9 +781,6 @@ void Type::CopyFrom(const Type& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Type::IsInitialized() const {
-  return true;
-}
 
 void Type::InternalSwap(Type* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -886,6 +884,7 @@ Field::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
               false,
           },
@@ -1228,9 +1227,6 @@ void Field::CopyFrom(const Field& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Field::IsInitialized() const {
-  return true;
-}
 
 void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1337,6 +1333,7 @@ Enum::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
               false,
           },
@@ -1601,9 +1598,6 @@ void Enum::CopyFrom(const Enum& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Enum::IsInitialized() const {
-  return true;
-}
 
 void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1686,6 +1680,7 @@ EnumValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
               false,
           },
@@ -1859,9 +1854,6 @@ void EnumValue::CopyFrom(const EnumValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool EnumValue::IsInitialized() const {
-  return true;
-}
 
 void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1947,6 +1939,7 @@ Option::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
               false,
           },
@@ -2109,9 +2102,6 @@ void Option::CopyFrom(const Option& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Option::IsInitialized() const {
-  return true;
-}
 
 void Option::InternalSwap(Option* PROTOBUF_RESTRICT other) {
   using std::swap;

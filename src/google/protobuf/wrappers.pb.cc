@@ -391,6 +391,7 @@ DoubleValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
               false,
           },
@@ -524,9 +525,6 @@ void DoubleValue::CopyFrom(const DoubleValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool DoubleValue::IsInitialized() const {
-  return true;
-}
 
 void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -579,6 +577,7 @@ FloatValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
               false,
           },
@@ -712,9 +711,6 @@ void FloatValue::CopyFrom(const FloatValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool FloatValue::IsInitialized() const {
-  return true;
-}
 
 void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -767,6 +763,7 @@ Int64Value::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
               false,
           },
@@ -886,9 +883,6 @@ void Int64Value::CopyFrom(const Int64Value& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Int64Value::IsInitialized() const {
-  return true;
-}
 
 void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -941,6 +935,7 @@ UInt64Value::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
               false,
           },
@@ -1060,9 +1055,6 @@ void UInt64Value::CopyFrom(const UInt64Value& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool UInt64Value::IsInitialized() const {
-  return true;
-}
 
 void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1115,6 +1107,7 @@ Int32Value::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
               false,
           },
@@ -1234,9 +1227,6 @@ void Int32Value::CopyFrom(const Int32Value& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Int32Value::IsInitialized() const {
-  return true;
-}
 
 void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1289,6 +1279,7 @@ UInt32Value::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
               false,
           },
@@ -1408,9 +1399,6 @@ void UInt32Value::CopyFrom(const UInt32Value& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool UInt32Value::IsInitialized() const {
-  return true;
-}
 
 void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1463,6 +1451,7 @@ BoolValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
               false,
           },
@@ -1581,9 +1570,6 @@ void BoolValue::CopyFrom(const BoolValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool BoolValue::IsInitialized() const {
-  return true;
-}
 
 void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1650,6 +1636,7 @@ StringValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
               false,
           },
@@ -1773,9 +1760,6 @@ void StringValue::CopyFrom(const StringValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool StringValue::IsInitialized() const {
-  return true;
-}
 
 void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1844,6 +1828,7 @@ BytesValue::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
               false,
           },
@@ -1962,9 +1947,6 @@ void BytesValue::CopyFrom(const BytesValue& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool BytesValue::IsInitialized() const {
-  return true;
-}
 
 void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT other) {
   using std::swap;

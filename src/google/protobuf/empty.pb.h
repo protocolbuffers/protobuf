@@ -155,6 +155,9 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   }
 
   public:
+  bool IsInitialized() const {
+    return true;
+  }
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }

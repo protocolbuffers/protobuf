@@ -314,6 +314,7 @@ Api::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
               false,
           },
@@ -603,9 +604,6 @@ void Api::CopyFrom(const Api& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Api::IsInitialized() const {
-  return true;
-}
 
 void Api::InternalSwap(Api* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -710,6 +708,7 @@ Method::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
               false,
           },
@@ -977,9 +976,6 @@ void Method::CopyFrom(const Method& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Method::IsInitialized() const {
-  return true;
-}
 
 void Method::InternalSwap(Method* PROTOBUF_RESTRICT other) {
   using std::swap;
@@ -1060,6 +1056,7 @@ Mixin::GetClassData() const {
           {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
+              nullptr,  // IsInitialized
               PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
               false,
           },
@@ -1209,9 +1206,6 @@ void Mixin::CopyFrom(const Mixin& from) {
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool Mixin::IsInitialized() const {
-  return true;
-}
 
 void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT other) {
   using std::swap;
