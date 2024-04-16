@@ -12,7 +12,7 @@ class TimestampBase extends \Google\Protobuf\Internal\Message
      * Converts PHP DateTime to Timestamp.
      *
      * @param \DateTimeInterface $datetime
-     * @return  \Google\Protobuf\Internal\TimestampBase
+     * @return \Google\Protobuf\Internal\TimestampBase
      */
     public function fromDateTime(\DateTimeInterface $datetime): static
     {
