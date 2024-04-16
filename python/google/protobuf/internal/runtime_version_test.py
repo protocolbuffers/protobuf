@@ -10,6 +10,7 @@
 __author__ = 'shaod@google.com (Dennis Shao)'
 
 import unittest
+from google.protobuf import disable_version_check
 from google.protobuf import runtime_version
 
 
@@ -115,6 +116,31 @@ class RuntimeVersionTest(unittest.TestCase):
           runtime_version.MINOR,
           runtime_version.PATCH,
           '-noflag',
+          'foo.proto',
+      )
+
+  def test_version_check_disabled(self):
+    disable_version_check.DisableProtobufVersionCheck()
+    with self.assertWarns(
+        Warning, msg='Protobuf Python version check is disabled.'
+    ):
+      runtime_version.ValidateProtobufRuntimeVersion(
+          runtime_version.DOMAIN,
+          runtime_version.MAJOR,
+          runtime_version.MINOR,
+          runtime_version.PATCH,
+          '-noflag',
+          'foo.proto',
+      )
+    with self.assertWarns(
+        Warning, msg='Protobuf Python version check is disabled.'
+    ):
+      runtime_version.ValidateProtobufRuntimeVersion(
+          runtime_version.DOMAIN,
+          runtime_version.MAJOR,
+          runtime_version.MINOR,
+          runtime_version.PATCH + 1,
+          runtime_version.SUFFIX,
           'foo.proto',
       )
 
