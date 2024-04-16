@@ -72,8 +72,8 @@ $PROTOC -Isrc -I. \
     csharp/protos/unittest_issue6936_b.proto \
     csharp/protos/unittest_issue6936_c.proto \
     csharp/protos/unittest_selfreferential_options.proto \
-    src/google/protobuf/editions/golden/test_messages_proto3_editions.proto \
-    src/google/protobuf/editions/golden/test_messages_proto2_editions.proto \
+    editions/golden/test_messages_proto3_editions.proto \
+    editions/golden/test_messages_proto2_editions.proto \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
     src/google/protobuf/test_messages_proto2.proto \

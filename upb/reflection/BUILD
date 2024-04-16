@@ -10,7 +10,7 @@ load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 
 # end:github_only
 load(
-    "//src/google/protobuf/editions:defaults.bzl",
+    "//editions:defaults.bzl",
     "compile_edition_defaults",
     "embed_edition_defaults",
 )

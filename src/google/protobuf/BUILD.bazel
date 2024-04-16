@@ -895,7 +895,7 @@ proto_library(
     name = "unittest_features_proto",
     srcs = ["unittest_features.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//src/google/protobuf:__subpackages__"],
+    visibility = ["//editions:__subpackages__"],
     deps = [
         ":descriptor_proto",
     ],
@@ -903,7 +903,7 @@ proto_library(
 
 cc_proto_library(
     name = "unittest_features_cc_proto",
-    visibility = ["//src/google/protobuf:__subpackages__"],
+    visibility = ["//editions:__subpackages__"],
     deps = [":unittest_features_proto"],
 )
 
@@ -1290,6 +1290,7 @@ cc_library(
     hdrs = ["test_textproto.h"],
     strip_include_prefix = "/src",
     visibility = [
+        "//editions:__pkg__",
         "//pkg:__pkg__",
         "//src/google/protobuf:__subpackages__",
     ],

@@ -26,12 +26,12 @@ internal_gen_kt_protos(
         "//:duration_proto",
         "//:empty_proto",
         "//:field_mask_proto",
+        "//:java_features_proto",
         "//:source_context_proto",
         "//:struct_proto",
         "//:timestamp_proto",
         "//:type_proto",
         "//:wrappers_proto",
-        "//java/core:java_features_proto",
     ],
 )
 
@@ -56,8 +56,8 @@ kt_jvm_export(
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin-lite:pom_template.xml",
     resources = [
+        "//:java_features_proto",
         "//:well_known_type_protos",
-        "//java/core:java_features_proto",
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],

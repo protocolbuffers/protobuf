@@ -12,8 +12,8 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/editions/defaults_test_embedded.h"
-#include "google/protobuf/editions/defaults_test_embedded_base64.h"
+#include "editions/defaults_test_embedded.h"
+#include "editions/defaults_test_embedded_base64.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -29,7 +29,7 @@ namespace {
 absl::StatusOr<FeatureSetDefaults> ReadDefaults(absl::string_view name) {
   auto runfiles = absl::WrapUnique(bazel::tools::cpp::runfiles::Runfiles::CreateForTest());
   std::string file = runfiles->Rlocation(absl::StrCat(
-      "com_google_protobuf/src/google/protobuf/editions/",
+      "com_google_protobuf/editions/",
       name, ".binpb"));
   std::string data;
   RETURN_IF_ERROR(File::GetContents(file, &data, true));

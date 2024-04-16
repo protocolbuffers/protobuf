@@ -120,7 +120,7 @@ embed_edition_defaults = rule(
             doc = "The encoding format to use for the binary data (octal or base64)",
         ),
         "_escape": attr.label(
-            default = "//src/google/protobuf/editions:internal_defaults_escape",
+            default = "//editions:internal_defaults_escape",
             executable = True,
             cfg = "exec",
         ),

@@ -12,8 +12,8 @@ require 'conformance/test_protos/test_messages_edition2023_pb'
 require 'google/protobuf'
 require 'google/protobuf/test_messages_proto3_pb'
 require 'google/protobuf/test_messages_proto2_pb'
-require 'google/protobuf/editions/golden/test_messages_proto2_editions_pb'
-require 'google/protobuf/editions/golden/test_messages_proto3_editions_pb'
+require 'test_messages_proto2_editions_pb'
+require 'test_messages_proto3_editions_pb'
 
 $test_count = 0
 $verbose = false

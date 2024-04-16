@@ -30,6 +30,24 @@ add_custom_command(
       --cpp_out=${protobuf_BINARY_DIR}
 )
 
+
+add_custom_command(
+  OUTPUT
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.h
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.cc
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.h
+    ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.cc
+  DEPENDS ${protobuf_PROTOC_EXE}
+    ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto3_editions.proto
+    ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto2_editions.proto
+  COMMAND ${protobuf_PROTOC_EXE}
+      ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto3_editions.proto
+      ${protobuf_SOURCE_DIR}/editions/golden/test_messages_proto2_editions.proto
+      --proto_path=${protobuf_SOURCE_DIR}
+      --proto_path=${protobuf_SOURCE_DIR}/src
+      --cpp_out=${protobuf_BINARY_DIR}
+)
+
 file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
 
 add_custom_command(
@@ -38,20 +56,12 @@ add_custom_command(
     ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
     ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.h
     ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.h
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.cc
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.h
-    ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.cc
   DEPENDS ${protobuf_PROTOC_EXE}
           ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
           ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
-          ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.proto
-          ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.proto
   COMMAND ${protobuf_PROTOC_EXE}
               ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
               ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
-              ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.proto
-              ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.proto
             --proto_path=${protobuf_SOURCE_DIR}/src
             --cpp_out=${protobuf_BINARY_DIR}/src
 )
@@ -61,14 +71,14 @@ add_library(libconformance_common STATIC
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
   ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
   ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.h
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto3_editions.pb.cc
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.h
+  ${protobuf_BINARY_DIR}/editions/golden/test_messages_proto2_editions.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.h
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.h
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.h
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.cc
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.h
-  ${protobuf_BINARY_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.cc
 )
 target_link_libraries(libconformance_common
   ${protobuf_LIB_PROTOBUF}

@@ -13,7 +13,7 @@ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
-load("//src/google/protobuf/editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
 
 def build_targets(name):
@@ -55,6 +55,7 @@ def build_targets(name):
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
+            "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
     )
@@ -234,8 +235,6 @@ def build_targets(name):
         srcs = [
             "//src/google/protobuf:test_messages_proto2.proto",
             "//src/google/protobuf:test_messages_proto3.proto",
-            "//src/google/protobuf/editions:golden/test_messages_proto2_editions.proto",
-            "//src/google/protobuf/editions:golden/test_messages_proto3_editions.proto",
         ],
         strip_prefix = "src",
     )

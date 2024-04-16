@@ -20,8 +20,8 @@ from google.protobuf import test_messages_proto2_pb2
 from google.protobuf import test_messages_proto3_pb2
 from conformance import conformance_pb2
 from conformance.test_protos import test_messages_edition2023_pb2
-from google.protobuf.editions.golden import test_messages_proto2_editions_pb2
-from google.protobuf.editions.golden import test_messages_proto3_editions_pb2
+from editions.golden import test_messages_proto2_editions_pb2
+from editions.golden import test_messages_proto3_editions_pb2
 
 test_count = 0
 verbose = False

@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <gtest/gtest.h>
-#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
+#include "editions/golden/test_messages_proto2_editions.pb.h"
 
 namespace google {
 namespace protobuf {

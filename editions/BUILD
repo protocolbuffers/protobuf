@@ -1,6 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@rules_python//python:proto.bzl", "py_proto_library")
-load("//:protobuf.bzl", "internal_objc_proto_library")
+load("//:protobuf.bzl", "internal_objc_proto_library", "internal_py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
@@ -74,7 +73,6 @@ cc_library(
         "defaults_test_embedded.h",
         "defaults_test_embedded_base64.h",
     ],
-    strip_include_prefix = "/src",
 )
 
 cc_test(
@@ -108,7 +106,6 @@ proto_library(
     name = "test_messages_proto2_editions_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto2_editions.proto"],
-    strip_import_prefix = "/src",
 )
 
 cc_proto_library(
@@ -139,11 +136,14 @@ java_lite_proto_library(
     deps = [":test_messages_proto2_editions_proto"],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "test_messages_proto2_editions_py_pb2",
     testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto2_editions_proto"],
+    srcs = ["golden/test_messages_proto2_editions.proto"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//conformance:__pkg__",
+    ],
 )
 
 upb_c_proto_library(
@@ -163,7 +163,6 @@ proto_library(
     name = "test_messages_proto3_editions_proto",
     testonly = True,
     srcs = ["golden/test_messages_proto3_editions.proto"],
-    strip_import_prefix = "/src",
     deps = [
         "//:any_proto",
         "//:duration_proto",
@@ -207,11 +206,15 @@ java_lite_proto_library(
     deps = [":test_messages_proto3_editions_proto"],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "test_messages_proto3_editions_py_pb2",
     testonly = True,
-    visibility = ["//conformance:__pkg__"],
-    deps = [":test_messages_proto3_editions_proto"],
+    srcs = ["golden/test_messages_proto3_editions.proto"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//conformance:__pkg__",
+    ],
+    deps = ["//python:well_known_types_py_pb2"],
 )
 
 upb_c_proto_library(
@@ -227,14 +230,13 @@ upb_proto_reflection_library(
     deps = ["test_messages_proto3_editions_proto"],
 )
 
-# Export these for conformance tests until we support py_proto_library.
+# Export these for conformance tests for ruby codegen.
 exports_files(
     [
         "golden/test_messages_proto2_editions.proto",
         "golden/test_messages_proto3_editions.proto",
     ],
     visibility = [
-        "//python:__pkg__",
         "//ruby:__pkg__",
     ],
 )
@@ -243,7 +245,6 @@ proto_library(
     name = "test_editions_default_features_proto",
     testonly = True,
     srcs = ["proto/test_editions_default_features.proto"],
-    strip_import_prefix = "/src",
 )
 
 cc_proto_library(
@@ -275,3 +276,6 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Define a test suite to allow us to trigger these tests from //src expansions.
+test_suite(name = "all_tests")

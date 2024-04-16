@@ -169,12 +169,6 @@ alias(
 # implementation, but are not Well-Known Types.
 
 alias(
-    name = "cpp_features_proto",
-    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "descriptor_proto",
     actual = "//src/google/protobuf:descriptor_proto",  # proto_library
     visibility = ["//visibility:public"],
@@ -334,6 +328,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "cpp_features_proto",
+    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Java support
 ################################################################################
@@ -365,6 +365,12 @@ alias(
 alias(
     name = "javalite_toolchain",
     actual = "//java/lite:toolchain",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "java_features_proto",
+    actual = "//java/core:java_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 

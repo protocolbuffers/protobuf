@@ -8,10 +8,10 @@
 #import <Foundation/Foundation.h>
 
 #import "Conformance.pbobjc.h"
+#import "editions/golden/TestMessagesProto2Editions.pbobjc.h"
+#import "editions/golden/TestMessagesProto3Editions.pbobjc.h"
 #import "google/protobuf/TestMessagesProto2.pbobjc.h"
 #import "google/protobuf/TestMessagesProto3.pbobjc.h"
-#import "google/protobuf/editions/golden/TestMessagesProto2Editions.pbobjc.h"
-#import "google/protobuf/editions/golden/TestMessagesProto3Editions.pbobjc.h"
 #import "test_protos/TestMessagesEdition2023.pbobjc.h"
 
 static void Die(NSString *format, ...) __dead2;

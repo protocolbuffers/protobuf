@@ -24,7 +24,7 @@ proto_lang_toolchain(
     name = "toolchain",
     # keep this in sync w/ LITE_WELL_KNOWN_PROTO_MAP in //:BUILD
     blacklisted_protos = [
-        "//java/core:java_features_proto",
+        "//:java_features_proto",
         "//:any_proto",
         "//:api_proto",
         "//:duration_proto",
