@@ -1090,7 +1090,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   uint8_t label_ : 2;
 
   // Actually a `Type`, but stored as uint8_t to save space.
-  mutable uint8_t type_;
+  uint8_t type_;
 
   // Logically:
   //   all_names_ = [name, full_name, lower, camel, json]
@@ -2676,9 +2676,6 @@ inline FieldDescriptor::Label FieldDescriptor::label() const {
 }
 
 inline FieldDescriptor::Type FieldDescriptor::type() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, &FieldDescriptor::TypeOnceInit, this);
-  }
   return static_cast<Type>(type_);
 }
 
