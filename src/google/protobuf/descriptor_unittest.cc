@@ -7336,7 +7336,11 @@ TEST(IsGroupLike, GroupLikeDelimited) {
   const FileDescriptor& file =
       *editions_unittest::TestDelimited::descriptor()->file();
 
+  EXPECT_EQ(msg.FindFieldByName("grouplike")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_TRUE(IsGroupLike(*msg.FindFieldByName("grouplike")));
+  EXPECT_EQ(file.FindExtensionByName("grouplikefilescope")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_TRUE(IsGroupLike(*file.FindExtensionByName("grouplikefilescope")));
 }
 
@@ -7346,7 +7350,11 @@ TEST(IsGroupLike, GroupLikeNotDelimited) {
   const FileDescriptor& file =
       *editions_unittest::TestDelimited::descriptor()->file();
 
+  EXPECT_EQ(msg.FindFieldByName("lengthprefixed")->type(),
+            FieldDescriptor::TYPE_MESSAGE);
   EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("lengthprefixed")));
+  EXPECT_EQ(file.FindExtensionByName("lengthprefixed")->type(),
+            FieldDescriptor::TYPE_MESSAGE);
   EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("lengthprefixed")));
 }
 
@@ -7356,7 +7364,11 @@ TEST(IsGroupLike, GroupLikeMismatchedName) {
   const FileDescriptor& file =
       *editions_unittest::TestDelimited::descriptor()->file();
 
+  EXPECT_EQ(msg.FindFieldByName("notgrouplike")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("notgrouplike")));
+  EXPECT_EQ(file.FindExtensionByName("not_group_like_scope")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("not_group_like_scope")));
 }
 
@@ -7366,7 +7378,11 @@ TEST(IsGroupLike, GroupLikeMismatchedScope) {
   const FileDescriptor& file =
       *editions_unittest::TestDelimited::descriptor()->file();
 
+  EXPECT_EQ(msg.FindFieldByName("notgrouplikescope")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("notgrouplikescope")));
+  EXPECT_EQ(file.FindExtensionByName("grouplike")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("grouplike")));
 }
 
@@ -7376,7 +7392,11 @@ TEST(IsGroupLike, GroupLikeMismatchedFile) {
   const FileDescriptor& file =
       *editions_unittest::TestDelimited::descriptor()->file();
 
+  EXPECT_EQ(msg.FindFieldByName("messageimport")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*msg.FindFieldByName("messageimport")));
+  EXPECT_EQ(file.FindExtensionByName("messageimport")->type(),
+            FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("messageimport")));
 }
 
@@ -12772,17 +12792,15 @@ class LazilyBuildDependenciesTest : public testing::Test {
 
   void AddSimpleMessageProtoFileToDb(absl::string_view file_name,
                                      absl::string_view message_name) {
-    ParseProtoAndAddToDb(absl::StrCat("name: '", file_name,
-                                      ".proto' "
-                                      "package: \"protobuf_unittest\" "
-                                      "message_type { "
-                                      "  name:'",
-                                      message_name,
-                                      "' "
-                                      "  field { name:'a' number:1 "
-                                      "  label:LABEL_OPTIONAL "
-                                      "  type_name:'int32' } "
-                                      "}"));
+    ParseProtoAndAddToDb(absl::StrFormat(
+        R"pb(
+          name: '%s.proto'
+          package: "protobuf_unittest"
+          message_type {
+            name: '%s'
+            field { name: 'a' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          })pb",
+        file_name, message_name));
   }
 
   void AddSimpleEnumProtoFileToDb(absl::string_view file_name,
@@ -12807,15 +12825,20 @@ class LazilyBuildDependenciesTest : public testing::Test {
 };
 
 TEST_F(LazilyBuildDependenciesTest, Message) {
-  ParseProtoAndAddToDb(
-      "name: 'foo.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'bar.proto' "
-      "message_type { "
-      "  name:'Foo' "
-      "  field { name:'bar' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Bar' } "
-      "}");
+  ParseProtoAndAddToDb(R"pb(
+    name: 'foo.proto'
+    package: 'protobuf_unittest'
+    dependency: 'bar.proto'
+    message_type {
+      name: 'Foo'
+      field {
+        name: 'bar'
+        number: 1
+        label: LABEL_OPTIONAL
+        type: TYPE_MESSAGE
+        type_name: '.protobuf_unittest.Bar'
+      }
+    })pb");
   AddSimpleMessageProtoFileToDb("bar", "Bar");
 
   // Verify neither has been built yet.
@@ -12848,17 +12871,28 @@ TEST_F(LazilyBuildDependenciesTest, Message) {
 
 TEST_F(LazilyBuildDependenciesTest, Enum) {
   ParseProtoAndAddToDb(
-      "name: 'foo.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'enum1.proto' "
-      "dependency: 'enum2.proto' "
-      "message_type { "
-      "  name:'Lazy' "
-      "  field { name:'enum1' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Enum1' } "
-      "  field { name:'enum2' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Enum2' } "
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        package: 'protobuf_unittest'
+        dependency: 'enum1.proto'
+        dependency: 'enum2.proto'
+        message_type {
+          name: 'Lazy'
+          field {
+            name: 'enum1'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: '.protobuf_unittest.Enum1'
+          }
+          field {
+            name: 'enum2'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: '.protobuf_unittest.Enum2'
+          }
+        })pb");
   AddSimpleEnumProtoFileToDb("enum1", "Enum1", "ENUM1");
   AddSimpleEnumProtoFileToDb("enum2", "Enum2", "ENUM2");
 
@@ -12885,23 +12919,44 @@ TEST_F(LazilyBuildDependenciesTest, Enum) {
 
 TEST_F(LazilyBuildDependenciesTest, Type) {
   ParseProtoAndAddToDb(
-      "name: 'foo.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'message1.proto' "
-      "dependency: 'message2.proto' "
-      "dependency: 'enum1.proto' "
-      "dependency: 'enum2.proto' "
-      "message_type { "
-      "  name:'Lazy' "
-      "  field { name:'message1' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Message1' } "
-      "  field { name:'message2' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Message2' } "
-      "  field { name:'enum1' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Enum1' } "
-      "  field { name:'enum2' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Enum2' } "
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        package: 'protobuf_unittest'
+        dependency: 'message1.proto'
+        dependency: 'message2.proto'
+        dependency: 'enum1.proto'
+        dependency: 'enum2.proto'
+        message_type {
+          name: 'Lazy'
+          field {
+            name: 'message1'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: '.protobuf_unittest.Message1'
+          }
+          field {
+            name: 'message2'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: '.protobuf_unittest.Message2'
+          }
+          field {
+            name: 'enum1'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: '.protobuf_unittest.Enum1'
+          }
+          field {
+            name: 'enum2'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: '.protobuf_unittest.Enum2'
+          }
+        })pb");
   AddSimpleMessageProtoFileToDb("message1", "Message1");
   AddSimpleMessageProtoFileToDb("message2", "Message2");
   AddSimpleEnumProtoFileToDb("enum1", "Enum1", "ENUM1");
@@ -12946,19 +13001,29 @@ TEST_F(LazilyBuildDependenciesTest, Type) {
 
 TEST_F(LazilyBuildDependenciesTest, Extension) {
   ParseProtoAndAddToDb(
-      "name: 'foo.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'bar.proto' "
-      "dependency: 'baz.proto' "
-      "extension { extendee: '.protobuf_unittest.Bar' name:'bar' number:11"
-      "            label:LABEL_OPTIONAL type_name:'.protobuf_unittest.Baz' }");
+      R"pb(
+        name: 'foo.proto'
+        package: 'protobuf_unittest'
+        dependency: 'bar.proto'
+        dependency: 'baz.proto'
+        extension {
+          extendee: '.protobuf_unittest.Bar'
+          name: 'bar'
+          number: 11
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: '.protobuf_unittest.Baz'
+        }
+      )pb");
   ParseProtoAndAddToDb(
-      "name: 'bar.proto' "
-      "package: 'protobuf_unittest' "
-      "message_type { "
-      "  name:'Bar' "
-      "  extension_range { start: 10 end: 20 }"
-      "}");
+      R"pb(
+        name: 'bar.proto'
+        package: 'protobuf_unittest'
+        message_type {
+          name: 'Bar'
+          extension_range { start: 10 end: 20 }
+        }
+      )pb");
   AddSimpleMessageProtoFileToDb("baz", "Baz");
 
   // Verify none have been built yet.
@@ -12977,18 +13042,21 @@ TEST_F(LazilyBuildDependenciesTest, Extension) {
 }
 
 TEST_F(LazilyBuildDependenciesTest, Service) {
-  ParseProtoAndAddToDb(
-      "name: 'foo.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'message1.proto' "
-      "dependency: 'message2.proto' "
-      "dependency: 'message3.proto' "
-      "dependency: 'message4.proto' "
-      "service {"
-      "  name: 'LazyService'"
-      "  method { name: 'A' input_type:  '.protobuf_unittest.Message1' "
-      "                     output_type: '.protobuf_unittest.Message2' }"
-      "}");
+  ParseProtoAndAddToDb(R"pb(
+    name: 'foo.proto'
+    package: 'protobuf_unittest'
+    dependency: 'message1.proto'
+    dependency: 'message2.proto'
+    dependency: 'message3.proto'
+    dependency: 'message4.proto'
+    service {
+      name: 'LazyService'
+      method {
+        name: 'A'
+        input_type: '.protobuf_unittest.Message1'
+        output_type: '.protobuf_unittest.Message2'
+      }
+    })pb");
   AddSimpleMessageProtoFileToDb("message1", "Message1");
   AddSimpleMessageProtoFileToDb("message2", "Message2");
   AddSimpleMessageProtoFileToDb("message3", "Message3");
@@ -13071,23 +13139,37 @@ TEST_F(LazilyBuildDependenciesTest, GeneratedFile) {
 
 TEST_F(LazilyBuildDependenciesTest, Dependency) {
   ParseProtoAndAddToDb(
-      "name: 'foo.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'bar.proto' "
-      "message_type { "
-      "  name:'Foo' "
-      "  field { name:'bar' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Bar' } "
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        package: 'protobuf_unittest'
+        dependency: 'bar.proto'
+        message_type {
+          name: 'Foo'
+          field {
+            name: 'bar'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: '.protobuf_unittest.Bar'
+          }
+        }
+      )pb");
   ParseProtoAndAddToDb(
-      "name: 'bar.proto' "
-      "package: 'protobuf_unittest' "
-      "dependency: 'baz.proto' "
-      "message_type { "
-      "  name:'Bar' "
-      "  field { name:'baz' number:1 label:LABEL_OPTIONAL "
-      "type_name:'.protobuf_unittest.Baz' } "
-      "}");
+      R"pb(
+        name: 'bar.proto'
+        package: 'protobuf_unittest'
+        dependency: 'baz.proto'
+        message_type {
+          name: 'Bar'
+          field {
+            name: 'baz'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: '.protobuf_unittest.Baz'
+          }
+        }
+      )pb");
   AddSimpleMessageProtoFileToDb("baz", "Baz");
 
   const FileDescriptor* foo_file = pool_.FindFileByName("foo.proto");

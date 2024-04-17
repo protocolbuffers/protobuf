@@ -9523,10 +9523,11 @@ void FieldDescriptor::InternalTypeOnceInit() const {
   Symbol result = file()->pool()->CrossLinkOnDemandHelper(
       lazy_type_name, type_ == FieldDescriptor::TYPE_ENUM);
   if (result.type() == Symbol::MESSAGE) {
-    type_ = FieldDescriptor::TYPE_MESSAGE;
+    ABSL_CHECK(type_ == FieldDescriptor::TYPE_MESSAGE ||
+               type_ == FieldDescriptor::TYPE_GROUP);
     type_descriptor_.message_type = result.descriptor();
   } else if (result.type() == Symbol::ENUM) {
-    type_ = FieldDescriptor::TYPE_ENUM;
+    ABSL_CHECK(type_ == FieldDescriptor::TYPE_ENUM);
     enum_type = type_descriptor_.enum_type = result.enum_descriptor();
   }
 
