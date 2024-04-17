@@ -1406,12 +1406,12 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // Preallocate an initial arena block to avoid mallocs during hooked region.
   std::vector<char> arena_block(1024 * 1024);
   Arena arena(arena_block.data(), arena_block.size());
+  const size_t initial_allocated_size = arena.SpaceAllocated();
 
   {
-    internal::NoHeapChecker no_heap;
-
-    // Fill some repeated fields on the arena to test for leaks. Also verify no
-    // memory allocations.
+    // Fill some repeated fields on the arena to test for leaks. Also that the
+    // newly allocated memory is approximately the size of the cleanups for the
+    // repeated messages.
     RepeatedField<int32_t> repeated_int32(&arena);
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1432,10 +1432,13 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     repeated_message.UnsafeArenaExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
     EXPECT_EQ(5, repeated_message.size());
+    const size_t upperbound_cleanup_size =
+        2 * 110 * sizeof(internal::cleanup::CleanupNode);
+    EXPECT_GT(initial_allocated_size + upperbound_cleanup_size,
+              arena.SpaceAllocated());
   }
 
-  // Now, outside the scope of the NoHeapChecker, test ExtractSubrange's copying
-  // semantics.
+  // Now test ExtractSubrange's copying semantics.
   {
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1563,28 +1566,6 @@ void FillArenaAwareFields(TestAllTypes* message) {
   message->mutable_optional_lazy_message()->set_bb(42);
 }
 
-// Test: no allocations occur on heap while touching all supported field types.
-TEST(ArenaTest, NoHeapAllocationsTest) {
-  if (internal::DebugHardenClearOneofMessageOnArena()) {
-    GTEST_SKIP() << "debug hardening may cause heap allocation.";
-  }
-
-  // Allocate a large initial block to avoid mallocs during hooked test.
-  std::vector<char> arena_block(128 * 1024);
-  ArenaOptions options;
-  options.initial_block = &arena_block[0];
-  options.initial_block_size = arena_block.size();
-  Arena arena(options);
-
-  {
-
-    TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
-    FillArenaAwareFields(message);
-  }
-
-  arena.Reset();
-}
-
 TEST(ArenaTest, ParseCorruptedString) {
   TestAllTypes message;
   TestUtil::SetAllFields(&message);
@@ -1610,8 +1591,9 @@ TEST(ArenaTest, MessageLiteOnArena) {
   initial_message.SerializeToString(&serialized);
 
   {
-
     MessageLite* generic_message = prototype->New(&arena);
+
+
     EXPECT_TRUE(generic_message != nullptr);
     EXPECT_EQ(&arena, generic_message->GetArena());
     EXPECT_TRUE(generic_message->ParseFromString(serialized));

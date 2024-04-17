@@ -20,6 +20,7 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -109,6 +110,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   friend class TcParser;
   friend class SerialArena;
   friend struct SerialArenaChunkHeader;
+  friend class cleanup::ChunkList;
   static uint64_t GetNextLifeCycleId();
 
   class SerialArenaChunk;
@@ -161,7 +163,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void Init();
 
   // Delete or Destruct all objects owned by the arena.
-  void CleanupList();
+  void CleanupList(size_t* space_allocated);
 
   inline void CacheSerialArena(SerialArena* serial) {
     thread_cache().last_serial_arena = serial;
