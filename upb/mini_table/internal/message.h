@@ -62,7 +62,7 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#ifdef UPB_FASTTABLE_ENABLED
+#if UPB_FASTTABLE
   // To statically initialize the tables of variable length, we need a flexible
   // array member, and we need to compile in gnu99 mode (constant initialization
   // of flexible array members is a GNU extension, not in C99 unfortunately.
@@ -97,9 +97,9 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
-UPB_INLINE const union upb_MiniTableSub* UPB_PRIVATE(
+UPB_INLINE const union upb_MiniTableSub UPB_PRIVATE(
     _upb_MiniTable_GetSubByIndex)(const struct upb_MiniTable* m, uint32_t i) {
-  return &m->UPB_PRIVATE(subs)[i];
+  return m->UPB_PRIVATE(subs)[i];
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
