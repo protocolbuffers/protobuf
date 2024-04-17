@@ -269,8 +269,8 @@ message FieldDescriptorProto {
   optional int32 number = 3;
   optional Label label = 4;
 
-  // If type_name is set, this need not be set.  If both this and type_name
-  // are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
+  // If this is TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP, type_name must also be
+  // set.
   optional Type type = 5;
 
   // For message and enum types, this is the name of the type.  If the name
