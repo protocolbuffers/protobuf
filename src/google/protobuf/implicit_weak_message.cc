@@ -25,6 +25,15 @@ const char* ImplicitWeakMessage::ParseImpl(ImplicitWeakMessage* msg,
   return ctx->AppendString(ptr, msg->data_);
 }
 
+void ImplicitWeakMessage::MergeImpl(MessageLite& self,
+                                    const MessageLite& other) {
+  const std::string* other_data =
+      static_cast<const ImplicitWeakMessage&>(other).data_;
+  if (other_data != nullptr) {
+    static_cast<ImplicitWeakMessage&>(self).data_->append(*other_data);
+  }
+}
+
 struct ImplicitWeakMessageDefaultType {
   constexpr ImplicitWeakMessageDefaultType()
       : instance(ConstantInitialized{}) {}
@@ -55,6 +64,7 @@ const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
           &table.header,
           nullptr,  // on_demand_register_arena_dtor
           nullptr,  // is_initialized (always true)
+          MergeImpl,
           PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
           true,
       },

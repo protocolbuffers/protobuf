@@ -273,10 +273,10 @@ struct DynamicMessageFactory::TypeInfo {
           nullptr,  // tc_table
           nullptr,  // on_demand_register_arena_dtor
           DynamicMessage::IsInitializedImpl,
+          &DynamicMessage::MergeImpl,
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
           false,
       },
-      &DynamicMessage::MergeImpl,
       &DynamicMessage::kDescriptorMethods,
       nullptr,  // descriptor_table
       nullptr,  // get_metadata_tracker

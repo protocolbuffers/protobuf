@@ -191,10 +191,10 @@ JavaFeatures::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &JavaFeatures::MergeImpl,
               PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
               false,
           },
-          &JavaFeatures::MergeImpl,
           &JavaFeatures::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
           nullptr,  // tracker

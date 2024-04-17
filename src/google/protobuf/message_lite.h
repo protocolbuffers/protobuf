@@ -249,7 +249,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // If |other| is the exact same class as this, calls MergeFrom(). Otherwise,
   // results are undefined (probably crash).
-  virtual void CheckTypeAndMergeFrom(const MessageLite& other) = 0;
+  void CheckTypeAndMergeFrom(const MessageLite& other);
 
   // These methods return a human-readable summary of the message. Note that
   // since the MessageLite interface does not support reflection, there is very
@@ -552,6 +552,7 @@ class PROTOBUF_EXPORT MessageLite {
     const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     bool (*is_initialized)(const MessageLite&);
+    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
 
     // Offset of the CachedSize member.
     uint32_t cached_size_offset;
@@ -559,25 +560,17 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
-    // XXX REMOVE XXX
-    constexpr ClassData(const internal::TcParseTableBase* tc_table,
-                        void (*on_demand_register_arena_dtor)(MessageLite&,
-                                                              Arena&),
-                        uint32_t cached_size_offset, bool is_lite)
-        : tc_table(tc_table),
-          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
-          is_initialized(nullptr),
-          cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {}
-
     constexpr ClassData(const internal::TcParseTableBase* tc_table,
                         void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
                         bool (*is_initialized)(const MessageLite&),
+                        void (*merge_to_from)(MessageLite& to,
+                                              const MessageLite& from_msg),
                         uint32_t cached_size_offset, bool is_lite)
         : tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
+          merge_to_from(merge_to_from),
           cached_size_offset(cached_size_offset),
           is_lite(is_lite) {}
 
@@ -595,13 +588,10 @@ class PROTOBUF_EXPORT MessageLite {
   };
   struct ClassDataFull : ClassData {
     constexpr ClassDataFull(ClassData base,
-                            void (*merge_to_from)(MessageLite& to,
-                                                  const MessageLite& from_msg),
                             const DescriptorMethods* descriptor_methods,
                             const internal::DescriptorTable* descriptor_table,
                             void (*get_metadata_tracker)())
         : ClassData(base),
-          merge_to_from(merge_to_from),
           descriptor_methods(descriptor_methods),
           descriptor_table(descriptor_table),
           reflection(),
@@ -610,7 +600,6 @@ class PROTOBUF_EXPORT MessageLite {
 
     constexpr const ClassData* base() const { return this; }
 
-    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     const DescriptorMethods* descriptor_methods;
 
     // Codegen types will provide a DescriptorTable to do lazy

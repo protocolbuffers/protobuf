@@ -367,10 +367,10 @@ Version::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Version::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
               false,
           },
-          &Version::MergeImpl,
           &Version::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
           nullptr,  // tracker
@@ -675,10 +675,10 @@ CodeGeneratorRequest::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               CodeGeneratorRequest::IsInitializedImpl,
+              &CodeGeneratorRequest::MergeImpl,
               PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
               false,
           },
-          &CodeGeneratorRequest::MergeImpl,
           &CodeGeneratorRequest::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
           nullptr,  // tracker
@@ -1026,10 +1026,10 @@ CodeGeneratorResponse_File::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &CodeGeneratorResponse_File::MergeImpl,
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
               false,
           },
-          &CodeGeneratorResponse_File::MergeImpl,
           &CodeGeneratorResponse_File::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
           nullptr,  // tracker
@@ -1343,10 +1343,10 @@ CodeGeneratorResponse::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &CodeGeneratorResponse::MergeImpl,
               PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
               false,
           },
-          &CodeGeneratorResponse::MergeImpl,
           &CodeGeneratorResponse::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
           nullptr,  // tracker

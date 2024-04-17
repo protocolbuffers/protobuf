@@ -45,6 +45,16 @@
 namespace google {
 namespace protobuf {
 
+void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
+  auto* data = GetClassData();
+  auto* other_data = other.GetClassData();
+
+  ABSL_CHECK_EQ(data, other_data)
+      << "Invalid call to CheckTypeAndMergeFrom between types " << GetTypeName()
+      << " and " << other.GetTypeName();
+  data->merge_to_from(*this, other);
+}
+
 bool MessageLite::IsInitialized() const {
   auto* data = GetClassData();
   return data->is_initialized != nullptr ? data->is_initialized(*this) : true;

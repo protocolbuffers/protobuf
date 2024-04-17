@@ -81,10 +81,6 @@ void Message::MergeFrom(const Message& from) {
   }
 }
 
-void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
-  MergeFrom(*DownCast<const Message*>(&other));
-}
-
 void Message::CopyFrom(const Message& from) {
   if (&from == this) return;
 

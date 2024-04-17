@@ -345,7 +345,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   void Clear() override;
 
-  void CheckTypeAndMergeFrom(const MessageLite& other) override;
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;

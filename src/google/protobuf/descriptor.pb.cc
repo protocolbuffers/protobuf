@@ -2451,10 +2451,10 @@ FileDescriptorSet::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FileDescriptorSet::IsInitializedImpl,
+              &FileDescriptorSet::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
               false,
           },
-          &FileDescriptorSet::MergeImpl,
           &FileDescriptorSet::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -2687,10 +2687,10 @@ FileDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FileDescriptorProto::IsInitializedImpl,
+              &FileDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &FileDescriptorProto::MergeImpl,
           &FileDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -3267,10 +3267,10 @@ DescriptorProto_ExtensionRange::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               DescriptorProto_ExtensionRange::IsInitializedImpl,
+              &DescriptorProto_ExtensionRange::MergeImpl,
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
               false,
           },
-          &DescriptorProto_ExtensionRange::MergeImpl,
           &DescriptorProto_ExtensionRange::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -3531,10 +3531,10 @@ DescriptorProto_ReservedRange::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &DescriptorProto_ReservedRange::MergeImpl,
               PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
               false,
           },
-          &DescriptorProto_ReservedRange::MergeImpl,
           &DescriptorProto_ReservedRange::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -3786,10 +3786,10 @@ DescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               DescriptorProto::IsInitializedImpl,
+              &DescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
               false,
           },
-          &DescriptorProto::MergeImpl,
           &DescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -4286,10 +4286,10 @@ ExtensionRangeOptions_Declaration::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &ExtensionRangeOptions_Declaration::MergeImpl,
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
               false,
           },
-          &ExtensionRangeOptions_Declaration::MergeImpl,
           &ExtensionRangeOptions_Declaration::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -4616,10 +4616,10 @@ ExtensionRangeOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               ExtensionRangeOptions::IsInitializedImpl,
+              &ExtensionRangeOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
               false,
           },
-          &ExtensionRangeOptions::MergeImpl,
           &ExtensionRangeOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -4971,10 +4971,10 @@ FieldDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FieldDescriptorProto::IsInitializedImpl,
+              &FieldDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &FieldDescriptorProto::MergeImpl,
           &FieldDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -5475,10 +5475,10 @@ OneofDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               OneofDescriptorProto::IsInitializedImpl,
+              &OneofDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &OneofDescriptorProto::MergeImpl,
           &OneofDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -5718,10 +5718,10 @@ EnumDescriptorProto_EnumReservedRange::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &EnumDescriptorProto_EnumReservedRange::MergeImpl,
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
               false,
           },
-          &EnumDescriptorProto_EnumReservedRange::MergeImpl,
           &EnumDescriptorProto_EnumReservedRange::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -5963,10 +5963,10 @@ EnumDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               EnumDescriptorProto::IsInitializedImpl,
+              &EnumDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &EnumDescriptorProto::MergeImpl,
           &EnumDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -6311,10 +6311,10 @@ EnumValueDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               EnumValueDescriptorProto::IsInitializedImpl,
+              &EnumValueDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &EnumValueDescriptorProto::MergeImpl,
           &EnumValueDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -6601,10 +6601,10 @@ ServiceDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               ServiceDescriptorProto::IsInitializedImpl,
+              &ServiceDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &ServiceDescriptorProto::MergeImpl,
           &ServiceDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -6908,10 +6908,10 @@ MethodDescriptorProto::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               MethodDescriptorProto::IsInitializedImpl,
+              &MethodDescriptorProto::MergeImpl,
               PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
               false,
           },
-          &MethodDescriptorProto::MergeImpl,
           &MethodDescriptorProto::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -7321,10 +7321,10 @@ FileOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FileOptions::IsInitializedImpl,
+              &FileOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
               false,
           },
-          &FileOptions::MergeImpl,
           &FileOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -8111,10 +8111,10 @@ MessageOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               MessageOptions::IsInitializedImpl,
+              &MessageOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
               false,
           },
-          &MessageOptions::MergeImpl,
           &MessageOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -8487,10 +8487,10 @@ FieldOptions_EditionDefault::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &FieldOptions_EditionDefault::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
               false,
           },
-          &FieldOptions_EditionDefault::MergeImpl,
           &FieldOptions_EditionDefault::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -8734,10 +8734,10 @@ FieldOptions_FeatureSupport::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &FieldOptions_FeatureSupport::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
               false,
           },
-          &FieldOptions_FeatureSupport::MergeImpl,
           &FieldOptions_FeatureSupport::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -9051,10 +9051,10 @@ FieldOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FieldOptions::IsInitializedImpl,
+              &FieldOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
               false,
           },
-          &FieldOptions::MergeImpl,
           &FieldOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -9620,10 +9620,10 @@ OneofOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               OneofOptions::IsInitializedImpl,
+              &OneofOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
               false,
           },
-          &OneofOptions::MergeImpl,
           &OneofOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -9900,10 +9900,10 @@ EnumOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               EnumOptions::IsInitializedImpl,
+              &EnumOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
               false,
           },
-          &EnumOptions::MergeImpl,
           &EnumOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -10254,10 +10254,10 @@ EnumValueOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               EnumValueOptions::IsInitializedImpl,
+              &EnumValueOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
               false,
           },
-          &EnumValueOptions::MergeImpl,
           &EnumValueOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -10584,10 +10584,10 @@ ServiceOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               ServiceOptions::IsInitializedImpl,
+              &ServiceOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
               false,
           },
-          &ServiceOptions::MergeImpl,
           &ServiceOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -10895,10 +10895,10 @@ MethodOptions::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               MethodOptions::IsInitializedImpl,
+              &MethodOptions::MergeImpl,
               PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
               false,
           },
-          &MethodOptions::MergeImpl,
           &MethodOptions::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -11221,10 +11221,10 @@ UninterpretedOption_NamePart::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               UninterpretedOption_NamePart::IsInitializedImpl,
+              &UninterpretedOption_NamePart::MergeImpl,
               PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
               false,
           },
-          &UninterpretedOption_NamePart::MergeImpl,
           &UninterpretedOption_NamePart::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -11483,10 +11483,10 @@ UninterpretedOption::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               UninterpretedOption::IsInitializedImpl,
+              &UninterpretedOption::MergeImpl,
               PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
               false,
           },
-          &UninterpretedOption::MergeImpl,
           &UninterpretedOption::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -11871,10 +11871,10 @@ FeatureSet::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FeatureSet::IsInitializedImpl,
+              &FeatureSet::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
               false,
           },
-          &FeatureSet::MergeImpl,
           &FeatureSet::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -12229,10 +12229,10 @@ FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
+              &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
               false,
           },
-          &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
           &FeatureSetDefaults_FeatureSetEditionDefault::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -12527,10 +12527,10 @@ FeatureSetDefaults::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               FeatureSetDefaults::IsInitializedImpl,
+              &FeatureSetDefaults::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
               false,
           },
-          &FeatureSetDefaults::MergeImpl,
           &FeatureSetDefaults::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -12805,10 +12805,10 @@ SourceCodeInfo_Location::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &SourceCodeInfo_Location::MergeImpl,
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
               false,
           },
-          &SourceCodeInfo_Location::MergeImpl,
           &SourceCodeInfo_Location::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -13128,10 +13128,10 @@ SourceCodeInfo::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &SourceCodeInfo::MergeImpl,
               PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
               false,
           },
-          &SourceCodeInfo::MergeImpl,
           &SourceCodeInfo::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -13338,10 +13338,10 @@ GeneratedCodeInfo_Annotation::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &GeneratedCodeInfo_Annotation::MergeImpl,
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
               false,
           },
-          &GeneratedCodeInfo_Annotation::MergeImpl,
           &GeneratedCodeInfo_Annotation::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker
@@ -13653,10 +13653,10 @@ GeneratedCodeInfo::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &GeneratedCodeInfo::MergeImpl,
               PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
               false,
           },
-          &GeneratedCodeInfo::MergeImpl,
           &GeneratedCodeInfo::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
           nullptr,  // tracker

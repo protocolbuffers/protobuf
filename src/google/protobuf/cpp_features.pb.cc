@@ -186,10 +186,10 @@ CppFeatures::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &CppFeatures::MergeImpl,
               PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
               false,
           },
-          &CppFeatures::MergeImpl,
           &CppFeatures::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
           nullptr,  // tracker
