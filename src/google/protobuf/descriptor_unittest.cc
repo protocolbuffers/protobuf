@@ -4060,6 +4060,16 @@ class ValidationErrorTest : public testing::Test {
   }
 
 
+  // Add file_proto to the DescriptorPool. Expect errors to be produced which
+  // match the given error text.
+  void BuildFileWithErrors(const FileDescriptorProto& file_proto,
+                           const std::string& expected_errors) {
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
+                nullptr);
+    EXPECT_EQ(expected_errors, error_collector.text_);
+  }
+
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect errors to be produced which match the
   // given error text.
@@ -4067,11 +4077,7 @@ class ValidationErrorTest : public testing::Test {
                            const std::string& expected_errors) {
     FileDescriptorProto file_proto;
     ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-
-    MockErrorCollector error_collector;
-    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
-                nullptr);
-    EXPECT_EQ(expected_errors, error_collector.text_);
+    BuildFileWithErrors(file_proto, expected_errors);
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
@@ -6423,7 +6429,7 @@ TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
       "  start: 10 end: 20 "
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryExtension) {
@@ -6434,7 +6440,7 @@ TEST_F(ValidationErrorTest, MapEntryExtension) {
       "  name: 'foo_ext' extendee: '.Bar' number: 5"
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryNestedType) {
@@ -6445,7 +6451,7 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
       "  name: 'Bar' "
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
@@ -6457,7 +6463,7 @@ TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
       "  value { name: 'BAR_BAR' number:0 } "
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryExtraField) {
@@ -6471,7 +6477,7 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
       "  number: 3 "
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryMessageName) {
@@ -6481,7 +6487,7 @@ TEST_F(ValidationErrorTest, MapEntryMessageName) {
       "OtherMapEntry");
   file_proto.mutable_message_type(0)->mutable_field(0)->set_type_name(
       "OtherMapEntry");
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
@@ -6489,7 +6495,7 @@ TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
   FillValidMapEntry(&file_proto);
   file_proto.mutable_message_type(0)->mutable_field(0)->set_label(
       FieldDescriptorProto::LABEL_OPTIONAL);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
@@ -6499,7 +6505,7 @@ TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   // the validation.
   file_proto.mutable_message_type()->AddAllocated(
       file_proto.mutable_message_type(0)->mutable_nested_type()->ReleaseLast());
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyName) {
@@ -6509,7 +6515,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyName) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           0);
   key->set_name("Key");
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyLabel) {
@@ -6519,7 +6525,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyLabel) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           0);
   key->set_label(FieldDescriptorProto::LABEL_REQUIRED);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyNumber) {
@@ -6529,7 +6535,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyNumber) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           0);
   key->set_number(3);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryValueName) {
@@ -6539,7 +6545,7 @@ TEST_F(ValidationErrorTest, MapEntryValueName) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           1);
   value->set_name("Value");
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryValueLabel) {
@@ -6549,7 +6555,7 @@ TEST_F(ValidationErrorTest, MapEntryValueLabel) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           1);
   value->set_label(FieldDescriptorProto::LABEL_REQUIRED);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryValueNumber) {
@@ -6559,7 +6565,7 @@ TEST_F(ValidationErrorTest, MapEntryValueNumber) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           1);
   value->set_number(3);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeFloat) {
@@ -6569,7 +6575,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeFloat) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           0);
   key->set_type(FieldDescriptorProto::TYPE_FLOAT);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryKeyTypeErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeDouble) {
@@ -6579,7 +6585,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeDouble) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           0);
   key->set_type(FieldDescriptorProto::TYPE_DOUBLE);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryKeyTypeErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeBytes) {
@@ -6589,7 +6595,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeBytes) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0)->mutable_field(
           0);
   key->set_type(FieldDescriptorProto::TYPE_BYTES);
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryKeyTypeErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
@@ -6605,14 +6611,14 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
   EnumValueDescriptorProto* enum_value_proto = enum_proto->add_value();
   enum_value_proto->set_name("BAR_VALUE0");
   enum_value_proto->set_number(0);
-  BuildFileWithErrors(file_proto.DebugString(),
+  BuildFileWithErrors(file_proto,
                       "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
                       "be enum types.\n");
   // Enum keys are not allowed in proto3 as well.
   // Get rid of extensions for proto3 to make it proto3 compatible.
   file_proto.mutable_message_type()->RemoveLast();
   file_proto.set_syntax("proto3");
-  BuildFileWithErrors(file_proto.DebugString(),
+  BuildFileWithErrors(file_proto,
                       "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
                       "be enum types.\n");
 }
@@ -6625,7 +6631,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
           0);
   key->clear_type();
   key->set_type_name(".Bar");
-  BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
+  BuildFileWithErrors(file_proto, kMapEntryKeyTypeErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
@@ -6640,7 +6646,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
       "}",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
-      file_proto.DebugString(),
+      file_proto,
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
       "\"Foo\".\n"
       "foo.proto: Foo.foo_map: TYPE: \"FooMapEntry\" is not defined.\n"
@@ -6657,7 +6663,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithMessage) {
       "}",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
-      file_proto.DebugString(),
+      file_proto,
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
       "\"Foo\".\n"
       "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
@@ -6674,7 +6680,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
       "}",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
-      file_proto.DebugString(),
+      file_proto,
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
       "\"Foo\".\n"
       "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
@@ -6860,7 +6866,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
       "} ",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
-      file_proto.DebugString(),
+      file_proto,
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
       "\"Foo\".\n"
       "foo.proto: Foo.foo_map: TYPE: \"FooMapEntry\" is not defined.\n"
@@ -7518,7 +7524,9 @@ TEST_F(FeaturesTest, Proto2Features) {
   // Check round-trip consistency.
   FileDescriptorProto proto;
   file->CopyTo(&proto);
-  EXPECT_THAT(proto, EqualsProto(file_proto.DebugString()));
+  std::string file_textproto;
+  google::protobuf::TextFormat::PrintToString(file_proto, &file_textproto);
+  EXPECT_THAT(proto, EqualsProto(file_textproto));
 }
 
 TEST_F(FeaturesTest, Proto3Features) {
@@ -7588,7 +7596,9 @@ TEST_F(FeaturesTest, Proto3Features) {
   // Check round-trip consistency.
   FileDescriptorProto proto;
   file->CopyTo(&proto);
-  EXPECT_THAT(proto, EqualsProto(file_proto.DebugString()));
+  std::string file_textproto;
+  google::protobuf::TextFormat::PrintToString(file_proto, &file_textproto);
+  EXPECT_THAT(proto, EqualsProto(file_textproto));
 }
 
 TEST_F(FeaturesTest, Proto2Proto3EnumFeatures) {
@@ -9778,7 +9788,7 @@ TEST_F(FeaturesTest, InvalidFieldMapImplicit) {
   proto.set_name("foo.proto");
 
   BuildDescriptorMessagesInTestPool();
-  BuildFileWithErrors(proto.DebugString(),
+  BuildFileWithErrors(proto,
                       "foo.proto: Foo.bar: NAME: Repeated fields can't specify "
                       "field presence.\n");
 }
@@ -10021,7 +10031,7 @@ TEST_F(FeaturesTest, InvalidFieldMapWithMessageEncoding) {
 
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
-      proto.DebugString(),
+      proto,
       "foo.proto: Foo.bar: NAME: Only message fields can specify message "
       "encoding.\n");
 }
@@ -11819,9 +11829,12 @@ TEST_F(DatabaseBackedPoolTest, UnittestProto) {
 TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
   FileDescriptorProto proto;
   FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  AddToDatabase(&database_, proto.DebugString());
+  std::string text_proto;
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
   pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  AddToDatabase(&database_, proto.DebugString());
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -11867,9 +11880,12 @@ TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
   FileDescriptorProto proto;
   FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  AddToDatabase(&database_, proto.DebugString());
+  std::string text_proto;
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
   pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  AddToDatabase(&database_, proto.DebugString());
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
