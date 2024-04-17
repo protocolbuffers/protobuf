@@ -10,6 +10,18 @@ bzl_library(
     visibility = ["//visibility:public"],
 )
 
+# Aggregate all the features owned by the Protobuf repo.
+compile_edition_defaults(
+    name = "protobuf_defaults",
+    testonly = True,
+    srcs = [
+        "//java/core:java_features_proto",
+        "//src/google/protobuf:cpp_features_proto",
+    ],
+    maximum_edition = "2023",
+    minimum_edition = "2023",
+)
+
 compile_edition_defaults(
     name = "test_defaults_2023",
     testonly = True,
@@ -75,18 +87,36 @@ cc_library(
     ],
 )
 
+cc_proto_library(
+    name = "cpp_features_cc_proto",
+    testonly = True,
+    deps = ["//src/google/protobuf:cpp_features_proto"],
+)
+
+cc_proto_library(
+    name = "java_features_cc_proto",
+    testonly = True,
+    deps = ["//java/core:java_features_proto"],
+)
+
 cc_test(
     name = "defaults_test",
     srcs = ["defaults_test.cc"],
     data = [
+        ":protobuf_defaults",
         ":test_defaults_2023",
         ":test_defaults_far_future",
         ":test_defaults_future",
     ],
     deps = [
+        ":cpp_features_cc_proto",
         ":defaults_test_embedded",
+        ":java_features_cc_proto",
+        "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf:test_textproto",
         "//src/google/protobuf:unittest_features_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

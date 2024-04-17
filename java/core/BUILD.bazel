@@ -187,6 +187,7 @@ proto_library(
     strip_import_prefix = "/java/core/src/main/resources",
     visibility = [
         "//:__pkg__",
+        "//editions:__pkg__",
         "//java/__subpackages__",
         "//pkg:__pkg__",
     ],

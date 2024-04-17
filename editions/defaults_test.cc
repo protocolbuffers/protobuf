@@ -12,10 +12,16 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/java_features.pb.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "editions/defaults_test_embedded.h"
 #include "editions/defaults_test_embedded_base64.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/stubs/status_macros.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -180,6 +186,63 @@ TEST(DefaultsTest, EmbeddedBase64) {
                 .GetExtension(pb::test)
                 .file_feature(),
             pb::VALUE3);
+}
+
+// Lock down that overridable defaults never change in released editions.  After
+// an edition has been released these tests should never need to be touched.
+class OverridableDefaultsTest : public ::testing::Test {
+ public:
+  OverridableDefaultsTest() = default;
+  static void SetUpTestSuite() {
+    google::protobuf::LinkExtensionReflection(pb::cpp);
+    google::protobuf::LinkExtensionReflection(pb::java);
+    DescriptorPool::generated_pool();
+  }
+};
+
+// TODO Enable these once they become fixed internally.
+TEST_F(OverridableDefaultsTest, Proto2) {
+  auto feature_defaults = ReadDefaults("protobuf_defaults");
+  ASSERT_OK(feature_defaults);
+  ASSERT_GE(feature_defaults->defaults().size(), 1);
+  const auto& defaults = feature_defaults->defaults(0);
+  ASSERT_EQ(defaults.edition(), EDITION_PROTO2);
+
+  EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
+                                                                [pb.java] {}
+              )pb"));
+}
+TEST_F(OverridableDefaultsTest, Proto3) {
+  auto feature_defaults = ReadDefaults("protobuf_defaults");
+  ASSERT_OK(feature_defaults);
+  ASSERT_GE(feature_defaults->defaults().size(), 2);
+  const auto& defaults = feature_defaults->defaults(1);
+  ASSERT_EQ(defaults.edition(), EDITION_PROTO3);
+
+  EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
+                                                                [pb.java] {}
+              )pb"));
+}
+
+// Lock down that 2023 overridable defaults never change.  Once Edition 2023 has
+// been released this test should never need to be touched.
+TEST_F(OverridableDefaultsTest, Edition2023) {
+  auto feature_defaults = ReadDefaults("protobuf_defaults");
+  ASSERT_OK(feature_defaults);
+  ASSERT_GE(feature_defaults->defaults().size(), 3);
+  const auto& defaults = feature_defaults->defaults(2);
+  ASSERT_EQ(defaults.edition(), EDITION_2023);
+
+  EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                [pb.cpp] { legacy_closed_enum: false string_type: STRING }
+                [pb.java] { legacy_closed_enum: false utf8_validation: DEFAULT }
+              )pb"));
 }
 
 }  // namespace
