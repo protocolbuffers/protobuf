@@ -23,6 +23,7 @@ rust_library(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [
         "//rust:protobuf_upb_export",
         "@crate_index//:googletest",
@@ -36,6 +37,7 @@ rust_library(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    visibility = ["//rust/test/shared:__subpackages__"],
     deps = [
         "//rust:protobuf_cpp_export",
         "@crate_index//:googletest",
