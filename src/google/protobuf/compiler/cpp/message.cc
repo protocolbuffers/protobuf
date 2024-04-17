@@ -2477,7 +2477,12 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
       bool dtor_on_demand = NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand;
       auto values = [&] {
         for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
-          p->Emit(i ? ", ~0u" : dtor_on_demand ? "~0u" : "0xFFFFFFFEu");
+          if (i > 0) {
+            p->Emit(", ");
+          }
+          p->Emit(dtor_on_demand
+                      ? "::_pbi::InitDonatingStates()"
+                      : "::_pbi::InitDonatingStates() & 0xFFFFFFFEu");
         }
       };
       separator();
@@ -3029,12 +3034,24 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   };
 
   auto maybe_register_arena_dtor = [&] {
-    if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
-      p->Emit(R"cc(
-        if (arena != nullptr) {
-          arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
-        }
-      )cc");
+    switch (NeedsArenaDestructor()) {
+      case ArenaDtorNeeds::kRequired: {
+        p->Emit(R"cc(
+          if (arena != nullptr) {
+            arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+          }
+        )cc");
+        break;
+      }
+      case ArenaDtorNeeds::kOnDemand: {
+        p->Emit(R"cc(
+          ::_pbi::InternalRegisterArenaDtor(arena, this,
+                                            &$classname$::ArenaDtor);
+        )cc");
+        break;
+      }
+      case ArenaDtorNeeds::kNone:
+        break;
     }
   };
 
@@ -3071,12 +3088,24 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
            [&] {
              if (HasSimpleBaseClass(descriptor_, options_)) return;
              p->Emit(R"cc(SharedCtor(arena);)cc");
-             if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
-               p->Emit(R"cc(
-                 if (arena != nullptr) {
-                   arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
-                 }
-               )cc");
+             switch (NeedsArenaDestructor()) {
+               case ArenaDtorNeeds::kRequired: {
+                 p->Emit(R"cc(
+                   if (arena != nullptr) {
+                     arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
+                   }
+                 )cc");
+                 break;
+               }
+               case ArenaDtorNeeds::kOnDemand: {
+                 p->Emit(R"cc(
+                   ::_pbi::InternalRegisterArenaDtor(arena, this,
+                                                     &$classname$::ArenaDtor);
+                 )cc");
+                 break;
+               }
+               case ArenaDtorNeeds::kNone:
+                 break;
              }
            }},
       },
