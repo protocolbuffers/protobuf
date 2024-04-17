@@ -16,13 +16,13 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
-#include <atomic>
 #include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 
-#include "google/protobuf/stubs/common.h"
-#include "absl/base/call_once.h"
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -208,7 +208,7 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
-  constexpr MessageLite() {}
+  constexpr MessageLite() = default;
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
   virtual ~MessageLite() = default;

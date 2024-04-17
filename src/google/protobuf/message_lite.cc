@@ -20,8 +20,6 @@
 #include <string>
 #include <utility>
 
-#include "absl/base/dynamic_annotations.h"
-#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -29,14 +27,15 @@
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 
 
