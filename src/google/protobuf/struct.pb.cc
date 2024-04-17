@@ -213,8 +213,7 @@ bool NullValue_IsValid(int value) {
 // ===================================================================
 
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() {}
-Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena)
-    : SuperType(arena) {}
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena) : SuperType(arena) {}
 const ::google::protobuf::MessageLite::ClassData*
 Struct_FieldsEntry_DoNotUse::GetClassData() const {
   PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
@@ -450,7 +449,7 @@ void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT other) {
 class Value::_Internal {
  public:
   static constexpr ::int32_t kOneofCaseOffset =
-    PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_);
+      PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_);
 };
 
 void Value::set_allocated_struct_value(::google::protobuf::Struct* struct_value) {

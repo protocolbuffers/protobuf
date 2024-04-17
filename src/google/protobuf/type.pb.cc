@@ -412,9 +412,10 @@ bool Syntax_IsValid(int value) {
 
 class Type::_Internal {
  public:
-  using HasBits = decltype(std::declval<Type>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<Type>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(Type, _impl_._has_bits_);
 };
 
 void Type::clear_source_context() {
@@ -1253,9 +1254,10 @@ void Field::InternalSwap(Field* PROTOBUF_RESTRICT other) {
 
 class Enum::_Internal {
  public:
-  using HasBits = decltype(std::declval<Enum>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<Enum>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(Enum, _impl_._has_bits_);
 };
 
 void Enum::clear_source_context() {
@@ -1872,9 +1874,10 @@ void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT other) {
 
 class Option::_Internal {
  public:
-  using HasBits = decltype(std::declval<Option>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<Option>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(Option, _impl_._has_bits_);
 };
 
 void Option::clear_value() {

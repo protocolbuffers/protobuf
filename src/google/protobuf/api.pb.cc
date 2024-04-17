@@ -228,9 +228,10 @@ namespace protobuf {
 
 class Api::_Internal {
  public:
-  using HasBits = decltype(std::declval<Api>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<Api>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
 };
 
 void Api::clear_options() {
