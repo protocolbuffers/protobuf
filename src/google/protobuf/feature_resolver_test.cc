@@ -335,65 +335,6 @@ TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
                    .has_removed_feature());
 }
 
-TEST(FeatureResolverTest, CompileDefaultsOverridableNoSupportWindow) {
-  absl::StatusOr<FeatureSetDefaults> defaults =
-      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
-                                       {GetExtension(pb::test)}, EDITION_PROTO2,
-                                       EDITION_2023);
-  ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
-
-  const auto& edition_defaults = defaults->defaults(2);
-  ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
-
-  EXPECT_TRUE(edition_defaults.features()
-                  .GetExtension(pb::test)
-                  .has_no_support_window_feature());
-  EXPECT_EQ(edition_defaults.features()
-                .GetExtension(pb::test)
-                .no_support_window_feature(),
-            pb::VALUE2);
-  EXPECT_FALSE(edition_defaults.fixed_features()
-                   .GetExtension(pb::test)
-                   .has_no_support_window_feature());
-  EXPECT_TRUE(edition_defaults.overridable_features()
-                  .GetExtension(pb::test)
-                  .has_no_support_window_feature());
-  EXPECT_EQ(edition_defaults.overridable_features()
-                .GetExtension(pb::test)
-                .no_support_window_feature(),
-            pb::VALUE2);
-}
-
-TEST(FeatureResolverTest, CompileDefaultsOverridableEmptySupportWindow) {
-  absl::StatusOr<FeatureSetDefaults> defaults =
-      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
-                                       {GetExtension(pb::test)}, EDITION_PROTO2,
-                                       EDITION_2023);
-  ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
-
-  const auto& edition_defaults = defaults->defaults(2);
-  ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
-
-  EXPECT_TRUE(edition_defaults.features()
-                  .GetExtension(pb::test)
-                  .has_empty_support_window_feature());
-  EXPECT_EQ(edition_defaults.features()
-                .GetExtension(pb::test)
-                .empty_support_window_feature(),
-            pb::VALUE2);
-  EXPECT_FALSE(edition_defaults.fixed_features()
-                   .GetExtension(pb::test)
-                   .has_empty_support_window_feature());
-  EXPECT_TRUE(edition_defaults.overridable_features()
-                  .GetExtension(pb::test)
-                  .has_empty_support_window_feature());
-  EXPECT_EQ(edition_defaults.overridable_features()
-                .GetExtension(pb::test)
-                .empty_support_window_feature(),
-            pb::VALUE2);
-}
 
 TEST(FeatureResolverTest, CompileDefaultsOverridable) {
   absl::StatusOr<FeatureSetDefaults> defaults =
@@ -977,8 +918,10 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsInvalidWithMissingSupport) {
   ASSERT_NE(file, nullptr);
 
   const FieldDescriptor* ext = file->extension(0);
-  EXPECT_OK(FeatureResolver::CompileDefaults(feature_set_, {ext}, EDITION_2023,
-                                             EDITION_2023));
+  EXPECT_THAT(FeatureResolver::CompileDefaults(feature_set_, {ext},
+                                               EDITION_2023, EDITION_2023),
+              HasError(AllOf(HasSubstr("test.Foo.bool_field"),
+                             HasSubstr("no feature support"))));
 }
 
 TEST_F(FeatureResolverPoolTest,
