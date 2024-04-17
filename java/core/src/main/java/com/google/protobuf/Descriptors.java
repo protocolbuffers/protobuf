@@ -127,18 +127,18 @@ public final class Descriptors {
               + javaEditionDefaults.getMaximumEdition()
               + "!");
     }
-    FeatureSet found = null;
+    FeatureSetEditionDefault found = null;
     for (FeatureSetEditionDefault editionDefault : javaEditionDefaults.getDefaultsList()) {
       if (editionDefault.getEdition().getNumber() > edition.getNumber()) {
         break;
       }
-      found = editionDefault.getFeatures();
+      found = editionDefault;
     }
     if (found == null) {
       throw new IllegalArgumentException(
           "Edition " + edition + " does not have a valid default FeatureSet!");
     }
-    return found;
+    return found.getFixedFeatures().toBuilder().mergeFrom(found.getOverridableFeatures()).build();
   }
 
   private static FeatureSet internFeatures(FeatureSet features) {

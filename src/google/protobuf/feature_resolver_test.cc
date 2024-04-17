@@ -215,6 +215,39 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
   EXPECT_FALSE(merged.HasExtension(pb::cpp));
 }
 
+TEST(FeatureResolverTest, DefaultsMergedFeatures) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_2023,
+                                       EDITION_2023);
+  ASSERT_OK(defaults);
+  ASSERT_EQ(defaults->defaults_size(), 3);
+
+  defaults->mutable_defaults(2)
+      ->mutable_fixed_features()
+      ->MutableExtension(pb::test)
+      ->set_file_feature(pb::VALUE7);
+  defaults->mutable_defaults(2)
+      ->mutable_fixed_features()
+      ->MutableExtension(pb::test)
+      ->set_multiple_feature(pb::VALUE6);
+  defaults->mutable_defaults(2)
+      ->mutable_overridable_features()
+      ->MutableExtension(pb::test)
+      ->clear_file_feature();
+  defaults->mutable_defaults(2)
+      ->mutable_overridable_features()
+      ->MutableExtension(pb::test)
+      ->set_multiple_feature(pb::VALUE8);
+
+  absl::StatusOr<FeatureSet> features = GetDefaults(EDITION_2023, *defaults);
+  ASSERT_OK(features);
+
+  const pb::TestFeatures& ext = features->GetExtension(pb::test);
+  EXPECT_EQ(ext.file_feature(), pb::VALUE7);
+  EXPECT_EQ(ext.multiple_feature(), pb::VALUE8);
+}
+
 TEST(FeatureResolverTest, DefaultsTooEarly) {
   absl::StatusOr<FeatureSetDefaults> defaults =
       FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
@@ -437,13 +470,15 @@ TEST(FeatureResolverTest, CreateUnknownEnumFeature) {
   for (int i = 0; i < descriptor.field_count(); ++i) {
     const FieldDescriptor& field = *descriptor.field(i);
 
+    // Clear the feature, which should be invalid.
     FeatureSetDefaults defaults = *valid_defaults;
     FeatureSet* features =
-        defaults.mutable_defaults()->Mutable(0)->mutable_features();
-    const Reflection& reflection = *features->GetReflection();
+        defaults.mutable_defaults()->Mutable(0)->mutable_overridable_features();
+    features->GetReflection()->ClearField(features, &field);
+    features =
+        defaults.mutable_defaults()->Mutable(0)->mutable_fixed_features();
+    features->GetReflection()->ClearField(features, &field);
 
-    // Clear the feature, which should be invalid.
-    reflection.ClearField(features, &field);
     EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
                 HasError(AllOf(HasSubstr(field.name()),
                                HasSubstr("must resolve to a known value"))));

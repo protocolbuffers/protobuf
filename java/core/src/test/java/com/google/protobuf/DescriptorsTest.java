@@ -1242,7 +1242,7 @@ public class DescriptorsTest {
     public void setUp() {
       FeatureSetDefaults.Builder defaults = Descriptors.getJavaEditionDefaults().toBuilder();
       for (FeatureSetEditionDefault.Builder editionDefaults : defaults.getDefaultsBuilderList()) {
-        setTestFeature(editionDefaults.getFeaturesBuilder(), 1);
+        setTestFeature(editionDefaults.getOverridableFeaturesBuilder(), 1);
       }
       Descriptors.setTestJavaEditionDefaults(defaults.build());
 

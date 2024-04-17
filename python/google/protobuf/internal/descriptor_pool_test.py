@@ -1131,19 +1131,49 @@ class FeatureSetDefaults(unittest.TestCase):
         file._GetFeatures().HasExtension(unittest_features_pb2.test)
     )
 
+  def testMergedDefaults(self):
+    pool = descriptor_pool.DescriptorPool()
+    fixed = descriptor_pb2.FeatureSet()
+    fixed.CopyFrom(unittest_features_pb2.DESCRIPTOR._GetFeatures())
+    fixed.field_presence = descriptor_pb2.FeatureSet.IMPLICIT
+    fixed.ClearField('message_encoding')
+    defaults = descriptor_pb2.FeatureSetDefaults(
+        defaults=[
+            descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
+                edition=descriptor_pb2.Edition.EDITION_PROTO2,
+                fixed_features=fixed,
+                overridable_features=descriptor_pb2.FeatureSet(
+                    message_encoding=descriptor_pb2.FeatureSet.DELIMITED
+                ),
+            )
+        ],
+        minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2023,
+    )
+    pool.SetFeatureSetDefaults(defaults)
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    file = pool.AddSerializedFile(file_desc.SerializeToString())
+    self.assertEqual(
+        file._GetFeatures().message_encoding,
+        descriptor_pb2.FeatureSet.DELIMITED,
+    )
+    self.assertEqual(
+        file._GetFeatures().field_presence, descriptor_pb2.FeatureSet.IMPLICIT
+    )
+
   def testOverride(self):
     pool = descriptor_pool.DescriptorPool()
     defaults = descriptor_pb2.FeatureSetDefaults(
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
         maximum_edition=descriptor_pb2.Edition.EDITION_2023,
     )
-    defaults.defaults[0].features.Extensions[
+    defaults.defaults[0].overridable_features.Extensions[
         unittest_features_pb2.test
     ].file_feature = unittest_features_pb2.VALUE9
     pool.SetFeatureSetDefaults(defaults)
@@ -1177,7 +1207,7 @@ class FeatureSetDefaults(unittest.TestCase):
               defaults=[
                   descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                       edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                      overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
                   )
               ],
               minimum_edition=descriptor_pb2.Edition.EDITION_2023,
@@ -1197,11 +1227,11 @@ class FeatureSetDefaults(unittest.TestCase):
               defaults=[
                   descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                       edition=descriptor_pb2.Edition.EDITION_PROTO3,
-                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                      overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
                   ),
                   descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                       edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                      overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
                   ),
               ],
               minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
@@ -1217,11 +1247,11 @@ class FeatureSetDefaults(unittest.TestCase):
               defaults=[
                   descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                       edition=descriptor_pb2.Edition.EDITION_UNKNOWN,
-                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                      overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
                   ),
                   descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                       edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                      features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                      overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
                   ),
               ],
               minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
@@ -1238,7 +1268,7 @@ class FeatureSetDefaults(unittest.TestCase):
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
@@ -1252,7 +1282,7 @@ class FeatureSetDefaults(unittest.TestCase):
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
@@ -1267,7 +1297,7 @@ class FeatureSetDefaults(unittest.TestCase):
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_2023,
-                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
@@ -1285,7 +1315,7 @@ class FeatureSetDefaults(unittest.TestCase):
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO3,
-                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO3,
@@ -1305,7 +1335,7 @@ class FeatureSetDefaults(unittest.TestCase):
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_features_pb2.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,

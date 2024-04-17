@@ -418,7 +418,9 @@ absl::StatusOr<FeatureResolver> FeatureResolver::Create(
             edition_default.edition(), ".");
       }
     }
-    RETURN_IF_ERROR(ValidateMergedFeatures(edition_default.features()));
+    FeatureSet features = edition_default.fixed_features();
+    features.MergeFrom(edition_default.overridable_features());
+    RETURN_IF_ERROR(ValidateMergedFeatures(features));
 
     prev_edition = edition_default.edition();
   }
@@ -435,7 +437,9 @@ absl::StatusOr<FeatureResolver> FeatureResolver::Create(
     return Error("No valid default found for edition ", edition);
   }
 
-  return FeatureResolver(std::prev(first_nonmatch)->features());
+  FeatureSet features = std::prev(first_nonmatch)->fixed_features();
+  features.MergeFrom(std::prev(first_nonmatch)->overridable_features());
+  return FeatureResolver(std::move(features));
 }
 
 absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(

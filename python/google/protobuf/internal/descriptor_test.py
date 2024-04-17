@@ -1455,13 +1455,13 @@ class FeatureInheritanceTest(unittest.TestCase):
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                features=unittest_pb2.TestAllTypes.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_pb2.TestAllTypes.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
         maximum_edition=descriptor_pb2.Edition.EDITION_2023,
     )
-    defaults.defaults[0].features.Extensions[
+    defaults.defaults[0].overridable_features.Extensions[
         unittest_features_pb2.test
     ].multiple_feature = 1
     ret.pool.SetFeatureSetDefaults(defaults)

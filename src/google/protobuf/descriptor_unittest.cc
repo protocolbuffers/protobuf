@@ -10730,7 +10730,7 @@ TEST_F(DescriptorPoolFeaturesTest, UnknownDefaults) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     defaults {
       edition: EDITION_UNKNOWN
-      features {}
+      overridable_features {}
     }
     minimum_edition: EDITION_PROTO2
     maximum_edition: EDITION_2023
@@ -10744,11 +10744,11 @@ TEST_F(DescriptorPoolFeaturesTest, NotStrictlyIncreasing) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     defaults {
       edition: EDITION_PROTO3
-      features {}
+      overridable_features {}
     }
     defaults {
       edition: EDITION_PROTO2
-      features {}
+      overridable_features {}
     }
     minimum_edition: EDITION_PROTO2
     maximum_edition: EDITION_2023
@@ -10766,7 +10766,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     defaults {
       edition: EDITION_PROTO2
-      features {
+      overridable_features {
         field_presence: EXPLICIT
         enum_type: CLOSED
         repeated_field_encoding: EXPANDED
