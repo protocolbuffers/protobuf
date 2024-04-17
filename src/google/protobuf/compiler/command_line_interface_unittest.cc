@@ -1865,14 +1865,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  features {
-                    field_presence: EXPLICIT
-                    enum_type: CLOSED
-                    repeated_field_encoding: EXPANDED
-                    utf8_validation: NONE
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: LEGACY_BEST_EFFORT
-                  }
                   edition: EDITION_PROTO2
                   overridable_features {}
                   fixed_features {
@@ -1885,14 +1877,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                   }
                 }
                 defaults {
-                  features {
-                    field_presence: IMPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
                   edition: EDITION_PROTO3
                   overridable_features {}
                   fixed_features {
@@ -1905,14 +1889,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                   }
                 }
                 defaults {
-                  features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
                   edition: EDITION_2023
                   overridable_features {
                     field_presence: EXPLICIT
@@ -1941,14 +1917,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  features {
-                    field_presence: EXPLICIT
-                    enum_type: CLOSED
-                    repeated_field_encoding: EXPANDED
-                    utf8_validation: NONE
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: LEGACY_BEST_EFFORT
-                  }
                   edition: EDITION_PROTO2
                   overridable_features {}
                   fixed_features {
@@ -1961,14 +1929,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                   }
                 }
                 defaults {
-                  features {
-                    field_presence: IMPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
                   edition: EDITION_PROTO3
                   overridable_features {}
                   fixed_features {
@@ -1981,14 +1941,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                   }
                 }
                 defaults {
-                  features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
                   edition: EDITION_2023
                   overridable_features {
                     field_presence: EXPLICIT
@@ -2018,14 +1970,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  features {
-                    field_presence: EXPLICIT
-                    enum_type: CLOSED
-                    repeated_field_encoding: EXPANDED
-                    utf8_validation: NONE
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: LEGACY_BEST_EFFORT
-                  }
                   edition: EDITION_PROTO2
                   overridable_features {}
                   fixed_features {
@@ -2038,14 +1982,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                   }
                 }
                 defaults {
-                  features {
-                    field_presence: IMPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
                   edition: EDITION_PROTO3
                   overridable_features {}
                   fixed_features {
@@ -2058,14 +1994,6 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                   }
                 }
                 defaults {
-                  features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
                   edition: EDITION_2023
                   overridable_features {
                     field_presence: EXPLICIT

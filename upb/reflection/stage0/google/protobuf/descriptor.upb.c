@@ -360,7 +360,7 @@ const upb_MiniTable* google__protobuf__FeatureSetDefaults_msg_init() {
 
 const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$a3433";
+  static const char* mini_descriptor = "$b433";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -368,7 +368,6 @@ const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefa
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 3), google_protobuf_Edition_enum_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 4), google__protobuf__FeatureSet_msg_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 5), google__protobuf__FeatureSet_msg_init());
-  upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 2), google__protobuf__FeatureSet_msg_init());
   return mini_table;
 }
 

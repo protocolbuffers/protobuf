@@ -382,11 +382,6 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
         fixed_defaults_dynamic->SerializeAsString());
     edition_defaults->mutable_overridable_features()->MergeFromString(
         overridable_defaults_dynamic->SerializeAsString());
-    // TODO Remove this once `features` is deprecated.
-    edition_defaults->mutable_features()->MergeFromString(
-        fixed_defaults_dynamic->SerializeAsString());
-    edition_defaults->mutable_features()->MergeFromString(
-        overridable_defaults_dynamic->SerializeAsString());
   }
   return defaults;
 }

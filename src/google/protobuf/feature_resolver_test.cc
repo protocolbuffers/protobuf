@@ -207,7 +207,7 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
   ASSERT_OK(defaults);
   ASSERT_EQ(defaults->defaults().size(), 3);
   ASSERT_EQ(defaults->defaults().at(2).edition(), EDITION_2023);
-  FeatureSet merged = defaults->defaults().at(2).features();
+  FeatureSet merged = defaults->defaults().at(2).overridable_features();
 
   EXPECT_EQ(merged.field_presence(), FeatureSet::EXPLICIT);
   EXPECT_TRUE(merged.HasExtension(pb::test));
@@ -292,10 +292,6 @@ TEST(FeatureResolverTest, CompileDefaultsFixedFutureFeature) {
   const auto& edition_defaults = defaults->defaults(2);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
 
-  EXPECT_TRUE(
-      edition_defaults.features().GetExtension(pb::test).has_future_feature());
-  EXPECT_EQ(edition_defaults.features().GetExtension(pb::test).future_feature(),
-            pb::VALUE1);
   EXPECT_TRUE(edition_defaults.fixed_features()
                   .GetExtension(pb::test)
                   .has_future_feature());
@@ -318,11 +314,6 @@ TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
   const auto& edition_defaults = defaults->defaults(3);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2024);
 
-  EXPECT_TRUE(
-      edition_defaults.features().GetExtension(pb::test).has_removed_feature());
-  EXPECT_EQ(
-      edition_defaults.features().GetExtension(pb::test).removed_feature(),
-      pb::VALUE3);
   EXPECT_TRUE(edition_defaults.fixed_features()
                   .GetExtension(pb::test)
                   .has_removed_feature());
@@ -347,11 +338,6 @@ TEST(FeatureResolverTest, CompileDefaultsOverridable) {
   const auto& edition_defaults = defaults->defaults(2);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
 
-  EXPECT_TRUE(
-      edition_defaults.features().GetExtension(pb::test).has_removed_feature());
-  EXPECT_EQ(
-      edition_defaults.features().GetExtension(pb::test).removed_feature(),
-      pb::VALUE2);
   EXPECT_FALSE(edition_defaults.fixed_features()
                    .GetExtension(pb::test)
                    .has_removed_feature());
@@ -382,10 +368,7 @@ TEST(FeatureResolverTest, CreateUnknownEdition) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     minimum_edition: EDITION_UNKNOWN
     maximum_edition: EDITION_99999_TEST_ONLY
-    defaults {
-      edition: EDITION_UNKNOWN
-      features {}
-    }
+    defaults { edition: EDITION_UNKNOWN }
   )pb");
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(HasSubstr("Invalid edition UNKNOWN")));
@@ -395,7 +378,7 @@ TEST(FeatureResolverTest, CreateMissingEdition) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     minimum_edition: EDITION_UNKNOWN
     maximum_edition: EDITION_99999_TEST_ONLY
-    defaults { features {} }
+    defaults {}
   )pb");
   EXPECT_THAT(FeatureResolver::Create(EDITION_2023, defaults),
               HasError(HasSubstr("Invalid edition UNKNOWN")));
@@ -1342,15 +1325,6 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
     maximum_edition: EDITION_99999_TEST_ONLY
     defaults {
       edition: EDITION_PROTO2
-      features {
-        field_presence: EXPLICIT
-        enum_type: CLOSED
-        repeated_field_encoding: EXPANDED
-        utf8_validation: NONE
-        message_encoding: LENGTH_PREFIXED
-        json_format: LEGACY_BEST_EFFORT
-        [pb.test] { file_feature: VALUE1 }
-      }
       overridable_features {
         [pb.test] {}
       }
@@ -1366,15 +1340,6 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
     }
     defaults {
       edition: EDITION_PROTO3
-      features {
-        field_presence: IMPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        utf8_validation: VERIFY
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.test] { file_feature: VALUE1 }
-      }
       overridable_features {
         [pb.test] {}
       }
@@ -1390,15 +1355,6 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
     }
     defaults {
       edition: EDITION_2023
-      features {
-        field_presence: EXPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        utf8_validation: VERIFY
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.test] { file_feature: VALUE2 }
-      }
       overridable_features {
         field_presence: EXPLICIT
         enum_type: OPEN
@@ -1414,15 +1370,6 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
     }
     defaults {
       edition: EDITION_99998_TEST_ONLY
-      features {
-        field_presence: EXPLICIT
-        enum_type: OPEN
-        repeated_field_encoding: PACKED
-        utf8_validation: VERIFY
-        message_encoding: LENGTH_PREFIXED
-        json_format: ALLOW
-        [pb.test] { file_feature: VALUE3 }
-      }
       overridable_features {
         field_presence: EXPLICIT
         enum_type: OPEN

@@ -1093,10 +1093,6 @@ message FeatureSetDefaults {
 
     // Defaults of features that can't be overridden in this edition.
     optional FeatureSet fixed_features = 5;
-
-    // TODO Deprecate and remove this field, which is just the
-    // above two merged.
-    optional FeatureSet features = 2;
   }
   repeated FeatureSetEditionDefault defaults = 1;
 
