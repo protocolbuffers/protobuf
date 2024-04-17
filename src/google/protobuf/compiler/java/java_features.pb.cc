@@ -143,9 +143,10 @@ constexpr int JavaFeatures::Utf8Validation_ARRAYSIZE;
 
 class JavaFeatures::_Internal {
  public:
-  using HasBits = decltype(std::declval<JavaFeatures>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<JavaFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
 };
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)

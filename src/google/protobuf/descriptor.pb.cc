@@ -2597,9 +2597,10 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT other)
 
 class FileDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<FileDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FileDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
 };
 
 FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
@@ -3197,9 +3198,10 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT ot
 
 class DescriptorProto_ExtensionRange::_Internal {
  public:
-  using HasBits = decltype(std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
 };
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* arena)
@@ -3485,9 +3487,10 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 
 class DescriptorProto_ReservedRange::_Internal {
  public:
-  using HasBits = decltype(std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
 };
 
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* arena)
@@ -3707,9 +3710,10 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 
 class DescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<DescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<DescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
 };
 
 DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
@@ -4212,9 +4216,10 @@ void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT other) {
 
 class ExtensionRangeOptions_Declaration::_Internal {
  public:
-  using HasBits = decltype(std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<ExtensionRangeOptions_Declaration>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._has_bits_);
 };
 
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* arena)
@@ -4545,9 +4550,10 @@ void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Decla
 
 class ExtensionRangeOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<ExtensionRangeOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._has_bits_);
 };
 
 ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
@@ -4879,9 +4885,10 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRIC
 
 class FieldDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<FieldDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FieldDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
 };
 
 FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
@@ -5408,9 +5415,10 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT 
 
 class OneofDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<OneofDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<OneofDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
 };
 
 OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
@@ -5666,9 +5674,10 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT 
 
 class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
-  using HasBits = decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
 };
 
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* arena)
@@ -5888,9 +5897,10 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 
 class EnumDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<EnumDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<EnumDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
 };
 
 EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
@@ -6235,9 +6245,10 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT ot
 
 class EnumValueDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
 };
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* arena)
@@ -6528,9 +6539,10 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_R
 
 class ServiceDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
 };
 
 ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
@@ -6818,9 +6830,10 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTR
 
 class MethodDescriptorProto::_Internal {
  public:
-  using HasBits = decltype(std::declval<MethodDescriptorProto>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<MethodDescriptorProto>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
 };
 
 MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
@@ -7202,9 +7215,10 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRIC
 
 class FileOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<FileOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FileOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
 };
 
 FileOptions::FileOptions(::google::protobuf::Arena* arena)
@@ -8023,9 +8037,10 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT other) {
 
 class MessageOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<MessageOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<MessageOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
 };
 
 MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
@@ -8416,9 +8431,10 @@ void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT other) {
 
 class FieldOptions_EditionDefault::_Internal {
  public:
-  using HasBits = decltype(std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FieldOptions_EditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._has_bits_);
 };
 
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* arena)
@@ -8651,9 +8667,10 @@ void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROT
 
 class FieldOptions_FeatureSupport::_Internal {
  public:
-  using HasBits = decltype(std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FieldOptions_FeatureSupport>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._has_bits_);
 };
 
 FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* arena)
@@ -8952,9 +8969,10 @@ void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROT
 
 class FieldOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<FieldOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FieldOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
 };
 
 FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
@@ -9540,9 +9558,10 @@ void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT other) {
 
 class OneofOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<OneofOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<OneofOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._has_bits_);
 };
 
 OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
@@ -9807,9 +9826,10 @@ void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT other) {
 
 class EnumOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<EnumOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<EnumOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
 };
 
 EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
@@ -10160,9 +10180,10 @@ void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT other) {
 
 class EnumValueOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<EnumValueOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<EnumValueOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
 };
 
 EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
@@ -10495,9 +10516,10 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT other) {
 
 class ServiceOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<ServiceOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<ServiceOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
 };
 
 ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
@@ -10799,9 +10821,10 @@ void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT other) {
 
 class MethodOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<MethodOptions>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<MethodOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
 };
 
 MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
@@ -11139,9 +11162,10 @@ void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT other) {
 
 class UninterpretedOption_NamePart::_Internal {
  public:
-  using HasBits = decltype(std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_);
   static bool MissingRequiredFields(const HasBits& has_bits) {
     return ((has_bits[0] & 0x00000003) ^ 0x00000003) != 0;
   }
@@ -11384,9 +11408,10 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PR
 
 class UninterpretedOption::_Internal {
  public:
-  using HasBits = decltype(std::declval<UninterpretedOption>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<UninterpretedOption>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
 };
 
 UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
@@ -11779,9 +11804,10 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT ot
 
 class FeatureSet::_Internal {
  public:
-  using HasBits = decltype(std::declval<FeatureSet>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FeatureSet>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._has_bits_);
 };
 
 FeatureSet::FeatureSet(::google::protobuf::Arena* arena)
@@ -12136,9 +12162,10 @@ void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT other) {
 
 class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
  public:
-  using HasBits = decltype(std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FeatureSetDefaults_FeatureSetEditionDefault>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._has_bits_);
 };
 
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* arena)
@@ -12472,9 +12499,10 @@ void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefault
 
 class FeatureSetDefaults::_Internal {
  public:
-  using HasBits = decltype(std::declval<FeatureSetDefaults>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<FeatureSetDefaults>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._has_bits_);
 };
 
 FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* arena)
@@ -12748,9 +12776,10 @@ void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT othe
 
 class SourceCodeInfo_Location::_Internal {
  public:
-  using HasBits = decltype(std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
 };
 
 SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* arena)
@@ -13276,9 +13305,10 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT other) {
 
 class GeneratedCodeInfo_Annotation::_Internal {
  public:
-  using HasBits = decltype(std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
 };
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* arena)

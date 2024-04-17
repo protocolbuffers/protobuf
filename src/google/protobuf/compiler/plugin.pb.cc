@@ -296,9 +296,10 @@ constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;
 
 class Version::_Internal {
  public:
-  using HasBits = decltype(std::declval<Version>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<Version>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
 };
 
 Version::Version(::google::protobuf::Arena* arena)
@@ -596,9 +597,10 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT other) {
 
 class CodeGeneratorRequest::_Internal {
  public:
-  using HasBits = decltype(std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
 };
 
 void CodeGeneratorRequest::clear_proto_file() {
@@ -949,9 +951,10 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 
 class CodeGeneratorResponse_File::_Internal {
  public:
-  using HasBits = decltype(std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
 };
 
 void CodeGeneratorResponse_File::clear_generated_code_info() {
@@ -1267,9 +1270,10 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOB
 
 class CodeGeneratorResponse::_Internal {
  public:
-  using HasBits = decltype(std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
 };
 
 CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)

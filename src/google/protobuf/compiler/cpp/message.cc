@@ -2116,65 +2116,103 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
-  Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_)) {
-    format(
-        "$classname$::$classname$() {}\n"
-        "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
-        "    : SuperType(arena) {}\n");
-    GenerateClassData(p);
+    p->Emit({{"annotate_accessors",
+              [&] {
+                if (!options_.annotate_accessor) return;
+                for (auto f : FieldRange(descriptor_)) {
+                  p->Emit({{"field", FieldName(f)}},
+                          R"cc(
+                            volatile bool $classname$::$field$_AccessedNoStrip;
+                          )cc");
+                }
+              }},
+             {"verify",
+              [&] {
+                // Delegates generating verify function as only a subset of map
+                // entry messages need it; i.e. UTF8 string key/value or message
+                // type value.
+                GenerateVerify(p);
+              }},
+             {"class_data", [&] { GenerateClassData(p); }}},
+            R"cc(
+              $classname$::$classname$() {}
+              $classname$::$classname$(::$proto_ns$::Arena* arena) : SuperType(arena) {}
+              $annotate_accessors$;
+              $verify$;
+              $class_data$;
+            )cc");
     return;
   }
-
   if (IsAnyMessage(descriptor_)) {
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "bool $classname$::GetAnyFieldDescriptors(\n"
-          "    const ::$proto_ns$::Message& message,\n"
-          "    const ::$proto_ns$::FieldDescriptor** type_url_field,\n"
-          "    const ::$proto_ns$::FieldDescriptor** value_field) {\n"
-          "  return ::_pbi::GetAnyFieldDescriptors(\n"
-          "      message, type_url_field, value_field);\n"
-          "}\n");
-    }
-    format(
-        "bool $classname$::ParseAnyTypeUrl(\n"
-        "    ::absl::string_view type_url,\n"
-        "    std::string* full_type_name) {\n"
-        "  return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);\n"
-        "}\n"
-        "\n");
+    p->Emit({{"any_field_descriptor",
+              [&] {
+                if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+                  return;
+                }
+                p->Emit(
+                    R"cc(
+                      bool $classname$::GetAnyFieldDescriptors(
+                          const ::$proto_ns$::Message& message,
+                          const ::$proto_ns$::FieldDescriptor** type_url_field,
+                          const ::$proto_ns$::FieldDescriptor** value_field) {
+                        return ::_pbi::GetAnyFieldDescriptors(message, type_url_field, value_field);
+                      }
+                    )cc");
+              }}},
+            R"cc(
+              $any_field_descriptor$;
+              bool $classname$::ParseAnyTypeUrl(::absl::string_view type_url,
+                                                std::string* full_type_name) {
+                return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);
+              }
+            )cc");
   }
-
-  format(
-      "class $classname$::_Internal {\n"
-      " public:\n");
-  format.Indent();
-  if (!has_bit_indices_.empty()) {
-    format(
-        "using HasBits = "
-        "decltype(std::declval<$classname$>().$has_bits$);\n"
-        "static constexpr ::int32_t kHasBitsOffset =\n"
-        "  8 * PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_);\n");
-  }
-  if (descriptor_->real_oneof_decl_count() > 0) {
-    format(
-        "static constexpr ::int32_t kOneofCaseOffset =\n"
-        "  PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);\n");
-  }
-  if (num_required_fields_ > 0) {
-    const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
-    format(
-        "static bool MissingRequiredFields(const HasBits& has_bits) "
-        "{\n"
-        "  return $1$;\n"
-        "}\n",
-        ConditionalToCheckBitmasks(masks_for_has_bits, false, "has_bits"));
-  }
-
-  format.Outdent();
-  format("};\n\n");
+  p->Emit(
+      {{"has_bit",
+        [&] {
+          if (has_bit_indices_.empty()) return;
+          p->Emit(
+              R"cc(
+                using HasBits =
+                    decltype(std::declval<$classname$>().$has_bits$);
+                static constexpr ::int32_t kHasBitsOffset =
+                    8 * PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_);
+              )cc");
+        }},
+       {"oneof",
+        [&] {
+          if (descriptor_->real_oneof_decl_count() == 0) return;
+          p->Emit(
+              R"cc(
+                static constexpr ::int32_t kOneofCaseOffset =
+                    PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);
+              )cc");
+        }},
+       {"required",
+        [&] {
+          if (num_required_fields_ == 0) return;
+          const std::vector<uint32_t> masks_for_has_bits =
+              RequiredFieldsBitMask();
+          p->Emit(
+              {{"check_bit_mask", ConditionalToCheckBitmasks(
+                                      masks_for_has_bits, false, "has_bits")}},
+              R"cc(
+                static bool MissingRequiredFields(const HasBits& has_bits) {
+                  return $check_bit_mask$;
+                }
+              )cc");
+        }}},
+      R"cc(
+        class $classname$::_Internal {
+         public:
+          $has_bit$;
+          $oneof$;
+          $required$;
+        };
+      )cc");
+  p->Emit("\n");
 
   // Generate non-inline field definitions.
   for (auto field : FieldRange(descriptor_)) {
@@ -2187,11 +2225,11 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   }
 
   GenerateStructors(p);
-  format("\n");
+  p->Emit("\n");
 
   if (descriptor_->real_oneof_decl_count() > 0) {
     GenerateOneofClear(p);
-    format("\n");
+    p->Emit("\n");
   }
 
   GenerateClassData(p);
@@ -2199,77 +2237,105 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     GenerateClear(p);
-    format("\n");
+    p->Emit("\n");
 
     GenerateSerializeWithCachedSizesToArray(p);
-    format("\n");
+    p->Emit("\n");
 
     GenerateByteSize(p);
-    format("\n");
+    p->Emit("\n");
 
     GenerateMergeFrom(p);
-    format("\n");
+    p->Emit("\n");
 
     GenerateClassSpecificMergeImpl(p);
-    format("\n");
+    p->Emit("\n");
 
     GenerateCopyFrom(p);
-    format("\n");
+    p->Emit("\n");
 
     GenerateIsInitialized(p);
-    format("\n");
+    p->Emit("\n");
   }
 
   if (ShouldSplit(descriptor_, options_)) {
-    format(
-        "void $classname$::PrepareSplitMessageForWrite() {\n"
-        "  if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault())) {\n"
-        "    void* chunk = $pbi$::CreateSplitMessageGeneric("
-        "GetArena(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
-        "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
-        "  }\n"
-        "}\n",
-        DefaultInstanceName(descriptor_, options_, /*split=*/true),
-        DefaultInstanceName(descriptor_, options_, /*split=*/false));
+    p->Emit({{"split_default",
+              DefaultInstanceName(descriptor_, options_, /*split=*/true)},
+             {"default",
+              DefaultInstanceName(descriptor_, options_, /*split=*/false)}},
+            R"cc(
+              void $classname$::PrepareSplitMessageForWrite() {
+                if (PROTOBUF_PREDICT_TRUE(IsSplitMessageDefault())) {
+                  void* chunk = $pbi$::CreateSplitMessageGeneric(
+                      GetArena(), &$split_default$, sizeof(Impl_::Split), this,
+                      &$default$);
+                  $split$ = reinterpret_cast<Impl_::Split*>(chunk);
+                }
+              }
+            )cc");
   }
 
   GenerateVerify(p);
 
   GenerateSwap(p);
-  format("\n");
+  p->Emit("\n");
 
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    // Same as the base class, but it avoids virtual dispatch.
-    p->Emit(R"cc(
-      ::$proto_ns$::Metadata $classname$::GetMetadata() const {
-        return $superclass$::GetMetadataImpl(GetClassData()->full());
-      }
-    )cc");
-  }
-
-  if (NeedsPostLoopHandler(descriptor_, options_)) {
-    p->Emit(
-        {{"required",
-          [&] {
-          }}},
-        R"cc(
-          const char* $classname$::PostLoopHandler(MessageLite* msg,
-                                                   const char* ptr,
-                                                   ::_pbi::ParseContext* ctx) {
-            $classname$* _this = static_cast<$classname$*>(msg);
-            $annotate_deserialize$;
-            $required$;
-            return ptr;
+  p->Emit(
+      {{"annotate_accessor_definition",
+        [&] {
+          if (!options_.annotate_accessor) return;
+          for (auto f : FieldRange(descriptor_)) {
+            p->Emit({{"field", FieldName(f)}},
+                    R"cc(
+                      volatile bool $classname$::$field$_AccessedNoStrip;
+                    )cc");
           }
-        )cc");
-  }
-
-  if (HasTracker(descriptor_, options_)) {
-    format(
-        "::$proto_ns$::AccessListener<$classtype$> "
-        "$1$::$tracker$(&FullMessageName);\n",
-        ClassName(descriptor_));
-  }
+        }},
+       {"get_metadata",
+        [&] {
+          if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
+          // Same as the base class, but it avoids virtual dispatch.
+          p->Emit(R"cc(
+            ::$proto_ns$::Metadata $classname$::GetMetadata() const {
+              return $superclass$::GetMetadataImpl(GetClassData()->full());
+            }
+          )cc");
+        }},
+       {"post_loop_handler",
+        [&] {
+          if (!NeedsPostLoopHandler(descriptor_, options_)) return;
+          p->Emit({{"required",
+                    [&] {
+                    }}},
+                  R"cc(
+                    const char* $classname$::PostLoopHandler(
+                        MessageLite* msg, const char* ptr,
+                        ::_pbi::ParseContext* ctx) {
+                      $classname$* _this = static_cast<$classname$*>(msg);
+                      $annotate_deserialize$;
+                      $required$;
+                      return ptr;
+                    }
+                  )cc");
+        }},
+       {"message_set_definition",
+        [&] {
+        }},
+       {"tracker_decl",
+        [&] {
+          if (!HasTracker(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            ::$proto_ns$::AccessListener<$classtype$> $classname$::$tracker$(
+                &FullMessageName);
+          )cc");
+        }}},
+      R"cc(
+        $annotate_accessor_definition$;
+        $get_metadata$;
+        $post_loop_handler$;
+        $message_set_definition$;
+        $tracker_decl$;
+      )cc");
 }
 
 std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {

@@ -138,9 +138,10 @@ constexpr int CppFeatures::StringType_ARRAYSIZE;
 
 class CppFeatures::_Internal {
  public:
-  using HasBits = decltype(std::declval<CppFeatures>()._impl_._has_bits_);
+  using HasBits =
+      decltype(std::declval<CppFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-    8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
 };
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
