@@ -249,6 +249,14 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
+inline constexpr bool DebugHardenConcurrentMutation() {
+#ifdef NDEBUG
+  return false;
+#else
+  return true;
+#endif
+}
+
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
 inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }

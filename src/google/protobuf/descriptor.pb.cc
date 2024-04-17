@@ -6,6 +6,8 @@
 #include "google/protobuf/descriptor.pb.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <cstddef>
 #include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -2862,6 +2864,10 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -2979,6 +2985,10 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FileDescriptorProto)
   return target;
@@ -3350,6 +3360,10 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ExtensionRange)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -3378,6 +3392,10 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.DescriptorProto.ExtensionRange)
   return target;
@@ -3603,6 +3621,10 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ReservedRange)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -3625,6 +3647,10 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.DescriptorProto.ReservedRange)
   return target;
@@ -3935,6 +3961,10 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -4042,6 +4072,10 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.DescriptorProto)
   return target;
@@ -4391,6 +4425,10 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ExtensionRangeOptions.Declaration)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -4436,6 +4474,10 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.ExtensionRangeOptions.Declaration)
   return target;
@@ -4713,6 +4755,10 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ExtensionRangeOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -4759,6 +4805,10 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.ExtensionRangeOptions)
   return target;
@@ -5135,6 +5185,10 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -5224,6 +5278,10 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldDescriptorProto)
   return target;
@@ -5554,6 +5612,10 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -5576,6 +5638,10 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.OneofDescriptorProto)
   return target;
@@ -5790,6 +5856,10 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -5812,6 +5882,10 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   return target;
@@ -6069,6 +6143,10 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -6121,6 +6199,10 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumDescriptorProto)
   return target;
@@ -6398,6 +6480,10 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -6427,6 +6513,10 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumValueDescriptorProto)
   return target;
@@ -6689,6 +6779,10 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -6722,6 +6816,10 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.ServiceDescriptorProto)
   return target;
@@ -7024,6 +7122,10 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodDescriptorProto)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -7076,6 +7178,10 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.MethodDescriptorProto)
   return target;
@@ -7574,6 +7680,10 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -7745,6 +7855,10 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FileOptions)
   return target;
@@ -8219,6 +8333,10 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MessageOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -8282,6 +8400,10 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.MessageOptions)
   return target;
@@ -8561,6 +8683,10 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions.EditionDefault)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -8584,6 +8710,10 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldOptions.EditionDefault)
   return target;
@@ -8826,6 +8956,10 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions.FeatureSupport)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -8863,6 +8997,10 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldOptions.FeatureSupport)
   return target;
@@ -9217,6 +9355,10 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -9333,6 +9475,10 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldOptions)
   return target;
@@ -9698,6 +9844,10 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -9726,6 +9876,10 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.OneofOptions)
   return target;
@@ -9998,6 +10152,10 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -10047,6 +10205,10 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumOptions)
   return target;
@@ -10349,6 +10511,10 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -10391,6 +10557,10 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumValueOptions)
   return target;
@@ -10669,6 +10839,10 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -10704,6 +10878,10 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.ServiceOptions)
   return target;
@@ -10994,6 +11172,10 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodOptions)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -11036,6 +11218,10 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.MethodOptions)
   return target;
@@ -11295,6 +11481,10 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption.NamePart)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -11318,6 +11508,10 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.UninterpretedOption.NamePart)
   return target;
@@ -11602,6 +11796,10 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -11664,6 +11862,10 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.UninterpretedOption)
   return target;
@@ -11975,6 +12177,10 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FeatureSet)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -12028,6 +12234,10 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FeatureSet)
   return target;
@@ -12316,6 +12526,10 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -12343,6 +12557,10 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   return target;
@@ -12605,6 +12823,10 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FeatureSetDefaults)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -12638,6 +12860,10 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FeatureSetDefaults)
   return target;
@@ -12909,6 +13135,10 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo.Location)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -12959,6 +13189,10 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.SourceCodeInfo.Location)
   return target;
@@ -13438,6 +13672,10 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo.Annotation)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -13484,6 +13722,10 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.GeneratedCodeInfo.Annotation)
   return target;

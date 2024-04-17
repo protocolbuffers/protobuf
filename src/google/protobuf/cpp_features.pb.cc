@@ -6,6 +6,8 @@
 #include "google/protobuf/cpp_features.pb.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <cstddef>
 #include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -259,6 +261,10 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
     ::uint8_t* target,
     ::google::protobuf::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:pb.CppFeatures)
+  ::uint64_t hasbits_hash;
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    hasbits_hash = _impl_._has_bits_.Hash();
+  }
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -281,6 +287,10 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  if (::_pbi::DebugHardenConcurrentMutation()) {
+    ABSL_DCHECK_EQ(hasbits_hash, _impl_._has_bits_.Hash())
+        << "likely due to concurrent mutation";
   }
   // @@protoc_insertion_point(serialize_to_array_end:pb.CppFeatures)
   return target;

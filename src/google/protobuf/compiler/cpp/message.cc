@@ -4182,6 +4182,17 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
                              : "defined(NDEBUG)"},
           {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
           {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
+          {"get_hasbits_hash",
+           [&] {
+             if (has_bit_indices_.empty()) return;
+             p->Emit(
+                 R"cc(
+                   ::uint64_t hasbits_hash;
+                   if (::_pbi::DebugHardenConcurrentMutation()) {
+                     hasbits_hash = $has_bits$.Hash();
+                   }
+                 )cc");
+           }},
           {"ifdef",
            [&] {
              if (ShouldSerializeInOrder(descriptor_, options_)) {
@@ -4197,6 +4208,17 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
                )cc");
              }
            }},
+          {"check_hasbits_hash",
+           [&] {
+             if (has_bit_indices_.empty()) return;
+             p->Emit(
+                 R"cc(
+                   if (::_pbi::DebugHardenConcurrentMutation()) {
+                     ABSL_DCHECK_EQ(hasbits_hash, $has_bits$.Hash())
+                         << "likely due to concurrent mutation";
+                   }
+                 )cc");
+           }},
       },
       R"cc(
         $uint8$* $classname$::_InternalSerialize(
@@ -4204,7 +4226,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
             ::$proto_ns$::io::EpsCopyOutputStream* stream) const {
           $annotate_serialize$;
           // @@protoc_insertion_point(serialize_to_array_start:$full_name$)
+          $get_hasbits_hash$;
           $ifdef$;
+          $check_hasbits_hash$;
           // @@protoc_insertion_point(serialize_to_array_end:$full_name$)
           return target;
         }

@@ -102,6 +102,18 @@ TEST(HasBits, Copy) {
   EXPECT_TRUE(bits1 == bits2);
 }
 
+TEST(HasBits, HashDiffsOnBitChange) {
+  HasBits<2> bits1({0, 128});
+  HasBits<2> bits2({0, 1});
+  EXPECT_NE(bits1.Hash(), bits2.Hash());
+}
+
+TEST(HasBits, HashSameOnNoChange) {
+  HasBits<2> bits1({0, 128});
+  HasBits<2> bits2({0, 128});
+  EXPECT_EQ(bits1.Hash(), bits2.Hash());
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

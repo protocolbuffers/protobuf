@@ -482,6 +482,8 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
         #include $h_include$
 
         #include <algorithm>
+        #include <cstdint>
+        #include <cstddef>
         #include <type_traits>
       )");
 

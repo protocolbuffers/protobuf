@@ -14,6 +14,9 @@
 #include <cstring>
 #include <initializer_list>
 
+#include "absl/hash/hash.h"
+#include "absl/types/span.h"
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -64,6 +67,8 @@ class HasBits {
   }
 
   bool empty() const;
+
+  uint64_t Hash() const { return absl::HashOf(absl::MakeSpan(has_bits_)); }
 
  private:
   // Unfortunately, older GCC compilers (and perhaps others) fail on initializer
