@@ -484,10 +484,7 @@ class ThreadSafeArena::SerialArenaChunk {
   }
 
   constexpr static layout_type Layout(size_t n) {
-    return layout_type(
-        /*header*/ 1,
-        /*ids*/ n,
-        /*arenas*/ n);
+    return layout_type(/*header*/ 1, /*ids*/ n, /*arenas*/ n);
   }
 };
 
