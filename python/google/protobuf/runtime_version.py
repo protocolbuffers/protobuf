@@ -30,7 +30,7 @@ class VersionError(Exception):
 # the Protobuf release process. Do not edit them manually.
 DOMAIN = Domain.PUBLIC
 MAJOR = 5
-MINOR = 27
+MINOR = 28
 PATCH = 0
 SUFFIX = '-dev'
 

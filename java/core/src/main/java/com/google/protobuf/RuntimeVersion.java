@@ -27,7 +27,7 @@ public final class RuntimeVersion {
 
   public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
   public static final int MAJOR = 4;
-  public static final int MINOR = 27;
+  public static final int MINOR = 28;
   public static final int PATCH = 0;
   public static final String SUFFIX = "-dev";
 
