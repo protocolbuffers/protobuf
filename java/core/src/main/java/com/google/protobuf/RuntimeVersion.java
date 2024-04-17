@@ -29,7 +29,7 @@ public final class RuntimeVersion {
   public static final int MAJOR = 4;
   public static final int MINOR = 27;
   public static final int PATCH = 0;
-  public static final String SUFFIX = "-rc1";
+  public static final String SUFFIX = "-dev";
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
