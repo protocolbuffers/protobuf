@@ -24,11 +24,5 @@ bazel_dep(name = "rules_python", version = "0.10.2")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "zlib", version = "1.2.11")
 
-<<<<<<< checkout/google3/third_party/protobuf/github/MODULE.bazel
 # TODO: remove after toolchain types are moved to protobuf
 bazel_dep(name = "rules_proto", version = "4.0.0")
-||||||| baseline/google3/third_party/protobuf/github/MODULE.bazel
-# TODO: remove after toolchain types are moved to protobuf
-bazel_dep(name = "rules_proto", version = "4.0.0")=======
-# TODO: remove after toolchain types are moved to protobuf
-bazel_dep(name = "rules_proto", version = "4.0.0")>>>>>>> destination/google3/third_party/protobuf/github/MODULE.bazel
