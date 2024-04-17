@@ -387,6 +387,7 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
          descriptor->file()->options().java_string_check_utf8();
 }
 
+
 void WriteUInt32ToUtf16CharSequence(uint32_t number,
                                     std::vector<uint16_t>* output);
 

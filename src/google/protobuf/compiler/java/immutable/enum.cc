@@ -11,10 +11,15 @@
 
 #include "google/protobuf/compiler/java/immutable/enum.h"
 
+#include <algorithm>
+#include <cmath>
 #include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -29,6 +34,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
+
 
 EnumNonLiteGenerator::EnumNonLiteGenerator(const EnumDescriptor* descriptor,
                                            bool immutable_api, Context* context)
@@ -373,6 +379,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n\n");
 }
+
 
 bool EnumNonLiteGenerator::CanUseEnumValues() {
   if (canonical_values_.size() != descriptor_->value_count()) {
