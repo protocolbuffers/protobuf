@@ -491,7 +491,10 @@ filegroup(
 #         "upb_UnknownToMessage_Status",
 #         "upb_WireType",
 #     ],
-#     visibility = ["//upb:__subpackages__"],
+#     visibility = [
+#         "//third_party/kotlin/protobuf:__subpackages__",
+#         "//upb:__subpackages__",
+#     ],
 # )
 #
 # end:google_only
