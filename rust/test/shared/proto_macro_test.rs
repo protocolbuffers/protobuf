@@ -14,17 +14,26 @@ use unittest_proto::{
     NestedTestAllTypes, TestAllTypes,
 };
 
+struct TestValue {
+    val: i64,
+}
+
 #[test]
 fn test_setting_literals() {
     let fixed64 = || 108;
+    let test_ref = |x: &i64| *x;
+    let test_ref_b = |x: &u32| *x;
+    let one_oh_seven = [107_u32];
+    let value = TestValue { val: 106 };
+
     let msg = proto!(TestAllTypes {
         optional_int32: 101,
         optional_int64: 102,
         optional_uint32: 103,
-        optional_uint64: 104,
+        optional_uint64: if true { 104 } else { 99 },
         optional_sint32: -105,
-        optional_sint64: 106,
-        optional_fixed32: 107,
+        optional_sint64: (test_ref(&value.val)),
+        optional_fixed32: { test_ref_b(&one_oh_seven[0]) },
         optional_fixed64: fixed64(), //108
         optional_sfixed32: 100 + 9,
         optional_sfixed64: {
