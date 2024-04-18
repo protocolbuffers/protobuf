@@ -1,3 +1,35 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+/// proto! enables the use of Rust struct initialization syntax to create
+/// protobuf messages. The macro does its best to try and detect the
+/// initialization of submessages, but it is only able to do so while the
+/// submessage is being defined as part of the original struct literal.
+/// Introducing an expression using () or {} as the value of a field will
+/// require another call to this macro in order to return a submessage
+/// literal.``` /*
+/// Given the following proto definition
+/// message Data {
+///     int32 number = 1;
+///     string letters = 2;
+///     Data nested = 3;
+/// }
+/// */
+/// use protobuf::proto;
+/// let message = proto!(Data {
+///     number: 42,
+///     letters: "Hello World",
+///     nested: Data {
+///         number: {
+///             let x = 100;
+///             x + 1
+///         }
+///     }
+/// }); ```
 #[macro_export]
 macro_rules! proto {
     ($msgtype:ty { $($tt:tt)* }) => {
