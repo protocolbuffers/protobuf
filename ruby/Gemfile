@@ -1,5 +1,3 @@
 source 'https://rubygems.org'
 
-gem 'ffi', github: 'KJTsanaktsidis/ffi', branch: 'missing_wb_struct_layout'
-
 gemspec
