@@ -1,6 +1,6 @@
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
-PROTOBUF_VERSION = "27.0"
+PROTOBUF_VERSION = "28.0-dev"
 
 module(
     name = "protobuf",
