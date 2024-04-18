@@ -195,6 +195,7 @@ cc_library(
         "//src/google/protobuf/compiler/cpp",
         "//src/google/protobuf/compiler/csharp",
         "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:kotlin",
         "//src/google/protobuf/compiler/objectivec",
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
