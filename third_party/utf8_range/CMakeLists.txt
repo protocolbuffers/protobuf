@@ -11,13 +11,13 @@ option (utf8_range_ENABLE_INSTALL "Configure installation" ON)
 
 ##
 # Create the lightweight C library
-add_library (utf8_range STATIC
+add_library (utf8_range
   utf8_range.c
 )
 
 ##
 # A heavier-weight C++ wrapper that supports Abseil.
-add_library (utf8_validity STATIC utf8_validity.cc utf8_range.c)
+add_library (utf8_validity utf8_validity.cc utf8_range.c)
 
 # Load Abseil dependency.
 if (NOT TARGET absl::strings)
