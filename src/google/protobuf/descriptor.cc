@@ -5438,6 +5438,16 @@ static void InferLegacyProtoFeatures(const ProtoT& proto,
 static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
                                      const FieldOptions& options,
                                      Edition edition, FeatureSet& features) {
+  if (!features.MutableExtension(pb::cpp)->has_string_type()) {
+    if (options.ctype() == FieldOptions::CORD) {
+      features.MutableExtension(pb::cpp)->set_string_type(
+          pb::CppFeatures::CORD);
+    }
+  }
+
+  // Everything below is specifically for proto2/proto.
+  if (!IsLegacyEdition(edition)) return;
+
   if (proto.label() == FieldDescriptorProto::LABEL_REQUIRED) {
     features.set_field_presence(FeatureSet::LEGACY_REQUIRED);
   }
@@ -5502,8 +5512,8 @@ void DescriptorBuilder::ResolveFeaturesImpl(
       AddError(descriptor->name(), proto, error_location,
                "Features are only valid under editions.");
     }
-    InferLegacyProtoFeatures(proto, *options, edition, base_features);
   }
+  InferLegacyProtoFeatures(proto, *options, edition, base_features);
 
   if (base_features.ByteSizeLong() == 0 && !force_merge) {
     // Nothing to merge, and we aren't forcing it.

@@ -7514,6 +7514,20 @@ TEST_F(FeaturesTest, Proto2Features) {
       }
       field { name: "utf8" number: 6 label: LABEL_REPEATED type: TYPE_STRING }
       field { name: "req" number: 7 label: LABEL_REQUIRED type: TYPE_INT32 }
+      field {
+        name: "cord"
+        number: 8
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: CORD }
+      }
+      field {
+        name: "piece"
+        number: 9
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: STRING_PIECE }
+      }
     }
     enum_type {
       name: "Foo2"
@@ -7564,6 +7578,10 @@ TEST_F(FeaturesTest, Proto2Features) {
       Utf8CheckMode::kVerify);
   EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
             Utf8CheckMode::kNone);
+  EXPECT_EQ(GetCoreFeatures(message->FindFieldByName("cord"))
+                .GetExtension(pb::cpp)
+                .string_type(),
+            pb::CppFeatures::CORD);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
