@@ -379,7 +379,12 @@ namespace Google.Protobuf.Reflection
                 IDescriptor typeDescriptor =
                     File.DescriptorPool.LookupSymbol(Proto.TypeName, this);
 
-                // TODO: See how much of this is actually required.
+                // In most cases, the type will be specified in the descriptor proto. This may be
+                // guaranteed in descriptor.proto in the future (with respect to spring 2024), but
+                // we may still see older descriptors created by old versions of protoc, and there
+                // may be some code creating descriptor protos directly. This code effectively
+                // maintains backward compatibility, but we don't expect it to be a path taken
+                // often at all.
                 if (!Proto.HasType)
                 {
                     // Choose field type based on symbol.
