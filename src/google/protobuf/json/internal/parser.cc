@@ -701,7 +701,7 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
                 }
                 case FieldDescriptor::TYPE_ENUM: {
                   MaybeOwnedString key_str = key.value;
-                  auto e = ParseEnumFromStr<Traits>(lex, key_str, field);
+                  auto e = ParseEnumFromStr<Traits>(lex, key_str, key_field);
                   RETURN_IF_ERROR(e.status());
                   Traits::SetEnum(key_field, entry, e->value_or(0));
                   break;
