@@ -1,2 +1,5 @@
 import common.bazelrc
 
+# Workaround for maximum path length issues
+startup --output_user_root=C:/tmp --windows_enable_symlinks
+common --enable_runfiles
