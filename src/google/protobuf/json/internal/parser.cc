@@ -322,11 +322,11 @@ absl::StatusOr<std::string> ParseStrOrBytes(JsonLexer& lex,
 }
 
 template <typename Traits>
-absl::StatusOr<absl::optional<int32_t>> ParseEnumFromStr(JsonLexer& lex,
-                                                         MaybeOwnedString& str,
-                                                         Field<Traits> field) {
+absl::StatusOr<absl::optional<int32_t>> ParseEnumFromStr(
+    const json_internal::ParseOptions& options, MaybeOwnedString& str,
+    Field<Traits> field) {
   absl::StatusOr<int32_t> value = Traits::EnumNumberByName(
-      field, str.AsView(), lex.options().case_insensitive_enum_parsing);
+      field, str.AsView(), options.case_insensitive_enum_parsing);
   if (value.ok()) {
     return absl::optional<int32_t>(*value);
   }
@@ -334,7 +334,7 @@ absl::StatusOr<absl::optional<int32_t>> ParseEnumFromStr(JsonLexer& lex,
   int32_t i;
   if (absl::SimpleAtoi(str.AsView(), &i)) {
     return absl::optional<int32_t>(i);
-  } else if (lex.options().ignore_unknown_fields) {
+  } else if (options.ignore_unknown_fields) {
     return {absl::nullopt};
   }
 
@@ -355,7 +355,7 @@ absl::StatusOr<absl::optional<int32_t>> ParseEnum(JsonLexer& lex,
       absl::StatusOr<LocationWith<MaybeOwnedString>> str = lex.ParseUtf8();
       RETURN_IF_ERROR(str.status());
 
-      auto e = ParseEnumFromStr<Traits>(lex, str->value, field);
+      auto e = ParseEnumFromStr<Traits>(lex.options(), str->value, field);
       RETURN_IF_ERROR(e.status());
       if (!e->has_value()) {
         return {absl::nullopt};
