@@ -625,6 +625,72 @@ absl::Status ParseArray(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
   });
 }
 
+// Parses map key from already consumed string 'key' into the key field of the
+// map entry message 'entry' of type 'type'.
+template <typename Traits>
+absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
+                         LocationWith<MaybeOwnedString>& key) {
+  auto key_field = Traits::KeyField(type);
+  switch (Traits::FieldType(key_field)) {
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED64: {
+      int64_t n;
+      if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
+        return key.loc.Invalid("non-number characters in quoted number");
+      }
+      Traits::SetInt64(key_field, entry, n);
+      break;
+    }
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED64: {
+      uint64_t n;
+      if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
+        return key.loc.Invalid("non-number characters in quoted number");
+      }
+      Traits::SetUInt64(key_field, entry, n);
+      break;
+    }
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SFIXED32: {
+      int32_t n;
+      if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
+        return key.loc.Invalid("non-number characters in quoted number");
+      }
+      Traits::SetInt32(key_field, entry, n);
+      break;
+    }
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_FIXED32: {
+      uint32_t n;
+      if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
+        return key.loc.Invalid("non-number characters in quoted number");
+      }
+      Traits::SetUInt32(key_field, entry, n);
+      break;
+    }
+    case FieldDescriptor::TYPE_BOOL: {
+      if (key.value == "true") {
+        Traits::SetBool(key_field, entry, true);
+      } else if (key.value == "false") {
+        Traits::SetBool(key_field, entry, false);
+      } else {
+        return key.loc.Invalid(absl::StrFormat("expected bool string, got '%s'",
+                                               key.value.AsView()));
+      }
+      break;
+    }
+    case FieldDescriptor::TYPE_STRING: {
+      Traits::SetString(key_field, entry, std::move(key.value.ToString()));
+      break;
+    }
+    default:
+      return key.loc.Invalid("unsupported map key type");
+  }
+  return absl::OkStatus();
+}
+
 template <typename Traits>
 absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
   if (lex.Peek(JsonLexer::kNull)) {
@@ -644,70 +710,7 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
         return Traits::NewMsg(
             field, msg,
             [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
-              auto key_field = Traits::KeyField(type);
-              switch (Traits::FieldType(key_field)) {
-                case FieldDescriptor::TYPE_INT64:
-                case FieldDescriptor::TYPE_SINT64:
-                case FieldDescriptor::TYPE_SFIXED64: {
-                  int64_t n;
-                  if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
-                    return key.loc.Invalid(
-                        "non-number characters in quoted number");
-                  }
-                  Traits::SetInt64(key_field, entry, n);
-                  break;
-                }
-                case FieldDescriptor::TYPE_UINT64:
-                case FieldDescriptor::TYPE_FIXED64: {
-                  uint64_t n;
-                  if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
-                    return key.loc.Invalid(
-                        "non-number characters in quoted number");
-                  }
-                  Traits::SetUInt64(key_field, entry, n);
-                  break;
-                }
-                case FieldDescriptor::TYPE_INT32:
-                case FieldDescriptor::TYPE_SINT32:
-                case FieldDescriptor::TYPE_SFIXED32: {
-                  int32_t n;
-                  if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
-                    return key.loc.Invalid(
-                        "non-number characters in quoted number");
-                  }
-                  Traits::SetInt32(key_field, entry, n);
-                  break;
-                }
-                case FieldDescriptor::TYPE_UINT32:
-                case FieldDescriptor::TYPE_FIXED32: {
-                  uint32_t n;
-                  if (!absl::SimpleAtoi(key.value.AsView(), &n)) {
-                    return key.loc.Invalid(
-                        "non-number characters in quoted number");
-                  }
-                  Traits::SetUInt32(key_field, entry, n);
-                  break;
-                }
-                case FieldDescriptor::TYPE_BOOL: {
-                  if (key.value == "true") {
-                    Traits::SetBool(key_field, entry, true);
-                  } else if (key.value == "false") {
-                    Traits::SetBool(key_field, entry, false);
-                  } else {
-                    return key.loc.Invalid(absl::StrFormat(
-                        "expected bool string, got '%s'", key.value.AsView()));
-                  }
-                  break;
-                }
-                case FieldDescriptor::TYPE_STRING: {
-                  Traits::SetString(key_field, entry,
-                                    std::move(key.value.ToString()));
-                  break;
-                }
-                default:
-                  return lex.Invalid("unsupported map key type");
-              }
-
+              RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
               return ParseSingular<Traits>(lex, Traits::ValueField(type),
                                            entry);
             });
