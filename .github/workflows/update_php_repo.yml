@@ -39,6 +39,7 @@ jobs:
           rm -rf src
           cp -r protobuf/php/src .
           cp protobuf/php/composer.json.dist composer.json
+          echo "*.php -text diff" > .gitattributes
           rm -rf protobuf
       - name: Push Changes
         run: |
