@@ -4362,7 +4362,8 @@ class DescriptorBuilder {
       DescriptorPool::ErrorCollector::ErrorLocation error_location,
       bool force_merge = false);
 
-  void PostProcessFieldFeatures(FieldDescriptor& field);
+  void PostProcessFieldFeatures(FieldDescriptor& field,
+                                const FieldDescriptorProto& proto);
 
   // Allocates an array of two strings, the first one is a copy of
   // `proto_name`, and the second one is the full name. Full proto name is
@@ -5542,7 +5543,8 @@ void DescriptorBuilder::ResolveFeatures(const FileDescriptorProto& proto,
                       /*force_merge=*/true);
 }
 
-void DescriptorBuilder::PostProcessFieldFeatures(FieldDescriptor& field) {
+void DescriptorBuilder::PostProcessFieldFeatures(
+    FieldDescriptor& field, const FieldDescriptorProto& proto) {
   // TODO This can be replace by a runtime check in `is_required`
   // once the `label` getter is hidden.
   if (field.features().field_presence() == FeatureSet::LEGACY_REQUIRED &&
@@ -5552,8 +5554,15 @@ void DescriptorBuilder::PostProcessFieldFeatures(FieldDescriptor& field) {
   // TODO This can be replace by a runtime check of `is_delimited`
   // once the `TYPE_GROUP` value is removed.
   if (field.type_ == FieldDescriptor::TYPE_MESSAGE &&
+      !field.containing_type()->options().map_entry() &&
       field.features().message_encoding() == FeatureSet::DELIMITED) {
-    field.type_ = FieldDescriptor::TYPE_GROUP;
+    Symbol type =
+        LookupSymbol(proto.type_name(), field.full_name(),
+                     DescriptorPool::PLACEHOLDER_MESSAGE, LOOKUP_TYPES, false);
+    if (type.descriptor() == nullptr ||
+        !type.descriptor()->options().map_entry()) {
+      field.type_ = FieldDescriptor::TYPE_GROUP;
+    }
   }
 }
 
@@ -6099,9 +6108,11 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         });
 
     // Post-process cleanup for field features.
-    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
-      PostProcessFieldFeatures(const_cast<FieldDescriptor&>(field));
-    });
+    internal::VisitDescriptors(
+        *result, proto,
+        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
+          PostProcessFieldFeatures(const_cast<FieldDescriptor&>(field), proto);
+        });
 
     // Interpret any remaining uninterpreted options gathered into
     // options_to_interpret_ during descriptor building.  Cross-linking has made
