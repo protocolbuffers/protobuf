@@ -22,11 +22,11 @@ const _CHECK_UPB_MALLOC_ALIGN_AT_LEAST_POINTER_ALIGNED: () =
 /// This is an owning type and will automatically free the arena when
 /// dropped.
 ///
-/// Note that this type is neither `Sync` nor `Send`. The upb_Arena C object
-/// could be understood as being Sync (at least vacuously, as there are no
-/// const-ptr functions on upb_Arena's API), but the Rust Arena is
-/// necessarily expressed as interior mutability (&self rather than &mut self
-/// receivers) See https://doc.rust-lang.org/nomicon/lifetime-mismatch.html and
+/// Note that this type is not `Sync` as it implements unsynchronized interior
+/// mutability. The upb_Arena C object could be understood as being Sync (at
+/// least vacuously under current API since there are not any const upb_Arena*
+/// API functions), but the Rust Arena is necessarily expressed as interior
+/// mutability (&self rather than &mut self receivers) See https://doc.rust-lang.org/nomicon/lifetime-mismatch.html and
 /// https://blog.reverberate.org/2021/12/19/arenas-and-rust.html, and the
 /// 'known problems' section of https://rust-lang.github.io/rust-clippy/master/index.html#/mut_from_ref.
 #[derive(Debug)]
@@ -35,6 +35,10 @@ pub struct Arena {
     raw: RawArena,
     _not_sync: PhantomData<UnsafeCell<()>>,
 }
+
+// SAFETY: `Arena` uniquely holds the underlying RawArena and has no
+// thread-local data.
+unsafe impl Send for Arena {}
 
 impl Arena {
     /// Allocates a fresh arena.
