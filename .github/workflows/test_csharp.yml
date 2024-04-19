@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       # TODO Run this with Bazel once codegen is handled properly.
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:3.1.415-6.0.100-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -39,7 +39,7 @@ jobs:
         run: sudo rm -rf _build
 
       - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:3.1.415-6.0.100-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -51,7 +51,7 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -70,7 +70,7 @@ jobs:
         shell: bash
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -82,14 +82,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Build protobuf C# tests under x86_64 docker image
         # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
         # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -106,7 +106,7 @@ jobs:
         #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
         #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
         #   we just run map the user's home to a throwaway temporary directory
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-arm64v8
           skip-staleness-check: true
