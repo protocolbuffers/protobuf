@@ -22,17 +22,24 @@ class Domain(Enum):
   PUBLIC = 2
 
 
-class VersionError(Exception):
-  """Exception class for version violation."""
-
-
 # The versions of this Python Protobuf runtime to be changed automatically by
 # the Protobuf release process. Do not edit them manually.
-DOMAIN = Domain.PUBLIC
-MAJOR = 5
-MINOR = 28
-PATCH = 0
-SUFFIX = '-dev'
+# These OSS versions are not stripped to avoid merging conflicts.
+OSS_DOMAIN = Domain.PUBLIC
+OSS_MAJOR = 5
+OSS_MINOR = 28
+OSS_PATCH = 0
+OSS_SUFFIX = '-dev'
+
+DOMAIN = OSS_DOMAIN
+MAJOR = OSS_MAJOR
+MINOR = OSS_MINOR
+PATCH = OSS_PATCH
+SUFFIX = OSS_SUFFIX
+
+
+class VersionError(Exception):
+  """Exception class for version violation."""
 
 
 def ValidateProtobufRuntimeVersion(

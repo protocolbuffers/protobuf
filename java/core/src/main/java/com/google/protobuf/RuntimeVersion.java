@@ -24,12 +24,18 @@ public final class RuntimeVersion {
 
   // The version of this runtime.
   // Automatically updated by Protobuf release process. Do not edit manually.
+  // These OSS versions are not stripped to avoid merging conflicts.
+  public static final RuntimeDomain OSS_DOMAIN = RuntimeDomain.PUBLIC;
+  public static final int OSS_MAJOR = 4;
+  public static final int OSS_MINOR = 28;
+  public static final int OSS_PATCH = 0;
+  public static final String OSS_SUFFIX = "-dev";
 
-  public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
-  public static final int MAJOR = 4;
-  public static final int MINOR = 28;
-  public static final int PATCH = 0;
-  public static final String SUFFIX = "-dev";
+  public static final RuntimeDomain DOMAIN = OSS_DOMAIN;
+  public static final int MAJOR = OSS_MAJOR;
+  public static final int MINOR = OSS_MINOR;
+  public static final int PATCH = OSS_PATCH;
+  public static final String SUFFIX = OSS_SUFFIX;
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
@@ -88,7 +94,7 @@ public final class RuntimeVersion {
     }
 
     // Check that runtime version is newer than the gencode version.
-    if (MINOR < minor || (MINOR == minor && PATCH < patch)) {
+    if (MINOR < minor || (minor == MINOR && PATCH < patch)) {
       throw new ProtobufRuntimeVersionException(
           String.format(
               "Detected incompatible Protobuf Gencode/Runtime versions when loading %s: gencode %s,"
