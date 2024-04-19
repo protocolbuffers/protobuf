@@ -26,7 +26,7 @@ jobs:
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
       - name: Checkout ${{ github.head_ref && 'PR' || matrix.branch }}
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout || github.head_ref || matrix.branch }}
 
@@ -49,7 +49,7 @@ jobs:
         # In branches where automatic updates work as post-submits, we don't want to run staleness
         # tests along with user changes.  Any stale files will be automatically fixed in a follow-up
         # commit.
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness

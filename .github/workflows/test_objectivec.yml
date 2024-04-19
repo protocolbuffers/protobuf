@@ -34,18 +34,18 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v2
+        uses: protocolbuffers/protobuf-ci/ccache@v3
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@v3
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -80,13 +80,13 @@ jobs:
     runs-on: ${{ matrix.OS }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Xcode version
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.XCODE }}.app
       - name: Pod lib lint
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cocoapods/${{ matrix.XCODE }}
@@ -125,11 +125,11 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
