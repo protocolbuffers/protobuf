@@ -691,6 +691,21 @@ absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
   return absl::OkStatus();
 }
 
+// Parses one map entry for 'map_field' in 'parent_msg' with already consumed
+// 'key'.
+template <typename Traits>
+absl::Status ParseMapEntry(JsonLexer& lex, Field<Traits> map_field,
+                           Msg<Traits>& parent_msg,
+                           LocationWith<MaybeOwnedString>& key) {
+  return Traits::NewMsg(
+      map_field, parent_msg,
+      [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
+        RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
+
+        return ParseSingular<Traits>(lex, Traits::ValueField(type), entry);
+      });
+}
+
 template <typename Traits>
 absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
   if (lex.Peek(JsonLexer::kNull)) {
@@ -707,13 +722,7 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
               "got unexpectedly-repeated repeated map key: '%s'",
               key.value.AsView()));
         }
-        return Traits::NewMsg(
-            field, msg,
-            [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
-              RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
-              return ParseSingular<Traits>(lex, Traits::ValueField(type),
-                                           entry);
-            });
+        return ParseMapEntry<Traits>(lex, field, msg, key);
       });
 }
 
