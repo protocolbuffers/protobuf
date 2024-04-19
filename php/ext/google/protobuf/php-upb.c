@@ -5137,10 +5137,8 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* m,
                              const upb_MiniTableField* f,
                              upb_Message* map_entry_message, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(map_entry_message));
-
-  // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
-  const upb_MiniTable* map_entry_mini_table = upb_MiniTableSub_Message(
-      m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+  const upb_MiniTable* map_entry_mini_table =
+      upb_MiniTable_MapEntrySubMessage(m, f);
   UPB_ASSERT(map_entry_mini_table);
   const upb_MiniTableField* map_entry_key_field =
       upb_MiniTable_MapKey(map_entry_mini_table);
@@ -6043,9 +6041,8 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
                                           const upb_MiniTableField* f,
                                           upb_Message* clone,
                                           upb_Arena* arena) {
-  // TODO: use a variant of upb_MiniTable_GetSubMessageTable() here.
-  const upb_MiniTable* map_entry_table = upb_MiniTableSub_Message(
-      mini_table->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)]);
+  const upb_MiniTable* map_entry_table =
+      upb_MiniTable_MapEntrySubMessage(mini_table, f);
   UPB_ASSERT(map_entry_table);
 
   const upb_MiniTableField* key_field = upb_MiniTable_MapKey(map_entry_table);
