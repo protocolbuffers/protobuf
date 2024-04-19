@@ -208,21 +208,11 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
       )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
       p->Emit(R"cc(
-        static_assert(sizeof(::uint32_t) == sizeof(float),
-                      "Code assumes ::uint32_t and float are the same size.");
-        float tmp_$name$ = $prefix$_internal_$name$();
-        ::uint32_t raw_$name$;
-        memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));
-        if (raw_$name$ != 0) {
+        if (::absl::bit_cast<::uint32_t>($prefix$_internal_$name$()) != 0) {
       )cc");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
       p->Emit(R"cc(
-        static_assert(sizeof(::uint64_t) == sizeof(double),
-                      "Code assumes ::uint64_t and double are the same size.");
-        double tmp_$name$ = $prefix$_internal_$name$();
-        ::uint64_t raw_$name$;
-        memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));
-        if (raw_$name$ != 0) {
+        if (::absl::bit_cast<::uint64_t>($prefix$_internal_$name$()) != 0) {
       )cc");
     } else {
       p->Emit(R"cc(
