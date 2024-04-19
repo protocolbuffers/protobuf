@@ -457,12 +457,7 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   (void)cached_has_bits;
 
   // double value = 1;
-  static_assert(sizeof(::uint64_t) == sizeof(double),
-                "Code assumes ::uint64_t and double are the same size.");
-  double tmp_value = this->_internal_value();
-  ::uint64_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint64_t>(this->_internal_value()) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteDoubleToArray(
         1, this->_internal_value(), target);
@@ -486,12 +481,7 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   (void) cached_has_bits;
 
   // double value = 1;
-  static_assert(sizeof(::uint64_t) == sizeof(double),
-                "Code assumes ::uint64_t and double are the same size.");
-  double tmp_value = this->_internal_value();
-  ::uint64_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint64_t>(this->_internal_value()) != 0) {
     total_size += 9;
   }
 
@@ -507,12 +497,7 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  static_assert(sizeof(::uint64_t) == sizeof(double),
-                "Code assumes ::uint64_t and double are the same size.");
-  double tmp_value = from._internal_value();
-  ::uint64_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint64_t>(from._internal_value()) != 0) {
     _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -643,12 +628,7 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   (void)cached_has_bits;
 
   // float value = 1;
-  static_assert(sizeof(::uint32_t) == sizeof(float),
-                "Code assumes ::uint32_t and float are the same size.");
-  float tmp_value = this->_internal_value();
-  ::uint32_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint32_t>(this->_internal_value()) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(
         1, this->_internal_value(), target);
@@ -672,12 +652,7 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   (void) cached_has_bits;
 
   // float value = 1;
-  static_assert(sizeof(::uint32_t) == sizeof(float),
-                "Code assumes ::uint32_t and float are the same size.");
-  float tmp_value = this->_internal_value();
-  ::uint32_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint32_t>(this->_internal_value()) != 0) {
     total_size += 5;
   }
 
@@ -693,12 +668,7 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  static_assert(sizeof(::uint32_t) == sizeof(float),
-                "Code assumes ::uint32_t and float are the same size.");
-  float tmp_value = from._internal_value();
-  ::uint32_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint32_t>(from._internal_value()) != 0) {
     _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
