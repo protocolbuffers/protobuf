@@ -507,6 +507,98 @@ TEST_P(JsonTest, ParseMap) {
   EXPECT_EQ(other->DebugString(), message.DebugString());
 }
 
+TEST_P(JsonTest, ParseMapWithEnumValuesProto2) {
+  ParseOptions options;
+  options.ignore_unknown_fields = false;
+  protobuf_unittest::TestMapOfEnums message;
+  const std::string input_json = R"json({
+    "enum_map": {
+      "key1": "PROTOCOL",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BUFFER",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "PROTOCOL",
+    }
+  })json";
+
+  // Without ignore_unknown_fields, the unknown enum string value fails to
+  // parse.
+  EXPECT_THAT(ToProto(message, input_json, options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, ParseMapWithEnumValuesProto3) {
+  ParseOptions options;
+  options.ignore_unknown_fields = false;
+  proto3::MapOfEnums message;
+  const std::string input_json = R"json({
+    "map": {
+      "key1": "FOO",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BAR",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "FOO",
+    }
+  })json";
+
+  // Without ignore_unknown_fields, the unknown enum string value fails to
+  // parse.
+  EXPECT_THAT(ToProto(message, input_json, options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, ParseMapWithEnumValuesProto2WithUnknownFields) {
+  ParseOptions options;
+  options.ignore_unknown_fields = true;
+  protobuf_unittest::TestMapOfEnums message;
+  const std::string input_json = R"json({
+    "enum_map": {
+      "key1": "PROTOCOL",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BUFFER",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "PROTOCOL",
+    }
+  })json";
+
+  ASSERT_OK(ToProto(message, input_json, options));
+  // With ignore_unknown_fields set, the unknown enum string value is accepted
+  // but coerced to 0-th enum value. This behavior fails the conformance test
+  // 'IgnoreUnknownEnumStringValueInMap' and it will be fixed in
+  // https://github.com/protocolbuffers/protobuf/pull/16479.
+  EXPECT_EQ(message.enum_map().size(), 5);
+  EXPECT_EQ(message.enum_map().contains("key2"), true);
+  EXPECT_EQ(message.enum_map().contains("key4"), true);
+  EXPECT_EQ(message.enum_map().at("key2"), 0);
+  EXPECT_EQ(message.enum_map().at("key4"), 0);
+}
+
+TEST_P(JsonTest, ParseMapWithEnumValuesProto3WithUnknownFields) {
+  ParseOptions options;
+  options.ignore_unknown_fields = true;
+  proto3::MapOfEnums message;
+  const std::string input_json = R"json({
+    "map": {
+      "key1": "FOO",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BAR",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "FOO",
+    }
+  })json";
+
+  ASSERT_OK(ToProto(message, input_json, options));
+  // With ignore_unknown_fields set, the unknown enum string value is accepted
+  // but coerced to 0-th enum value. This behavior fails the conformance test
+  // 'IgnoreUnknownEnumStringValueInMap' and it will be fixed in
+  // https://github.com/protocolbuffers/protobuf/pull/16479.
+  EXPECT_EQ(message.map().size(), 5);
+  EXPECT_EQ(message.map().contains("key2"), true);
+  EXPECT_EQ(message.map().contains("key4"), true);
+  EXPECT_EQ(message.map().at("key2"), 0);
+  EXPECT_EQ(message.map().at("key4"), 0);
+}
+
 TEST_P(JsonTest, RepeatedMapKey) {
   EXPECT_THAT(ToProto<TestMap>(R"json({
     "string_map": {
