@@ -34,8 +34,18 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m);
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* m, const upb_MiniTableField* f);
 
-// Returns the MiniTable for a message field if it is a submessage.
+// Returns the MiniTable for a message field if it is a submessage, otherwise
+// returns NULL.
+//
+// WARNING: if dynamic tree shaking is in use, the return value may be the
+// "empty", zero-field placeholder message instead of the real message type.
+// If the message is later linked, this function will begin returning the real
+// message type.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
+    const upb_MiniTable* m, const upb_MiniTableField* f);
+
+// Returns the MiniTable for a map field.  The given field must refer to a map.
+UPB_API_INLINE const upb_MiniTable* upb_MiniTable_MapEntrySubMessage(
     const upb_MiniTable* m, const upb_MiniTableField* f);
 
 // Returns the MiniTableEnum for a message field, NULL if the field is unlinked.

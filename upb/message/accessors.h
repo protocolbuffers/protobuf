@@ -22,9 +22,15 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
 #include "upb/message/tagged_ptr.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
 // Must be last.
@@ -354,8 +360,6 @@ UPB_API_INLINE void _upb_Message_SetTaggedMessagePtr(
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(field) ==
              UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
   UPB_ASSUME(upb_MiniTableField_IsScalar(field));
-  UPB_ASSERT(upb_MiniTableSub_Message(
-      mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]));
   upb_Message_SetBaseField(msg, field, &sub_message);
 }
 
@@ -379,8 +383,8 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
   upb_Message* sub_message =
       *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*);
   if (!sub_message) {
-    const upb_MiniTable* sub_mini_table = upb_MiniTableSub_Message(
-        mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]);
+    const upb_MiniTable* sub_mini_table =
+        upb_MiniTable_SubMessage(mini_table, field);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*) = sub_message;
