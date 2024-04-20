@@ -13,6 +13,7 @@ package protobuf_test_messages.edition;
 
 import "google/protobuf/cpp_features.proto";
 
+option java_package = "com.google.protobuf_sample_messages.edition";
 option optimize_for = SPEED;
 option features.(pb.cpp).string_type = VIEW;
 
