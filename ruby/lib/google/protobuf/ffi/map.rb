@@ -155,6 +155,19 @@ module Google
       end
       alias size length
 
+      def freeze
+        return self if frozen?
+        super
+        @arena.pin self
+        if value_type == :message
+          internal_iterator do |iterator|
+            value_message_value = Google::Protobuf::FFI.map_value(@map_ptr, iterator)
+            convert_upb_to_ruby(value_message_value, value_type, descriptor, arena).freeze
+          end
+        end
+        self
+      end
+
       ##
       # call-seq:
       #    Map.dup => new_map

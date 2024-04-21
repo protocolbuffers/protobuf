@@ -64,7 +64,34 @@ typedef enum {
 extern "C" {
 #endif
 
-UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
+// Convert from upb_FieldType to upb_CType
+UPB_INLINE upb_CType upb_FieldType_CType(upb_FieldType field_type) {
+  static const upb_CType c_type[] = {
+      kUpb_CType_Double,   // kUpb_FieldType_Double
+      kUpb_CType_Float,    // kUpb_FieldType_Float
+      kUpb_CType_Int64,    // kUpb_FieldType_Int64
+      kUpb_CType_UInt64,   // kUpb_FieldType_UInt64
+      kUpb_CType_Int32,    // kUpb_FieldType_Int32
+      kUpb_CType_UInt64,   // kUpb_FieldType_Fixed64
+      kUpb_CType_UInt32,   // kUpb_FieldType_Fixed32
+      kUpb_CType_Bool,     // kUpb_FieldType_Bool
+      kUpb_CType_String,   // kUpb_FieldType_String
+      kUpb_CType_Message,  // kUpb_FieldType_Group
+      kUpb_CType_Message,  // kUpb_FieldType_Message
+      kUpb_CType_Bytes,    // kUpb_FieldType_Bytes
+      kUpb_CType_UInt32,   // kUpb_FieldType_UInt32
+      kUpb_CType_Enum,     // kUpb_FieldType_Enum
+      kUpb_CType_Int32,    // kUpb_FieldType_SFixed32
+      kUpb_CType_Int64,    // kUpb_FieldType_SFixed64
+      kUpb_CType_Int32,    // kUpb_FieldType_SInt32
+      kUpb_CType_Int64,    // kUpb_FieldType_SInt64
+  };
+
+  // -1 here because the enum is one-based but the table is zero-based.
+  return c_type[field_type - 1];
+}
+
+UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType field_type) {
   // clang-format off
   const unsigned kUnpackableTypes =
       (1 << kUpb_FieldType_String) |
@@ -72,7 +99,7 @@ UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType type) {
       (1 << kUpb_FieldType_Message) |
       (1 << kUpb_FieldType_Group);
   // clang-format on
-  return (1 << type) & ~kUnpackableTypes;
+  return (1 << field_type) & ~kUnpackableTypes;
 }
 
 #ifdef __cplusplus

@@ -36,7 +36,9 @@ const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                               uint32_t num);
 UPB_API const char* upb_OneofDef_Name(const upb_OneofDef* o);
 int upb_OneofDef_numfields(const upb_OneofDef* o);
-const UPB_DESC(OneofOptions) * upb_OneofDef_Options(const upb_OneofDef* o);
+const UPB_DESC(OneofOptions*) upb_OneofDef_Options(const upb_OneofDef* o);
+const UPB_DESC(FeatureSet*)
+    upb_OneofDef_ResolvedFeatures(const upb_OneofDef* o);
 
 #ifdef __cplusplus
 } /* extern "C" */

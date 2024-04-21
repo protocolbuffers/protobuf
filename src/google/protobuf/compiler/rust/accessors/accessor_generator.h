@@ -9,9 +9,13 @@
 #define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSOR_GENERATOR_H__
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "absl/log/absl_check.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -24,25 +28,33 @@ class AccessorGenerator {
   AccessorGenerator() = default;
   virtual ~AccessorGenerator() = default;
 
-  AccessorGenerator(const AccessorGenerator &) = delete;
-  AccessorGenerator(AccessorGenerator &&) = delete;
-  AccessorGenerator &operator=(const AccessorGenerator &) = delete;
-  AccessorGenerator &operator=(AccessorGenerator &&) = delete;
+  AccessorGenerator(const AccessorGenerator&) = delete;
+  AccessorGenerator(AccessorGenerator&&) = delete;
+  AccessorGenerator& operator=(const AccessorGenerator&) = delete;
+  AccessorGenerator& operator=(AccessorGenerator&&) = delete;
 
   // Constructs a generator for the given field.
   //
   // Returns `nullptr` if there is no known generator for this field.
-  static std::unique_ptr<AccessorGenerator> For(Context<FieldDescriptor> field);
+  static std::unique_ptr<AccessorGenerator> For(Context& ctx,
+                                                const FieldDescriptor& field);
 
-  void GenerateMsgImpl(Context<FieldDescriptor> field) const {
-    InMsgImpl(field);
+  void GenerateMsgImpl(Context& ctx, const FieldDescriptor& field,
+                       AccessorCase accessor_case) const {
+    ctx.Emit({{"comment", FieldInfoComment(ctx, field)}}, R"rs(
+      // $comment$
+    )rs");
+    InMsgImpl(ctx, field, accessor_case);
+    ctx.printer().PrintRaw("\n");
   }
-  void GenerateExternC(Context<FieldDescriptor> field) const {
-    InExternC(field);
+  void GenerateExternC(Context& ctx, const FieldDescriptor& field) const {
+    InExternC(ctx, field);
+    ctx.printer().PrintRaw("\n");
   }
-  void GenerateThunkCc(Context<FieldDescriptor> field) const {
-    ABSL_CHECK(field.is_cpp());
-    InThunkCc(field);
+  void GenerateThunkCc(Context& ctx, const FieldDescriptor& field) const {
+    ABSL_CHECK(ctx.is_cpp());
+    InThunkCc(ctx, field);
+    ctx.printer().PrintRaw("\n");
   }
 
  private:
@@ -51,53 +63,73 @@ class AccessorGenerator {
   // functions. For example, consider calling `field.printer.WithVars()` as a
   // prologue to inject variables automatically.
 
-  // Called inside the main inherent `impl Msg {}` block.
-  virtual void InMsgImpl(Context<FieldDescriptor> field) const {}
+  // Called inside the `impl Msg {}`, `impl MsgMut {}` and `impl MsgView`
+  // blocks.
+  virtual void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                         AccessorCase accessor_case) const {}
 
   // Called inside of a message's `extern "C" {}` block.
-  virtual void InExternC(Context<FieldDescriptor> field) const {}
+  virtual void InExternC(Context& ctx, const FieldDescriptor& field) const {}
 
   // Called inside of an `extern "C" {}` block in the  `.thunk.cc` file, if such
   // a file is being generated.
-  virtual void InThunkCc(Context<FieldDescriptor> field) const {}
+  virtual void InThunkCc(Context& ctx, const FieldDescriptor& field) const {}
 };
 
 class SingularScalar final : public AccessorGenerator {
  public:
   ~SingularScalar() override = default;
-  void InMsgImpl(Context<FieldDescriptor> field) const override;
-  void InExternC(Context<FieldDescriptor> field) const override;
-  void InThunkCc(Context<FieldDescriptor> field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+  void InExternC(Context& ctx, const FieldDescriptor& field) const override;
+  void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
 
 class SingularString final : public AccessorGenerator {
  public:
   ~SingularString() override = default;
-  void InMsgImpl(Context<FieldDescriptor> field) const override;
-  void InExternC(Context<FieldDescriptor> field) const override;
-  void InThunkCc(Context<FieldDescriptor> field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+  void InExternC(Context& ctx, const FieldDescriptor& field) const override;
+  void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
 
 class SingularMessage final : public AccessorGenerator {
  public:
   ~SingularMessage() override = default;
-  void InMsgImpl(Context<FieldDescriptor> field) const override;
-  void InExternC(Context<FieldDescriptor> field) const override;
-  void InThunkCc(Context<FieldDescriptor> field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+  void InExternC(Context& ctx, const FieldDescriptor& field) const override;
+  void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
 
-class RepeatedScalar final : public AccessorGenerator {
+class RepeatedField final : public AccessorGenerator {
  public:
-  ~RepeatedScalar() override = default;
-  void InMsgImpl(Context<FieldDescriptor> field) const override;
-  void InExternC(Context<FieldDescriptor> field) const override;
-  void InThunkCc(Context<FieldDescriptor> field) const override;
+  ~RepeatedField() override = default;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+  void InExternC(Context& ctx, const FieldDescriptor& field) const override;
+  void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
 
 class UnsupportedField final : public AccessorGenerator {
  public:
+  explicit UnsupportedField(std::string reason) : reason_(std::move(reason)) {}
   ~UnsupportedField() override = default;
-  void InMsgImpl(Context<FieldDescriptor> field) const override;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+
+ private:
+  std::string reason_;
+};
+
+class Map final : public AccessorGenerator {
+ public:
+  ~Map() override = default;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+  void InExternC(Context& ctx, const FieldDescriptor& field) const override;
+  void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
 
 }  // namespace rust

@@ -1,39 +1,22 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "upb/json/decode.h"
 
+#include <string>
+#include <vector>
+
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
+#include "upb/base/status.hpp"
+#include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 
@@ -45,8 +28,8 @@ static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
 
   upb_test_Box* box = upb_test_Box_new(a);
   int options = 0;
-  bool ok = upb_JsonDecode(json, strlen(json), box, m.ptr(), defpool.ptr(),
-                           options, a, status.ptr());
+  bool ok = upb_JsonDecode(json, strlen(json), UPB_UPCAST(box), m.ptr(),
+                           defpool.ptr(), options, a, status.ptr());
   return ok ? box : nullptr;
 }
 
@@ -99,4 +82,18 @@ TEST(JsonTest, DecodeConflictJsonName) {
   upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
   EXPECT_EQ(2, upb_test_Box_new_value(box));
   EXPECT_EQ(0, upb_test_Box_value(box));
+}
+
+TEST(JsonTest, RejectsBadTrailingCharacters) {
+  upb::Arena a;
+  std::string json_string = R"({}abc)";
+  upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
+  EXPECT_EQ(box, nullptr);
+}
+
+TEST(JsonTest, AcceptsTrailingWhitespace) {
+  upb::Arena a;
+  std::string json_string = "{} \n \r\n \t\t";
+  upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
+  EXPECT_NE(box, nullptr);
 }

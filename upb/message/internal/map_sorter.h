@@ -1,40 +1,20 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_
+#ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
+#define UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
 
 #include <stdlib.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/alloc.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
@@ -69,25 +49,26 @@ UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
 }
 
 UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) free(s->entries);
+  if (s->entries) upb_gfree(s->entries);
 }
 
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
+                                    const struct upb_Map* map,
                                     _upb_sortedmap* sorted, upb_MapEntry* ent) {
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
   upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->data.k, map->key_size);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
   upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->data.v, map->val_size);
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
   return true;
 }
 
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const upb_Message_Extension** ext) {
+                                       const upb_Extension** ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const upb_Message_Extension*)s->entries[sorted->pos++];
+  *ext = (const upb_Extension*)s->entries[sorted->pos++];
   return true;
 }
 
@@ -97,11 +78,10 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 }
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
+                            const struct upb_Map* map, _upb_sortedmap* sorted);
 
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
-                             const upb_Message_Extension* exts, size_t count,
-                             _upb_sortedmap* sorted);
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Extension* exts,
+                             size_t count, _upb_sortedmap* sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -109,4 +89,4 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_INTERNAL_MAP_SORTER_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */

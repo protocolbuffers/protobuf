@@ -9,8 +9,8 @@
 #define UPB_MESSAGE_PROMOTE_H_
 
 #include "upb/message/array.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/map.h"
+#include "upb/message/value.h"
 #include "upb/wire/decode.h"
 
 // Must be last.
@@ -33,15 +33,13 @@ typedef enum {
   kUpb_GetExtensionAsBytes_EncodeError,
 } upb_GetExtensionAsBytes_Status;
 
-// Returns a message extension or promotes an unknown field to
-// an extension.
+// Returns a message value or promotes an unknown field to an extension.
 //
 // TODO: Only supports extension fields that are messages,
 // expand support to include non-message types.
-upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
+upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
-    int decode_options, upb_Arena* arena,
-    const upb_Message_Extension** extension);
+    int decode_options, upb_Arena* arena, upb_MessageValue* value);
 
 typedef enum {
   kUpb_FindUnknown_Ok,
@@ -59,9 +57,9 @@ typedef struct {
 
 // Finds first occurrence of unknown data by tag id in message.
 // A depth_limit of zero means to just use the upb default depth limit.
-upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
-                                             uint32_t field_number,
-                                             int depth_limit);
+upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
+                                           uint32_t field_number,
+                                           int depth_limit);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,

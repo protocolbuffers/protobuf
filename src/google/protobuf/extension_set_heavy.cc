@@ -12,14 +12,20 @@
 // Contains methods defined in extension_set.h which cannot be part of the
 // lite library because they use descriptors or reflection.
 
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -205,7 +211,7 @@ ExtensionSet::Extension* ExtensionSet::MaybeNewRepeatedExtension(
     ABSL_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        Arena::CreateMessage<RepeatedPtrField<MessageLite> >(arena_);
+        Arena::Create<RepeatedPtrField<MessageLite> >(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }
@@ -268,9 +274,16 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
     if (extension->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       output->message_info.prototype =
           factory_->GetPrototype(extension->message_type());
+      output->message_info.tc_table =
+          output->message_info.prototype->GetTcParseTable();
       ABSL_CHECK(output->message_info.prototype != nullptr)
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
+
+      if (extension->options().has_lazy()) {
+        output->is_lazy = extension->options().lazy() ? LazyAnnotation::kLazy
+                                                      : LazyAnnotation::kEager;
+      }
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;
       output->enum_validity_check.arg = extension->enum_type();
@@ -412,6 +425,18 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
 }
+
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+bool ExtensionSet::ShouldRegisterAtThisTime(
+    std::initializer_list<WeakPrototypeRef> messages, bool is_preregistration) {
+  bool has_all = true;
+  for (auto ref : messages) {
+    has_all = has_all && GetPrototypeForWeakDescriptor(ref.table, ref.index,
+                                                       false) != nullptr;
+  }
+  return has_all == is_preregistration;
+}
+#endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
 }  // namespace internal
 }  // namespace protobuf

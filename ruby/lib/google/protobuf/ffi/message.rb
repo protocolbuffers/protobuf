@@ -19,10 +19,11 @@ module Google
       attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Internal::Arena, :pointer, :pointer], EncodeStatus
       attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena, Status.by_ref], :bool
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, Descriptor, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
-      attach_function :decode_message,          :upb_Decode,                              [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
+      attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
       attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDescriptor], FieldDescriptor
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
+      attach_function :message_next,            :upb_Message_Next,            [:Message, Descriptor, :DefPool, :FieldDefPointer, MessageValue.by_ref, :pointer], :bool
       # MessageValue
       attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, Descriptor], :bool
       attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, Descriptor, :uint64_t], :uint64_t
@@ -58,8 +59,15 @@ module Google
           end
 
           def freeze
+            return self if frozen?
             super
             @arena.pin self
+            self.class.descriptor.each do |field_descriptor|
+              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
+              if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
+                get_field(field_descriptor).freeze
+              end
+            end
             self
           end
 
@@ -170,7 +178,15 @@ module Google
 
             message = new
             mini_table_ptr = Google::Protobuf::FFI.get_mini_table(message.class.descriptor)
-            status = Google::Protobuf::FFI.decode_message(data, data.bytesize, message.instance_variable_get(:@msg), mini_table_ptr, nil, decoding_options, message.instance_variable_get(:@arena))
+            status = Google::Protobuf::FFI.decode_message(
+              data,
+              data.bytesize,
+              message.instance_variable_get(:@msg),
+              mini_table_ptr,
+              Google::Protobuf::FFI.get_extension_registry(message.class.descriptor.send(:pool).descriptor_pool),
+              decoding_options,
+              message.instance_variable_get(:@arena)
+            )
             raise ParseError.new "Error occurred during parsing" unless status == :Ok
             message
           end
@@ -619,6 +635,7 @@ module Google
             repeated_field = OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
               repeated_field = RepeatedField.send(:construct_for_field, field, @arena, array: array)
+              repeated_field.freeze if frozen?
             end
             repeated_field
           end
@@ -631,6 +648,7 @@ module Google
             map_field = OBJECT_CACHE.get(map.address)
             if map_field.nil?
               map_field = Google::Protobuf::Map.send(:construct_for_field, field, @arena, map: map)
+              map_field.freeze if frozen?
             end
             map_field
           end

@@ -123,9 +123,9 @@ void UsageError() {
           "                              strictly conforming to protobuf\n");
   fprintf(stderr, "                              spec.\n");
   fprintf(stderr,
-          "  --maximum edition           Only run conformance tests up to \n");
+          "  --maximum_edition <edition>   Only run conformance tests up\n");
   fprintf(stderr,
-          "                              and including the specified\n");
+          "                              to and including the specified\n");
   fprintf(stderr, "                              edition.\n");
   fprintf(stderr,
           "  --output_dir                <dirname> Directory to write\n"

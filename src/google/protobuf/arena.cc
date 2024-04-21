@@ -13,22 +13,23 @@
 #include <cstdint>
 #include <limits>
 #include <string>
-#include <typeinfo>
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/internal/layout.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/string_block.h"
 #include "google/protobuf/thread_safe_arena.h"
 
-
-#ifdef ADDRESS_SANITIZER
-#include <sanitizer/asan_interface.h>
-#endif  // ADDRESS_SANITIZER
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -59,10 +60,8 @@ ArenaBlock* SentryArenaBlock() {
 }
 #endif
 
-}  // namespace
-
-static SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr,
-                               size_t last_size, size_t min_bytes) {
+SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr, size_t last_size,
+                        size_t min_bytes) {
   AllocationPolicy policy;  // default policy
   if (policy_ptr) policy = *policy_ptr;
   size_t size;
@@ -91,23 +90,22 @@ class GetDeallocator {
         space_allocated_(space_allocated) {}
 
   void operator()(SizedPtr mem) const {
-#ifdef ADDRESS_SANITIZER
-    // This memory was provided by the underlying allocator as unpoisoned,
-    // so return it in an unpoisoned state.
-    ASAN_UNPOISON_MEMORY_REGION(mem.p, mem.n);
-#endif  // ADDRESS_SANITIZER
     if (dealloc_) {
       dealloc_(mem.p, mem.n);
     } else {
       internal::SizedDelete(mem.p, mem.n);
     }
-    *space_allocated_ += mem.n;
+    AddSpaceAllocated(mem.n);
   }
+
+  void AddSpaceAllocated(size_t n) const { *space_allocated_ += n; }
 
  private:
   void (*dealloc_)(void*, size_t);
   size_t* space_allocated_;
 };
+
+}  // namespace
 
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
@@ -142,9 +140,9 @@ std::vector<void*> SerialArena::PeekCleanupListForTesting() {
   ArenaBlock* b = head();
   if (b->IsSentry()) return res;
 
-  const auto peek_list = [&](const char* pos, const char* end) {
-    while (pos != end) {
-      pos += cleanup::PeekNode(pos, res);
+  const auto peek_list = [&](char* pos, char* end) {
+    for (; pos != end; pos += cleanup::Size()) {
+      cleanup::PeekNode(pos, res);
     }
   };
 
@@ -181,6 +179,8 @@ SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
 
 template <typename Deallocator>
 SizedPtr SerialArena::Free(Deallocator deallocator) {
+  deallocator.AddSpaceAllocated(FreeStringBlocks());
+
   ArenaBlock* b = head();
   SizedPtr mem = {b, b->size};
   while (b->next) {
@@ -194,7 +194,7 @@ SizedPtr SerialArena::Free(Deallocator deallocator) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n) {
   AllocateNewBlock(n);
-  void* ret;
+  void* ret = nullptr;
   bool res = MaybeAllocateAligned(n, &ret);
   ABSL_DCHECK(res);
   return ret;
@@ -228,15 +228,14 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
+  size_t required = AlignUpTo(n, align) + cleanup::Size();
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  size_t required = cleanup::Size(destructor);
-  AllocateNewBlock(required);
+  AllocateNewBlock(cleanup::Size());
   AddCleanupFromExisting(elem, destructor);
 }
 
@@ -260,9 +259,6 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // the microbenchmark.
 
   auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size, n);
-  // We don't want to emit an expensive RMW instruction that requires
-  // exclusive access to a cacheline. Hence we write it in terms of a
-  // regular add.
   AddSpaceAllocated(mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
@@ -272,9 +268,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
-#ifdef ADDRESS_SANITIZER
-  ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
-#endif  // ADDRESS_SANITIZER
+  PROTOBUF_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
 }
 
 uint64_t SerialArena::SpaceUsed() const {
@@ -307,6 +301,7 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
                                      size_t unused_bytes) {
   ABSL_DCHECK(string_block != nullptr);
   StringBlock* next = string_block->next();
+  absl::PrefetchToLocalCacheNta(next);
   std::string* end = string_block->end();
   for (std::string* s = string_block->AtOffset(unused_bytes); s != end; ++s) {
     s->~basic_string();
@@ -315,6 +310,7 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
 
   while ((string_block = next) != nullptr) {
     next = string_block->next();
+    absl::PrefetchToLocalCacheNta(next);
     for (std::string& s : *string_block) {
       s.~basic_string();
     }
@@ -332,8 +328,20 @@ void SerialArena::CleanupList() {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
     ABSL_DCHECK(!b->IsSentry() || it == limit);
-    while (it < limit) {
-      it += cleanup::DestroyNode(it);
+    // A prefetch distance of 8 here was chosen arbitrarily.
+    char* prefetch = it;
+    int prefetch_dist = 8;
+    for (; prefetch < limit && --prefetch_dist; prefetch += cleanup::Size()) {
+      cleanup::PrefetchNode(prefetch);
+    }
+    for (; prefetch < limit;
+         it += cleanup::Size(), prefetch += cleanup::Size()) {
+      cleanup::DestroyNode(it);
+      cleanup::PrefetchNode(prefetch);
+    }
+    absl::PrefetchToLocalCacheNta(b->next);
+    for (; it < limit; it += cleanup::Size()) {
+      cleanup::DestroyNode(it);
     }
     b = b->next;
   } while (b);
@@ -476,10 +484,7 @@ class ThreadSafeArena::SerialArenaChunk {
   }
 
   constexpr static layout_type Layout(size_t n) {
-    return layout_type(
-        /*header*/ 1,
-        /*ids*/ n,
-        /*arenas*/ n);
+    return layout_type(/*header*/ 1, /*ids*/ n, /*arenas*/ n);
   }
 };
 
@@ -656,6 +661,15 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
   head_.store(new_head, std::memory_order_release);
 }
 
+void ThreadSafeArena::UnpoisonAllArenaBlocks() const {
+  VisitSerialArena([](const SerialArena* serial) {
+    for (const auto* b = serial->head(); b != nullptr && !b->IsSentry();
+         b = b->next) {
+      PROTOBUF_UNPOISON_MEMORY_REGION(b, b->size);
+    }
+  });
+}
+
 void ThreadSafeArena::Init() {
   tag_and_id_ = GetNextLifeCycleId();
   arena_stats_ = Sample();
@@ -681,10 +695,8 @@ ThreadSafeArena::~ThreadSafeArena() {
   size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
   if (alloc_policy_.is_user_owned_initial_block()) {
-#ifdef ADDRESS_SANITIZER
     // Unpoison the initial block, now that it's going back to the user.
-    ASAN_UNPOISON_MEMORY_REGION(mem.p, mem.n);
-#endif  // ADDRESS_SANITIZER
+    PROTOBUF_UNPOISON_MEMORY_REGION(mem.p, mem.n);
     space_allocated += mem.n;
   } else if (mem.n > 0) {
     GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
@@ -702,8 +714,6 @@ SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
       SerialArena* serial = it->load(std::memory_order_relaxed);
       ABSL_DCHECK_NE(serial, nullptr);
-      // Free string blocks
-      *space_allocated += serial->FreeStringBlocks();
       // Always frees the first block of "serial" as it cannot be user-provided.
       SizedPtr mem = serial->Free(deallocator);
       ABSL_DCHECK_NE(mem.p, nullptr);
@@ -716,7 +726,6 @@ SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
   });
 
   // The first block of the first arena is special and let the caller handle it.
-  *space_allocated += first_arena_.FreeStringBlocks();
   return first_arena_.Free(deallocator);
 }
 
@@ -785,17 +794,19 @@ void* ThreadSafeArena::AllocateFromStringBlock() {
   return GetSerialArena()->AllocateFromStringBlock();
 }
 
-template <typename Functor>
-void ThreadSafeArena::WalkConstSerialArenaChunk(Functor fn) const {
+template <typename Callback>
+void ThreadSafeArena::WalkConstSerialArenaChunk(Callback fn) const {
   const SerialArenaChunk* chunk = head_.load(std::memory_order_acquire);
 
   for (; !chunk->IsSentry(); chunk = chunk->next_chunk()) {
+    // Prefetch the next chunk.
+    absl::PrefetchToLocalCache(chunk->next_chunk());
     fn(chunk);
   }
 }
 
-template <typename Functor>
-void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
+template <typename Callback>
+void ThreadSafeArena::WalkSerialArenaChunk(Callback fn) {
   // By omitting an Acquire barrier we help the sanitizer that any user code
   // that doesn't properly synchronize Reset() or the destructor will throw a
   // TSAN warning.
@@ -804,13 +815,19 @@ void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
   while (!chunk->IsSentry()) {
     // Cache next chunk in case this chunk is destroyed.
     SerialArenaChunk* next_chunk = chunk->next_chunk();
+    // Prefetch the next chunk.
+    absl::PrefetchToLocalCache(next_chunk);
     fn(chunk);
     chunk = next_chunk;
   }
 }
 
-template <typename Functor>
-void ThreadSafeArena::PerConstSerialArenaInChunk(Functor fn) const {
+template <typename Callback>
+void ThreadSafeArena::VisitSerialArena(Callback fn) const {
+  // In most cases, arenas are single-threaded and "first_arena_" should be
+  // sufficient.
+  fn(&first_arena_);
+
   WalkConstSerialArenaChunk([&fn](const SerialArenaChunk* chunk) {
     for (const auto& each : chunk->arenas()) {
       const SerialArena* serial = each.load(std::memory_order_acquire);
@@ -823,18 +840,17 @@ void ThreadSafeArena::PerConstSerialArenaInChunk(Functor fn) const {
 }
 
 uint64_t ThreadSafeArena::SpaceAllocated() const {
-  uint64_t space_allocated = first_arena_.SpaceAllocated();
-  PerConstSerialArenaInChunk([&space_allocated](const SerialArena* serial) {
+  uint64_t space_allocated = 0;
+  VisitSerialArena([&space_allocated](const SerialArena* serial) {
     space_allocated += serial->SpaceAllocated();
   });
   return space_allocated;
 }
 
 uint64_t ThreadSafeArena::SpaceUsed() const {
-  // First arena is inlined to ThreadSafeArena and the first block's overhead is
-  // smaller than others that contain SerialArena.
-  uint64_t space_used = first_arena_.SpaceUsed();
-  PerConstSerialArenaInChunk([&space_used](const SerialArena* serial) {
+  // `first_arena_` doesn't have kSerialArenaSize overhead, so adjust it here.
+  uint64_t space_used = kSerialArenaSize;
+  VisitSerialArena([&space_used](const SerialArena* serial) {
     // SerialArena on chunks directly allocated from the block and needs to be
     // subtracted from SpaceUsed.
     space_used += serial->SpaceUsed() - kSerialArenaSize;
@@ -853,6 +869,10 @@ template void*
     ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
 void ThreadSafeArena::CleanupList() {
+#ifdef PROTOBUF_ASAN
+  UnpoisonAllArenaBlocks();
+#endif
+
   WalkSerialArenaChunk([](SerialArenaChunk* chunk) {
     absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
     // Walks arenas backward to handle the first serial arena the last.

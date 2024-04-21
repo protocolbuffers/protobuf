@@ -2,10 +2,10 @@ syntax = "proto2";
 
 package basic_test_proto2;
 
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 message Foo {
   optional Bar bar = 1;
@@ -44,6 +44,20 @@ message TestMessage {
   repeated bytes repeated_bytes = 20;
   repeated TestMessage2 repeated_msg = 21;
   repeated TestEnum repeated_enum = 22;
+}
+
+message TestPackedMessage {
+  repeated int32 repeated_int32 = 12 [packed = true];
+}
+
+message TestGroupMessage {
+  optional group GroupField = 1 {
+    optional int32 a = 1;
+  }
+}
+
+message TestRequiredMessage {
+  required int32 required_int32 = 1;
 }
 
 message TestMessage2 {
@@ -187,4 +201,52 @@ message MyRepeatedStruct {
 message MyStruct {
   optional string string = 1;
   optional google.protobuf.Struct struct = 2;
+}
+
+message TestExtensions {
+  extensions 1 to max;
+}
+
+message TestNestedExtension {
+  extend TestExtensions {
+    optional string test = 1002 [default = "test"];
+  }
+}
+
+extend TestExtensions {
+  optional int32 optional_int32_extension = 1;
+}
+
+// A message with message_set_wire_format.
+message TestMessageSet {
+  option message_set_wire_format = true;
+
+  extensions 4 to max;
+}
+
+message TestMessageSetExtension1 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension1 message_set_extension = 98418603;
+  }
+  optional int32 i = 15;
+}
+
+message TestMessageSetExtension2 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension2 message_set_extension = 98418634;
+  }
+  optional string str = 25;
+}
+
+message TestMessageSetExtension3 {
+  optional string text = 35;
+}
+
+extend TestMessageSet {
+  optional TestMessageSetExtension3 message_set_extension3 = 98418655;
+}
+
+message BadFieldNames {
+  optional int32 dup = 1;
+  optional int32 class = 2;
 }

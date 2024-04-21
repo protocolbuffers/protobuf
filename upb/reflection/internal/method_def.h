@@ -20,9 +20,11 @@ extern "C" {
 upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
 
 // Allocate and initialize an array of |n| method defs owned by |s|.
-upb_MethodDef* _upb_MethodDefs_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(MethodDescriptorProto) * const* protos, upb_ServiceDef* s);
+upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
+                                   const UPB_DESC(MethodDescriptorProto*)
+                                       const* protos,
+                                   const UPB_DESC(FeatureSet*) parent_features,
+                                   upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

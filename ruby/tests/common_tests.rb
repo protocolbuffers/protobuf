@@ -855,26 +855,6 @@ module CommonTests
     assert_equal proto_module::TestMessage.decode_json([m.to_json].first), decoded_msg
   end
 
-  def test_def_errors
-    s = Google::Protobuf::DescriptorPool.new
-    assert_raises Google::Protobuf::TypeError do
-      s.build do
-        # enum with no default (integer value 0)
-        add_enum "MyEnum" do
-          value :A, 1
-        end
-      end
-    end
-    assert_raises Google::Protobuf::TypeError do
-      s.build do
-        # message with required field (unsupported in proto3)
-        add_message "MyMessage" do
-          required :foo, :int32, 1
-        end
-      end
-    end
-  end
-
   def test_corecursive
     # just be sure that we can instantiate types with corecursive field-type
     # references.

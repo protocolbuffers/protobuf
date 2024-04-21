@@ -1,51 +1,38 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+#ifndef UPB_MESSAGE_INTERNAL_MAP_H_
+#define UPB_MESSAGE_INTERNAL_MAP_H_
 
-#ifndef UPB_COLLECTIONS_INTERNAL_MAP_H_
-#define UPB_COLLECTIONS_INTERNAL_MAP_H_
+#include <stddef.h>
+#include <string.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
-#include "upb/message/map.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef enum {
+  kUpb_MapInsertStatus_Inserted = 0,
+  kUpb_MapInsertStatus_Replaced = 1,
+  kUpb_MapInsertStatus_OutOfMemory = 2,
+} upb_MapInsertStatus;
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 struct upb_Map {
   // Size of key and val, based on the map type.
   // Strings are represented as '0' because they must be handled specially.
   char key_size;
   char val_size;
+  bool UPB_PRIVATE(is_frozen);
 
   upb_strtable table;
 };
@@ -53,6 +40,14 @@ struct upb_Map {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_INLINE void UPB_PRIVATE(_upb_Map_ShallowFreeze)(struct upb_Map* map) {
+  map->UPB_PRIVATE(is_frozen) = true;
+}
+
+UPB_API_INLINE bool upb_Map_IsFrozen(const struct upb_Map* map) {
+  return map->UPB_PRIVATE(is_frozen);
+}
 
 // Converting between internal table representation and user values.
 //
@@ -100,7 +95,7 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
   }
 }
 
-UPB_INLINE void* _upb_map_next(const upb_Map* map, size_t* iter) {
+UPB_INLINE void* _upb_map_next(const struct upb_Map* map, size_t* iter) {
   upb_strtable_iter it;
   it.t = &map->table;
   it.index = *iter;
@@ -110,17 +105,21 @@ UPB_INLINE void* _upb_map_next(const upb_Map* map, size_t* iter) {
   return (void*)str_tabent(&it);
 }
 
-UPB_INLINE void _upb_Map_Clear(upb_Map* map) {
+UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+
   upb_strtable_clear(&map->table);
 }
 
-UPB_INLINE bool _upb_Map_Delete(upb_Map* map, const void* key, size_t key_size,
-                                upb_value* val) {
+UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
+                                size_t key_size, upb_value* val) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+
   upb_StringView k = _upb_map_tokey(key, key_size);
   return upb_strtable_remove2(&map->table, k.data, k.size, val);
 }
 
-UPB_INLINE bool _upb_Map_Get(const upb_Map* map, const void* key,
+UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
                              size_t key_size, void* val, size_t val_size) {
   upb_value tabval;
   upb_StringView k = _upb_map_tokey(key, key_size);
@@ -131,9 +130,12 @@ UPB_INLINE bool _upb_Map_Get(const upb_Map* map, const void* key,
   return ret;
 }
 
-UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(upb_Map* map, const void* key,
-                                               size_t key_size, void* val,
-                                               size_t val_size, upb_Arena* a) {
+UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
+                                               const void* key, size_t key_size,
+                                               void* val, size_t val_size,
+                                               upb_Arena* a) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+
   upb_StringView strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
@@ -150,7 +152,7 @@ UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(upb_Map* map, const void* key,
                  : kUpb_MapInsertStatus_Inserted;
 }
 
-UPB_INLINE size_t _upb_Map_Size(const upb_Map* map) {
+UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
   return map->table.t.count;
 }
 
@@ -162,7 +164,7 @@ UPB_INLINE size_t _upb_Map_CTypeSize(upb_CType ctype) {
 }
 
 // Creates a new map on the given arena with this key/value type.
-upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
+struct upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -170,4 +172,4 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_COLLECTIONS_INTERNAL_MAP_H_ */
+#endif /* UPB_MESSAGE_INTERNAL_MAP_H_ */

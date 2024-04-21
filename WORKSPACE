@@ -1,5 +1,14 @@
 workspace(name = "com_google_protobuf")
 
+# An explicit self-reference to work around changes in Bazel 7.0
+# See https://github.com/bazelbuild/bazel/issues/19973#issuecomment-1787814450
+# buildifier: disable=duplicated-name
+local_repository(name = "com_google_protobuf", path = ".")
+
+# Second self-reference that makes it possible to load proto rules from @protobuf.
+# buildifier: disable=duplicated-name
+local_repository(name = "protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -11,6 +20,10 @@ local_repository(
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
 
 # Bazel platform rules.
 http_archive(
@@ -73,6 +86,14 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 
 apple_rules_dependencies()
 
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+
+apple_support_dependencies()
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+
+rules_cc_dependencies()
+
 # For `kt_jvm_library`
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
@@ -81,6 +102,15 @@ kotlin_repositories()
 load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
+
+http_archive(
+    name = "rules_ruby",
+    urls = [
+      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+    ],
+    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
+    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
+)
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
 
@@ -109,7 +139,7 @@ ruby_bundle(
 
 http_archive(
     name = "lua",
-    build_file = "//bazel:lua.BUILD",
+    build_file = "//python/dist:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -127,14 +157,14 @@ http_archive(
 
 http_archive(
     name = "com_google_googleapis",
-    urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
-    strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
-    sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
+    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
+    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
+    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
     build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//bazel:system_python.bzl", "system_python")
+load("//python/dist:system_python.bzl", "system_python")
 
 system_python(
     name = "system_python",
@@ -152,25 +182,26 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 
 install_deps()
 
-load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
-
-utf8_range_deps()
-
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "d9002dd3cd6437017f08593124fdd1b13b3473c7b929ceb0e60d317cb9346118",
-    strip_prefix = "rules_fuzzing-0.3.2",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.2.zip"],
+    sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
+    strip_prefix = "rules_fuzzing-0.4.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
+    patches = ["//third_party:rules_fuzzing.patch"],
+    patch_args = ["-p1"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
 
 rules_fuzzing_dependencies()
 
-bind(
-    name = "python_headers",
-    actual = "@system_python//:python_headers",
-)
+load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
+
+rules_fuzzing_init()
+
+load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
+
+fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",

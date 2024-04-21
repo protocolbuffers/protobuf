@@ -10,6 +10,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
@@ -34,35 +35,7 @@ ZeroFieldsBase::~ZeroFieldsBase() {
 }
 
 size_t ZeroFieldsBase::ByteSizeLong() const {
-  return MaybeComputeUnknownFieldsSize(0, &_cached_size_);
-}
-
-const char* ZeroFieldsBase::_InternalParse(const char* ptr,
-                                           internal::ParseContext* ctx) {
-#define CHK_(x)                       \
-  if (PROTOBUF_PREDICT_FALSE(!(x))) { \
-    goto failure;                     \
-  }
-
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = internal::ReadTag(ptr, &tag);
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
-    }
-    ptr = UnknownFieldParse(
-        tag, _internal_metadata_.mutable_unknown_fields<UnknownFieldSet>(), ptr,
-        ctx);
-    CHK_(ptr);
-  }  // while
-message_done:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
+  return MaybeComputeUnknownFieldsSize(0, &_impl_._cached_size_);
 }
 
 ::uint8_t* ZeroFieldsBase::_InternalSerialize(
@@ -76,7 +49,8 @@ failure:
   return target;
 }
 
-void ZeroFieldsBase::MergeImpl(Message& to_param, const Message& from_param) {
+void ZeroFieldsBase::MergeImpl(MessageLite& to_param,
+                               const MessageLite& from_param) {
   auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   ABSL_DCHECK_NE(from, to);
@@ -93,15 +67,6 @@ void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
 
 void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
   _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
-}
-
-const Message::ClassData* ZeroFieldsBase::GetClassData() const {
-  static constexpr ClassData data = {
-      &MergeImpl,
-      nullptr,
-      &kDescriptorMethods,
-  };
-  return &data;
 }
 
 }  // namespace internal

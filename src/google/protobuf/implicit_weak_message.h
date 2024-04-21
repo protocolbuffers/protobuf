@@ -56,22 +56,13 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   static const ImplicitWeakMessage* default_instance();
 
-  const ClassData* GetClassData() const final {
-    struct Data {
-      ClassData header;
-      char name[1];
-    };
-    static constexpr Data data = {{}, ""};
-    return &data.header;
-  }
+  const ClassData* GetClassData() const final;
 
   MessageLite* New(Arena* arena) const override {
-    return Arena::CreateMessage<ImplicitWeakMessage>(arena);
+    return Arena::Create<ImplicitWeakMessage>(arena);
   }
 
   void Clear() override { data_->clear(); }
-
-  bool IsInitialized() const override { return true; }
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override {
     const std::string* other_data =
@@ -81,10 +72,10 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     }
   }
 
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final;
-
   size_t ByteSizeLong() const override {
-    return data_ == nullptr ? 0 : data_->size();
+    size_t size = data_ == nullptr ? 0 : data_->size();
+    cached_size_.Set(internal::ToCachedSize(size));
+    return size;
   }
 
   uint8_t* _InternalSerialize(uint8_t* target,
@@ -99,10 +90,14 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   typedef void InternalArenaConstructable_;
 
  private:
+  static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
+                               ParseContext* ctx);
+
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.
   std::string* data_;
+  mutable google::protobuf::internal::CachedSize cached_size_{};
 };
 
 struct ImplicitWeakMessageDefaultType;
@@ -157,7 +152,11 @@ struct WeakRepeatedPtrField {
   // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
 
-  ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
+  ~WeakRepeatedPtrField() {
+    if (weak.NeedsDestroy()) {
+      weak.DestroyProtos();
+    }
+  }
 
   typedef internal::RepeatedPtrIterator<MessageLite> iterator;
   typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
@@ -187,9 +186,6 @@ struct WeakRepeatedPtrField {
     return const_pointer_iterator(base().raw_data() + base().size());
   }
 
-  MessageLite* AddWeak(const MessageLite* prototype) {
-    return base().AddWeak(prototype);
-  }
   T* Add() { return weak.Add(); }
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {

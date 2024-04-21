@@ -7,8 +7,17 @@
 
 #include "upb/reflection/internal/file_def.h"
 
-#include "upb/reflection/def_pool.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/string_view.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/file.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/message_def.h"
@@ -19,7 +28,8 @@
 #include "upb/port/def.inc"
 
 struct upb_FileDef {
-  const UPB_DESC(FileOptions) * opts;
+  const UPB_DESC(FileOptions*) opts;
+  const UPB_DESC(FeatureSet*) resolved_features;
   const char* name;
   const char* package;
   UPB_DESC(Edition) edition;
@@ -45,8 +55,27 @@ struct upb_FileDef {
   upb_Syntax syntax;
 };
 
+UPB_API const char* upb_FileDef_EditionName(int edition) {
+  // TODO Synchronize this with descriptor.proto better.
+  switch (edition) {
+    case UPB_DESC(EDITION_PROTO2):
+      return "PROTO2";
+    case UPB_DESC(EDITION_PROTO3):
+      return "PROTO3";
+    case UPB_DESC(EDITION_2023):
+      return "2023";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 const UPB_DESC(FileOptions) * upb_FileDef_Options(const upb_FileDef* f) {
   return f->opts;
+}
+
+const UPB_DESC(FeatureSet) *
+    upb_FileDef_ResolvedFeatures(const upb_FileDef* f) {
+  return f->resolved_features;
 }
 
 bool upb_FileDef_HasOptions(const upb_FileDef* f) {
@@ -141,6 +170,17 @@ const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
   return f->ext_layouts[i];
 }
 
+// Note: Import cycles are not allowed so this will terminate.
+bool upb_FileDef_Resolves(const upb_FileDef* f, const char* path) {
+  if (!strcmp(f->name, path)) return true;
+
+  for (int i = 0; i < upb_FileDef_PublicDependencyCount(f); i++) {
+    const upb_FileDef* dep = upb_FileDef_PublicDependency(f, i);
+    if (upb_FileDef_Resolves(dep, path)) return true;
+  }
+  return false;
+}
+
 static char* strviewdup(upb_DefBuilder* ctx, upb_StringView view) {
   char* ret = upb_strdup2(view.data, view.size, _upb_DefBuilder_Arena(ctx));
   if (!ret) _upb_DefBuilder_OomErr(ctx);
@@ -163,6 +203,64 @@ static int count_exts_in_msg(const UPB_DESC(DescriptorProto) * msg_proto) {
   }
 
   return ext_count;
+}
+
+const UPB_DESC(FeatureSet*)
+    _upb_FileDef_FindEdition(upb_DefBuilder* ctx, int edition) {
+  const UPB_DESC(FeatureSetDefaults)* defaults =
+      upb_DefPool_FeatureSetDefaults(ctx->symtab);
+
+  int min = UPB_DESC(FeatureSetDefaults_minimum_edition)(defaults);
+  int max = UPB_DESC(FeatureSetDefaults_maximum_edition)(defaults);
+  if (edition < min) {
+    _upb_DefBuilder_Errf(ctx,
+                         "Edition %s is earlier than the minimum edition %s "
+                         "given in the defaults",
+                         upb_FileDef_EditionName(edition),
+                         upb_FileDef_EditionName(min));
+    return NULL;
+  }
+  if (edition > max) {
+    _upb_DefBuilder_Errf(ctx,
+                         "Edition %s is later than the maximum edition %s "
+                         "given in the defaults",
+                         upb_FileDef_EditionName(edition),
+                         upb_FileDef_EditionName(max));
+    return NULL;
+  }
+
+  size_t n;
+  const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* const* d =
+      UPB_DESC(FeatureSetDefaults_defaults)(defaults, &n);
+  const UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault)* result = NULL;
+  for (size_t i = 0; i < n; i++) {
+    if (UPB_DESC(FeatureSetDefaults_FeatureSetEditionDefault_edition)(d[i]) >
+        edition) {
+      break;
+    }
+    result = d[i];
+  }
+  if (result == NULL) {
+    _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
+                         upb_FileDef_EditionName(edition));
+    return NULL;
+  }
+
+  // Merge the fixed and overridable features to get the edition's default
+  // feature set.
+  const UPB_DESC(FeatureSet)* fixed = UPB_DESC(
+      FeatureSetDefaults_FeatureSetEditionDefault_fixed_features)(result);
+  const UPB_DESC(FeatureSet)* overridable = UPB_DESC(
+      FeatureSetDefaults_FeatureSetEditionDefault_overridable_features)(result);
+  if (!fixed && !overridable) {
+    _upb_DefBuilder_Errf(ctx, "No valid default found for edition %s",
+                         upb_FileDef_EditionName(edition));
+    return NULL;
+  } else if (!fixed) {
+    return overridable;
+  }
+  return _upb_DefBuilder_DoResolveFeatures(ctx, fixed, overridable,
+                                           /*is_implicit=*/true);
 }
 
 // Allocate and initialize one file def, and add it to the context object.
@@ -193,11 +291,12 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
-    file->ext_layouts = ctx->layout->exts;
-    if (ctx->layout->ext_count != file->ext_count) {
+    file->ext_layouts = ctx->layout->UPB_PRIVATE(exts);
+    const int mt_ext_count = upb_MiniTableFile_ExtensionCount(ctx->layout);
+    if (mt_ext_count != file->ext_count) {
       _upb_DefBuilder_Errf(ctx,
                            "Extension count did not match layout (%d vs %d)",
-                           ctx->layout->ext_count, file->ext_count);
+                           mt_ext_count, file->ext_count);
     }
   } else {
     // We are building ext layouts from scratch.
@@ -233,20 +332,32 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 
     if (streql_view(syntax, "proto2")) {
       file->syntax = kUpb_Syntax_Proto2;
+      file->edition = UPB_DESC(EDITION_PROTO2);
     } else if (streql_view(syntax, "proto3")) {
       file->syntax = kUpb_Syntax_Proto3;
+      file->edition = UPB_DESC(EDITION_PROTO3);
     } else if (streql_view(syntax, "editions")) {
       file->syntax = kUpb_Syntax_Editions;
+      file->edition = UPB_DESC(FileDescriptorProto_edition)(file_proto);
     } else {
       _upb_DefBuilder_Errf(ctx, "Invalid syntax '" UPB_STRINGVIEW_FORMAT "'",
                            UPB_STRINGVIEW_ARGS(syntax));
     }
   } else {
     file->syntax = kUpb_Syntax_Proto2;
+    file->edition = UPB_DESC(EDITION_PROTO2);
   }
 
   // Read options.
   UPB_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
+
+  // Resolve features.
+  const UPB_DESC(FeatureSet*) edition_defaults =
+      _upb_FileDef_FindEdition(ctx, file->edition);
+  const UPB_DESC(FeatureSet*) unresolved =
+      UPB_DESC(FileOptions_features)(file->opts);
+  file->resolved_features =
+      _upb_DefBuilder_ResolveFeatures(ctx, edition_defaults, unresolved);
 
   // Verify dependencies.
   strs = UPB_DESC(FileDescriptorProto_dependency)(file_proto, &n);
@@ -293,22 +404,26 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   // Create enums.
   enums = UPB_DESC(FileDescriptorProto_enum_type)(file_proto, &n);
   file->top_lvl_enum_count = n;
-  file->top_lvl_enums = _upb_EnumDefs_New(ctx, n, enums, NULL);
+  file->top_lvl_enums =
+      _upb_EnumDefs_New(ctx, n, enums, file->resolved_features, NULL);
 
   // Create extensions.
   exts = UPB_DESC(FileDescriptorProto_extension)(file_proto, &n);
   file->top_lvl_ext_count = n;
-  file->top_lvl_exts = _upb_Extensions_New(ctx, n, exts, file->package, NULL);
+  file->top_lvl_exts = _upb_Extensions_New(
+      ctx, n, exts, file->resolved_features, file->package, NULL);
 
   // Create messages.
   msgs = UPB_DESC(FileDescriptorProto_message_type)(file_proto, &n);
   file->top_lvl_msg_count = n;
-  file->top_lvl_msgs = _upb_MessageDefs_New(ctx, n, msgs, NULL);
+  file->top_lvl_msgs =
+      _upb_MessageDefs_New(ctx, n, msgs, file->resolved_features, NULL);
 
   // Create services.
   services = UPB_DESC(FileDescriptorProto_service)(file_proto, &n);
   file->service_count = n;
-  file->services = _upb_ServiceDefs_New(ctx, n, services);
+  file->services =
+      _upb_ServiceDefs_New(ctx, n, services, file->resolved_features);
 
   // Now that all names are in the table, build layouts and resolve refs.
 

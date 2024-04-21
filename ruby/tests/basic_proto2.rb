@@ -6,26 +6,11 @@ $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 require 'basic_test_proto2_pb'
 require 'common_tests'
 require 'google/protobuf'
+require 'google/protobuf/descriptor_pb'
 require 'json'
 require 'test/unit'
 
-# ------------- generated code --------------
-
 module BasicTestProto2
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-    add_file "test_proto2.proto", syntax: :proto2 do
-      add_message "BadFieldNames" do
-        optional :dup, :int32, 1
-        optional :class, :int32, 2
-      end
-    end
-  end
-
-  BadFieldNames = pool.lookup("BadFieldNames").msgclass
-
-# ------------ test cases ---------------
-
   class MessageContainerTest < Test::Unit::TestCase
     # Required by CommonTests module to resolve proto2 proto classes used in tests.
     def proto_module
@@ -246,13 +231,11 @@ module BasicTestProto2
     def test_file_descriptor
       file_descriptor = TestMessage.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
-      assert_equal :proto2, file_descriptor.syntax
+      assert_equal "basic_test_proto2.proto", file_descriptor.name
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
-      assert_equal :proto2, file_descriptor.syntax
+      assert_equal "basic_test_proto2.proto", file_descriptor.name
     end
 
     def test_oneof_fields_respond_to? # regression test for issue 9202
@@ -268,6 +251,132 @@ module BasicTestProto2
       refute msg.has_c?
       assert msg.respond_to? :has_d?
       refute msg.has_d?
+    end
+
+    def test_is_packed
+      assert_false TestMessage.descriptor.lookup("optional_int32").is_packed?
+      assert_false TestMessage.descriptor.lookup("repeated_int32").is_packed?
+    end
+
+    def test_extension
+      message = TestExtensions.new
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, extension
+      assert_equal 0, extension.get(message)
+      extension.set message, 42
+      assert_equal 42, extension.get(message)
+    end
+
+    def test_extension_json
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
+      message = TestExtensions.decode_json '{"[basic_test_proto2.optional_int32_extension]": 123}'
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.optional_int32_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, extension
+      assert_equal 123, extension.get(message)
+    end
+
+    def test_extension_json_separate_pool
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
+      pool = Google::Protobuf::DescriptorPool.new
+
+      # This serialized descriptor is a subset of basic_test_proto2.proto:
+      #
+      #   syntax = "proto2";
+      #   package basic_test_proto2;
+      #
+      #   message TestExtensions {
+      #     extensions 1 to max;
+      #   }
+      #
+      #   extend TestExtensions {
+      #     # Same extension as basic_test_proto2.proto, but with a different
+      #     # name.
+      #     optional int32 different_optional_int32_extension = 1;
+      #   }
+      #
+      descriptor_data = "\n\x17\x62\x61sic_test_proto2.proto\x12\x11\x62\x61sic_test_proto2\"\x1a\n\x0eTestExtensions*\x08\x08\x01\x10\x80\x80\x80\x80\x02:M\n\"different_optional_int32_extension\x12!.basic_test_proto2.TestExtensions\x18\x01 \x01(\x05"
+      pool.add_serialized_file(descriptor_data)
+      message_class = pool.lookup("basic_test_proto2.TestExtensions").msgclass
+      extension = pool.lookup 'basic_test_proto2.different_optional_int32_extension'
+
+      message = message_class.decode_json '{"[basic_test_proto2.different_optional_int32_extension]": 123}'
+      assert_equal 123, extension.get(message)
+
+      message2 = message_class.decode_json(message_class.encode_json(message))
+      assert_equal 123, extension.get(message2)
+    end
+
+    def test_nested_extension
+      message = TestExtensions.new
+      extension = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestNestedExtension.test'
+      assert_instance_of Google::Protobuf::FieldDescriptor, extension
+      assert_equal 'test', extension.get(message)
+      extension.set message, 'another test'
+      assert_equal 'another test', extension.get(message)
+    end
+
+    def test_message_set_extension_json_roundtrip
+      omit "Java Protobuf JsonFormat does not handle Proto2 extensions" if defined? JRUBY_VERSION and :NATIVE == Google::Protobuf::IMPLEMENTATION
+      message = TestMessageSet.new
+      ext1 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension1.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext1
+      ext2 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension2.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext2
+      ext3 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.message_set_extension3'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext3
+      ext1.set(message, ext1.subtype.msgclass.new(i: 42))
+      ext2.set(message, ext2.subtype.msgclass.new(str: 'foo'))
+      ext3.set(message, ext3.subtype.msgclass.new(text: 'bar'))
+      message_text = message.to_json
+      parsed_message = TestMessageSet.decode_json message_text
+      assert_equal message, parsed_message
+    end
+
+
+    def test_message_set_extension_roundtrip
+      message = TestMessageSet.new
+      ext1 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension1.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext1
+      ext2 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.TestMessageSetExtension2.message_set_extension'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext2
+      ext3 = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test_proto2.message_set_extension3'
+      assert_instance_of Google::Protobuf::FieldDescriptor, ext3
+      ext1.set(message, ext1.subtype.msgclass.new(i: 42))
+      ext2.set(message, ext2.subtype.msgclass.new(str: 'foo'))
+      ext3.set(message, ext3.subtype.msgclass.new(text: 'bar'))
+      encoded_message = TestMessageSet.encode message
+      decoded_message = TestMessageSet.decode encoded_message
+      assert_equal message, decoded_message
+    end
+
+    def test_field_explicit_presence
+      descriptor = TestMessage.descriptor.lookup("optional_int32")
+      assert_true descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_expanded_encoding
+      descriptor = TestMessage.descriptor.lookup("repeated_int32")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_packed_encoding
+      descriptor = TestPackedMessage.descriptor.lookup("repeated_int32")
+      assert_true descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_group_type
+      descriptor = TestGroupMessage.descriptor.lookup("groupfield")
+      assert_equal :group, descriptor.type
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_required
+      descriptor = TestRequiredMessage.descriptor.lookup("required_int32")
+      assert_equal :required, descriptor.label
+      assert_false descriptor.options.has_features?
     end
   end
 end

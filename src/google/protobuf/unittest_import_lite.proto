@@ -9,7 +9,7 @@
 //
 // This is like unittest_import.proto but with optimize_for = LITE_RUNTIME.
 
-syntax = "proto2";
+edition = "2023";
 
 package protobuf_unittest_import;
 
@@ -19,10 +19,12 @@ option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.protobuf";
 
 message ImportMessageLite {
-  optional int32 d = 1;
+  int32 d = 1;
 }
 
 enum ImportEnumLite {
+  option features.enum_type = CLOSED;
+
   IMPORT_LITE_FOO = 7;
   IMPORT_LITE_BAR = 8;
   IMPORT_LITE_BAZ = 9;

@@ -7,13 +7,22 @@
 
 #include "upb/reflection/internal/message_def.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_table/file.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
-#include "upb/reflection/def_type.h"
 #include "upb/reflection/internal/def_builder.h"
 #include "upb/reflection/internal/desc_state.h"
 #include "upb/reflection/internal/enum_def.h"
@@ -28,7 +37,8 @@
 #include "upb/port/def.inc"
 
 struct upb_MessageDef {
-  const UPB_DESC(MessageOptions) * opts;
+  const UPB_DESC(MessageOptions*) opts;
+  const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTable* layout;
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;
@@ -66,6 +76,9 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -132,6 +145,11 @@ const UPB_DESC(MessageOptions) *
 
 bool upb_MessageDef_HasOptions(const upb_MessageDef* m) {
   return m->opts != (void*)kUpbDefOptDefault;
+}
+
+const UPB_DESC(FeatureSet) *
+    upb_MessageDef_ResolvedFeatures(const upb_MessageDef* m) {
+  return m->resolved_features;
 }
 
 const char* upb_MessageDef_FullName(const upb_MessageDef* m) {
@@ -397,10 +415,12 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
       _upb_MessageDef_Insert(m, shortname, shortnamelen, field_v, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  // TODO: Once editions is supported this should turn into a
-  // check on LEGACY_BEST_EFFORT
-  if (strcmp(shortname, json_name) != 0 &&
-      upb_FileDef_Syntax(m->file) == kUpb_Syntax_Proto3 &&
+  bool skip_json_conflicts =
+      UPB_DESC(MessageOptions_deprecated_legacy_json_field_conflicts)(
+          upb_MessageDef_Options(m));
+  if (!skip_json_conflicts && strcmp(shortname, json_name) != 0 &&
+      UPB_DESC(FeatureSet_json_format)(m->resolved_features) ==
+          UPB_DESC(FeatureSet_ALLOW) &&
       upb_strtable_lookup(&m->ntof, json_name, &v)) {
     _upb_DefBuilder_Errf(
         ctx, "duplicate json_name for (%s) with original field name (%s)",
@@ -408,13 +428,15 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   }
 
   if (upb_strtable_lookup(&m->jtof, json_name, &v)) {
-    _upb_DefBuilder_Errf(ctx, "duplicate json_name (%s)", json_name);
+    if (!skip_json_conflicts) {
+      _upb_DefBuilder_Errf(ctx, "duplicate json_name (%s)", json_name);
+    }
+  } else {
+    const size_t json_size = strlen(json_name);
+    ok = upb_strtable_insert(&m->jtof, json_name, json_size,
+                             upb_value_constptr(f), ctx->arena);
+    if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
-
-  const size_t json_size = strlen(json_name);
-  ok = upb_strtable_insert(&m->jtof, json_name, json_size,
-                           upb_value_constptr(f), ctx->arena);
-  if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   if (upb_inttable_lookup(&m->itof, field_number, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate field number (%u)", field_number);
@@ -428,9 +450,8 @@ void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
   if (ctx->layout == NULL) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   } else {
-    UPB_ASSERT(ctx->msg_count < ctx->layout->msg_count);
-    m->layout = ctx->layout->msgs[ctx->msg_count++];
-    UPB_ASSERT(m->field_count == m->layout->field_count);
+    m->layout = upb_MiniTableFile_Message(ctx->layout, ctx->msg_count++);
+    UPB_ASSERT(m->field_count == upb_MiniTable_FieldCount(m->layout));
 
     // We don't need the result of this call, but it will assign layout_index
     // for all the fields in O(n lg n) time.
@@ -466,9 +487,9 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
 
     UPB_ASSERT(layout_index < m->field_count);
     upb_MiniTableField* mt_f =
-        (upb_MiniTableField*)&m->layout->fields[layout_index];
+        (upb_MiniTableField*)&m->layout->UPB_PRIVATE(fields)[layout_index];
     if (sub_m) {
-      if (!mt->subs) {
+      if (!mt->UPB_PRIVATE(subs)) {
         _upb_DefBuilder_Errf(ctx, "unexpected submsg for (%s)", m->full_name);
       }
       UPB_ASSERT(mt_f);
@@ -488,8 +509,9 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
     const int layout_index = _upb_FieldDef_LayoutIndex(f);
-    UPB_ASSERT(layout_index < m->layout->field_count);
-    const upb_MiniTableField* mt_f = &m->layout->fields[layout_index];
+    UPB_ASSERT(layout_index < upb_MiniTable_FieldCount(m->layout));
+    const upb_MiniTableField* mt_f =
+        &m->layout->UPB_PRIVATE(fields)[layout_index];
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
     UPB_ASSERT(upb_FieldDef_CType(f) == upb_MiniTableField_CType(mt_f));
     UPB_ASSERT(upb_FieldDef_HasPresence(f) ==
@@ -517,7 +539,8 @@ static bool _upb_MessageDef_ValidateUtf8(const upb_MessageDef* m) {
 static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   uint64_t out = 0;
 
-  if (upb_FileDef_Syntax(m->file) == kUpb_Syntax_Proto3) {
+  if (UPB_DESC(FeatureSet_repeated_field_encoding(m->resolved_features)) ==
+      UPB_DESC(FeatureSet_PACKED)) {
     out |= kUpb_MessageModifier_DefaultIsPacked;
   }
 
@@ -631,7 +654,8 @@ static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
 }
 
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
-                          const UPB_DESC(DescriptorProto) * msg_proto,
+                          const UPB_DESC(DescriptorProto*) msg_proto,
+                          const UPB_DESC(FeatureSet*) parent_features,
                           const upb_MessageDef* containing_type,
                           upb_MessageDef* m) {
   const UPB_DESC(OneofDescriptorProto)* const* oneofs;
@@ -642,6 +666,10 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   size_t n_oneof, n_field, n_enum, n_ext, n_msg;
   size_t n_ext_range, n_res_range, n_res_name;
   upb_StringView name;
+
+  UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
+  m->resolved_features = _upb_DefBuilder_ResolveFeatures(
+      ctx, parent_features, UPB_DESC(MessageOptions_features)(m->opts));
 
   // Must happen before _upb_DefBuilder_Add()
   m->file = _upb_DefBuilder_File(ctx);
@@ -671,14 +699,12 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   ok = upb_strtable_init(&m->jtof, n_field, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
-
   m->oneof_count = n_oneof;
-  m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m);
+  m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m->resolved_features, m);
 
   m->field_count = n_field;
-  m->fields =
-      _upb_FieldDefs_New(ctx, n_field, fields, m->full_name, m, &m->is_sorted);
+  m->fields = _upb_FieldDefs_New(ctx, n_field, fields, m->resolved_features,
+                                 m->full_name, m, &m->is_sorted);
 
   // Message Sets may not contain fields.
   if (UPB_UNLIKELY(UPB_DESC(MessageOptions_message_set_wire_format)(m->opts))) {
@@ -688,7 +714,8 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   }
 
   m->ext_range_count = n_ext_range;
-  m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges, m);
+  m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges,
+                                           m->resolved_features, m);
 
   m->res_range_count = n_res_range;
   m->res_ranges =
@@ -706,23 +733,29 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   const UPB_DESC(EnumDescriptorProto)* const* enums =
       UPB_DESC(DescriptorProto_enum_type)(msg_proto, &n_enum);
   m->nested_enum_count = n_enum;
-  m->nested_enums = _upb_EnumDefs_New(ctx, n_enum, enums, m);
+  m->nested_enums =
+      _upb_EnumDefs_New(ctx, n_enum, enums, m->resolved_features, m);
 
   const UPB_DESC(FieldDescriptorProto)* const* exts =
       UPB_DESC(DescriptorProto_extension)(msg_proto, &n_ext);
   m->nested_ext_count = n_ext;
-  m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->full_name, m);
+  m->nested_exts = _upb_Extensions_New(ctx, n_ext, exts, m->resolved_features,
+                                       m->full_name, m);
 
   const UPB_DESC(DescriptorProto)* const* msgs =
       UPB_DESC(DescriptorProto_nested_type)(msg_proto, &n_msg);
   m->nested_msg_count = n_msg;
-  m->nested_msgs = _upb_MessageDefs_New(ctx, n_msg, msgs, m);
+  m->nested_msgs =
+      _upb_MessageDefs_New(ctx, n_msg, msgs, m->resolved_features, m);
 }
 
 // Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(
-    upb_DefBuilder* ctx, int n, const UPB_DESC(DescriptorProto) * const* protos,
-    const upb_MessageDef* containing_type) {
+upb_MessageDef* _upb_MessageDefs_New(upb_DefBuilder* ctx, int n,
+                                     const UPB_DESC(DescriptorProto*)
+                                         const* protos,
+                                     const UPB_DESC(FeatureSet*)
+                                         parent_features,
+                                     const upb_MessageDef* containing_type) {
   _upb_DefType_CheckPadding(sizeof(upb_MessageDef));
 
   const char* name = containing_type ? containing_type->full_name
@@ -730,7 +763,8 @@ upb_MessageDef* _upb_MessageDefs_New(
 
   upb_MessageDef* m = _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageDef) * n);
   for (int i = 0; i < n; i++) {
-    create_msgdef(ctx, name, protos[i], containing_type, &m[i]);
+    create_msgdef(ctx, name, protos[i], parent_features, containing_type,
+                  &m[i]);
   }
   return m;
 }

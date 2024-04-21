@@ -1,0 +1,11 @@
+# This is the list of text format conformance tests that are known to fail right
+# now.
+# TODO: These should be fixed.
+Required.Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput
+Required.Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput
+Required.Proto3.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput
+Required.Proto3.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput
+Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput
+Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput
+Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput
+Required.Editions_Proto3.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput

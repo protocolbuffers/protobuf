@@ -1,9 +1,8 @@
 # Protobuf Rust runtime packages.
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 package(
     default_visibility = [
@@ -41,12 +40,13 @@ rust_library(
 
 # This list contains kernel-agnostic logic and simple kernel-specific logic controlled by
 # `#[cfg(...)]` attributes. That forces us to compile these files twice, once for each kernel. As a
-# result these files are included in both `:protobuf_upb` and `:protobuf_cpp`. This is in principle
-# identical to how we compile regular Rust source files twice (once for production, and once for
-# unittesting).
+# result these files are included in both `:protobuf_upb` and `:protobuf_cpp`.
+# This is in principle identical to how we compile regular Rust source files twice
+# (once for production, and once for unit testing).
 #
 # shared.rs is the root of the crate and has public items re-exported in protobuf.rs for user use.
 PROTOBUF_SHARED = [
+    "enum.rs",
     "internal.rs",
     "macros.rs",
     "optional.rs",
@@ -56,6 +56,8 @@ PROTOBUF_SHARED = [
     "shared.rs",
     "string.rs",
     "vtable.rs",
+    "map.rs",
+    "proto_macro.rs",
 ]
 
 # The Rust Protobuf runtime using the upb kernel.
@@ -67,21 +69,42 @@ rust_library(
     name = "protobuf_upb",
     srcs = PROTOBUF_SHARED + ["upb.rs"],
     crate_root = "shared.rs",
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [
-        "//src/google/protobuf:__subpackages__",
         "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
     ],
     deps = [
         ":utf8",
-        "//rust/upb_kernel:upb_c_api",
+        "//rust/upb",
     ],
 )
 
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
+    rustc_flags = [
+        "--cfg=upb_kernel",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+    ],
+)
+
+# This provides an identical set of re-exports as `:protobuf` with `:use_upb_kernel` active.
+# This is only used for tests shared between runtimes.
+rust_library(
+    name = "protobuf_upb_export",
+    testonly = True,
+    srcs = ["protobuf.rs"],
     rustc_flags = ["--cfg=upb_kernel"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [":protobuf_upb"],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.
@@ -106,7 +129,25 @@ rust_library(
 rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+    ],
+    deps = [
+        "@crate_index//:googletest",
+    ],
+)
+
+# This provides an identical set of re-exports as `:protobuf` with `:use_upb_kernel` inactive.
+# This is only used for tests shared between runtimes.
+rust_library(
+    name = "protobuf_cpp_export",
+    testonly = True,
+    srcs = ["protobuf.rs"],
     rustc_flags = ["--cfg=cpp_kernel"],
+    visibility = [
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [":protobuf_cpp"],
 )
 
 rust_library(
@@ -117,7 +158,7 @@ rust_library(
 
 proto_lang_toolchain(
     name = "proto_rust_upb_toolchain",
-    command_line = "--rust_out=experimental-codegen=enabled,kernel=upb:$(OUT)",
+    command_line = "--rust_out=$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_upb",
     visibility = ["//visibility:public"],
@@ -125,7 +166,7 @@ proto_lang_toolchain(
 
 proto_lang_toolchain(
     name = "proto_rust_cpp_toolchain",
-    command_line = "--rust_out=experimental-codegen=enabled,kernel=cpp:$(OUT)",
+    command_line = "--rust_out=$(OUT)",
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_cpp",
     visibility = ["//visibility:public"],

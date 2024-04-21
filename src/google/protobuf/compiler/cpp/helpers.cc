@@ -15,7 +15,9 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <queue>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -26,7 +28,9 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
@@ -36,6 +40,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
@@ -52,10 +57,6 @@ namespace cpp {
 namespace {
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
-
-std::string DotsToColons(absl::string_view name) {
-  return absl::StrReplaceAll(name, {{".", "::"}});
-}
 
 static const char* const kKeywordList[] = {
     // clang-format off
@@ -198,6 +199,18 @@ bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
                           const Options& options) {
   return false;
+}
+
+internal::field_layout::TransformValidation GetLazyStyle(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer) {
+  if (IsEagerlyVerifiedLazy(field, options, scc_analyzer)) {
+    return internal::field_layout::kTvEager;
+  }
+  if (IsLazilyVerifiedLazy(field, options)) {
+    return internal::field_layout::kTvLazy;
+  }
+  return {};
 }
 
 absl::flat_hash_map<absl::string_view, std::string> MessageVars(
@@ -425,6 +438,21 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
   return QualifiedExtensionName(d, Options());
 }
 
+std::string ResolveKeyword(absl::string_view name) {
+  if (Keywords().count(name) > 0) {
+    return absl::StrCat(name, "_");
+  }
+  return std::string(name);
+}
+
+std::string DotsToColons(absl::string_view name) {
+  std::vector<std::string> scope = absl::StrSplit(name, ".", absl::SkipEmpty());
+  for (auto& word : scope) {
+    word = ResolveKeyword(word);
+  }
+  return absl::StrJoin(scope, "::");
+}
+
 std::string Namespace(absl::string_view package) {
   if (package.empty()) return "";
   return absl::StrCat("::", DotsToColons(package));
@@ -500,13 +528,6 @@ std::string SuperClassName(const Descriptor* descriptor,
   }
   return absl::StrCat("::", ProtobufNamespace(options),
                       "::internal::", simple_base);
-}
-
-std::string ResolveKeyword(absl::string_view name) {
-  if (Keywords().count(name) > 0) {
-    return absl::StrCat(name, "_");
-  }
-  return std::string(name);
 }
 
 std::string FieldName(const FieldDescriptor* field) {
@@ -1024,6 +1045,13 @@ bool IsPresentMessage(const Descriptor* descriptor, const Options& options) {
   return true;
 }
 
+const FieldDescriptor* FindHottestField(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
+  (void)fields;
+  (void)options;
+  return nullptr;
+}
+
 static bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     if (descriptor->field(i)->label() == FieldDescriptor::LABEL_REPEATED) {
@@ -1303,11 +1331,159 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
 
 void FlattenMessagesInFile(const FileDescriptor* file,
                            std::vector<const Descriptor*>* result) {
-  for (int i = 0; i < file->message_type_count(); i++) {
-    ForEachMessage(file->message_type(i), [&](const Descriptor* descriptor) {
-      result->push_back(descriptor);
-    });
+  internal::cpp::VisitDescriptorsInFileOrder(file,
+                                             [&](const Descriptor* descriptor) {
+                                               result->push_back(descriptor);
+                                               return std::false_type{};
+                                             });
+}
+
+// TopologicalSortMessagesInFile topologically sorts and returns a vector of
+// proto descriptors defined in the file provided as input.  The underlying
+// graph is defined using dependency relationship between protos.  For example,
+// if proto A contains proto B as a member, then proto B would be ordered before
+// proto A in a topological ordering, assuming there is no mutual dependence
+// between the two protos.  The topological order is used to emit proto
+// declarations so that a proto is declared after all the protos it is dependent
+// on have been declared (again assuming no mutual dependence).  This is needed
+// in cases where we may declare proto B as a member of proto A using an object,
+// instead of a pointer.
+//
+// The proto dependency graph can have cycles.  So instead of directly working
+// with protos, we compute strong connected components (SCCs) composed of protos
+// with mutual dependence.  The dependency graph on SCCs is a directed acyclic
+// graph (DAG) and therefore a topological order can be computed for it i.e. an
+// order where an SCC is ordered after all other SCCs it is dependent on have
+// been ordered.
+//
+// The function below first constructs the SCC graph and then computes a
+// deterministic topological order for the graph.
+//
+// For computing the SCC graph, we follow the following steps:
+// 1. Collect the descriptors for the messages in the file.
+// 2. Construct a map for descriptor to SCC mapping.
+// 3. Construct a map for dependence between SCCs, referred to as
+// child_to_parent_scc_map below.  This map constructed by running a BFS on the
+// SCCs.
+//
+// For computing a deterministic topological order on the graph computed in step
+// 3 above, we do the following:
+// 1. Since the graph on SCCs is a DAG, therefore there will be at least one SCC
+// that does not depend on other SCCs.  We first construct a list of all such
+// SCCs.
+// 2. Next we run a BFS starting with the list of SCCs computed in step 1.  For
+// each SCC, we track the number of the SCC it is dependent on and the number of
+// those SCC that have been ordered.  Once all the SCCs an SCC is dependent on
+// have been ordered, this SCC is added to list of SCCs that are to be ordered
+// next.
+// 3. Within an SCC, the descriptors are ordered on the basis of the full_name()
+// of the descriptors.
+std::vector<const Descriptor*> TopologicalSortMessagesInFile(
+    const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer) {
+  // Collect the messages defined in this file.
+  std::vector<const Descriptor*> messages_in_file = FlattenMessagesInFile(file);
+  if (messages_in_file.empty()) return {};
+  // Populate the map from the descriptor to the SCC to which the descriptor
+  // belongs.
+  absl::flat_hash_map<const Descriptor*, const SCC*> descriptor_to_scc_map;
+  descriptor_to_scc_map.reserve(messages_in_file.size());
+  for (const Descriptor* d : messages_in_file) {
+    descriptor_to_scc_map.emplace(d, scc_analyzer.GetSCC(d));
   }
+  ABSL_DCHECK(messages_in_file.size() == descriptor_to_scc_map.size())
+      << "messages_in_file has duplicate messages!";
+  // Each parent SCC has information about the child SCCs i.e. SCCs for fields
+  // that are contained in the protos that belong to the parent SCC.  Use this
+  // information to construct the inverse map from child SCC to parent SCC.
+  absl::flat_hash_map<const SCC*, absl::flat_hash_set<const SCC*>>
+      child_to_parent_scc_map;
+  // For recording the number of edges from each SCC to other SCCs in the
+  // forward map.
+  absl::flat_hash_map<const SCC*, int> scc_to_outgoing_edges_map;
+  std::queue<const SCC*> sccs_to_process;
+  for (const auto& p : descriptor_to_scc_map) {
+    sccs_to_process.push(p.second);
+  }
+  // Run a BFS to fill the two data structures: child_to_parent_scc_map and
+  // scc_to_outgoing_edges_map.
+  while (!sccs_to_process.empty()) {
+    const SCC* scc = sccs_to_process.front();
+    sccs_to_process.pop();
+    auto& count = scc_to_outgoing_edges_map[scc];
+    for (const auto& child : scc->children) {
+      // Test whether this child has been seen thus far.  We do not know if the
+      // children SCC vector contains unique children SCC.
+      auto& parent_set = child_to_parent_scc_map[child];
+      if (parent_set.empty()) {
+        // Just added.
+        sccs_to_process.push(child);
+      }
+      auto ret = parent_set.insert(scc);
+      if (ret.second) {
+        ++count;
+      }
+    }
+  }
+  std::vector<const SCC*> next_scc_q;
+  // Find out the SCCs that do not have an outgoing edge i.e. the protos in this
+  // SCC do not depend on protos other than the ones in this SCC.
+  for (const auto& p : scc_to_outgoing_edges_map) {
+    if (p.second == 0) {
+      next_scc_q.push_back(p.first);
+    }
+  }
+  ABSL_DCHECK(!next_scc_q.empty()) << "No independent components!";
+  // Topologically sort the SCCs.
+  // If an SCC no longer has an outgoing edge i.e. all the SCCs it depends on
+  // have been ordered, then this SCC is now a candidate for ordering.
+  std::vector<const Descriptor*> sorted_messages;
+  while (!next_scc_q.empty()) {
+    std::vector<const SCC*> current_scc_q;
+    current_scc_q.swap(next_scc_q);
+    // SCCs present in the current_scc_q are topologically equivalent to each
+    // other.  Therefore they can be added to the output in any order.  We sort
+    // these SCCs by the full_name() of the first descriptor that belongs to the
+    // SCC.  This works well since the descriptors in each SCC are sorted by
+    // full_name() and also that a descriptor can be part of only one SCC.
+    std::sort(current_scc_q.begin(), current_scc_q.end(),
+              [](const SCC* a, const SCC* b) {
+                ABSL_DCHECK(!a->descriptors.empty()) << "No descriptors!";
+                ABSL_DCHECK(!b->descriptors.empty()) << "No descriptors!";
+                const Descriptor* ad = a->descriptors[0];
+                const Descriptor* bd = b->descriptors[0];
+                return ad->full_name() < bd->full_name();
+              });
+    while (!current_scc_q.empty()) {
+      const SCC* scc = current_scc_q.back();
+      current_scc_q.pop_back();
+      // Messages in an SCC are already sorted on full_name().  So we can emit
+      // them right away.
+      for (const Descriptor* d : scc->descriptors) {
+        // Only push messages that are defined in the file.
+        if (descriptor_to_scc_map.contains(d)) {
+          sorted_messages.push_back(d);
+        }
+      }
+      // Find all the SCCs that are dependent on the current SCC.
+      const auto& parents = child_to_parent_scc_map.find(scc);
+      if (parents == child_to_parent_scc_map.end()) continue;
+      for (const SCC* parent : parents->second) {
+        auto it = scc_to_outgoing_edges_map.find(parent);
+        ABSL_CHECK(it != scc_to_outgoing_edges_map.end());
+        ABSL_CHECK(it->second > 0);
+        // Reduce the dependency count for the SCC.  In case the dependency
+        // count reaches 0, add the SCC to the list of SCCs to be ordered next.
+        it->second--;
+        if (it->second == 0) {
+          next_scc_q.push_back(parent);
+        }
+      }
+    }
+  }
+  for (const auto& p : scc_to_outgoing_edges_map) {
+    ABSL_DCHECK(p.second == 0) << "SCC left behind!";
+  }
+  return sorted_messages;
 }
 
 bool HasWeakFields(const Descriptor* descriptor, const Options& options) {
@@ -1322,6 +1498,36 @@ bool HasWeakFields(const FileDescriptor* file, const Options& options) {
     if (HasWeakFields(file->message_type(i), options)) return true;
   }
   return false;
+}
+
+bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
+                                 const Options& options) {
+  return HasDescriptorMethods(file, options) &&
+         !IsBootstrapProto(options, file) &&
+         options.descriptor_implicit_weak_messages &&
+         !options.opensource_runtime;
+}
+
+std::string StrongReferenceToType(const Descriptor* desc,
+                                  const Options& options) {
+  const auto name = QualifiedDefaultInstanceName(desc, options);
+  return absl::StrFormat("::%s::internal::StrongPointer<decltype(%s)*, &%s>()",
+                         ProtobufNamespace(options), name, name);
+}
+
+std::string WeakDescriptorDataSection(absl::string_view prefix,
+                                      const Descriptor* descriptor,
+                                      int index_in_file_messages,
+                                      const Options& options) {
+  const auto* file = descriptor->file();
+
+  // To make a compact name we use the index of the object in its file
+  // of its name.
+  // So the name could be `pb_def_3_HASH` instead of
+  // `pd_def_VeryLongClassName_WithNesting_AndMoreNames_HASH`
+  // We need a know common prefix to merge the sections later on.
+  return UniqueName(absl::StrCat("pb_", prefix, "_", index_in_file_messages),
+                    file, options);
 }
 
 bool UsingImplicitWeakFields(const FileDescriptor* file,
@@ -1725,6 +1931,22 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
 bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
   return !IsMapEntryMessage(descriptor) ||
          HasDescriptorMethods(descriptor->file(), options);
+}
+
+bool HasOnDeserializeTracker(const Descriptor* descriptor,
+                             const Options& options) {
+  return HasTracker(descriptor, options) &&
+         !options.field_listener_options.forbidden_field_listener_events
+              .contains("deserialize");
+}
+
+
+bool NeedsPostLoopHandler(const Descriptor* descriptor,
+                          const Options& options) {
+  if (HasOnDeserializeTracker(descriptor, options)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace cpp

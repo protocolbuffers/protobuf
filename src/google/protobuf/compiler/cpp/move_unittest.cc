@@ -66,12 +66,12 @@ TEST(MovableMessageTest, MoveSameArena) {
   Arena arena;
 
   auto* message1_on_arena =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena);
   TestUtil::SetAllFields(message1_on_arena);
   const auto* nested = &message1_on_arena->optional_nested_message();
 
   auto* message2_on_arena =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena);
 
   // Moving messages on the same arena should lead to swapped pointers.
   *message2_on_arena = std::move(*message1_on_arena);
@@ -82,12 +82,12 @@ TEST(MovableMessageTest, MoveDifferentArenas) {
   Arena arena1, arena2;
 
   auto* message1_on_arena =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena1);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena1);
   TestUtil::SetAllFields(message1_on_arena);
   const auto* nested = &message1_on_arena->optional_nested_message();
 
   auto* message2_on_arena =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena2);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena2);
 
   // Moving messages on two different arenas should lead to a copy.
   *message2_on_arena = std::move(*message1_on_arena);
@@ -100,7 +100,7 @@ TEST(MovableMessageTest, MoveFromArena) {
   Arena arena;
 
   auto* message1_on_arena =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena);
   TestUtil::SetAllFields(message1_on_arena);
   const auto* nested = &message1_on_arena->optional_nested_message();
 
@@ -121,7 +121,7 @@ TEST(MovableMessageTest, MoveToArena) {
   const auto* nested = &message1.optional_nested_message();
 
   auto* message2_on_arena =
-      Arena::CreateMessage<protobuf_unittest::TestAllTypes>(&arena);
+      Arena::Create<protobuf_unittest::TestAllTypes>(&arena);
 
   // Moving to a message on the arena should lead to a copy.
   *message2_on_arena = std::move(message1);

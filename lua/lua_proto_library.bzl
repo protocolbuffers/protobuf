@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2021, Google LLC
+# Copyright (c) 2023, Google LLC
 # All rights reserved.
 #
 # Use of this source code is governed by a BSD-style
@@ -124,7 +124,6 @@ _lua_proto_library_aspect = aspect(
 )
 
 lua_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _lua_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(

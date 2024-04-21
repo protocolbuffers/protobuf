@@ -51,40 +51,6 @@ static const char kParentClassValueKey = 0;
 static const char kClassNameSuffixKey = 0;
 static const char kFileDescriptorCacheKey = 0;
 
-// Utility function to generate selectors on the fly.
-static SEL SelFromStrings(const char *prefix, const char *middle, const char *suffix,
-                          BOOL takesArg) {
-  if (prefix == NULL && suffix == NULL && !takesArg) {
-    return sel_getUid(middle);
-  }
-  const size_t prefixLen = prefix != NULL ? strlen(prefix) : 0;
-  const size_t middleLen = strlen(middle);
-  const size_t suffixLen = suffix != NULL ? strlen(suffix) : 0;
-  size_t totalLen = prefixLen + middleLen + suffixLen + 1;  // include space for null on end.
-  if (takesArg) {
-    totalLen += 1;
-  }
-  char buffer[totalLen];
-  if (prefix != NULL) {
-    memcpy(buffer, prefix, prefixLen);
-    memcpy(buffer + prefixLen, middle, middleLen);
-    buffer[prefixLen] = (char)toupper(buffer[prefixLen]);
-  } else {
-    memcpy(buffer, middle, middleLen);
-  }
-  if (suffix != NULL) {
-    memcpy(buffer + prefixLen + middleLen, suffix, suffixLen);
-  }
-  if (takesArg) {
-    buffer[totalLen - 2] = ':';
-  }
-  // Always null terminate it.
-  buffer[totalLen - 1] = 0;
-
-  SEL result = sel_getUid(buffer);
-  return result;
-}
-
 static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageFields)
     __attribute__((ns_returns_retained));
 
@@ -594,8 +560,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
     for (GPBFieldDescriptor *fieldDesc in fields) {
       fieldDesc->containingOneof_ = self;
     }
-
-    caseSel_ = SelFromStrings(NULL, name, "OneOfCase", NO);
   }
   return self;
 }
@@ -682,27 +646,9 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       coreDesc = description;
     }
     description_ = coreDesc;
-    getSel_ = sel_getUid(coreDesc->name);
-    setSel_ = SelFromStrings("set", coreDesc->name, NULL, YES);
 
     GPBDataType dataType = coreDesc->dataType;
     BOOL isMessage = GPBDataTypeIsMessage(dataType);
-    BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
-
-    if (isMapOrArray) {
-      // map<>/repeated fields get a *Count property (inplace of a has*) to
-      // support checking if there are any entries without triggering
-      // autocreation.
-      hasOrCountSel_ = SelFromStrings(NULL, coreDesc->name, "_Count", NO);
-    } else {
-      // It is a single field; it gets has/setHas selectors if...
-      //  - not in a oneof (negative has index)
-      //  - not clearing on zero
-      if ((coreDesc->hasIndex >= 0) && ((coreDesc->flags & GPBFieldClearHasIvarOnZero) == 0)) {
-        hasOrCountSel_ = SelFromStrings("has", coreDesc->name, NULL, NO);
-        setHasSel_ = SelFromStrings("setHas", coreDesc->name, NULL, YES);
-      }
-    }
 
     // Extra type specific data.
     if (isMessage) {
@@ -719,6 +665,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     }
 
     // Non map<>/repeated fields can have defaults in proto2 syntax.
+    BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
     if (!isMapOrArray && includesDefault) {
       defaultValue_ = ((GPBMessageFieldDescriptionWithDefault *)description)->defaultValue;
       if (dataType == GPBDataTypeBytes) {

@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -328,33 +329,42 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 // Examples:
 //   FastV8S1, FastZ64S2, FastEr1P2, FastBcS1, FastMtR2, FastEndG1
 //
-#define PROTOBUF_TC_PARSE_FUNCTION_LIST            \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ32)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ64)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF32)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF64)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEv)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastS)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSi)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt) \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMl)   \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()
+#define PROTOBUF_TC_PARSE_FUNCTION_LIST                           \
+  /* These functions have the Fast entry ABI */                   \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ32)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ64)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF32)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastF64)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEv)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastS)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSi)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMl)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()                     \
+  PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoopLite) \
+  PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoop)     \
+  PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionParseLoop)               \
+  /* These functions have the fallback ABI */                     \
+  PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallback)                   \
+  PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallbackLite)               \
+  PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionFallback)                \
+  PROTOBUF_TC_PARSE_FUNCTION_X(DiscardEverythingFallback)
 
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
 enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
@@ -366,6 +376,22 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename T>
   static constexpr auto GetTable() -> decltype(&T::_table_.header) {
     return &T::_table_.header;
+  }
+
+  static PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
+      MessageLite* msg, const char* ptr, ParseContext* ctx,
+      const TcParseTableBase* tc_table) {
+    return ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
+      return ParseLoop(msg, ptr, ctx, tc_table);
+    });
+  }
+
+  static PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+      MessageLite* msg, const char* ptr, ParseContext* ctx,
+      const TcParseTableBase* tc_table, uint32_t start_tag) {
+    return ctx->ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
+      return ParseLoop(msg, ptr, ctx, tc_table);
+    });
   }
 
   // == ABI of the tail call functions ==
@@ -390,7 +416,18 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* ReflectionFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL);
 
-  PROTOBUF_NOINLINE
+  // This fallback will discard any field that reaches there.
+  // Note that fields parsed via fast/MiniParse are not going to be discarded
+  // even when this is enabled.
+  static const char* DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL);
+
+  // These follow the "fast" function ABI but implement the whole loop for
+  // message_set_wire_format types.
+  static const char* MessageSetWireFormatParseLoop(
+      PROTOBUF_TC_PARAM_NO_DATA_DECL);
+  static const char* MessageSetWireFormatParseLoopLite(
+      PROTOBUF_TC_PARAM_NO_DATA_DECL);
+
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,
                                const TcParseTableBase* table);
@@ -599,7 +636,7 @@ class PROTOBUF_EXPORT TcParser final {
     if (!is_split) return RefAt<T>(x, offset);
     void*& ptr = RefAt<void*>(x, offset);
     if (ptr == DefaultRawPtr()) {
-      ptr = Arena::CreateMessage<T>(msg->GetArena());
+      ptr = Arena::Create<T>(msg->GetArena());
     }
     return *static_cast<T*>(ptr);
   }
@@ -778,6 +815,15 @@ class PROTOBUF_EXPORT TcParser final {
     }
   }
 
+  template <class MessageBaseT>
+  static const char* MessageSetWireFormatParseLoopImpl(
+      PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+    return RefAt<ExtensionSet>(msg, table->extension_offset)
+        .ParseMessageSet(
+            ptr, static_cast<const MessageBaseT*>(table->default_instance),
+            &msg->_internal_metadata_, ctx);
+  }
+
   // Note: `inline` is needed on template function declarations below to avoid
   // -Wattributes diagnostic in GCC.
 
@@ -942,6 +988,39 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
   SyncHasbits(msg, hasbits, table);
   return ptr;
 }
+
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
+    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    const TcParseTableBase* table) {
+  // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
+  // For fast dispatch, we'd like to have a pointer to that, but if we use
+  // that expression, there's no easy way to get back to "table", which we also
+  // need during dispatch.  It turns out that "table + 1" points exactly to
+  // fast_entries, so we just increment table by 1 here, to get the register
+  // holding the value we want.
+  table += 1;
+  while (!ctx->Done(&ptr)) {
+#if defined(__GNUC__)
+    // Note: this asm prevents the compiler (clang, specifically) from
+    // believing (thanks to CSE) that it needs to dedicate a registeer both
+    // to "table" and "&table->fast_entries".
+    // TODO: remove this asm
+    asm("" : "+r"(table));
+#endif
+    ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
+    if (ptr == nullptr) break;
+    if (ctx->LastTag() != 1) break;  // Ended on terminating tag
+  }
+  table -= 1;
+  if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
+    return table->post_loop_handler(msg, ptr, ctx);
+  }
+  return ptr;
+}
+
+// Prints the type card as or of labels, using known higher level labels.
+// Used for code generation, but also useful for debugging.
+PROTOBUF_EXPORT std::string TypeCardToString(uint16_t type_card);
 
 }  // namespace internal
 }  // namespace protobuf

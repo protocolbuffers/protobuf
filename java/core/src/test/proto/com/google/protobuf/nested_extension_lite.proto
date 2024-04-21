@@ -11,7 +11,9 @@
 // this must be defined in a separate file to properly test the initialization
 // of the outer class.
 
-syntax = "proto2";
+// LINT: LEGACY_NAMES
+
+edition = "2023";
 
 package protobuf_unittest;
 
@@ -21,7 +23,7 @@ option optimize_for = LITE_RUNTIME;
 
 message MyNestedExtensionLite {
   extend MessageLiteToBeExtended {
-    optional MessageLiteToBeExtended recursiveExtensionLite = 3;
-    optional double private = 2004;
+    MessageLiteToBeExtended recursiveExtensionLite = 3;
+    double private = 2004;
   }
 }

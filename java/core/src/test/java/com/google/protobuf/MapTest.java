@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.google.protobuf.Descriptors.Descriptor;
@@ -1591,5 +1592,39 @@ public class MapTest {
     } catch (NullPointerException expected) {
       assertThat(expected).hasMessageThat().isNotNull();
     }
+  }
+
+  @Test
+  public void getAllFields_mapEntryListMutability() {
+    TestMap testMap =
+        TestMap.newBuilder()
+            .putInt32ToInt32Field(1, 11)
+            .putInt32ToInt32Field(2, 22)
+            .putInt32ToMessageField(1, TestMap.MessageValue.newBuilder().setValue(111).build())
+            .build();
+    FieldDescriptor int2IntMapField =
+        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_INT32_FIELD_FIELD_NUMBER);
+    FieldDescriptor int2MessageMapField =
+        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_MESSAGE_FIELD_FIELD_NUMBER);
+    Map<FieldDescriptor, Object> allFields = testMap.getAllFields();
+    List<?> mapEntries = (List<?>) allFields.get(int2IntMapField);
+    assertThat(mapEntries).hasSize(2);
+    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
+    mapEntries = (List<?>) allFields.get(int2MessageMapField);
+    assertThat(mapEntries).hasSize(1);
+    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
+
+    TestMap.Builder builder = testMap.toBuilder();
+    allFields = builder.getAllFields();
+    mapEntries = (List<?>) allFields.get(int2IntMapField);
+    assertThat(mapEntries).hasSize(2);
+    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
+    builder.clearField(int2IntMapField);
+    assertThat(mapEntries).hasSize(2);
+    mapEntries = (List<?>) allFields.get(int2MessageMapField);
+    assertThat(mapEntries).hasSize(1);
+    assertThrows(UnsupportedOperationException.class, mapEntries::clear);
+    builder.clearField(int2MessageMapField);
+    assertThat(mapEntries).hasSize(1);
   }
 }

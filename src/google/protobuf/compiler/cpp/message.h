@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -20,6 +21,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -45,6 +47,8 @@ class MessageGenerator {
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
   ~MessageGenerator() = default;
+
+  int index_in_file_messages() const { return index_in_file_messages_; }
 
   // Append the two types of nested generators to the corresponding vector.
   void AddGenerators(
@@ -80,6 +84,7 @@ class MessageGenerator {
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
+  using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
   enum class InitType { kConstexpr, kArena, kArenaCopy };
 
   // Generate declarations and definitions of accessors for fields.
@@ -118,11 +123,15 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
   void GenerateClassData(io::Printer* p);
+  void GenerateMapEntryClassDefinition(io::Printer* p);
+  void GenerateAnyMethodDefinition(io::Printer* p);
+  void GenerateImplDefinition(io::Printer* p);
   void GenerateMergeFrom(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateCopyFrom(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);
+  bool NeedsIsInitialized();
 
   // Helpers for GenerateSerializeWithCachedSizes().
   //
@@ -147,6 +156,10 @@ class MessageGenerator {
   // Generates the clear_foo() method for a field.
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
+
+  // Returns true if any of the fields needs an `arena` variable containing
+  // the current message's arena, reducing `GetArena()` call churn.
+  bool RequiresArena(GeneratorFunction function) const;
 
   // Returns whether impl_ has a copy ctor.
   bool ImplHasCopyCtor() const;

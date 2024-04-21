@@ -160,7 +160,14 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
 }
 
 - (void)dealloc {
-  [self flush];
+  @try {
+    [self flush];
+  } @catch (NSException *exception) {
+    // -dealloc methods cannot fail, so swallow any exceptions from flushing.
+#if defined(DEBUG) && DEBUG
+    NSLog(@"GPBCodedOutputStream: Exception while flushing in dealloc: %@", exception);
+#endif
+  }
   [state_.output close];
   [state_.output release];
   [buffer_ release];

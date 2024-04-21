@@ -68,7 +68,7 @@ module Google
       end
 
       def label
-        @label ||= Google::Protobuf::FFI::Label[Google::Protobuf::FFI.get_label(self)]
+        @label ||= Google::Protobuf::FFI.get_label(self)
       end
 
       def default
@@ -156,6 +156,14 @@ module Google
         @has_presence ||= Google::Protobuf::FFI.get_has_presence(self)
       end
 
+      ##
+      # Tests if this is a repeated field that uses packed encoding.
+      #
+      # @return [Boolean] True iff this field is packed
+      def is_packed?
+        @is_packed ||= Google::Protobuf::FFI.get_is_packed(self)
+      end
+
       # @param msg [Google::Protobuf::Message]
       def clear(msg)
         if msg.class.descriptor != Google::Protobuf::FFI.get_containing_message_def(self)
@@ -203,6 +211,17 @@ module Google
         else
           message_descriptor = Google::Protobuf::FFI.get_subtype_as_message(self)
           @wrapper = message_descriptor.nil? ? false : message_descriptor.send(:wrapper?)
+        end
+      end
+
+      def options
+        @options ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.field_options(self, size_ptr, temporary_arena)
+          opts = Google::Protobuf::FieldOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+          opts.clear_features()
+          opts.freeze
         end
       end
 
@@ -289,21 +308,23 @@ module Google
       attach_function :get_field_by_number,  :upb_MessageDef_FindFieldByNumber,      [Descriptor, :uint32_t], FieldDescriptor
 
       # FieldDescriptor
-      attach_function :get_containing_message_def, :upb_FieldDef_ContainingType,     [FieldDescriptor], Descriptor
-      attach_function :get_c_type,                 :upb_FieldDef_CType,              [FieldDescriptor], CType
-      attach_function :get_default,                :upb_FieldDef_Default,            [FieldDescriptor], MessageValue.by_value
-      attach_function :get_subtype_as_enum,        :upb_FieldDef_EnumSubDef,         [FieldDescriptor], EnumDescriptor
-      attach_function :get_has_presence,           :upb_FieldDef_HasPresence,        [FieldDescriptor], :bool
-      attach_function :is_map,                     :upb_FieldDef_IsMap,              [FieldDescriptor], :bool
-      attach_function :is_repeated,                :upb_FieldDef_IsRepeated,         [FieldDescriptor], :bool
-      attach_function :is_sub_message,             :upb_FieldDef_IsSubMessage,       [FieldDescriptor], :bool
-      attach_function :get_json_name,              :upb_FieldDef_JsonName,           [FieldDescriptor], :string
-      attach_function :get_label,                  :upb_FieldDef_Label,              [FieldDescriptor], Label
-      attach_function :get_subtype_as_message,     :upb_FieldDef_MessageSubDef,      [FieldDescriptor], Descriptor
-      attach_function :get_full_name,              :upb_FieldDef_Name,               [FieldDescriptor], :string
-      attach_function :get_number,                 :upb_FieldDef_Number,             [FieldDescriptor], :uint32_t
-      attach_function :get_type,                   :upb_FieldDef_Type,               [FieldDescriptor], FieldType
-      attach_function :file_def_by_raw_field_def,  :upb_FieldDef_File,               [:pointer], :FileDef
+      attach_function :field_options,              :FieldDescriptor_serialized_options, [FieldDescriptor, :pointer, Internal::Arena], :pointer
+      attach_function :get_containing_message_def, :upb_FieldDef_ContainingType,        [FieldDescriptor], Descriptor
+      attach_function :get_c_type,                 :upb_FieldDef_CType,                 [FieldDescriptor], CType
+      attach_function :get_default,                :upb_FieldDef_Default,               [FieldDescriptor], MessageValue.by_value
+      attach_function :get_subtype_as_enum,        :upb_FieldDef_EnumSubDef,            [FieldDescriptor], EnumDescriptor
+      attach_function :get_has_presence,           :upb_FieldDef_HasPresence,           [FieldDescriptor], :bool
+      attach_function :get_is_packed,              :upb_FieldDef_IsPacked,              [FieldDescriptor], :bool
+      attach_function :is_map,                     :upb_FieldDef_IsMap,                 [FieldDescriptor], :bool
+      attach_function :is_repeated,                :upb_FieldDef_IsRepeated,            [FieldDescriptor], :bool
+      attach_function :is_sub_message,             :upb_FieldDef_IsSubMessage,          [FieldDescriptor], :bool
+      attach_function :get_json_name,              :upb_FieldDef_JsonName,              [FieldDescriptor], :string
+      attach_function :get_label,                  :upb_FieldDef_Label,                 [FieldDescriptor], Label
+      attach_function :get_subtype_as_message,     :upb_FieldDef_MessageSubDef,         [FieldDescriptor], Descriptor
+      attach_function :get_full_name,              :upb_FieldDef_Name,                  [FieldDescriptor], :string
+      attach_function :get_number,                 :upb_FieldDef_Number,                [FieldDescriptor], :uint32_t
+      attach_function :get_type,                   :upb_FieldDef_Type,                  [FieldDescriptor], FieldType
+      attach_function :file_def_by_raw_field_def,  :upb_FieldDef_File,                  [:pointer], :FileDef
     end
   end
 end

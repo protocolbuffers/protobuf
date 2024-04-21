@@ -141,7 +141,7 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       VALUE utf8 = rb_enc_from_encoding(rb_utf8_encoding());
       if (rb_obj_class(value) == rb_cSymbol) {
         value = rb_funcall(value, rb_intern("to_s"), 0);
-      } else if (rb_obj_class(value) != rb_cString) {
+      } else if (!rb_obj_is_kind_of(value, rb_cString)) {
         rb_raise(cTypeError,
                  "Invalid argument for string field '%s' (given %s).", name,
                  rb_class2name(CLASS_OF(value)));
@@ -208,7 +208,8 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       }
       break;
     default:
-      break;
+      rb_raise(cTypeError,
+                "Convert_RubyToUpb(): Unexpected type %d", (int)type_info.type);
   }
 
   return ret;
@@ -296,7 +297,8 @@ bool Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(rb_eRuntimeError, upb_Status_ErrorMessage(&status));
+    rb_raise(rb_eRuntimeError, "Msgval_IsEqual(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }
 
@@ -309,6 +311,7 @@ uint64_t Msgval_GetHash(upb_MessageValue val, TypeInfo type_info,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
-    rb_raise(rb_eRuntimeError, upb_Status_ErrorMessage(&status));
+    rb_raise(rb_eRuntimeError, "Msgval_GetHash(): %s",
+             upb_Status_ErrorMessage(&status));
   }
 }

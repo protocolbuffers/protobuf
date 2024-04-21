@@ -15,13 +15,14 @@ require 'google/protobuf/ffi/descriptor'
 require 'google/protobuf/ffi/enum_descriptor'
 require 'google/protobuf/ffi/field_descriptor'
 require 'google/protobuf/ffi/oneof_descriptor'
+require 'google/protobuf/ffi/method_descriptor'
+require 'google/protobuf/ffi/service_descriptor'
 require 'google/protobuf/ffi/descriptor_pool'
 require 'google/protobuf/ffi/file_descriptor'
 require 'google/protobuf/ffi/map'
 require 'google/protobuf/ffi/object_cache'
 require 'google/protobuf/ffi/repeated_field'
 require 'google/protobuf/ffi/message'
-require 'google/protobuf/descriptor_dsl'
 
 module Google
   module Protobuf

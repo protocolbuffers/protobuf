@@ -8,10 +8,16 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -39,27 +45,65 @@ inline absl::string_view KernelRsName(Kernel kernel) {
 // Global options for a codegen invocation.
 struct Options {
   Kernel kernel;
+  std::string mapping_file_path;
 
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
 
+class RustGeneratorContext {
+ public:
+  explicit RustGeneratorContext(
+      const std::vector<const FileDescriptor*>* files_in_current_crate,
+      const absl::flat_hash_map<std::string, std::string>*
+          import_path_to_crate_name)
+      : files_in_current_crate_(*files_in_current_crate),
+        import_path_to_crate_name_(*import_path_to_crate_name) {}
+
+  const FileDescriptor& primary_file() const {
+    return *files_in_current_crate_.front();
+  }
+
+  bool is_file_in_current_crate(const FileDescriptor& f) const {
+    return std::find(files_in_current_crate_.begin(),
+                     files_in_current_crate_.end(),
+                     &f) != files_in_current_crate_.end();
+  }
+
+  absl::string_view ImportPathToCrateName(absl::string_view import_path) const {
+    auto it = import_path_to_crate_name_.find(import_path);
+    if (it == import_path_to_crate_name_.end()) {
+      ABSL_LOG(FATAL) << "Path " << import_path
+                      << " not found in crate mapping. Crate mapping has "
+                      << import_path_to_crate_name_.size() << " entries";
+    }
+    return it->second;
+  }
+
+ private:
+  const std::vector<const FileDescriptor*>& files_in_current_crate_;
+  const absl::flat_hash_map<std::string, std::string>&
+      import_path_to_crate_name_;
+};
+
 // A context for generating a particular kind of definition.
-// This type acts as an options struct (as in go/totw/173) for most of the
-// generator.
-//
-// `Descriptor` is the type of a descriptor.h class relevant for the current
-// context.
-template <typename Descriptor>
 class Context {
  public:
-  Context(const Options* opts, const Descriptor* desc, io::Printer* printer)
-      : opts_(opts), desc_(desc), printer_(printer) {}
+  Context(const Options* opts,
+          const RustGeneratorContext* rust_generator_context,
+          io::Printer* printer)
+      : opts_(opts),
+        rust_generator_context_(rust_generator_context),
+        printer_(printer) {}
 
-  Context(const Context&) = default;
-  Context& operator=(const Context&) = default;
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
+  Context(Context&&) = default;
+  Context& operator=(Context&&) = default;
 
-  const Descriptor& desc() const { return *desc_; }
   const Options& opts() const { return *opts_; }
+  const RustGeneratorContext& generator_context() const {
+    return *rust_generator_context_;
+  }
 
   bool is_cpp() const { return opts_->kernel == Kernel::kCpp; }
   bool is_upb() const { return opts_->kernel == Kernel::kUpb; }
@@ -67,19 +111,8 @@ class Context {
   // NOTE: prefer ctx.Emit() over ctx.printer().Emit();
   io::Printer& printer() const { return *printer_; }
 
-  // Creates a new context over a different descriptor.
-  template <typename D>
-  Context<D> WithDesc(const D& desc) const {
-    return Context<D>(opts_, &desc, printer_);
-  }
-
-  template <typename D>
-  Context<D> WithDesc(const D* desc) const {
-    return Context<D>(opts_, desc, printer_);
-  }
-
   Context WithPrinter(io::Printer* printer) const {
-    return Context(opts_, desc_, printer);
+    return Context(opts_, rust_generator_context_, printer);
   }
 
   // Forwards to Emit(), which will likely be called all the time.
@@ -96,9 +129,14 @@ class Context {
 
  private:
   const Options* opts_;
-  const Descriptor* desc_;
+  const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
 };
+
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message);
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_);
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

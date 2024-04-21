@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "protos_generator/gen_messages.h"
 
@@ -165,13 +142,13 @@ void WriteModelPublicDeclaration(
           $0& operator=(const CProxy& from);
 
           $0($0&& m)
-              : Access(absl::exchange(m.msg_, nullptr),
-                       absl::exchange(m.arena_, nullptr)),
+              : Access(std::exchange(m.msg_, nullptr),
+                       std::exchange(m.arena_, nullptr)),
                 owned_arena_(std::move(m.owned_arena_)) {}
 
           $0& operator=($0&& m) {
-            msg_ = absl::exchange(m.msg_, nullptr);
-            arena_ = absl::exchange(m.arena_, nullptr);
+            msg_ = std::exchange(m.msg_, nullptr);
+            arena_ = std::exchange(m.arena_, nullptr);
             owned_arena_ = std::move(m.owned_arena_);
             return *this;
           }
@@ -204,8 +181,8 @@ void WriteModelPublicDeclaration(
   output(
       R"cc(
         private:
-        const void* msg() const { return msg_; }
-        void* msg() { return msg_; }
+        const upb_Message* msg() const { return UPB_UPCAST(msg_); }
+        upb_Message* msg() { return UPB_UPCAST(msg_); }
 
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
@@ -265,9 +242,10 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
   output(
       R"cc(
         private:
-        void* msg() const { return msg_; }
+        upb_Message* msg() const { return UPB_UPCAST(msg_); }
 
-        $0Proxy(void* msg, upb_Arena* arena) : internal::$0Access(($1*)msg, arena) {}
+        $0Proxy(upb_Message* msg, upb_Arena* arena)
+            : internal::$0Access(($1*)msg, arena) {}
         friend $0::Proxy(::protos::CreateMessage<$0>(::protos::Arena& arena));
         friend $0::Proxy(::protos::internal::CreateMessageProxy<$0>(
             upb_Message*, upb_Arena*));
@@ -318,9 +296,9 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
       R"cc(
         private:
         using AsNonConst = $0Proxy;
-        const void* msg() const { return msg_; }
+        const upb_Message* msg() const { return UPB_UPCAST(msg_); }
 
-        $0CProxy(const void* msg, upb_Arena* arena)
+        $0CProxy(const upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena){};
         friend struct ::protos::internal::PrivateAccess;
         friend class RepeatedFieldProxy;
@@ -363,7 +341,7 @@ void WriteMessageImplementation(
           }
           $0::$0(const $0& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
@@ -377,7 +355,7 @@ void WriteMessageImplementation(
           }
           $0& $0::operator=(const $3& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {

@@ -19,8 +19,6 @@ extern "C" {
 
 upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
 
-const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
-    const upb_FieldDef* f);
 bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
 bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
 int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
@@ -31,16 +29,19 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
                                            const upb_FieldDef* f);
 
 // Allocate and initialize an array of |n| extensions (field defs).
-upb_FieldDef* _upb_Extensions_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
-    upb_MessageDef* m);
+upb_FieldDef* _upb_Extensions_New(upb_DefBuilder* ctx, int n,
+                                  const UPB_DESC(FieldDescriptorProto*)
+                                      const* protos,
+                                  const UPB_DESC(FeatureSet*) parent_features,
+                                  const char* prefix, upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| field defs.
-upb_FieldDef* _upb_FieldDefs_New(
-    upb_DefBuilder* ctx, int n,
-    const UPB_DESC(FieldDescriptorProto) * const* protos, const char* prefix,
-    upb_MessageDef* m, bool* is_sorted);
+upb_FieldDef* _upb_FieldDefs_New(upb_DefBuilder* ctx, int n,
+                                 const UPB_DESC(FieldDescriptorProto*)
+                                     const* protos,
+                                 const UPB_DESC(FeatureSet*) parent_features,
+                                 const char* prefix, upb_MessageDef* m,
+                                 bool* is_sorted);
 
 // Allocate and return a list of pointers to the |n| field defs in |ff|,
 // sorted by field number.

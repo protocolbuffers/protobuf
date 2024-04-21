@@ -30,32 +30,25 @@ namespace internal {
 class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final { return true; }
   size_t ByteSizeLong() const final;
-  int GetCachedSize() const { return _cached_size_.Get(); }
-  const char* _InternalParse(const char* ptr,
-                             internal::ParseContext* ctx) final;
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
   ::uint8_t* _InternalSerialize(::uint8_t* target,
                                 io::EpsCopyOutputStream* stream) const final;
 
  protected:
-  internal::CachedSize* AccessCachedSize() const final {
-    return &_cached_size_;
-  }
-
   constexpr ZeroFieldsBase() {}
   explicit ZeroFieldsBase(Arena* arena) : Message(arena) {}
   ZeroFieldsBase(const ZeroFieldsBase&) = delete;
   ZeroFieldsBase& operator=(const ZeroFieldsBase&) = delete;
   ~ZeroFieldsBase() override;
 
-  const ClassData* GetClassData() const final;
-
-  static void MergeImpl(Message& to, const Message& from);
+  static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);
 
-  mutable internal::CachedSize _cached_size_;
+  struct {
+    mutable internal::CachedSize _cached_size_;
+  } _impl_;
 };
 
 }  // namespace internal

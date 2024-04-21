@@ -2,11 +2,14 @@ syntax = "proto3";
 
 package basic_test;
 
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
+import "google/protobuf/descriptor.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 import "test_import_proto2.proto";
+
+option deprecated = true;
 
 message Foo {
   Bar bar = 1;
@@ -50,6 +53,10 @@ message TestMessage {
   optional TestSingularFields optional_msg2 = 23;
 }
 
+message TestUnpackedMessage {
+  repeated int32 repeated_int32 = 25 [packed = false];
+}
+
 message TestSingularFields {
   int32 singular_int32 = 1;
   int64 singular_int64 = 2;
@@ -68,12 +75,44 @@ message TestMessage2 {
   optional int32 foo = 1;
 }
 
+extend google.protobuf.OneofOptions {
+  optional string test_top_level_option = 1000;
+}
+
+message TestDeprecatedMessage {
+  option deprecated = true;
+
+  extend google.protobuf.OneofOptions {
+    optional string test_nested_option = 1001;
+  }
+
+  optional int32 foo = 1 [deprecated = true];
+
+  oneof test_deprecated_message_oneof {
+    option (test_top_level_option) = "Custom option value";
+    option (test_nested_option) = "Another custom option value";
+
+    string a = 2;
+    int32 b = 3;
+  }
+
+  map<string, TestMessage2> map_string_msg = 4;
+  repeated TestMessage2 repeated_msg = 5;
+}
+
 enum TestEnum {
   Default = 0;
   A = 1;
   B = 2;
   C = 3;
   v0 = 4;
+}
+
+enum TestDeprecatedEnum {
+  option deprecated = true;
+
+  DefaultA = 0;
+  AA = 1 [deprecated = true];
 }
 
 message TestEmbeddedMessageParent {
@@ -130,8 +169,7 @@ message Outer {
   map<int32, Inner> items = 1;
 }
 
-message Inner {
-}
+message Inner {}
 
 message Wrapper {
   google.protobuf.DoubleValue double = 1;
@@ -213,8 +251,8 @@ message MyStruct {
 }
 
 message WithJsonName {
-  optional int32 foo_bar = 1 [json_name="jsonFooBar"];
-  repeated WithJsonName baz = 2 [json_name="jsonBaz"];
+  optional int32 foo_bar = 1 [json_name = "jsonFooBar"];
+  repeated WithJsonName baz = 2 [json_name = "jsonBaz"];
 }
 
 message HelloRequest {
@@ -250,4 +288,32 @@ message HelloRequest {
   optional uint32 random_name_c8 = 30;
   optional uint32 random_name_c9 = 31;
   optional string version = 32;
+}
+
+message BadFieldNames {
+  optional int32 dup = 1;
+  optional int32 class = 2;
+}
+
+// Messages to test the fix for
+// https://github.com/protocolbuffers/protobuf/issues/8311.
+message Inner8311 {
+  // Removing either of these fixes the segfault.
+  optional string foo = 1;
+  optional string bar = 2;
+}
+
+message Outer8311 {
+  repeated Inner8311 inners = 1;
+}
+
+// Messages to test the fix for
+// https://github.com/protocolbuffers/protobuf/issues/9507
+message NpeMessage {
+  optional TestEnum9507 type = 1;
+  optional string other = 2;
+}
+
+enum TestEnum9507 {
+  Something = 0;
 }

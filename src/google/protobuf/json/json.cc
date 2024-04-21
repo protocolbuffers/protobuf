@@ -33,7 +33,8 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.add_whitespace = options.add_whitespace;
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
   opts.always_print_enums_as_ints = options.always_print_enums_as_ints;
-  opts.always_print_primitive_fields = options.always_print_primitive_fields;
+  opts.always_print_fields_with_no_presence =
+      options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
   // TODO: Drop this setting.
@@ -87,7 +88,8 @@ absl::Status MessageToJsonString(const Message& message, std::string* output,
   opts.add_whitespace = options.add_whitespace;
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
   opts.always_print_enums_as_ints = options.always_print_enums_as_ints;
-  opts.always_print_primitive_fields = options.always_print_primitive_fields;
+  opts.always_print_fields_with_no_presence =
+      options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
   // TODO: Drop this setting.

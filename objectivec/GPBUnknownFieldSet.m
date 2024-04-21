@@ -207,6 +207,7 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(__unused const void *ke
   NSMutableData *data = [NSMutableData dataWithLength:self.serializedSize];
   GPBCodedOutputStream *output = [[GPBCodedOutputStream alloc] initWithData:data];
   [self writeToCodedOutputStream:output];
+  [output flush];
   [output release];
   return data;
 }

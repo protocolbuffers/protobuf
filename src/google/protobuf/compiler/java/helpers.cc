@@ -28,8 +28,9 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 
@@ -41,8 +42,8 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
+using ::google::protobuf::internal::WireFormat;
+using ::google::protobuf::internal::WireFormatLite;
 
 const char kThickSeparator[] =
     "// ===================================================================\n";
@@ -82,6 +83,25 @@ void PrintEnumVerifierLogic(
                          "      }");
   printer->Print(variables,
                  absl::StrCat(enum_verifier_string, terminating_string));
+}
+
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  absl::string_view java_class_name) {
+  const auto& version = GetProtobufJavaVersion(oss_runtime);
+  printer->Print(
+      "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "  com.google.protobuf.RuntimeVersion.RuntimeDomain.$domain$,\n"
+      "  $major$,\n"
+      "  $minor$,\n"
+      "  $patch$,\n"
+      "  $suffix$,\n"
+      "  $location$);\n",
+      "domain", oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "major",
+      absl::StrCat("/* major= */ ", version.major()), "minor",
+      absl::StrCat("/* minor= */ ", version.minor()), "patch",
+      absl::StrCat("/* patch= */ ", version.patch()), "suffix",
+      absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+      absl::StrCat(java_class_name, ".class.getName()"));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,
@@ -811,8 +831,7 @@ bool HasRequiredFields(const Descriptor* type) {
 }
 
 bool IsRealOneof(const FieldDescriptor* descriptor) {
-  return descriptor->containing_oneof() &&
-         !OneofDescriptorLegacy(descriptor->containing_oneof()).is_synthetic();
+  return descriptor->real_containing_oneof();
 }
 
 bool HasRepeatedFields(const Descriptor* descriptor) {

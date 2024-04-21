@@ -161,8 +161,14 @@ static bool Message_set(Message* intern, const upb_FieldDef* f, zval* val) {
   return true;
 }
 
+/**
+ * MessageEq()
+ */
 static bool MessageEq(const upb_Message* m1, const upb_Message* m2,
-                      const upb_MessageDef* m);
+                      const upb_MessageDef* m) {
+  const int options = 0;
+  return upb_Message_IsEqual(m1, m2, upb_MessageDef_MiniTable(m), options);
+}
 
 /**
  * ValueEq()
@@ -192,40 +198,6 @@ bool ValueEq(upb_MessageValue val1, upb_MessageValue val2, TypeInfo type) {
     default:
       return false;
   }
-}
-
-/**
- * MessageEq()
- */
-static bool MessageEq(const upb_Message* m1, const upb_Message* m2,
-                      const upb_MessageDef* m) {
-  int n = upb_MessageDef_FieldCount(m);
-
-  for (int i = 0; i < n; i++) {
-    const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-
-    if (upb_FieldDef_HasPresence(f)) {
-      if (upb_Message_HasFieldByDef(m1, f) !=
-          upb_Message_HasFieldByDef(m2, f)) {
-        return false;
-      }
-      if (!upb_Message_HasFieldByDef(m1, f)) continue;
-    }
-
-    upb_MessageValue val1 = upb_Message_GetFieldByDef(m1, f);
-    upb_MessageValue val2 = upb_Message_GetFieldByDef(m2, f);
-
-    if (upb_FieldDef_IsMap(f)) {
-      if (!MapEq(val1.map_val, val2.map_val, MapType_Get(f))) return false;
-    } else if (upb_FieldDef_IsRepeated(f)) {
-      if (!ArrayEq(val1.array_val, val2.array_val, TypeInfo_Get(f)))
-        return false;
-    } else {
-      if (!ValueEq(val1, val2, TypeInfo_Get(f))) return false;
-    }
-  }
-
-  return true;
 }
 
 /**
@@ -400,11 +372,8 @@ static zval* Message_get_property_ptr_ptr(zend_object* object,
 static zend_object* Message_clone_obj(zend_object* object) {
   Message* intern = (Message*)object;
   const upb_MiniTable* t = upb_MessageDef_MiniTable(intern->desc->msgdef);
-  upb_Message* clone = upb_Message_New(t, Arena_Get(&intern->arena));
-
-  // TODO: copy unknown fields?
-  // TODO: use official upb msg copy function
-  memcpy(clone, intern->msg, t->size);
+  upb_Message* clone =
+      upb_Message_ShallowClone(intern->msg, t, Arena_Get(&intern->arena));
   zval ret;
   Message_GetPhpWrapper(&ret, intern->desc, clone, &intern->arena);
   return Z_OBJ_P(&ret);
@@ -685,7 +654,6 @@ PHP_METHOD(Message, mergeFrom) {
 PHP_METHOD(Message, mergeFromString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   char* data = NULL;
-  char* data_copy = NULL;
   zend_long data_len;
   const upb_MiniTable* l = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Arena* arena = Arena_Get(&intern->arena);
@@ -695,11 +663,7 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
 
-  // TODO: avoid this copy when we can make the decoder copy.
-  data_copy = upb_Arena_Malloc(arena, data_len);
-  memcpy(data_copy, data, data_len);
-
-  if (upb_Decode(data_copy, data_len, intern->msg, l, NULL, 0, arena) !=
+  if (upb_Decode(data, data_len, intern->msg, l, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
     return;
@@ -742,7 +706,6 @@ PHP_METHOD(Message, serializeToString) {
 PHP_METHOD(Message, mergeFromJsonString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   char* data = NULL;
-  char* data_copy = NULL;
   zend_long data_len;
   upb_Arena* arena = Arena_Get(&intern->arena);
   upb_Status status;
@@ -754,17 +717,12 @@ PHP_METHOD(Message, mergeFromJsonString) {
     return;
   }
 
-  // TODO: avoid this copy when we can make the decoder copy.
-  data_copy = upb_Arena_Malloc(arena, data_len + 1);
-  memcpy(data_copy, data, data_len);
-  data_copy[data_len] = '\0';
-
   if (ignore_json_unknown) {
     options |= upb_JsonDecode_IgnoreUnknown;
   }
 
   upb_Status_Clear(&status);
-  if (!upb_JsonDecode(data_copy, data_len, intern->msg, intern->desc->msgdef,
+  if (!upb_JsonDecode(data, data_len, intern->msg, intern->desc->msgdef,
                       DescriptorPool_GetSymbolTable(), options, arena,
                       &status)) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing: %s",

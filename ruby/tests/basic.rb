@@ -3,26 +3,16 @@
 # basic_test_pb.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
+require 'basic_test_features_pb'
 require 'basic_test_pb'
 require 'common_tests'
 require 'google/protobuf'
 require 'json'
 require 'test/unit'
 
-# ------------- generated code --------------
-
 module BasicTest
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-    add_message "BadFieldNames" do
-      optional :dup, :int32, 1
-      optional :class, :int32, 2
-    end
-  end
-
-  BadFieldNames = pool.lookup("BadFieldNames").msgclass
-
-# ------------ test cases ---------------
+  TestMessage = BasicTest::TestMessage
+  Outer = BasicTest::Outer
 
   class MessageContainerTest < Test::Unit::TestCase
     # Required by CommonTests module to resolve proto3 proto classes used in tests.
@@ -32,32 +22,12 @@ module BasicTest
     include CommonTests
 
     def test_issue_8311_crash
-      Google::Protobuf::DescriptorPool.generated_pool.build do
-        add_file("inner.proto", :syntax => :proto3) do
-          add_message "Inner" do
-            # Removing either of these fixes the segfault.
-            optional :foo, :string, 1
-            optional :bar, :string, 2
-          end
-        end
-      end
-
-      Google::Protobuf::DescriptorPool.generated_pool.build do
-        add_file("outer.proto", :syntax => :proto3) do
-          add_message "Outer" do
-            repeated :inners, :message, 1, "Inner"
-          end
-        end
-      end
-
-      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
-
-      outer.new(
+      BasicTest::Outer8311.new(
           inners: []
       )['inners'].to_s
 
       assert_raises Google::Protobuf::TypeError do
-        outer.new(
+        BasicTest::Outer8311.new(
             inners: [nil]
         ).to_s
       end
@@ -83,29 +53,16 @@ module BasicTest
     end
 
     def test_issue_9507
-      pool = Google::Protobuf::DescriptorPool.new
-      pool.build do
-        add_message "NpeMessage" do
-          optional :type, :enum, 1, "TestEnum"
-          optional :other, :string, 2
-        end
-        add_enum "TestEnum" do
-          value :Something, 0
-        end
-      end
-
-      msgclass = pool.lookup("NpeMessage").msgclass
-
-      m = msgclass.new(
+      m = BasicTest::NpeMessage.new(
         other: "foo"      # must be set, but can be blank
       )
 
       begin
-        encoded = msgclass.encode(m)
+        encoded = BasicTest::NpeMessage.encode(m)
       rescue java.lang.NullPointerException
         flunk "NPE rescued"
       end
-      decoded = msgclass.decode(encoded)
+      decoded = BasicTest::NpeMessage.decode(encoded)
       decoded.inspect
       decoded.to_proto
     end
@@ -513,32 +470,19 @@ module BasicTest
     #end
 
     def test_to_h
-      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
+      m = TestMessage.new(
+        :optional_bool => true,
+        :optional_double => -10.100001,
+        :optional_string => 'foo',
+        :repeated_string => ['bar1', 'bar2'],
+        :repeated_msg => [TestMessage2.new(:foo => 100)]
+      )
       expected_result = {
         :optional_bool=>true,
-        :optional_bytes=>"",
         :optional_double=>-10.100001,
-        :optional_enum=>:Default,
-        :optional_float=>0.0,
-        :optional_int32=>0,
-        :optional_int64=>0,
-        :optional_msg=>nil,
-        :optional_msg2=>nil,
-        :optional_proto2_submessage=>nil,
         :optional_string=>"foo",
-        :optional_uint32=>0,
-        :optional_uint64=>0,
-        :repeated_bool=>[],
-        :repeated_bytes=>[],
-        :repeated_double=>[],
-        :repeated_enum=>[],
-        :repeated_float=>[],
-        :repeated_int32=>[],
-        :repeated_int64=>[],
-        :repeated_msg=>[{:foo => 100}],
         :repeated_string=>["bar1", "bar2"],
-        :repeated_uint32=>[],
-        :repeated_uint64=>[]
+        :repeated_msg=>[{:foo => 100}],
       }
       assert_equal expected_result, m.to_h
 
@@ -609,13 +553,11 @@ module BasicTest
     def test_file_descriptor
       file_descriptor = TestMessage.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test.proto", file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
+      assert_equal "basic_test.proto", file_descriptor.name
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
-      assert_equal "tests/basic_test.proto", file_descriptor.name
-      assert_equal :proto3, file_descriptor.syntax
+      assert_equal "basic_test.proto", file_descriptor.name
     end
 
     def test_map_freeze
@@ -695,20 +637,196 @@ module BasicTest
         msg.map_string_int32_as_value = :boom
       end
     end
-  end
 
-  def test_oneof_fields_respond_to? # regression test for issue 9202
-    msg = proto_module::OneofMessage.new
-    # `has_` prefix + "?" suffix actions should work for oneofs fields and members.
-    assert msg.has_my_oneof?
-    assert msg.respond_to? :has_my_oneof?
-    assert_respond_to msg, :has_a?
-    refute msg.has_a?
-    assert_respond_to msg, :has_b?
-    refute msg.has_b?
-    assert_respond_to msg, :has_c?
-    refute msg.has_c?
-    assert_respond_to msg, :has_d?
-    refute msg.has_d?
+    def test_has_presence
+      assert_true TestMessage.descriptor.lookup("optional_int32").has_presence?
+      assert_false TestMessage.descriptor.lookup("repeated_int32").has_presence?
+      assert_false TestSingularFields.descriptor.lookup("singular_int32").has_presence?
+    end
+
+    def test_is_packed
+      assert_false TestMessage.descriptor.lookup("optional_int32").is_packed?
+      assert_true TestMessage.descriptor.lookup("repeated_int32").is_packed?
+    end
+
+    def test_file_descriptor_options
+      file_descriptor = TestMessage.descriptor.file_descriptor
+
+      assert_instance_of Google::Protobuf::FileOptions, file_descriptor.options
+      assert file_descriptor.options.deprecated
+    end
+
+    def test_field_descriptor_options
+      field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
+
+      assert_instance_of Google::Protobuf::FieldOptions, field_descriptor.options
+      assert field_descriptor.options.deprecated
+    end
+
+    def test_descriptor_options
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_instance_of Google::Protobuf::MessageOptions, descriptor.options
+      assert descriptor.options.deprecated
+    end
+
+    def test_enum_descriptor_options
+      enum_descriptor = TestDeprecatedEnum.descriptor
+
+      assert_instance_of Google::Protobuf::EnumOptions, enum_descriptor.options
+      assert enum_descriptor.options.deprecated
+    end
+
+    def test_oneof_descriptor_options
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
+      test_top_level_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.test_top_level_option'
+      assert_instance_of Google::Protobuf::FieldDescriptor, test_top_level_option
+      assert_equal "Custom option value", test_top_level_option.get(oneof_descriptor.options)
+    end
+
+    def test_nested_extension
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofOptions, oneof_descriptor.options
+      test_nested_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.TestDeprecatedMessage.test_nested_option'
+      assert_instance_of Google::Protobuf::FieldDescriptor, test_nested_option
+      assert_equal "Another custom option value", test_nested_option.get(oneof_descriptor.options)
+    end
+
+    def test_options_deep_freeze
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_raise FrozenError do
+        descriptor.options.uninterpreted_option.push \
+          Google::Protobuf::UninterpretedOption.new
+      end
+    end
+
+    def test_message_freeze
+      message = TestDeprecatedMessage.new
+      nested_message_2 = TestMessage2.new
+
+      message.map_string_msg["message"] = TestMessage2.new
+      message.repeated_msg.push(TestMessage2.new)
+
+      message.freeze
+
+      assert_raise FrozenError do
+        message.map_string_msg["message"].foo = nested_message_2
+      end
+
+      assert_raise FrozenError do
+        message.repeated_msg[0].foo = nested_message_2
+      end
+    end
+
+    def test_oneof_fields_respond_to? # regression test for issue 9202
+      msg = proto_module::OneofMessage.new
+      # `has_` prefix + "?" suffix actions should work for oneofs fields and members.
+      assert_false msg.has_my_oneof?
+      assert msg.respond_to? :has_my_oneof?
+      assert_respond_to msg, :has_a?
+      refute msg.has_a?
+      assert_respond_to msg, :has_b?
+      refute msg.has_b?
+      assert_respond_to msg, :has_c?
+      refute msg.has_c?
+      assert_respond_to msg, :has_d?
+      refute msg.has_d?
+    end
+
+    def test_string_subclass
+      str = "hello"
+      myString = Class.new(String)
+
+      m = proto_module::TestMessage.new(
+        optional_string: myString.new(str),
+      )
+
+      assert_equal str, m.optional_string
+    end
+
+    def test_proto3_explicit_presence
+      descriptor = TestMessage.descriptor.lookup("optional_int32")
+      assert_true descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_implicit_presence
+      descriptor = TestSingularFields.descriptor.lookup("singular_int32")
+      assert_false descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_packed_encoding
+      descriptor = TestMessage.descriptor.lookup("repeated_int32")
+      assert_true descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_expanded_encoding
+      descriptor = TestUnpackedMessage.descriptor.lookup("repeated_int32")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_proto3_expanded_encoding_unpackable
+      descriptor = TestMessage.descriptor.lookup("optional_msg")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_explicit_presence
+      descriptor = TestFeaturesMessage.descriptor.lookup("explicit")
+      assert_true descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_implicit_presence
+      descriptor = TestFeaturesMessage.descriptor.lookup("implicit")
+      assert_false descriptor.has_presence?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_required_presence
+      descriptor = TestFeaturesMessage.descriptor.lookup("legacy_required")
+      assert_equal :required, descriptor.label
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_packed_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("packed")
+      assert_true descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_expanded_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("expanded")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_editions_expanded_encoding_unpackable
+      descriptor = TestFeaturesMessage.descriptor.lookup("unpackable")
+      assert_false descriptor.is_packed?
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_delimited_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("delimited")
+      assert_equal :group, descriptor.type
+      assert_false descriptor.options.has_features?
+    end
+
+    def test_field_length_prefixed_encoding
+      descriptor = TestFeaturesMessage.descriptor.lookup("length_prefixed")
+      assert_equal :message, descriptor.type
+      assert_false descriptor.options.has_features?
+    end
+
   end
 end

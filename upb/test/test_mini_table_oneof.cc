@@ -9,9 +9,7 @@
 #include "google/protobuf/test_messages_proto2.upb_minitable.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-
-// Must be last.
-#include "upb/port/def.inc"
+#include "upb/test/proto3_test.upb.h"
 
 TEST(MiniTableOneofTest, OneOfIteratorProto2) {
   constexpr int oneof_first_field_number = 111;
@@ -25,8 +23,17 @@ TEST(MiniTableOneofTest, OneOfIteratorProto2) {
   const upb_MiniTableField* ptr = upb_MiniTable_GetOneof(google_protobuf_table, field);
   int field_num = oneof_first_field_number;
   do {
-    EXPECT_EQ(ptr->number, field_num++);
+    EXPECT_EQ(upb_MiniTableField_Number(ptr), field_num++);
   } while (upb_MiniTable_NextOneofField(google_protobuf_table, &ptr));
+}
+
+TEST(MiniTableOneofTest, InitialFieldOneOf) {
+  const upb_MiniTable* table = &upb__test__TestOneOfInitialField_msg_init;
+  const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(table, 1);
+  ASSERT_TRUE(field != nullptr);
+
+  const upb_MiniTableField* ptr = upb_MiniTable_GetOneof(table, field);
+  EXPECT_TRUE(ptr == field);
 }
 
 TEST(MiniTableOneofTest, InitialFieldNotOneOf) {

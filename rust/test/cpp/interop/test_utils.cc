@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <cstddef>
+#include <cstdint>
 
 #include "absl/strings/string_view.h"
 #include "rust/cpp_kernel/cpp_api.h"
@@ -22,9 +23,13 @@ extern "C" google::protobuf::rust_internal::SerializedData SerializeTestAllTypes
   return google::protobuf::rust_internal::SerializeMsg(msg);
 }
 
+extern "C" void DeleteTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
+  delete msg;
+}
+
 extern "C" void* DeserializeTestAllTypes(const void* data, size_t size) {
   auto* proto = new protobuf_unittest::TestAllTypes;
-  proto->ParseFromArray(data, size);
+  proto->ParseFromArray(data, static_cast<int>(size));
   return proto;
 }
 
@@ -39,4 +44,11 @@ extern "C" google::protobuf::rust_internal::PtrAndLen GetBytesExtension(
   absl::string_view bytes =
       proto->GetExtension(protobuf_unittest::optional_bytes_extension);
   return {bytes.data(), bytes.size()};
+}
+
+extern "C" int32_t TakeOwnershipAndGetOptionalInt32(
+    protobuf_unittest::TestAllTypes* msg) {
+  int32_t i = msg->optional_int32();
+  delete msg;
+  return i;
 }

@@ -183,6 +183,11 @@ struct MapTestPeer {
   }
 
   template <typename T>
+  static size_t NumBuckets(T& map) {
+    return map.num_buckets_;
+  }
+
+  template <typename T>
   static size_t BucketNumber(T& map, typename T::key_type key) {
     return map.BucketNumber(key);
   }
@@ -198,6 +203,10 @@ struct MapTestPeer {
       if (TableEntryIsTree(map.table_[i])) return true;
     }
     return false;
+  }
+
+  static int CalculateHiCutoff(int num_buckets) {
+    return Map<int, int>::CalculateHiCutoff(num_buckets);
   }
 };
 
@@ -1243,7 +1252,7 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
     {
       // Use local_arena to allocate lhs to trigger use-after-free error.
       Arena local_arena;
-      auto* lhs = Arena::CreateMessage<TestMap>(&local_arena);
+      auto* lhs = Arena::Create<TestMap>(&local_arena);
       const auto* reflection = lhs->GetReflection();
       std::vector<const FieldDescriptor*> fields;
 
@@ -1276,7 +1285,7 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
 }
 
 TEST_F(MapImplTest, SpaceUsed) {
-  constexpr size_t kMinCap = 8;
+  constexpr size_t kMinCap = 16 / sizeof(void*);
 
   Map<int32_t, int32_t> m;
   // An newly constructed map should have no space used.
@@ -1286,15 +1295,11 @@ TEST_F(MapImplTest, SpaceUsed) {
     std::pair<int32_t, int32_t> kv;
   };
 
-  size_t capacity = kMinCap;
   for (int i = 0; i < 100; ++i) {
     m[i];
-    static constexpr double kMaxLoadFactor = .75;
-    if (m.size() >= capacity * kMaxLoadFactor) {
-      capacity *= 2;
-    }
     EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-              sizeof(void*) * capacity + m.size() * sizeof(IntIntNode));
+              sizeof(void*) * MapTestPeer::NumBuckets(m) +
+                  m.size() * sizeof(IntIntNode));
   }
 
   // Test string, and non-scalar keys.
@@ -1360,10 +1365,9 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   const auto& cm = m;
 
   m.insert({"ABC", 1});
-
-  const auto abc_it = m.begin();
-
   m.insert({"DEF", 2});
+
+  const auto abc_it = m.find("ABC");
 
   using testing::Pair;
   using testing::UnorderedElementsAre;
@@ -2322,7 +2326,7 @@ class MyMapEntry
  public:
   constexpr MyMapEntry() {}
   using MyMapEntry::MapEntry::MapEntry;
-  Metadata GetMetadata() const override { ABSL_CHECK(false); }
+  const ClassData* GetClassData() const override { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
   static bool ValidateValue(void*) { return true; }
 };
@@ -2725,6 +2729,30 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
   EXPECT_EQ(1, to.known_map_field().size());
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
+}
+
+TEST(GeneratedMapFieldTest, Proto2UknownEnumThrowsAwayUnknownData) {
+  UNITTEST::TestEnumMap to;
+  // 101: {
+  //   1: 2
+  //   2: 3     # this is an unknown enum. It should be kept.
+  //   3: 120   # this is an extra field that will be discarded.
+  // }
+  constexpr absl::string_view data = "\252\006\006\010\002\020\003\030x";
+  // Same as above, but without the extra field.
+  constexpr absl::string_view expected = "\252\006\004\010\002\020\003";
+  ASSERT_TRUE(to.ParseFromString(data));
+  EXPECT_EQ(expected, to.SerializeAsString());
+
+  // Test the same behavior with the reflection based parser.
+  to.Clear();
+  const char* ptr;
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                             false, &ptr, data);
+  ptr = WireFormat::_InternalParse(&to, ptr, &ctx);
+  ASSERT_TRUE(ptr);
+  ASSERT_TRUE(ctx.EndedAtLimit());
+  EXPECT_EQ(expected, to.SerializeAsString());
 }
 
 TEST(GeneratedMapFieldTest, Proto2UnknownEnumAllKeyTypesWork) {
@@ -4076,12 +4104,11 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
     // NoHeapChecker no_heap;
 
     UNITTEST::TestArenaMap* from =
-        Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
+        Arena::Create<UNITTEST::TestArenaMap>(&arena);
     MapTestUtil::SetArenaMapFields(from);
     from->SerializeToString(&data);
 
-    UNITTEST::TestArenaMap* to =
-        Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
+    UNITTEST::TestArenaMap* to = Arena::Create<UNITTEST::TestArenaMap>(&arena);
     to->ParseFromString(data);
     MapTestUtil::ExpectArenaMapFieldsSet(*to);
   }
@@ -4104,10 +4131,8 @@ TEST(ArenaTest, ReflectionInTextFormat) {
   TextFormat::Printer printer;
   TextFormat::Parser parser;
 
-  UNITTEST::TestArenaMap* from =
-      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
-  UNITTEST::TestArenaMap* to =
-      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
+  UNITTEST::TestArenaMap* from = Arena::Create<UNITTEST::TestArenaMap>(&arena);
+  UNITTEST::TestArenaMap* to = Arena::Create<UNITTEST::TestArenaMap>(&arena);
 
   MapTestUtil::SetArenaMapFields(from);
   printer.PrintToString(*from, &data);
@@ -4120,7 +4145,7 @@ TEST(ArenaTest, ReflectionInTextFormat) {
 TEST(ArenaTest, StringMapNoLeak) {
   Arena arena;
   UNITTEST::TestArenaMap* message =
-      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
+      Arena::Create<UNITTEST::TestArenaMap>(&arena);
   std::string data;
   // String with length less than 16 will not be allocated from heap.
   int original_capacity = data.capacity();
@@ -4150,7 +4175,7 @@ TEST(ArenaTest, IsInitialized) {
   Arena arena(options);
 
   UNITTEST::TestArenaMap* message =
-      Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
+      Arena::Create<UNITTEST::TestArenaMap>(&arena);
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 

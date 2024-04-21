@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:pb_runtime/ffi/bytes.dart';
 import 'package:pb_runtime/pb_runtime.dart' as pb;
 import 'package:third_party.protobuf/test_messages_proto2.upb.dart';
 import 'package:third_party.protobuf/test_messages_proto3.upb.dart';
@@ -50,8 +49,8 @@ ConformanceResponse doTest(ConformanceRequest request) {
     case ConformanceRequest_payload.protobufPayload:
       try {
         testMessage = isProto3
-            ? TestAllTypesProto3.fromBinary(request.protobufPayload.data)
-            : TestAllTypesProto2.fromBinary(request.protobufPayload.data);
+            ? TestAllTypesProto3.fromBuffer(request.protobufPayload)
+            : TestAllTypesProto2.fromBuffer(request.protobufPayload);
       } catch (e) {
         final parseErrorResponse = ConformanceResponse();
         parseErrorResponse.parseError = '$e';
@@ -66,8 +65,7 @@ ConformanceResponse doTest(ConformanceRequest request) {
   switch (request.requestedOutputFormat) {
     case WireFormat.PROTOBUF:
       try {
-        response.protobufPayload =
-            Bytes(pb.GeneratedMessage.toBinary(testMessage));
+        response.protobufPayload = pb.GeneratedMessage.toBuffer(testMessage);
       } catch (e) {
         response.serializeError = '$e';
       }
@@ -86,9 +84,9 @@ Future<bool> doTestIo() async {
   if (serializedMsg == null) {
     throw 'Unexpected EOF from test program.';
   }
-  final request = ConformanceRequest.fromBinary(serializedMsg);
+  final request = ConformanceRequest.fromBuffer(serializedMsg);
   final response = doTest(request);
-  final serializedOutput = pb.GeneratedMessage.toBinary(response);
+  final serializedOutput = pb.GeneratedMessage.toBuffer(response);
   writeLittleEndianIntToStdout(serializedOutput.length);
   stdout.add(serializedOutput);
   await stdout.flush();

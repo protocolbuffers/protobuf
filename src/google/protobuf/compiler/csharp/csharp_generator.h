@@ -35,6 +35,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
     GeneratorContext* generator_context,
     std::string* error) const override;
   uint64_t GetSupportedFeatures() const override;
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  using CodeGenerator::GetEdition;
 };
 
 }  // namespace csharp
