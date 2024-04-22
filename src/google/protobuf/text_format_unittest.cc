@@ -70,6 +70,9 @@ class UnsetFieldsMetadataTextFormatTestUtil {
         message, *message.GetDescriptor()->FindFieldByName(field));
   }
 };
+
+extern std::atomic<bool> enable_abslstringify_safe_format;
+extern std::atomic<bool> enable_debugstring_safe_format;
 }  // namespace internal
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
