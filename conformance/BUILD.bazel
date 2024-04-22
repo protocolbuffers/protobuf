@@ -339,6 +339,7 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//:test_messages_proto3_editions_php_proto",
     ],
 )
 

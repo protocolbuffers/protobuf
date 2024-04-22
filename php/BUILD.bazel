@@ -68,6 +68,7 @@ conformance_test(
         "@platforms//os:osx": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
+    maximum_edition = "2023",
     testee = "//conformance:conformance_php",
     text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )
@@ -79,6 +80,7 @@ conformance_test(
         "@platforms//os:osx": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    maximum_edition = "2023",
     testee = "//conformance:conformance_php_c",
     text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )

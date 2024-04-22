@@ -9,7 +9,8 @@ if [[ -z "${PROTOC}" ]]; then
 fi
 if [ ! -f $PROTOC ]; then
   ${BAZEL:-bazel} $BAZEL_STARTUP_FLAGS build -c opt //:protoc $BAZEL_FLAGS
-  PROTOC=$(pwd)/bazel-bin/protoc
+  PROTOC="$(pwd)/bazel-bin/protoc --experimental_editions"
+  echo "USING LOCAL PROTOC ($PROTOC)"
 fi
 
 if [[ -d php/tmp && -z $(find php/tests/proto $PROTOC -newer php/tmp) ]]; then
