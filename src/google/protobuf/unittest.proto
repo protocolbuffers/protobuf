@@ -198,6 +198,7 @@ enum ForeignEnum {
   FOREIGN_BAR = 5;
   FOREIGN_BAZ = 6;
   FOREIGN_BAX = 32;  // (1 << 32) to generate a 64b bitmask would be incorrect.
+  FOREIGN_LARGE = 123456;  // Large enough to escape the Boxed Integer cache.
 }
 
 message TestReservedFields {

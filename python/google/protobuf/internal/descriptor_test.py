@@ -884,6 +884,10 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         name: 'FOREIGN_BAX'
         number: 32
       >
+      value: <
+        name: 'FOREIGN_LARGE'
+        number: 123456
+      >
       """
 
     self._InternalTestCopyToProto(
