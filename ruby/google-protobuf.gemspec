@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
                                    BUILD\.bazel|extconf\.rb|wrap_memcpy\.c)$/x
       end
     s.extensions = ["ext/google/protobuf_c/Rakefile"]
-    s.add_dependency "ffi", "~>1"
+    s.add_dependency "ffi", "~>1.17.0.rc2"
     s.add_dependency "ffi-compiler", "~>1"
   else
     s.files     += Dir.glob('ext/**/*').reject do |file|
