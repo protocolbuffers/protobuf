@@ -39,7 +39,7 @@ Gem::Specification.new do |s|
   # more details:
   # https://github.com/protocolbuffers/protobuf/pull/15203
   s.add_dependency "rake", ">= 13"
-  s.add_development_dependency "ffi", "~>1"
+  s.add_development_dependency "ffi", "~>1.17.0.rc2"
   s.add_development_dependency "ffi-compiler", "~>1"
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
