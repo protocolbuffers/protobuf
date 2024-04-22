@@ -114,7 +114,7 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   repeated string repeated_cord = 55 [ctype = CORD];
 
-  repeated NestedMessage repeated_lazy_message = 57 ;
+  repeated NestedMessage repeated_lazy_message = 57;
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
@@ -178,6 +178,7 @@ enum ForeignEnum {
   FOREIGN_FOO = 4;
   FOREIGN_BAR = 5;
   FOREIGN_BAZ = 6;
+  FOREIGN_LARGE = 123456;
 }
 
 // TestEmptyMessage is used to test behavior of unknown fields.
