@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   end
   s.required_ruby_version = '>= 3.0'
   # bigdecimal must be used as a non-built in gem as of ruby-3.4
-  s.add_dependency "bigdecimal"
+  s.add_dependency "bigdecimal" if RUBY_VERSION >= '3.4.0'
   # TODO: evaluate removing Rakefile and moving logic to extconf.rb, so that we
   # can remove this runtime dependency on rake. See the discussion here for
   # more details:
