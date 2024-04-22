@@ -686,13 +686,13 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
   printer->Print(
       variables_,
       "@SuppressWarnings(\"serial\")\n"
-      "private java.util.List<java.lang.Integer> $name$_;\n"
+      "private com.google.protobuf.Internal.IntList $name$_;\n"
       "private static final "
-      "com.google.protobuf.Internal.ListAdapter.Converter<\n"
-      "    java.lang.Integer, $type$> $name$_converter_ =\n"
-      "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
-      "            java.lang.Integer, $type$>() {\n"
-      "          public $type$ convert(java.lang.Integer from) {\n"
+      "com.google.protobuf.Internal.IntListAdapter.IntConverter<\n"
+      "    $type$> $name$_converter_ =\n"
+      "        new com.google.protobuf.Internal.IntListAdapter.IntConverter<\n"
+      "            $type$>() {\n"
+      "          public $type$ convert(int from) {\n"
       "            $type$ result = $type$.forNumber(from);\n"
       "            return result == null ? $unknown$ : result;\n"
       "          }\n"
@@ -700,14 +700,13 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                context_->options());
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public java.util.List<$type$> "
-      "${$get$capitalized_name$List$}$() {\n"
-      "  return new com.google.protobuf.Internal.ListAdapter<\n"
-      "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
-      "}\n");
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public java.util.List<$type$> "
+                 "${$get$capitalized_name$List$}$() {\n"
+                 "  return new com.google.protobuf.Internal.IntListAdapter<\n"
+                 "      $type$>($name$_, $name$_converter_);\n"
+                 "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
                                context_->options());
@@ -724,7 +723,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
       variables_,
       "@java.lang.Override\n"
       "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
-      "  return $name$_converter_.convert($name$_.get(index));\n"
+      "  return $name$_converter_.convert($name$_.getInt(index));\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
   if (SupportUnknownEnumValue(descriptor_)) {
@@ -743,7 +742,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
                    "@java.lang.Override\n"
                    "$deprecation$public int "
                    "${$get$capitalized_name$Value$}$(int index) {\n"
-                   "  return $name$_.get(index);\n"
+                   "  return $name$_.getInt(index);\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -759,19 +758,18 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       variables_,
       // One field is the list and the other field keeps track of whether the
       // list is immutable. If it's immutable, the invariant is that it must
-      // either an instance of Collections.emptyList() or it's an ArrayList
-      // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
-      // a reference to the underlying ArrayList. This invariant allows us to
-      // share instances of lists between protocol buffers avoiding expensive
-      // memory allocations. Note, immutable is a strong guarantee here -- not
-      // just that the list cannot be modified via the reference but that the
-      // list can never be modified.
-      "private java.util.List<java.lang.Integer> $name$_ =\n"
-      "  java.util.Collections.emptyList();\n"
+      // either an instance of emptyIntList() or it's an immutable IntArrayList
+      // and nobody else has a reference to the underlying ArrayList. This
+      // invariant allows us to share instances of lists between protocol
+      // buffers avoiding expensive memory allocations. Note, immutable is a
+      // strong guarantee here -- not just that the list cannot be modified via
+      // the reference but that the list can never be modified.
+      "private com.google.protobuf.Internal.IntList $name$_ =\n"
+      "  emptyIntList();\n"
 
       "private void ensure$capitalized_name$IsMutable() {\n"
       "  if (!$get_mutable_bit_builder$) {\n"
-      "    $name$_ = new java.util.ArrayList<java.lang.Integer>($name$_);\n"
+      "    $name$_ = makeMutableCopy($name$_);\n"
       "    $set_mutable_bit_builder$;\n"
       "  }\n"
       "}\n");
@@ -786,8 +784,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       //   immutable.
       "$deprecation$public java.util.List<$type$> "
       "${$get$capitalized_name$List$}$() {\n"
-      "  return new com.google.protobuf.Internal.ListAdapter<\n"
-      "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
+      "  return new com.google.protobuf.Internal.IntListAdapter<\n"
+      "      $type$>($name$_, $name$_converter_);\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
@@ -803,7 +801,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
-      "  return $name$_converter_.convert($name$_.get(index));\n"
+      "  return $name$_converter_.convert($name$_.getInt(index));\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
@@ -816,7 +814,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "    throw new NullPointerException();\n"
                  "  }\n"
                  "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.set(index, value.getNumber());\n"
+                 "  $name$_.setInt(index, value.getNumber());\n"
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
@@ -831,7 +829,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "    throw new NullPointerException();\n"
                  "  }\n"
                  "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.add(value.getNumber());\n"
+                 "  $name$_.addInt(value.getNumber());\n"
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
@@ -844,7 +842,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "    java.lang.Iterable<? extends $type$> values) {\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  for ($type$ value : values) {\n"
-                 "    $name$_.add(value.getNumber());\n"
+                 "    $name$_.addInt(value.getNumber());\n"
                  "  }\n"
                  "  onChanged();\n"
                  "  return this;\n"
@@ -856,7 +854,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $name$_ = java.util.Collections.emptyList();\n"
+      "  $name$_ = emptyIntList();\n"
       "  $clear_mutable_bit_builder$;\n"
       "  onChanged();\n"
       "  return this;\n"
@@ -877,7 +875,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "$deprecation$public int "
                    "${$get$capitalized_name$Value$}$(int index) {\n"
-                   "  return $name$_.get(index);\n"
+                   "  return $name$_.getInt(index);\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldEnumValueAccessorDocComment(
@@ -888,7 +886,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "$deprecation$public Builder ${$set$capitalized_name$Value$}$(\n"
         "    int index, int value) {\n"
         "  ensure$capitalized_name$IsMutable();\n"
-        "  $name$_.set(index, value);\n"
+        "  $name$_.setInt(index, value);\n"
         "  onChanged();\n"
         "  return this;\n"
         "}\n");
@@ -900,7 +898,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "$deprecation$public Builder "
                    "${$add$capitalized_name$Value$}$(int value) {\n"
                    "  ensure$capitalized_name$IsMutable();\n"
-                   "  $name$_.add(value);\n"
+                   "  $name$_.addInt(value);\n"
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
@@ -914,7 +912,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "    java.lang.Iterable<java.lang.Integer> values) {\n"
         "  ensure$capitalized_name$IsMutable();\n"
         "  for (int value : values) {\n"
-        "    $name$_.add(value);\n"
+        "    $name$_.addInt(value);\n"
         "  }\n"
         "  onChanged();\n"
         "  return this;\n"
@@ -930,13 +928,13 @@ void RepeatedImmutableEnumFieldGenerator::
 
 void RepeatedImmutableEnumFieldGenerator::GenerateInitializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = java.util.Collections.emptyList();\n");
+  printer->Print(variables_, "$name$_ = emptyIntList();\n");
 }
 
 void RepeatedImmutableEnumFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "$name$_ = java.util.Collections.emptyList();\n"
+                 "$name$_ = emptyIntList();\n"
                  "$clear_mutable_bit_builder$;\n");
 }
 
@@ -964,13 +962,12 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   // The code below ensures that the result has an immutable list. If our
   // list is immutable, we can just reuse it. If not, we make it immutable.
-  printer->Print(
-      variables_,
-      "if ($get_mutable_bit_builder$) {\n"
-      "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
-      "  $clear_mutable_bit_builder$;\n"
-      "}\n"
-      "result.$name$_ = $name$_;\n");
+  printer->Print(variables_,
+                 "if ($get_mutable_bit_builder$) {\n"
+                 "  $name$_.makeImmutable();\n"
+                 "  $clear_mutable_bit_builder$;\n"
+                 "}\n"
+                 "result.$name$_ = $name$_;\n");
 }
 
 void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
@@ -980,7 +977,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
     printer->Print(variables_,
                    "int tmpRaw = input.readEnum();\n"
                    "ensure$capitalized_name$IsMutable();\n"
-                   "$name$_.add(tmpRaw);\n");
+                   "$name$_.addInt(tmpRaw);\n");
   } else {
     printer->Print(variables_,
                    "int tmpRaw = input.readEnum();\n"
@@ -990,7 +987,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
                    "  mergeUnknownVarintField($number$, tmpRaw);\n"
                    "} else {\n"
                    "  ensure$capitalized_name$IsMutable();\n"
-                   "  $name$_.add(tmpRaw);\n"
+                   "  $name$_.addInt(tmpRaw);\n"
                    "}\n");
   }
 }
@@ -1021,12 +1018,12 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializationCode(
                    "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
                    "}\n"
                    "for (int i = 0; i < $name$_.size(); i++) {\n"
-                   "  output.writeEnumNoTag($name$_.get(i));\n"
+                   "  output.writeEnumNoTag($name$_.getInt(i));\n"
                    "}\n");
   } else {
     printer->Print(variables_,
                    "for (int i = 0; i < $name$_.size(); i++) {\n"
-                   "  output.writeEnum($number$, $name$_.get(i));\n"
+                   "  output.writeEnum($number$, $name$_.getInt(i));\n"
                    "}\n");
   }
 }
@@ -1041,7 +1038,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializedSizeCode(
   printer->Print(variables_,
                  "for (int i = 0; i < $name$_.size(); i++) {\n"
                  "  dataSize += com.google.protobuf.CodedOutputStream\n"
-                 "    .computeEnumSizeNoTag($name$_.get(i));\n"
+                 "    .computeEnumSizeNoTag($name$_.getInt(i));\n"
                  "}\n");
   printer->Print("size += dataSize;\n");
   if (descriptor_->is_packed()) {
