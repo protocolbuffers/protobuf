@@ -12,9 +12,18 @@ require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php");
-
+require_once("Protobuf_test_messages/Editions/Proto3/EnumOnlyProto3/PBBool.php");
+require_once("Protobuf_test_messages/Editions/Proto3/EnumOnlyProto3.php");
+require_once("Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/NestedMessage.php");
+require_once("Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/NestedEnum.php");
+require_once("Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/AliasedEnum.php");
+require_once("Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3.php");
+require_once("Protobuf_test_messages/Editions/Proto3/NullHypothesisProto3.php");
+require_once("Protobuf_test_messages/Editions/Proto3/ForeignEnum.php");
+require_once("Protobuf_test_messages/Editions/Proto3/ForeignMessage.php");
 require_once("GPBMetadata/Conformance.php");
 require_once("GPBMetadata/TestMessagesProto3.php");
+require_once("GPBMetadata/TestMessagesProto3Editions.php");
 
 use  \Conformance\TestCategory;
 use  \Conformance\WireFormat;
@@ -27,57 +36,89 @@ $test_count = 0;
 
 function doTest($request)
 {
-    $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
-    $response = new \Conformance\ConformanceResponse();
-    if ($request->getPayload() == "protobuf_payload") {
-      if ($request->getMessageType() == "conformance.FailureSet") {
-        $response->setProtobufPayload("");
-        return $response;
-      } elseif ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
-        try {
-          $test_message->mergeFromString($request->getProtobufPayload());
-        } catch (Exception $e) {
-          $response->setParseError($e->getMessage());
+  $response = new \Conformance\ConformanceResponse();
+
+  switch ($request->getPayload()) {
+    case "protobuf_payload":
+      switch ($request->getMessageType()) {
+        case "protobuf_test_messages.proto3.TestAllTypesProto3":
+          $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
+          break;
+        case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
+          $test_message = new \Protobuf_test_messages\Editions\Proto3\TestAllTypesProto3();
+          break;
+        case "conformance.FailureSet":
+          $response->setProtobufPayload("");
           return $response;
-        }
-      } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
-        $response->setSkipped("PHP doesn't support proto2");
-        return $response;
-      } else {
-        trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
+        case "protobuf_test_messages.proto2.TestAllTypesProto2":
+        case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
+          $response->setSkipped("PHP doesn't support proto2");
+          return $response;
+        case "protobuf_test_messages.editions.TestAllTypesEdition2023":
+          $response->setSkipped("PHP doesn't support editions-specific features yet");
+          return $response;
+        case "":
+          trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
+        default:
+          trigger_error(
+            sprintf("Protobuf request doesn't support %s message type", $request->getMessageType()),
+            E_USER_ERROR
+          );
       }
-    } elseif ($request->getPayload() == "json_payload") {
+
+      try {
+        $test_message->mergeFromString($request->getProtobufPayload());
+      } catch (Exception $e) {
+        $response->setParseError($e->getMessage());
+        return $response;
+      }
+      break;
+    case "json_payload":
+      switch ($request->getMessageType()) {
+        case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
+          $test_message = new \Protobuf_test_messages\Editions\Proto3\TestAllTypesProto3();
+          break;
+        case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
+          $response->setSkipped("PHP doesn't support proto2");
+          return $response;
+        default:
+          $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
+      }
+
       $ignore_json_unknown =
           ($request->getTestCategory() ==
               TestCategory::JSON_IGNORE_UNKNOWN_PARSING_TEST);
       try {
           $test_message->mergeFromJsonString($request->getJsonPayload(),
-                                             $ignore_json_unknown);
+                                            $ignore_json_unknown);
       } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
       }
-	} elseif ($request->getPayload() == "text_payload") {
-		$response->setSkipped("PHP doesn't support text format yet");
-        return $response;
-	} else {
+      break;
+	  case "text_payload":
+		  $response->setSkipped("PHP doesn't support text format yet");
+      return $response;
+	  default:
       trigger_error("Request didn't have payload.", E_USER_ERROR);
-    }
+  }
 
-    if ($request->getRequestedOutputFormat() == WireFormat::UNSPECIFIED) {
+  switch ($request->getRequestedOutputFormat()) {
+    case WireFormat::UNSPECIFIED:
       trigger_error("Unspecified output format.", E_USER_ERROR);
-    } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
+    case WireFormat::PROTOBUF:
       $response->setProtobufPayload($test_message->serializeToString());
-    } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
+      break;
+    case WireFormat::JSON:
       try {
-          $response->setJsonPayload($test_message->serializeToJsonString());
+        $response->setJsonPayload($test_message->serializeToJsonString());
       } catch (Exception $e) {
-          $response->setSerializeError($e->getMessage());
-          return $response;
+        $response->setSerializeError($e->getMessage());
+        return $response;
       }
-    }
+  }
 
-    return $response;
+  return $response;
 }
 
 function doTestIO()

@@ -9,6 +9,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
+load("//python:internal.bzl", "internal_copy_files")
 
 licenses(["notice"])
 
@@ -614,6 +615,37 @@ internal_php_proto_library(
         "//conformance:__pkg__",
         "//php:__subpackages__",
     ],
+)
+internal_copy_files(
+    name = "copied_conformance_editions_php_test_files",
+    testonly = 1,
+    srcs = [
+        "//editions:golden/test_messages_proto3_editions.proto",
+    ],
+    strip_prefix = "editions/golden/",
+)
+internal_php_proto_library(
+    name = "test_messages_proto3_editions_php_proto",
+    testonly = 1,
+    srcs = [":copied_conformance_editions_php_test_files"],
+    outs = [
+        "GPBMetadata/TestMessagesProto3Editions.php",
+        "Protobuf_test_messages/Editions/Proto3/EnumOnlyProto3/PBBool.php",
+        "Protobuf_test_messages/Editions/Proto3/EnumOnlyProto3.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/NestedMessage.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/NestedEnum.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/AliasedEnum.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3.php",
+        "Protobuf_test_messages/Editions/Proto3/NullHypothesisProto3.php",
+        "Protobuf_test_messages/Editions/Proto3/ForeignEnum.php",
+        "Protobuf_test_messages/Editions/Proto3/ForeignMessage.php",
+    ],
+    includes = [
+        ".",
+        "src"
+    ],
+    proto_deps = [":well_known_protos"],
+    visibility = ["//conformance:__pkg__"],
 )
 
 filegroup(

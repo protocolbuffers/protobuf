@@ -269,6 +269,7 @@ exports_files(
     visibility = [
         "//ruby:__pkg__",
         "//src/google/protobuf/csharp:__pkg__",
+        "//:__pkg__",
     ],
 )
 
