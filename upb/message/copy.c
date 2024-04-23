@@ -117,6 +117,7 @@ static upb_Map* upb_Message_Map_DeepClone(const upb_Map* map,
                                           const upb_MiniTableField* f,
                                           upb_Message* clone,
                                           upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(clone));
   const upb_MiniTable* map_entry_table =
       upb_MiniTable_MapEntrySubMessage(mini_table, f);
   UPB_ASSERT(map_entry_table);
@@ -160,6 +161,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
                                         const upb_MiniTable* mini_table,
                                         const upb_MiniTableField* field,
                                         upb_Message* clone, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(clone));
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(field);
   upb_Array* cloned_array = upb_Array_DeepClone(
       array, upb_MiniTableField_CType(field),
@@ -185,6 +187,7 @@ static bool upb_Clone_ExtensionValue(
 upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                const upb_MiniTable* mini_table,
                                upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(dst));
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
   memcpy(dst + 1, src + 1, mini_table->UPB_PRIVATE(size) - sizeof(upb_Message));
@@ -291,6 +294,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
 bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
                           const upb_MiniTable* mini_table, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(dst));
   upb_Message_Clear(dst, mini_table);
   return _upb_Message_Copy(dst, src, mini_table, arena) != NULL;
 }
@@ -307,6 +311,7 @@ upb_Message* upb_Message_DeepClone(const upb_Message* msg,
 // Performs a shallow copy. TODO: Extend to handle unknown fields.
 void upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
                              const upb_MiniTable* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(dst));
   memcpy(dst, src, m->UPB_PRIVATE(size));
 }
 
