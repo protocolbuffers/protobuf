@@ -804,6 +804,45 @@ static const char* HandleMessage(Message* msg, const char* ptr,
   return ptr;
 }
 
+static bool IsMismatchAllowed(const FieldDescriptor* field_descriptor,
+                              WireFormatLite::WireType wire_type, bool is_lazy,
+                              bool is_map) {
+  if (is_map) {
+    return false;
+  }
+  switch (field_descriptor->type()) {
+    case FieldDescriptor::TYPE_GROUP:
+      return wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED ||
+             wire_type == WireFormatLite::WIRETYPE_START_GROUP;
+    case FieldDescriptor::TYPE_MESSAGE:
+      return is_lazy ? wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED
+                     : wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED ||
+                           wire_type == WireFormatLite::WIRETYPE_START_GROUP;
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      return false;
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_BOOL:
+    case FieldDescriptor::TYPE_ENUM:
+      return wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_FLOAT:
+      return wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+    case FieldDescriptor::TYPE_DOUBLE:
+      return wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+    default:
+      return false;
+  }
+}
+
 const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
                                        internal::ParseContext* ctx) {
   const Descriptor* descriptor = msg->GetDescriptor();
@@ -852,6 +891,27 @@ const char* WireFormat::_InternalParseAndMergeField(
     return internal::UnknownFieldParse(
         tag, reflection->MutableUnknownFields(msg), ptr, ctx);
   }
+  auto zget_tag_wire_type = WireFormatLite::GetTagWireType(tag);
+  auto zwire_type_for_field_type = WireTypeForFieldType(field->type());
+  auto zfield_type = field->type();
+  (void)zget_tag_wire_type;
+  (void)zwire_type_for_field_type;
+  (void)zfield_type;
+  bool is_lazy = reflection->IsLazyField(field);
+  bool is_map = field->is_map();
+  if (WireFormatLite::GetTagWireType(tag) !=
+          WireTypeForFieldType(field->type()) &&
+      !IsMismatchAllowed(field, WireFormatLite::GetTagWireType(tag), is_lazy,
+                         is_map)) {
+    // mismatched wiretype;
+    return internal::UnknownFieldParse(
+        tag, reflection->MutableUnknownFields(msg), ptr, ctx);
+  }
+  if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+      field->type() == FieldDescriptor::TYPE_GROUP) {
+    return HandleMessage(msg, ptr, ctx, tag, reflection, field);
+  }
+
   if (WireFormatLite::GetTagWireType(tag) !=
       WireTypeForFieldType(field->type())) {
     if (field->is_packable() && WireFormatLite::GetTagWireType(tag) ==
