@@ -372,6 +372,36 @@ public final class Internal {
   }
 
   /**
+   * Provides an immutable view of {@code List<T>} around an {@code IntList}.
+   *
+   * <p>Protobuf internal. Used in protobuf generated code only.
+   */
+  public static class IntListAdapter<T> extends AbstractList<T> {
+    /** Convert individual elements of the List from int to T. */
+    public interface IntConverter<T> {
+      T convert(int from);
+    }
+
+    private final IntList fromList;
+    private final IntConverter<T> converter;
+
+    public IntListAdapter(IntList fromList, IntConverter<T> converter) {
+      this.fromList = fromList;
+      this.converter = converter;
+    }
+
+    @Override
+    public T get(int index) {
+      return converter.convert(fromList.getInt(index));
+    }
+
+    @Override
+    public int size() {
+      return fromList.size();
+    }
+  }
+
+  /**
    * Provides an immutable view of {@code List<T>} around a {@code List<F>}.
    *
    * <p>Protobuf internal. Used in protobuf generated code only.
