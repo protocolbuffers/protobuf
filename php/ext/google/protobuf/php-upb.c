@@ -12021,6 +12021,7 @@ const double kUpb_NaN = NAN;
 
 bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const size_t overhead = sizeof(upb_Message_Internal);
 
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
@@ -15423,6 +15424,7 @@ upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
                                             const upb_FieldDef* f,
                                             upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_FieldDef_IsSubMessage(f) || upb_FieldDef_IsRepeated(f));
   if (upb_FieldDef_HasPresence(f) && !upb_Message_HasFieldByDef(msg, f)) {
     // We need to skip the upb_Message_GetFieldByDef() call in this case.
@@ -15461,6 +15463,7 @@ make:
 
 bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
                                upb_MessageValue val, upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
 
   if (upb_MiniTableField_IsExtension(m_f)) {
@@ -15473,6 +15476,7 @@ bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
 }
 
 void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_MiniTableField* m_f = upb_FieldDef_MiniTable(f);
 
   if (upb_MiniTableField_IsExtension(m_f)) {
@@ -15483,6 +15487,7 @@ void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f) {
 }
 
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Clear(msg, upb_MessageDef_MiniTable(m));
 }
 
@@ -15544,6 +15549,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
 
 bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                  int depth) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
   upb_MessageValue val;
