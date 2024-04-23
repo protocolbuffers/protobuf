@@ -1623,12 +1623,21 @@ bool Parser::ParseOption(Message* options,
       case io::Tokenizer::TYPE_IDENTIFIER: {
         value_location.AddPath(
             UninterpretedOption::kIdentifierValueFieldNumber);
-        if (is_negative) {
-          RecordError("Invalid '-' symbol before identifier.");
-          return false;
-        }
         std::string value;
         DO(ConsumeIdentifier(&value, "Expected identifier."));
+        if (is_negative) {
+          if (value == "inf") {
+            uninterpreted_option->set_double_value(
+                -std::numeric_limits<double>::infinity());
+          } else if (value == "nan") {
+            uninterpreted_option->set_double_value(
+                std::numeric_limits<double>::quiet_NaN());
+          } else {
+            RecordError("Identifier after '-' symbol must be inf or nan.");
+            return false;
+          }
+          break;
+        }
         uninterpreted_option->set_identifier_value(value);
         break;
       }

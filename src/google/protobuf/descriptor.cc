@@ -9149,6 +9149,10 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         value = uninterpreted_option_->positive_int_value();
       } else if (uninterpreted_option_->has_negative_int_value()) {
         value = uninterpreted_option_->negative_int_value();
+      } else if (uninterpreted_option_->identifier_value() == "inf") {
+        value = std::numeric_limits<float>::infinity();
+      } else if (uninterpreted_option_->identifier_value() == "nan") {
+        value = std::numeric_limits<float>::quiet_NaN();
       } else {
         return AddValueError([&] {
           return absl::StrCat("Value must be number for float option \"",
@@ -9168,6 +9172,10 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         value = uninterpreted_option_->positive_int_value();
       } else if (uninterpreted_option_->has_negative_int_value()) {
         value = uninterpreted_option_->negative_int_value();
+      } else if (uninterpreted_option_->identifier_value() == "inf") {
+        value = std::numeric_limits<double>::infinity();
+      } else if (uninterpreted_option_->identifier_value() == "nan") {
+        value = std::numeric_limits<double>::quiet_NaN();
       } else {
         return AddValueError([&] {
           return absl::StrCat("Value must be number for double option \"",
