@@ -119,6 +119,7 @@ namespace Google.Protobuf.Reflection
                 DescriptorProto.FieldFieldNumber => (IReadOnlyList<DescriptorBase>)fieldsInDeclarationOrder,
                 DescriptorProto.NestedTypeFieldNumber => (IReadOnlyList<DescriptorBase>)NestedTypes,
                 DescriptorProto.EnumTypeFieldNumber => (IReadOnlyList<DescriptorBase>)EnumTypes,
+                DescriptorProto.OneofDeclFieldNumber => (IReadOnlyList<DescriptorBase>)Oneofs,
                 _ => null,
             };
 
