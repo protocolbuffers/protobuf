@@ -597,12 +597,12 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
       variables_,
       "private com.google.protobuf.Internal.IntList $name$_;\n"
       "private static final "
-      "com.google.protobuf.Internal.ListAdapter.Converter<\n"
-      "    java.lang.Integer, $type$> $name$_converter_ =\n"
-      "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
-      "            java.lang.Integer, $type$>() {\n"
+      "com.google.protobuf.Internal.IntListAdapter.IntConverter<\n"
+      "    $type$> $name$_converter_ =\n"
+      "        new com.google.protobuf.Internal.IntListAdapter.IntConverter<\n"
+      "            $type$>() {\n"
       "          @java.lang.Override\n"
-      "          public $type$ convert(java.lang.Integer from) {\n"
+      "          public $type$ convert(int from) {\n"
       "            $type$ result = $type$.forNumber(from);\n"
       "            return result == null ? $unknown$ : result;\n"
       "          }\n"
@@ -610,14 +610,13 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                context_->options());
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public java.util.List<$type$> "
-      "${$get$capitalized_name$List$}$() {\n"
-      "  return new com.google.protobuf.Internal.ListAdapter<\n"
-      "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
-      "}\n");
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public java.util.List<$type$> "
+                 "${$get$capitalized_name$List$}$() {\n"
+                 "  return new com.google.protobuf.Internal.IntListAdapter<\n"
+                 "      $type$>($name$_, $name$_converter_);\n"
+                 "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
                                context_->options());
