@@ -23,7 +23,6 @@
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
-#include "upb/message/message.h"
 #include "upb/reflection/message.h"
 #include "upb/text/encode.h"
 #include "upb/wire/decode.h"
@@ -69,7 +68,6 @@ typedef struct {
 } ctx;
 
 bool parse_proto(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_StringView proto =
       conformance_ConformanceRequest_protobuf_payload(c->request);
   if (upb_Decode(proto.data, proto.size, msg, upb_MessageDef_MiniTable(m), NULL,
@@ -119,7 +117,6 @@ void serialize_text(const upb_Message* msg, const upb_MessageDef* m,
 }
 
 bool parse_json(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_StringView json = conformance_ConformanceRequest_json_payload(c->request);
   upb_Status status;
   int opts = 0;
@@ -175,7 +172,6 @@ void serialize_json(const upb_Message* msg, const upb_MessageDef* m,
 }
 
 bool parse_input(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   switch (conformance_ConformanceRequest_payload_case(c->request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload:
       return parse_proto(msg, m, c);
