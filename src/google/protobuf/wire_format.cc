@@ -814,6 +814,10 @@ const char* WireFormat::_InternalParseAndMergeField(
     return internal::UnknownFieldParse(
         tag, reflection->MutableUnknownFields(msg), ptr, ctx);
   }
+  auto x = WireFormatLite::GetTagWireType(tag);
+  auto y = WireTypeForFieldType(field->type());
+  (void)x;
+  (void)y;
   if (WireFormatLite::GetTagWireType(tag) !=
       WireTypeForFieldType(field->type())) {
     if (field->is_packable() && WireFormatLite::GetTagWireType(tag) ==
