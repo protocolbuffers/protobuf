@@ -396,20 +396,25 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 ::size_t Struct::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Struct)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Struct)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // map<string, .google.protobuf.Value> fields = 1;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_fields_size());
-  for (const auto& entry : _internal_fields()) {
-    total_size += _pbi::MapEntryFuncs<std::string, ::google::protobuf::Value,
-                                   _pbi::WireFormatLite::TYPE_STRING,
-                                   _pbi::WireFormatLite::TYPE_MESSAGE>::ByteSizeLong(entry.first, entry.second);
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // map<string, .google.protobuf.Value> fields = 1;
+     {
+      total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_fields_size());
+      for (const auto& entry : _internal_fields()) {
+        total_size += _pbi::MapEntryFuncs<std::string, ::google::protobuf::Value,
+                                       _pbi::WireFormatLite::TYPE_STRING,
+                                       _pbi::WireFormatLite::TYPE_MESSAGE>::ByteSizeLong(entry.first, entry.second);
+      }
+    }
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
@@ -729,12 +734,12 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 ::size_t Value::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Value)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Value)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   switch (kind_case()) {
     // .google.protobuf.NullValue null_value = 1;
@@ -1002,18 +1007,23 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 ::size_t ListValue::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.ListValue)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ListValue)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // repeated .google.protobuf.Value values = 1;
-  total_size += 1UL * this->_internal_values_size();
-  for (const auto& msg : this->_internal_values()) {
-    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // repeated .google.protobuf.Value values = 1;
+     {
+      total_size += 1UL * this->_internal_values_size();
+      for (const auto& msg : this->_internal_values()) {
+        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      }
+    }
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }

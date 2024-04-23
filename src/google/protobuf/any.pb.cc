@@ -280,26 +280,27 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 ::size_t Any::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Any)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Any)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // string type_url = 1;
-  if (!this->_internal_type_url().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_type_url());
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // string type_url = 1;
+    if (!this->_internal_type_url().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_type_url());
+    }
+    // bytes value = 2;
+    if (!this->_internal_value().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
+                                      this->_internal_value());
+    }
   }
-
-  // bytes value = 2;
-  if (!this->_internal_value().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
-                                    this->_internal_value());
-  }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 

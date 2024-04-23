@@ -508,54 +508,65 @@ PROTOBUF_NOINLINE void Api::Clear() {
 }
 
 ::size_t Api::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Api)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Api)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // repeated .google.protobuf.Method methods = 2;
-  total_size += 1UL * this->_internal_methods_size();
-  for (const auto& msg : this->_internal_methods()) {
-    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // repeated .google.protobuf.Method methods = 2;
+     {
+      total_size += 1UL * this->_internal_methods_size();
+      for (const auto& msg : this->_internal_methods()) {
+        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      }
+    }
+    // repeated .google.protobuf.Option options = 3;
+     {
+      total_size += 1UL * this->_internal_options_size();
+      for (const auto& msg : this->_internal_options()) {
+        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      }
+    }
+    // repeated .google.protobuf.Mixin mixins = 6;
+     {
+      total_size += 1UL * this->_internal_mixins_size();
+      for (const auto& msg : this->_internal_mixins()) {
+        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      }
+    }
   }
-  // repeated .google.protobuf.Option options = 3;
-  total_size += 1UL * this->_internal_options_size();
-  for (const auto& msg : this->_internal_options()) {
-    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+   {
+    // string name = 1;
+    if (!this->_internal_name().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_name());
+    }
+    // string version = 4;
+    if (!this->_internal_version().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_version());
+    }
   }
-  // repeated .google.protobuf.Mixin mixins = 6;
-  total_size += 1UL * this->_internal_mixins_size();
-  for (const auto& msg : this->_internal_mixins()) {
-    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+   {
+    // .google.protobuf.SourceContext source_context = 5;
+    cached_has_bits = _impl_._has_bits_[0];
+    if (cached_has_bits & 0x00000001u) {
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
+    }
   }
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_name());
+   {
+    // .google.protobuf.Syntax syntax = 7;
+    if (this->_internal_syntax() != 0) {
+      total_size += 1 +
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
+    }
   }
-
-  // string version = 4;
-  if (!this->_internal_version().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_version());
-  }
-
-  // .google.protobuf.SourceContext source_context = 5;
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    total_size +=
-        1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
-  }
-
-  // .google.protobuf.Syntax syntax = 7;
-  if (this->_internal_syntax() != 0) {
-    total_size += 1 +
-                  ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
-  }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -888,53 +899,54 @@ PROTOBUF_NOINLINE void Method::Clear() {
 }
 
 ::size_t Method::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Method)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Method)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // repeated .google.protobuf.Option options = 6;
-  total_size += 1UL * this->_internal_options_size();
-  for (const auto& msg : this->_internal_options()) {
-    total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // repeated .google.protobuf.Option options = 6;
+     {
+      total_size += 1UL * this->_internal_options_size();
+      for (const auto& msg : this->_internal_options()) {
+        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      }
+    }
   }
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_name());
+   {
+    // string name = 1;
+    if (!this->_internal_name().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_name());
+    }
+    // string request_type_url = 2;
+    if (!this->_internal_request_type_url().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_request_type_url());
+    }
+    // string response_type_url = 4;
+    if (!this->_internal_response_type_url().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_response_type_url());
+    }
+    // bool request_streaming = 3;
+    if (this->_internal_request_streaming() != 0) {
+      total_size += 2;
+    }
+    // bool response_streaming = 5;
+    if (this->_internal_response_streaming() != 0) {
+      total_size += 2;
+    }
+    // .google.protobuf.Syntax syntax = 7;
+    if (this->_internal_syntax() != 0) {
+      total_size += 1 +
+                    ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
+    }
   }
-
-  // string request_type_url = 2;
-  if (!this->_internal_request_type_url().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_request_type_url());
-  }
-
-  // string response_type_url = 4;
-  if (!this->_internal_response_type_url().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_response_type_url());
-  }
-
-  // bool request_streaming = 3;
-  if (this->_internal_request_streaming() != 0) {
-    total_size += 2;
-  }
-
-  // bool response_streaming = 5;
-  if (this->_internal_response_streaming() != 0) {
-    total_size += 2;
-  }
-
-  // .google.protobuf.Syntax syntax = 7;
-  if (this->_internal_syntax() != 0) {
-    total_size += 1 +
-                  ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
-  }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1159,26 +1171,27 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
 }
 
 ::size_t Mixin::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Mixin)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Mixin)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_name());
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // string name = 1;
+    if (!this->_internal_name().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_name());
+    }
+    // string root = 2;
+    if (!this->_internal_root().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_root());
+    }
   }
-
-  // string root = 2;
-  if (!this->_internal_root().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_root());
-  }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
