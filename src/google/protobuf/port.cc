@@ -27,3 +27,4 @@ void protobuf_assumption_failed(const char* pred, const char* file, int line) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+#include "google/protobuf/port_undef.inc"

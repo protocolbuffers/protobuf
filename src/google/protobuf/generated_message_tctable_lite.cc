@@ -2932,3 +2932,5 @@ const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
