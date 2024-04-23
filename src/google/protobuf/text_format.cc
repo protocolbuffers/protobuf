@@ -28,6 +28,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -40,7 +41,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -489,6 +489,44 @@ class TextFormat::Parser::ParserImpl {
   }
 
 
+  absl::string_view GetExtensionMetadataName(
+      const google::protobuf::Descriptor::ExtensionRange* range) {
+    if (range->start_number() == range->end_number() - 1) {
+      if (range->options().metadata().has_name()) {
+        return range->options().metadata().name();
+      }
+    }
+    return absl::string_view();
+  }
+
+  absl::string_view ParseFieldNameIfQualified(absl::string_view full_name) {
+    size_t pos = full_name.find('.');
+    absl::string_view extension;
+
+    if (pos != std::string::npos) {
+      extension = full_name.substr(pos + 1);
+    } else {
+      extension = full_name;
+    }
+    return extension;
+  }
+
+  const google::protobuf::Descriptor::ExtensionRange* FindExtensionRangeByMetadataName(
+      const google::protobuf::Descriptor* descriptor, absl::string_view name) {
+    for (int i = 0; i < descriptor->extension_range_count(); ++i) {
+      const google::protobuf::Descriptor::ExtensionRange* range =
+          descriptor->extension_range(i);
+      absl::string_view extension_name = GetExtensionMetadataName(range);
+      if (!extension_name.empty() &&
+          absl::EqualsIgnoreCase(
+              extension_name,
+              ParseFieldNameIfQualified(absl::string_view(name)))) {
+        return range;
+      }
+    }
+    return nullptr;
+  }
+
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
   bool ConsumeField(Message* message) {
@@ -608,6 +646,15 @@ class TextFormat::Parser::ParserImpl {
         if (field == nullptr) {
           reserved_field = descriptor->IsReservedName(field_name);
         }
+      }
+      // Resolve extension field with metadata info accessed like a
+      // regular field without square braces.
+      const google::protobuf::Descriptor::ExtensionRange* range =
+          FindExtensionRangeByMetadataName(descriptor, field_name);
+      if (range != nullptr) {
+        // Get Field descriptor from the same pool by extension tag number
+        field = descriptor->file()->pool()->FindExtensionByNumber(
+            descriptor, range->start_number());
       }
 
       if (field == nullptr && !reserved_field) {
