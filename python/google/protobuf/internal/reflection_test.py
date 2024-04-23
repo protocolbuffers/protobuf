@@ -594,19 +594,37 @@ class ReflectionTest(unittest.TestCase):
 
   def testEnum_KeysAndValues(self, message_module):
     if message_module == unittest_pb2:
-      keys = ['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ', 'FOREIGN_BAX']
-      values = [4, 5, 6, 32]
+      keys = [
+          'FOREIGN_FOO',
+          'FOREIGN_BAR',
+          'FOREIGN_BAZ',
+          'FOREIGN_BAX',
+          'FOREIGN_LARGE',
+      ]
+      values = [4, 5, 6, 32, 123456]
       items = [
           ('FOREIGN_FOO', 4),
           ('FOREIGN_BAR', 5),
           ('FOREIGN_BAZ', 6),
           ('FOREIGN_BAX', 32),
+          ('FOREIGN_LARGE', 123456),
       ]
     else:
-      keys = ['FOREIGN_ZERO', 'FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ']
-      values = [0, 4, 5, 6]
-      items = [('FOREIGN_ZERO', 0), ('FOREIGN_FOO', 4),
-               ('FOREIGN_BAR', 5), ('FOREIGN_BAZ', 6)]
+      keys = [
+          'FOREIGN_ZERO',
+          'FOREIGN_FOO',
+          'FOREIGN_BAR',
+          'FOREIGN_BAZ',
+          'FOREIGN_LARGE',
+      ]
+      values = [0, 4, 5, 6, 123456]
+      items = [
+          ('FOREIGN_ZERO', 0),
+          ('FOREIGN_FOO', 4),
+          ('FOREIGN_BAR', 5),
+          ('FOREIGN_BAZ', 6),
+          ('FOREIGN_LARGE', 123456),
+      ]
     self.assertEqual(keys,
                      list(message_module.ForeignEnum.keys()))
     self.assertEqual(values,
