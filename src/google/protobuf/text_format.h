@@ -45,8 +45,6 @@ PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
 PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
 
 PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_format_marker;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_detection;
-PROTOBUF_EXPORT extern std::atomic<bool> enable_debug_text_redaction;
 PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 PROTOBUF_EXPORT bool ShouldRedactField(const FieldDescriptor* field);
 

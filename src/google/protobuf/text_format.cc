@@ -97,10 +97,6 @@ const char kDebugStringSilentMarkerForDetection[] = "\t ";
 // Controls insertion of kDebugStringSilentMarker into DebugString() output.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 
-// Controls insertion of a marker making debug strings non-parseable, and
-// redacting annotated fields.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction{true};
-
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
 }
@@ -182,8 +178,7 @@ std::string StringifyMessage(const Message& message, Option option) {
       break;
   }
   printer.SetExpandAny(true);
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction.load(std::memory_order_relaxed));
+  printer.SetRedactDebugString(true);
   printer.SetRandomizeDebugString(true);
   printer.SetReportSensitiveFields(reporter);
   std::string result;
