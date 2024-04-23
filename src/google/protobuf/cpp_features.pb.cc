@@ -287,27 +287,26 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 }
 
 ::size_t CppFeatures::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
+  // @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (cached_has_bits & 0x00000001u) {
       total_size += 2;
     }
-
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this->_internal_string_type());
     }
-
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }

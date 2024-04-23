@@ -544,17 +544,15 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
            }},
       },
       R"cc(
-        {
-          std::size_t data_size = 0;
-          auto count = static_cast<std::size_t>(this->_internal_$name$_size());
+        std::size_t data_size = 0;
+        auto count = static_cast<std::size_t>(this->_internal_$name$_size());
 
-          for (std::size_t i = 0; i < count; ++i) {
-            data_size += ::_pbi::WireFormatLite::EnumSize(
-                this->_internal_$name$().Get(static_cast<int>(i)));
-          }
-          total_size += data_size;
-          $add_to_size$;
+        for (std::size_t i = 0; i < count; ++i) {
+          data_size += ::_pbi::WireFormatLite::EnumSize(
+              this->_internal_$name$().Get(static_cast<int>(i)));
         }
+        total_size += data_size;
+        $add_to_size$;
       )cc");
 }
 }  // namespace

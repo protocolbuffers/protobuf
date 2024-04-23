@@ -183,50 +183,55 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
   return runs;
 }
 
-// Emits an if-statement with a condition that evaluates to true if |field| is
-// considered non-default (will be sent over the wire), for message types
-// without true field presence. Should only be called if
-// !HasHasbit(field).
-bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
-                                  const FieldDescriptor* field) {
+void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
+                         const FieldDescriptor* field) {
   ABSL_CHECK(!HasHasbit(field));
+  ABSL_CHECK(!field->is_repeated());
+  ABSL_CHECK(!field->containing_oneof() || field->real_containing_oneof());
+
   auto v = p->WithVars({{
       {"prefix", prefix},
       {"name", FieldName(field)},
   }});
   // Merge and serialize semantics: primitive fields are merged/serialized only
   // if non-zero (numeric) or non-empty (string).
-  if (!field->is_repeated() && !field->containing_oneof()) {
+  if (!field->containing_oneof()) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      p->Emit(R"cc(
-        if (!$prefix$_internal_$name$().empty()) {
-      )cc");
+      p->Emit("!$prefix$_internal_$name$().empty()");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
-      p->Emit(R"cc(
-        if ($prefix$_internal_has_$name$()) {
-      )cc");
+      p->Emit("$prefix$_internal_has_$name$()");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
-      p->Emit(R"cc(
-        if (::absl::bit_cast<::uint32_t>($prefix$_internal_$name$()) != 0) {
-      )cc");
+      p->Emit("::absl::bit_cast<::uint32_t>($prefix$_internal_$name$()) != 0");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
-      p->Emit(R"cc(
-        if (::absl::bit_cast<::uint64_t>($prefix$_internal_$name$()) != 0) {
-      )cc");
+      p->Emit("::absl::bit_cast<::uint64_t>($prefix$_internal_$name$()) != 0");
     } else {
-      p->Emit(R"cc(
-        if ($prefix$_internal_$name$() != 0) {
-      )cc");
+      p->Emit("$prefix$_internal_$name$() != 0");
     }
-    return true;
   } else if (field->real_containing_oneof()) {
-    p->Emit(R"cc(
-      if ($has_field$) {
-    )cc");
-    return true;
+    p->Emit("$has_field$");
   }
-  return false;
+}
+
+bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
+  return (!field->is_repeated() && !field->containing_oneof()) ||
+         field->real_containing_oneof();
+}
+
+// Emits an if-statement with a condition that evaluates to true if |field| is
+// considered non-default (will be sent over the wire), for message types
+// without true field presence. Should only be called if
+// !HasHasbit(field).
+bool MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
+                              const FieldDescriptor* field) {
+  ABSL_CHECK(!HasHasbit(field));
+  if (!ShouldEmitNonDefaultCheck(field)) return false;
+
+  p->Emit({{"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }}},
+          R"cc(
+            if ($condition$) {
+          )cc");
+  return true;
 }
 
 bool HasInternalHasMethod(const FieldDescriptor* field) {
@@ -3857,8 +3862,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
-          bool have_enclosing_if =
-              EmitFieldNonDefaultCondition(p, "from.", field);
+          bool have_enclosing_if = MayEmitIfNonDefaultCheck(p, "from.", field);
           if (have_enclosing_if) format.Indent();
           generator.GenerateMergingCode(p);
           if (have_enclosing_if) {
@@ -4130,7 +4134,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
           }
         )cc");
   } else if (field->is_optional()) {
-    bool have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
+    bool have_enclosing_if = MayEmitIfNonDefaultCheck(p, "this->", field);
     if (have_enclosing_if) p->Indent();
     emit_body();
     if (have_enclosing_if) {
@@ -4551,23 +4555,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     return;
   }
 
-  Formatter format(p);
-  format(
-      "::size_t $classname$::ByteSizeLong() const {\n"
-      "$WeakDescriptorSelfPin$"
-      "$annotate_bytesize$"
-      "// @@protoc_insertion_point(message_byte_size_start:$full_name$)\n");
-  format.Indent();
-  format(
-      "::size_t total_size = 0;\n"
-      "\n");
-
-  if (descriptor_->extension_range_count() > 0) {
-    format(
-        "total_size += $extensions$.ByteSize();\n"
-        "\n");
-  }
-
   std::vector<FieldChunk> chunks = CollectFields(
       optimized_order_, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
@@ -4576,177 +4563,278 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
       });
 
-  auto it = chunks.begin();
-  auto end = chunks.end();
-  int cached_has_word_index = -1;
+  p->Emit(
+      {{"handle_extension_set",
+        [&] {
+          if (descriptor_->extension_range_count() == 0) return;
+          p->Emit(R"cc(
+            total_size += $extensions$.ByteSize();
+          )cc");
+        }},
+       {"prefetch",
+        [&] {
+          // See comment in third_party/protobuf/port.h for details,
+          // on how much we are prefetching. Only insert prefetch once per
+          // function, since advancing is actually slower. We sometimes
+          // prefetch more than sizeof(message), because it helps with
+          // next message on arena.
+          bool generate_prefetch = false;
+          // Skip trivial messages with 0 or 1 fields, unless they are
+          // repeated, to reduce codesize.
+          switch (optimized_order_.size()) {
+            case 1:
+              generate_prefetch = optimized_order_[0]->is_repeated();
+              break;
+            case 0:
+              break;
+            default:
+              generate_prefetch = true;
+          }
+          if (!generate_prefetch || !IsPresentMessage(descriptor_, options_)) {
+            return;
+          }
+          p->Emit(R"cc(
+            ::_pbi::Prefetch5LinesFrom7Lines(
+                reinterpret_cast<const void*>(this));
+          )cc");
+        }},
+       {"handle_fields",
+        [&] {
+          auto it = chunks.begin();
+          auto end = chunks.end();
+          int cached_has_word_index = -1;
 
-  format(
-      "$uint32$ cached_has_bits = 0;\n"
-      "// Prevent compiler warnings about cached_has_bits being unused\n"
-      "(void) cached_has_bits;\n\n");
+          while (it != end) {
+            auto next =
+                FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+            bool has_haswords_check =
+                MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
+                                       cached_has_word_index, "", p);
 
-  // See comment in third_party/protobuf/port.h for details,
-  // on how much we are prefetching. Only insert prefetch once per
-  // function, since advancing is actually slower. We sometimes
-  // prefetch more than sizeof(message), because it helps with
-  // next message on arena.
-  bool generate_prefetch = false;
-  // Skip trivial messages with 0 or 1 fields, unless they are repeated,
-  // to reduce codesize.
-  switch (optimized_order_.size()) {
-    case 1:
-      generate_prefetch = optimized_order_[0]->is_repeated();
-      break;
-    case 0:
-      break;
-    default:
-      generate_prefetch = true;
-  }
-  if (!IsPresentMessage(descriptor_, options_)) {
-    generate_prefetch = false;
-  }
-  if (generate_prefetch) {
-    p->Emit(R"cc(
-      ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-    )cc");
-  }
+            while (it != next) {
+              const auto& fields = it->fields;
+              const bool check_has_byte =
+                  fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit &&
+                  !IsLikelyPresent(fields.back(), options_);
+              p->Emit(
+                  {{"update_byte_size_for_chunk",
+                    [&] {
+                      // Go back and emit checks for each of the fields we
+                      // processed.
+                      for (const auto* field : fields) {
+                        p->Emit(
+                            {{"comment",
+                              [&] {
+                                PrintFieldComment(Formatter{p}, field,
+                                                  options_);
+                              }},
+                             {"update_byte_size_for_field",
+                              [&] {
+                                field_generators_.get(field).GenerateByteSize(
+                                    p);
+                              }},
+                             {"update_cached_has_bits",
+                              [&] {
+                                if (!HasHasbit(field) ||
+                                    field->options().weak())
+                                  return;
+                                int has_bit_index =
+                                    has_bit_indices_[field->index()];
+                                if (cached_has_word_index ==
+                                    (has_bit_index / 32))
+                                  return;
+                                cached_has_word_index = (has_bit_index / 32);
+                                p->Emit({{"index", cached_has_word_index}},
+                                        R"cc(
+                                          cached_has_bits = $has_bits$[$index$];
+                                        )cc");
+                              }},
+                             {"check_if_field_present",
+                              [&] {
+                                if (HasHasbit(field)) {
+                                  if (field->options().weak()) {
+                                    p->Emit("if (has_$name$())");
+                                    return;
+                                  }
 
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, has_bit_indices_, cached_has_word_index, "", p);
+                                  int has_bit_index =
+                                      has_bit_indices_[field->index()];
+                                  p->Emit({{"mask",
+                                            absl::StrFormat(
+                                                "0x%08xu",
+                                                1u << (has_bit_index % 32))}},
+                                          "if (cached_has_bits & $mask$)");
+                                } else if (ShouldEmitNonDefaultCheck(field)) {
+                                  // Without field presence: field is
+                                  // serialized only if it has a non-default
+                                  // value.
+                                  p->Emit({{"non_default_check",
+                                            [&] {
+                                              EmitNonDefaultCheck(p, "this->",
+                                                                  field);
+                                            }}},
+                                          "if ($non_default_check$)");
+                                }
+                              }}},
+                            R"cc(
+                              $comment$;
+                              $update_cached_has_bits$;
+                              $check_if_field_present$ {
+                                //~ Force newline.
+                                $update_byte_size_for_field$;
+                              }
+                            )cc");
+                      }
+                    }},
+                   {"may_update_cached_has_word_index",
+                    [&] {
+                      if (!check_has_byte) return;
+                      if (cached_has_word_index == HasWordIndex(fields.front()))
+                        return;
 
-    while (it != next) {
-      const std::vector<const FieldDescriptor*>& fields = it->fields;
-      const bool check_has_byte = fields.size() > 1 &&
-                                  HasWordIndex(fields[0]) != kNoHasbit &&
-                                  !IsLikelyPresent(fields.back(), options_);
+                      cached_has_word_index = HasWordIndex(fields.front());
+                      p->Emit({{"index", cached_has_word_index}},
+                              R"cc(
+                                cached_has_bits = $has_bits$[$index$];
+                              )cc");
+                    }},
+                   {"check_if_chunk_present",
+                    [&] {
+                      if (!check_has_byte) {
+                        return;
+                      }
 
-      if (check_has_byte) {
-        // Emit an if() that will let us skip the whole chunk if none are set.
-        uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
-        std::string chunk_mask_str =
-            absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
+                      // Emit an if() that will let us skip the whole chunk
+                      // if none are set.
+                      uint32_t chunk_mask =
+                          GenChunkMask(fields, has_bit_indices_);
 
-        // Check (up to) 8 has_bits at a time if we have more than one field in
-        // this chunk.  Due to field layout ordering, we may check
-        // _has_bits_[last_chunk * 8 / 32] multiple times.
-        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+                      // Check (up to) 8 has_bits at a time if we have more
+                      // than one field in this chunk.  Due to field layout
+                      // ordering, we may check _has_bits_[last_chunk * 8 /
+                      // 32] multiple times.
+                      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+                      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-        if (cached_has_word_index != HasWordIndex(fields.front())) {
-          cached_has_word_index = HasWordIndex(fields.front());
-          format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
-        }
-        format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
-        format.Indent();
-      }
+                      p->Emit(
+                          {{"mask", absl::StrFormat("0x%08xu", chunk_mask)}},
+                          "if (cached_has_bits & $mask$)");
+                    }}},
+                  R"cc(
+                    $may_update_cached_has_word_index$;
+                    $check_if_chunk_present$ {
+                      //~ Force newline.
+                      $update_byte_size_for_chunk$;
+                    }
+                  )cc");
 
-      // Go back and emit checks for each of the fields we processed.
-      for (const auto* field : fields) {
-        bool have_enclosing_if = false;
+              // To next chunk.
+              ++it;
+            }
 
-        PrintFieldComment(format, field, options_);
+            if (has_haswords_check) {
+              p->Emit(R"cc(
+                }
+              )cc");
 
-        if (field->is_repeated()) {
-          // No presence check is required.
-        } else if (HasHasbit(field)) {
-          PrintPresenceCheck(field, has_bit_indices_, p,
-                             &cached_has_word_index);
-          have_enclosing_if = true;
-        } else {
-          // Without field presence: field is serialized only if it has a
-          // non-default value.
-          have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
-        }
+              // Reset here as it may have been updated in just closed if
+              // statement.
+              cached_has_word_index = -1;
+            }
+          }
+        }},
+       {"handle_oneof_fields",
+        [&] {
+          // Fields inside a oneof don't use _has_bits_ so we count them in a
+          // separate pass.
+          for (auto oneof : OneOfRange(descriptor_)) {
+            p->Emit(
+                {{"oneof_name", oneof->name()},
+                 {"oneof_case_name", absl::AsciiStrToUpper(oneof->name())},
+                 {"case_per_field",
+                  [&] {
+                    for (auto field : FieldRange(oneof)) {
+                      PrintFieldComment(Formatter{p}, field, options_);
+                      p->Emit(
+                          {{"field_name",
+                            UnderscoresToCamelCase(field->name(), true)},
+                           {"field_byte_size",
+                            [&] {
+                              field_generators_.get(field).GenerateByteSize(p);
+                            }}},
+                          R"cc(
+                            case k$field_name$: {
+                              $field_byte_size$;
+                              break;
+                            }
+                          )cc");
+                    }
+                  }}},
+                R"cc(
+                  switch ($oneof_name$_case()) {
+                    $case_per_field$;
+                    case $oneof_case_name$_NOT_SET: {
+                      break;
+                    }
+                  }
+                )cc");
+          }
+        }},
+       {"handle_weak_fields",
+        [&] {
+          if (num_weak_fields_ == 0) return;
+          // TagSize + MessageSize
+          p->Emit(R"cc(
+            total_size += $weak_field_map$.ByteSizeLong();
+          )cc");
+        }},
+       {"handle_unknown_fields",
+        [&] {
+          if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+            // We go out of our way to put the computation of the uncommon
+            // path of unknown fields in tail position. This allows for
+            // better code generation of this function for simple protos.
+            p->Emit(R"cc(
+              return MaybeComputeUnknownFieldsSize(total_size, &$cached_size$);
+            )cc");
+          } else {
+            // We update _cached_size_ even though this is a const method.
+            // Because const methods might be called concurrently this needs
+            // to be atomic operations or the program is undefined.  In
+            // practice, since any concurrent writes will be writing the
+            // exact same value, normal writes will work on all common
+            // processors. We use a dedicated wrapper class to abstract away
+            // the underlying atomic. This makes it easier on platforms where
+            // even relaxed memory order might have perf impact to replace it
+            // with ordinary loads and stores.
+            p->Emit(R"cc(
+              if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {
+                total_size += $unknown_fields$.size();
+              }
+              $cached_size$.Set(::_pbi::ToCachedSize(total_size));
+              return total_size;
+            )cc");
+          }
+        }}},
+      R"cc(
+        ::size_t $classname$::ByteSizeLong() const {
+          $WeakDescriptorSelfPin$;
+          $annotate_bytesize$;
+          // @@protoc_insertion_point(message_byte_size_start:$full_name$)
+          ::size_t total_size = 0;
+          $handle_extension_set$;
 
-        if (have_enclosing_if) format.Indent();
+          $uint32$ cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-        field_generators_.get(field).GenerateByteSize(p);
-
-        if (have_enclosing_if) {
-          format.Outdent();
-          format(
-              "}\n"
-              "\n");
-        }
-      }
-
-      if (check_has_byte) {
-        format.Outdent();
-        format("}\n");
-      }
-
-      // To next chunk.
-      ++it;
-    }
-
-    if (has_haswords_check) {
-      p->Outdent();
-      p->Emit(R"cc(
+          $prefetch$;
+          $handle_fields$;
+          $handle_oneof_fields$;
+          $handle_weak_fields$;
+          $handle_unknown_fields$;
         }
       )cc");
-
-      // Reset here as it may have been updated in just closed if statement.
-      cached_has_word_index = -1;
-    }
-  }
-
-  // Fields inside a oneof don't use _has_bits_ so we count them in a separate
-  // pass.
-  for (auto oneof : OneOfRange(descriptor_)) {
-    format("switch ($1$_case()) {\n", oneof->name());
-    format.Indent();
-    for (auto field : FieldRange(oneof)) {
-      PrintFieldComment(format, field, options_);
-      format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
-      format.Indent();
-      field_generators_.get(field).GenerateByteSize(p);
-      format("break;\n");
-      format.Outdent();
-      format("}\n");
-    }
-    format(
-        "case $1$_NOT_SET: {\n"
-        "  break;\n"
-        "}\n",
-        absl::AsciiStrToUpper(oneof->name()));
-    format.Outdent();
-    format("}\n");
-  }
-
-  if (num_weak_fields_) {
-    // TagSize + MessageSize
-    format("total_size += $weak_field_map$.ByteSizeLong();\n");
-  }
-
-  if (UseUnknownFieldSet(descriptor_->file(), options_)) {
-    // We go out of our way to put the computation of the uncommon path of
-    // unknown fields in tail position. This allows for better code generation
-    // of this function for simple protos.
-    format(
-        "return MaybeComputeUnknownFieldsSize(total_size, &$cached_size$);\n");
-  } else {
-    format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
-    format("  total_size += $unknown_fields$.size();\n");
-    format("}\n");
-
-    // We update _cached_size_ even though this is a const method.  Because
-    // const methods might be called concurrently this needs to be atomic
-    // operations or the program is undefined.  In practice, since any
-    // concurrent writes will be writing the exact same value, normal writes
-    // will work on all common processors. We use a dedicated wrapper class to
-    // abstract away the underlying atomic. This makes it easier on platforms
-    // where even relaxed memory order might have perf impact to replace it with
-    // ordinary loads and stores.
-    p->Emit(R"cc(
-      $cached_size$.Set(::_pbi::ToCachedSize(total_size));
-      return total_size;
-    )cc");
-  }
-
-  format.Outdent();
-  format("}\n");
 }
 
 bool MessageGenerator::NeedsIsInitialized() {

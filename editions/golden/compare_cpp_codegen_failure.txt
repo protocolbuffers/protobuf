@@ -25,14 +25,14 @@
      target = ::proto2::internal::WireFormatLite::
          WriteInt32ToArrayWithField<1>(
 @@ @@
-   // Prevent compiler warnings about cached_has_bits being unused
-   (void) cached_has_bits;
+   (void)cached_has_bits;
  
--  // optional int32 int32_field = 1;
-+  // int32 int32_field = 1;
-   cached_has_bits = _impl_._has_bits_[0];
-   if (cached_has_bits & 0x00000001u) {
-     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+    {
+-    // optional int32 int32_field = 1;
++    // int32 int32_field = 1;
+     cached_has_bits = _impl_._has_bits_[0];
+     if (cached_has_bits & 0x00000001u) {
+       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@

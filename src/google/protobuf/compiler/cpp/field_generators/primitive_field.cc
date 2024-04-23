@@ -635,12 +635,10 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
               .WithSuffix(""),
       },
       R"cc(
-        {
-          std::size_t data_size = $data_size$;
-          $maybe_cache_data_size$;
-          std::size_t tag_size = $tag_size$;
-          total_size += tag_size + data_size;
-        }
+        std::size_t data_size = $data_size$;
+        $maybe_cache_data_size$;
+        std::size_t tag_size = $tag_size$;
+        total_size += tag_size + data_size;
       )cc");
 }
 }  // namespace
