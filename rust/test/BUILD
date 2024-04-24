@@ -1,7 +1,6 @@
 load(
     "//rust:defs.bzl",
     "rust_cc_proto_library",
-    "rust_proto_library",
     "rust_upb_proto_library",
 )
 
@@ -10,13 +9,6 @@ UNITTEST_PROTO_TARGET = "//src/google/protobuf:test_protos"
 UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
 
 UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
-
-rust_proto_library(
-    name = "unittest_rust_proto",
-    testonly = True,
-    visibility = ["//visibility:private"],
-    deps = [UNITTEST_PROTO_TARGET],
-)
 
 rust_upb_proto_library(
     name = "unittest_upb_rust_proto",
@@ -35,15 +27,6 @@ rust_cc_proto_library(
     deps = [UNITTEST_PROTO_TARGET],
 )
 
-rust_proto_library(
-    name = "unittest_proto3_rust_proto",
-    testonly = True,
-    visibility = ["//visibility:private"],
-    deps = [
-        UNITTEST_PROTO3_TARGET,
-    ],
-)
-
 rust_cc_proto_library(
     name = "unittest_proto3_cc_rust_proto",
     testonly = True,
@@ -56,15 +39,6 @@ rust_upb_proto_library(
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_TARGET],
-)
-
-rust_proto_library(
-    name = "unittest_proto3_optional_rust_proto",
-    testonly = True,
-    visibility = ["//visibility:private"],
-    deps = [
-        UNITTEST_PROTO3_OPTIONAL_TARGET,
-    ],
 )
 
 rust_cc_proto_library(
