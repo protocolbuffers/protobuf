@@ -12,7 +12,7 @@
 #include "shared_convert.h"
 
 bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
-                           upb_CType type, upb_MessageDef* msgdef,
+                           upb_CType type, const upb_MessageDef* msgdef,
                            upb_Status* status) {
   switch (type) {
     case kUpb_CType_Bool:
@@ -31,15 +31,19 @@ bool shared_Msgval_IsEqual(upb_MessageValue val1, upb_MessageValue val2,
       return val1.str_val.size == val2.str_val.size &&
              memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
                  0;
-    case kUpb_CType_Message:
-      return shared_Message_Equal(val1.msg_val, val2.msg_val, msgdef, status);
+    case kUpb_CType_Message: {
+      const upb_MiniTable* m = upb_MessageDef_MiniTable(msgdef);
+      const int options = 0;
+      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m, options);
+    }
     default:
       upb_Status_SetErrorMessage(status, "Internal error, unexpected type");
+      return false;
   }
 }
 
 uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type,
-                               upb_MessageDef* msgdef, uint64_t seed,
+                               const upb_MessageDef* msgdef, uint64_t seed,
                                upb_Status* status) {
   switch (type) {
     case kUpb_CType_Bool:
@@ -60,5 +64,6 @@ uint64_t shared_Msgval_GetHash(upb_MessageValue val, upb_CType type,
       return shared_Message_Hash(val.msg_val, msgdef, seed, status);
     default:
       upb_Status_SetErrorMessage(status, "Internal error, unexpected type");
+      return 0;
   }
 }

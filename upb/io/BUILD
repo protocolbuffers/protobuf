@@ -19,9 +19,9 @@ cc_library(
         ":string",
         ":zero_copy_stream",
         "//upb:base",
-        "//upb:lex",
         "//upb:mem",
         "//upb:port",
+        "//upb/lex",
     ],
 )
 
@@ -64,8 +64,9 @@ cc_test(
     srcs = ["string_test.cc"],
     deps = [
         ":string",
-        "@com_google_googletest//:gtest_main",
         "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -78,12 +79,13 @@ cc_test(
         ":string",
         ":tokenizer",
         ":zero_copy_stream",
-        "@com_google_googletest//:gtest_main",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-        "//upb:lex",
         "//upb:mem",
         "//upb:port",
+        "//upb/lex",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -96,8 +98,9 @@ cc_test(
     deps = [
         ":chunked_stream",
         ":zero_copy_stream",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )

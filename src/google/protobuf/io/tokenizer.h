@@ -55,33 +55,16 @@ class PROTOBUF_EXPORT ErrorCollector {
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
   virtual void RecordError(int line, ColumnNumber column,
-                           absl::string_view message) {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    AddError(line, column, std::string(message));
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-  }
+                           absl::string_view message)
+      = 0;
 
   // Indicates that there was a warning in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
   virtual void RecordWarning(int line, ColumnNumber column,
                              absl::string_view message) {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    AddWarning(line, column, std::string(message));
-    PROTOBUF_IGNORE_DEPRECATION_STOP
   }
 
- private:
-  // These should never be called directly, but if a legacy class overrides
-  // them they'll get routed to by the Record* methods.
-  ABSL_DEPRECATED("Use RecordError")
-  virtual void AddError(int line, ColumnNumber column,
-                        const std::string& message) {
-    ABSL_LOG(FATAL) << "AddError or RecordError must be implemented.";
-  }
-  ABSL_DEPRECATED("Use RecordWarning")
-  virtual void AddWarning(int line, ColumnNumber column,
-                          const std::string& message) {}
 };
 
 // This class converts a stream of raw text into a stream of tokens for

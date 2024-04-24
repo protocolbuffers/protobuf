@@ -6,13 +6,14 @@
 #   //:protobuf_python
 #   //:well_known_types_py_pb2
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
-load("//src/google/protobuf/editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
 
 def build_targets(name):
@@ -54,6 +55,7 @@ def build_targets(name):
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
+            "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
     )
@@ -85,7 +87,7 @@ def build_targets(name):
         ],
         deps = select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["//external:python_headers"],
+            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
         }),
     )
 
@@ -120,11 +122,21 @@ def build_targets(name):
         ],
         deps = [
             ":proto_api",
-            "//:protobuf",
-            "//src/google/protobuf:descriptor_legacy",
+            "//src/google/protobuf",
+            "//src/google/protobuf:port",
+            "//src/google/protobuf:protobuf_lite",
+            "//src/google/protobuf/io",
+            "//src/google/protobuf/io:tokenizer",
+            "//src/google/protobuf/stubs:lite",
+            "//src/google/protobuf/util:differencer",
+            "@com_google_absl//absl/container:flat_hash_map",
+            "@com_google_absl//absl/log:absl_check",
+            "@com_google_absl//absl/log:absl_log",
+            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/strings",
         ] + select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["//external:python_headers"],
+            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
         }),
     )
 
@@ -211,6 +223,7 @@ def build_targets(name):
         testonly = 1,
         srcs = [
             "//:test_proto_srcs",
+            "//:test_proto_editions_srcs",
             "//src/google/protobuf/util:test_proto_srcs",
         ],
         strip_prefix = "src",
@@ -222,10 +235,30 @@ def build_targets(name):
         srcs = [
             "//src/google/protobuf:test_messages_proto2.proto",
             "//src/google/protobuf:test_messages_proto3.proto",
-            "//src/google/protobuf/editions:golden/test_messages_proto2_editions.proto",
-            "//src/google/protobuf/editions:golden/test_messages_proto3_editions.proto",
         ],
         strip_prefix = "src",
+    )
+
+    internal_copy_files(
+        name = "copied_test_dependency_proto_files",
+        srcs = [
+            "//src/google/protobuf:cpp_features_proto_srcs",
+        ],
+        strip_prefix = "src",
+    )
+
+    internal_py_proto_library(
+        name = "test_dependency_proto_py_pb2",
+        srcs = [":copied_test_dependency_proto_files"],
+        include = ".",
+        default_runtime = "",
+        protoc = "//:protoc",
+        srcs_version = "PY2AND3",
+        visibility = [
+            "//:__pkg__",
+            "//upb:__subpackages__",
+        ],
+        deps = [":well_known_types_py_pb2"],
     )
 
     internal_py_proto_library(
@@ -237,7 +270,7 @@ def build_targets(name):
         protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = ["//:__pkg__"],
-        deps = [":well_known_types_py_pb2"],
+        deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
     )
 
     internal_py_proto_library(
@@ -388,7 +421,7 @@ def build_targets(name):
         hdrs = ["google/protobuf/proto_api.h"],
         visibility = ["//visibility:public"],
         deps = [
-            "//external:python_headers",
+            "@system_python//:python_headers",
         ],
     )
 
@@ -450,7 +483,6 @@ def build_targets(name):
             ":python_src_files",
             "README.md",
             "google/__init__.py",
-            "setup.cfg",
         ],
         strip_prefix = "",
         visibility = ["//python/dist:__pkg__"],
@@ -474,9 +506,17 @@ def build_targets(name):
             "google/protobuf/python_protobuf.h",
             "internal.bzl",
             "python_version_test.py",
-            "setup.cfg",
-            "setup.py",
         ],
         strip_prefix = strip_prefix.from_root(""),
         visibility = ["//pkg:__pkg__"],
+    )
+
+    proto_lang_toolchain(
+        name = "python_toolchain",
+        command_line = "--python_out=%s",
+        progress_message = "Generating Python proto_library %{label}",
+        runtime = ":protobuf_python",
+        # NOTE: This isn't *actually* public. It's an implicit dependency of py_proto_library,
+        # so must be public so user usages of the rule can reference it.
+        visibility = ["//visibility:public"],
     )

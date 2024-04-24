@@ -17,8 +17,9 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -74,8 +75,14 @@ std::string FileJavaPackage(const FileDescriptor* descriptor,
 // Requires:
 //   descriptor != NULL
 // Returns:
-//   Capitalized camel case name field name.
-std::string CapitalizedFieldName(const FieldDescriptor* descriptor);
+//   Capitalized camel case field name.
+std::string CapitalizedFieldName(const FieldDescriptor* field);
+
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   Capitalized camel case oneof name.
+std::string CapitalizedOneofName(const OneofDescriptor* oneof);
 
 // Returns:
 //   Converts a name to camel-case. If cap_first_letter is true, capitalize the

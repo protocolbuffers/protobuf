@@ -20,7 +20,9 @@ jobs:
           - name: OpenJDK 8
             version: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version
+            # TODO: b/318555165 - enable the layering check. Currently it does
+            # not work correctly with the toolchain in this Docker image.
+            targets: //java/... //java/internal:java_version --features=-layering_check
           - name: OpenJDK 11
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
@@ -38,44 +40,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: java_linux/${{ matrix.version }}
           bazel: test ${{ matrix.targets }} --test_env=KOKORO_JAVA_VERSION
 
-  linkage-monitor:
-    name: Linux Linkage Monitor
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
-        with:
-          ref: ${{ inputs.safe-checkout }}
-      - name: Run Linkage Monitor test
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: java_linux/8
-          bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone
-
+# TODO restore this test (or a better one) when gRPC has rebuilt with 26.x
+  # linkage-monitor:
+  #   name: Linux Linkage Monitor
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout pending changes
+  #       uses: protocolbuffers/protobuf-ci/checkout@v3
+  #       with:
+  #         ref: ${{ inputs.safe-checkout }}
+  #     - name: Run Linkage Monitor test
+  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+  #       with:
+  #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+  #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+  #         bazel-cache: java_linux/8
+  #         # TODO: b/318555165 - enable the layering check. Currently it does
+  #         # not work correctly with the toolchain in this Docker image.
+  #         bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
+  
   protobuf-bom:
     name: Protobuf Maven BOM
     runs-on: ubuntu-latest
     steps:
     - name: Checkout pending changes
-      uses: protocolbuffers/protobuf-ci/checkout@v2
+      uses: protocolbuffers/protobuf-ci/checkout@v3
       with:
         ref: ${{ inputs.safe-checkout }}
     - name: Build protoc
       id: build-protoc
-      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -89,7 +94,7 @@ jobs:
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
       working-directory: java
     - name: Generate pom.xml files from the template
-      uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v3
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

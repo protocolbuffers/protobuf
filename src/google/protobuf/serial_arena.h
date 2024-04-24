@@ -15,12 +15,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <type_traits>
-#include <typeinfo>
-#include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
@@ -28,7 +24,6 @@
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
-#include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
 
@@ -92,14 +87,6 @@ class PROTOBUF_EXPORT SerialArena {
       ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 
   void CleanupList();
-  size_t FreeStringBlocks() {
-    // On the active block delete all strings skipping the unused instances.
-    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
-    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
-      return FreeStringBlocks(sb, unused_bytes);
-    }
-    return 0;
-  }
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
   }
@@ -223,14 +210,15 @@ class PROTOBUF_EXPORT SerialArena {
     // ret + n may point out of the block bounds, or ret may be nullptr.
     // Both computations have undefined behavior when done on pointers,
     // so do them on uintptr_t instead.
-    uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
-    if (PROTOBUF_PREDICT_FALSE(next > reinterpret_cast<uintptr_t>(limit_))) {
+    if (PROTOBUF_PREDICT_FALSE(reinterpret_cast<uintptr_t>(ret) + n >
+                               reinterpret_cast<uintptr_t>(limit_))) {
       return false;
     }
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
     *out = ret;
-    set_ptr(reinterpret_cast<char*>(next));
-    MaybePrefetchForwards(reinterpret_cast<char*>(next));
+    char* next = ret + n;
+    set_ptr(next);
+    MaybePrefetchForwards(next);
     return true;
   }
 
@@ -248,24 +236,24 @@ class PROTOBUF_EXPORT SerialArena {
     n = ArenaAlignDefault::Ceil(n);
     char* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     // See the comment in MaybeAllocateAligned re uintptr_t.
-    uintptr_t next = reinterpret_cast<uintptr_t>(ret) + n;
-    if (PROTOBUF_PREDICT_FALSE(next + cleanup::Size(destructor) >
+    if (PROTOBUF_PREDICT_FALSE(reinterpret_cast<uintptr_t>(ret) + n +
+                                   cleanup::Size() >
                                reinterpret_cast<uintptr_t>(limit_))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
     PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
-    set_ptr(reinterpret_cast<char*>(next));
+    char* next = ret + n;
+    set_ptr(next);
     AddCleanupFromExisting(ret, destructor);
     ABSL_DCHECK_GE(limit_, ptr());
-    MaybePrefetchForwards(reinterpret_cast<char*>(next));
+    MaybePrefetchForwards(next);
     return ret;
   }
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
-    size_t required = cleanup::Size(destructor);
     size_t has = static_cast<size_t>(limit_ - ptr());
-    if (PROTOBUF_PREDICT_FALSE(required > has)) {
+    if (PROTOBUF_PREDICT_FALSE(cleanup::Size() > has)) {
       return AddCleanupFallback(elem, destructor);
     }
     AddCleanupFromExisting(elem, destructor);
@@ -299,14 +287,13 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanupFromExisting(void* elem, void (*destructor)(void*)) {
-    cleanup::Tag tag = cleanup::Type(destructor);
-    size_t n = cleanup::Size(tag);
+    const size_t cleanup_size = cleanup::Size();
 
-    PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
-    limit_ -= n;
+    PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - cleanup_size, cleanup_size);
+    limit_ -= cleanup_size;
     MaybePrefetchBackwards(limit_);
     ABSL_DCHECK_GE(limit_, ptr());
-    cleanup::CreateNode(tag, limit_, elem, destructor);
+    cleanup::CreateNode(limit_, elem, destructor);
   }
 
   // Prefetch the next kPrefetchForwardsDegree bytes after `prefetch_ptr_` and
@@ -358,10 +345,18 @@ class PROTOBUF_EXPORT SerialArena {
   // The `parent` arena must outlive the serial arena, which is guaranteed
   // because the parent manages the lifetime of the serial arenas.
   static SerialArena* New(SizedPtr mem, ThreadSafeArena& parent);
-  // Free SerialArena returning the memory passed in to New
+  // Free SerialArena returning the memory passed in to New.
   template <typename Deallocator>
   SizedPtr Free(Deallocator deallocator);
 
+  size_t FreeStringBlocks() {
+    // On the active block delete all strings skipping the unused instances.
+    size_t unused_bytes = string_block_unused_.load(std::memory_order_relaxed);
+    if (StringBlock* sb = string_block_.load(std::memory_order_relaxed)) {
+      return FreeStringBlocks(sb, unused_bytes);
+    }
+    return 0;
+  }
   static size_t FreeStringBlocks(StringBlock* string_block, size_t unused);
 
   // Adds 'used` to space_used_ in relaxed atomic order.

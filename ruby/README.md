@@ -115,7 +115,7 @@ $ bazel test //ruby/tests/...
 To run tests against the FFI implementation:
 
 ```
-$ bazel test //ruby/tests/... //ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI
+$ bazel test //ruby/tests/... //ruby:ffi_enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI
 ```
 
 Version Number Scheme

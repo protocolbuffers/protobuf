@@ -325,7 +325,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
             $5* msg_value;
             $7bool success = $4_$9_get(msg_, $8, &msg_value);
             if (success) {
-              return ::protos::internal::CreateMessage<$6>(msg_value, arena_);
+              return ::protos::internal::CreateMessage<$6>(UPB_UPCAST(msg_value), arena_);
             }
             return absl::NotFoundError("");
           }

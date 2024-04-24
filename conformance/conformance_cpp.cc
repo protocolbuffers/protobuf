@@ -9,9 +9,10 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
@@ -19,10 +20,12 @@
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
+#include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "editions/golden/test_messages_proto2_editions.pb.h"
+#include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -45,6 +48,7 @@ using ::google::protobuf::util::JsonParseOptions;
 using ::google::protobuf::util::JsonToBinaryString;
 using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
+using ::protobuf_test_messages::editions::TestAllTypesEdition2023;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
 using TestAllTypesProto2Editions =
@@ -82,13 +86,12 @@ class Harness {
   Harness() {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
+    google::protobuf::LinkMessageReflection<TestAllTypesEdition2023>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();
 
     resolver_.reset(NewTypeResolverForDescriptorPool(
         "type.googleapis.com", DescriptorPool::generated_pool()));
-    type_url_ = absl::StrCat("type.googleapis.com/",
-                             TestAllTypesProto3::GetDescriptor()->full_name());
   }
 
   absl::StatusOr<ConformanceResponse> RunTest(
@@ -100,7 +103,6 @@ class Harness {
  private:
   bool verbose_ = false;
   std::unique_ptr<TypeResolver> resolver_;
-  std::string type_url_;
 };
 
 absl::StatusOr<ConformanceResponse> Harness::RunTest(
@@ -112,6 +114,8 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
     return absl::NotFoundError(
         absl::StrCat("No such message type: ", request.message_type()));
   }
+  std::string type_url =
+      absl::StrCat("type.googleapis.com/", request.message_type());
 
   std::unique_ptr<Message> test_message(
       MessageFactory::generated_factory()->GetPrototype(descriptor)->New());
@@ -134,7 +138,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
 
       std::string proto_binary;
       absl::Status status =
-          JsonToBinaryString(resolver_.get(), type_url_, request.json_payload(),
+          JsonToBinaryString(resolver_.get(), type_url, request.json_payload(),
                              &proto_binary, options);
       if (!status.ok()) {
         response.set_parse_error(
@@ -182,7 +186,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       std::string proto_binary;
       ABSL_CHECK(test_message->SerializeToString(&proto_binary));
       absl::Status status =
-          BinaryToJsonString(resolver_.get(), type_url_, proto_binary,
+          BinaryToJsonString(resolver_.get(), type_url, proto_binary,
                              response.mutable_json_payload());
       if (!status.ok()) {
         response.set_serialize_error(absl::StrCat(

@@ -16,6 +16,7 @@ module Google
       attach_function :lookup_enum,           :upb_DefPool_FindEnumByName,     [:DefPool, :string], EnumDescriptor
       attach_function :lookup_extension,      :upb_DefPool_FindExtensionByName,[:DefPool, :string], FieldDescriptor
       attach_function :lookup_msg,            :upb_DefPool_FindMessageByName,  [:DefPool, :string], Descriptor
+      attach_function :lookup_service,        :upb_DefPool_FindServiceByName,  [:DefPool, :string], ServiceDescriptor
 
         # FileDescriptorProto
       attach_function :parse,                 :FileDescriptorProto_parse,      [:binary_string, :size_t, Internal::Arena], :FileDescriptorProto
@@ -54,7 +55,8 @@ module Google
       def lookup name
         Google::Protobuf::FFI.lookup_msg(@descriptor_pool, name) ||
           Google::Protobuf::FFI.lookup_enum(@descriptor_pool, name) ||
-          Google::Protobuf::FFI.lookup_extension(@descriptor_pool, name)
+          Google::Protobuf::FFI.lookup_extension(@descriptor_pool, name) ||
+          Google::Protobuf::FFI.lookup_service(@descriptor_pool, name)
       end
 
       def self.generated_pool

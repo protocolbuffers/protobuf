@@ -44,9 +44,12 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_delimited.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -58,21 +61,13 @@ namespace protobuf {
 namespace internal {
 class UnsetFieldsMetadataTextFormatTestUtil {
  public:
-  static std::vector<const void*> GetRawAddresses(
+  static const auto& GetRawIds(
       const TextFormat::Parser::UnsetFieldsMetadata& metadata) {
-    return std::vector<const void*>(metadata.addresses_.begin(),
-                                    metadata.addresses_.end());
+    return metadata.ids_;
   }
-  static const void* GetAddress(const Message& message,
-                                const Reflection& reflection,
-                                const FieldDescriptor& fd) {
-    return TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-        message, reflection, fd);
-  }
-
-  static int32_t NumFields(
-      const TextFormat::Parser::UnsetFieldsMetadata& metadata) {
-    return metadata.addresses_.size();
+  static auto GetId(const Message& message, absl::string_view field) {
+    return TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
+        message, *message.GetDescriptor()->FindFieldByName(field));
   }
 };
 }  // namespace internal
@@ -84,6 +79,7 @@ using ::google::protobuf::internal::kDebugStringSilentMarker;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
+using ::testing::UnorderedElementsAre;
 
 // A basic string with different escapable characters for testing.
 constexpr absl::string_view kEscapeTestString =
@@ -377,6 +373,19 @@ TEST_F(TextFormatTest, Utf8DebugString) {
   // Compare.
   EXPECT_EQ(correct_utf8_string, utf8_debug_string);
   EXPECT_EQ(correct_string, debug_string);
+}
+
+TEST_F(TextFormatTest, DelimitedPrintToString) {
+  editions_unittest::TestDelimited proto;
+  proto.mutable_grouplike()->set_a(9);
+  proto.mutable_notgrouplike()->set_b(8);
+  proto.mutable_nested()->mutable_notgrouplike()->set_a(7);
+
+  std::string output;
+  TextFormat::PrintToString(proto, &output);
+  EXPECT_EQ(output,
+            "nested {\n  notgrouplike {\n    a: 7\n  }\n}\nGroupLike {\n  a: "
+            "9\n}\nnotgrouplike {\n  b: 8\n}\n");
 }
 
 TEST_F(TextFormatTest, PrintUnknownFields) {
@@ -1028,14 +1037,15 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
   TextFormat::Parser parser;
   TextFormat::Parser::UnsetFieldsMetadata no_op_fields;
   parser.OutputNoOpFields(&no_op_fields);
+  using Peer = UnsetFieldsMetadataTextFormatTestUtil;
 
   {
     no_op_fields = {};
     const absl::string_view singular_int_parse_string = "optional_int32: 0";
     EXPECT_TRUE(TextFormat::ParseFromString(singular_int_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(singular_int_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_int32")));
   }
   {
     no_op_fields = {};
@@ -1043,8 +1053,8 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(singular_bool_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(singular_bool_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_bool")));
   }
   {
     no_op_fields = {};
@@ -1053,8 +1063,8 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(singular_string_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(singular_string_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_string")));
   }
   {
     no_op_fields = {};
@@ -1063,8 +1073,9 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(nested_message_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(nested_message_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(
+                    Peer::GetId(proto.optional_nested_message(), "bb")));
   }
   {
     no_op_fields = {};
@@ -1073,8 +1084,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(nested_message_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(nested_message_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              0);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
   }
   {
     no_op_fields = {};
@@ -1083,8 +1093,9 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(foreign_message_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(foreign_message_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(
+                    Peer::GetId(proto.optional_foreign_message(), "c")));
   }
   {
     no_op_fields = {};
@@ -1092,8 +1103,9 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
         "optional_nested_enum: ZERO ";
     EXPECT_TRUE(TextFormat::ParseFromString(nested_enum_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(nested_enum_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(
+        Peer::GetRawIds(no_op_fields),
+        UnorderedElementsAre(Peer::GetId(proto, "optional_nested_enum")));
   }
   {
     no_op_fields = {};
@@ -1101,8 +1113,9 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
         "optional_foreign_enum: FOREIGN_ZERO ";
     EXPECT_TRUE(TextFormat::ParseFromString(foreign_enum_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(foreign_enum_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(
+        Peer::GetRawIds(no_op_fields),
+        UnorderedElementsAre(Peer::GetId(proto, "optional_foreign_enum")));
   }
   {
     no_op_fields = {};
@@ -1110,16 +1123,17 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
         "optional_string_piece: '' ";
     EXPECT_TRUE(TextFormat::ParseFromString(string_piece_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(string_piece_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(
+        Peer::GetRawIds(no_op_fields),
+        UnorderedElementsAre(Peer::GetId(proto, "optional_string_piece")));
   }
   {
     no_op_fields = {};
     const absl::string_view cord_parse_string = "optional_cord: '' ";
     EXPECT_TRUE(TextFormat::ParseFromString(cord_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(cord_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_cord")));
   }
   {
     no_op_fields = {};
@@ -1128,8 +1142,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_int32_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_int32_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              0);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
   }
   {
     no_op_fields = {};
@@ -1138,8 +1151,7 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_bool_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_bool_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              0);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
   }
   {
     no_op_fields = {};
@@ -1148,12 +1160,12 @@ TEST_F(TextFormatTest, PopulatesNoOpFields) {
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_string_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_string_parse_string, &proto));
-    EXPECT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              0);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
   }
 }
 
 TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
+  using Peer = UnsetFieldsMetadataTextFormatTestUtil;
   proto3_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   TextFormat::Parser::UnsetFieldsMetadata no_op_fields;
@@ -1166,18 +1178,10 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
       optional_nested_message { bb: 0 }
     )pb";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
-    ASSERT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              2);
-    std::vector<const void*> ptrs =
-        UnsetFieldsMetadataTextFormatTestUtil::GetRawAddresses(no_op_fields);
-    EXPECT_EQ(*static_cast<const int32_t*>(ptrs[0]), 0);
-    EXPECT_EQ(*static_cast<const int32_t*>(ptrs[1]), 0);
-    proto.set_optional_int32(20);
-    proto.mutable_optional_nested_message()->set_bb(30);
-    const std::vector<int32_t> new_values{
-        *static_cast<const int32_t*>(ptrs[0]),
-        *static_cast<const int32_t*>(ptrs[1])};
-    EXPECT_THAT(new_values, testing::UnorderedElementsAre(20, 30));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(
+                    Peer::GetId(proto, "optional_int32"),
+                    Peer::GetId(proto.optional_nested_message(), "bb")));
   }
   {
     no_op_fields = {};
@@ -1187,13 +1191,8 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
       optional_nested_message { bb: 20 }
     )pb";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
-    ASSERT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
-    std::vector<const void*> ptrs =
-        UnsetFieldsMetadataTextFormatTestUtil::GetRawAddresses(no_op_fields);
-    EXPECT_EQ(*static_cast<const bool*>(ptrs[0]), false);
-    proto.set_optional_bool(true);
-    EXPECT_EQ(*static_cast<const bool*>(ptrs[0]), true);
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_bool")));
   }
   {
     // The address returned by the field is a string_view, which is a separate
@@ -1201,14 +1200,8 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
     no_op_fields = {};
     const absl::string_view parse_string = "optional_string: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
-    ASSERT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
-    const Reflection* reflection = proto.GetReflection();
-    const FieldDescriptor* field = proto.GetDescriptor()->FindFieldByNumber(14);
-    EXPECT_EQ(
-        UnsetFieldsMetadataTextFormatTestUtil::GetRawAddresses(no_op_fields)[0],
-        UnsetFieldsMetadataTextFormatTestUtil::GetAddress(proto, *reflection,
-                                                          *field));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_string")));
   }
   {
     // The address returned by the field is a string_view, which is a separate
@@ -1216,14 +1209,8 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
     no_op_fields = {};
     const absl::string_view parse_string = "optional_bytes: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
-    ASSERT_EQ(UnsetFieldsMetadataTextFormatTestUtil::NumFields(no_op_fields),
-              1);
-    const Reflection* reflection = proto.GetReflection();
-    const FieldDescriptor* field = proto.GetDescriptor()->FindFieldByNumber(15);
-    EXPECT_EQ(
-        UnsetFieldsMetadataTextFormatTestUtil::GetRawAddresses(no_op_fields)[0],
-        UnsetFieldsMetadataTextFormatTestUtil::GetAddress(proto, *reflection,
-                                                          *field));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_bytes")));
   }
 }
 
@@ -2045,13 +2032,12 @@ TEST_F(TextFormatParserTest, InvalidFieldName) {
       1, 14);
 }
 
-TEST_F(TextFormatParserTest, InvalidCapitalization) {
-  // We require that group names be exactly as they appear in the .proto.
-  ExpectFailure(
-      "optionalgroup {\na: 15\n}\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
-      "\"optionalgroup\".",
-      1, 15);
+TEST_F(TextFormatParserTest, GroupCapitalization) {
+  // We allow group names to be the field or message name.
+  unittest::TestAllTypes proto;
+  EXPECT_TRUE(parser_.ParseFromString("optionalgroup {\na: 15\n}\n", &proto));
+  EXPECT_TRUE(parser_.ParseFromString("OptionalGroup {\na: 15\n}\n", &proto));
+
   ExpectFailure(
       "OPTIONALgroup {\na: 15\n}\n",
       "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
@@ -2062,6 +2048,27 @@ TEST_F(TextFormatParserTest, InvalidCapitalization) {
       "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
       "\"Optional_Double\".",
       1, 16);
+}
+
+TEST_F(TextFormatParserTest, DelimitedCapitalization) {
+  editions_unittest::TestDelimited proto;
+  EXPECT_TRUE(parser_.ParseFromString("grouplike {\na: 1\n}\n", &proto));
+  EXPECT_EQ(proto.grouplike().a(), 1);
+  EXPECT_TRUE(parser_.ParseFromString("GroupLike {\na: 12\n}\n", &proto));
+  EXPECT_EQ(proto.grouplike().a(), 12);
+  EXPECT_TRUE(parser_.ParseFromString("notgrouplike {\na: 15\n}\n", &proto));
+  EXPECT_EQ(proto.notgrouplike().a(), 15);
+
+  ExpectFailure(
+      "groupLike {\na: 15\n}\n",
+      "Message type \"editions_unittest.TestDelimited\" has no field named "
+      "\"groupLike\".",
+      1, 11, &proto);
+  ExpectFailure(
+      "notGroupLike {\na: 15\n}\n",
+      "Message type \"editions_unittest.TestDelimited\" has no field named "
+      "\"notGroupLike\".",
+      1, 14, &proto);
 }
 
 TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {

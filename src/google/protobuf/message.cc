@@ -11,12 +11,20 @@
 
 #include "google/protobuf/message.h"
 
-#include <iostream>
-#include <stack>
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <new>  // IWYU pragma: keep for operator new().
+#include <queue>
+#include <string>
+#include <vector>
 
-#include "absl/base/casts.h"
+#include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_join.h"
@@ -30,15 +38,15 @@
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection_internal.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -58,7 +66,6 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
-using internal::WireFormatLite;
 
 void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
   ReflectionOps::Merge(DownCast<const Message&>(from), DownCast<Message*>(&to));
@@ -70,7 +77,7 @@ void Message::MergeFrom(const Message& from) {
   if (class_to == nullptr || class_to != class_from) {
     ReflectionOps::Merge(from, this);
   } else {
-    class_to->merge_to_from(*this, from);
+    class_to->full().merge_to_from(*this, from);
   }
 }
 
@@ -89,7 +96,7 @@ void Message::CopyFrom(const Message& from) {
     ABSL_DCHECK(!internal::IsDescendant(*this, from))
         << "Source of CopyFrom cannot be a descendant of the target.";
     Clear();
-    class_to->merge_to_from(*this, from);
+    class_to->full().merge_to_from(*this, from);
   } else {
     const Descriptor* descriptor = GetDescriptor();
     ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
@@ -105,8 +112,8 @@ void Message::CopyFrom(const Message& from) {
 
 void Message::Clear() { ReflectionOps::Clear(this); }
 
-bool Message::IsInitialized() const {
-  return ReflectionOps::IsInitialized(*this);
+bool Message::IsInitializedImpl(const MessageLite& msg) {
+  return ReflectionOps::IsInitialized(DownCast<const Message&>(msg));
 }
 
 void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
@@ -129,17 +136,23 @@ void Message::DiscardUnknownFields() {
   return ReflectionOps::DiscardUnknownFields(this);
 }
 
-const char* Message::_InternalParse(const char* ptr,
-                                    internal::ParseContext* ctx) {
-#if defined(PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION)
-  auto meta = GetMetadata();
-  ptr = internal::TcParser::ParseLoop(this, ptr, ctx,
-                                      meta.reflection->GetTcParseTable());
+Metadata Message::GetMetadata() const {
+  return GetMetadataImpl(GetClassData()->full());
+}
 
-  return ptr;
-#else
-  return WireFormat::_InternalParse(this, ptr, ctx);
-#endif
+Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
+  auto* table = data.descriptor_table;
+  // Only codegen types provide a table. DynamicMessage does not provide a table
+  // and instead eagerly initializes the descriptor/reflection members.
+  if (ABSL_PREDICT_TRUE(table != nullptr)) {
+    if (ABSL_PREDICT_FALSE(data.get_metadata_tracker != nullptr)) {
+      data.get_metadata_tracker();
+    }
+    absl::call_once(*table->once, [table] {
+      internal::AssignDescriptorsOnceInnerCall(table);
+    });
+  }
+  return {data.descriptor, data.reflection};
 }
 
 uint8_t* Message::_InternalSerialize(uint8_t* target,
@@ -172,13 +185,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 }
 
 size_t Message::SpaceUsedLong() const {
-  auto* reflection = GetReflection();
-  if (PROTOBUF_PREDICT_TRUE(reflection != nullptr)) {
-    return reflection->SpaceUsedLong(*this);
-  }
-  // The only case that does not have reflection is RawMessage.
-  return internal::DownCast<const internal::RawMessageBase&>(*this)
-      .SpaceUsedLong();
+  return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
 
 static std::string GetTypeNameImpl(const MessageLite& msg) {
@@ -189,9 +196,22 @@ static std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCast<const Message&>(msg).InitializationErrorString();
 }
 
-constexpr MessageLite::DescriptorMethods Message::kDescriptorMethods = {
-    GetTypeNameImpl,
-    InitializationErrorStringImpl,
+const internal::TcParseTableBase* Message::GetTcParseTableImpl(
+    const MessageLite& msg) {
+  return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
+}
+
+size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
+  auto& msg = DownCast<const Message&>(msg_lite);
+  return msg.GetReflection()->SpaceUsedLong(msg);
+}
+
+PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
+    Message::kDescriptorMethods = {
+        GetTypeNameImpl,
+        InitializationErrorStringImpl,
+        GetTcParseTableImpl,
+        SpaceUsedLongImpl,
 };
 
 namespace internal {
@@ -209,7 +229,7 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
 // =============================================================================
 // MessageFactory
 
-MessageFactory::~MessageFactory() {}
+MessageFactory::~MessageFactory() = default;
 
 namespace {
 
@@ -235,7 +255,7 @@ class GeneratedMessageFactory final : public MessageFactory {
   {
     auto it = type_map_.find(type);
     if (it == type_map_.end()) return absl::nullopt;
-    return it->second;
+    return it->second.get();
   }
 
   const google::protobuf::internal::DescriptorTable* FindInFileMap(
@@ -281,7 +301,17 @@ class GeneratedMessageFactory final : public MessageFactory {
   DynamicMessageFactory dropped_defaults_factory_;
 
   absl::Mutex mutex_;
-  absl::flat_hash_map<const Descriptor*, const Message*> type_map_
+  class MessagePtr {
+   public:
+    MessagePtr() : value_() {}
+    explicit MessagePtr(const Message* msg) : value_(msg) {}
+    const Message* get() const { return value_; }
+    void set(const Message* msg) { value_ = msg; }
+
+   private:
+    const Message* value_;
+  };
+  absl::flat_hash_map<const Descriptor*, MessagePtr> type_map_
       ABSL_GUARDED_BY(mutex_);
 };
 
@@ -330,7 +360,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
       // And update the main map to make the next lookup faster.
       // We don't need to recheck here. Even if someone raced us here the result
       // is the same, so we can just write it.
-      type_map_[type] = result;
+      type_map_[type].set(result);
     }
   }
 
@@ -473,8 +503,8 @@ template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
 }  // namespace internal
+
 
 }  // namespace protobuf
 }  // namespace google

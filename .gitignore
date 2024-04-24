@@ -173,6 +173,7 @@ ruby/tests/test_import_pb.rb
 ruby/tests/test_ruby_package_pb.rb
 ruby/tests/generated_code_proto2_pb.rb
 ruby/tests/multi_level_nesting_test_pb.rb
+ruby/tests/service_test_pb.rb
 ruby/tests/test_import_proto2_pb.rb
 ruby/tests/test_ruby_package_proto2_pb.rb
 ruby/compatibility_tests/v3.0.0/protoc
@@ -212,3 +213,6 @@ compile_commands.json
 
 # Ignore GHA NodeJS files
 .github/**/node_modules/
+
+# Ignore Bzlmod lock file until it is more stable
+MODULE.bazel.lock

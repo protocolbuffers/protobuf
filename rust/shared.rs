@@ -13,18 +13,28 @@
 
 use std::fmt;
 
+// There are a number of manual `Debug` and similar impls instead of using their
+// derives, in order to to avoid unnecessary bounds on a generic `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+
 /// Everything in `__public` is re-exported in `protobuf.rs`.
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
-    pub use crate::map::{MapMut, MapView};
+    pub use crate::r#enum::UnknownEnumValue;
+    pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
     pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
-    pub use crate::primitive::{PrimitiveMut, SingularPrimitiveMut};
+    pub use crate::primitive::PrimitiveMut;
+    pub use crate::proto;
     pub use crate::proxied::{
         Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
     };
-    pub use crate::repeated::{RepeatedFieldRef, RepeatedMut, RepeatedView};
+    pub use crate::repeated::{
+        ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
+    };
     pub use crate::string::{BytesMut, ProtoStr, ProtoStrMut};
+    pub use crate::ParseError;
 }
 pub use __public::*;
 
@@ -44,10 +54,13 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+#[path = "enum.rs"]
+mod r#enum;
 mod macros;
 mod map;
 mod optional;
 mod primitive;
+mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
@@ -56,6 +69,8 @@ mod vtable;
 /// An error that happened during deserialization.
 #[derive(Debug, Clone)]
 pub struct ParseError;
+
+impl std::error::Error for ParseError {}
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

@@ -13,21 +13,22 @@
 #include <cstdlib>
 #include <limits>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
 #include "upb_generator/common.h"
@@ -214,16 +215,20 @@ std::string MapValueCType(upb::FieldDefPtr map_field) {
   return CType(map_field.message_type().map_value());
 }
 
-std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
-  return map_field.message_type().map_key().ctype() == kUpb_CType_String
+std::string MapKeyValueSize(upb_CType ctype, absl::string_view expr) {
+  return ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes
              ? "0"
              : absl::StrCat("sizeof(", expr, ")");
 }
 
+std::string MapKeySize(upb::FieldDefPtr map_field, absl::string_view expr) {
+  const upb_CType ctype = map_field.message_type().map_key().ctype();
+  return MapKeyValueSize(ctype, expr);
+}
+
 std::string MapValueSize(upb::FieldDefPtr map_field, absl::string_view expr) {
-  return map_field.message_type().map_value().ctype() == kUpb_CType_String
-             ? "0"
-             : absl::StrCat("sizeof(", expr, ")");
+  const upb_CType ctype = map_field.message_type().map_value().ctype();
+  return MapKeyValueSize(ctype, expr);
 }
 
 std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field,
@@ -256,11 +261,11 @@ std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
 }
 
 void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
-                               Output& output) {
+                               const Options& options, Output& output) {
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
-          return _upb_Message_HasExtensionField(msg, &$3);
+          return upb_Message_HasExtension((upb_Message*)msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
@@ -269,7 +274,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
   output(
       R"cc(
         UPB_INLINE void $0_clear_$1(struct $2* msg) {
-          _upb_Message_ClearExtensionField(msg, &$3);
+          upb_Message_ClearExtension((upb_Message*)msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
@@ -287,7 +292,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
                            &ext->UPB_PRIVATE(field)) == $5);
             $0 default_val = $6;
             $0 ret;
-            _upb_Message_GetExtensionField(msg, ext, &default_val, &ret);
+            _upb_Message_GetExtensionField((upb_Message*)msg, ext, &default_val, &ret);
             return ret;
           }
         )cc",
@@ -301,13 +306,33 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $5);
-            bool ok = _upb_Message_SetExtensionField(msg, ext, &val, arena);
+            bool ok = upb_Message_SetExtension((upb_Message*)msg, ext, &val, arena);
             UPB_ASSERT(ok);
           }
         )cc",
         CTypeConst(ext), ExtensionIdentBase(ext), ext.name(),
         MessageName(ext.containing_type()), ExtensionLayout(ext),
         GetFieldRep(pools, ext));
+
+    // Message extensions also have a Msg_mutable_foo() accessor that will
+    // create the sub-message if it doesn't already exist.
+    if (ext.IsSubMessage()) {
+      output(
+          R"cc(
+            UPB_INLINE struct $0* $1_mutable_$2(struct $3* msg,
+                                                upb_Arena* arena) {
+              struct $0* sub = (struct $0*)$1_$2(msg);
+              if (sub == NULL) {
+                sub = (struct $0*)_upb_Message_New($4, arena);
+                if (sub) $1_set_$2(msg, sub, arena);
+              }
+              return sub;
+            }
+          )cc",
+          MessageName(ext.message_type()), ExtensionIdentBase(ext), ext.name(),
+          MessageName(ext.containing_type()),
+          MessageMiniTableRef(ext.message_type(), options));
+    }
   }
 }
 
@@ -323,7 +348,8 @@ void GenerateMessageFunctionsInHeader(upb::MessageDefPtr message,
         UPB_INLINE $0* $0_parse(const char* buf, size_t size, upb_Arena* arena) {
           $0* ret = $0_new(arena);
           if (!ret) return NULL;
-          if (upb_Decode(buf, size, ret, $1, NULL, 0, arena) != kUpb_DecodeStatus_Ok) {
+          if (upb_Decode(buf, size, UPB_UPCAST(ret), $1, NULL, 0, arena) !=
+              kUpb_DecodeStatus_Ok) {
             return NULL;
           }
           return ret;
@@ -333,21 +359,21 @@ void GenerateMessageFunctionsInHeader(upb::MessageDefPtr message,
                                    int options, upb_Arena* arena) {
           $0* ret = $0_new(arena);
           if (!ret) return NULL;
-          if (upb_Decode(buf, size, ret, $1, extreg, options, arena) !=
-              kUpb_DecodeStatus_Ok) {
+          if (upb_Decode(buf, size, UPB_UPCAST(ret), $1, extreg, options,
+                         arena) != kUpb_DecodeStatus_Ok) {
             return NULL;
           }
           return ret;
         }
         UPB_INLINE char* $0_serialize(const $0* msg, upb_Arena* arena, size_t* len) {
           char* ptr;
-          (void)upb_Encode(msg, $1, 0, arena, &ptr, len);
+          (void)upb_Encode(UPB_UPCAST(msg), $1, 0, arena, &ptr, len);
           return ptr;
         }
         UPB_INLINE char* $0_serialize_ex(const $0* msg, int options,
                                          upb_Arena* arena, size_t* len) {
           char* ptr;
-          (void)upb_Encode(msg, $1, options, arena, &ptr, len);
+          (void)upb_Encode(UPB_UPCAST(msg), $1, options, arena, &ptr, len);
           return ptr;
         }
       )cc",
@@ -371,7 +397,8 @@ void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0_oneofcases $1_$2_case(const $1* msg) {
           const upb_MiniTableField field = $3;
-          return ($0_oneofcases)upb_Message_WhichOneofFieldNumber(msg, &field);
+          return ($0_oneofcases)upb_Message_WhichOneofFieldNumber(
+              UPB_UPCAST(msg), &field);
         }
       )cc",
       fullname, msg_name, oneof.name(),
@@ -388,23 +415,10 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
             const upb_MiniTableField field = $2;
-            return _upb_Message_HasNonExtensionField(msg, &field);
+            return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
           }
         )cc",
         msg_name, resolved_name, FieldInitializer(pools, field, options));
-  } else if (field.IsMap()) {
-    // Do nothing.
-  } else if (field.IsSequence()) {
-    // TODO: remove.
-    output(
-        R"cc(
-          UPB_INLINE bool $0_has_$1(const $0* msg) {
-            size_t size;
-            $0_$1(msg, &size);
-            return size != 0;
-          }
-        )cc",
-        msg_name, resolved_name);
   }
 }
 
@@ -422,7 +436,7 @@ void GenerateClear(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE void $0_clear_$1($0* msg) {
           const upb_MiniTableField field = $2;
-          _upb_Message_ClearNonExtensionField(msg, &field);
+          upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
         }
       )cc",
       msg_name, resolved_name, FieldInitializer(pools, field, options));
@@ -437,7 +451,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE size_t $0_$1_size(const $0* msg) {
           const upb_MiniTableField field = $2;
-          const upb_Map* map = upb_Message_GetMap(msg, &field);
+          const upb_Map* map = upb_Message_GetMap(UPB_UPCAST(msg), &field);
           return map ? _upb_Map_Size(map) : 0;
         }
       )cc",
@@ -446,7 +460,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE bool $0_$1_get(const $0* msg, $2 key, $3* val) {
           const upb_MiniTableField field = $4;
-          const upb_Map* map = upb_Message_GetMap(msg, &field);
+          const upb_Map* map = upb_Message_GetMap(UPB_UPCAST(msg), &field);
           if (!map) return false;
           return _upb_Map_Get(map, &key, $5, val, $6);
         }
@@ -458,7 +472,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0 $1_$2_next(const $1* msg, size_t* iter) {
           const upb_MiniTableField field = $3;
-          const upb_Map* map = upb_Message_GetMap(msg, &field);
+          const upb_Map* map = upb_Message_GetMap(UPB_UPCAST(msg), &field);
           if (!map) return NULL;
           return ($0)_upb_map_next(map, iter);
         }
@@ -475,11 +489,11 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE const upb_Map* _$0_$1_$2($0* msg) {
           const upb_MiniTableField field = $4;
-          return upb_Message_GetMap(msg, &field);
+          return upb_Message_GetMap(UPB_UPCAST(msg), &field);
         }
         UPB_INLINE upb_Map* _$0_$1_$3($0* msg, upb_Arena* a) {
           const upb_MiniTableField field = $4;
-          return _upb_Message_GetOrCreateMutableMap(msg, &field, $5, $6, a);
+          return _upb_Message_GetOrCreateMutableMap(UPB_UPCAST(msg), &field, $5, $6, a);
         }
       )cc",
       msg_name, resolved_name, kMapGetterPostfix, kMutableMapGetterPostfix,
@@ -514,10 +528,10 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0 const* $1_$2(const $1* msg, size_t* size) {
           const upb_MiniTableField field = $3;
-          const upb_Array* arr = upb_Message_GetArray(msg, &field);
+          const upb_Array* arr = upb_Message_GetArray(UPB_UPCAST(msg), &field);
           if (arr) {
-            if (size) *size = arr->size;
-            return ($0 const*)_upb_array_constptr(arr);
+            if (size) *size = arr->UPB_PRIVATE(size);
+            return ($0 const*)upb_Array_DataPtr(arr);
           } else {
             if (size) *size = 0;
             return NULL;
@@ -539,18 +553,18 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE const upb_Array* _$1_$2_$4(const $1* msg, size_t* size) {
           const upb_MiniTableField field = $3;
-          const upb_Array* arr = upb_Message_GetArray(msg, &field);
+          const upb_Array* arr = upb_Message_GetArray(UPB_UPCAST(msg), &field);
           if (size) {
-            *size = arr ? arr->size : 0;
+            *size = arr ? arr->UPB_PRIVATE(size) : 0;
           }
           return arr;
         }
-        UPB_INLINE upb_Array* _$1_$2_$5(const $1* msg, size_t* size, upb_Arena* arena) {
+        UPB_INLINE upb_Array* _$1_$2_$5($1* msg, size_t* size, upb_Arena* arena) {
           const upb_MiniTableField field = $3;
-          upb_Array* arr = upb_Message_GetOrCreateMutableArray(
-              (upb_Message*)msg, &field, arena);
+          upb_Array* arr = upb_Message_GetOrCreateMutableArray(UPB_UPCAST(msg),
+                                                               &field, arena);
           if (size) {
-            *size = arr ? arr->size : 0;
+            *size = arr ? arr->UPB_PRIVATE(size) : 0;
           }
           return arr;
         }
@@ -575,7 +589,8 @@ void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           $0 default_val = $3;
           $0 ret;
           const upb_MiniTableField field = $4;
-          _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
+          _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                            &default_val, &ret);
           return ret;
         }
       )cc",
@@ -589,8 +604,7 @@ void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
     GenerateMapGetters(field, pools, msg_name, field_names, options, output);
-  } else if (UPB_DESC(MessageOptions_map_entry)(
-                 field.containing_type().options())) {
+  } else if (field.containing_type().mapentry()) {
     GenerateMapEntryGetters(field, msg_name, output);
   } else if (field.IsSequence()) {
     GenerateRepeatedGetters(field, pools, msg_name, field_names, options,
@@ -609,7 +623,7 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE void $0_$1_clear($0* msg) {
           const upb_MiniTableField field = $2;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(msg, &field);
+          upb_Map* map = (upb_Map*)upb_Message_GetMap(UPB_UPCAST(msg), &field);
           if (!map) return;
           _upb_Map_Clear(map);
         }
@@ -619,7 +633,8 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE bool $0_$1_set($0* msg, $2 key, $3 val, upb_Arena* a) {
           const upb_MiniTableField field = $4;
-          upb_Map* map = _upb_Message_GetOrCreateMutableMap(msg, &field, $5, $6, a);
+          upb_Map* map = _upb_Message_GetOrCreateMutableMap(UPB_UPCAST(msg),
+                                                            &field, $5, $6, a);
           return _upb_Map_Insert(map, &key, $5, &val, $6, a) !=
                  kUpb_MapInsertStatus_OutOfMemory;
         }
@@ -631,7 +646,7 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE bool $0_$1_delete($0* msg, $2 key) {
           const upb_MiniTableField field = $3;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(msg, &field);
+          upb_Map* map = (upb_Map*)upb_Message_GetMap(UPB_UPCAST(msg), &field);
           if (!map) return false;
           return _upb_Map_Delete(map, &key, $4, NULL);
         }
@@ -642,7 +657,7 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0 $1_$2_nextmutable($1* msg, size_t* iter) {
           const upb_MiniTableField field = $3;
-          upb_Map* map = (upb_Map*)upb_Message_GetMap(msg, &field);
+          upb_Map* map = (upb_Map*)upb_Message_GetMap(UPB_UPCAST(msg), &field);
           if (!map) return NULL;
           return ($0)_upb_map_next(map, iter);
         }
@@ -660,10 +675,10 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0* $1_mutable_$2($1* msg, size_t* size) {
           upb_MiniTableField field = $3;
-          upb_Array* arr = upb_Message_GetMutableArray(msg, &field);
+          upb_Array* arr = upb_Message_GetMutableArray(UPB_UPCAST(msg), &field);
           if (arr) {
-            if (size) *size = arr->size;
-            return ($0*)_upb_array_ptr(arr);
+            if (size) *size = arr->UPB_PRIVATE(size);
+            return ($0*)upb_Array_MutableDataPtr(arr);
           } else {
             if (size) *size = 0;
             return NULL;
@@ -676,7 +691,8 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       R"cc(
         UPB_INLINE $0* $1_resize_$2($1* msg, size_t size, upb_Arena* arena) {
           upb_MiniTableField field = $3;
-          return ($0*)upb_Message_ResizeArrayUninitialized(msg, &field, size, arena);
+          return ($0*)upb_Message_ResizeArrayUninitialized(UPB_UPCAST(msg),
+                                                           &field, size, arena);
         }
       )cc",
       CType(field), msg_name, resolved_name,
@@ -686,13 +702,16 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         R"cc(
           UPB_INLINE struct $0* $1_add_$2($1* msg, upb_Arena* arena) {
             upb_MiniTableField field = $4;
-            upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
-            if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+            upb_Array* arr = upb_Message_GetOrCreateMutableArray(
+                UPB_UPCAST(msg), &field, arena);
+            if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
+                            arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return NULL;
             }
             struct $0* sub = (struct $0*)_upb_Message_New($3, arena);
             if (!arr || !sub) return NULL;
-            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &sub, sizeof(sub));
+            UPB_PRIVATE(_upb_Array_Set)
+            (arr, arr->UPB_PRIVATE(size) - 1, &sub, sizeof(sub));
             return sub;
           }
         )cc",
@@ -704,11 +723,14 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         R"cc(
           UPB_INLINE bool $1_add_$2($1* msg, $0 val, upb_Arena* arena) {
             upb_MiniTableField field = $3;
-            upb_Array* arr = upb_Message_GetOrCreateMutableArray(msg, &field, arena);
-            if (!arr || !_upb_Array_ResizeUninitialized(arr, arr->size + 1, arena)) {
+            upb_Array* arr = upb_Message_GetOrCreateMutableArray(
+                UPB_UPCAST(msg), &field, arena);
+            if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
+                            arr, arr->UPB_PRIVATE(size) + 1, arena)) {
               return false;
             }
-            UPB_PRIVATE(_upb_Array_Set)(arr, arr->size - 1, &val, sizeof(val));
+            UPB_PRIVATE(_upb_Array_Set)
+            (arr, arr->UPB_PRIVATE(size) - 1, &val, sizeof(val));
             return true;
           }
         )cc",
@@ -742,7 +764,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
     output(R"cc(
              UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
                const upb_MiniTableField field = $3;
-               _upb_Message_SetNonExtensionField(msg, &field, &value);
+               upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
              }
            )cc",
            msg_name, field_name, CType(field),
@@ -751,8 +773,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
 
   // Message fields also have a Msg_mutable_foo() accessor that will create
   // the sub-message if it doesn't already exist.
-  if (field.ctype() == kUpb_CType_Message &&
-      !UPB_DESC(MessageOptions_map_entry)(field.containing_type().options())) {
+  if (field.IsSubMessage() && !field.containing_type().mapentry()) {
     output(
         R"cc(
           UPB_INLINE struct $0* $1_mutable_$2($1* msg, upb_Arena* arena) {
@@ -789,7 +810,7 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
                              Output& output) {
   output("/* $0 */\n\n", message.full_name());
   std::string msg_name = ToCIdent(message.full_name());
-  if (!UPB_DESC(MessageOptions_map_entry)(message.options())) {
+  if (!message.mapentry()) {
     GenerateMessageFunctionsInHeader(message, options, output);
   }
 
@@ -901,7 +922,8 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   // Forward-declare types defined in this file.
   for (auto message : this_file_messages) {
-    output("typedef struct $0 $0;\n", ToCIdent(message.full_name()));
+    output("typedef struct $0 { upb_Message UPB_PRIVATE(base); } $0;\n",
+           ToCIdent(message.full_name()));
   }
 
   // Forward-declare types not in this file, but used as submessages.
@@ -928,7 +950,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 
   for (auto ext : this_file_exts) {
-    GenerateExtensionInHeader(pools, ext, output);
+    GenerateExtensionInHeader(pools, ext, options, output);
   }
 
   if (absl::string_view(file.name()) == "google/protobuf/descriptor.proto" ||
@@ -942,8 +964,8 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     size_t max64 = 0;
     for (const auto message : this_file_messages) {
       if (absl::EndsWith(message.name(), "Options")) {
-        size_t size32 = pools.GetMiniTable32(message)->size;
-        size_t size64 = pools.GetMiniTable64(message)->size;
+        size_t size32 = pools.GetMiniTable32(message)->UPB_PRIVATE(size);
+        size_t size64 = pools.GetMiniTable64(message)->UPB_PRIVATE(size);
         if (size32 > max32) {
           max32 = size32;
           max32_message = message;
@@ -1104,6 +1126,8 @@ bool ParseOptions(Plugin* plugin, Options* options) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
     if (pair.first == "bootstrap_upb") {
       options->bootstrap = true;
+    } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
+      continue;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;

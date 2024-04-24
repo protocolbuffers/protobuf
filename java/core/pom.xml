@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.25.0</version>
+    <version>4.28.0</version>
   </parent>
 
   <artifactId>protobuf-java</artifactId>
@@ -57,6 +57,12 @@
           <include>google/protobuf/type.proto</include>
           <include>google/protobuf/wrappers.proto</include>
           <include>google/protobuf/compiler/plugin.proto</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${protobuf.java_source.dir}</directory>
+        <includes>
+          <include>google/protobuf/java_features.proto</include>
         </includes>
       </resource>
     </resources>

@@ -67,12 +67,6 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
-// Portable fallback for Clang's __has_warning macro:
-#ifndef __has_warning
-#define __has_warning(x) 0
-#define PROTOBUF_has_warning_DEFINED_
-#endif
-
 // Portable PROTOBUF_BUILTIN_BSWAPxx definitions
 // Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
 #ifdef PROTOBUF_BUILTIN_BSWAP16
@@ -92,11 +86,6 @@
 #endif
 #if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
 #define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
-#endif
-
-// Portable check for __builtin_mul_overflow.
-#if ABSL_HAVE_BUILTIN(__builtin_mul_overflow)
-#define PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW 1
 #endif
 
 // Portable check for gcc-style atomic built-ins
@@ -170,39 +159,11 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
 
-// Used to remove the manipulation of cleared elements in RepeatedPtrField.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
-
 // Used for descriptor proto extension declarations.
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Used to remove `RepeatedPtrField::GetArena() const`.
-// Owner: ezb@
-#define PROTOBUF_FUTURE_REMOVE_CONST_REPEATEDFIELD_GETARENA_API 1
-
-// Used to make ExtensionRange into a fully-fledged descriptor class.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_EXTENSION_RANGE_CLASS 1
-
-// Used to lock down wrong ctype usages in proto file.
-// Owner: jieluo@
-#define PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE 1
-
 #endif
-
-// Defines the Protobuf C++ Version for checking version compatibility at
-// compilation time.
-#ifdef PROTOBUF_VERSION
-#error PROTOBUF_VERSION was previously defined
-#endif
-#define PROTOBUF_VERSION 4026000
-
-#ifdef PROTOBUF_VERSION_SUFFIX
-#error PROTOBUF_VERSION_SUFFIX was previously defined
-#endif
-#define PROTOBUF_VERSION_SUFFIX ""
 
 #ifdef PROTOBUF_MINIMUM_EDITION
 #error PROTOBUF_MINIMUM_EDITION was previously defined
@@ -406,18 +367,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 # define PROTOC_EXPORT
 #endif
 
-#if defined(PROTOBUF_USE_DLLS) && defined(_MSC_VER)
-# if defined(LIBPROTOBUF_TEST_EXPORTS)
-#  define PROTOBUF_TEST_EXPORTS __declspec(dllexport)
-# else
-#  define PROTOBUF_TEST_EXPORTS __declspec(dllimport)
-# endif  // defined(LIBPROTOBUF_TEST_EXPORTS)
-#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOBUF_TEST_EXPORTS)
-# define PROTOBUF_TEST_EXPORTS __attribute__((visibility("default")))
-#else
-# define PROTOBUF_TEST_EXPORTS
-#endif
-
 #if defined(PROTOBUF_PREDICT_TRUE) || defined(PROTOBUF_PREDICT_FALSE)
 #error PROTOBUF_PREDICT_(TRUE|FALSE) was previously defined
 #endif
@@ -459,10 +408,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
 #error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
-#endif
-
-#ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
-#error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
 #endif
 
 #ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
@@ -511,11 +456,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #else
 #define PROTOBUF_ALIGNAS(byte_alignment) alignas(byte_alignment)
 #endif
-
-#ifdef PROTOBUF_FINAL
-#error PROTOBUF_FINAL was previously defined
-#endif
-#define PROTOBUF_FINAL final
 
 #ifdef PROTOBUF_THREAD_LOCAL
 #error PROTOBUF_THREAD_LOCAL was previously defined
@@ -577,21 +517,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY [[clang::no_destroy]]
 #else
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY
-#endif
-
-// Force clang to always emit complete debug info for a type.
-// Clang uses constructor homing to determine when to emit debug info for a
-// type. If the constructor of a type is never used, which can happen in some
-// cases where member variables are constructed in place for optimization
-// purposes (see b/208803175 for an example), the type will have incomplete
-// debug info unless this attribute is used.
-#ifdef PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
-#error PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG was previously defined
-#endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::standalone_debug)
-#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG [[clang::standalone_debug]]
-#else
-#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
 #endif
 
 // Protobuf extensions and reflection require registration of the protos linked
@@ -687,32 +612,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
 #endif  // PROTOBUF_ASAN
 
-#ifdef PROTOBUF_TSAN_READ
-#error PROTOBUF_TSAN_READ was previously defined
-#endif
-#ifdef PROTOBUF_TSAN_WRITE
-#error PROTOBUF_TSAN_WRITE was previously defined
-#endif
-#ifdef PROTOBUF_TSAN
-// TODO: it would be preferable to use __tsan_external_read/
-// __tsan_external_write, but they can cause dlopen issues.
-#define PROTOBUF_TSAN_READ(addr)                                      \
-  do {                                                                \
-    char protobuf_tsan_dummy = *reinterpret_cast<const char *>(addr); \
-    asm volatile("" : "+r"(protobuf_tsan_dummy));                     \
-  } while (0)
-// We currently use a dedicated member for TSan checking so the value of this
-// member is not important. We can unconditionally write to it without affecting
-// correctness of the rest of the class.
-#define PROTOBUF_TSAN_WRITE(addr)        \
-  do {                                   \
-    *reinterpret_cast<char *>(addr) = 0; \
-  } while (0)
-#else  // PROTOBUF_TSAN
-#define PROTOBUF_TSAN_READ(addr) (void)0
-#define PROTOBUF_TSAN_WRITE(addr) (void)0
-#endif  // PROTOBUF_TSAN
-
 #ifdef PROTOBUF_TSAN
 #define PROTOBUF_TSAN_DECLARE_MEMBER ::uint32_t _tsan_detect_race = 0;
 #else
@@ -795,6 +694,16 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // TODO: Enable the feature by default and remove this flag.
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
 #error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
+#endif
+
+#ifdef PROTOBUF_PREFETCH_WITH_OFFSET
+#error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
+#endif
+#if defined(__x86_64__) && defined(__GNUC__)
+#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset) \
+  asm("prefetcht0 " #offset "(%0)" : : "r"(base));
+#else
+#define PROTOBUF_PREFETCH_WITH_OFFSET(base, offset)
 #endif
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
@@ -885,6 +794,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef REASON_UNKNOWN
 #pragma push_macro("SERVICE_DISABLED")
 #undef SERVICE_DISABLED
+#pragma push_macro("SERVICE_STOP")
+#undef SERVICE_STOP
 #pragma push_macro("SEVERITY_ERROR")
 #undef SEVERITY_ERROR
 #pragma push_macro("STATUS_PENDING")
@@ -914,6 +825,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #pragma push_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 #endif  // __APPLE__
+
+#if defined(ANDROID) || defined(__ANDROID__)
+// Inconvenient macro names from usr/include/limits.h in some Android NDKs.
+#pragma push_macro("UID_MAX")
+#undef UID_MAX
+#pragma push_macro("GID_MAX")
+#undef GID_MAX
+#endif  // defined(ANDROID) || defined(__ANDROID__)
 
 #ifdef __FreeBSD__
 // Inconvenient macro names from /usr/include/sys/param.h.
@@ -1070,10 +989,3 @@ namespace internal {
 #endif  // !NDEBUG
 #endif  // has_builtin(__builtin_assume)
 
-// We don't want code outside port_def doing complex testing, so
-// remove our portable condition test macros to nudge folks away from
-// using it themselves.
-#ifdef PROTOBUF_has_warning_DEFINED_
-#  undef __has_warning
-#  undef PROTOBUF_has_warning_DEFINED_
-#endif

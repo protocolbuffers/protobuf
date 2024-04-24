@@ -31,11 +31,6 @@
 from google.protobuf.internal.descriptor_test import *
 import unittest
 
-# These fail because they attempt to add fields with conflicting JSON names.
-# We don't want to support this going forward.
-MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
-MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
-
 # We pass this test, but the error message is slightly different.
 # Our error message is better.
 NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True

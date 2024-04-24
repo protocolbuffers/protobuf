@@ -7,19 +7,22 @@
 
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 
-#include <memory>
+#include <cstddef>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
+#include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 
 namespace google {
 namespace protobuf {

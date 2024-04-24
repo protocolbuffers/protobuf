@@ -22,7 +22,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
-#include "upb/message/types.h"
+#include "upb/message/message.h"
 
 namespace protos {
 namespace internal {
@@ -136,9 +136,11 @@ class RepeatedFieldProxy
   }
 
   iterator begin() const {
-    return iterator({static_cast<upb_Message**>(
-                         const_cast<void*>(upb_Array_DataPtr(this->arr_))),
-                     this->arena_});
+    return iterator(
+        {static_cast<upb_Message**>(
+             this->arr_ ? const_cast<void*>(upb_Array_DataPtr(this->arr_))
+                        : nullptr),
+         this->arena_});
   }
   iterator end() const { return begin() + this->size(); }
   reverse_iterator rbegin() const { return reverse_iterator(end()); }

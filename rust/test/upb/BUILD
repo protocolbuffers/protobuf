@@ -8,4 +8,5 @@
 #
 # To do that use:
 # * `rust_upb_proto_library` instead of `rust_proto_library`.
-# * `//rust:protobuf_upb` instead of `//rust:protobuf``.
+# * `//rust:protobuf_upb_export` instead of
+#   `//rust:protobuf`.

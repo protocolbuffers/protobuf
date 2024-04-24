@@ -12,7 +12,6 @@
 #include <stdint.h>
 
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

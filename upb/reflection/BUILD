@@ -5,18 +5,22 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
+
+# end:github_only
+load(
+    "//editions:defaults.bzl",
+    "compile_edition_defaults",
+    "embed_edition_defaults",
+)
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+
+# begin:github_only
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",
 )
-load(
-    "//src/google/protobuf/editions:defaults.bzl",
-    "compile_edition_defaults",
-    "embed_edition_defaults",
-)
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -64,8 +68,10 @@ bootstrap_cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_value",
+        "//upb:mini_descriptor",
+        "//upb:mini_table",
         "//upb:port",
+        "//upb/message:internal",
     ],
 )
 
@@ -131,20 +137,18 @@ bootstrap_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:message",
-        "//upb:message_accessors",
-        "//upb:message_accessors_internal",
         "//upb:message_copy",
-        "//upb:message_internal",
-        "//upb:message_value",
         "//upb:mini_descriptor",
-        "//upb:mini_descriptor_internal",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
+        "//upb:wire",
         "//upb/base:internal",
+        "//upb/hash",
+        "//upb/message:internal",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -160,9 +164,9 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
         "//upb:mem",
         "//upb:mini_descriptor",
-        "//upb:reflection_internal",
     ],
 )
 
@@ -176,16 +180,41 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
-        "@com_google_googletest//:gtest_main",
-        "//upb:hash",
+        ":internal",
+        "//upb:base",
         "//upb:mem",
         "//upb:port",
         "//upb:reflection",
-        "//upb:reflection_internal",
+        "//upb/hash",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
+# begin:google_only
+# compile_edition_defaults(
+#     name = "upb_edition_defaults",
+#     srcs = [
+#         "//:descriptor_proto",
+#     ],
+#     compatible_with = ["//buildenv/target:non_prod"],
+#     maximum_edition = "2023",
+#     minimum_edition = "PROTO2",
+# )
+#
+# embed_edition_defaults(
+#     name = "embedded_upb_edition_defaults_generate",
+#     compatible_with = ["//buildenv/target:non_prod"],
+#     defaults = "upb_edition_defaults",
+#     output = "internal/upb_edition_defaults.h",
+#     placeholder = "DEFAULTS_VALUE",
+#     template = "internal/upb_edition_defaults.h.template",
+# )
+# end:google_only
+
+# TODO Merge these once we deal with the whitespace issues with reversible stripping.
+# begin:github_only
 compile_edition_defaults(
     name = "upb_edition_defaults",
     srcs = [
@@ -207,8 +236,10 @@ staleness_test(
     name = "bootstrap_upb_defaults_staleness_test",
     outs = ["internal/upb_edition_defaults.h"],
     generated_pattern = "generated/%s",
+    tags = ["manual"],
     target_files = ["internal/upb_edition_defaults.h"],
 )
+# end:github_only
 
 # begin:github_only
 filegroup(
@@ -219,11 +250,14 @@ filegroup(
             "**/*.h",
             "**/*.hpp",
         ],
-        exclude = ["stage0/**"],
+        exclude = [
+            "stage0/**",
+            "cmake/**",
+        ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
 # end:github_only

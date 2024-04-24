@@ -100,7 +100,8 @@ message TestModel {
   optional string doc_id = 241;
   optional bool set_doc_id = 242;
 
-  extensions 10000 to max;
+  extensions 10000 to max
+  [verification = UNVERIFIED];
 }
 
 // Old version with fewer fields to test backward/forward compatibility.
@@ -146,7 +147,8 @@ extend TestModel {
 }
 
 message TestAnnotation {
-  extensions 10000 to max;
+  extensions 10000 to max
+  [verification = UNVERIFIED];
 }
 
 message TestMessageHasEnum {

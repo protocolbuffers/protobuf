@@ -73,31 +73,6 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
 
-PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
-    const TcParseTableBase* table) {
-  // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
-  // For fast dispatch, we'd like to have a pointer to that, but if we use
-  // that expression, there's no easy way to get back to "table", which we also
-  // need during dispatch.  It turns out that "table + 1" points exactly to
-  // fast_entries, so we just increment table by 1 here, to get the register
-  // holding the value we want.
-  table += 1;
-  while (!ctx->Done(&ptr)) {
-#if defined(__GNUC__)
-    // Note: this asm prevents the compiler (clang, specifically) from
-    // believing (thanks to CSE) that it needs to dedicate a registeer both
-    // to "table" and "&table->fast_entries".
-    // TODO: remove this asm
-    asm("" : "+r"(table));
-#endif
-    ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
-    if (ptr == nullptr) break;
-    if (ctx->LastTag() != 1) break;  // Ended on terminating tag
-  }
-  return ptr;
-}
-
 // On the fast path, a (matching) 1-byte tag already has the decoded value.
 static uint32_t FastDecodeTag(uint8_t coded_tag) {
   return coded_tag;
@@ -387,11 +362,12 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     if (field == nullptr) {
       field = inner_table->default_instance->New(msg->GetArena());
     }
-    if (group_coding) {
-      return ctx->ParseGroup<TcParser>(field, ptr, FastDecodeTag(saved_tag),
-                                       inner_table);
-    }
-    return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoop(field, ptr, ctx, inner_table);
+    };
+    return group_coding ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag),
+                                                 inner_loop)
+                        : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
   } else {
     if (field == nullptr) {
       const MessageLite* default_instance =
@@ -474,12 +450,12 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     ptr += sizeof(TagType);
     MessageLite* submsg = field.AddMessage(default_instance);
     if (aux_is_table) {
-      if (group_coding) {
-        ptr = ctx->ParseGroup<TcParser>(submsg, ptr,
-                                        FastDecodeTag(expected_tag), aux.table);
-      } else {
-        ptr = ctx->ParseMessage<TcParser>(submsg, ptr, aux.table);
-      }
+      const auto inner_loop = [&](const char* ptr) {
+        return ParseLoop(submsg, ptr, ctx, aux.table);
+      };
+      ptr = group_coding ? ctx->ParseGroupInlined(
+                               ptr, FastDecodeTag(expected_tag), inner_loop)
+                         : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
     } else {
       if (group_coding) {
         ptr = ctx->ParseGroup(submsg, ptr, FastDecodeTag(expected_tag));
@@ -2369,10 +2345,11 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     if (need_init || field == nullptr) {
       field = inner_table->default_instance->New(msg->GetArena());
     }
-    if (is_group) {
-      return ctx->ParseGroup<TcParser>(field, ptr, decoded_tag, inner_table);
-    }
-    return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoop(field, ptr, ctx, inner_table);
+    };
+    return is_group ? ctx->ParseGroupInlined(ptr, decoded_tag, inner_loop)
+                    : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
   } else {
     if (need_init || field == nullptr) {
       const MessageLite* def;
@@ -2428,9 +2405,11 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
     uint32_t next_tag;
     do {
       MessageLite* value = field.AddMessage(default_instance);
-      ptr = is_group ? ctx->ParseGroup<TcParser>(value, ptr2, decoded_tag,
-                                                 inner_table)
-                     : ctx->ParseMessage<TcParser>(value, ptr2, inner_table);
+      const auto inner_loop = [&](const char* ptr) {
+        return ParseLoop(value, ptr, ctx, inner_table);
+      };
+      ptr = is_group ? ctx->ParseGroupInlined(ptr2, decoded_tag, inner_loop)
+                     : ctx->ParseLengthDelimitedInlined(ptr2, inner_loop);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
       if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
       ptr2 = ReadTag(ptr, &next_tag);
@@ -2802,6 +2781,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+const char* TcParser::MessageSetWireFormatParseLoopLite(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<MessageLite>(
+      PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
 std::string TypeCardToString(uint16_t type_card) {
   // In here we convert the runtime value of entry.type_card back into a
   // sequence of literal enum labels. We use the mnenonic labels for nicer
@@ -2932,6 +2917,16 @@ std::string TypeCardToString(uint16_t type_card) {
 #undef PROTOBUF_INTERNAL_TYPE_CARD_CASE
 
   return out;
+}
+
+const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+  return UnknownFieldParse(tag, nullptr, ptr, ctx);
 }
 
 }  // namespace internal

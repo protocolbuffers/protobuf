@@ -1,6 +1,6 @@
 """ Custom rule to generate OSGi Manifest """
 
-load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:defs.bzl", "JavaInfo", "java_library")
 
 # Note that this rule is currently agnostic of protobuf concerns and could be
 # pulled out as a general purpose helper to allow migrations from maven to bazel
@@ -174,7 +174,7 @@ def _osgi_jar_impl(ctx):
         source_jars = source_jars.to_list()
     if len(source_jars) > 1:
         fail("osgi_jar rule doesn't know how to deal with more than one source jar.")
-    source_jar = target_java_output.source_jars[0]
+    source_jar = source_jars[0]
 
     output_jar = ctx.outputs.output_jar
 

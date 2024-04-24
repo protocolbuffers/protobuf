@@ -12,7 +12,6 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_split.h"
@@ -66,7 +65,7 @@ class TestGenerator : public CodeGenerator {
 // compiling the output which is a bit more than I care to do for this test.
 TEST(JavaPluginTest, PluginTest) {
   ABSL_CHECK_OK(
-      File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
+      File::SetContents(absl::StrCat(::testing::TempDir(), "/test.proto"),
                         "edition = \"2023\";\n"
                         "package foo;\n"
                         "option java_package = \"\";\n"
@@ -88,22 +87,22 @@ TEST(JavaPluginTest, PluginTest) {
   cli.RegisterGenerator("--java_out", &java_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  std::string proto_path = absl::StrCat("-I", TestTempDir());
-  std::string java_out = absl::StrCat("--java_out=", TestTempDir());
-  std::string test_out = absl::StrCat("--test_out=", TestTempDir());
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
+  std::string test_out = absl::StrCat("--test_out=", ::testing::TempDir());
 
-  const char* argv[] = {
-      "protoc",         proto_path.c_str(),        java_out.c_str(),
-      test_out.c_str(), "--experimental_editions", "test.proto"};
+  const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
+                        test_out.c_str(), "test.proto"};
 
-  EXPECT_EQ(0, cli.Run(6, argv));
+  EXPECT_EQ(0, cli.Run(5, argv));
 
   // Loop over the lines of the generated code and verify that we find what we
   // expect
 
   std::string output;
-  ABSL_CHECK_OK(File::GetContents(absl::StrCat(TestTempDir(), "/Test.java"),
-                                  &output, true));
+  ABSL_CHECK_OK(
+      File::GetContents(absl::StrCat(::testing::TempDir(), "/Test.java"),
+                        &output, true));
   std::vector<std::string> lines = absl::StrSplit(output, "\n");
   bool found_generated_annotation = false;
   bool found_do_not_edit = false;

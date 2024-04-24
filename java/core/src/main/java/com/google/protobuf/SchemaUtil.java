@@ -31,7 +31,7 @@ final class SchemaUtil {
   private SchemaUtil() {}
 
   /**
-   * Requires that the given message extend {@link com.google.protobuf.GeneratedMessageV3} or {@link
+   * Requires that the given message extend {@link com.google.protobuf.GeneratedMessage} or {@link
    * GeneratedMessageLite}.
    */
   public static void requireGeneratedMessage(Class<?> messageType) {
@@ -41,7 +41,7 @@ final class SchemaUtil {
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
-          "Message classes must extend GeneratedMessageV3 or GeneratedMessageLite");
+          "Message classes must extend GeneratedMessage or GeneratedMessageLite");
     }
   }
 
@@ -784,7 +784,7 @@ final class SchemaUtil {
     try {
       // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
-      return Class.forName("com.google.protobuf.GeneratedMessageV3");
+      return Class.forName("com.google.protobuf.GeneratedMessage");
     } catch (Throwable e) {
       return null;
     }

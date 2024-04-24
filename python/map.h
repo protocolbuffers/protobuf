@@ -33,10 +33,6 @@ void PyUpb_MapContainer_Reify(PyObject* self, upb_Map* map);
 // Reifies this map object if it is not already reified.
 upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* self);
 
-// Assigns `self[key] = val` for the map `self`.
-int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,
-                                       PyObject* val);
-
 // Invalidates any existing iterators for the map `obj`.
 void PyUpb_MapContainer_Invalidate(PyObject* obj);
 

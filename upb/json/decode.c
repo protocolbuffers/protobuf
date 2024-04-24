@@ -28,7 +28,6 @@
 #include "upb/message/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/message/types.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
@@ -51,12 +50,17 @@ typedef struct {
   const upb_FieldDef* debug_field;
 } jsondec;
 
+typedef struct {
+  upb_MessageValue value;
+  bool ignore;
+} upb_JsonMessageValue;
+
 enum { JD_OBJECT, JD_ARRAY, JD_STRING, JD_NUMBER, JD_TRUE, JD_FALSE, JD_NULL };
 
 /* Forward declarations of mutually-recursive functions. */
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m);
-static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
+static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
 static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
                                    const upb_MessageDef* m);
 static void jsondec_object(jsondec* d, upb_Message* msg,
@@ -787,19 +791,19 @@ static upb_MessageValue jsondec_strfield(jsondec* d, const upb_FieldDef* f) {
   return val;
 }
 
-static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
+static upb_JsonMessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
   switch (jsondec_peek(d)) {
     case JD_STRING: {
       upb_StringView str = jsondec_string(d);
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
-      upb_MessageValue val;
+      upb_JsonMessageValue val = {.ignore = false};
       if (ev) {
-        val.int32_val = upb_EnumValueDef_Number(ev);
+        val.value.int32_val = upb_EnumValueDef_Number(ev);
       } else {
         if (d->options & upb_JsonDecode_IgnoreUnknown) {
-          val.int32_val = 0;
+          val.ignore = true;
         } else {
           jsondec_errf(d, "Unknown enumerator: '" UPB_STRINGVIEW_FORMAT "'",
                        UPB_STRINGVIEW_ARGS(str));
@@ -809,15 +813,16 @@ static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
     }
     case JD_NULL: {
       if (jsondec_isnullvalue(f)) {
-        upb_MessageValue val;
+        upb_JsonMessageValue val = {.ignore = false};
         jsondec_null(d);
-        val.int32_val = 0;
+        val.value.int32_val = 0;
         return val;
       }
     }
       /* Fallthrough. */
     default:
-      return jsondec_int(d, f);
+      return (upb_JsonMessageValue){.value = jsondec_int(d, f),
+                                    .ignore = false};
   }
 }
 
@@ -856,17 +861,21 @@ static upb_MessageValue jsondec_bool(jsondec* d, const upb_FieldDef* f) {
 /* Composite types (array/message/map) ****************************************/
 
 static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Array* arr = upb_Message_Mutable(msg, f, d->arena).array;
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
-    upb_MessageValue elem = jsondec_value(d, f);
-    upb_Array_Append(arr, elem, d->arena);
+    upb_JsonMessageValue elem = jsondec_value(d, f);
+    if (!elem.ignore) {
+      upb_Array_Append(arr, elem.value, d->arena);
+    }
   }
   jsondec_arrend(d);
 }
 
 static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Map* map = upb_Message_Mutable(msg, f, d->arena).map;
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
@@ -874,17 +883,21 @@ static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
-    upb_MessageValue key, val;
+    upb_JsonMessageValue key, val;
     key = jsondec_value(d, key_f);
+    UPB_ASSUME(!key.ignore);  // Map key cannot be enum.
     jsondec_entrysep(d);
     val = jsondec_value(d, val_f);
-    upb_Map_Set(map, key, val, d->arena);
+    if (!val.ignore) {
+      upb_Map_Set(map, key.value, val.value, d->arena);
+    }
   }
   jsondec_objend(d);
 }
 
 static void jsondec_tomsg(jsondec* d, upb_Message* msg,
                           const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (upb_MessageDef_WellKnownType(m) == kUpb_WellKnown_Unspecified) {
     jsondec_object(d, msg, m);
   } else {
@@ -905,6 +918,7 @@ static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
 
 static void jsondec_field(jsondec* d, upb_Message* msg,
                           const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_StringView name;
   const upb_FieldDef* f;
   const upb_FieldDef* preserved;
@@ -959,8 +973,10 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     jsondec_tomsg(d, submsg, subm);
   } else {
-    upb_MessageValue val = jsondec_value(d, f);
-    upb_Message_SetFieldByDef(msg, f, val, d->arena);
+    upb_JsonMessageValue val = jsondec_value(d, f);
+    if (!val.ignore) {
+      upb_Message_SetFieldByDef(msg, f, val.value, d->arena);
+    }
   }
 
   d->debug_field = preserved;
@@ -968,6 +984,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
 
 static void jsondec_object(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     jsondec_field(d, msg, m);
@@ -975,7 +992,7 @@ static void jsondec_object(jsondec* d, upb_Message* msg,
   jsondec_objend(d);
 }
 
-static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
+static upb_MessageValue jsondec_nonenum(jsondec* d, const upb_FieldDef* f) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Bool:
       return jsondec_bool(d, f);
@@ -991,12 +1008,20 @@ static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
       return jsondec_strfield(d, f);
-    case kUpb_CType_Enum:
-      return jsondec_enum(d, f);
     case kUpb_CType_Message:
       return jsondec_msg(d, f);
+    case kUpb_CType_Enum:
     default:
       UPB_UNREACHABLE();
+  }
+}
+
+static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
+  if (upb_FieldDef_CType(f) == kUpb_CType_Enum) {
+    return jsondec_enum(d, f);
+  } else {
+    return (upb_JsonMessageValue){.value = jsondec_nonenum(d, f),
+                                  .ignore = false};
   }
 }
 
@@ -1060,6 +1085,7 @@ static int64_t jsondec_unixtime(int y, int m, int d, int h, int min, int s) {
 
 static void jsondec_timestamp(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_MessageValue seconds;
   upb_MessageValue nanos;
   upb_StringView str = jsondec_string(d);
@@ -1125,6 +1151,7 @@ malformed:
 
 static void jsondec_duration(jsondec* d, upb_Message* msg,
                              const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_MessageValue seconds;
   upb_MessageValue nanos;
   upb_StringView str = jsondec_string(d);
@@ -1157,6 +1184,7 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
 
 static void jsondec_listvalue(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
@@ -1175,6 +1203,7 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
 
 static void jsondec_struct(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
@@ -1197,6 +1226,7 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
 
 static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
                                    const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_MessageValue val;
   const upb_FieldDef* f;
   upb_Message* submsg;
@@ -1285,6 +1315,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
 
 static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   /* repeated string paths = 1; */
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_Array* arr = upb_Message_Mutable(msg, paths_f, d->arena).array;
@@ -1308,6 +1339,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
 
 static void jsondec_anyfield(jsondec* d, upb_Message* msg,
                              const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (upb_MessageDef_WellKnownType(m) == kUpb_WellKnown_Unspecified) {
     /* For regular types: {"@type": "[user type]", "f1": <V1>, "f2": <V2>}
      * where f1, f2, etc. are the normal fields of this type. */
@@ -1326,6 +1358,7 @@ static void jsondec_anyfield(jsondec* d, upb_Message* msg,
 
 static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
                                              const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* type_url_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* type_m;
   upb_StringView type_url = jsondec_string(d);
@@ -1355,6 +1388,7 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
 }
 
 static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   /* string type_url = 1;
    * bytes value = 2; */
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
@@ -1423,13 +1457,16 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
                             const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  upb_MessageValue val = jsondec_value(d, value_f);
-  upb_Message_SetFieldByDef(msg, value_f, val, d->arena);
+  upb_JsonMessageValue val = jsondec_value(d, value_f);
+  UPB_ASSUME(val.ignore == false);  // Wrapper cannot be an enum.
+  upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena);
 }
 
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   switch (upb_MessageDef_WellKnownType(m)) {
     case kUpb_WellKnown_Any:
       jsondec_any(d, msg, m);
@@ -1470,6 +1507,7 @@ static void jsondec_wellknown(jsondec* d, upb_Message* msg,
 
 static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
                                    const upb_MessageDef* const m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (UPB_SETJMP(d->err)) return false;
 
   jsondec_tomsg(d, msg, m);
@@ -1489,6 +1527,7 @@ static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
 bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
                     const upb_MessageDef* m, const upb_DefPool* symtab,
                     int options, upb_Arena* arena, upb_Status* status) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   jsondec d;
 
   if (size == 0) return true;

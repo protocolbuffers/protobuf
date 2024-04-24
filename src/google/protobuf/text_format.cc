@@ -18,6 +18,7 @@
 #include <atomic>
 #include <climits>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <utility>
@@ -47,6 +48,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -96,15 +98,60 @@ const char kDebugStringSilentMarkerForDetection[] = "\t ";
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 
 // Controls insertion of a marker making debug strings non-parseable, and
-// redacting annotated fields.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction{true};
+// redacting annotated fields in Protobuf's DebugString APIs.
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{false};
 
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
 }
+
+enum class Option { kNone, kShort, kUTF8 };
+
+std::string StringifyMessage(const Message& message, Option option,
+                             FieldReporterLevel reporter_level,
+                             bool enable_safe_format) {
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+
+  TextFormat::Printer printer;
+  internal::FieldReporterLevel reporter = reporter_level;
+  switch (option) {
+    case Option::kShort:
+      printer.SetSingleLineMode(true);
+      break;
+    case Option::kUTF8:
+      printer.SetUseUtf8StringEscaping(true);
+      break;
+    case Option::kNone:
+      break;
+  }
+  printer.SetExpandAny(true);
+  printer.SetRedactDebugString(enable_safe_format);
+  printer.SetRandomizeDebugString(enable_safe_format);
+  printer.SetReportSensitiveFields(reporter);
+  std::string result;
+  printer.PrintToString(message, &result);
+
+  if (option == Option::kShort) {
+    TrimTrailingSpace(result);
+  }
+
+  return result;
+}
+
+PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
+  return StringifyMessage(message, Option::kNone,
+                          FieldReporterLevel::kAbslStringify, true);
+}
 }  // namespace internal
 
 std::string Message::DebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kNone,
+                            FieldReporterLevel::kDebugString, true);
+  }
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
   std::string debug_string;
@@ -121,6 +168,12 @@ std::string Message::DebugString() const {
 }
 
 std::string Message::ShortDebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kShort,
+                            FieldReporterLevel::kShortDebugString, true);
+  }
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
   std::string debug_string;
@@ -139,6 +192,12 @@ std::string Message::ShortDebugString() const {
 }
 
 std::string Message::Utf8DebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kUTF8,
+                            FieldReporterLevel::kUtf8DebugString, true);
+  }
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
   std::string debug_string;
@@ -157,55 +216,14 @@ std::string Message::Utf8DebugString() const {
 
 void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
-namespace internal {
-
-enum class Option { kNone, kShort, kUTF8 };
-
-std::string StringifyMessage(const Message& message, Option option) {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-
-  TextFormat::Printer printer;
-  internal::FieldReporterLevel reporter = FieldReporterLevel::kAbslStringify;
-  switch (option) {
-    case Option::kShort:
-      printer.SetSingleLineMode(true);
-      reporter = FieldReporterLevel::kShortFormat;
-      break;
-    case Option::kUTF8:
-      printer.SetUseUtf8StringEscaping(true);
-      reporter = FieldReporterLevel::kUtf8Format;
-      break;
-    case Option::kNone:
-      break;
-  }
-  printer.SetExpandAny(true);
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction.load(std::memory_order_relaxed));
-  printer.SetRandomizeDebugString(true);
-  printer.SetReportSensitiveFields(reporter);
-  std::string result;
-  printer.PrintToString(message, &result);
-
-  if (option == Option::kShort) {
-    TrimTrailingSpace(result);
-  }
-
-  return result;
-}
-
-PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
-  return StringifyMessage(message, Option::kNone);
-}
-
-}  // namespace internal
-
 PROTOBUF_EXPORT std::string ShortFormat(const Message& message) {
-  return internal::StringifyMessage(message, internal::Option::kShort);
+  return internal::StringifyMessage(message, internal::Option::kShort,
+                                    FieldReporterLevel::kShortFormat, true);
 }
 
 PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
-  return internal::StringifyMessage(message, internal::Option::kUTF8);
+  return internal::StringifyMessage(message, internal::Option::kUTF8,
+                                    FieldReporterLevel::kUtf8Format, true);
 }
 
 
@@ -295,12 +313,9 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 }
 }  // namespace
 
-const void* TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldAddress(
-    const Message& message, const Reflection& reflection,
-    const FieldDescriptor& fd) {
-  // reflection->GetRaw() is a simple cast for any non-repeated type, so for
-  // simplicity we just pass in char as the template argument.
-  return &reflection.GetRaw<char>(message, &fd);
+auto TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
+    const Message& message, const FieldDescriptor& fd) -> Id {
+  return {&message, &fd};
 }
 
 // ===========================================================================
@@ -585,23 +600,19 @@ class TextFormat::Parser::ParserImpl {
         }
       } else {
         field = descriptor->FindFieldByName(field_name);
-        // Group names are expected to be capitalized as they appear in the
-        // .proto file, which actually matches their type names, not their
-        // field names.
+        // Group-like delimited fields will accept both the capitalized type
+        // names as well.
         if (field == nullptr) {
           std::string lower_field_name = field_name;
           absl::AsciiStrToLower(&lower_field_name);
           field = descriptor->FindFieldByName(lower_field_name);
           // If the case-insensitive match worked but the field is NOT a group,
-          if (field != nullptr &&
-              field->type() != FieldDescriptor::TYPE_GROUP) {
+          if (field != nullptr && !internal::cpp::IsGroupLike(*field)) {
             field = nullptr;
           }
-        }
-        // Again, special-case group names as described above.
-        if (field != nullptr && field->type() == FieldDescriptor::TYPE_GROUP &&
-            field->message_type()->name() != field_name) {
-          field = nullptr;
+          if (field != nullptr && field->message_type()->name() != field_name) {
+            field = nullptr;
+          }
         }
 
         if (field == nullptr && allow_case_insensitive_field_) {
@@ -843,20 +854,19 @@ class TextFormat::Parser::ParserImpl {
 // the message and the new value are the default. If the existing field value is
 // not the default, setting it to the default should not be treated as a no-op.
 // The pointer of this is kept in no_op_fields_ for bookkeeping.
-#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                            \
-  if (field->is_repeated()) {                                              \
-    reflection->Add##CPPTYPE(message, field, VALUE);                       \
-  } else {                                                                 \
-    if (no_op_fields_ && !field->has_presence() &&                         \
-        field->default_value_##CPPTYPELCASE() ==                           \
-            reflection->Get##CPPTYPE(*message, field) &&                   \
-        field->default_value_##CPPTYPELCASE() == VALUE) {                  \
-      no_op_fields_->addresses_.insert(                                    \
-          UnsetFieldsMetadata::GetUnsetFieldAddress(*message, *reflection, \
-                                                    *field));              \
-    } else {                                                               \
-      reflection->Set##CPPTYPE(message, field, std::move(VALUE));          \
-    }                                                                      \
+#define SET_FIELD(CPPTYPE, CPPTYPELCASE, VALUE)                    \
+  if (field->is_repeated()) {                                      \
+    reflection->Add##CPPTYPE(message, field, VALUE);               \
+  } else {                                                         \
+    if (no_op_fields_ && !field->has_presence() &&                 \
+        field->default_value_##CPPTYPELCASE() ==                   \
+            reflection->Get##CPPTYPE(*message, field) &&           \
+        field->default_value_##CPPTYPELCASE() == VALUE) {          \
+      no_op_fields_->ids_.insert(                                  \
+          UnsetFieldsMetadata::GetUnsetFieldId(*message, *field)); \
+    } else {                                                       \
+      reflection->Set##CPPTYPE(message, field, std::move(VALUE));  \
+    }                                                              \
   }
 
     switch (field->cpp_type()) {
@@ -1647,6 +1657,94 @@ class TextFormat::Printer::DebugStringFieldValuePrinter
   }
 };
 
+namespace {
+
+// Returns true if `ch` needs to be escaped in TextFormat, independent of any
+// UTF-8 validity issues.
+bool DefinitelyNeedsEscape(unsigned char ch) {
+  if (ch >= 0x80) {
+    return false;  // High byte; no escapes necessary if UTF-8 is valid.
+  }
+
+  if (!absl::ascii_isprint(ch)) {
+    return true;  // Unprintable characters need escape.
+  }
+
+  switch (ch) {
+    case '\"':
+    case '\'':
+    case '\\':
+      // These characters need escapes despite being printable.
+      return true;
+  }
+
+  return false;
+}
+
+// Returns true if this is a high byte that requires UTF-8 validation.  If the
+// UTF-8 validation fails, we must escape the byte.
+bool NeedsUtf8Validation(unsigned char ch) { return ch > 127; }
+
+// Returns the number of bytes in the prefix of `val` that do not need escaping.
+// This is like utf8_range::SpanStructurallyValid(), except that it also
+// terminates at any ASCII char that needs to be escaped in TextFormat (any char
+// that has `DefinitelyNeedsEscape(ch) == true`).
+//
+// If we could get a variant of utf8_range::SpanStructurallyValid() that could
+// terminate on any of these chars, that might be more efficient, but it would
+// be much more complicated to modify that heavily SIMD code.
+size_t SkipPassthroughBytes(absl::string_view val) {
+  for (size_t i = 0; i < val.size(); i++) {
+    unsigned char uc = val[i];
+    if (DefinitelyNeedsEscape(uc)) return i;
+    if (NeedsUtf8Validation(uc)) {
+      // Find the end of this region of consecutive high bytes, so that we only
+      // give high bytes to the UTF-8 checker.  This avoids needing to perform
+      // a second scan of the ASCII characters looking for characters that
+      // need escaping.
+      //
+      // We assume that high bytes are less frequent than plain, printable ASCII
+      // bytes, so we accept the double-scan of high bytes.
+      size_t end = i + 1;
+      for (; end < val.size(); end++) {
+        if (!NeedsUtf8Validation(val[end])) break;
+      }
+      size_t n = end - i;
+      size_t ok = utf8_range::SpanStructurallyValid(val.substr(i, n));
+      if (ok != n) return i + ok;
+      i += ok - 1;
+    }
+  }
+  return val.size();
+}
+
+}  // namespace
+
+void TextFormat::Printer::HardenedPrintString(
+    absl::string_view src, TextFormat::BaseTextGenerator* generator) {
+  // Print as UTF-8, while guarding against any invalid UTF-8 in the string
+  // field.
+  //
+  // If in the future we have a guaranteed invariant that invalid UTF-8 will
+  // never be present, we could avoid the UTF-8 check here.
+
+  generator->PrintLiteral("\"");
+  while (!src.empty()) {
+    size_t n = SkipPassthroughBytes(src);
+    if (n != 0) {
+      generator->PrintString(src.substr(0, n));
+      src.remove_prefix(n);
+      if (src.empty()) break;
+    }
+
+    // If repeated calls to CEscape() and PrintString() are expensive, we could
+    // consider batching them, at the cost of some complexity.
+    generator->PrintString(absl::CEscape(src.substr(0, 1)));
+    src.remove_prefix(1);
+  }
+  generator->PrintLiteral("\"");
+}
+
 // ===========================================================================
 //  An internal field value printer that escape UTF8 strings.
 class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
@@ -1654,9 +1752,7 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
  public:
   void PrintString(const std::string& val,
                    TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("\"");
-    generator->PrintString(absl::Utf8SafeCEscape(val));
-    generator->PrintLiteral("\"");
+    TextFormat::Printer::HardenedPrintString(val, generator);
   }
   void PrintBytes(const std::string& val,
                   TextFormat::BaseTextGenerator* generator) const override {
@@ -1956,7 +2052,9 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
 void TextFormat::FastFieldValuePrinter::PrintString(
     const std::string& val, BaseTextGenerator* generator) const {
   generator->PrintLiteral("\"");
-  generator->PrintString(absl::CEscape(val));
+  if (!val.empty()) {
+    generator->PrintString(absl::CEscape(val));
+  }
   generator->PrintLiteral("\"");
 }
 void TextFormat::FastFieldValuePrinter::PrintBytes(
@@ -1976,7 +2074,7 @@ void TextFormat::FastFieldValuePrinter::PrintFieldName(
     generator->PrintLiteral("[");
     generator->PrintString(field->PrintableNameForExtension());
     generator->PrintLiteral("]");
-  } else if (field->type() == FieldDescriptor::TYPE_GROUP) {
+  } else if (internal::cpp::IsGroupLike(*field)) {
     // Groups must be serialized with their original capitalization.
     generator->PrintString(field->message_type()->name());
   } else {
@@ -2258,6 +2356,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   const std::string& type_url = reflection->GetString(message, type_url_field);
   std::string url_prefix;
   std::string full_type_name;
+
   if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
     return false;
   }

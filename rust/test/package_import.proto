@@ -10,3 +10,7 @@ syntax = "proto2";
 package testing_packages;
 
 message ImportedMsgWithPackage {}
+
+enum ImportedEnumWithPackage {
+  IMPORTED_ENUM_WITH_PACKAGE_UNSPECIFIED = 0;
+}

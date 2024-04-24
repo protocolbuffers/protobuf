@@ -17,12 +17,12 @@ load(
     _upb_c_proto_library_aspect = "upb_c_proto_library_aspect",
 )
 load(
-    "//bazel:upb_proto_library_internal/aspect.bzl",
-    _GeneratedSrcsInfo = "GeneratedSrcsInfo",
-)
-load(
     "//bazel:upb_proto_reflection_library.bzl",
     _upb_proto_reflection_library = "upb_proto_reflection_library",
+)
+load(
+    "//bazel/private:upb_proto_library_internal/aspect.bzl",
+    _GeneratedSrcsInfo = "GeneratedSrcsInfo",
 )
 
 # Temporary alias, see b/291827469.

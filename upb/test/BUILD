@@ -6,10 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
-load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
@@ -17,6 +13,10 @@ load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_CPPOPTS",
 )
 
 # begin:google_only
@@ -68,6 +68,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
+    visibility = ["//upb:__subpackages__"],
 )
 
 upb_minitable_proto_library(
@@ -168,7 +169,6 @@ cc_library(
         "//upb:message",
         "//upb:mini_descriptor",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )
@@ -180,8 +180,9 @@ cc_test(
     deps = [
         ":proto3_test_upb_proto",
         ":proto3_test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:reflection",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -192,10 +193,30 @@ cc_test(
     deps = [
         ":editions_test_upb_c_proto",
         ":editions_test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:reflection",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "length_prefixed_test",
+    srcs = ["length_prefixed_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":test_messages_proto2_upb_minitable",
+        ":test_messages_proto2_upb_proto",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:message_compare",
+        "//upb:mini_table",
+        "//upb:wire",
+        "//upb/mem:internal",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -208,10 +229,12 @@ cc_test(
         ":test_cpp_upb_proto_reflection",
         ":timestamp_upb_proto",
         ":timestamp_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
+        "//upb:base",
         "//upb:json",
         "//upb:port",
         "//upb:reflection",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -225,11 +248,12 @@ cc_test(
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
         "//upb:port",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -243,8 +267,9 @@ cc_test(
         ":proto3_test_upb_proto",
         ":test_messages_proto2_upb_minitable",
         ":test_upb_proto",
-        "@com_google_googletest//:gtest_main",
         "//upb:mini_table",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -296,6 +321,40 @@ cc_test(
     srcs = ["test_import_empty_srcs.cc"],
     deps = [
         ":test_import_empty_srcs_upb_minitable_proto",
+        "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+            "**/test_*.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_util",
+    srcs = [
+        "fuzz_util.cc",
+        "fuzz_util.h",
+        "parse_text_proto.h",
+    ],
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = glob(
+        [
+            "**/*.proto",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+# end:github_only

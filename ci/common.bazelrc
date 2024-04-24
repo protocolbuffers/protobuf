@@ -28,6 +28,11 @@ build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 
+# Workaround Bazel 7 remote cache issues.
+# See https://github.com/bazelbuild/bazel/issues/20161
+build --experimental_remote_cache_eviction_retries=5
+build --remote_download_outputs=all
+
 # Build with all --incompatible flags that we can. This helps us prepare for
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
 # running bazelisk with the --migrate flag and filtering out all flags that
@@ -35,7 +40,6 @@ build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 build --incompatible_check_sharding_support
 build --incompatible_default_to_explicit_init_py
 build --incompatible_disable_native_android_rules
-build --incompatible_disable_runtimes_filegroups
 build --incompatible_disable_target_provider_fields
 build --incompatible_disallow_empty_glob
 build --incompatible_dont_use_javasourceinfoprovider
@@ -66,3 +70,11 @@ build --incompatible_use_host_features
 #   --incompatible_disable_objc_library_transition
 #   --incompatible_fail_on_unknown_attributes
 #   --incompatible_merge_fixed_and_default_shell_env
+
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://github.com/protocolbuffers/protobuf/issues/14313
+common --noenable_bzlmod
+
+# Important: this flag ensures that we remain compliant with the C++ layering
+# check.
+build --features=layering_check

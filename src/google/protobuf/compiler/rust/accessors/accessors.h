@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
 
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 
@@ -16,9 +17,13 @@ namespace protobuf {
 namespace compiler {
 namespace rust {
 
-void GenerateAccessorMsgImpl(Context<FieldDescriptor> field);
-void GenerateAccessorExternC(Context<FieldDescriptor> field);
-void GenerateAccessorThunkCc(Context<FieldDescriptor> field);
+// Generates the Rust accessors: expected to be called once each for each
+// Message, MessageMut and MessageView's impl.
+void GenerateAccessorMsgImpl(Context& ctx, const FieldDescriptor& field,
+                             AccessorCase accessor_case);
+
+void GenerateAccessorExternC(Context& ctx, const FieldDescriptor& field);
+void GenerateAccessorThunkCc(Context& ctx, const FieldDescriptor& field);
 
 }  // namespace rust
 }  // namespace compiler

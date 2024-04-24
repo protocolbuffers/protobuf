@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "make_shell_script",
 )
 load(
@@ -89,7 +89,6 @@ sh_test(
         "//third_party/utf8_range:utf8_range_srcs",
         "//upb:source_files",
         "//upb/base:source_files",
-        "//upb/collections:source_files",
         "//upb/hash:source_files",
         "//upb/lex:source_files",
         "//upb/mem:source_files",

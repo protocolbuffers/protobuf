@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 #define GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 
 // Must be included last.
@@ -44,6 +45,15 @@ class MapReflectionTester {
   MapIterator MapBegin(Message* message, const std::string& field_name);
   MapIterator MapEnd(Message* message, const std::string& field_name);
   int MapSize(const Message& message, const std::string& field_name);
+
+  static MapValueConstRef LookupMapValue(const Reflection& reflection,
+                                         const Message& message,
+                                         const FieldDescriptor& descriptor,
+                                         const MapKey& map_key) {
+    MapValueConstRef map_val_const;
+    reflection.LookupMapValue(message, &descriptor, map_key, &map_val_const);
+    return map_val_const;
+  }
 
   static std::string long_string() {
     return "This is a very long string that goes in the heap";

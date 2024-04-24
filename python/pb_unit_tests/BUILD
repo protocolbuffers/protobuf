@@ -5,10 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 # begin:github_only
 load("@pip_deps//:requirements.bzl", "requirement")
 # end:github_only
+
+load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 
 # begin:google_only
 # package(default_applicable_licenses = ["//upb:license"])
@@ -39,15 +40,15 @@ py_test(
     name = "numpy_test",
     srcs = ["numpy_test_wrapper.py"],
     main = "numpy_test_wrapper.py",
-    deps = [
-      requirement("numpy"),
-      "//python/google/protobuf/internal/numpy:numpy_test",
-      "//python:_message",
-    ],
     target_compatible_with = select({
-      "@system_python//:supported": [],
-      "//conditions:default": ["@platforms//:incompatible"],
+        "@system_python//:supported": [],
+        "//conditions:default": ["@platforms//:incompatible"],
     }),
+    deps = [
+        requirement("numpy"),
+        "//python:_message",
+        "//python/google/protobuf/internal/numpy:numpy_test",
+    ],
 )
 # end:github_only
 

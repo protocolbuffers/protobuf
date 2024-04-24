@@ -11,7 +11,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "upb/mini_table/internal/extension.h"
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 

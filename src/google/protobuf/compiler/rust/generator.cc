@@ -7,29 +7,29 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
-#include <iterator>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/algorithm/container.h"
-#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/crate_mapping.h"
+#include "google/protobuf/compiler/rust/enum.h"
 #include "google/protobuf/compiler/rust/message.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/relative_path.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -37,164 +37,109 @@ namespace compiler {
 namespace rust {
 namespace {
 
-// Emits openings for a tree of submodules for a given `pkg`.
-//
-// For example for `package.uses.dots.submodule.separator` this function
-// generates:
-// ```
-//   pub mod package {
-//   pub mod uses {
-//   pub mod dots {
-//   pub mod submodule {
-//   pub mod separator {
-// ```
-void EmitOpeningOfPackageModules(absl::string_view pkg,
-                                 Context<FileDescriptor> file) {
-  if (pkg.empty()) return;
-  for (absl::string_view segment : absl::StrSplit(pkg, '.')) {
-    file.Emit({{"segment", segment}},
-              R"rs(
-           pub mod $segment$ {
-           )rs");
-  }
-}
-
-// Emits closing curly brace for a tree of submodules for a given `pkg`.
-//
-// For example for `package.uses.dots.submodule.separator` this function
-// generates:
-// ```
-//   } // mod separator
-//   } // mod submodule
-//   } // mod dots
-//   } // mod uses
-//   } // mod package
-// ```
-void EmitClosingOfPackageModules(absl::string_view pkg,
-                                 Context<FileDescriptor> file) {
-  if (pkg.empty()) return;
-  std::vector<absl::string_view> segments = absl::StrSplit(pkg, '.');
-  absl::c_reverse(segments);
-
-  for (absl::string_view segment : segments) {
-    file.Emit({{"segment", segment}}, R"rs(
-      } // mod $segment$
-    )rs");
-  }
-}
-
-// Emits `pub use <internal submodule name>::Msg` for all messages of a
-// `non_primary_src` into the `primary_file`.
+// Emits `pub use <internal submodule name>::Type` for all messages and enums of
+// a `non_primary_src` into the `primary_file`.
 //
 // `non_primary_src` has to be a non-primary src of the current `proto_library`.
-void EmitPubUseOfOwnMessages(Context<FileDescriptor>& primary_file,
-                             const Context<FileDescriptor>& non_primary_src) {
-  for (int i = 0; i < non_primary_src.desc().message_type_count(); ++i) {
-    auto msg = primary_file.WithDesc(non_primary_src.desc().message_type(i));
-    auto mod = RustInternalModuleName(non_primary_src);
-    auto name = msg.desc().name();
-    primary_file.Emit({{"mod", mod}, {"Msg", name}},
-                      R"rs(
-                        pub use crate::$mod$::$Msg$;
-                        // TODO Address use for imported crates
-                        pub use crate::$mod$::$Msg$View;
-                        pub use crate::$mod$::$Msg$Mut;
-                      )rs");
+void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
+                          const FileDescriptor& non_primary_src) {
+  auto mod = RustInternalModuleName(ctx, non_primary_src);
+  ctx.Emit({{"mod", mod}}, R"rs(
+    #[allow(unused_imports)]
+    pub use crate::$mod$::*;
+  )rs");
+}
+
+// Emits `pub use <crate_name>::<modules for parent types>::Type` for all
+// messages and enums of a `dep`. This should only be
+// called for 'import public' deps.
+void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
+  std::string crate_name = GetCrateName(ctx, *dep);
+  for (int i = 0; i < dep->message_type_count(); ++i) {
+    auto* msg = dep->message_type(i);
+    auto path = GetCrateRelativeQualifiedPath(ctx, *msg);
+    ctx.Emit({{"crate", crate_name}, {"pkg::Msg", path}},
+             R"rs(
+                pub use $crate$::$pkg::Msg$;
+                pub use $crate$::$pkg::Msg$View;
+                pub use $crate$::$pkg::Msg$Mut;
+              )rs");
+  }
+  for (int i = 0; i < dep->enum_type_count(); ++i) {
+    auto* enum_ = dep->enum_type(i);
+    auto path = GetCrateRelativeQualifiedPath(ctx, *enum_);
+    ctx.Emit({{"crate", crate_name}, {"pkg::Enum", path}},
+             R"rs(
+                pub use $crate$::$pkg::Enum$;
+              )rs");
   }
 }
 
-// Emits `pub use <crate_name>::<public package>::Msg` for all messages of a
-// `dep` into the `primary_file`. This should only be called for 'import public'
-// deps.
+// Emits public imports of all files coming from dependencies (imports of local
+// files are implicitly public).
 //
-// `dep` is a primary src of a dependency of the current `proto_library`.
-// TODO: Add support for public import of non-primary srcs of deps.
-void EmitPubUseForImportedMessages(Context<FileDescriptor>& primary_file,
-                                   const Context<FileDescriptor>& dep) {
-  std::string crate_name = GetCrateName(dep);
-  for (int i = 0; i < dep.desc().message_type_count(); ++i) {
-    auto msg = primary_file.WithDesc(dep.desc().message_type(i));
-    auto path = GetCrateRelativeQualifiedPath(msg);
-    primary_file.Emit({{"crate", crate_name}, {"pkg::Msg", path}},
-                      R"rs(
-                        pub use $crate$::$pkg::Msg$;
-                        pub use $crate$::$pkg::Msg$View;
-                      )rs");
+// `import public` works transitively in C++ (although it doesn't respect
+// layering_check in clang). For Rust we actually make it layering clean because
+// Blaze compiles transitive proto deps as if they were direct.
+//
+// Note we don't reexport entire crates, only messages and enums from files that
+// have been explicitly publicly imported. It may happen that a `proto_library`
+// defines multiple files, but not all are publicly imported.
+void EmitPublicImports(Context& ctx,
+                       const std::vector<const FileDescriptor*>& srcs) {
+  absl::flat_hash_set<const FileDescriptor*> files_in_current_target(
+      srcs.begin(), srcs.end());
+  std::vector<const FileDescriptor*> files_to_visit(srcs.begin(), srcs.end());
+  absl::c_reverse(files_to_visit);
+  while (!files_to_visit.empty()) {
+    const FileDescriptor* file = files_to_visit.back();
+    files_to_visit.pop_back();
+
+    if (!files_in_current_target.contains(file)) {
+      EmitPublicImportsForDepFile(ctx, file);
+    }
+
+    for (int i = 0; i < file->public_dependency_count(); ++i) {
+      files_to_visit.push_back(file->dependency(i));
+    }
   }
 }
 
-// Emits all public imports of the current file
-void EmitPublicImports(Context<FileDescriptor>& primary_file) {
-  for (int i = 0; i < primary_file.desc().public_dependency_count(); ++i) {
-    auto dep_file = primary_file.desc().public_dependency(i);
-    // If the publicly imported file is a src of the current `proto_library`
-    // we don't need to emit `pub use` here, we already do it for all srcs in
-    // RustGenerator::Generate. In other words, all srcs are implicitly publicly
-    // imported into the primary file for Protobuf Rust.
-    // TODO: Handle the case where a non-primary src with the same
-    // declared package as the primary src publicly imports a file that the
-    // primary doesn't.
-    if (primary_file.generator_context().is_file_in_current_crate(dep_file))
-      continue;
-    auto dep = primary_file.WithDesc(dep_file);
-    EmitPubUseForImportedMessages(primary_file, dep);
-  }
-}
-
-// Emits submodule declarations so `rustc` can find non primary sources from the
-// primary file.
+// Emits submodule declarations so `rustc` can find non primary sources from
+// the primary file.
 void DeclareSubmodulesForNonPrimarySrcs(
-    Context<FileDescriptor>& primary_file,
-    absl::Span<const Context<FileDescriptor>> non_primary_srcs) {
-  std::string primary_file_path = GetRsFile(primary_file);
+    Context& ctx, const FileDescriptor& primary_file,
+    absl::Span<const FileDescriptor* const> non_primary_srcs) {
+  std::string primary_file_path = GetRsFile(ctx, primary_file);
   RelativePath primary_relpath(primary_file_path);
-  for (const auto& non_primary_src : non_primary_srcs) {
-    std::string non_primary_file_path = GetRsFile(non_primary_src);
+  for (const FileDescriptor* non_primary_src : non_primary_srcs) {
+    std::string non_primary_file_path = GetRsFile(ctx, *non_primary_src);
     std::string relative_mod_path =
         primary_relpath.Relative(RelativePath(non_primary_file_path));
-    primary_file.Emit({{"file_path", relative_mod_path},
-                       {"foo", primary_file_path},
-                       {"bar", non_primary_file_path},
-                       {"mod_name", RustInternalModuleName(non_primary_src)}},
-                      R"rs(
+    ctx.Emit({{"file_path", relative_mod_path},
+              {"foo", primary_file_path},
+              {"bar", non_primary_file_path},
+              {"mod_name", RustInternalModuleName(ctx, *non_primary_src)}},
+             R"rs(
                         #[path="$file_path$"]
+                        #[allow(non_snake_case)]
                         pub mod $mod_name$;
                       )rs");
   }
 }
 
-// Emits `pub use <...>::Msg` for all messages in non primary sources into their
-// corresponding packages (each source file can declare a different package).
-//
-// Returns the non-primary sources that should be reexported from the package of
-// the primary file.
-std::vector<const Context<FileDescriptor>*> ReexportMessagesFromSubmodules(
-    Context<FileDescriptor>& primary_file,
-    absl::Span<const Context<FileDescriptor>> non_primary_srcs) {
-  absl::btree_map<absl::string_view,
-                  std::vector<const Context<FileDescriptor>*>>
-      packages;
-  for (const Context<FileDescriptor>& ctx : non_primary_srcs) {
-    packages[ctx.desc().package()].push_back(&ctx);
+// Emits `pub use <...>::Msg` for all messages in non primary sources.
+void ReexportMessagesFromSubmodules(
+    Context& ctx, const FileDescriptor& primary_file,
+    absl::Span<const FileDescriptor* const> non_primary_srcs) {
+  for (const FileDescriptor* file : non_primary_srcs) {
+    EmitPubUseOfOwnTypes(ctx, primary_file, *file);
   }
-  for (const auto& pair : packages) {
-    // We will deal with messages for the package of the primary file later.
-    auto fds = pair.second;
-    absl::string_view package = fds[0]->desc().package();
-    if (package == primary_file.desc().package()) continue;
-
-    EmitOpeningOfPackageModules(package, primary_file);
-    for (const Context<FileDescriptor>* c : fds) {
-      EmitPubUseOfOwnMessages(primary_file, *c);
-    }
-    EmitClosingOfPackageModules(package, primary_file);
-  }
-
-  return packages[primary_file.desc().package()];
 }
+
 }  // namespace
 
-bool RustGenerator::Generate(const FileDescriptor* file_desc,
+bool RustGenerator::Generate(const FileDescriptor* file,
                              const std::string& parameter,
                              GeneratorContext* generator_context,
                              std::string* error) const {
@@ -207,17 +152,25 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
   std::vector<const FileDescriptor*> files_in_current_crate;
   generator_context->ListParsedFiles(&files_in_current_crate);
 
-  RustGeneratorContext rust_generator_context(&files_in_current_crate);
+  absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
+      import_path_to_crate_name = GetImportPathToCrateNameMap(&*opts);
+  if (!import_path_to_crate_name.ok()) {
+    *error = std::string(import_path_to_crate_name.status().message());
+    return false;
+  }
 
-  Context<FileDescriptor> file(&*opts, file_desc, &rust_generator_context,
-                               nullptr);
+  RustGeneratorContext rust_generator_context(&files_in_current_crate,
+                                              &*import_path_to_crate_name);
 
-  auto outfile = absl::WrapUnique(generator_context->Open(GetRsFile(file)));
+  Context ctx_without_printer(&*opts, &rust_generator_context, nullptr);
+
+  auto outfile = absl::WrapUnique(
+      generator_context->Open(GetRsFile(ctx_without_printer, *file)));
   io::Printer printer(outfile.get());
-  file = file.WithPrinter(&printer);
+  Context ctx = ctx_without_printer.WithPrinter(&printer);
 
   // Convenience shorthands for common symbols.
-  auto v = file.printer().WithVars({
+  auto v = ctx.printer().WithVars({
       {"std", "::__std"},
       {"pb", "::__pb"},
       {"pbi", "::__pb::__internal"},
@@ -226,68 +179,69 @@ bool RustGenerator::Generate(const FileDescriptor* file_desc,
       {"Phantom", "::__std::marker::PhantomData"},
   });
 
-  file.Emit({{"kernel", KernelRsName(file.opts().kernel)}}, R"rs(
+  ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(
     extern crate protobuf_$kernel$ as __pb;
     extern crate std as __std;
 
   )rs");
 
-  std::vector<Context<FileDescriptor>> file_contexts;
-  for (const FileDescriptor* f : files_in_current_crate) {
-    file_contexts.push_back(file.WithDesc(*f));
-  }
+  std::vector<const FileDescriptor*> file_contexts(
+      files_in_current_crate.begin(), files_in_current_crate.end());
 
   // Generating the primary file?
-  if (file_desc == rust_generator_context.primary_file()) {
+  if (file == &rust_generator_context.primary_file()) {
     auto non_primary_srcs = absl::MakeConstSpan(file_contexts).subspan(1);
-    DeclareSubmodulesForNonPrimarySrcs(file, non_primary_srcs);
-
-    std::vector<const Context<FileDescriptor>*>
-        non_primary_srcs_in_primary_package =
-            ReexportMessagesFromSubmodules(file, non_primary_srcs);
-
-    EmitOpeningOfPackageModules(file.desc().package(), file);
-
-    for (const Context<FileDescriptor>* non_primary_file :
-         non_primary_srcs_in_primary_package) {
-      EmitPubUseOfOwnMessages(file, *non_primary_file);
-    }
+    DeclareSubmodulesForNonPrimarySrcs(ctx, *file, non_primary_srcs);
+    ReexportMessagesFromSubmodules(ctx, *file, non_primary_srcs);
+    EmitPublicImports(ctx, file_contexts);
   }
-
-  EmitPublicImports(file);
 
   std::unique_ptr<io::ZeroCopyOutputStream> thunks_cc;
   std::unique_ptr<io::Printer> thunks_printer;
-  if (file.is_cpp()) {
-    thunks_cc.reset(generator_context->Open(GetThunkCcFile(file)));
+  if (ctx.is_cpp()) {
+    thunks_cc.reset(generator_context->Open(GetThunkCcFile(ctx, *file)));
     thunks_printer = std::make_unique<io::Printer>(thunks_cc.get());
 
-    thunks_printer->Emit({{"proto_h", GetHeaderFile(file)}},
+    thunks_printer->Emit({{"proto_h", GetHeaderFile(ctx, *file)}},
                          R"cc(
 #include "$proto_h$"
 #include "google/protobuf/rust/cpp_kernel/cpp_api.h"
                          )cc");
   }
 
-  for (int i = 0; i < file.desc().message_type_count(); ++i) {
-    auto msg = file.WithDesc(file.desc().message_type(i));
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    auto& msg = *file->message_type(i);
 
-    GenerateRs(msg);
-    msg.printer().PrintRaw("\n");
+    GenerateRs(ctx, msg);
+    ctx.printer().PrintRaw("\n");
 
-    if (file.is_cpp()) {
-      auto thunks_msg = msg.WithPrinter(thunks_printer.get());
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
 
-      thunks_msg.Emit({{"Msg", msg.desc().full_name()}}, R"cc(
+      thunks_ctx.Emit({{"Msg", msg.full_name()}}, R"cc(
         // $Msg$
       )cc");
-      GenerateThunksCc(thunks_msg);
-      thunks_msg.printer().PrintRaw("\n");
+      GenerateThunksCc(thunks_ctx, msg);
+      thunks_ctx.printer().PrintRaw("\n");
     }
   }
-  if (file_desc == files_in_current_crate.front()) {
-    EmitClosingOfPackageModules(file.desc().package(), file);
+
+  for (int i = 0; i < file->enum_type_count(); ++i) {
+    auto& enum_ = *file->enum_type(i);
+    GenerateEnumDefinition(ctx, enum_);
+    ctx.printer().PrintRaw("\n");
+
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
+
+      thunks_ctx.Emit({{"enum", enum_.full_name()}}, R"cc(
+        // $enum$
+      )cc");
+      GenerateEnumThunksCc(thunks_ctx, enum_);
+      thunks_ctx.printer().PrintRaw("\n");
+    }
   }
+
   return true;
 }
 

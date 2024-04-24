@@ -2,8 +2,8 @@
 
 load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_jvm_external//:defs.bzl", "java_export")
-load("//java/osgi:osgi.bzl", "osgi_java_library")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+load("//java/osgi:osgi.bzl", "osgi_java_library")
 
 JAVA_OPTS = [
     "-source 8",

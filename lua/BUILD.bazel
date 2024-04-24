@@ -6,13 +6,13 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "UPB_DEFAULT_CPPOPTS",
-)
-load(
     "//lua:lua_proto_library.bzl",
     "lua_proto_library",
+)
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
 )
 
 licenses(["notice"])
@@ -32,6 +32,7 @@ cc_library(
     deps = [
         "//upb:json",
         "//upb:message",
+        "//upb:port",
         "//upb:reflection",
         "//upb:text",
         "@lua//:liblua",
@@ -44,7 +45,9 @@ cc_binary(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/strings",
     ],
 )

@@ -20,6 +20,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import calendar
 import collections.abc
 import datetime
+import warnings
 
 from google.protobuf.internal import field_mask
 
@@ -33,6 +34,8 @@ _MILLIS_PER_SECOND = 1000
 _MICROS_PER_SECOND = 1000000
 _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
+_TIMESTAMP_SECONDS_MIN = -62135596800
+_TIMESTAMP_SECONDS_MAX = 253402300799
 
 _EPOCH_DATETIME_NAIVE = datetime.datetime(1970, 1, 1, tzinfo=None)
 _EPOCH_DATETIME_AWARE = _EPOCH_DATETIME_NAIVE.replace(
@@ -85,10 +88,10 @@ class Timestamp(object):
       and uses 3, 6 or 9 fractional digits as required to represent the
       exact time. Example of the return format: '1972-01-01T10:00:20.021Z'
     """
-    nanos = self.nanos % _NANOS_PER_SECOND
-    total_sec = self.seconds + (self.nanos - nanos) // _NANOS_PER_SECOND
-    seconds = total_sec % _SECONDS_PER_DAY
-    days = (total_sec - seconds) // _SECONDS_PER_DAY
+    _CheckTimestampValid(self.seconds, self.nanos)
+    nanos = self.nanos
+    seconds = self.seconds % _SECONDS_PER_DAY
+    days = (self.seconds - seconds) // _SECONDS_PER_DAY
     dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(days, seconds)
 
     result = dt.isoformat()
@@ -166,6 +169,7 @@ class Timestamp(object):
       else:
         seconds += (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
     # Set seconds and nanos
+    _CheckTimestampValid(seconds, nanos)
     self.seconds = int(seconds)
     self.nanos = int(nanos)
 
@@ -175,39 +179,53 @@ class Timestamp(object):
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
+    _CheckTimestampValid(self.seconds, self.nanos)
     return self.seconds * _NANOS_PER_SECOND + self.nanos
 
   def ToMicroseconds(self):
     """Converts Timestamp to microseconds since epoch."""
+    _CheckTimestampValid(self.seconds, self.nanos)
     return (self.seconds * _MICROS_PER_SECOND +
             self.nanos // _NANOS_PER_MICROSECOND)
 
   def ToMilliseconds(self):
     """Converts Timestamp to milliseconds since epoch."""
+    _CheckTimestampValid(self.seconds, self.nanos)
     return (self.seconds * _MILLIS_PER_SECOND +
             self.nanos // _NANOS_PER_MILLISECOND)
 
   def ToSeconds(self):
     """Converts Timestamp to seconds since epoch."""
+    _CheckTimestampValid(self.seconds, self.nanos)
     return self.seconds
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds since epoch to Timestamp."""
-    self.seconds = nanos // _NANOS_PER_SECOND
-    self.nanos = nanos % _NANOS_PER_SECOND
+    seconds = nanos // _NANOS_PER_SECOND
+    nanos = nanos % _NANOS_PER_SECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
 
   def FromMicroseconds(self, micros):
     """Converts microseconds since epoch to Timestamp."""
-    self.seconds = micros // _MICROS_PER_SECOND
-    self.nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
+    seconds = micros // _MICROS_PER_SECOND
+    nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds since epoch to Timestamp."""
-    self.seconds = millis // _MILLIS_PER_SECOND
-    self.nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
+    seconds = millis // _MILLIS_PER_SECOND
+    nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
 
   def FromSeconds(self, seconds):
     """Converts seconds since epoch to Timestamp."""
+    _CheckTimestampValid(seconds, 0)
     self.seconds = seconds
     self.nanos = 0
 
@@ -229,6 +247,7 @@ class Timestamp(object):
     # https://github.com/python/cpython/issues/109849) or full range (on some
     # platforms, see https://github.com/python/cpython/issues/110042) of
     # datetime.
+    _CheckTimestampValid(self.seconds, self.nanos)
     delta = datetime.timedelta(
         seconds=self.seconds,
         microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
@@ -252,8 +271,22 @@ class Timestamp(object):
     # manipulated into a long value of seconds.  During the conversion from
     # struct_time to long, the source date in UTC, and so it follows that the
     # correct transformation is calendar.timegm()
-    self.seconds = calendar.timegm(dt.utctimetuple())
-    self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    seconds = calendar.timegm(dt.utctimetuple())
+    nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
+
+
+def _CheckTimestampValid(seconds, nanos):
+  if seconds < _TIMESTAMP_SECONDS_MIN or seconds > _TIMESTAMP_SECONDS_MAX:
+    raise ValueError(
+        'Timestamp is not valid: Seconds {0} must be in range '
+        '[-62135596800, 253402300799].'.format(seconds))
+  if nanos < 0 or nanos >= _NANOS_PER_SECOND:
+    raise ValueError(
+        'Timestamp is not valid: Nanos {} must be in a range '
+        '[0, 999999].'.format(nanos))
 
 
 class Duration(object):
@@ -367,7 +400,7 @@ class Duration(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToTimedelta(self):
+  def ToTimedelta(self) -> datetime.timedelta:
     """Converts Duration to timedelta."""
     return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(

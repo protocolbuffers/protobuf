@@ -27,6 +27,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
@@ -382,8 +383,20 @@ bool IsLazy(const FieldDescriptor* field, const Options& options,
 // Is this an explicit (non-profile driven) lazy field, as denoted by
 // lazy/unverified_lazy in the descriptor?
 inline bool IsExplicitLazy(const FieldDescriptor* field) {
+  if (field->is_map() || field->is_repeated()) {
+    return false;
+  }
+
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+    return false;
+  }
+
   return field->options().lazy() || field->options().unverified_lazy();
 }
+
+internal::field_layout::TransformValidation GetLazyStyle(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer);
 
 bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
                            MessageSCCAnalyzer* scc_analyzer);
@@ -498,7 +511,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter);
 
 inline bool IsCrossFileMessage(const FieldDescriptor* field) {
-  return field->type() == FieldDescriptor::TYPE_MESSAGE &&
+  return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
          field->message_type()->file() != field->file();
 }
 
@@ -632,19 +645,6 @@ inline std::vector<const Descriptor*> FlattenMessagesInFile(
 std::vector<const Descriptor*> TopologicalSortMessagesInFile(
     const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer);
 
-template <typename F>
-void ForEachMessage(const Descriptor* descriptor, F&& func) {
-  for (int i = 0; i < descriptor->nested_type_count(); i++)
-    ForEachMessage(descriptor->nested_type(i), std::forward<F&&>(func));
-  func(descriptor);
-}
-
-template <typename F>
-void ForEachMessage(const FileDescriptor* descriptor, F&& func) {
-  for (int i = 0; i < descriptor->message_type_count(); i++)
-    ForEachMessage(descriptor->message_type(i), std::forward<F&&>(func));
-}
-
 bool HasWeakFields(const Descriptor* desc, const Options& options);
 bool HasWeakFields(const FileDescriptor* desc, const Options& options);
 
@@ -741,10 +741,16 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // decoupling the messages from the TU-wide `file_default_instances` array.
 // This way there are no static initializers in the TU pointing to any part of
 // the generated classes and they can be GC'd by the linker.
-// Instead, we inject the surviving messages by having `WeakDefaultWriter`
-// objects in a special `pb_defaults` section. The runtime will iterate this
-// section to see the list of all live objects and put them back into the
-// `file_default_instances` array.
+// Instead of direct use, we have two ways to weakly refer to the default
+// instances:
+//  - Each default instance is located on its own section, and we use a
+//    `&__start_section_name` pointer to access it. This is a reference that
+//    allows GC to happen. This step is used with dynamic linking.
+//  - We also allow merging all these sections at link time into the
+//    `pb_defaults` section. All surviving messages will be injected back into
+//    the `file_default_instances` when the runtime is initialized. This is
+//    useful when doing static linking and you want to avoid having an unbounded
+//    number of sections.
 //
 // Any object that gets GC'd will have a `nullptr` in the respective slot in the
 // `file_default_instances` array. The runtime will recognize this and will
@@ -758,12 +764,10 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // friends.
 //
 // A "pin" is adding dependency edge in the graph for the GC.
-// The `WeakDefaultWriter`, the default instance, and vtable of a message all
-// pin each other. If anyone lives, they all do. This is important.
-// The `WeakDefaultWriter` pins the default instance of the message by using it.
-// The default instance of the message pins the vtable trivially by using it.
-// The vtable pins the `WeakDefaultWriter` by having a StrongPointer into it
-// from any of the virtual functions.
+// The default instance and vtable of a message pin each other. If any one
+// lives, they both do. This is important. The default instance of the message
+// pins the vtable trivially by using it. The vtable pins the default instance
+// by having a StrongPointer into it from any of the virtual functions.
 //
 // All parent messages pin their children.
 // SPEED messages do this implicitly via the TcParseTable, which contain
@@ -772,9 +776,13 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // their codegen.
 // LITE messages do not participate at all in this feature.
 //
-// For extensions, the identifiers currently pin both the extended and extendee
-// messages. This is the status quo, but not the desired end state which should
-// change in a future update to the feature.
+// For extensions, the identifiers currently pin the extendee. The extended is
+// assumed to by pinned elsewhere since we already have an instance of it when
+// we call `.GetExtension` et al. The extension identifier itself is not
+// automatically pinned, so it has to be used to participate in the graph.
+// Registration of the extensions do not pin the extended or the extendee. At
+// registration time we will eagerly create a prototype object if one is
+// missing to insert in the extension table in ExtensionSet.
 //
 // For services, the TU unconditionally pins the request/response objects.
 // This is the status quo for simplicitly to avoid modifying the RPC layer. It
@@ -782,11 +790,27 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);
 
-// Section name to be used for the DefaultWriter object for implicit weak
-// descriptor objects.
+// Generates a strong reference to the message in `desc`, as a statement.
+std::string StrongReferenceToType(const Descriptor* desc,
+                                  const Options& options);
+
+// Generates the section name to be used for a data object when using implicit
+// weak descriptors. The prefix determines the kind of object and the section it
+// will be merged into afterwards.
 // See `UsingImplicitWeakDescriptor` above.
-std::string WeakDefaultWriterSection(const Descriptor* descriptor,
-                                     const Options& options);
+std::string WeakDescriptorDataSection(absl::string_view prefix,
+                                      const Descriptor* descriptor,
+                                      int index_in_file_messages,
+                                      const Options& options);
+
+// Section name to be used for the default instance for implicit weak descriptor
+// objects. See `UsingImplicitWeakDescriptor` above.
+inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                              int index_in_file_messages,
+                                              const Options& options) {
+  return WeakDescriptorDataSection("def", descriptor, index_in_file_messages,
+                                   options);
+}
 
 // Indicates whether we should use implicit weak fields for this file.
 bool UsingImplicitWeakFields(const FileDescriptor* file,
@@ -798,7 +822,10 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 
 inline std::string SimpleBaseClass(const Descriptor* desc,
                                    const Options& options) {
+  // The only base class we have derived from `Message`.
   if (!HasDescriptorMethods(desc->file(), options)) return "";
+  // We don't use the base class to be able to inject the weak descriptor pins.
+  if (UsingImplicitWeakDescriptor(desc->file(), options)) return "";
   if (desc->extension_range_count() != 0) return "";
   // Don't use a simple base class if the field tracking is enabled. This
   // ensures generating all methods to track.
@@ -817,18 +844,18 @@ inline bool HasSimpleBaseClass(const Descriptor* desc, const Options& options) {
 
 inline bool HasSimpleBaseClasses(const FileDescriptor* file,
                                  const Options& options) {
-  bool v = false;
-  ForEachMessage(file, [&v, &options](const Descriptor* desc) {
-    v |= HasSimpleBaseClass(desc, options);
-  });
-  return v;
+  return internal::cpp::VisitDescriptorsInFileOrder(
+      file, [&](const Descriptor* desc) {
+        return HasSimpleBaseClass(desc, options);
+      });
 }
 
 // Returns true if this message has a _tracker_ field.
 inline bool HasTracker(const Descriptor* desc, const Options& options) {
   return options.field_listener_options.inject_field_listener_events &&
          desc->file()->options().optimize_for() !=
-             google::protobuf::FileOptions::LITE_RUNTIME;
+             google::protobuf::FileOptions::LITE_RUNTIME &&
+         !IsMapEntryMessage(desc);
 }
 
 // Returns true if this message needs an Impl_ struct for it's data.
@@ -1138,6 +1165,26 @@ bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options);
 // Some descriptors, like some map entries, are not represented as a generated
 // class.
 bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options);
+
+
+// Determine if we are going to generate a tracker call for OnDeserialize.
+// This one is handled specially because we generate the PostLoopHandler for it.
+// We don't want to generate a handler if it is going to end up empty.
+bool HasOnDeserializeTracker(const Descriptor* descriptor,
+                             const Options& options);
+
+// Determine if we need a PostLoopHandler function to inject into TcParseTable's
+// ParseLoop.
+// If this returns true, the parse table generation will use
+// `&ClassName::PostLoopHandler` which should be a static function of the right
+// signature.
+bool NeedsPostLoopHandler(const Descriptor* descriptor, const Options& options);
+
+// Priority used for static initializers.
+enum InitPriority {
+  kInitPriority101,
+  kInitPriority102,
+};
 
 }  // namespace cpp
 }  // namespace compiler

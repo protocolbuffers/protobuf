@@ -194,7 +194,7 @@ public class Utf8Test {
 
   private static byte[] encodeToByteArray(String message, int length, Utf8.Processor processor) {
     byte[] output = new byte[length];
-    processor.encodeUtf8(message, output, 0, output.length);
+    int unused = processor.encodeUtf8(message, output, 0, output.length);
     return output;
   }
 

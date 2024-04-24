@@ -1,0 +1,25 @@
+matrix:
+  platform: ["debian10", "macos", "ubuntu2004", "windows"]
+
+tasks:
+  verify_targets:
+    name: "Verify build targets"
+    platform: ${{ platform }}
+    build_targets:
+    - '@protobuf//:protobuf'
+    - '@protobuf//:protobuf_lite'
+    - '@protobuf//:protoc'
+    - '@protobuf//:test_messages_proto2_cc_proto'
+    - '@protobuf//:test_messages_proto3_cc_proto'
+
+bcr_test_module:
+  module_path: "examples"
+  matrix:
+
+    platform: ["debian10", "macos", "ubuntu2004", "windows"]
+  tasks:
+    run_test_module:
+      name: "Run test module"
+      platform: ${{ platform }}
+      build_targets:
+      - "//..."

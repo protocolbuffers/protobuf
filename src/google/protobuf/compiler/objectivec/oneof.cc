@@ -23,7 +23,7 @@ namespace objectivec {
 
 OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor,
                                const GenerationOptions& generation_options)
-    : descriptor_(descriptor) {
+    : descriptor_(descriptor), generation_options_(generation_options) {
   variables_["enum_name"] = OneofEnumName(descriptor_);
   variables_["name"] = OneofName(descriptor_);
   variables_["capitalized_name"] = OneofNameCapitalized(descriptor_);
@@ -64,12 +64,15 @@ void OneofGenerator::GenerateCaseEnum(io::Printer* printer) const {
 void OneofGenerator::GeneratePublicCasePropertyDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
-  printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
-      R"objc(
-        $comments$;
-        @property(nonatomic, readonly) $enum_name$ $name$OneOfCase;
-      )objc");
+  printer->Emit({{"comments",
+                  [&] {
+                    EmitCommentsString(printer, generation_options_,
+                                       descriptor_);
+                  }}},
+                R"objc(
+                  $comments$;
+                  @property(nonatomic, readonly) $enum_name$ $name$OneOfCase;
+                )objc");
   printer->Emit("\n");
 }
 

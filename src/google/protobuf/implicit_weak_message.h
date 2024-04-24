@@ -56,29 +56,13 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   static const ImplicitWeakMessage* default_instance();
 
-  const ClassData* GetClassData() const final {
-    struct Data {
-      ClassData header;
-      char name[1];
-    };
-    static constexpr Data data = {
-        {
-            nullptr,  // merge_impl
-            nullptr,  // on_demand_register_arena_dtor
-            nullptr,  // descriptor_methods
-            PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
-        },
-        ""};
-    return &data.header;
-  }
+  const ClassData* GetClassData() const final;
 
   MessageLite* New(Arena* arena) const override {
-    return Arena::CreateMessage<ImplicitWeakMessage>(arena);
+    return Arena::Create<ImplicitWeakMessage>(arena);
   }
 
   void Clear() override { data_->clear(); }
-
-  bool IsInitialized() const override { return true; }
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override {
     const std::string* other_data =
@@ -87,8 +71,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
       data_->append(*other_data);
     }
   }
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final;
 
   size_t ByteSizeLong() const override {
     size_t size = data_ == nullptr ? 0 : data_->size();
@@ -108,6 +90,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   typedef void InternalArenaConstructable_;
 
  private:
+  static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
+                               ParseContext* ctx);
+
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.

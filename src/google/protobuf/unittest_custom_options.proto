@@ -191,6 +191,26 @@ message SettingRealsFromNegativeInts {
   option (double_opt) = -154;
 }
 
+message SettingRealsFromInf {
+  option (float_opt) = inf;
+  option (double_opt) = inf;
+}
+
+message SettingRealsFromNegativeInf {
+  option (float_opt) = -inf;
+  option (double_opt) = -inf;
+}
+
+message SettingRealsFromNan {
+  option (float_opt) = nan;
+  option (double_opt) = nan;
+}
+
+message SettingRealsFromNegativeNan {
+  option (float_opt) = -nan;
+  option (double_opt) = -nan;
+}
+
 // Options of complex message types, themselves combined and extended in
 // various ways.
 

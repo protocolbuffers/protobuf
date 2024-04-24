@@ -173,7 +173,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
     }
   }
 
-  static void SetInt32(Field f, Msg& msg, int32 x) {
+  static void SetInt32(Field f, Msg& msg, int32_t x) {
     RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddInt32(msg.msg_, f, x);
@@ -182,7 +182,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
     }
   }
 
-  static void SetUInt32(Field f, Msg& msg, uint32 x) {
+  static void SetUInt32(Field f, Msg& msg, uint32_t x) {
     RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddUInt32(msg.msg_, f, x);

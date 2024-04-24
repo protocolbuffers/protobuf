@@ -22,7 +22,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
@@ -696,17 +695,6 @@ static PyObject* EnumValueName(PyBaseDescriptor *self, PyObject *args) {
   return PyString_FromCppString(enum_value->name());
 }
 
-static PyObject* GetSyntax(PyBaseDescriptor *self, void *closure) {
-  PyErr_WarnEx(nullptr,
-               "descriptor.syntax is deprecated. It will be removed soon. "
-               "Most usages are checking field descriptors. Consider to use "
-               "has_presence, is_packed on field descriptors.",
-               1);
-  std::string syntax(FileDescriptorLegacy::SyntaxName(
-      FileDescriptorLegacy(_GetDescriptor(self)->file()).syntax()));
-  return PyUnicode_InternFromString(syntax.c_str());
-}
-
 static PyGetSetDef Getters[] = {
     {"name", (getter)GetName, nullptr, "Last name"},
     {"full_name", (getter)GetFullName, nullptr, "Full name"},
@@ -743,7 +731,6 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
-    {"syntax", (getter)GetSyntax, (setter) nullptr, "Syntax"},
     {nullptr},
 };
 
@@ -1542,17 +1529,6 @@ static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
   return CheckCalledFromGeneratedFile("_serialized_options");
 }
 
-static PyObject* GetSyntax(PyFileDescriptor *self, void *closure) {
-  PyErr_WarnEx(nullptr,
-               "descriptor.syntax is deprecated. It will be removed soon. "
-               "Most usages are checking field descriptors. Consider to use "
-               "has_presence, is_packed on field descriptors.",
-               1);
-  std::string syntax(FileDescriptorLegacy::SyntaxName(
-      FileDescriptorLegacy(_GetDescriptor(self)).syntax()));
-  return PyUnicode_InternFromString(syntax.c_str());
-}
-
 static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
   return CopyToPythonProto<FileDescriptorProto>(_GetDescriptor(self), target);
 }
@@ -1579,7 +1555,6 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
-    {"syntax", (getter)GetSyntax, (setter) nullptr, "Syntax"},
     {nullptr},
 };
 

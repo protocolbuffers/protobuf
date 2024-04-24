@@ -16,8 +16,6 @@
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
-#include "upb/message/internal/accessors.h"
-#include "upb/message/internal/extension.h"
 #include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
@@ -72,7 +70,7 @@ class Ptr final {
 #endif
 
  private:
-  Ptr(void* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
+  Ptr(upb_Message* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
 
   friend class Ptr<const T>;
   friend typename T::Access;
@@ -132,12 +130,16 @@ struct PrivateAccess {
     return message->msg();
   }
   template <typename T>
-  static auto Proxy(void* p, upb_Arena* arena) {
+  static auto Proxy(upb_Message* p, upb_Arena* arena) {
     return typename T::Proxy(p, arena);
   }
   template <typename T>
-  static auto CProxy(const void* p, upb_Arena* arena) {
+  static auto CProxy(const upb_Message* p, upb_Arena* arena) {
     return typename T::CProxy(p, arena);
+  }
+  template <typename T>
+  static auto CreateMessage(upb_Arena* arena) {
+    return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
   }
 };
 
@@ -152,7 +154,7 @@ T CreateMessage() {
 }
 
 template <typename T>
-typename T::Proxy CreateMessageProxy(void* msg, upb_Arena* arena) {
+typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
 }
 
@@ -223,8 +225,8 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid);
 
-const upb_Message_Extension* GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTableExtension* eid, upb_Arena* arena);
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value);
 
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena);
@@ -344,8 +346,8 @@ void ClearExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   static_assert(!std::is_const_v<T>, "");
-  _upb_Message_ClearExtensionField(internal::GetInternalMsg(message),
-                                   id.mini_table_ext());
+  upb_Message_ClearExtension(internal::GetInternalMsg(message),
+                             id.mini_table_ext());
 }
 
 template <typename T, typename Extendee, typename Extension,
@@ -409,15 +411,16 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   // TODO: Fix const correctness issues.
-  const upb_Message_Extension* ext = ::protos::internal::GetOrPromoteExtension(
+  upb_MessageValue value;
+  const bool ok = ::protos::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
-      id.mini_table_ext(), ::protos::internal::GetArena(message));
-  if (!ext) {
+      id.mini_table_ext(), ::protos::internal::GetArena(message), &value);
+  if (!ok) {
     return ExtensionNotFoundError(
         upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
   return Ptr<const Extension>(::protos::internal::CreateMessage<Extension>(
-      ext->data.ptr, ::protos::internal::GetArena(message)));
+      (upb_Message*)value.msg_val, ::protos::internal::GetArena(message)));
 }
 
 template <typename T, typename Extendee, typename Extension,

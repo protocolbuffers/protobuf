@@ -6,8 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // Author: jonp@google.com (Jon Perlow)
-//
-syntax = "proto2";
+edition = "2023";
 
 package protobuf_unittest;
 
@@ -15,21 +14,21 @@ option java_multiple_files = true;
 option java_outer_classname = "NestedBuilders";
 
 message Vehicle {
-  optional Engine engine = 1;
+  Engine engine = 1;
   repeated Wheel wheel = 2;
 }
 
 message Engine {
-  optional int32 cylinder = 1;
-  optional int32 liters = 2;
-  optional TimingBelt timing_belt = 3;
+  int32 cylinder = 1;
+  int32 liters = 2;
+  TimingBelt timing_belt = 3;
 }
 
 message TimingBelt {
-  optional int32 number_of_teeth = 1;
+  int32 number_of_teeth = 1;
 }
 
 message Wheel {
-  optional int32 radius = 1;
-  optional int32 width = 2;
+  int32 radius = 1;
+  int32 width = 2;
 }

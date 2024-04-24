@@ -1,0 +1,77 @@
+edition = "2023";
+
+package editions_unittest;
+
+import "google/protobuf/unittest_delimited_import.proto";
+
+option java_multiple_files = true;
+
+// Test various scenarios that are now possible in edition 2023 that weren't in
+// google.protobuf.
+
+message LengthPrefixed {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message NotGroupLikeScope {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message GroupLikeFileScope {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message TestDelimited {
+  message LengthPrefixed {
+    int32 a = 1;
+    int32 b = 2;
+  }
+  // Non-delimited field that otherwise looks group-like.
+  LengthPrefixed lengthprefixed = 1;
+
+  // Nested field for nested tests.
+  TestDelimited nested = 2 [features.message_encoding = DELIMITED];
+
+  message GroupLike {
+    int32 a = 1;
+    int32 b = 2;
+  }
+
+  // Truly group-like field.
+  GroupLike grouplike = 3 [features.message_encoding = DELIMITED];
+
+  // Delimited field that isn't group-like solely because of its name.
+  GroupLike notgrouplike = 4 [features.message_encoding = DELIMITED];
+
+  // Delimited field that isn't group-like because of the scope of its type.
+  NotGroupLikeScope notgrouplikescope = 5
+      [features.message_encoding = DELIMITED];
+
+  // Delimited field that's grouplike except that it's an imported type.
+  MessageImport messageimport = 6 [features.message_encoding = DELIMITED];
+
+  extensions 1000 to max;
+}
+
+extend TestDelimited {
+  // Non-delimited field that otherwise looks group-like.
+  LengthPrefixed lengthprefixed = 1004;
+
+  // Truly group-like extension.
+  GroupLikeFileScope grouplikefilescope = 1000
+      [features.message_encoding = DELIMITED];
+
+  // Delimited extension that isn't group-like because of its name.
+  NotGroupLikeScope not_group_like_scope = 1001
+      [features.message_encoding = DELIMITED];
+
+  // Delimited extension that isn't group-like because of the scope of its type.
+  TestDelimited.GroupLike grouplike = 1002
+      [features.message_encoding = DELIMITED];
+
+  // Delimited extension that's grouplike except that it's an imported type.
+  MessageImport messageimport = 1003 [features.message_encoding = DELIMITED];
+}

@@ -83,7 +83,7 @@ impl<T> From<Optional<T>> for Option<T> {
 
 /// A mutable view into the value of an optional field, which may be set or
 /// unset.
-pub type FieldEntry<'a, T> = Optional<PresentField<'a, T>, AbsentField<'a, T>>;
+pub type FieldEntry<'msg, T> = Optional<PresentField<'msg, T>, AbsentField<'msg, T>>;
 
 /// Methods for `_mut()` accessors of optional types.
 ///
@@ -285,11 +285,11 @@ where
 
 /// A field mutator capable of setting that is statically known to point to a
 /// non-set field.
-pub struct AbsentField<'a, T>
+pub struct AbsentField<'msg, T>
 where
-    T: ProxiedWithPresence + ?Sized + 'a,
+    T: ProxiedWithPresence + ?Sized + 'msg,
 {
-    pub(crate) inner: T::AbsentMutData<'a>,
+    pub(crate) inner: T::AbsentMutData<'msg>,
 }
 
 impl<'msg, T: ProxiedWithPresence + ?Sized + 'msg> Debug for AbsentField<'msg, T> {
@@ -432,10 +432,10 @@ mod tests {
         }
     }
 
-    fn make_field_entry<'a>(
-        msg: &'a mut MyMessage,
-        vtable: &'a ProxyVtable,
-    ) -> FieldEntry<'a, VtableProxied> {
+    fn make_field_entry<'msg>(
+        msg: &'msg mut MyMessage,
+        vtable: &'msg ProxyVtable,
+    ) -> FieldEntry<'msg, VtableProxied> {
         if (vtable.has)(&*msg) {
             Optional::Set(PresentField::from_inner(Private, VtableProxiedMut { msg, vtable }))
         } else {
@@ -494,8 +494,8 @@ mod tests {
     struct VtableProxied;
 
     impl Proxied for VtableProxied {
-        type View<'a> = VtableProxiedView;
-        type Mut<'a> = VtableProxiedMut<'a>;
+        type View<'msg> = VtableProxiedView;
+        type Mut<'msg> = VtableProxiedMut<'msg>;
     }
 
     impl ProxiedWithPresence for VtableProxied {
@@ -503,19 +503,19 @@ mod tests {
         // `Mut` in layout. Other types/runtimes could require otherwise, e.g. `Mut`
         // could be defined to only have get/set functions in its vtable, and not
         // has/clear.
-        type PresentMutData<'a> = VtableProxiedMut<'a>;
-        type AbsentMutData<'a> = VtableProxiedMut<'a>;
+        type PresentMutData<'msg> = VtableProxiedMut<'msg>;
+        type AbsentMutData<'msg> = VtableProxiedMut<'msg>;
 
-        fn clear_present_field<'a>(
-            present_mutator: Self::PresentMutData<'a>,
-        ) -> Self::AbsentMutData<'a> {
+        fn clear_present_field<'msg>(
+            present_mutator: Self::PresentMutData<'msg>,
+        ) -> Self::AbsentMutData<'msg> {
             (present_mutator.vtable.clear)(&mut *present_mutator.msg);
             present_mutator
         }
 
-        fn set_absent_to_default<'a>(
-            absent_mutator: Self::AbsentMutData<'a>,
-        ) -> Self::PresentMutData<'a> {
+        fn set_absent_to_default<'msg>(
+            absent_mutator: Self::AbsentMutData<'msg>,
+        ) -> Self::PresentMutData<'msg> {
             SettableValue::<VtableProxied>::set_on_absent(
                 absent_mutator.as_view().val(),
                 Private,
@@ -539,28 +539,28 @@ mod tests {
         }
     }
 
-    impl<'a> ViewProxy<'a> for VtableProxiedView {
+    impl<'msg> ViewProxy<'msg> for VtableProxiedView {
         type Proxied = VtableProxied;
 
-        fn as_view(&self) -> View<'a, VtableProxied> {
+        fn as_view(&self) -> View<'msg, VtableProxied> {
             *self
         }
 
         fn into_view<'shorter>(self) -> View<'shorter, VtableProxied>
         where
-            'a: 'shorter,
+            'msg: 'shorter,
         {
             self
         }
     }
 
     #[derive(Debug)]
-    struct VtableProxiedMut<'a> {
-        msg: &'a mut MyMessage,
-        vtable: &'a ProxyVtable,
+    struct VtableProxiedMut<'msg> {
+        msg: &'msg mut MyMessage,
+        vtable: &'msg ProxyVtable,
     }
 
-    impl<'a> ViewProxy<'a> for VtableProxiedMut<'a> {
+    impl<'msg> ViewProxy<'msg> for VtableProxiedMut<'msg> {
         type Proxied = VtableProxied;
 
         fn as_view(&self) -> View<'_, VtableProxied> {
@@ -569,55 +569,55 @@ mod tests {
 
         fn into_view<'shorter>(self) -> View<'shorter, VtableProxied>
         where
-            'a: 'shorter,
+            'msg: 'shorter,
         {
             VtableProxiedView::read(self.msg, self.vtable)
         }
     }
 
-    impl<'a> MutProxy<'a> for VtableProxiedMut<'a> {
+    impl<'msg> MutProxy<'msg> for VtableProxiedMut<'msg> {
         fn as_mut(&mut self) -> Mut<'_, VtableProxied> {
             VtableProxiedMut { msg: self.msg, vtable: self.vtable }
         }
 
         fn into_mut<'shorter>(self) -> Mut<'shorter, VtableProxied>
         where
-            'a: 'shorter,
+            'msg: 'shorter,
         {
             self
         }
     }
 
     impl SettableValue<VtableProxied> for View<'_, VtableProxied> {
-        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, VtableProxied>)
+        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, VtableProxied>)
         where
-            VtableProxied: 'a,
+            VtableProxied: 'msg,
         {
             SettableValue::<VtableProxied>::set_on(self.val(), Private, mutator)
         }
 
-        fn set_on_absent<'a>(
+        fn set_on_absent<'msg>(
             self,
             _private: Private,
-            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'a>,
-        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'a> {
+            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'msg>,
+        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'msg> {
             SettableValue::<VtableProxied>::set_on_absent(self.val(), Private, absent_mutator)
         }
     }
 
     impl SettableValue<VtableProxied> for i32 {
-        fn set_on<'a>(self, _private: Private, mutator: Mut<'a, VtableProxied>)
+        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, VtableProxied>)
         where
-            VtableProxied: 'a,
+            VtableProxied: 'msg,
         {
             (mutator.vtable.set)(mutator.msg, self)
         }
 
-        fn set_on_absent<'a>(
+        fn set_on_absent<'msg>(
             self,
             _private: Private,
-            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'a>,
-        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'a> {
+            absent_mutator: <VtableProxied as ProxiedWithPresence>::AbsentMutData<'msg>,
+        ) -> <VtableProxied as ProxiedWithPresence>::PresentMutData<'msg> {
             (absent_mutator.vtable.set)(absent_mutator.msg, self);
             absent_mutator
         }

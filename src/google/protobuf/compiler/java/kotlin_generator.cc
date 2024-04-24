@@ -22,7 +22,8 @@ KotlinGenerator::KotlinGenerator() {}
 KotlinGenerator::~KotlinGenerator() {}
 
 uint64_t KotlinGenerator::GetSupportedFeatures() const {
-  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |
+         CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
 }
 
 bool KotlinGenerator::Generate(const FileDescriptor* file,

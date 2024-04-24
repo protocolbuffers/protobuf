@@ -48,6 +48,8 @@ class MessageGenerator {
 
   ~MessageGenerator() = default;
 
+  int index_in_file_messages() const { return index_in_file_messages_; }
+
   // Append the two types of nested generators to the corresponding vector.
   void AddGenerators(
       std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
@@ -129,6 +131,7 @@ class MessageGenerator {
   void GenerateCopyFrom(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);
+  bool NeedsIsInitialized();
 
   // Helpers for GenerateSerializeWithCachedSizes().
   //

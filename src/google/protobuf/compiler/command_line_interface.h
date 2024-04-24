@@ -193,6 +193,11 @@ class PROTOC_EXPORT CommandLineInterface {
   void SetVersionInfo(const std::string& text) { version_info_ = text; }
 
 
+  // Configure protoc to act as if we're in opensource.
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
  private:
   // -----------------------------------------------------------------
 
@@ -240,7 +245,7 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Read an argument file and append the file's content to the list of
   // arguments. Return false if the file cannot be read.
-  bool ExpandArgumentFile(const std::string& file,
+  bool ExpandArgumentFile(const char* file,
                           std::vector<std::string>* arguments);
 
   // Parses a command-line argument into a name/value pair.  Returns
@@ -294,8 +299,8 @@ class PROTOC_EXPORT CommandLineInterface {
   bool WriteDescriptorSet(
       const std::vector<const FileDescriptor*>& parsed_files);
 
-  // Implements the --experimental_edition_defaults_out option.
-  bool WriteExperimentalEditionDefaults(const DescriptorPool& pool);
+  // Implements the --edition_defaults_out option.
+  bool WriteEditionDefaults(const DescriptorPool& pool);
 
   // Implements the --dependency_out option
   bool GenerateDependencyManifestFile(
@@ -434,9 +439,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // FileDescriptorSet should be written.  Otherwise, empty.
   std::string descriptor_set_out_name_;
 
-  std::string experimental_edition_defaults_out_name_;
-  Edition experimental_edition_defaults_minimum_;
-  Edition experimental_edition_defaults_maximum_;
+  std::string edition_defaults_out_name_;
+  Edition edition_defaults_minimum_;
+  Edition edition_defaults_maximum_;
 
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
@@ -463,6 +468,8 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
+
+  bool opensource_runtime_ = PROTO2_IS_OSS;
 };
 
 }  // namespace compiler

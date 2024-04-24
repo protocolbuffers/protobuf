@@ -35,8 +35,6 @@ package com.google.protobuf.jruby;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.GenericDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor.Syntax.*;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -84,27 +82,6 @@ public class RubyFileDescriptor extends RubyObject {
   public IRubyObject getName(ThreadContext context) {
     String name = fileDescriptor.getName();
     return name == null ? context.nil : context.runtime.newString(name);
-  }
-
-  /*
-   * call-seq:
-   *     FileDescriptor.syntax => syntax
-   *
-   * Returns this file descriptors syntax.
-   *
-   * Valid syntax versions are:
-   *     :proto2 or :proto3.
-   */
-  @JRubyMethod(name = "syntax")
-  public IRubyObject getSyntax(ThreadContext context) {
-    switch (LegacyFileDescriptor.getSyntax(fileDescriptor)) {
-      case PROTO2:
-        return context.runtime.newSymbol("proto2");
-      case PROTO3:
-        return context.runtime.newSymbol("proto3");
-      default:
-        return context.nil;
-    }
   }
 
   @JRubyMethod

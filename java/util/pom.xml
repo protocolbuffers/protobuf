@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.25.0</version>
+    <version>4.28.0</version>
   </parent>
 
   <artifactId>protobuf-java-util</artifactId>
@@ -88,6 +88,7 @@
                   <arg value="--proto_path=${protobuf.source.dir}"/>
                   <arg value="--proto_path=src/test/proto"/>
                   <arg value="src/test/proto/com/google/protobuf/util/json_test.proto"/>
+                  <arg value="src/test/proto/com/google/protobuf/util/json_test_proto2.proto"/>
                 </exec>
               </target>
             </configuration>
@@ -123,9 +124,14 @@
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <configuration>
           <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java18</artifactId>
+            <version>1.0</version>
+          </signature>
+          <signature>
             <groupId>net.sf.androidscents.signature</groupId>
-            <artifactId>android-api-level-19</artifactId>
-            <version>4.4.2_r4</version>
+            <artifactId>android-api-level-21</artifactId>
+            <version>5.0.1_r2</version>
           </signature>
         </configuration>
         <executions>

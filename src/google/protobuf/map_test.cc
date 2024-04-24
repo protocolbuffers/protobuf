@@ -10,6 +10,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -21,6 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/internal_visibility_for_testing.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
@@ -170,6 +172,48 @@ TEST(MapTest, CopyConstructMessagesWithArena) {
   EXPECT_EQ(map1["2"].GetArena(), &arena);
 }
 
+TEST(MapTest, AlwaysSerializesBothEntries) {
+  for (const Message* prototype :
+       {static_cast<const Message*>(
+            &protobuf_unittest::TestI32StrMap::default_instance()),
+        static_cast<const Message*>(
+            &proto3_unittest::TestI32StrMap::default_instance())}) {
+    const FieldDescriptor* map_field =
+        prototype->GetDescriptor()->FindFieldByName("m_32_str");
+    const FieldDescriptor* map_key = map_field->message_type()->map_key();
+    const FieldDescriptor* map_value = map_field->message_type()->map_value();
+    for (bool add_key : {true, false}) {
+      for (bool add_value : {true, false}) {
+        std::unique_ptr<Message> message(prototype->New());
+        Message* entry_message =
+            message->GetReflection()->AddMessage(message.get(), map_field);
+        // Add the fields, but leave them as the default to make it easier to
+        // match.
+        if (add_key) {
+          entry_message->GetReflection()->SetInt32(entry_message, map_key, 0);
+        }
+        if (add_value) {
+          entry_message->GetReflection()->SetString(entry_message, map_value,
+                                                    "");
+        }
+        ASSERT_EQ(4, entry_message->ByteSizeLong());
+        EXPECT_EQ(entry_message->SerializeAsString(),
+                  std::string({
+                      '\010', '\0',  // key, VARINT, value=0
+                      '\022', '\0',  // value, LEN, size=0
+                  }));
+        ASSERT_EQ(6, message->ByteSizeLong());
+        EXPECT_EQ(message->SerializeAsString(),
+                  std::string({
+                      '\012', '\04',  // field=1, LEN, size=4
+                      '\010', '\0',   // key, VARINT, value=0
+                      '\022', '\0',   // value, LEN, size=0
+                  }));
+      }
+    }
+  }
+}
+
 TEST(MapTest, LoadFactorCalculationWorks) {
   // Three stages:
   //  - empty
@@ -198,7 +242,7 @@ TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
   for (int i = 0; i < kNumFields; ++i) {
-    values.push_back(Arena::CreateMessage<Map<int, int>>(&arena));
+    values.push_back(Arena::Create<Map<int, int>>(&arena));
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
       field[j] = j;
@@ -225,6 +269,17 @@ TEST(MapTest, SizeTypeIsSizeT) {
   size_t x = 0;
   x = std::max(M().size(), x);
   (void)x;
+}
+
+TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
+  Map<int, int> map;
+  EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cbegin()).node_,
+            nullptr);
+  map.insert({1, 1});
+  // This behavior is depended on by Rust FFI.
+  EXPECT_NE(internal::UntypedMapIterator::FromTyped(map.cbegin()).node_,
+            nullptr);
+  EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cend()).node_, nullptr);
 }
 
 template <typename Aligned, bool on_arena = false>
