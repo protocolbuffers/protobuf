@@ -39,8 +39,9 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     AccessorCase accessor_case) const {
   auto& key_type = *field.message_type()->map_key();
   auto& value_type = *field.message_type()->map_value();
+  std::string field_name = FieldNameWithCollisionAvoidance(field);
 
-  ctx.Emit({{"field", RsSafeName(field.name())},
+  ctx.Emit({{"field", RsSafeName(field_name)},
             {"Key", RsTypePath(ctx, key_type)},
             {"Value", RsTypePath(ctx, value_type)},
             {"view_lifetime", ViewLifetime(accessor_case)},

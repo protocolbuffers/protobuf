@@ -193,10 +193,11 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
                if (rs_type.empty()) {
                  continue;
                }
+               std::string field_name = FieldNameWithCollisionAvoidance(field);
                ctx.Emit(
                    {
                        {"case", OneofCaseRsName(field)},
-                       {"rs_getter", RsSafeName(field.name())},
+                       {"rs_getter", RsSafeName(field_name)},
                        {"type", rs_type},
                    },
                    R"rs(

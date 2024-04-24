@@ -22,7 +22,8 @@ namespace rust {
 
 void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                               AccessorCase accessor_case) const {
-  ctx.Emit({{"field", RsSafeName(field.name())},
+  std::string field_name = FieldNameWithCollisionAvoidance(field);
+  ctx.Emit({{"field", RsSafeName(field_name)},
             {"RsType", RsTypePath(ctx, field)},
             {"view_lifetime", ViewLifetime(accessor_case)},
             {"view_self", ViewReceiver(accessor_case)},

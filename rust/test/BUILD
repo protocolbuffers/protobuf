@@ -342,23 +342,23 @@ rust_cc_proto_library(
 )
 
 proto_library(
-    name = "reserved_proto",
+    name = "bad_names_proto",
     testonly = True,
-    srcs = ["reserved.proto"],
+    srcs = ["bad_names.proto"],
 )
 
 rust_cc_proto_library(
-    name = "reserved_cc_rust_proto",
+    name = "bad_names_cc_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":reserved_proto"],
+    deps = [":bad_names_proto"],
 )
 
 rust_upb_proto_library(
-    name = "reserved_upb_rust_proto",
+    name = "bad_names_upb_rust_proto",
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [":reserved_proto"],
+    deps = [":bad_names_proto"],
 )
 
 proto_library(

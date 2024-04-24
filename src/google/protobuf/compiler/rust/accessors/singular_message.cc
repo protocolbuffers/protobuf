@@ -24,9 +24,10 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                 AccessorCase accessor_case) const {
   // fully qualified message name with modules prefixed
   std::string msg_type = RsTypePath(ctx, field);
+  std::string field_name = FieldNameWithCollisionAvoidance(field);
   ctx.Emit({{"msg_type", msg_type},
-            {"field", RsSafeName(field.name())},
-            {"raw_field_name", field.name()},
+            {"field", RsSafeName(field_name)},
+            {"raw_field_name", field_name},
             {"view_lifetime", ViewLifetime(accessor_case)},
             {"view_self", ViewReceiver(accessor_case)},
             {"getter_thunk", ThunkName(ctx, field, "get")},
