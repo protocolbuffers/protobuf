@@ -38,7 +38,6 @@ public final class RuntimeVersion {
   public static final String SUFFIX = OSS_SUFFIX;
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
-  private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
 
   /**
    * Validates that the gencode version is compatible with this runtime version according to

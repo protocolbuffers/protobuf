@@ -65,6 +65,7 @@ class RuntimeVersionTest(unittest.TestCase):
     )
 
   def test_newer_runtime_version_allowed(self):
+
     runtime_version.ValidateProtobufRuntimeVersion(
         runtime_version.DOMAIN,
         runtime_version.MAJOR,

@@ -8,8 +8,10 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.logging.Level.WARNING;
 import static org.junit.Assert.assertThrows;
 
+import java.util.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
