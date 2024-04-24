@@ -105,6 +105,7 @@ class FieldDefPtr {
   OneofDefPtr real_containing_oneof() const;
 
   // Convenient field type tests.
+  bool IsEnum() const { return upb_FieldDef_IsEnum(ptr_); }
   bool IsSubMessage() const { return upb_FieldDef_IsSubMessage(ptr_); }
   bool IsString() const { return upb_FieldDef_IsString(ptr_); }
   bool IsSequence() const { return upb_FieldDef_IsRepeated(ptr_); }
