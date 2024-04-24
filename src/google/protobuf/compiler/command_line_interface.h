@@ -470,6 +470,7 @@ class PROTOC_EXPORT CommandLineInterface {
   bool deterministic_output_ = false;
 
   bool opensource_runtime_ = PROTO2_IS_OSS;
+
 };
 
 }  // namespace compiler
