@@ -23,6 +23,7 @@ rust_library(
         "message_value.rs",
         "mini_table.rs",
         "opaque_pointee.rs",
+        "owned_arena_box.rs",
         "string_view.rs",
         "wire.rs",
     ],

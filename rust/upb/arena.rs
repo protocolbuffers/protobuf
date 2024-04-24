@@ -3,7 +3,7 @@ use std::alloc::{self, Layout};
 use std::cell::UnsafeCell;
 use std::marker::PhantomData;
 use std::mem::{align_of, MaybeUninit};
-use std::ptr::NonNull;
+use std::ptr::{self, NonNull};
 use std::slice;
 
 opaque_pointee!(upb_Arena);
@@ -94,6 +94,53 @@ impl Arena {
         // - `[MaybeUninit<u8>]` has no alignment requirement, and `ptr` is aligned to a
         //   `UPB_MALLOC_ALIGN` boundary.
         unsafe { slice::from_raw_parts_mut(ptr.cast(), layout.size()) }
+    }
+
+    /// Same as alloc() but panics if `layout.align() > UPB_MALLOC_ALIGN`.
+    #[allow(clippy::mut_from_ref)]
+    #[inline]
+    pub fn checked_alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
+        assert!(layout.align() <= UPB_MALLOC_ALIGN);
+        // SAFETY: layout.align() <= UPB_MALLOC_ALIGN asserted.
+        unsafe { self.alloc(layout) }
+    }
+
+    /// Copies the T into this arena and returns a pointer to the T data inside
+    /// the arena.
+    pub fn copy_in<'a, T: Copy>(&'a self, data: &T) -> &'a T {
+        let layout = Layout::for_value(data);
+        let alloc = self.checked_alloc(layout);
+
+        // SAFETY:
+        // - alloc is valid for `layout.len()` bytes and is the uninit bytes are written
+        //   to not read from until written.
+        // - T is copy so copying the bytes of the value is sound.
+        unsafe {
+            let alloc = alloc.as_mut_ptr().cast::<MaybeUninit<T>>();
+            // let data = (data as *const T).cast::<MaybeUninit<T>>();
+            (*alloc).write(*data)
+        }
+    }
+
+    pub fn copy_str_in<'a>(&'a self, s: &str) -> &'a str {
+        let copied_bytes = self.copy_slice_in(s.as_bytes());
+        // SAFETY: `copied_bytes` has same contents as `s` and so must meet &str
+        // criteria.
+        unsafe { std::str::from_utf8_unchecked(copied_bytes) }
+    }
+
+    pub fn copy_slice_in<'a, T: Copy>(&'a self, data: &[T]) -> &'a [T] {
+        let layout = Layout::for_value(data);
+        let alloc: *mut T = self.checked_alloc(layout).as_mut_ptr().cast();
+
+        // SAFETY:
+        // - uninit_alloc is valid for `layout.len()` bytes and is the uninit bytes are
+        //   written to not read from until written.
+        // - T is copy so copying the bytes of the values is sound.
+        unsafe {
+            ptr::copy_nonoverlapping(data.as_ptr(), alloc, data.len());
+            slice::from_raw_parts_mut(alloc, data.len())
+        }
     }
 }
 

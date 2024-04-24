@@ -21,7 +21,9 @@ pub use map::{
 };
 
 mod message;
-pub use message::{upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, RawMessage};
+pub use message::{
+    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_New, RawMessage,
+};
 
 mod message_value;
 pub use message_value::{upb_MessageValue, upb_MutableMessageValue};
@@ -31,8 +33,11 @@ pub use mini_table::{upb_MiniTable, RawMiniTable};
 
 mod opaque_pointee;
 
+mod owned_arena_box;
+pub use owned_arena_box::OwnedArenaBox;
+
 mod string_view;
 pub use string_view::StringView;
 
-mod wire;
-pub use wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
+pub mod wire;
+pub use wire::{upb_Decode, DecodeStatus, EncodeStatus};

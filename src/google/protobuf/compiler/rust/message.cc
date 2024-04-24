@@ -68,35 +68,17 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit({{"minitable", UpbMinitableName(msg)}},
                R"rs(
-        let arena = $pbr$::Arena::new();
         // SAFETY: $minitable$ is a static of a const object.
         let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
-        let options = 0;
-        let mut buf: *mut u8 = std::ptr::null_mut();
-        let mut len = 0;
-
-        // SAFETY: `mini_table` is the corresponding one that was used to
-        // construct `self.raw_msg()`.
-        let status = unsafe {
-          $pbr$::upb_Encode(self.raw_msg(), mini_table, options, arena.raw(),
-              &mut buf, &mut len)
+        // SAFETY: $minitable$ is the one associated with raw_msg().
+        let encoded = unsafe {
+          $pbr$::wire::encode(self.raw_msg(), mini_table)
         };
 
         //~ TODO: Currently serialize() on the Rust API is an
         //~ infallible fn, so if upb signals an error here we can only panic.
-        assert!(status == $pbr$::EncodeStatus::Ok);
-        let data = if len == 0 {
-          std::ptr::NonNull::dangling()
-        } else {
-          std::ptr::NonNull::new(buf).unwrap()
-        };
-
-        // SAFETY:
-        // - `arena` allocated `data`.
-        // - `data` is valid for reads up to `len` and will not be mutated.
-        unsafe {
-          $pbr$::SerializedData::from_raw_parts(arena, data, len)
-        }
+        let serialized = encoded.expect("serialize is not allowed to fail");
+        serialized
       )rs");
       return;
   }
@@ -131,27 +113,25 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         let mut msg = Self::new();
         // SAFETY: $minitable$ is a static of a const object.
         let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
-        let ext_reg = std::ptr::null();
-        let options = 0;
 
         // SAFETY:
         // - `data.as_ptr()` is valid to read for `data.len()`
         // - `mini_table` is the one used to construct `msg.raw_msg()`
         // - `msg.arena().raw()` is held for the same lifetime as `msg`.
         let status = unsafe {
-          $pbr$::upb_Decode(
-              data.as_ptr(), data.len(), msg.raw_msg(),
-              mini_table, ext_reg, options, msg.arena().raw())
+          $pbr$::wire::decode(
+              data, msg.raw_msg(),
+              mini_table, msg.arena())
         };
         match status {
-          $pbr$::DecodeStatus::Ok => {
+          Ok(_) => {
             //~ This swap causes the old self.inner.arena to be moved into `msg`
             //~ which we immediately drop, which will release any previous
             //~ message that was held here.
             std::mem::swap(self, &mut msg);
             Ok(())
           }
-          _ => Err($pb$::ParseError)
+          Err(_) => Err($pb$::ParseError)
         }
       )rs");
       return;
