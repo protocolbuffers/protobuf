@@ -19,17 +19,22 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
@@ -40,7 +45,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -505,6 +509,97 @@ class TextFormat::Parser::ParserImpl {
   }
 
 
+  // Returns the extension metadata name
+  absl::string_view GetExtensionMetadataName(
+      const google::protobuf::Descriptor::ExtensionRange* range) {
+    if (range->start_number() == range->end_number() - 1 &&
+        range->options().has_metadata() &&
+        range->options().metadata().has_name()) {
+      return range->options().metadata().name();
+    }
+    return absl::string_view();
+  }
+
+  // Returns the parsed field name if it is qualified with dot operator
+  absl::string_view ParseFieldNameIfQualified(absl::string_view full_name) {
+    size_t dot_position = full_name.find('.');
+    if (dot_position != std::string::npos) {
+      return full_name.substr(dot_position + 1);
+    } else {
+      return full_name;
+    }
+  }
+
+  // Returns the extension range with the given metadata name
+  const google::protobuf::Descriptor::ExtensionRange* FindExtensionRangeByMetadataName(
+      const google::protobuf::Descriptor* descriptor, absl::string_view name) {
+    for (int i = 0; i < descriptor->extension_range_count(); ++i) {
+      const google::protobuf::Descriptor::ExtensionRange* range =
+          descriptor->extension_range(i);
+      absl::string_view extension_name = GetExtensionMetadataName(range);
+      if (!extension_name.empty() &&
+          absl::EqualsIgnoreCase(
+              extension_name,
+              ParseFieldNameIfQualified(absl::string_view(name)))) {
+        return range;
+      }
+    }
+    return nullptr;
+  }
+
+  // Returns the proto type with the given name
+  const google::protobuf::Message* GetProtoTypeByName(absl::string_view proto_name) {
+    const google::protobuf::Descriptor* const descriptor =
+        google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(
+            proto_name);
+    ABSL_CHECK(descriptor) << "No descriptor found for proto name '"
+                           << proto_name << "'.";
+    return google::protobuf::MessageFactory::generated_factory()->GetPrototype(
+        descriptor);
+  }
+
+  // Adds an unparsed field to the UnknownFieldSet of a message
+  void SetUnParsedFieldToUnknownFieldSet(Message* message, int32_t field_number,
+                                         std::string& field_value) {
+    const Reflection* reflection = message->GetReflection();
+    reflection->MutableUnknownFields(message)->AddLengthDelimited(field_number,
+                                                                  field_value);
+  }
+
+  // Returns typed extension type name if the extension range has a valid
+  // typed extension attribute; otherwise returns an empty string.
+  absl::string_view GetTypedExtensionTypeName(
+      const google::protobuf::Descriptor::ExtensionRange* range) {
+    if (range->start_number() == range->end_number() - 1) {
+      if (range->options().metadata().has_type()) {
+        return range->options().metadata().type();
+      }
+    }
+    return absl::string_view();
+  }
+
+  // Consumes a text of message, then serializes it into serialized_value.
+  bool ConsumeAnyValueByMessage(const Message* message,
+                                std::string* serialized_value) {
+    std::string sub_delimiter;
+    std::unique_ptr<Message> value(message->New());
+    DO(ConsumeMessageDelimiter(&sub_delimiter));
+    DO(ConsumeMessage(value.get(), std::move(sub_delimiter)));
+
+    if (allow_partial_) {
+      value->AppendPartialToString(serialized_value);
+    } else {
+      if (!value->IsInitialized()) {
+        ReportError(absl::StrCat(
+            "Value of type \"", value->GetDescriptor()->full_name(),
+            "\" stored in protobuf has missing required fields"));
+        return false;
+      }
+      value->AppendToString(serialized_value);
+    }
+    return true;
+  }
+
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
   bool ConsumeField(Message* message) {
@@ -625,7 +720,41 @@ class TextFormat::Parser::ParserImpl {
           reserved_field = descriptor->IsReservedName(field_name);
         }
       }
-
+      // Could be an extension field with metadata info accessed like a
+      // regular field without square braces. Ref: go/text_proto_exten_parser
+      if (field == nullptr) {
+        const google::protobuf::Descriptor::ExtensionRange* range =
+            FindExtensionRangeByMetadataName(descriptor, field_name);
+        if (range != nullptr) {
+          // Get Field descriptor from the same pool by extension tag number
+          field = descriptor->file()->pool()->FindExtensionByNumber(
+              descriptor, range->start_number());
+          if (field == nullptr) {
+            // Field belongs to a different pool
+            absl::string_view type_name = GetTypedExtensionTypeName(range);
+            if (!type_name.empty()) {
+              const google::protobuf::Message* const output_proto_type =
+                  GetProtoTypeByName(type_name);
+              if (output_proto_type == nullptr) {
+                ReportWarning(absl::StrCat(
+                    "Cannot resolve Message by type name \"", type_name, "| ",
+                    range->start_number(), "\"."));
+              } else {
+                std::string serialized_value;
+                DO(ConsumeAnyValueByMessage(output_proto_type,
+                                            &serialized_value));
+                if (!serialized_value.empty()) {
+                  // Set the unresolved extension to UnknownFieldSet.
+                  SetUnParsedFieldToUnknownFieldSet(
+                      message, range->start_number(), serialized_value);
+                  // Parsed successfully.
+                  return true;
+                }
+              }
+            }
+          }
+        }
+      }
       if (field == nullptr && !reserved_field) {
         if (!allow_unknown_field_) {
           ReportError(absl::StrCat("Message type \"", descriptor->full_name(),
