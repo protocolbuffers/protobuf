@@ -393,6 +393,9 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
 
       impl $pb$::Proxied for $name$ {
         type View<'a> = $name$;
+      }
+
+      impl $pb$::MutProxied for $name$ {
         type Mut<'a> = $pb$::PrimitiveMut<'a, $name$>;
       }
 

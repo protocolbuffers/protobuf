@@ -15,8 +15,8 @@ use crate::__runtime::{
 };
 use crate::macros::impl_forwarding_settable_value;
 use crate::{
-    AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, Proxied, ProxiedWithPresence,
-    SettableValue, View, ViewProxy,
+    AbsentField, FieldEntry, Mut, MutProxied, MutProxy, Optional, PresentField, Proxied,
+    ProxiedWithPresence, SettableValue, View, ViewProxy,
 };
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -123,6 +123,9 @@ impl AsRef<[u8]> for BytesMut<'_> {
 
 impl Proxied for [u8] {
     type View<'msg> = &'msg [u8];
+}
+
+impl MutProxied for [u8] {
     type Mut<'msg> = BytesMut<'msg>;
 }
 
@@ -465,6 +468,9 @@ impl Ord for ProtoStr {
 
 impl Proxied for ProtoStr {
     type View<'msg> = &'msg ProtoStr;
+}
+
+impl MutProxied for ProtoStr {
     type Mut<'msg> = ProtoStrMut<'msg>;
 }
 

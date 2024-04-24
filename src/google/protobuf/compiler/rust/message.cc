@@ -865,6 +865,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Proxied for $Msg$ {
           type View<'msg> = $Msg$View<'msg>;
+        }
+
+        impl $pb$::MutProxied for $Msg$ {
           type Mut<'msg> = $Msg$Mut<'msg>;
         }
 

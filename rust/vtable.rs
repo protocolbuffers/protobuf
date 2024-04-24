@@ -11,7 +11,7 @@ use crate::__runtime::{
     RawMessage,
 };
 use crate::{
-    AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, PrimitiveMut, Proxied,
+    AbsentField, FieldEntry, Mut, MutProxied, MutProxy, Optional, PresentField, PrimitiveMut,
     ProxiedWithPresence, View, ViewProxy,
 };
 use std::fmt::{self, Debug};
@@ -23,7 +23,7 @@ use std::ptr::NonNull;
 ///
 /// This vtable should consist of `unsafe fn`s that call thunks that operate on
 /// `RawMessage`. The structure of this vtable is different per proxied type.
-pub trait ProxiedWithRawVTable: Proxied {
+pub trait ProxiedWithRawVTable: MutProxied {
     /// The vtable for get/set access, stored in static memory.
     type VTable: Debug + 'static;
 
@@ -443,7 +443,7 @@ pub trait PrimitiveWithRawVTable:
     + ProxiedWithPresence
     + Sync
     + Send
-    + for<'msg> Proxied<View<'msg> = Self, Mut<'msg> = PrimitiveMut<'msg, Self>>
+    + for<'msg> MutProxied<View<'msg> = Self, Mut<'msg> = PrimitiveMut<'msg, Self>>
 {
 }
 
