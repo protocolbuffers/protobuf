@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -334,6 +335,14 @@ public final class Timestamps {
     }
     // otherwise, fall back on millisecond precision
     return fromMillis(System.currentTimeMillis());
+  }
+
+  public static Timestamp fromInstant(Instant instant) {
+    return normalizedTimestamp(instant.getEpochSecond(), instant.getNano());
+  }
+
+  public static Instant toInstant(Timestamp timestamp) {
+    return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
   }
 
   /** Create a Timestamp from the number of seconds elapsed from the epoch. */

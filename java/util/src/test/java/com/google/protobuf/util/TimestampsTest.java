@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -406,6 +407,7 @@ public class TimestampsTest {
     assertThat(Timestamps.toMicros(timestamp)).isEqualTo(1111111);
     assertThat(Timestamps.toMillis(timestamp)).isEqualTo(1111);
     assertThat(Timestamps.toSeconds(timestamp)).isEqualTo(1);
+    assertThat(Timestamps.toInstant(timestamp)).isEqualTo(Instant.ofEpochSecond(1, 111111111));
     timestamp = Timestamps.fromNanos(1111111111);
     assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111111111Z");
     timestamp = Timestamps.fromMicros(1111111);
@@ -420,6 +422,10 @@ public class TimestampsTest {
     assertThat(Timestamps.toMicros(timestamp)).isEqualTo(-888889);
     assertThat(Timestamps.toMillis(timestamp)).isEqualTo(-889);
     assertThat(Timestamps.toSeconds(timestamp)).isEqualTo(-1);
+
+    assertThat(Timestamps.fromInstant(Instant.ofEpochSecond(123456, 7890)))
+        .isEqualTo(Timestamp.newBuilder().setSeconds(123456).setNanos(7890).build());
+
     timestamp = Timestamps.fromNanos(-888888889);
     assertThat(Timestamps.toString(timestamp)).isEqualTo("1969-12-31T23:59:59.111111111Z");
     timestamp = Timestamps.fromMicros(-888889);
