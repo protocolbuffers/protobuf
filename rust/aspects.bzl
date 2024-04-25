@@ -265,10 +265,6 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
         build_info = None,
     )
 
-def _is_cc_proto_library(rule):
-    """Detects if the current rule is a cc_proto_library."""
-    return rule.kind == "cc_proto_library"
-
 def _rust_upb_proto_aspect_impl(target, ctx):
     """Implements the Rust protobuf aspect logic for UPB kernel."""
     return _rust_proto_aspect_common(target, ctx, is_upb = True)
@@ -286,12 +282,6 @@ def get_import_path(f):
 def _rust_proto_aspect_common(target, ctx, is_upb):
     if RustProtoInfo in target:
         return []
-
-    if _is_cc_proto_library(ctx.rule):
-        # This is cc_proto_library, but we need the RustProtoInfo provider of the proto_library that
-        # this aspect provides. Luckily this aspect has already been attached on the proto_library
-        # so we can just read the provider.
-        return [ctx.rule.attr.deps[0][RustProtoInfo]]
 
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
     cc_toolchain = find_cpp_toolchain(ctx)
@@ -371,7 +361,6 @@ def _make_proto_library_aspect(is_upb):
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
         requires = ([upb_proto_library_aspect] if is_upb else [cc_proto_aspect]),
-        required_aspect_providers = ([] if is_upb else [CcInfo]),
         attrs = {
             "_cc_toolchain": attr.label(
                 doc = (

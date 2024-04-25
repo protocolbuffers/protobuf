@@ -79,7 +79,7 @@ def _make_rust_proto_library(is_upb):
         attrs = {
             "deps": attr.label_list(
                 mandatory = True,
-                providers = [ProtoInfo] if is_upb else [CcInfo],
+                providers = [ProtoInfo],
                 aspects = [rust_upb_proto_library_aspect if is_upb else rust_cc_proto_library_aspect],
             ),
         },
