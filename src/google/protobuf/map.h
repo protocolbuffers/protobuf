@@ -51,7 +51,7 @@
 #endif  // defined(__cpp_lib_string_view)
 
 #if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__)
-#include <mach/mach_time.h>
+#include <time.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
@@ -1088,7 +1088,7 @@ class Map {
 #if defined(__APPLE__)
       // Use a commpage-based fast time function on Apple environments (MacOS,
       // iOS, tvOS, watchOS, etc).
-      s += mach_absolute_time();
+      s = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 #elif defined(__x86_64__) && defined(__GNUC__)
       uint32_t hi, lo;
       asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
