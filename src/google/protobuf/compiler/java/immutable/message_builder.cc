@@ -475,6 +475,7 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public $classname$ buildPartial() {\n"
+      "  if (isDefault()) { onBuilt(); return $classname$.getDefaultInstance(); }\n"
       "  $classname$ result = new $classname$(this);\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
