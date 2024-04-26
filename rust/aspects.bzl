@@ -33,6 +33,12 @@ RustProtoInfo = provider(
     },
 )
 
+def proto_rust_toolchain_label(is_upb):
+    if is_upb:
+        return "//rust:proto_rust_upb_toolchain"
+    else:
+        return "//rust:proto_rust_cpp_toolchain"
+
 def _register_crate_mapping_write_action(name, actions, crate_mappings):
     """Registers an action that generates a crate mapping for a proto_library.
 
@@ -401,9 +407,7 @@ def _make_proto_library_aspect(is_upb):
                 cfg = "exec",
             ),
             "_proto_lang_toolchain": attr.label(
-                default = Label(
-                    "//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain",
-                ),
+                default = Label(proto_rust_toolchain_label(is_upb)),
             ),
         },
         fragments = ["cpp"],

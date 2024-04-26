@@ -3,9 +3,11 @@
 Disclaimer: This project is experimental, under heavy development, and should not
 be used yet."""
 
+load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 load(
     "//rust:aspects.bzl",
     "RustProtoInfo",
+    "proto_rust_toolchain_label",
     "rust_cc_proto_library_aspect",
     "rust_upb_proto_library_aspect",
 )
@@ -65,6 +67,7 @@ def _rust_proto_library_impl(ctx):
 
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
+
     dep_variant_info = rust_proto_info.dep_variant_info
     return [
         dep_variant_info.crate_info,
@@ -81,6 +84,9 @@ def _make_rust_proto_library(is_upb):
                 mandatory = True,
                 providers = [ProtoInfo],
                 aspects = [rust_upb_proto_library_aspect if is_upb else rust_cc_proto_library_aspect],
+            ),
+            "_proto_lang_toolchain": attr.label(
+                default = Label(proto_rust_toolchain_label(is_upb)),
             ),
         },
     )
