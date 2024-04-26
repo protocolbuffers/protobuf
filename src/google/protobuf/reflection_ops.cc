@@ -51,10 +51,11 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
   ABSL_CHECK_NE(&from, to);
 
   const Descriptor* descriptor = from.GetDescriptor();
-  ABSL_CHECK_EQ(to->GetDescriptor(), descriptor)
-      << "Tried to merge messages of different types "
-      << "(merge " << descriptor->full_name() << " to "
-      << to->GetDescriptor()->full_name() << ")";
+  ABSL_CHECK(to->GetDescriptor() == descriptor ||
+             to->GetDescriptor()->full_name() == descriptor->full_name())
+      << "Tried to merge messages of different types " << "(merge "
+      << descriptor->full_name() << " to " << to->GetDescriptor()->full_name()
+      << ")";
 
   const Reflection* from_reflection = GetReflectionOrDie(from);
   const Reflection* to_reflection = GetReflectionOrDie(*to);

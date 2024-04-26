@@ -99,13 +99,15 @@ void Message::CopyFrom(const Message& from) {
     class_to->full().merge_to_from(*this, from);
   } else {
     const Descriptor* descriptor = GetDescriptor();
-    ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
+    const Descriptor* from_descriptor = from.GetDescriptor();
+    ABSL_CHECK(from_descriptor == descriptor ||
+               from_descriptor->full_name() == descriptor->full_name())
         << ": Tried to copy from a message with a different type. "
            "to: "
         << descriptor->full_name()
         << ", "
            "from: "
-        << from.GetDescriptor()->full_name();
+        << from_descriptor->full_name();
     ReflectionOps::Copy(from, this);
   }
 }

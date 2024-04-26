@@ -1711,13 +1711,15 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
   }
 
   other_message = reinterpret_cast<CMessage*>(arg);
-  if (other_message->message->GetDescriptor() !=
-      self->message->GetDescriptor()) {
+  const Descriptor* self_descriptor = self->message->GetDescriptor();
+  const Descriptor* other_descriptor = other_message->message->GetDescriptor();
+  if (other_descriptor != self_descriptor &&
+      other_descriptor->full_name() != self_descriptor->full_name()) {
     PyErr_Format(PyExc_TypeError,
                  "Parameter to MergeFrom() must be instance of same class: "
                  "expected %s got %s.",
-                 self->message->GetDescriptor()->full_name().c_str(),
-                 other_message->message->GetDescriptor()->full_name().c_str());
+                 self_descriptor->full_name().c_str(),
+                 other_descriptor->full_name().c_str());
     return nullptr;
   }
   AssureWritable(self);
@@ -1749,13 +1751,15 @@ static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
     Py_RETURN_NONE;
   }
 
-  if (other_message->message->GetDescriptor() !=
-      self->message->GetDescriptor()) {
+  const Descriptor* self_descriptor = self->message->GetDescriptor();
+  const Descriptor* other_descriptor = other_message->message->GetDescriptor();
+  if (other_descriptor != self_descriptor &&
+      other_descriptor->full_name() != self_descriptor->full_name()) {
     PyErr_Format(PyExc_TypeError,
                  "Parameter to CopyFrom() must be instance of same class: "
                  "expected %s got %s.",
-                 self->message->GetDescriptor()->full_name().c_str(),
-                 other_message->message->GetDescriptor()->full_name().c_str());
+                 self_descriptor->full_name().c_str(),
+                 other_descriptor->full_name().c_str());
     return nullptr;
   }
 
