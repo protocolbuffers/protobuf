@@ -187,6 +187,7 @@ Inactive:
         [![Maven Central](https://img.shields.io/maven-central/v/org.xolstice.maven.plugins/protobuf-maven-plugin.svg)](https://repo1.maven.org/maven2/org/xolstice/maven/plugins/protobuf-maven-plugin/)
     *   https://code.google.com/p/maven-protoc-plugin/
     *   https://github.com/os72/protoc-jar-maven-plugin
+    *   https://ascopes.github.io/protobuf-maven-plugin
 *   [Protobuf Plugin for Gradle](https://github.com/google/protobuf-gradle-plugin)
 *   [Sbt plugin for Protocol Buffers](https://github.com/Atry/sbt-cppp)
 
