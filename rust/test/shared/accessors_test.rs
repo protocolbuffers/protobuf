@@ -507,15 +507,8 @@ fn test_singular_msg_field() {
 
     assert_that!(msg.has_optional_nested_message(), eq(false));
     let mut nested_msg_mut = msg.optional_nested_message_mut();
-
     // test reading an int inside a mut
     assert_that!(nested_msg_mut.bb(), eq(0));
-
-    // Test setting an owned NestedMessage onto another message.
-    let mut new_nested = NestedMessage::new();
-    new_nested.set_bb(7);
-    nested_msg_mut.set(new_nested);
-    assert_that!(nested_msg_mut.bb(), eq(7));
 
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }
@@ -760,18 +753,6 @@ fn test_msg_oneof_default_accessors() {
     assert_that!(msg.bar_int_opt(), eq(Optional::Unset(5)));
 
     // TODO: Add tests covering a message-type field in a oneof.
-}
-
-#[test]
-fn test_set_message_from_view() {
-    use protobuf::MutProxy;
-
-    let mut m1 = TestAllTypes::new();
-    m1.set_optional_int32(1);
-    let mut m2 = TestAllTypes::new();
-    m2.as_mut().set(m1.as_view());
-
-    assert_that!(m2.optional_int32(), eq(1i32));
 }
 
 #[test]

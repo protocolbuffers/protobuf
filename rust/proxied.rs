@@ -134,7 +134,7 @@ pub trait ViewProxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
     ///     y: View<'b, T>,
     /// ) -> [View<'b, T>; 2]
     /// where
-    ///     T: Proxied,
+    ///     T: MutProxied,
     ///     'a: 'b,
     /// {
     ///     // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
@@ -293,6 +293,19 @@ where
     {
         unimplemented!()
     }
+}
+
+/// A value to `Proxied`-value conversion that consumes the input value.
+///
+/// All setter functions accept types that implement `IntoProxied`. The purpose
+/// of `IntoProxied` is to allow setting arbitrary values on Protobuf fields
+/// with the minimal number of copies.
+///
+/// This trait must not be implemented on types outside the Protobuf codegen and
+/// runtime. We expect it to change in backwards incompatible ways in the
+/// future.
+pub trait IntoProxied<T: Proxied> {
+    fn into(self, _private: Private) -> T;
 }
 
 #[cfg(test)]
