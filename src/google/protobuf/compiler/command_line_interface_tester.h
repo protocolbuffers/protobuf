@@ -128,6 +128,9 @@ class CommandLineInterfaceTester : public testing::Test {
   // The object we are testing.
   CommandLineInterface cli_;
 
+  // A separate CLI instance for protoc_minimal invocations.
+  CommandLineInterface protoc_minimal_cli_;
+
   // We create a directory within TestTempDir() in order to add extra
   // protection against accidentally deleting user files (since we recursively
   // delete this directory during the test).  This is the full path of that

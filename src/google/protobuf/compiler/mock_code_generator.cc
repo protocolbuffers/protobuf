@@ -122,6 +122,8 @@ void MockCodeGenerator::ExpectGenerated(
       absl::StrCat(output_directory, "/", GetOutputFileName(name, file)),
       &content, true));
 
+  std::cout << "content: " << content << "\n";
+
   std::vector<std::string> lines =
       absl::StrSplit(content, '\n', absl::SkipEmpty());
 

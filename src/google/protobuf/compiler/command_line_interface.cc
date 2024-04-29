@@ -1851,14 +1851,25 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     bool foundImplicitPlugin = false;
     for (const auto& d : output_directives_) {
       if (d.generator == nullptr) {
+        // Infers the plugin name from the plugin_prefix_ and output directive.
         std::string plugin_name = PluginName(plugin_prefix_, d.name);
+
+        // Since plugin_parameters_ is also inferred from --xxx_opt, we check
+        // that it actually matches the plugin name inferred from --xxx_out.
         if (plugin_name == kv.first) {
           foundImplicitPlugin = true;
           break;
         }
       }
     }
-    if (!foundImplicitPlugin) {
+
+    // This is a special case for cc_plugin invocations that are only with
+    // "--cpp_opt" but no "--cpp_out". In this case, "--cpp_opt" only serves
+    // as passing the arguments to cc_plugins, and no C++ generator is required
+    // to be present in the invocation. We didn't have to skip for C++ generator
+    // previously because the C++ generator was built-in.
+    if (!foundImplicitPlugin &&
+        kv.first != absl::StrCat(plugin_prefix_, "gen-cpp")) {
       std::cerr << "Unknown flag: "
                 // strip prefix + "gen-" and add back "_opt"
                 << "--" << kv.first.substr(plugin_prefix_.size() + 4) << "_opt"
@@ -2781,6 +2792,9 @@ bool CommandLineInterface::GeneratePluginOutput(
   const DescriptorPool* pool = parsed_files[0]->pool();
   absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
                                                      input_files_.end());
+  static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
+      {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",
+       "protoc-gen-python"});
   for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
@@ -2789,7 +2803,11 @@ bool CommandLineInterface::GeneratePluginOutput(
       // Don't populate source code info or json_name for bootstrap protos.
       if (!bootstrap) {
         file->CopySourceCodeInfoTo(&file_proto);
-        file->CopyJsonNameTo(&file_proto);
+
+        // The built-in code generators didn't use the json names.
+        if (!builtin_plugins->contains(plugin_name)) {
+          file->CopyJsonNameTo(&file_proto);
+        }
       }
       StripSourceRetentionOptions(*file->pool(), file_proto);
     }
