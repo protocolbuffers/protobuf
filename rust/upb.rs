@@ -14,9 +14,7 @@ use crate::{
 };
 use core::fmt::Debug;
 use std::alloc::Layout;
-use std::fmt;
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
-use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
 use std::sync::OnceLock;
@@ -60,57 +58,7 @@ impl ScratchSpace {
     }
 }
 
-/// Serialized Protobuf wire format data.
-///
-/// It's typically produced by `<Message>::serialize()`.
-pub struct SerializedData {
-    data: NonNull<u8>,
-    len: usize,
-
-    // The arena that owns `data`.
-    _arena: Arena,
-}
-
-impl SerializedData {
-    /// Construct `SerializedData` from raw pointers and its owning arena.
-    ///
-    /// # Safety
-    /// - `arena` must be have allocated `data`
-    /// - `data` must be readable for `len` bytes and not mutate while this
-    ///   struct exists
-    pub unsafe fn from_raw_parts(arena: Arena, data: NonNull<u8>, len: usize) -> Self {
-        SerializedData { _arena: arena, data, len }
-    }
-
-    /// Gets a raw slice pointer.
-    pub fn as_ptr(&self) -> *const [u8] {
-        ptr::slice_from_raw_parts(self.data.as_ptr(), self.len)
-    }
-}
-
-impl Deref for SerializedData {
-    type Target = [u8];
-    fn deref(&self) -> &Self::Target {
-        // SAFETY: `data` is valid for `len` bytes as promised by
-        //         the caller of `SerializedData::from_raw_parts`.
-        unsafe { slice::from_raw_parts(self.data.as_ptr(), self.len) }
-    }
-}
-
-impl fmt::Debug for SerializedData {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self.deref(), f)
-    }
-}
-
-impl SettableValue<[u8]> for SerializedData {
-    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
-    where
-        [u8]: 'msg,
-    {
-        mutator.set(self.as_ref())
-    }
-}
+pub type SerializedData = upb::OwnedArenaBox<[u8]>;
 
 // TODO: Investigate replacing this with direct access to UPB bits.
 pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
@@ -813,22 +761,6 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
 mod tests {
     use super::*;
     use googletest::prelude::*;
-
-    #[test]
-    fn test_serialized_data_roundtrip() {
-        let arena = Arena::new();
-        let original_data = b"Hello world";
-        let len = original_data.len();
-
-        let serialized_data = unsafe {
-            SerializedData::from_raw_parts(
-                arena,
-                NonNull::new(original_data as *const _ as *mut _).unwrap(),
-                len,
-            )
-        };
-        assert_that!(&*serialized_data, eq(b"Hello world"));
-    }
 
     #[test]
     fn assert_c_type_sizes() {

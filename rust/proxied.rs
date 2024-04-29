@@ -51,18 +51,25 @@ use std::fmt::Debug;
 
 /// A type that can be accessed through a reference-like proxy.
 ///
-/// An instance of a `Proxied` can be accessed
-/// immutably via `Proxied::View` and mutably via `Proxied::Mut`.
+/// An instance of a `Proxied` can be accessed immutably via `Proxied::View`.
 ///
 /// All Protobuf field types implement `Proxied`.
 pub trait Proxied {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
-    type View<'msg>: ViewProxy<'msg, Proxied = Self> + Copy + Send + SettableValue<Self>
+    type View<'msg>: ViewProxy<'msg, Proxied = Self> + Copy + Send
     where
         Self: 'msg;
+}
 
+/// A type that can be be accessed through a reference-like proxy.
+///
+/// An instance of a `MutProxied` can be accessed mutably via `MutProxied::Mut`
+/// and immutably via `MutProxied::View`.
+///
+/// `MutProxied` is implemented by message, map and repeated field types.
+pub trait MutProxied: Proxied {
     /// The proxy type that provides exclusive mutable access to a `T`, like a
     /// `&'msg mut T`.
     ///
@@ -83,7 +90,7 @@ pub type View<'msg, T> = <T as Proxied>::View<'msg>;
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
-pub type Mut<'msg, T> = <T as Proxied>::Mut<'msg>;
+pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 
 /// Declares conversion operations common to all views.
 ///
@@ -147,7 +154,10 @@ pub trait ViewProxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait MutProxy<'msg>: ViewProxy<'msg> {
+pub trait MutProxy<'msg>: ViewProxy<'msg>
+where
+    Self::Proxied: MutProxied,
+{
     /// Gets an immutable view of this field. This is shorthand for `as_view`.
     ///
     /// This provides a shorter lifetime than `into_view` but can also be called
@@ -211,7 +221,7 @@ pub trait MutProxy<'msg>: ViewProxy<'msg> {
 ///
 /// All scalar and message types implement `ProxiedWithPresence`, while repeated
 /// types don't.
-pub trait ProxiedWithPresence: Proxied {
+pub trait ProxiedWithPresence: MutProxied {
     /// The data necessary to store a present field mutator proxying `Self`.
     /// This is the contents of `PresentField<'msg, Self>`.
     type PresentMutData<'msg>: MutProxy<'msg, Proxied = Self>;
@@ -233,7 +243,7 @@ pub trait ProxiedWithPresence: Proxied {
 /// Values that can be used to set a field of `T`.
 pub trait SettableValue<T>: Sized
 where
-    T: Proxied + ?Sized,
+    T: MutProxied + ?Sized,
 {
     /// Consumes `self` to set the given mutator to the value of `self`.
     #[doc(hidden)]
@@ -308,6 +318,9 @@ mod tests {
 
     impl Proxied for MyProxied {
         type View<'msg> = MyProxiedView<'msg>;
+    }
+
+    impl MutProxied for MyProxied {
         type Mut<'msg> = MyProxiedMut<'msg>;
     }
 
@@ -460,7 +473,7 @@ mod tests {
         y: &'b View<'a, T>,
     ) -> [View<'b, T>; 2]
     where
-        T: Proxied,
+        T: MutProxied,
         'a: 'b,
     {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
@@ -509,7 +522,7 @@ mod tests {
 
     fn reborrow_generic_mut_into_view<'a, 'b, T>(x: Mut<'a, T>, y: View<'b, T>) -> [View<'b, T>; 2]
     where
-        T: Proxied,
+        T: MutProxied,
         'a: 'b,
     {
         [x.into_view(), y]
@@ -529,7 +542,7 @@ mod tests {
 
     fn reborrow_generic_mut_into_mut<'a, 'b, T>(x: Mut<'a, T>, y: Mut<'b, T>) -> [Mut<'b, T>; 2]
     where
-        T: Proxied,
+        T: MutProxied,
         'a: 'b,
     {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `Mut`

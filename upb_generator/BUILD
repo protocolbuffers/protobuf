@@ -409,27 +409,3 @@ proto_lang_toolchain(
     runtime = "//upb:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     visibility = ["//visibility:public"],
 )
-
-cc_binary(
-    name = "protoc-gen-upbdev",
-    srcs = [
-        "protoc-gen-upbdev.cc",
-        "subprocess.cc",
-        "subprocess.h",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
-    visibility = ["//visibility:public"],
-    deps = [
-        ":plugin_upb_proto",
-        ":upbdev",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:port",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-    ],
-)

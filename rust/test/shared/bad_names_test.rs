@@ -5,10 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-/// Test covering proto compilation with reserved words.
+use bad_names_proto::*;
 use googletest::prelude::*;
-use reserved_proto::Self__mangled_because_ident_isnt_a_legal_raw_identifier;
-use reserved_proto::{r#enum, Ref};
 
 #[test]
 fn test_reserved_keyword_in_accessors() {
@@ -21,4 +19,14 @@ fn test_reserved_keyword_in_accessors() {
 fn test_reserved_keyword_in_messages() {
     let _ = r#enum::new();
     let _ = Ref::new().r#const();
+}
+
+#[test]
+fn test_collision_in_accessors() {
+    let mut m = AccessorsCollide::new();
+    m.set_x_mut_5(false);
+    assert_that!(m.x_mut_5(), eq(false));
+    assert_that!(m.has_x_mut_5(), eq(true));
+    assert_that!(m.has_x(), eq(false));
+    assert_that!(m.has_set_x_2(), eq(false));
 }

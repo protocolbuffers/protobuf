@@ -172,6 +172,11 @@ proto_lang_toolchain(
     visibility = ["//visibility:public"],
 )
 
+package_group(
+    name = "rust_proto_library_allowed_in_different_package",
+    packages = ["//rust/test"],  # for unittest proto_libraries
+)
+
 # This flag controls what kernel all Rust Protobufs are using in the current build.
 string_flag(
     name = "rust_proto_library_kernel",

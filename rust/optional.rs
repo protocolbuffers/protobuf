@@ -10,7 +10,9 @@
 #![allow(unused)]
 
 use crate::__internal::Private;
-use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
+use crate::{
+    Mut, MutProxied, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
+};
 use std::convert::{AsMut, AsRef};
 use std::fmt::{self, Debug};
 use std::panic;
@@ -495,6 +497,9 @@ mod tests {
 
     impl Proxied for VtableProxied {
         type View<'msg> = VtableProxiedView;
+    }
+
+    impl MutProxied for VtableProxied {
         type Mut<'msg> = VtableProxiedMut<'msg>;
     }
 

@@ -557,6 +557,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeEnumList(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
+    if (value instanceof IntArrayList) {
+      writeEnumListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeEnumListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeEnumListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeEnumSizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeEnumNoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeEnum(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  private void writeEnumListInternal(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 

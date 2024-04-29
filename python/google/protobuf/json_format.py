@@ -451,13 +451,22 @@ def Parse(
   """
   if not isinstance(text, str):
     text = text.decode('utf-8')
+
   try:
     js = json.loads(text, object_pairs_hook=_DuplicateChecker)
-  except ValueError as e:
+  except Exception as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e))) from e
-  return ParseDict(
-      js, message, ignore_unknown_fields, descriptor_pool, max_recursion_depth
-  )
+
+  try:
+    return ParseDict(
+        js, message, ignore_unknown_fields, descriptor_pool, max_recursion_depth
+    )
+  except ParseError as e:
+    raise e
+  except Exception as e:
+    raise ParseError(
+        'Failed to parse JSON: {0}: {1}.'.format(type(e).__name__, str(e))
+    ) from e
 
 
 def ParseDict(

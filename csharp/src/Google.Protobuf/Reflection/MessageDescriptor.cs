@@ -202,6 +202,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         internal bool IsWrapperType => File.Package == "google.protobuf" && File.Name == "google/protobuf/wrappers.proto";
 
+        /// <summary>
+        /// Returns whether this message was synthetically-created to store key/value pairs in a
+        /// map field.
+        /// </summary>
+        public bool IsMapEntry => Proto.Options?.MapEntry == true;
+
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
         /// </value>

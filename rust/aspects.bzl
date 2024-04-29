@@ -4,6 +4,7 @@ Disclaimer: This project is experimental, under heavy development, and should no
 be used yet."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
@@ -11,8 +12,6 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
-
-proto_common = proto_common_do_not_use
 
 visibility(["//rust/..."])
 
@@ -33,6 +32,12 @@ RustProtoInfo = provider(
                          "dependencies of the current proto_library.",
     },
 )
+
+def proto_rust_toolchain_label(is_upb):
+    if is_upb:
+        return "//rust:proto_rust_upb_toolchain"
+    else:
+        return "//rust:proto_rust_cpp_toolchain"
 
 def _register_crate_mapping_write_action(name, actions, crate_mappings):
     """Registers an action that generates a crate mapping for a proto_library.
@@ -266,10 +271,6 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
         build_info = None,
     )
 
-def _is_cc_proto_library(rule):
-    """Detects if the current rule is a cc_proto_library."""
-    return rule.kind == "cc_proto_library"
-
 def _rust_upb_proto_aspect_impl(target, ctx):
     """Implements the Rust protobuf aspect logic for UPB kernel."""
     return _rust_proto_aspect_common(target, ctx, is_upb = True)
@@ -287,12 +288,6 @@ def get_import_path(f):
 def _rust_proto_aspect_common(target, ctx, is_upb):
     if RustProtoInfo in target:
         return []
-
-    if _is_cc_proto_library(ctx.rule):
-        # This is cc_proto_library, but we need the RustProtoInfo provider of the proto_library that
-        # this aspect provides. Luckily this aspect has already been attached on the proto_library
-        # so we can just read the provider.
-        return [ctx.rule.attr.deps[0][RustProtoInfo]]
 
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
     cc_toolchain = find_cpp_toolchain(ctx)
@@ -372,7 +367,6 @@ def _make_proto_library_aspect(is_upb):
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
         requires = ([upb_proto_library_aspect] if is_upb else [cc_proto_aspect]),
-        required_aspect_providers = ([] if is_upb else [CcInfo]),
         attrs = {
             "_cc_toolchain": attr.label(
                 doc = (
@@ -413,9 +407,7 @@ def _make_proto_library_aspect(is_upb):
                 cfg = "exec",
             ),
             "_proto_lang_toolchain": attr.label(
-                default = Label(
-                    "//rust:proto_rust_upb_toolchain" if is_upb else "//rust:proto_rust_cpp_toolchain",
-                ),
+                default = Label(proto_rust_toolchain_label(is_upb)),
             ),
         },
         fragments = ["cpp"],

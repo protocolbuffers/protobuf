@@ -25,11 +25,6 @@ UPB_API upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
                                            upb_Arena* arena,
                                            upb_Status* status);
 
-// Decode |buf| from JSON, serialize to wire format, and return it.
-UPB_API upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
-                                            upb_Arena* arena,
-                                            upb_Status* status);
-
 // Decode |buf| from JSON, serialize to wire format, and write it to stdout.
 UPB_API void upbdev_ProcessStdout(const char* buf, size_t size,
                                   upb_Arena* arena, upb_Status* status);

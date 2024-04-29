@@ -45,6 +45,7 @@ bool upb_FieldDef_HasOptions(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_HasPresence(const upb_FieldDef* f);
 bool upb_FieldDef_HasSubDef(const upb_FieldDef* f);
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f);
+UPB_API bool upb_FieldDef_IsEnum(const upb_FieldDef* f);
 bool upb_FieldDef_IsExtension(const upb_FieldDef* f);
 UPB_API bool upb_FieldDef_IsMap(const upb_FieldDef* f);
 bool upb_FieldDef_IsOptional(const upb_FieldDef* f);

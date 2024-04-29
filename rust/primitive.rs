@@ -10,7 +10,9 @@ use std::fmt::Debug;
 use crate::__internal::Private;
 use crate::__runtime::InnerPrimitiveMut;
 use crate::vtable::{PrimitiveWithRawVTable, ProxiedWithRawVTable, RawVTableOptionalMutatorData};
-use crate::{Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy};
+use crate::{
+    Mut, MutProxied, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
+};
 
 /// A mutator for a primitive (numeric or enum) value of `T`.
 ///
@@ -98,6 +100,9 @@ macro_rules! impl_singular_primitives {
       $(
         impl Proxied for $t {
             type View<'msg> = $t;
+        }
+
+        impl MutProxied for $t {
             type Mut<'msg> = PrimitiveMut<'msg, $t>;
         }
 

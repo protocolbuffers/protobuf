@@ -28,7 +28,7 @@ pub mod __public {
     pub use crate::primitive::PrimitiveMut;
     pub use crate::proto;
     pub use crate::proxied::{
-        Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
+        Mut, MutProxied, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
     };
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,

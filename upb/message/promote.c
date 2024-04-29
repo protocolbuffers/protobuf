@@ -67,6 +67,7 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
 upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
   const upb_Extension* extension =
       UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
@@ -177,6 +178,7 @@ upb_DecodeStatus upb_Message_PromoteMessage(upb_Message* parent,
                                             int decode_options,
                                             upb_Arena* arena,
                                             upb_Message** promoted) {
+  UPB_ASSERT(!upb_Message_IsFrozen(parent));
   const upb_MiniTable* sub_table =
       upb_MiniTable_GetSubMessageTable(mini_table, field);
   UPB_ASSERT(sub_table);
@@ -233,6 +235,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
     int decode_options, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_FindUnknownRet unknown;
   // We need to loop and merge unknowns that have matching tag field->number.
   upb_Message* message = NULL;
@@ -292,6 +295,8 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+
   upb_Array* repeated_messages = upb_Message_GetMutableArray(msg, field);
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
@@ -327,6 +332,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, int decode_options, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+
   const upb_MiniTable* map_entry_mini_table =
       upb_MiniTable_MapEntrySubMessage(mini_table, field);
   UPB_ASSERT(upb_MiniTable_FieldCount(map_entry_mini_table) == 2);

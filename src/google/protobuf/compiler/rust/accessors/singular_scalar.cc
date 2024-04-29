@@ -23,10 +23,11 @@ namespace rust {
 
 void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                AccessorCase accessor_case) const {
+  std::string field_name = FieldNameWithCollisionAvoidance(field);
   ctx.Emit(
       {
-          {"field", RsSafeName(field.name())},
-          {"raw_field_name", field.name()},  // Never r# prefixed
+          {"field", RsSafeName(field_name)},
+          {"raw_field_name", field_name},  // Never r# prefixed
           {"view_self", ViewReceiver(accessor_case)},
           {"Scalar", RsTypePath(ctx, field)},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},

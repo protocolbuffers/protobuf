@@ -1439,7 +1439,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidAny(self):
     message = any_pb2.Any()
     text = '{"@type": "type.googleapis.com/google.protobuf.Int32Value"}'
-    self.assertRaisesRegex(KeyError, 'value', json_format.Parse, text, message)
+    self.assertRaisesRegex(json_format.ParseError, 'KeyError: \'value\'', json_format.Parse, text, message)
     text = '{"value": 1234}'
     self.assertRaisesRegex(
         json_format.ParseError,
@@ -1661,6 +1661,12 @@ class JsonFormatTest(JsonFormatBase):
     json_string = json_format.MessageToJson(new_message)
     json_format.Parse(json_string, new_parsed_message)
     self.assertEqual(new_message, new_parsed_message)
+
+  def testOtherParseErrors(self):
+    self.CheckError(
+        '9',
+        "Failed to parse JSON: TypeError: 'int' object is not iterable.",
+    )
 
 
 if __name__ == '__main__':

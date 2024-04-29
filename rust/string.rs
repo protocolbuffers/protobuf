@@ -15,8 +15,8 @@ use crate::__runtime::{
 };
 use crate::macros::impl_forwarding_settable_value;
 use crate::{
-    AbsentField, FieldEntry, Mut, MutProxy, Optional, PresentField, Proxied, ProxiedWithPresence,
-    SettableValue, View, ViewProxy,
+    AbsentField, FieldEntry, Mut, MutProxied, MutProxy, Optional, PresentField, Proxied,
+    ProxiedWithPresence, SettableValue, View, ViewProxy,
 };
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -123,6 +123,9 @@ impl AsRef<[u8]> for BytesMut<'_> {
 
 impl Proxied for [u8] {
     type View<'msg> = &'msg [u8];
+}
+
+impl MutProxied for [u8] {
     type Mut<'msg> = BytesMut<'msg>;
 }
 
@@ -180,53 +183,6 @@ impl<'msg> MutProxy<'msg> for BytesMut<'msg> {
     {
         BytesMut { inner: self.inner }
     }
-}
-
-impl SettableValue<[u8]> for &'_ [u8] {
-    fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, [u8]>)
-    where
-        [u8]: 'msg,
-    {
-        // SAFETY: this is a `bytes` field with no restriction on UTF-8.
-        unsafe { mutator.inner.set(self) }
-    }
-
-    fn set_on_absent(
-        self,
-        _private: Private,
-        absent_mutator: <[u8] as ProxiedWithPresence>::AbsentMutData<'_>,
-    ) -> <[u8] as ProxiedWithPresence>::PresentMutData<'_> {
-        // SAFETY: this is a `bytes` field with no restriction on UTF-8.
-        unsafe { absent_mutator.set(self) }
-    }
-
-    fn set_on_present(
-        self,
-        _private: Private,
-        present_mutator: <[u8] as ProxiedWithPresence>::PresentMutData<'_>,
-    ) {
-        // SAFETY: this is a `bytes` field with no restriction on UTF-8.
-        unsafe {
-            present_mutator.set(self);
-        }
-    }
-}
-
-impl<const N: usize> SettableValue<[u8]> for &'_ [u8; N] {
-    // forward to `self[..]`
-    impl_forwarding_settable_value!([u8], self => &self[..]);
-}
-
-impl SettableValue<[u8]> for Vec<u8> {
-    // TODO: Investigate taking ownership of this when allowed by the
-    // runtime.
-    impl_forwarding_settable_value!([u8], self => &self[..]);
-}
-
-impl SettableValue<[u8]> for Cow<'_, [u8]> {
-    // TODO: Investigate taking ownership of this when allowed by the
-    // runtime.
-    impl_forwarding_settable_value!([u8], self => &self[..]);
 }
 
 impl Hash for BytesMut<'_> {
@@ -465,6 +421,9 @@ impl Ord for ProtoStr {
 
 impl Proxied for ProtoStr {
     type View<'msg> = &'msg ProtoStr;
+}
+
+impl MutProxied for ProtoStr {
     type Mut<'msg> = ProtoStrMut<'msg>;
 }
 
@@ -695,50 +654,28 @@ impl<'msg> MutProxy<'msg> for ProtoStrMut<'msg> {
     }
 }
 
-impl SettableValue<ProtoStr> for &'_ ProtoStr {
-    fn set_on<'b>(self, _private: Private, mutator: Mut<'b, ProtoStr>)
-    where
-        ProtoStr: 'b,
-    {
-        // SAFETY: A `ProtoStr` has the same UTF-8 validity requirement as the runtime.
-        unsafe { mutator.bytes.inner.set(self.as_bytes()) }
-    }
-
-    fn set_on_absent(
-        self,
-        _private: Private,
-        absent_mutator: <ProtoStr as ProxiedWithPresence>::AbsentMutData<'_>,
-    ) -> <ProtoStr as ProxiedWithPresence>::PresentMutData<'_> {
-        // SAFETY: A `ProtoStr` has the same UTF-8 validity requirement as the runtime.
-        StrPresentMutData(unsafe { absent_mutator.0.set(self.as_bytes()) })
-    }
-
-    fn set_on_present(
-        self,
-        _private: Private,
-        present_mutator: <ProtoStr as ProxiedWithPresence>::PresentMutData<'_>,
-    ) {
-        // SAFETY: A `ProtoStr` has the same UTF-8 validity requirement as the runtime.
-        unsafe {
-            present_mutator.0.set(self.as_bytes());
-        }
+// TODO: remove after IntoProxied has been implemented for
+// ProtoStr.
+impl AsRef<ProtoStr> for String {
+    fn as_ref(&self) -> &ProtoStr {
+        ProtoStr::from_str(self.as_str())
     }
 }
 
-impl SettableValue<ProtoStr> for &'_ str {
-    impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(self));
+// TODO: remove after IntoProxied has been implemented for
+// ProtoStr.
+impl AsRef<ProtoStr> for &str {
+    fn as_ref(&self) -> &ProtoStr {
+        ProtoStr::from_str(self)
+    }
 }
 
-impl SettableValue<ProtoStr> for String {
-    // TODO: Investigate taking ownership of this when allowed by the
-    // runtime.
-    impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(&self));
-}
-
-impl SettableValue<ProtoStr> for Cow<'_, str> {
-    // TODO: Investigate taking ownership of this when allowed by the
-    // runtime.
-    impl_forwarding_settable_value!(ProtoStr, self => ProtoStr::from_str(&self));
+// TODO: remove after IntoProxied has been implemented for
+// ProtoStr.
+impl AsRef<ProtoStr> for &ProtoStr {
+    fn as_ref(&self) -> &ProtoStr {
+        self
+    }
 }
 
 impl Hash for ProtoStrMut<'_> {

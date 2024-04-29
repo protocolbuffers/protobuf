@@ -15,7 +15,7 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
+    Mut, MutProxied, MutProxy, Proxied, SettableValue, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
@@ -314,6 +314,12 @@ where
     T: ProxiedInRepeated + ?Sized,
 {
     type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
+}
+
+impl<T> MutProxied for Repeated<T>
+where
+    T: ProxiedInRepeated + ?Sized,
+{
     type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
 }
 

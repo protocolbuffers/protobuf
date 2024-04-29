@@ -242,7 +242,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsMap => FieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;
+        public bool IsMap => FieldType == FieldType.Message && messageType.IsMapEntry;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.

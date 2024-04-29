@@ -3,7 +3,7 @@ use std::alloc::{self, Layout};
 use std::cell::UnsafeCell;
 use std::marker::PhantomData;
 use std::mem::{align_of, MaybeUninit};
-use std::ptr::NonNull;
+use std::ptr::{self, NonNull};
 use std::slice;
 
 opaque_pointee!(upb_Arena);
@@ -95,6 +95,72 @@ impl Arena {
         //   `UPB_MALLOC_ALIGN` boundary.
         unsafe { slice::from_raw_parts_mut(ptr.cast(), layout.size()) }
     }
+
+    /// Same as alloc() but panics if `layout.align() > UPB_MALLOC_ALIGN`.
+    #[allow(clippy::mut_from_ref)]
+    #[inline]
+    pub fn checked_alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
+        assert!(layout.align() <= UPB_MALLOC_ALIGN);
+        // SAFETY: layout.align() <= UPB_MALLOC_ALIGN asserted.
+        unsafe { self.alloc(layout) }
+    }
+
+    /// Copies the T into this arena and returns a pointer to the T data inside
+    /// the arena.
+    pub fn copy_in<'a, T: Copy>(&'a self, data: &T) -> &'a T {
+        let layout = Layout::for_value(data);
+        let alloc = self.checked_alloc(layout);
+
+        // SAFETY:
+        // - alloc is valid for `layout.len()` bytes and is the uninit bytes are written
+        //   to not read from until written.
+        // - T is copy so copying the bytes of the value is sound.
+        unsafe {
+            let alloc = alloc.as_mut_ptr().cast::<MaybeUninit<T>>();
+            // let data = (data as *const T).cast::<MaybeUninit<T>>();
+            (*alloc).write(*data)
+        }
+    }
+
+    pub fn copy_str_in<'a>(&'a self, s: &str) -> &'a str {
+        let copied_bytes = self.copy_slice_in(s.as_bytes());
+        // SAFETY: `copied_bytes` has same contents as `s` and so must meet &str
+        // criteria.
+        unsafe { std::str::from_utf8_unchecked(copied_bytes) }
+    }
+
+    pub fn copy_slice_in<'a, T: Copy>(&'a self, data: &[T]) -> &'a [T] {
+        let layout = Layout::for_value(data);
+        let alloc: *mut T = self.checked_alloc(layout).as_mut_ptr().cast();
+
+        // SAFETY:
+        // - uninit_alloc is valid for `layout.len()` bytes and is the uninit bytes are
+        //   written to not read from until written.
+        // - T is copy so copying the bytes of the values is sound.
+        unsafe {
+            ptr::copy_nonoverlapping(data.as_ptr(), alloc, data.len());
+            slice::from_raw_parts_mut(alloc, data.len())
+        }
+    }
+
+    /// Fuse two arenas so they share the same lifetime.
+    ///
+    /// `fuse` will make it so that the memory allocated by `self` or `other` is
+    /// guaranteed to last until both `self` and `other` have been dropped.
+    /// The pointers returned by `Arena::alloc` will continue to be valid so
+    /// long as either `self` or `other` has not been dropped.
+    ///
+    pub fn fuse(&self, other: &Arena) {
+        // SAFETY: `self.raw()` and `other.raw()` are both valid UPB arenas.
+        let success = unsafe { upb_Arena_Fuse(self.raw(), other.raw()) };
+        if !success {
+            // Fusing can fail if any of the arenas has an initial block i.e. the arena is
+            // backed by a preallocated chunk of memory that it doesn't own and thus cannot
+            // lifetime extend. This function panics because this is typically not a
+            // recoverable error but a logic bug in a program.
+            panic!("Could not fuse two UPB arenas.");
+        }
+    }
 }
 
 impl Default for Arena {
@@ -117,6 +183,7 @@ extern "C" {
     fn upb_Arena_New() -> Option<RawArena>;
     fn upb_Arena_Free(arena: RawArena);
     fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
+    fn upb_Arena_Fuse(arena1: RawArena, arena2: RawArena) -> bool;
 }
 
 #[cfg(test)]
