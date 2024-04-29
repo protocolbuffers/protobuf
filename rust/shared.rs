@@ -33,7 +33,7 @@ pub mod __public {
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
-    pub use crate::string::{BytesMut, ProtoStr, ProtoStrMut};
+    pub use crate::string::ProtoStr;
     pub use crate::ParseError;
 }
 pub use __public::*;

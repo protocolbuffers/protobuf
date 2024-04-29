@@ -14,8 +14,8 @@ pub use paste::paste;
 
 pub use crate::r#enum::Enum;
 pub use crate::vtable::{
-    new_vtable_field_entry, BytesMutVTable, BytesOptionalMutVTable, ProxiedWithRawOptionalVTable,
-    ProxiedWithRawVTable, RawVTableMutator, RawVTableOptionalMutatorData,
+    new_vtable_field_entry, ProxiedWithRawOptionalVTable, ProxiedWithRawVTable, RawVTableMutator,
+    RawVTableOptionalMutatorData,
 };
 pub use crate::ProtoStr;
 
