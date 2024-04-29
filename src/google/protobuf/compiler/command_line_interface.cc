@@ -2781,6 +2781,9 @@ bool CommandLineInterface::GeneratePluginOutput(
   const DescriptorPool* pool = parsed_files[0]->pool();
   absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
                                                      input_files_.end());
+  static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
+      {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",
+       "protoc-gen-python"});
   for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
@@ -2789,7 +2792,9 @@ bool CommandLineInterface::GeneratePluginOutput(
       // Don't populate source code info or json_name for bootstrap protos.
       if (!bootstrap) {
         file->CopySourceCodeInfoTo(&file_proto);
-        file->CopyJsonNameTo(&file_proto);
+        if (!builtin_plugins->contains(plugin_name)) {
+          file->CopyJsonNameTo(&file_proto);
+        }
       }
       StripSourceRetentionOptions(*file->pool(), file_proto);
     }

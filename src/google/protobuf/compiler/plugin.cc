@@ -59,6 +59,16 @@ class GeneratorResponseContext : public GeneratorContext {
     return new io::StringOutputStream(file->mutable_content());
   }
 
+  io::ZeroCopyOutputStream* OpenForAppend(
+      const std::string& filename) override {
+    for (auto& file : *response_->mutable_file()) {
+      if (file.name() == filename) {
+        return new io::StringOutputStream(file.mutable_content());
+      }
+    }
+    return Open(filename);
+  }
+
   io::ZeroCopyOutputStream* OpenForInsert(
       const std::string& filename,
       const std::string& insertion_point) override {
