@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
@@ -34,7 +11,10 @@
 #import "GPBDictionary.h"
 
 #import "GPBTestUtilities.h"
-#import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
+
+// Disable clang-format for the macros.
+// clang-format off
 
 // Pull in the macros (using an external file because expanding all tests
 // in a single file makes a file that is failing to work with within Xcode.
@@ -55,15 +35,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getUInt32:NULL forKey:YES]);
-  [dict enumerateKeysAndUInt32sUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused BOOL aKey, __unused uint32_t aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolUInt32Dictionary *dict = [GPBBoolUInt32Dictionary dictionaryWithUInt32:100U forKey:YES];
+  GPBBoolUInt32Dictionary *dict = [[GPBBoolUInt32Dictionary alloc] init];
+  [dict setUInt32:100U forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   uint32_t value;
@@ -76,6 +56,7 @@
     XCTAssertEqual(aValue, 100U);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -120,8 +101,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndUInt32sUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndUInt32sUsingBlock:^(__unused BOOL aKey, __unused uint32_t aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -214,17 +194,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolUInt32Dictionary *dict2 =
-      [GPBBoolUInt32Dictionary dictionaryWithDictionary:dict];
+      [[GPBBoolUInt32Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolUInt32Dictionary *dict = [GPBBoolUInt32Dictionary dictionary];
+  GPBBoolUInt32Dictionary *dict = [[GPBBoolUInt32Dictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -249,6 +230,7 @@
   XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 101U);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -356,15 +338,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getInt32:NULL forKey:YES]);
-  [dict enumerateKeysAndInt32sUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndInt32sUsingBlock:^(__unused BOOL aKey, __unused int32_t aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolInt32Dictionary *dict = [GPBBoolInt32Dictionary dictionaryWithInt32:200 forKey:YES];
+  GPBBoolInt32Dictionary *dict = [[GPBBoolInt32Dictionary alloc] init];
+  [dict setInt32:200 forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int32_t value;
@@ -377,6 +359,7 @@
     XCTAssertEqual(aValue, 200);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -421,8 +404,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndInt32sUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndInt32sUsingBlock:^(__unused BOOL aKey, __unused int32_t aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -515,17 +497,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolInt32Dictionary *dict2 =
-      [GPBBoolInt32Dictionary dictionaryWithDictionary:dict];
+      [[GPBBoolInt32Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolInt32Dictionary *dict = [GPBBoolInt32Dictionary dictionary];
+  GPBBoolInt32Dictionary *dict = [[GPBBoolInt32Dictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -550,6 +533,7 @@
   XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 201);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -657,15 +641,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getUInt64:NULL forKey:YES]);
-  [dict enumerateKeysAndUInt64sUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused BOOL aKey, __unused uint64_t aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolUInt64Dictionary *dict = [GPBBoolUInt64Dictionary dictionaryWithUInt64:300U forKey:YES];
+  GPBBoolUInt64Dictionary *dict = [[GPBBoolUInt64Dictionary alloc] init];
+  [dict setUInt64:300U forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   uint64_t value;
@@ -678,6 +662,7 @@
     XCTAssertEqual(aValue, 300U);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -722,8 +707,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndUInt64sUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndUInt64sUsingBlock:^(__unused BOOL aKey, __unused uint64_t aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -816,17 +800,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolUInt64Dictionary *dict2 =
-      [GPBBoolUInt64Dictionary dictionaryWithDictionary:dict];
+      [[GPBBoolUInt64Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolUInt64Dictionary *dict = [GPBBoolUInt64Dictionary dictionary];
+  GPBBoolUInt64Dictionary *dict = [[GPBBoolUInt64Dictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -851,6 +836,7 @@
   XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 301U);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -958,15 +944,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getInt64:NULL forKey:YES]);
-  [dict enumerateKeysAndInt64sUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndInt64sUsingBlock:^(__unused BOOL aKey, __unused int64_t aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolInt64Dictionary *dict = [GPBBoolInt64Dictionary dictionaryWithInt64:400 forKey:YES];
+  GPBBoolInt64Dictionary *dict = [[GPBBoolInt64Dictionary alloc] init];
+  [dict setInt64:400 forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int64_t value;
@@ -979,6 +965,7 @@
     XCTAssertEqual(aValue, 400);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -1023,8 +1010,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndInt64sUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndInt64sUsingBlock:^(__unused BOOL aKey, __unused int64_t aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -1117,17 +1103,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolInt64Dictionary *dict2 =
-      [GPBBoolInt64Dictionary dictionaryWithDictionary:dict];
+      [[GPBBoolInt64Dictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolInt64Dictionary *dict = [GPBBoolInt64Dictionary dictionary];
+  GPBBoolInt64Dictionary *dict = [[GPBBoolInt64Dictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -1152,6 +1139,7 @@
   XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 401);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -1259,15 +1247,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getBool:NULL forKey:YES]);
-  [dict enumerateKeysAndBoolsUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndBoolsUsingBlock:^(__unused BOOL aKey, __unused BOOL aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolBoolDictionary *dict = [GPBBoolBoolDictionary dictionaryWithBool:NO forKey:YES];
+  GPBBoolBoolDictionary *dict = [[GPBBoolBoolDictionary alloc] init];
+  [dict setBool:NO forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   BOOL value;
@@ -1280,6 +1268,7 @@
     XCTAssertEqual(aValue, NO);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -1324,8 +1313,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndBoolsUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndBoolsUsingBlock:^(__unused BOOL aKey, __unused BOOL aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -1418,17 +1406,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolBoolDictionary *dict2 =
-      [GPBBoolBoolDictionary dictionaryWithDictionary:dict];
+      [[GPBBoolBoolDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolBoolDictionary *dict = [GPBBoolBoolDictionary dictionary];
+  GPBBoolBoolDictionary *dict = [[GPBBoolBoolDictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -1453,6 +1442,7 @@
   XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, YES);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -1560,15 +1550,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getFloat:NULL forKey:YES]);
-  [dict enumerateKeysAndFloatsUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndFloatsUsingBlock:^(__unused BOOL aKey, __unused float aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolFloatDictionary *dict = [GPBBoolFloatDictionary dictionaryWithFloat:500.f forKey:YES];
+  GPBBoolFloatDictionary *dict = [[GPBBoolFloatDictionary alloc] init];
+  [dict setFloat:500.f forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   float value;
@@ -1581,6 +1571,7 @@
     XCTAssertEqual(aValue, 500.f);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -1625,8 +1616,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndFloatsUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndFloatsUsingBlock:^(__unused BOOL aKey, __unused float aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -1719,17 +1709,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolFloatDictionary *dict2 =
-      [GPBBoolFloatDictionary dictionaryWithDictionary:dict];
+      [[GPBBoolFloatDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolFloatDictionary *dict = [GPBBoolFloatDictionary dictionary];
+  GPBBoolFloatDictionary *dict = [[GPBBoolFloatDictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -1754,6 +1745,7 @@
   XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 501.f);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -1861,15 +1853,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertFalse([dict getDouble:NULL forKey:YES]);
-  [dict enumerateKeysAndDoublesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  [dict enumerateKeysAndDoublesUsingBlock:^(__unused BOOL aKey, __unused double aValue, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolDoubleDictionary *dict = [GPBBoolDoubleDictionary dictionaryWithDouble:600. forKey:YES];
+  GPBBoolDoubleDictionary *dict = [[GPBBoolDoubleDictionary alloc] init];
+  [dict setDouble:600. forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   double value;
@@ -1882,6 +1874,7 @@
     XCTAssertEqual(aValue, 600.);
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -1926,8 +1919,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndDoublesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndDoublesUsingBlock:^(__unused BOOL aKey, __unused double aValue, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2020,17 +2012,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolDoubleDictionary *dict2 =
-      [GPBBoolDoubleDictionary dictionaryWithDictionary:dict];
+      [[GPBBoolDoubleDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolDoubleDictionary *dict = [GPBBoolDoubleDictionary dictionary];
+  GPBBoolDoubleDictionary *dict = [[GPBBoolDoubleDictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -2055,6 +2048,7 @@
   XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 601.);
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {
@@ -2162,15 +2156,15 @@
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertNil([dict objectForKey:YES]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, NSString* aObject, BOOL *stop) {
-    #pragma unused(aKey, aObject, stop)
+  [dict enumerateKeysAndObjectsUsingBlock:^(__unused BOOL aKey, __unused NSString* aObject, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolObjectDictionary<NSString*> *dict = [GPBBoolObjectDictionary dictionaryWithObject:@"abc" forKey:YES];
+  GPBBoolObjectDictionary<NSString*> *dict = [[GPBBoolObjectDictionary alloc] init];
+  [dict setObject:@"abc" forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
@@ -2180,6 +2174,7 @@
     XCTAssertEqualObjects(aObject, @"abc");
     XCTAssertNotEqual(stop, NULL);
   }];
+  [dict release];
 }
 
 - (void)testBasics {
@@ -2219,8 +2214,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, NSString* aObject, BOOL *stop) {
-    #pragma unused(aKey, aObject)
+  [dict enumerateKeysAndObjectsUsingBlock:^(__unused BOOL aKey, __unused NSString* aObject, BOOL *stop) {
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2313,17 +2307,18 @@
   XCTAssertNotNil(dict);
 
   GPBBoolObjectDictionary<NSString*> *dict2 =
-      [GPBBoolObjectDictionary dictionaryWithDictionary:dict];
+      [[GPBBoolObjectDictionary alloc] initWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(dict, dict2);
   XCTAssertEqualObjects(dict, dict2);
+  [dict2 release];
   [dict release];
 }
 
 - (void)testAdds {
-  GPBBoolObjectDictionary<NSString*> *dict = [GPBBoolObjectDictionary dictionary];
+  GPBBoolObjectDictionary<NSString*> *dict = [[GPBBoolObjectDictionary alloc] init];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -2343,6 +2338,7 @@
   XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
   XCTAssertEqualObjects([dict objectForKey:NO], @"def");
   [dict2 release];
+  [dict release];
 }
 
 - (void)testRemove {

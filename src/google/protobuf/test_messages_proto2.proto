@@ -1,42 +1,23 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 //
 // Test schema for proto2 messages.  This test schema is used by:
 //
 // - conformance tests
 //
 
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
 
 package protobuf_test_messages.proto2;
+
 option java_package = "com.google.protobuf_test_messages.proto2";
+option objc_class_prefix = "Proto2";
 
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;
@@ -64,79 +45,111 @@ message TestAllTypesProto2 {
   }
 
   // Singular
-  optional int32 optional_int32    =  1;
-  optional int64 optional_int64    =  2;
-  optional uint32 optional_uint32   =  3;
-  optional uint64 optional_uint64   =  4;
-  optional sint32 optional_sint32   =  5;
-  optional sint64 optional_sint64   =  6;
-  optional fixed32 optional_fixed32  =  7;
-  optional fixed64 optional_fixed64  =  8;
-  optional sfixed32 optional_sfixed32 =  9;
+  optional int32 optional_int32 = 1;
+  optional int64 optional_int64 = 2;
+  optional uint32 optional_uint32 = 3;
+  optional uint64 optional_uint64 = 4;
+  optional sint32 optional_sint32 = 5;
+  optional sint64 optional_sint64 = 6;
+  optional fixed32 optional_fixed32 = 7;
+  optional fixed64 optional_fixed64 = 8;
+  optional sfixed32 optional_sfixed32 = 9;
   optional sfixed64 optional_sfixed64 = 10;
-  optional float optional_float    = 11;
-  optional double optional_double   = 12;
-  optional bool optional_bool     = 13;
-  optional string optional_string   = 14;
-  optional bytes optional_bytes    = 15;
+  optional float optional_float = 11;
+  optional double optional_double = 12;
+  optional bool optional_bool = 13;
+  optional string optional_string = 14;
+  optional bytes optional_bytes = 15;
 
-  optional NestedMessage                        optional_nested_message  = 18;
-  optional ForeignMessage                       optional_foreign_message = 19;
+  optional NestedMessage optional_nested_message = 18;
+  optional ForeignMessageProto2 optional_foreign_message = 19;
 
-  optional NestedEnum                           optional_nested_enum     = 21;
-  optional ForeignEnum                          optional_foreign_enum    = 22;
+  optional NestedEnum optional_nested_enum = 21;
+  optional ForeignEnumProto2 optional_foreign_enum = 22;
 
-  optional string optional_string_piece = 24 [ctype=STRING_PIECE];
-  optional string optional_cord = 25 [ctype=CORD];
+  optional string optional_string_piece = 24 [ctype = STRING_PIECE];
+  optional string optional_cord = 25 [ctype = CORD];
 
   optional TestAllTypesProto2 recursive_message = 27;
 
   // Repeated
-  repeated    int32 repeated_int32    = 31;
-  repeated    int64 repeated_int64    = 32;
-  repeated   uint32 repeated_uint32   = 33;
-  repeated   uint64 repeated_uint64   = 34;
-  repeated   sint32 repeated_sint32   = 35;
-  repeated   sint64 repeated_sint64   = 36;
-  repeated  fixed32 repeated_fixed32  = 37;
-  repeated  fixed64 repeated_fixed64  = 38;
+  repeated int32 repeated_int32 = 31;
+  repeated int64 repeated_int64 = 32;
+  repeated uint32 repeated_uint32 = 33;
+  repeated uint64 repeated_uint64 = 34;
+  repeated sint32 repeated_sint32 = 35;
+  repeated sint64 repeated_sint64 = 36;
+  repeated fixed32 repeated_fixed32 = 37;
+  repeated fixed64 repeated_fixed64 = 38;
   repeated sfixed32 repeated_sfixed32 = 39;
   repeated sfixed64 repeated_sfixed64 = 40;
-  repeated    float repeated_float    = 41;
-  repeated   double repeated_double   = 42;
-  repeated     bool repeated_bool     = 43;
-  repeated   string repeated_string   = 44;
-  repeated    bytes repeated_bytes    = 45;
+  repeated float repeated_float = 41;
+  repeated double repeated_double = 42;
+  repeated bool repeated_bool = 43;
+  repeated string repeated_string = 44;
+  repeated bytes repeated_bytes = 45;
 
-  repeated NestedMessage       repeated_nested_message  = 48;
-  repeated ForeignMessage      repeated_foreign_message = 49;
+  repeated NestedMessage repeated_nested_message = 48;
+  repeated ForeignMessageProto2 repeated_foreign_message = 49;
 
-  repeated NestedEnum          repeated_nested_enum     = 51;
-  repeated ForeignEnum         repeated_foreign_enum    = 52;
+  repeated NestedEnum repeated_nested_enum = 51;
+  repeated ForeignEnumProto2 repeated_foreign_enum = 52;
 
-  repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
-  repeated string repeated_cord = 55 [ctype=CORD];
+  repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
+  repeated string repeated_cord = 55 [ctype = CORD];
+
+  // Packed
+  repeated int32 packed_int32 = 75 [packed = true];
+  repeated int64 packed_int64 = 76 [packed = true];
+  repeated uint32 packed_uint32 = 77 [packed = true];
+  repeated uint64 packed_uint64 = 78 [packed = true];
+  repeated sint32 packed_sint32 = 79 [packed = true];
+  repeated sint64 packed_sint64 = 80 [packed = true];
+  repeated fixed32 packed_fixed32 = 81 [packed = true];
+  repeated fixed64 packed_fixed64 = 82 [packed = true];
+  repeated sfixed32 packed_sfixed32 = 83 [packed = true];
+  repeated sfixed64 packed_sfixed64 = 84 [packed = true];
+  repeated float packed_float = 85 [packed = true];
+  repeated double packed_double = 86 [packed = true];
+  repeated bool packed_bool = 87 [packed = true];
+  repeated NestedEnum packed_nested_enum = 88 [packed = true];
+
+  // Unpacked
+  repeated int32 unpacked_int32 = 89 [packed = false];
+  repeated int64 unpacked_int64 = 90 [packed = false];
+  repeated uint32 unpacked_uint32 = 91 [packed = false];
+  repeated uint64 unpacked_uint64 = 92 [packed = false];
+  repeated sint32 unpacked_sint32 = 93 [packed = false];
+  repeated sint64 unpacked_sint64 = 94 [packed = false];
+  repeated fixed32 unpacked_fixed32 = 95 [packed = false];
+  repeated fixed64 unpacked_fixed64 = 96 [packed = false];
+  repeated sfixed32 unpacked_sfixed32 = 97 [packed = false];
+  repeated sfixed64 unpacked_sfixed64 = 98 [packed = false];
+  repeated float unpacked_float = 99 [packed = false];
+  repeated double unpacked_double = 100 [packed = false];
+  repeated bool unpacked_bool = 101 [packed = false];
+  repeated NestedEnum unpacked_nested_enum = 102 [packed = false];
 
   // Map
-  map <   int32, int32>    map_int32_int32 = 56;
-  map <   int64, int64>    map_int64_int64 = 57;
-  map <  uint32, uint32>   map_uint32_uint32 = 58;
-  map <  uint64, uint64>   map_uint64_uint64 = 59;
-  map <  sint32, sint32>   map_sint32_sint32 = 60;
-  map <  sint64, sint64>   map_sint64_sint64 = 61;
-  map < fixed32, fixed32>  map_fixed32_fixed32 = 62;
-  map < fixed64, fixed64>  map_fixed64_fixed64 = 63;
-  map <sfixed32, sfixed32> map_sfixed32_sfixed32 = 64;
-  map <sfixed64, sfixed64> map_sfixed64_sfixed64 = 65;
-  map <   int32, float>    map_int32_float = 66;
-  map <   int32, double>   map_int32_double = 67;
-  map <    bool, bool>     map_bool_bool = 68;
-  map <  string, string>   map_string_string = 69;
-  map <  string, bytes>    map_string_bytes = 70;
-  map <  string, NestedMessage>  map_string_nested_message = 71;
-  map <  string, ForeignMessage> map_string_foreign_message = 72;
-  map <  string, NestedEnum>     map_string_nested_enum = 73;
-  map <  string, ForeignEnum>    map_string_foreign_enum = 74;
+  map<int32, int32> map_int32_int32 = 56;
+  map<int64, int64> map_int64_int64 = 57;
+  map<uint32, uint32> map_uint32_uint32 = 58;
+  map<uint64, uint64> map_uint64_uint64 = 59;
+  map<sint32, sint32> map_sint32_sint32 = 60;
+  map<sint64, sint64> map_sint64_sint64 = 61;
+  map<fixed32, fixed32> map_fixed32_fixed32 = 62;
+  map<fixed64, fixed64> map_fixed64_fixed64 = 63;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 64;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 65;
+  map<int32, float> map_int32_float = 66;
+  map<int32, double> map_int32_double = 67;
+  map<bool, bool> map_bool_bool = 68;
+  map<string, string> map_string_string = 69;
+  map<string, bytes> map_string_bytes = 70;
+  map<string, NestedMessage> map_string_nested_message = 71;
+  map<string, ForeignMessageProto2> map_string_foreign_message = 72;
+  map<string, NestedEnum> map_string_nested_enum = 73;
+  map<string, ForeignEnumProto2> map_string_foreign_enum = 74;
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
@@ -157,7 +170,24 @@ message TestAllTypesProto2 {
   optional group Data = 201 {
     optional int32 group_int32 = 202;
     optional uint32 group_uint32 = 203;
-  };
+  }
+
+  // default values
+  optional int32 default_int32 = 241 [default = -123456789];
+  optional int64 default_int64 = 242 [default = -9123456789123456789];
+  optional uint32 default_uint32 = 243 [default = 2123456789];
+  optional uint64 default_uint64 = 244 [default = 10123456789123456789];
+  optional sint32 default_sint32 = 245 [default = -123456789];
+  optional sint64 default_sint64 = 246 [default = -9123456789123456789];
+  optional fixed32 default_fixed32 = 247 [default = 2123456789];
+  optional fixed64 default_fixed64 = 248 [default = 10123456789123456789];
+  optional sfixed32 default_sfixed32 = 249 [default = -123456789];
+  optional sfixed64 default_sfixed64 = 250 [default = -9123456789123456789];
+  optional float default_float = 251 [default = 9e9];
+  optional double default_double = 252 [default = 7e22];
+  optional bool default_bool = 253 [default = true];
+  optional string default_string = 254 [default = "Rosebud"];
+  optional bytes default_bytes = 255 [default = "joshua"];
 
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)
@@ -180,9 +210,13 @@ message TestAllTypesProto2 {
   optional int32 field_name17__ = 417;
   optional int32 Field_name18__ = 418;
 
+  // Reserved for unknown fields test.
+  reserved 1000 to 9999;
+
   // message_set test case.
   message MessageSetCorrect {
     option message_set_wire_format = true;
+
     extensions 4 to max;
   }
 
@@ -201,11 +235,11 @@ message TestAllTypesProto2 {
   }
 }
 
-message ForeignMessage {
+message ForeignMessageProto2 {
   optional int32 c = 1;
 }
 
-enum ForeignEnum {
+enum ForeignEnumProto2 {
   FOREIGN_FOO = 0;
   FOREIGN_BAR = 1;
   FOREIGN_BAZ = 2;
@@ -213,4 +247,128 @@ enum ForeignEnum {
 
 extend TestAllTypesProto2 {
   optional int32 extension_int32 = 120;
+}
+
+message UnknownToTestAllTypes {
+  optional int32 optional_int32 = 1001;
+  optional string optional_string = 1002;
+  optional ForeignMessageProto2 nested_message = 1003;
+  optional group OptionalGroup = 1004 {
+    optional int32 a = 1;
+  }
+  optional bool optional_bool = 1006;
+  repeated int32 repeated_int32 = 1011;
+}
+
+message NullHypothesisProto2 {}
+
+message EnumOnlyProto2 {
+  enum Bool {
+    kFalse = 0;
+    kTrue = 1;
+  }
+}
+
+message OneStringProto2 {
+  optional string data = 1;
+}
+
+message ProtoWithKeywords {
+  optional int32 inline = 1;
+  optional string concept = 2;
+  repeated string requires = 3;
+}
+
+message TestAllRequiredTypesProto2 {
+  message NestedMessage {
+    required int32 a = 1;
+    required TestAllRequiredTypesProto2 corecursive = 2;
+    optional TestAllRequiredTypesProto2 optional_corecursive = 3;
+  }
+
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+    NEG = -1;  // Intentionally negative.
+  }
+
+  // Singular
+  required int32 required_int32 = 1;
+  required int64 required_int64 = 2;
+  required uint32 required_uint32 = 3;
+  required uint64 required_uint64 = 4;
+  required sint32 required_sint32 = 5;
+  required sint64 required_sint64 = 6;
+  required fixed32 required_fixed32 = 7;
+  required fixed64 required_fixed64 = 8;
+  required sfixed32 required_sfixed32 = 9;
+  required sfixed64 required_sfixed64 = 10;
+  required float required_float = 11;
+  required double required_double = 12;
+  required bool required_bool = 13;
+  required string required_string = 14;
+  required bytes required_bytes = 15;
+
+  required NestedMessage required_nested_message = 18;
+  required ForeignMessageProto2 required_foreign_message = 19;
+
+  required NestedEnum required_nested_enum = 21;
+  required ForeignEnumProto2 required_foreign_enum = 22;
+
+  required string required_string_piece = 24 [ctype = STRING_PIECE];
+  required string required_cord = 25 [ctype = CORD];
+
+  required TestAllRequiredTypesProto2 recursive_message = 27;
+  optional TestAllRequiredTypesProto2 optional_recursive_message = 28;
+
+  // extensions
+  extensions 120 to 200;
+
+  // groups
+  required group Data = 201 {
+    required int32 group_int32 = 202;
+    required uint32 group_uint32 = 203;
+  }
+
+  // default values
+  required int32 default_int32 = 241 [default = -123456789];
+  required int64 default_int64 = 242 [default = -9123456789123456789];
+  required uint32 default_uint32 = 243 [default = 2123456789];
+  required uint64 default_uint64 = 244 [default = 10123456789123456789];
+  required sint32 default_sint32 = 245 [default = -123456789];
+  required sint64 default_sint64 = 246 [default = -9123456789123456789];
+  required fixed32 default_fixed32 = 247 [default = 2123456789];
+  required fixed64 default_fixed64 = 248 [default = 10123456789123456789];
+  required sfixed32 default_sfixed32 = 249 [default = -123456789];
+  required sfixed64 default_sfixed64 = 250 [default = -9123456789123456789];
+  required float default_float = 251 [default = 9e9];
+  required double default_double = 252 [default = 7e22];
+  required bool default_bool = 253 [default = true];
+  required string default_string = 254 [default = "Rosebud"];
+  required bytes default_bytes = 255 [default = "joshua"];
+
+  // Reserved for unknown fields test.
+  reserved 1000 to 9999;
+
+  // message_set test case.
+  message MessageSetCorrect {
+    option message_set_wire_format = true;
+
+    extensions 4 to max;
+  }
+
+  message MessageSetCorrectExtension1 {
+    extend MessageSetCorrect {
+      optional MessageSetCorrectExtension1 message_set_extension = 1547769;
+    }
+    required string str = 25;
+  }
+
+  message MessageSetCorrectExtension2 {
+    extend MessageSetCorrect {
+      optional MessageSetCorrectExtension2 message_set_extension = 4135312;
+    }
+    required int32 i = 9;
+  }
 }

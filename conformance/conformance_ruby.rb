@@ -2,36 +2,14 @@
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
-require 'conformance_pb'
+require 'conformance/conformance_pb'
 require 'google/protobuf/test_messages_proto3_pb'
+require 'google/protobuf/test_messages_proto2_pb'
 
 $test_count = 0
 $verbose = false
@@ -39,31 +17,37 @@ $verbose = false
 def do_test(request)
   test_message = ProtobufTestMessages::Proto3::TestAllTypesProto3.new
   response = Conformance::ConformanceResponse.new
+  descriptor = Google::Protobuf::DescriptorPool.generated_pool.lookup(request.message_type)
+
+  unless descriptor
+    response.skipped = "Unknown message type: " + request.message_type
+  end
 
   begin
     case request.payload
     when :protobuf_payload
-      if request.message_type.eql?('protobuf_test_messages.proto3.TestAllTypesProto3')
-        begin
-          test_message = ProtobufTestMessages::Proto3::TestAllTypesProto3.decode(
-              request.protobuf_payload)
-        rescue Google::Protobuf::ParseError => err
-          response.parse_error = err.message.encode('utf-8')
-          return response
-        end
-      elsif request.message_type.eql?('protobuf_test_messages.proto2.TestAllTypesProto2')
-        response.skipped = "Ruby doesn't support proto2"
+      begin
+        test_message = descriptor.msgclass.decode(request.protobuf_payload)
+      rescue Google::Protobuf::ParseError => err
+        response.parse_error = err.message.encode('utf-8')
         return response
-      else 
-        fail "Protobuf request doesn't have specific payload type"
       end
 
     when :json_payload
       begin
-        test_message = ProtobufTestMessages::Proto3::TestAllTypesProto3.decode_json(
-            request.json_payload)
+        options = {}
+        if request.test_category == :JSON_IGNORE_UNKNOWN_PARSING_TEST
+          options[:ignore_unknown_fields] = true
+        end
+        test_message = descriptor.msgclass.decode_json(request.json_payload, options)
       rescue Google::Protobuf::ParseError => err
         response.parse_error = err.message.encode('utf-8')
+        return response
+      end
+
+    when :text_payload
+      begin
+        response.skipped = "Ruby doesn't support text format"
         return response
       end
 
@@ -76,10 +60,18 @@ def do_test(request)
       fail 'Unspecified output format'
 
     when :PROTOBUF
-      response.protobuf_payload = test_message.to_proto
+      begin
+        response.protobuf_payload = test_message.to_proto
+      rescue Google::Protobuf::ParseError => err
+        response.serialize_error = err.message.encode('utf-8')
+      end
 
     when :JSON
-      response.json_payload = test_message.to_json
+      begin
+        response.json_payload = test_message.to_json
+      rescue Google::Protobuf::ParseError => err
+        response.serialize_error = err.message.encode('utf-8')
+      end
 
     when nil
       fail "Request didn't have requested output format"

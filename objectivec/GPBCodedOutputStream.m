@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBCodedOutputStream_PackagePrivate.h"
 
@@ -35,6 +12,10 @@
 #import "GPBArray.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
+
+// TODO: Consider using on other functions to reduce bloat when
+// some compiler optimizations are enabled.
+#define GPB_NOINLINE __attribute__((noinline))
 
 // These values are the existing values so as not to break any code that might
 // have already been inspecting them when they weren't documented/exposed.
@@ -48,6 +29,7 @@ typedef struct GPBOutputBufferState {
   uint8_t *bytes;
   size_t size;
   size_t position;
+  size_t bytesFlushed;
   NSOutputStream *output;
 } GPBOutputBufferState;
 
@@ -59,6 +41,37 @@ typedef struct GPBOutputBufferState {
 static const int32_t LITTLE_ENDIAN_32_SIZE = sizeof(uint32_t);
 static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 
+// Helper to write bytes to an NSOutputStream looping in case a subset is written in
+// any of the attempts.
+GPB_NOINLINE
+static NSInteger WriteToOutputStream(NSOutputStream *output, uint8_t *bytes, size_t length) {
+  size_t total = 0;
+
+  while (length) {
+    NSInteger written = [output write:bytes maxLength:length];
+
+    // Fast path - done.
+    if (written == (NSInteger)length) {
+      return total + written;
+    }
+
+    if (written > 0) {
+      // Record the subset written and continue in case it was a partial write.
+      total += written;
+      length -= written;
+      bytes += written;
+    } else if (written == 0) {
+      // Stream refused to write more, return what was written.
+      return total;
+    } else {
+      // Return the error.
+      return written;
+    }
+  }
+
+  return total;
+}
+
 // Internal helper that writes the current buffer to the output. The
 // buffer position is reset to its initial value when this returns.
 static void GPBRefreshBuffer(GPBOutputBufferState *state) {
@@ -67,11 +80,11 @@ static void GPBRefreshBuffer(GPBOutputBufferState *state) {
     [NSException raise:GPBCodedOutputStreamException_OutOfSpace format:@""];
   }
   if (state->position != 0) {
-    NSInteger written =
-        [state->output write:state->bytes maxLength:state->position];
+    NSInteger written = WriteToOutputStream(state->output, state->bytes, state->position);
     if (written != (NSInteger)state->position) {
       [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
+    state->bytesFlushed += written;
     state->position = 0;
   }
 }
@@ -118,28 +131,25 @@ static void GPBWriteInt32NoTag(GPBOutputBufferState *state, int32_t value) {
   }
 }
 
-static void GPBWriteUInt32(GPBOutputBufferState *state, int32_t fieldNumber,
-                           uint32_t value) {
+static void GPBWriteUInt32(GPBOutputBufferState *state, int32_t fieldNumber, uint32_t value) {
   GPBWriteTagWithFormat(state, fieldNumber, GPBWireFormatVarint);
   GPBWriteRawVarint32(state, value);
 }
 
-static void GPBWriteTagWithFormat(GPBOutputBufferState *state,
-                                  uint32_t fieldNumber, GPBWireFormat format) {
+static void GPBWriteTagWithFormat(GPBOutputBufferState *state, uint32_t fieldNumber,
+                                  GPBWireFormat format) {
   GPBWriteRawVarint32(state, GPBWireFormatMakeTag(fieldNumber, format));
 }
 
-static void GPBWriteRawLittleEndian32(GPBOutputBufferState *state,
-                                      int32_t value) {
-  GPBWriteRawByte(state, (value)&0xFF);
+static void GPBWriteRawLittleEndian32(GPBOutputBufferState *state, int32_t value) {
+  GPBWriteRawByte(state, (value) & 0xFF);
   GPBWriteRawByte(state, (value >> 8) & 0xFF);
   GPBWriteRawByte(state, (value >> 16) & 0xFF);
   GPBWriteRawByte(state, (value >> 24) & 0xFF);
 }
 
-static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
-                                      int64_t value) {
-  GPBWriteRawByte(state, (int32_t)(value)&0xFF);
+static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value) {
+  GPBWriteRawByte(state, (int32_t)(value) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 8) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 16) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 24) & 0xFF);
@@ -170,22 +180,20 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 // This initializer isn't exposed, but it is the designated initializer.
 // Setting OutputStream and NSData is to control the buffering behavior/size
 // of the work, but that is more obvious via the bufferSize: version.
-- (instancetype)initWithOutputStream:(NSOutputStream *)output
-                                data:(NSMutableData *)data {
+- (instancetype)initWithOutputStream:(NSOutputStream *)output data:(NSMutableData *)data {
   if ((self = [super init])) {
     buffer_ = [data retain];
-    [output open];
     state_.bytes = [data mutableBytes];
     state_.size = [data length];
     state_.output = [output retain];
+    [state_.output open];
   }
   return self;
 }
 
 + (instancetype)streamWithOutputStream:(NSOutputStream *)output {
   NSMutableData *data = [NSMutableData dataWithLength:PAGE_SIZE];
-  return [[[self alloc] initWithOutputStream:output
-                                        data:data] autorelease];
+  return [[[self alloc] initWithOutputStream:output data:data] autorelease];
 }
 
 + (instancetype)streamWithData:(NSMutableData *)data {
@@ -197,6 +205,13 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 // protos can turn on -Wdirect-ivar-access without issues.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
+- (size_t)bytesWritten {
+  // Could use NSStreamFileCurrentOffsetKey on state_.output if there is a stream, that could be
+  // expensive, manually tracking what is flush keeps things faster so message serialization can
+  // check it.
+  return state_.bytesFlushed + state_.position;
+}
 
 - (void)writeDoubleNoTag:(double)value {
   GPBWriteRawLittleEndian64(&state_, GPBConvertDoubleToInt64(value));
@@ -277,8 +292,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
     return;
   }
 
-  const char *quickString =
-      CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
+  const char *quickString = CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
 
   // Fast path: Most strings are short, if the buffer already has space,
   // add to it directly.
@@ -300,9 +314,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
                 remainingRange:NULL];
     }
     if (result) {
-      NSAssert2((usedBufferLength == length),
-                @"Our UTF8 calc was wrong? %tu vs %zd", usedBufferLength,
-                length);
+      NSAssert2((usedBufferLength == length), @"Our UTF8 calc was wrong? %tu vs %zd",
+                usedBufferLength, length);
       state_.position += usedBufferLength;
       return;
     }
@@ -311,9 +324,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   } else {
     // Slow path: just get it as data and write it out.
     NSData *utf8Data = [value dataUsingEncoding:NSUTF8StringEncoding];
-    NSAssert2(([utf8Data length] == length),
-              @"Strings UTF8 length was wrong? %tu vs %zd", [utf8Data length],
-              length);
+    NSAssert2(([utf8Data length] == length), @"Strings UTF8 length was wrong? %tu vs %zd",
+              [utf8Data length], length);
     [self writeRawData:utf8Data];
   }
 }
@@ -333,14 +345,12 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   [self writeGroupNoTag:fieldNumber value:value];
 }
 
-- (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
-                         value:(const GPBUnknownFieldSet *)value {
+- (void)writeUnknownGroupNoTag:(int32_t)fieldNumber value:(const GPBUnknownFieldSet *)value {
   [value writeToCodedOutputStream:self];
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatEndGroup);
 }
 
-- (void)writeUnknownGroup:(int32_t)fieldNumber
-                    value:(GPBUnknownFieldSet *)value {
+- (void)writeUnknownGroup:(int32_t)fieldNumber value:(GPBUnknownFieldSet *)value {
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatStartGroup);
   [self writeUnknownGroupNoTag:fieldNumber value:value];
 }
@@ -374,12 +384,12 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 }
 
 - (void)writeEnumNoTag:(int32_t)value {
-  GPBWriteRawVarint32(&state_, value);
+  GPBWriteInt32NoTag(&state_, value);
 }
 
 - (void)writeEnum:(int32_t)fieldNumber value:(int32_t)value {
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatVarint);
-  GPBWriteRawVarint32(&state_, value);
+  GPBWriteInt32NoTag(&state_, value);
 }
 
 - (void)writeSFixed32NoTag:(int32_t)value {
@@ -418,6 +428,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   GPBWriteRawVarint64(&state_, GPBEncodeZigZag64(value));
 }
 
+// clang-format off
+
 //%PDDM-DEFINE WRITE_PACKABLE_DEFNS(NAME, ARRAY_TYPE, TYPE, ACCESSOR_NAME)
 //%- (void)write##NAME##Array:(int32_t)fieldNumber
 //%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
@@ -425,19 +437,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 //%  if (tag != 0) {
 //%    if (values.count == 0) return;
 //%    __block size_t dataSize = 0;
-//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, NSUInteger idx, BOOL *stop) {
-//%#pragma unused(idx, stop)
+//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx,__unused  BOOL *stop) {
 //%      dataSize += GPBCompute##NAME##SizeNoTag(value);
 //%    }];
 //%    GPBWriteRawVarint32(&state_, tag);
 //%    GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, NSUInteger idx, BOOL *stop) {
-//%#pragma unused(idx, stop)
+//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL *stop) {
 //%      [self write##NAME##NoTag:value];
 //%    }];
 //%  } else {
-//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, NSUInteger idx, BOOL *stop) {
-//%#pragma unused(idx, stop)
+//%    [values enumerate##ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL *stop) {
 //%      [self write##NAME:fieldNumber value:value];
 //%    }];
 //%  }
@@ -459,19 +468,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(double value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(double value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeDoubleSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(double value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(double value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeDoubleNoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(double value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(double value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeDouble:fieldNumber value:value];
     }];
   }
@@ -486,19 +492,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(float value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(float value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeFloatSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(float value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(float value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeFloatNoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(float value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(float value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeFloat:fieldNumber value:value];
     }];
   }
@@ -513,19 +516,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeUInt64SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeUInt64NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeUInt64:fieldNumber value:value];
     }];
   }
@@ -540,19 +540,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeInt64SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeInt64NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeInt64:fieldNumber value:value];
     }];
   }
@@ -567,19 +564,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeInt32SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeInt32NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeInt32:fieldNumber value:value];
     }];
   }
@@ -594,19 +588,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeUInt32SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeUInt32NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeUInt32:fieldNumber value:value];
     }];
   }
@@ -621,19 +612,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeFixed64SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeFixed64NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeFixed64:fieldNumber value:value];
     }];
   }
@@ -648,19 +636,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeFixed32SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeFixed32NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeFixed32:fieldNumber value:value];
     }];
   }
@@ -675,19 +660,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeSInt32SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSInt32NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSInt32:fieldNumber value:value];
     }];
   }
@@ -702,19 +684,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeSInt64SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSInt64NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSInt64:fieldNumber value:value];
     }];
   }
@@ -729,19 +708,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeSFixed64SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSFixed64NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSFixed64:fieldNumber value:value];
     }];
   }
@@ -756,19 +732,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeSFixed32SizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSFixed32NoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeSFixed32:fieldNumber value:value];
     }];
   }
@@ -783,19 +756,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateValuesWithBlock:^(BOOL value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(BOOL value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeBoolSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateValuesWithBlock:^(BOOL value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(BOOL value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeBoolNoTag:value];
     }];
   } else {
-    [values enumerateValuesWithBlock:^(BOOL value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateValuesWithBlock:^(BOOL value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeBool:fieldNumber value:value];
     }];
   }
@@ -810,19 +780,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   if (tag != 0) {
     if (values.count == 0) return;
     __block size_t dataSize = 0;
-    [values enumerateRawValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx,__unused  BOOL *stop) {
       dataSize += GPBComputeEnumSizeNoTag(value);
     }];
     GPBWriteRawVarint32(&state_, tag);
     GPBWriteRawVarint32(&state_, (int32_t)dataSize);
-    [values enumerateRawValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeEnumNoTag:value];
     }];
   } else {
-    [values enumerateRawValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+    [values enumerateRawValuesWithBlock:^(int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
       [self writeEnum:fieldNumber value:value];
     }];
   }
@@ -875,23 +842,20 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 
 //%PDDM-EXPAND-END (19 expansions)
 
-- (void)writeMessageSetExtension:(int32_t)fieldNumber
-                           value:(GPBMessage *)value {
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatStartGroup);
+// clang-format on
+
+- (void)writeMessageSetExtension:(int32_t)fieldNumber value:(GPBMessage *)value {
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatStartGroup);
   GPBWriteUInt32(&state_, GPBWireFormatMessageSetTypeId, fieldNumber);
   [self writeMessage:GPBWireFormatMessageSetMessage value:value];
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatEndGroup);
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatEndGroup);
 }
 
 - (void)writeRawMessageSetExtension:(int32_t)fieldNumber value:(NSData *)value {
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatStartGroup);
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatStartGroup);
   GPBWriteUInt32(&state_, GPBWireFormatMessageSetTypeId, fieldNumber);
   [self writeBytes:GPBWireFormatMessageSetMessage value:value];
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatEndGroup);
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatEndGroup);
 }
 
 - (void)flush {
@@ -908,9 +872,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   [self writeRawPtr:[data bytes] offset:0 length:[data length]];
 }
 
-- (void)writeRawPtr:(const void *)value
-             offset:(size_t)offset
-             length:(size_t)length {
+- (void)writeRawPtr:(const void *)value offset:(size_t)offset length:(size_t)length {
   if (value == nil || length == 0) {
     return;
   }
@@ -925,8 +887,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
     // Write extends past current buffer.  Fill the rest of this buffer and
     // flush.
     size_t bytesWritten = bufferBytesLeft;
-    memcpy(state_.bytes + state_.position, ((uint8_t *)value) + offset,
-           bytesWritten);
+    memcpy(state_.bytes + state_.position, ((uint8_t *)value) + offset, bytesWritten);
     offset += bytesWritten;
     length -= bytesWritten;
     state_.position = bufferLength;
@@ -942,7 +903,11 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
       state_.position = length;
     } else {
       // Write is very big.  Let's do it all at once.
-      [state_.output write:((uint8_t *)value) + offset maxLength:length];
+      NSInteger written = WriteToOutputStream(state_.output, ((uint8_t *)value) + offset, length);
+      if (written != (NSInteger)length) {
+        [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
+      }
+      state_.bytesFlushed += written;
     }
   }
 }
@@ -976,23 +941,13 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 
 @end
 
-size_t GPBComputeDoubleSizeNoTag(Float64 value) {
-#pragma unused(value)
-  return LITTLE_ENDIAN_64_SIZE;
-}
+size_t GPBComputeDoubleSizeNoTag(__unused Float64 value) { return LITTLE_ENDIAN_64_SIZE; }
 
-size_t GPBComputeFloatSizeNoTag(Float32 value) {
-#pragma unused(value)
-  return LITTLE_ENDIAN_32_SIZE;
-}
+size_t GPBComputeFloatSizeNoTag(__unused Float32 value) { return LITTLE_ENDIAN_32_SIZE; }
 
-size_t GPBComputeUInt64SizeNoTag(uint64_t value) {
-  return GPBComputeRawVarint64Size(value);
-}
+size_t GPBComputeUInt64SizeNoTag(uint64_t value) { return GPBComputeRawVarint64Size(value); }
 
-size_t GPBComputeInt64SizeNoTag(int64_t value) {
-  return GPBComputeRawVarint64Size(value);
-}
+size_t GPBComputeInt64SizeNoTag(int64_t value) { return GPBComputeRawVarint64Size(value); }
 
 size_t GPBComputeInt32SizeNoTag(int32_t value) {
   if (value >= 0) {
@@ -1007,33 +962,20 @@ size_t GPBComputeSizeTSizeAsInt32NoTag(size_t value) {
   return GPBComputeInt32SizeNoTag((int32_t)value);
 }
 
-size_t GPBComputeFixed64SizeNoTag(uint64_t value) {
-#pragma unused(value)
-  return LITTLE_ENDIAN_64_SIZE;
-}
+size_t GPBComputeFixed64SizeNoTag(__unused uint64_t value) { return LITTLE_ENDIAN_64_SIZE; }
 
-size_t GPBComputeFixed32SizeNoTag(uint32_t value) {
-#pragma unused(value)
-  return LITTLE_ENDIAN_32_SIZE;
-}
+size_t GPBComputeFixed32SizeNoTag(__unused uint32_t value) { return LITTLE_ENDIAN_32_SIZE; }
 
-size_t GPBComputeBoolSizeNoTag(BOOL value) {
-#pragma unused(value)
-  return 1;
-}
+size_t GPBComputeBoolSizeNoTag(__unused BOOL value) { return 1; }
 
 size_t GPBComputeStringSizeNoTag(NSString *value) {
   NSUInteger length = [value lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
   return GPBComputeRawVarint32SizeForInteger(length) + length;
 }
 
-size_t GPBComputeGroupSizeNoTag(GPBMessage *value) {
-  return [value serializedSize];
-}
+size_t GPBComputeGroupSizeNoTag(GPBMessage *value) { return [value serializedSize]; }
 
-size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value) {
-  return value.serializedSize;
-}
+size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value) { return value.serializedSize; }
 
 size_t GPBComputeMessageSizeNoTag(GPBMessage *value) {
   size_t size = [value serializedSize];
@@ -1045,23 +987,13 @@ size_t GPBComputeBytesSizeNoTag(NSData *value) {
   return GPBComputeRawVarint32SizeForInteger(valueLength) + valueLength;
 }
 
-size_t GPBComputeUInt32SizeNoTag(int32_t value) {
-  return GPBComputeRawVarint32Size(value);
-}
+size_t GPBComputeUInt32SizeNoTag(int32_t value) { return GPBComputeRawVarint32Size(value); }
 
-size_t GPBComputeEnumSizeNoTag(int32_t value) {
-  return GPBComputeRawVarint32Size(value);
-}
+size_t GPBComputeEnumSizeNoTag(int32_t value) { return GPBComputeInt32SizeNoTag(value); }
 
-size_t GPBComputeSFixed32SizeNoTag(int32_t value) {
-#pragma unused(value)
-  return LITTLE_ENDIAN_32_SIZE;
-}
+size_t GPBComputeSFixed32SizeNoTag(__unused int32_t value) { return LITTLE_ENDIAN_32_SIZE; }
 
-size_t GPBComputeSFixed64SizeNoTag(int64_t value) {
-#pragma unused(value)
-  return LITTLE_ENDIAN_64_SIZE;
-}
+size_t GPBComputeSFixed64SizeNoTag(__unused int64_t value) { return LITTLE_ENDIAN_64_SIZE; }
 
 size_t GPBComputeSInt32SizeNoTag(int32_t value) {
   return GPBComputeRawVarint32Size(GPBEncodeZigZag32(value));
@@ -1111,10 +1043,8 @@ size_t GPBComputeGroupSize(int32_t fieldNumber, GPBMessage *value) {
   return GPBComputeTagSize(fieldNumber) * 2 + GPBComputeGroupSizeNoTag(value);
 }
 
-size_t GPBComputeUnknownGroupSize(int32_t fieldNumber,
-                                  GPBUnknownFieldSet *value) {
-  return GPBComputeTagSize(fieldNumber) * 2 +
-         GPBComputeUnknownGroupSizeNoTag(value);
+size_t GPBComputeUnknownGroupSize(int32_t fieldNumber, GPBUnknownFieldSet *value) {
+  return GPBComputeTagSize(fieldNumber) * 2 + GPBComputeUnknownGroupSizeNoTag(value);
 }
 
 size_t GPBComputeMessageSize(int32_t fieldNumber, GPBMessage *value) {
@@ -1146,27 +1076,23 @@ size_t GPBComputeSInt32Size(int32_t fieldNumber, int32_t value) {
 }
 
 size_t GPBComputeSInt64Size(int32_t fieldNumber, int64_t value) {
-  return GPBComputeTagSize(fieldNumber) +
-         GPBComputeRawVarint64Size(GPBEncodeZigZag64(value));
+  return GPBComputeTagSize(fieldNumber) + GPBComputeRawVarint64Size(GPBEncodeZigZag64(value));
 }
 
-size_t GPBComputeMessageSetExtensionSize(int32_t fieldNumber,
-                                         GPBMessage *value) {
+size_t GPBComputeMessageSetExtensionSize(int32_t fieldNumber, GPBMessage *value) {
   return GPBComputeTagSize(GPBWireFormatMessageSetItem) * 2 +
          GPBComputeUInt32Size(GPBWireFormatMessageSetTypeId, fieldNumber) +
          GPBComputeMessageSize(GPBWireFormatMessageSetMessage, value);
 }
 
-size_t GPBComputeRawMessageSetExtensionSize(int32_t fieldNumber,
-                                            NSData *value) {
+size_t GPBComputeRawMessageSetExtensionSize(int32_t fieldNumber, NSData *value) {
   return GPBComputeTagSize(GPBWireFormatMessageSetItem) * 2 +
          GPBComputeUInt32Size(GPBWireFormatMessageSetTypeId, fieldNumber) +
          GPBComputeBytesSize(GPBWireFormatMessageSetMessage, value);
 }
 
 size_t GPBComputeTagSize(int32_t fieldNumber) {
-  return GPBComputeRawVarint32Size(
-      GPBWireFormatMakeTag(fieldNumber, GPBWireFormatVarint));
+  return GPBComputeRawVarint32Size(GPBWireFormatMakeTag(fieldNumber, GPBWireFormatVarint));
 }
 
 size_t GPBComputeWireFormatTagSize(int field_number, GPBDataType dataType) {

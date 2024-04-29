@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 syntax = "proto3";
 
@@ -96,6 +73,7 @@ message TestAllTypes {
       optional_public_import_message = 26;
 
   NestedMessage optional_lazy_message = 27 [lazy=true];
+  NestedMessage optional_unverified_lazy_message = 28 [unverified_lazy=true];
   protobuf_unittest_import.ImportMessage optional_lazy_import_message = 115
       [lazy = true];
 
@@ -115,6 +93,23 @@ message TestAllTypes {
   repeated     bool repeated_bool     = 43;
   repeated   string repeated_string   = 44;
   repeated    bytes repeated_bytes    = 45;
+
+  // Optional
+  optional    int32 proto3_optional_int32    = 116;
+  optional    int64 proto3_optional_int64    = 117;
+  optional   uint32 proto3_optional_uint32   = 118;
+  optional   uint64 proto3_optional_uint64   = 119;
+  optional   sint32 proto3_optional_sint32   = 120;
+  optional   sint64 proto3_optional_sint64   = 121;
+  optional  fixed32 proto3_optional_fixed32  = 122;
+  optional  fixed64 proto3_optional_fixed64  = 123;
+  optional sfixed32 proto3_optional_sfixed32 = 124;
+  optional sfixed64 proto3_optional_sfixed64 = 125;
+  optional    float proto3_optional_float    = 126;
+  optional   double proto3_optional_double   = 127;
+  optional     bool proto3_optional_bool     = 128;
+  optional   string proto3_optional_string   = 129;
+  optional    bytes proto3_optional_bytes    = 130;
 
   // Groups are not allowed in proto3.
   // repeated group RepeatedGroup = 46 {
@@ -183,10 +178,12 @@ message TestUnpackedTypes {
   repeated TestAllTypes.NestedEnum repeated_nested_enum = 14 [packed = false];
 }
 
-// This proto includes a recusively nested message.
+// This proto includes a recursively nested message.
 message NestedTestAllTypes {
   NestedTestAllTypes child = 1;
   TestAllTypes payload = 2;
+  repeated NestedTestAllTypes repeated_child = 3;
+  TestAllTypes lazy_payload = 4 [lazy = true];
 }
 
 // Define these after TestAllTypes to make sure the compiler can handle
@@ -206,3 +203,12 @@ enum ForeignEnum {
 message TestEmptyMessage {
 }
 
+// Needed for a Python test.
+message TestPickleNestedMessage {
+  message NestedMessage {
+    int32 bb = 1;
+    message NestedNestedMessage {
+      int32 cc = 1;
+    }
+  }
+}

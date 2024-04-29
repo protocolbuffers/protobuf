@@ -9,6 +9,7 @@ class EnumDescriptor
     use HasPublicDescriptorTrait;
 
     private $klass;
+    private $legacy_klass;
     private $full_name;
     private $value;
     private $name_to_value;
@@ -38,17 +39,26 @@ class EnumDescriptor
 
     public function getValueByNumber($number)
     {
-        return $this->value[$number];
+        if (isset($this->value[$number])) {
+            return $this->value[$number];
+        }
+        return null;
     }
 
     public function getValueByName($name)
     {
-        return $this->name_to_value[$name];
+        if (isset($this->name_to_value[$name])) {
+            return $this->name_to_value[$name];
+        }
+        return null;
     }
 
     public function getValueDescriptorByIndex($index)
     {
-        return $this->value_descriptor[$index];
+        if (isset($this->value_descriptor[$index])) {
+            return $this->value_descriptor[$index];
+        }
+        return null;
     }
 
     public function getValueCount()
@@ -66,12 +76,23 @@ class EnumDescriptor
         return $this->klass;
     }
 
+    public function setLegacyClass($klass)
+    {
+        $this->legacy_klass = $klass;
+    }
+
+    public function getLegacyClass()
+    {
+        return $this->legacy_klass;
+    }
+
     public static function buildFromProto($proto, $file_proto, $containing)
     {
         $desc = new EnumDescriptor();
 
         $enum_name_without_package  = "";
         $classname = "";
+        $legacy_classname = "";
         $fullname = "";
         GPBUtil::getFullClassName(
             $proto,
@@ -79,9 +100,12 @@ class EnumDescriptor
             $file_proto,
             $enum_name_without_package,
             $classname,
-            $fullname);
+            $legacy_classname,
+            $fullname,
+            $unused_previous_classname);
         $desc->setFullName($fullname);
         $desc->setClass($classname);
+        $desc->setLegacyClass($legacy_classname);
         $values = $proto->getValue();
         foreach ($values as $value) {
             $desc->addValue($value->getNumber(), $value);

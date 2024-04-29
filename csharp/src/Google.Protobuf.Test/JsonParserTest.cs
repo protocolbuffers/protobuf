@@ -1,40 +1,20 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using Google.Protobuf.Reflection;
 using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
+using ProtobufTestMessages.Proto2;
+using ProtobufTestMessages.Proto3;
 using System;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf
 {
@@ -573,6 +553,10 @@ namespace Google.Protobuf
         [TestCase("-3.402823e38", -3.402823e38f)]
         [TestCase("1.5e1", 15f)]
         [TestCase("15e-1", 1.5f)]
+        [TestCase("3.4028235e38", float.MaxValue)]
+        [TestCase("-3.4028235e38", float.MinValue)]
+        [TestCase("3.4028235e+38", float.MaxValue)]
+        [TestCase("-3.4028235e+38", float.MinValue)]
         public void NumberToFloat_Valid(string jsonValue, float expectedParsedValue)
         {
             string json = "{ \"singleFloat\": " + jsonValue + "}";
@@ -581,8 +565,10 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("3.402824e38", typeof(InvalidProtocolBufferException))]
-        [TestCase("-3.402824e38", typeof(InvalidProtocolBufferException))]
+        [TestCase("3.4028236e38", typeof(InvalidProtocolBufferException))]
+        [TestCase("-3.4028236e38", typeof(InvalidProtocolBufferException))]
+        [TestCase("3.4028236e+38", typeof(InvalidProtocolBufferException))]
+        [TestCase("-3.4028236e+38", typeof(InvalidProtocolBufferException))]
         [TestCase("1,0", typeof(InvalidJsonException))]
         [TestCase("1.0.0", typeof(InvalidJsonException))]
         [TestCase("+1", typeof(InvalidJsonException))]
@@ -638,7 +624,7 @@ namespace Google.Protobuf
         [TestCase("9999-12-31T23:59:59.999999999Z", null)]
         public void Timestamp_Valid(string jsonValue, string expectedFormatted)
         {
-            expectedFormatted = expectedFormatted ?? jsonValue;
+            expectedFormatted ??= jsonValue;
             string json = WrapInQuotes(jsonValue);
             var parsed = Timestamp.Parser.ParseJson(json);
             Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
@@ -696,6 +682,22 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Value_List_WithNullElement()
+        {
+            var expected = Value.ForList(Value.ForString("x"), Value.ForNull(), Value.ForString("y"));
+            var actual = Value.Parser.ParseJson("[\"x\", null, \"y\"]");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void StructValue_NullElement()
+        {
+            var expected = Value.ForStruct(new Struct { Fields = { { "x", Value.ForNull() } } });
+            var actual = Value.Parser.ParseJson("{ \"x\": null }");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
         public void ParseListValue()
         {
             Assert.AreEqual(new ListValue { Values = { Value.ForNumber(1), Value.ForString("x") } }, ListValue.Parser.ParseJson("[1, \"x\"]"));
@@ -739,7 +741,7 @@ namespace Google.Protobuf
         [TestCase("-315576000000s", null)]
         public void Duration_Valid(string jsonValue, string expectedFormatted)
         {
-            expectedFormatted = expectedFormatted ?? jsonValue;
+            expectedFormatted ??= jsonValue;
             string json = WrapInQuotes(jsonValue);
             var parsed = Duration.Parser.ParseJson(json);
             Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
@@ -809,7 +811,7 @@ namespace Google.Protobuf
             var json = formatter.Format(original); // This is tested in JsonFormatterTest
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
             Assert.AreEqual(original, parser.Parse<Any>(json));
-            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest.TestAllTypes\" }";
+            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest3.TestAllTypes\" }";
             Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
         }
 
@@ -820,7 +822,7 @@ namespace Google.Protobuf
             var message = new TestAllTypes { SingleInt32 = 10 };
             var original = Any.Pack(message, "custom.prefix/middle-part");
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
-            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest.TestAllTypes\", \"singleInt32\": 10 }";
+            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest3.TestAllTypes\", \"singleInt32\": 10 }";
             Assert.AreEqual(original, parser.Parse<Any>(json));
         }
 
@@ -900,10 +902,10 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("\"FOREIGN_BAR\"", ForeignEnum.ForeignBar)]
-        [TestCase("5", ForeignEnum.ForeignBar)]
-        [TestCase("100", (ForeignEnum)100)]
-        public void EnumValid(string value, ForeignEnum expectedValue)
+        [TestCase("\"FOREIGN_BAR\"", TestProtos.ForeignEnum.ForeignBar)]
+        [TestCase("5", TestProtos.ForeignEnum.ForeignBar)]
+        [TestCase("100", (TestProtos.ForeignEnum)100)]
+        public void EnumValid(string value, TestProtos.ForeignEnum expectedValue)
         {
             string json = "{ \"singleForeignEnum\": " + value + " }";
             var parsed = TestAllTypes.Parser.ParseJson(json);
@@ -926,6 +928,74 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
         }
 
+        [Test]
+        public void UnknownField_NotIgnored()
+        {
+            string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void Proto2_DefaultValuesPreserved()
+        {
+            string json = "{ \"FieldName13\": 0 }";
+            var parsed = TestAllTypesProto2.Parser.ParseJson(json);
+            Assert.False(parsed.HasFieldName10);
+            Assert.True(parsed.HasFieldName13);
+            Assert.AreEqual(0, parsed.FieldName13);
+        }
+
+        [Test]
+        [TestCase("5")]
+        [TestCase("\"text\"")]
+        [TestCase("[0, 1, 2]")]
+        [TestCase("{ \"a\": { \"b\": 10 } }")]
+        public void UnknownField_Ignored(string value)
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"unknownField\": " + value + ", \"singleString\": \"x\" }";
+            var actual = parser.Parse<TestAllTypes>(json);
+            var expected = new TestAllTypes { SingleString = "x" };
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void NullValueOutsideStruct_NullLiteral()
+        {
+            string json = "{ \"nullValue\": null }";
+            var message = NullValueOutsideStruct.Parser.ParseJson(json);
+            Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
+        }
+
+        [Test]
+        public void NullValueNotInOneof_NullLiteral()
+        {
+            // We'd only normally see this with FormatDefaultValues set to true.
+            string json = "{ \"nullValue\": null }";
+            var message = NullValueNotInOneof.Parser.ParseJson(json);
+            Assert.AreEqual(NullValue.NullValue, message.NullValue);
+        }
+
+        // NullValue used to only be converted to the null literal when part of a struct.
+        // Otherwise, it would end up as a string "NULL_VALUE" (the name of the enum value).
+        // We still parse that form, for compatibility.
+        [Test]
+        public void NullValueOutsideStruct_Compatibility()
+        {
+            string json = "{ \"nullValue\": \"NULL_VALUE\" }";
+            var message = NullValueOutsideStruct.Parser.ParseJson(json);
+            Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
+        }
+
+        [Test]
+        public void NullValueNotInOneof_Compatibility()
+        {
+            // We'd only normally see this with FormatDefaultValues set to true.
+            string json = "{ \"nullValue\": \"NULL_VALUE\" }";
+            var message = NullValueNotInOneof.Parser.ParseJson(json);
+            Assert.AreEqual(NullValue.NullValue, message.NullValue);
+        }
+
         /// <summary>
         /// Various tests use strings which have quotes round them for parsing or as the result
         /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
@@ -934,6 +1004,130 @@ namespace Google.Protobuf
         internal static string WrapInQuotes(string text)
         {
             return '"' + text + '"';
+        }
+
+        [Test]
+        public void ParseAllNullValues()
+        {
+            string json = @"{
+  ""optionalInt32"": null,
+  ""optionalInt64"": null,
+  ""optionalUint32"": null,
+  ""optionalUint64"": null,
+  ""optionalSint32"": null,
+  ""optionalSint64"": null,
+  ""optionalFixed32"": null,
+  ""optionalFixed64"": null,
+  ""optionalSfixed32"": null,
+  ""optionalSfixed64"": null,
+  ""optionalFloat"": null,
+  ""optionalDouble"": null,
+  ""optionalBool"": null,
+  ""optionalString"": null,
+  ""optionalBytes"": null,
+  ""optionalNestedEnum"": null,
+  ""optionalNestedMessage"": null,
+  ""repeatedInt32"": null,
+  ""repeatedInt64"": null,
+  ""repeatedUint32"": null,
+  ""repeatedUint64"": null,
+  ""repeatedSint32"": null,
+  ""repeatedSint64"": null,
+  ""repeatedFixed32"": null,
+  ""repeatedFixed64"": null,
+  ""repeatedSfixed32"": null,
+  ""repeatedSfixed64"": null,
+  ""repeatedFloat"": null,
+  ""repeatedDouble"": null,
+  ""repeatedBool"": null,
+  ""repeatedString"": null,
+  ""repeatedBytes"": null,
+  ""repeatedNestedEnum"": null,
+  ""repeatedNestedMessage"": null,
+  ""mapInt32Int32"": null,
+  ""mapBoolBool"": null,
+  ""mapStringNestedMessage"": null
+}";
+
+            var message = new TestAllTypesProto3
+            {
+                OptionalInt32 = 1,
+                OptionalInt64 = 1,
+                OptionalUint32 = 1,
+                OptionalUint64 = 1,
+                OptionalSint32 = 1,
+                OptionalSint64 = 1,
+                OptionalFixed32 = 1,
+                OptionalFixed64 = 1,
+                OptionalSfixed32 = 1,
+                OptionalSfixed64 = 1,
+                OptionalFloat = 1,
+                OptionalDouble = 1,
+                OptionalBool = true,
+                OptionalString = "1",
+                OptionalBytes = ByteString.CopyFrom(new byte[] { 1 }),
+                OptionalNestedEnum = TestAllTypesProto3.Types.NestedEnum.Bar,
+                OptionalNestedMessage = new TestAllTypesProto3.Types.NestedMessage()
+            };
+            message.RepeatedInt32.Add(1);
+            message.RepeatedInt64.Add(1);
+            message.RepeatedUint32.Add(1);
+            message.RepeatedUint64.Add(1);
+            message.RepeatedSint32.Add(1);
+            message.RepeatedSint64.Add(1);
+            message.RepeatedFixed32.Add(1);
+            message.RepeatedFixed64.Add(1);
+            message.RepeatedSfixed32.Add(1);
+            message.RepeatedSfixed64.Add(1);
+            message.RepeatedFloat.Add(1);
+            message.RepeatedDouble.Add(1);
+            message.RepeatedBool.Add(true);
+            message.RepeatedString.Add("1");
+            message.RepeatedBytes.Add(ByteString.CopyFrom(new byte[] { 1 }));
+            message.RepeatedNestedEnum.Add(TestAllTypesProto3.Types.NestedEnum.Bar);
+            message.RepeatedNestedMessage.Add(new TestAllTypesProto3.Types.NestedMessage());
+            message.MapInt32Int32.Add(1, 1);
+            message.MapBoolBool.Add(true, true);
+            message.MapStringNestedMessage.Add(" ", new TestAllTypesProto3.Types.NestedMessage());
+
+            JsonParser.Default.Merge(message, json);
+
+            Assert.AreEqual(0, message.OptionalInt32);
+            Assert.AreEqual(0, message.OptionalInt64);
+            Assert.AreEqual(0, message.OptionalUint32);
+            Assert.AreEqual(0, message.OptionalUint64);
+            Assert.AreEqual(0, message.OptionalSint32);
+            Assert.AreEqual(0, message.OptionalSint64);
+            Assert.AreEqual(0, message.OptionalFixed32);
+            Assert.AreEqual(0, message.OptionalFixed64);
+            Assert.AreEqual(0, message.OptionalSfixed32);
+            Assert.AreEqual(0, message.OptionalSfixed64);
+            Assert.AreEqual(0, message.OptionalFloat);
+            Assert.AreEqual(0, message.OptionalDouble);
+            Assert.AreEqual(false, message.OptionalBool);
+            Assert.AreEqual("", message.OptionalString);
+            Assert.AreEqual(ByteString.Empty, message.OptionalBytes);
+            Assert.AreEqual(TestAllTypesProto3.Types.NestedEnum.Foo, message.OptionalNestedEnum);
+            Assert.AreEqual(null, message.OptionalNestedMessage);
+            Assert.AreEqual(0, message.RepeatedInt32.Count);
+            Assert.AreEqual(0, message.RepeatedInt64.Count);
+            Assert.AreEqual(0, message.RepeatedUint32.Count);
+            Assert.AreEqual(0, message.RepeatedUint64.Count);
+            Assert.AreEqual(0, message.RepeatedSint32.Count);
+            Assert.AreEqual(0, message.RepeatedSint64.Count);
+            Assert.AreEqual(0, message.RepeatedFixed32.Count);
+            Assert.AreEqual(0, message.RepeatedFixed64.Count);
+            Assert.AreEqual(0, message.RepeatedSfixed32.Count);
+            Assert.AreEqual(0, message.RepeatedFloat.Count);
+            Assert.AreEqual(0, message.RepeatedDouble.Count);
+            Assert.AreEqual(0, message.RepeatedBool.Count);
+            Assert.AreEqual(0, message.RepeatedString.Count);
+            Assert.AreEqual(0, message.RepeatedBytes.Count);
+            Assert.AreEqual(0, message.RepeatedNestedEnum.Count);
+            Assert.AreEqual(0, message.RepeatedNestedMessage.Count);
+            Assert.AreEqual(0, message.MapInt32Int32.Count);
+            Assert.AreEqual(0, message.MapBoolBool.Count);
+            Assert.AreEqual(0, message.MapStringNestedMessage.Count);
         }
     }
 }

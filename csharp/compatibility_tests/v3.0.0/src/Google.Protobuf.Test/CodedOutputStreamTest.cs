@@ -1,33 +1,10 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -211,35 +188,35 @@ namespace Google.Protobuf
         [Test]
         public void EncodeZigZag32()
         {
-            Assert.AreEqual(0u, CodedOutputStream.EncodeZigZag32(0));
-            Assert.AreEqual(1u, CodedOutputStream.EncodeZigZag32(-1));
-            Assert.AreEqual(2u, CodedOutputStream.EncodeZigZag32(1));
-            Assert.AreEqual(3u, CodedOutputStream.EncodeZigZag32(-2));
-            Assert.AreEqual(0x7FFFFFFEu, CodedOutputStream.EncodeZigZag32(0x3FFFFFFF));
-            Assert.AreEqual(0x7FFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0xC0000000)));
-            Assert.AreEqual(0xFFFFFFFEu, CodedOutputStream.EncodeZigZag32(0x7FFFFFFF));
-            Assert.AreEqual(0xFFFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0x80000000)));
+            Assert.AreEqual(0u, WritingPrimitives.EncodeZigZag32(0));
+            Assert.AreEqual(1u, WritingPrimitives.EncodeZigZag32(-1));
+            Assert.AreEqual(2u, WritingPrimitives.EncodeZigZag32(1));
+            Assert.AreEqual(3u, WritingPrimitives.EncodeZigZag32(-2));
+            Assert.AreEqual(0x7FFFFFFEu, WritingPrimitives.EncodeZigZag32(0x3FFFFFFF));
+            Assert.AreEqual(0x7FFFFFFFu, WritingPrimitives.EncodeZigZag32(unchecked((int) 0xC0000000)));
+            Assert.AreEqual(0xFFFFFFFEu, WritingPrimitives.EncodeZigZag32(0x7FFFFFFF));
+            Assert.AreEqual(0xFFFFFFFFu, WritingPrimitives.EncodeZigZag32(unchecked((int) 0x80000000)));
         }
 
         [Test]
         public void EncodeZigZag64()
         {
-            Assert.AreEqual(0u, CodedOutputStream.EncodeZigZag64(0));
-            Assert.AreEqual(1u, CodedOutputStream.EncodeZigZag64(-1));
-            Assert.AreEqual(2u, CodedOutputStream.EncodeZigZag64(1));
-            Assert.AreEqual(3u, CodedOutputStream.EncodeZigZag64(-2));
+            Assert.AreEqual(0u, WritingPrimitives.EncodeZigZag64(0));
+            Assert.AreEqual(1u, WritingPrimitives.EncodeZigZag64(-1));
+            Assert.AreEqual(2u, WritingPrimitives.EncodeZigZag64(1));
+            Assert.AreEqual(3u, WritingPrimitives.EncodeZigZag64(-2));
             Assert.AreEqual(0x000000007FFFFFFEuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x000000003FFFFFFFUL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x000000003FFFFFFFUL)));
             Assert.AreEqual(0x000000007FFFFFFFuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0xFFFFFFFFC0000000UL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0xFFFFFFFFC0000000UL)));
             Assert.AreEqual(0x00000000FFFFFFFEuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x000000007FFFFFFFUL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x000000007FFFFFFFUL)));
             Assert.AreEqual(0x00000000FFFFFFFFuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0xFFFFFFFF80000000UL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0xFFFFFFFF80000000UL)));
             Assert.AreEqual(0xFFFFFFFFFFFFFFFEL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x7FFFFFFFFFFFFFFFUL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x7FFFFFFFFFFFFFFFUL)));
             Assert.AreEqual(0xFFFFFFFFFFFFFFFFL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x8000000000000000UL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x8000000000000000UL)));
         }
 
         [Test]
@@ -247,26 +224,26 @@ namespace Google.Protobuf
         {
             // Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
             // were chosen semi-randomly via keyboard bashing.
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-3612)));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(0)));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(1)));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(-1)));
+            Assert.AreEqual(14927, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(14927)));
+            Assert.AreEqual(-3612, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(-3612)));
         }
 
         [Test]
         public void RoundTripZigZag64()
         {
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-3612)));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(0)));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(1)));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(-1)));
+            Assert.AreEqual(14927, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(14927)));
+            Assert.AreEqual(-3612, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(-3612)));
 
             Assert.AreEqual(856912304801416L,
-                            CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(856912304801416L)));
+                            ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(856912304801416L)));
             Assert.AreEqual(-75123905439571256L,
-                            CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-75123905439571256L)));
+                            ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(-75123905439571256L)));
         }
 
         [Test]
@@ -395,7 +372,7 @@ namespace Google.Protobuf
             Assert.IsTrue(memoryStream.CanWrite);
             using (var cos = new CodedOutputStream(memoryStream))
             {
-                cos.WriteRawByte(0);
+                cos.WriteRawBytes(new byte[] {0});
                 Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
             }
             Assert.AreEqual(1, memoryStream.ToArray().Length); // Flushed data from CodedOutputStream to MemoryStream
@@ -409,7 +386,7 @@ namespace Google.Protobuf
             Assert.IsTrue(memoryStream.CanWrite);
             using (var cos = new CodedOutputStream(memoryStream, true))
             {
-                cos.WriteRawByte(0);
+                cos.WriteRawBytes(new byte[] {0});
                 Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
             }
             Assert.AreEqual(1, memoryStream.Position); // Flushed data from CodedOutputStream to MemoryStream

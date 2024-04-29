@@ -1,0 +1,112 @@
+load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_versioned_java_library")
+load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+load("//java/internal:testing.bzl", "junit_tests")
+
+java_library(
+    name = "util",
+    srcs = glob([
+        "src/main/java/com/google/protobuf/util/*.java",
+    ]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//java/core",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:com_google_errorprone_error_prone_annotations",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_j2objc_j2objc_annotations",
+    ],
+)
+
+protobuf_versioned_java_library(
+    name = "util_bundle",
+    srcs = glob([
+        "src/main/java/com/google/protobuf/util/*.java",
+    ]),
+    bundle_description = "Utilities for Protocol Buffers",
+    bundle_name = "Protocol Buffers [Util]",
+    bundle_symbolic_name = "com.google.protobuf.util",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//java/core",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:com_google_errorprone_error_prone_annotations",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_j2objc_j2objc_annotations",
+    ],
+)
+
+# Bazel users, don't depend on this target, use :util.
+protobuf_java_export(
+    name = "util_mvn",
+    deploy_env = ["//java/core"],
+    maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_JAVA_VERSION,
+    pom_template = "pom_template.xml",
+    tags = ["manual"],
+    visibility = ["//java:__pkg__"],
+    runtime_deps = [":util_bundle"],
+)
+
+filegroup(
+    name = "release",
+    srcs = [
+        ":util_mvn-docs",
+        ":util_mvn-maven-source",
+        ":util_mvn-pom",
+        ":util_mvn-project",
+    ],
+    visibility = ["//java:__pkg__"],
+)
+
+proto_library(
+    name = "test_protos",
+    srcs = glob(["src/test/proto/**/*.proto"]),
+    deps = [
+        "//:any_proto",
+        "//:duration_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+java_proto_library(
+    name = "test_protos_java_proto",
+    deps = [":test_protos"],
+)
+
+junit_tests(
+    name = "tests",
+    package_name = "com.google.protobuf.util",
+    srcs = glob(["src/test/java/**/*.java"]),
+    deps = [
+        ":test_protos_java_proto",
+        ":util",
+        "//java/core",
+        "//java/core:generic_test_protos_java_proto",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "src/main/**/*.java",
+        "src/test/**/*.java",
+        "src/test/**/*.proto",
+    ]) + [
+        "BUILD.bazel",
+        "pom.xml",
+        "pom_template.xml",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
+)

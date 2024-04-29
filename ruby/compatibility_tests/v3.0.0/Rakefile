@@ -2,6 +2,7 @@ require "rake/testtask"
 
 # Proto for tests.
 genproto_output = []
+
 genproto_output << "tests/generated_code.rb"
 genproto_output << "tests/test_import.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|

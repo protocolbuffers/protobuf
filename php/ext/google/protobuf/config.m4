@@ -4,7 +4,8 @@ if test "$PHP_PROTOBUF" != "no"; then
 
   PHP_NEW_EXTENSION(
     protobuf,
-    array.c def.c encode_decode.c map.c message.c protobuf.c storage.c type_check.c upb.c utf8.c,
-    $ext_shared)
+    arena.c array.c convert.c def.c map.c message.c names.c php-upb.c protobuf.c third_party/utf8_range/naive.c third_party/utf8_range/range2-neon.c third_party/utf8_range/range2-sse.c,
+    $ext_shared, , -std=gnu99 -I@ext_srcdir@/third_party/utf8_range)
+  PHP_ADD_BUILD_DIR($ext_builddir/third_party/utf8_range)
 
 fi

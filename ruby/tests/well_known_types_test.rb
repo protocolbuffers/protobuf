@@ -15,16 +15,30 @@ class TestWellKnownTypes < Test::Unit::TestCase
 
     # millisecond accuracy
     time = Time.at(123456, 654321)
-    ts.from_time(time)
+    resp = ts.from_time(time)
     assert_equal 123456, ts.seconds
     assert_equal 654321000, ts.nanos
     assert_equal time, ts.to_time
+    assert_equal resp, ts
 
     # nanosecond accuracy
     time = Time.at(123456, Rational(654321321, 1000))
-    ts.from_time(time)
+    resp = ts.from_time(time)
+    assert_equal 123456, ts.seconds
     assert_equal 654321321, ts.nanos
     assert_equal time, ts.to_time
+    assert_equal resp, ts
+
+    # Class based initialisation using from_time
+    time = Time.at(123456, Rational(654321321, 1000))
+    ts = Google::Protobuf::Timestamp.from_time(time)
+    assert_equal 123456, ts.seconds
+    assert_equal 654321321, ts.nanos
+    assert_equal time, ts.to_time
+
+      # Instance method returns the same value as class method
+    assert_equal Google::Protobuf::Timestamp.new.from_time(time),
+                 Google::Protobuf::Timestamp.from_time(time)
   end
 
   def test_duration
@@ -51,15 +65,17 @@ class TestWellKnownTypes < Test::Unit::TestCase
     struct["sublist"] = sublist
 
     assert_equal 12345, struct["number"]
-    assert_equal true, struct["boolean-true"]
-    assert_equal false, struct["boolean-false"]
-    assert_equal nil, struct["null"]
+    assert struct["boolean-true"]
+    refute struct["boolean-false"]
+    assert_nil struct["null"]
     assert_equal "abcdef", struct["string"]
     assert_equal(Google::Protobuf::Struct.from_hash(substruct),
                  struct["substruct"])
     assert_equal(Google::Protobuf::ListValue.from_a(sublist),
                  struct["sublist"])
 
+    assert struct.has_key? "null"
+    refute struct.has_key? "missing_key"
     should_equal = {
       "number" => 12345,
       "boolean-true" => true,
@@ -74,45 +90,48 @@ class TestWellKnownTypes < Test::Unit::TestCase
     }
 
     list = struct["sublist"]
-    list.is_a?(Google::Protobuf::ListValue)
+    assert_instance_of Google::Protobuf::ListValue, list
     assert_equal "abc", list[0]
     assert_equal 123, list[1]
     assert_equal({"deepkey" => "deepval"}, list[2].to_h)
 
     # to_h returns a fully-flattened Ruby structure (Hash and Array).
-    assert_equal(should_equal, struct.to_h)
+    assert_equal should_equal, struct.to_h
+
+    # Test that we can safely access a missing key
+    assert_nil struct["missing_key"]
 
     # Test that we can assign Struct and ListValue directly.
     struct["substruct"] = Google::Protobuf::Struct.from_hash(substruct)
     struct["sublist"] = Google::Protobuf::ListValue.from_a(sublist)
 
-    assert_equal(should_equal, struct.to_h)
+    assert_equal should_equal, struct.to_h
 
     struct["sublist"] << nil
     should_equal["sublist"] << nil
 
-    assert_equal(should_equal, struct.to_h)
-    assert_equal(should_equal["sublist"].length, struct["sublist"].length)
+    assert_equal should_equal, struct.to_h
+    assert_equal should_equal["sublist"].length, struct["sublist"].length
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[123] = 5
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[5] = Time.new
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[5] = [Time.new]
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[5] = {123 => 456}
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
-      struct = Google::Protobuf::Struct.new
-      struct.fields["foo"] = Google::Protobuf::Value.new
+    struct = Google::Protobuf::Struct.new
+    struct.fields["foo"] = Google::Protobuf::Value.new
+    assert_raises Google::Protobuf::UnexpectedStructType do
       # Tries to return a Ruby value for a Value class whose type
       # hasn't been filled in.
       struct["foo"]
@@ -120,11 +139,104 @@ class TestWellKnownTypes < Test::Unit::TestCase
   end
 
   def test_any
-    any = Google::Protobuf::Any.new
     ts = Google::Protobuf::Timestamp.new(seconds: 12345, nanos: 6789)
+
+    any = Google::Protobuf::Any.new
     any.pack(ts)
 
     assert any.is(Google::Protobuf::Timestamp)
     assert_equal ts, any.unpack(Google::Protobuf::Timestamp)
+
+    any = Google::Protobuf::Any.pack(ts)
+
+    assert any.is(Google::Protobuf::Timestamp)
+    assert_equal ts, any.unpack(Google::Protobuf::Timestamp)
+  end
+
+  def test_struct_init
+    s = Google::Protobuf::Struct.new(fields: {'a' => Google::Protobuf::Value.new({number_value: 4.4})})
+    assert_equal 4.4, s['a']
+
+    s = Google::Protobuf::Struct.new(fields: {'a' => {number_value: 2.2}})
+    assert_equal 2.2, s['a']
+
+    s = Google::Protobuf::Struct.new(fields: {a: {number_value: 1.1}})
+    assert_equal 1.1, s[:a]
+  end
+
+  def test_struct_nested_init
+    s = Google::Protobuf::Struct.new(
+      fields: {
+        'a' => {string_value: 'A'},
+        'b' => {struct_value: {
+          fields: {
+            'x' => {list_value: {values: [{number_value: 1.0}, {string_value: "ok"}]}},
+            'y' => {bool_value: true}}}
+        },
+        'c' => {struct_value: {}}
+      }
+    )
+    assert_equal 'A', s['a']
+    assert_equal 'A', s[:a]
+    expected_b_x = [Google::Protobuf::Value.new(number_value: 1.0), Google::Protobuf::Value.new(string_value: "ok")]
+    assert_equal expected_b_x, s['b']['x'].values
+    assert_equal expected_b_x, s[:b][:x].values
+    assert_equal expected_b_x, s['b'][:x].values
+    assert_equal expected_b_x, s[:b]['x'].values
+    assert s['b']['y']
+    assert s[:b][:y]
+    assert s[:b]['y']
+    assert s['b'][:y]
+    assert_equal Google::Protobuf::Struct.new, s['c']
+    assert_equal Google::Protobuf::Struct.new, s[:c]
+
+    s = Google::Protobuf::Struct.new(
+      fields: {
+        a: {string_value: 'Eh'},
+        b: {struct_value: {
+          fields: {
+            y: {bool_value: false}}}
+        }
+      }
+    )
+    assert_equal 'Eh', s['a']
+    assert_equal 'Eh', s[:a]
+    refute s['b']['y']
+    refute s[:b][:y]
+    refute s['b'][:y]
+    refute s[:b]['y']
+  end
+
+  def test_b8325
+    value_field = Google::Protobuf::ListValue.descriptor.lookup("values")
+    proto = Google::Protobuf::ListValue.new(
+        values: [Google::Protobuf::Value.new(string_value: "Hello")]
+    )
+    assert_equal '[<Google::Protobuf::Value: string_value: "Hello">]', value_field.get(proto).inspect
+  end
+
+  def test_from_ruby
+    pb = Google::Protobuf::Value.from_ruby(nil)
+    assert_equal :NULL_VALUE, pb.null_value
+    pb = Google::Protobuf::Value.from_ruby(1.23)
+    assert_equal 1.23, pb.number_value
+    pb = Google::Protobuf::Value.from_ruby('1.23')
+    assert_equal '1.23', pb.string_value
+    pb = Google::Protobuf::Value.from_ruby(true)
+    assert pb.bool_value
+
+    pb = Google::Protobuf::Value.from_ruby(false)
+    refute pb.bool_value
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }))
+    assert_equal Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }), pb.struct_value
+
+    pb = Google::Protobuf::Value.from_ruby({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+    assert_equal Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }), pb.struct_value
+
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::ListValue.from_a([1, 2, 3]))
+    assert_equal Google::Protobuf::ListValue.from_a([1, 2, 3]), pb.list_value
+
+    pb = Google::Protobuf::Value.from_ruby([1, 2, 3])
+    assert_equal Google::Protobuf::ListValue.from_a([1, 2, 3]), pb.list_value
   end
 end

@@ -1,0 +1,16 @@
+load("//build_defs:internal_shell.bzl", "inline_sh_test")
+
+# Run csharp compatibility test between 3.0.0 and the current version.
+inline_sh_test(
+    name = "tests",
+    srcs = ["test.sh"],
+    cmd = "$(location test.sh) 3.0.0 $(rootpath //:protoc)",
+    tools = ["//:protoc"],
+    deps = glob([
+        "src/**/*.cs*",  # .cs and .csproj
+        "protos/**/*.proto",
+    ]) + [
+        "//:well_known_protos",
+        "//csharp:srcs",
+    ],
+)

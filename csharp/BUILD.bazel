@@ -1,0 +1,116 @@
+# Protobuf C# runtime
+#
+# See also code generation logic under /src/google/protobuf/compiler/csharp.
+
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:internal_shell.bzl", "inline_sh_test")
+load("//conformance:defs.bzl", "conformance_test")
+
+################################################################################
+# Tests
+################################################################################
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_csharp.txt",
+    testee = "//conformance:conformance_csharp",
+    text_format_failure_list = "//conformance:text_format_failure_list_csharp.txt",
+)
+
+################################################################################
+# CSharp Runtime
+################################################################################
+
+filegroup(
+    name = "srcs",
+    srcs = glob(
+        [
+            "keys/*",
+            "protos/*",
+            "src/**/*.cs*",  # .cs and .csproj
+        ],
+        exclude = [
+            # Exclude generated files.
+            "src/*/obj/**/*",
+        ],
+    ) + [
+        "src/Directory.Build.props",
+        "src/Google.Protobuf.Test/testprotos.pb",
+        "src/Google.Protobuf.sln",
+    ],
+    visibility = [
+        "//conformance:__subpackages__",
+        "//csharp:__subpackages__",
+    ],
+)
+
+filegroup(
+    name = "wkt_cs_srcs",
+    srcs = [
+        "src/Google.Protobuf/Reflection/Descriptor.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Any.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Api.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Duration.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Empty.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/FieldMask.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/SourceContext.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Struct.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Timestamp.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Type.pb.cs",
+        "src/Google.Protobuf/WellKnownTypes/Wrappers.pb.cs",
+    ],
+    visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
+)
+
+inline_sh_test(
+    name = "tests",
+    srcs = [
+        "src/Google.Protobuf.sln",
+        ":srcs",
+        "//conformance:conformance_csharp_proto",
+        "//csharp/src/Google.Protobuf.Conformance:srcs",
+    ],
+    cmd = """
+        cp $(rootpath //conformance:conformance_csharp_proto) `dirname $(location src/Google.Protobuf.sln)`/Google.Protobuf.Conformance/
+        pushd `dirname $(location src/Google.Protobuf.sln)`/..
+        dotnet restore src/Google.Protobuf.sln
+        dotnet build -c Release src/Google.Protobuf.sln
+        dotnet test -c Release -f net6.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
+        popd
+    """,
+)
+
+################################################################################
+# Distribution files
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        ".editorconfig",
+        ".gitignore",
+        "BUILD.bazel",
+        "CHANGES.txt",
+        "Google.Protobuf.Tools.nuspec",
+        "Google.Protobuf.Tools.targets",
+        "NuGet.Config",
+        "README.md",
+        "build_packages.bat",
+        "build_release.sh",
+        "build_tools.sh",
+        "buildall.bat",
+        "buildall.sh",
+        "generate_protos.sh",
+        "install_dotnet_sdk.ps1",
+        ":srcs",
+        "//csharp/src/Google.Protobuf.Conformance:dist_files",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+sh_binary(
+    name = "release",
+    srcs = ["build_release.sh"],
+    args = ["$(location build_release.sh)"],
+)

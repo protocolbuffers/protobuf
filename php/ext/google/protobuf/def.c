@@ -1,146 +1,1056 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
+#include "def.h"
+
+#include <php.h>
+
+// This is not self-contained: it must be after other Zend includes.
+#include <Zend/zend_exceptions.h>
+
+#include "names.h"
+#include "php-upb.h"
 #include "protobuf.h"
 
-const char* const kReservedNames[] = {"Empty", "ECHO", "ARRAY"};
-const int kReservedNamesSize = 3;
-
-// Forward declare.
-static void descriptor_init_c_instance(Descriptor* intern TSRMLS_DC);
-static void descriptor_free_c(Descriptor* object TSRMLS_DC);
-
-static void field_descriptor_init_c_instance(FieldDescriptor* intern TSRMLS_DC);
-static void field_descriptor_free_c(FieldDescriptor* object TSRMLS_DC);
-
-static void enum_descriptor_init_c_instance(EnumDescriptor* intern TSRMLS_DC);
-static void enum_descriptor_free_c(EnumDescriptor* object TSRMLS_DC);
-
-static void enum_value_descriptor_init_c_instance(
-    EnumValueDescriptor *intern TSRMLS_DC);
-static void enum_value_descriptor_free_c(EnumValueDescriptor *object TSRMLS_DC);
-
-static void descriptor_pool_free_c(DescriptorPool* object TSRMLS_DC);
-static void descriptor_pool_init_c_instance(DescriptorPool* pool TSRMLS_DC);
-
-static void internal_descriptor_pool_free_c(
-    InternalDescriptorPool *object TSRMLS_DC);
-static void internal_descriptor_pool_init_c_instance(
-    InternalDescriptorPool *pool TSRMLS_DC);
-
-static void oneof_descriptor_free_c(Oneof* object TSRMLS_DC);
-static void oneof_descriptor_init_c_instance(Oneof* pool TSRMLS_DC);
-
-// -----------------------------------------------------------------------------
-// Common Utilities
-// -----------------------------------------------------------------------------
-
-static void check_upb_status(const upb_status* status, const char* msg) {
-  if (!upb_ok(status)) {
-    zend_error(E_ERROR, "%s: %s\n", msg, upb_status_errmsg(status));
+static void CheckUpbStatus(const upb_Status* status, const char* msg) {
+  if (!upb_Status_IsOk(status)) {
+    zend_error(E_ERROR, "%s: %s\n", msg, upb_Status_ErrorMessage(status));
   }
 }
 
-static void upb_filedef_free(void *r) {
-  upb_filedef *f = *(upb_filedef **)r;
-  size_t i;
+static void FieldDescriptor_FromFieldDef(zval* val, const upb_FieldDef* f);
 
-  for (i = 0; i < upb_filedef_depcount(f); i++) {
-    upb_filedef_unref(upb_filedef_dep(f, i), f);
-  }
-
-  upb_inttable_uninit(&f->defs);
-  upb_inttable_uninit(&f->deps);
-  upb_gfree((void *)f->name);
-  upb_gfree((void *)f->package);
-  upb_gfree(f);
+// We use this for objects that should not be created directly from PHP.
+static zend_object* CreateHandler_ReturnNull(zend_class_entry* class_type) {
+  return NULL;  // Nobody should call this.
 }
 
-// Camel-case the field name and append "Entry" for generated map entry name.
-// e.g. map<KeyType, ValueType> foo_map => FooMapEntry
-static void append_map_entry_name(char *result, const char *field_name,
-                                  int pos) {
-  bool cap_next = true;
-  int i;
+// clang-format off
+ZEND_BEGIN_ARG_INFO_EX(arginfo_getByIndex, 0, 0, 1)
+  ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+// clang-format on
 
-  for (i = 0; i < strlen(field_name); ++i) {
-    if (field_name[i] == '_') {
-      cap_next = true;
-    } else if (cap_next) {
-      // Note: Do not use ctype.h due to locales.
-      if ('a' <= field_name[i] && field_name[i] <= 'z') {
-        result[pos++] = field_name[i] - 'a' + 'A';
-      } else {
-        result[pos++] = field_name[i];
-      }
-      cap_next = false;
-    } else {
-      result[pos++] = field_name[i];
+// -----------------------------------------------------------------------------
+// EnumValueDescriptor
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  zend_object std;
+  const char* name;
+  int32_t number;
+} EnumValueDescriptor;
+
+zend_class_entry* EnumValueDescriptor_class_entry;
+static zend_object_handlers EnumValueDescriptor_object_handlers;
+
+/*
+ * EnumValueDescriptor_Make()
+ *
+ * Function to create an EnumValueDescriptor object from C.
+ */
+static void EnumValueDescriptor_Make(zval* val, const char* name,
+                                     int32_t number) {
+  EnumValueDescriptor* intern = emalloc(sizeof(EnumValueDescriptor));
+  zend_object_std_init(&intern->std, EnumValueDescriptor_class_entry);
+  intern->std.handlers = &EnumValueDescriptor_object_handlers;
+  intern->name = name;
+  intern->number = number;
+  // Skip object_properties_init(), we don't allow derived classes.
+  ZVAL_OBJ(val, &intern->std);
+}
+
+/*
+ * EnumValueDescriptor::getName()
+ *
+ * Returns the name for this enum value.
+ */
+PHP_METHOD(EnumValueDescriptor, getName) {
+  EnumValueDescriptor* intern = (EnumValueDescriptor*)Z_OBJ_P(getThis());
+  RETURN_STRING(intern->name);
+}
+
+/*
+ * EnumValueDescriptor::getNumber()
+ *
+ * Returns the number for this enum value.
+ */
+PHP_METHOD(EnumValueDescriptor, getNumber) {
+  EnumValueDescriptor* intern = (EnumValueDescriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(intern->number);
+}
+
+// clang-format off
+static zend_function_entry EnumValueDescriptor_methods[] = {
+  PHP_ME(EnumValueDescriptor, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(EnumValueDescriptor, getNumber, arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format on
+
+// -----------------------------------------------------------------------------
+// EnumDescriptor
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  zend_object std;
+  const upb_EnumDef* enumdef;
+  void* cache_key;
+} EnumDescriptor;
+
+zend_class_entry* EnumDescriptor_class_entry;
+static zend_object_handlers EnumDescriptor_object_handlers;
+
+static void EnumDescriptor_destructor(zend_object* obj) {
+  EnumDescriptor* intern = (EnumDescriptor*)obj;
+  ObjCache_Delete(intern->cache_key);
+}
+
+// Caller owns a ref on the returned zval.
+static void EnumDescriptor_FromClassEntry(zval* val, zend_class_entry* ce) {
+  // To differentiate enums from classes, we pointer-tag the class entry.
+  void* key = (void*)((uintptr_t)ce | 1);
+  PBPHP_ASSERT(key != ce);
+
+  if (ce == NULL) {
+    ZVAL_NULL(val);
+    return;
+  }
+
+  if (!ObjCache_Get(key, val)) {
+    const upb_EnumDef* e = NameMap_GetEnum(ce);
+    if (!e) {
+      ZVAL_NULL(val);
+      return;
+    }
+    EnumDescriptor* ret = emalloc(sizeof(EnumDescriptor));
+    zend_object_std_init(&ret->std, EnumDescriptor_class_entry);
+    ret->std.handlers = &EnumDescriptor_object_handlers;
+    ret->enumdef = e;
+    ret->cache_key = key;
+    ObjCache_Add(key, &ret->std);
+    ZVAL_OBJ(val, &ret->std);
+  }
+}
+
+// Caller owns a ref on the returned zval.
+static void EnumDescriptor_FromEnumDef(zval* val, const upb_EnumDef* m) {
+  if (!m) {
+    ZVAL_NULL(val);
+  } else {
+    char* classname =
+        GetPhpClassname(upb_EnumDef_File(m), upb_EnumDef_FullName(m), false);
+    zend_string* str = zend_string_init(classname, strlen(classname), 0);
+    zend_class_entry* ce = zend_lookup_class(str);  // May autoload the class.
+
+    zend_string_release(str);
+
+    if (!ce) {
+      zend_error(E_ERROR, "Couldn't load generated class %s", classname);
+    }
+
+    free(classname);
+    EnumDescriptor_FromClassEntry(val, ce);
+  }
+}
+
+/*
+ * EnumDescriptor::getValue()
+ *
+ * Returns an EnumValueDescriptor for this index. Note: we are not looking
+ * up by numeric enum value, but by the index in the list of enum values.
+ */
+PHP_METHOD(EnumDescriptor, getValue) {
+  EnumDescriptor* intern = (EnumDescriptor*)Z_OBJ_P(getThis());
+  zend_long index;
+  zval ret;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect integer for index.\n");
+    return;
+  }
+
+  if (index < 0 || index >= upb_EnumDef_ValueCount(intern->enumdef)) {
+    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
+    return;
+  }
+
+  const upb_EnumValueDef* ev = upb_EnumDef_Value(intern->enumdef, index);
+  EnumValueDescriptor_Make(&ret, upb_EnumValueDef_Name(ev),
+                           upb_EnumValueDef_Number(ev));
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * EnumDescriptor::getValueCount()
+ *
+ * Returns the number of values in this enum.
+ */
+PHP_METHOD(EnumDescriptor, getValueCount) {
+  EnumDescriptor* intern = (EnumDescriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_EnumDef_ValueCount(intern->enumdef));
+}
+
+/*
+ * EnumDescriptor::getPublicDescriptor()
+ *
+ * Returns this EnumDescriptor. Unlike the pure-PHP descriptor, we do not
+ * have two separate EnumDescriptor classes. We use a single class for both
+ * the public and private descriptor.
+ */
+PHP_METHOD(EnumDescriptor, getPublicDescriptor) { RETURN_COPY(getThis()); }
+
+// clang-format off
+static zend_function_entry EnumDescriptor_methods[] = {
+  PHP_ME(EnumDescriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(EnumDescriptor, getValueCount, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(EnumDescriptor, getValue, arginfo_getByIndex, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format on
+
+// -----------------------------------------------------------------------------
+// Oneof
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  zend_object std;
+  const upb_OneofDef* oneofdef;
+} OneofDescriptor;
+
+zend_class_entry* OneofDescriptor_class_entry;
+static zend_object_handlers OneofDescriptor_object_handlers;
+
+static void OneofDescriptor_destructor(zend_object* obj) {
+  OneofDescriptor* intern = (OneofDescriptor*)obj;
+  ObjCache_Delete(intern->oneofdef);
+}
+
+static void OneofDescriptor_FromOneofDef(zval* val, const upb_OneofDef* o) {
+  if (o == NULL) {
+    ZVAL_NULL(val);
+    return;
+  }
+
+  if (!ObjCache_Get(o, val)) {
+    OneofDescriptor* ret = emalloc(sizeof(OneofDescriptor));
+    zend_object_std_init(&ret->std, OneofDescriptor_class_entry);
+    ret->std.handlers = &OneofDescriptor_object_handlers;
+    ret->oneofdef = o;
+    ObjCache_Add(o, &ret->std);
+    ZVAL_OBJ(val, &ret->std);
+  }
+}
+
+/*
+ * OneofDescriptor::getName()
+ *
+ * Returns the name of this oneof.
+ */
+PHP_METHOD(OneofDescriptor, getName) {
+  OneofDescriptor* intern = (OneofDescriptor*)Z_OBJ_P(getThis());
+  RETURN_STRING(upb_OneofDef_Name(intern->oneofdef));
+}
+
+/*
+ * OneofDescriptor::getField()
+ *
+ * Returns a field from this oneof. The given index must be in the range
+ *   [0, getFieldCount() - 1].
+ */
+PHP_METHOD(OneofDescriptor, getField) {
+  OneofDescriptor* intern = (OneofDescriptor*)Z_OBJ_P(getThis());
+  zend_long index;
+  zval ret;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect integer for index.\n");
+    return;
+  }
+
+  if (index < 0 || index >= upb_OneofDef_FieldCount(intern->oneofdef)) {
+    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
+    return;
+  }
+
+  const upb_FieldDef* field = upb_OneofDef_Field(intern->oneofdef, index);
+  FieldDescriptor_FromFieldDef(&ret, field);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * OneofDescriptor::getFieldCount()
+ *
+ * Returns the number of fields in this oneof.
+ */
+PHP_METHOD(OneofDescriptor, getFieldCount) {
+  OneofDescriptor* intern = (OneofDescriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_OneofDef_FieldCount(intern->oneofdef));
+}
+
+// clang-format off
+static zend_function_entry OneofDescriptor_methods[] = {
+  PHP_ME(OneofDescriptor, getName,  arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(OneofDescriptor, getField, arginfo_getByIndex, ZEND_ACC_PUBLIC)
+  PHP_ME(OneofDescriptor, getFieldCount, arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format on
+
+// -----------------------------------------------------------------------------
+// FieldDescriptor
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  zend_object std;
+  const upb_FieldDef* fielddef;
+} FieldDescriptor;
+
+zend_class_entry* FieldDescriptor_class_entry;
+static zend_object_handlers FieldDescriptor_object_handlers;
+
+static void FieldDescriptor_destructor(zend_object* obj) {
+  FieldDescriptor* intern = (FieldDescriptor*)obj;
+  ObjCache_Delete(intern->fielddef);
+}
+
+// Caller owns a ref on the returned zval.
+static void FieldDescriptor_FromFieldDef(zval* val, const upb_FieldDef* f) {
+  if (f == NULL) {
+    ZVAL_NULL(val);
+    return;
+  }
+
+  if (!ObjCache_Get(f, val)) {
+    FieldDescriptor* ret = emalloc(sizeof(FieldDescriptor));
+    zend_object_std_init(&ret->std, FieldDescriptor_class_entry);
+    ret->std.handlers = &FieldDescriptor_object_handlers;
+    ret->fielddef = f;
+    ObjCache_Add(f, &ret->std);
+    ZVAL_OBJ(val, &ret->std);
+  }
+}
+
+upb_CType to_fieldtype(upb_FieldType type) {
+  switch (type) {
+#define CASE(descriptor_type, type)      \
+  case kUpb_FieldType_##descriptor_type: \
+    return kUpb_CType_##type;
+
+    CASE(Float, Float);
+    CASE(Double, Double);
+    CASE(Bool, Bool);
+    CASE(String, String);
+    CASE(Bytes, Bytes);
+    CASE(Message, Message);
+    CASE(Group, Message);
+    CASE(Enum, Enum);
+    CASE(Int32, Int32);
+    CASE(Int64, Int64);
+    CASE(UInt32, UInt32);
+    CASE(UInt64, UInt64);
+    CASE(SInt32, Int32);
+    CASE(SInt64, Int64);
+    CASE(Fixed32, UInt32);
+    CASE(Fixed64, UInt64);
+    CASE(SFixed32, Int32);
+    CASE(SFixed64, Int64);
+
+#undef CONVERT
+  }
+
+  zend_error(E_ERROR, "Unknown field type.");
+  return 0;
+}
+
+/*
+ * FieldDescriptor::getName()
+ *
+ * Returns the name of this field.
+ */
+PHP_METHOD(FieldDescriptor, getName) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  RETURN_STRING(upb_FieldDef_Name(intern->fielddef));
+}
+
+/*
+ * FieldDescriptor::getNumber()
+ *
+ * Returns the number of this field.
+ */
+PHP_METHOD(FieldDescriptor, getNumber) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_FieldDef_Number(intern->fielddef));
+}
+
+/*
+ * FieldDescriptor::getLabel()
+ *
+ * Returns the label of this field as an integer.
+ */
+PHP_METHOD(FieldDescriptor, getLabel) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_FieldDef_Label(intern->fielddef));
+}
+
+/*
+ * FieldDescriptor::getType()
+ *
+ * Returns the type of this field as an integer.
+ */
+PHP_METHOD(FieldDescriptor, getType) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_FieldDef_Type(intern->fielddef));
+}
+
+/*
+ * FieldDescriptor::isMap()
+ *
+ * Returns true if this field is a map.
+ */
+PHP_METHOD(FieldDescriptor, isMap) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  RETURN_BOOL(upb_FieldDef_IsMap(intern->fielddef));
+}
+
+/*
+ * FieldDescriptor::getEnumType()
+ *
+ * Returns the EnumDescriptor for this field, which must be an enum.
+ */
+PHP_METHOD(FieldDescriptor, getEnumType) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  const upb_EnumDef* e = upb_FieldDef_EnumSubDef(intern->fielddef);
+  zval ret;
+
+  if (!e) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Cannot get enum type for non-enum field '%s'",
+                            upb_FieldDef_Name(intern->fielddef));
+    return;
+  }
+
+  EnumDescriptor_FromEnumDef(&ret, e);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * FieldDescriptor::getContainingOneof()
+ *
+ * Returns the OneofDescriptor for this field, or null if it is not inside
+ * a oneof.
+ */
+PHP_METHOD(FieldDescriptor, getContainingOneof) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  const upb_OneofDef* o = upb_FieldDef_ContainingOneof(intern->fielddef);
+  zval ret;
+
+  if (!o) {
+    RETURN_NULL();
+  }
+
+  OneofDescriptor_FromOneofDef(&ret, o);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * FieldDescriptor::getRealContainingOneof()
+ *
+ * Returns the non-synthetic OneofDescriptor for this field, or null if it is
+ * not inside a oneof.
+ */
+PHP_METHOD(FieldDescriptor, getRealContainingOneof) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  const upb_OneofDef* o = upb_FieldDef_RealContainingOneof(intern->fielddef);
+  zval ret;
+
+  if (!o) {
+    RETURN_NULL();
+  }
+
+  OneofDescriptor_FromOneofDef(&ret, o);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * FieldDescriptor::getMessageType()
+ *
+ * Returns the Descriptor for this field, which must be a message.
+ */
+PHP_METHOD(FieldDescriptor, getMessageType) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  Descriptor* desc = Descriptor_GetFromFieldDef(intern->fielddef);
+
+  if (!desc) {
+    zend_throw_exception_ex(
+        NULL, 0, "Cannot get message type for non-message field '%s'",
+        upb_FieldDef_Name(intern->fielddef));
+    return;
+  }
+
+  RETURN_OBJ_COPY(&desc->std);
+}
+
+// clang-format off
+static zend_function_entry FieldDescriptor_methods[] = {
+  PHP_ME(FieldDescriptor, getName,   arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getNumber, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getLabel,  arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getType,   arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, isMap,     arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getEnumType, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getContainingOneof, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getRealContainingOneof, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getMessageType, arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format on
+
+// -----------------------------------------------------------------------------
+// Descriptor
+// -----------------------------------------------------------------------------
+
+zend_class_entry* Descriptor_class_entry;
+static zend_object_handlers Descriptor_object_handlers;
+
+static void Descriptor_destructor(zend_object* obj) {
+  // We don't really need to do anything here, we don't allow this to be
+  // collected before the end of the request.
+}
+
+static zend_class_entry* Descriptor_GetGeneratedClass(const upb_MessageDef* m) {
+  for (int i = 0; i < 2; ++i) {
+    char* classname = GetPhpClassname(upb_MessageDef_File(m),
+                                      upb_MessageDef_FullName(m), (bool)i);
+    zend_string* str = zend_string_init(classname, strlen(classname), 0);
+    zend_class_entry* ce = zend_lookup_class(str);  // May autoload the class.
+
+    zend_string_release(str);
+    free(classname);
+
+    if (ce) {
+      return ce;
     }
   }
-  strcat(result, "Entry");
+
+  char* classname = GetPhpClassname(upb_MessageDef_File(m),
+                                    upb_MessageDef_FullName(m), false);
+  zend_error(E_ERROR, "Couldn't load generated class %s", classname);
+  return NULL;
 }
 
-#define CHECK_UPB(code, msg)             \
-  do {                                   \
-    upb_status status = UPB_STATUS_INIT; \
-    code;                                \
-    check_upb_status(&status, msg);      \
-  } while (0)
+void Descriptor_FromMessageDef(zval* val, const upb_MessageDef* m) {
+  if (m == NULL) {
+    ZVAL_NULL(val);
+    return;
+  }
 
-// Define PHP class
-#define DEFINE_PROTOBUF_INIT_CLASS(CLASSNAME, CAMELNAME, LOWERNAME) \
-  PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWERNAME)       \
-  PHP_PROTO_INIT_CLASS_END
+  if (!ObjCache_Get(m, val)) {
+    zend_class_entry* ce = NULL;
+    if (!upb_MessageDef_IsMapEntry(m)) {  // Map entries don't have a class.
+      ce = Descriptor_GetGeneratedClass(m);
+      if (!ce) {
+        ZVAL_NULL(val);
+        return;
+      }
+    }
+    Descriptor* ret = emalloc(sizeof(Descriptor));
+    zend_object_std_init(&ret->std, Descriptor_class_entry);
+    ret->std.handlers = &Descriptor_object_handlers;
+    ret->class_entry = ce;
+    ret->msgdef = m;
+    ObjCache_Add(m, &ret->std);
+    Descriptors_Add(&ret->std);
+    ZVAL_OBJ(val, &ret->std);
+  }
+}
 
-#define DEFINE_PROTOBUF_CREATE(NAME, LOWERNAME)  \
-  PHP_PROTO_OBJECT_CREATE_START(NAME, LOWERNAME) \
-  LOWERNAME##_init_c_instance(intern TSRMLS_CC); \
-  PHP_PROTO_OBJECT_CREATE_END(NAME, LOWERNAME)
+static void Descriptor_FromClassEntry(zval* val, zend_class_entry* ce) {
+  if (ce) {
+    Descriptor_FromMessageDef(val, NameMap_GetMessage(ce));
+  } else {
+    ZVAL_NULL(val);
+  }
+}
 
-#define DEFINE_PROTOBUF_FREE(CAMELNAME, LOWERNAME)  \
-  PHP_PROTO_OBJECT_FREE_START(CAMELNAME, LOWERNAME) \
-  LOWERNAME##_free_c(intern TSRMLS_CC);             \
-  PHP_PROTO_OBJECT_FREE_END
+static Descriptor* Descriptor_GetFromZval(zval* val) {
+  if (Z_TYPE_P(val) == IS_NULL) {
+    return NULL;
+  } else {
+    zend_object* ret = Z_OBJ_P(val);
+    zval_ptr_dtor(val);
+    return (Descriptor*)ret;
+  }
+}
 
-#define DEFINE_PROTOBUF_DTOR(CAMELNAME, LOWERNAME)  \
-  PHP_PROTO_OBJECT_DTOR_START(CAMELNAME, LOWERNAME) \
-  PHP_PROTO_OBJECT_DTOR_END
+// C Functions from def.h //////////////////////////////////////////////////////
 
-#define DEFINE_CLASS(NAME, LOWERNAME, string_name) \
-  zend_class_entry *LOWERNAME##_type;              \
-  zend_object_handlers *LOWERNAME##_handlers;      \
-  DEFINE_PROTOBUF_FREE(NAME, LOWERNAME)            \
-  DEFINE_PROTOBUF_DTOR(NAME, LOWERNAME)            \
-  DEFINE_PROTOBUF_CREATE(NAME, LOWERNAME)          \
-  DEFINE_PROTOBUF_INIT_CLASS(string_name, NAME, LOWERNAME)
+// These are documented in the header file.
+
+Descriptor* Descriptor_GetFromClassEntry(zend_class_entry* ce) {
+  zval desc;
+  Descriptor_FromClassEntry(&desc, ce);
+  return Descriptor_GetFromZval(&desc);
+}
+
+Descriptor* Descriptor_GetFromMessageDef(const upb_MessageDef* m) {
+  zval desc;
+  Descriptor_FromMessageDef(&desc, m);
+  return Descriptor_GetFromZval(&desc);
+}
+
+Descriptor* Descriptor_GetFromFieldDef(const upb_FieldDef* f) {
+  return Descriptor_GetFromMessageDef(upb_FieldDef_MessageSubDef(f));
+}
+
+/*
+ * Descriptor::getPublicDescriptor()
+ *
+ * Returns this EnumDescriptor. Unlike the pure-PHP descriptor, we do not
+ * have two separate EnumDescriptor classes. We use a single class for both
+ * the public and private descriptor.
+ */
+PHP_METHOD(Descriptor, getPublicDescriptor) { RETURN_COPY(getThis()); }
+
+/*
+ * Descriptor::getFullName()
+ *
+ * Returns the full name for this message type.
+ */
+PHP_METHOD(Descriptor, getFullName) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  RETURN_STRING(upb_MessageDef_FullName(intern->msgdef));
+}
+
+/*
+ * Descriptor::getField()
+ *
+ * Returns a FieldDescriptor for the given index, which must be in the range
+ * [0, getFieldCount()-1].
+ */
+PHP_METHOD(Descriptor, getField) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  int count = upb_MessageDef_FieldCount(intern->msgdef);
+  zval ret;
+  zend_long index;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect integer for index.\n");
+    return;
+  }
+
+  if (index < 0 || index >= count) {
+    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
+    return;
+  }
+
+  FieldDescriptor_FromFieldDef(&ret,
+                               upb_MessageDef_Field(intern->msgdef, index));
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * Descriptor::getFieldCount()
+ *
+ * Returns the number of fields in this message.
+ */
+PHP_METHOD(Descriptor, getFieldCount) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_MessageDef_FieldCount(intern->msgdef));
+}
+
+/*
+ * Descriptor::getOneofDecl()
+ *
+ * Returns a OneofDescriptor for the given index, which must be in the range
+ * [0, getOneofDeclCount()].
+ */
+PHP_METHOD(Descriptor, getOneofDecl) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  zend_long index;
+  zval ret;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect integer for index.\n");
+    return;
+  }
+
+  if (index < 0 || index >= upb_MessageDef_OneofCount(intern->msgdef)) {
+    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
+    return;
+  }
+
+  OneofDescriptor_FromOneofDef(&ret,
+                               upb_MessageDef_Oneof(intern->msgdef, index));
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * Descriptor::getOneofDeclCount()
+ *
+ * Returns the number of oneofs in this message.
+ */
+PHP_METHOD(Descriptor, getOneofDeclCount) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  RETURN_LONG(upb_MessageDef_OneofCount(intern->msgdef));
+}
+
+/*
+ * Descriptor::getClass()
+ *
+ * Returns the name of the PHP class for this message.
+ */
+PHP_METHOD(Descriptor, getClass) {
+  Descriptor* intern = (Descriptor*)Z_OBJ_P(getThis());
+  const char* classname = ZSTR_VAL(intern->class_entry->name);
+  RETURN_STRING(classname);
+}
+
+// clang-format off
+static zend_function_entry Descriptor_methods[] = {
+  PHP_ME(Descriptor, getClass, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getFullName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getField, arginfo_getByIndex, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getFieldCount, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getOneofDecl, arginfo_getByIndex, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getOneofDeclCount, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format on
+
+// -----------------------------------------------------------------------------
+// DescriptorPool
+// -----------------------------------------------------------------------------
+
+typedef struct DescriptorPool {
+  zend_object std;
+  upb_DefPool* symtab;
+} DescriptorPool;
+
+zend_class_entry* DescriptorPool_class_entry;
+static zend_object_handlers DescriptorPool_object_handlers;
+
+static DescriptorPool* GetPool(const zval* this_ptr) {
+  return (DescriptorPool*)Z_OBJ_P(this_ptr);
+}
+
+/**
+ * Object handler to free an DescriptorPool.
+ */
+static void DescriptorPool_destructor(zend_object* obj) {
+  DescriptorPool* intern = (DescriptorPool*)obj;
+
+  // We can't free our underlying symtab here, because user code may create
+  // messages from destructors that will refer to it. The symtab will be freed
+  // by our RSHUTDOWN() handler in protobuf.c
+
+  zend_object_std_dtor(&intern->std);
+}
+
+void DescriptorPool_CreateWithSymbolTable(zval* zv, upb_DefPool* symtab) {
+  DescriptorPool* intern = emalloc(sizeof(DescriptorPool));
+  zend_object_std_init(&intern->std, DescriptorPool_class_entry);
+  intern->std.handlers = &DescriptorPool_object_handlers;
+  intern->symtab = symtab;
+
+  ZVAL_OBJ(zv, &intern->std);
+}
+
+upb_DefPool* DescriptorPool_GetSymbolTable() { return get_global_symtab(); }
+
+/*
+ * DescriptorPool::getGeneratedPool()
+ *
+ * Returns the generated DescriptorPool.
+ */
+PHP_METHOD(DescriptorPool, getGeneratedPool) {
+  DescriptorPool_CreateWithSymbolTable(return_value, get_global_symtab());
+}
+
+/*
+ * DescriptorPool::getDescriptorByClassName()
+ *
+ * Returns a Descriptor object for the given PHP class name.
+ */
+PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
+  char* classname = NULL;
+  zend_long classname_len;
+  zend_class_entry* ce;
+  zend_string* str;
+  zval ret;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &classname, &classname_len) ==
+      FAILURE) {
+    return;
+  }
+
+  str = zend_string_init(classname, strlen(classname), 0);
+  ce = zend_lookup_class(str);  // May autoload the class.
+  zend_string_release(str);
+
+  if (!ce) {
+    RETURN_NULL();
+  }
+
+  Descriptor_FromClassEntry(&ret, ce);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * DescriptorPool::getEnumDescriptorByClassName()
+ *
+ * Returns a EnumDescriptor object for the given PHP class name.
+ */
+PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
+  char* classname = NULL;
+  zend_long classname_len;
+  zend_class_entry* ce;
+  zend_string* str;
+  zval ret;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &classname, &classname_len) ==
+      FAILURE) {
+    return;
+  }
+
+  str = zend_string_init(classname, strlen(classname), 0);
+  ce = zend_lookup_class(str);  // May autoload the class.
+  zend_string_release(str);
+
+  if (!ce) {
+    RETURN_NULL();
+  }
+
+  EnumDescriptor_FromClassEntry(&ret, ce);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * DescriptorPool::getEnumDescriptorByProtoName()
+ *
+ * Returns a Descriptor object for the given protobuf message name.
+ */
+PHP_METHOD(DescriptorPool, getDescriptorByProtoName) {
+  DescriptorPool* intern = GetPool(getThis());
+  char* protoname = NULL;
+  zend_long protoname_len;
+  const upb_MessageDef* m;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &protoname, &protoname_len) ==
+      FAILURE) {
+    return;
+  }
+
+  if (*protoname == '.') protoname++;
+
+  m = upb_DefPool_FindMessageByName(intern->symtab, protoname);
+
+  if (m) {
+    RETURN_OBJ_COPY(&Descriptor_GetFromMessageDef(m)->std);
+  } else {
+    RETURN_NULL();
+  }
+}
+
+/*
+ * depends_on_descriptor()
+ *
+ * Returns true if this FileDescriptorProto depends on descriptor.proto.
+ */
+bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
+  const upb_StringView* deps;
+  upb_StringView name =
+      upb_StringView_FromString("google/protobuf/descriptor.proto");
+  size_t i, n;
+
+  deps = google_protobuf_FileDescriptorProto_dependency(file, &n);
+  for (i = 0; i < n; i++) {
+    if (upb_StringView_IsEqual(deps[i], name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static void add_message_name_mappings(const upb_MessageDef* message) {
+  NameMap_AddMessage(message);
+  int msg_n = upb_MessageDef_NestedMessageCount(message);
+  for (int i = 0; i < msg_n; i++) {
+    add_message_name_mappings(upb_MessageDef_NestedMessage(message, i));
+  }
+  int enum_n = upb_MessageDef_NestedEnumCount(message);
+  for (int i = 0; i < enum_n; i++) {
+    NameMap_AddEnum(upb_MessageDef_NestedEnum(message, i));
+  }
+}
+
+/*
+ * add_name_mappings()
+ *
+ * Adds the messages and enums in this file to the NameMap.
+ */
+static void add_name_mappings(const upb_FileDef* file) {
+  for (int i = 0; i < upb_FileDef_TopLevelMessageCount(file); i++) {
+    add_message_name_mappings(upb_FileDef_TopLevelMessage(file, i));
+  }
+
+  for (int i = 0; i < upb_FileDef_TopLevelEnumCount(file); i++) {
+    NameMap_AddEnum(upb_FileDef_TopLevelEnum(file, i));
+  }
+}
+
+static void add_descriptor(upb_DefPool* symtab,
+                           const google_protobuf_FileDescriptorProto* file) {
+  upb_StringView name = google_protobuf_FileDescriptorProto_name(file);
+  upb_Status status;
+  const upb_FileDef* file_def;
+  upb_Status_Clear(&status);
+
+  if (upb_DefPool_FindFileByNameWithSize(symtab, name.data, name.size)) {
+    // Already added.
+    // TODO: Re-enable this warning when aggregate metadata is
+    // deprecated.
+    // zend_error(E_USER_WARNING,
+    //            "proto descriptor was previously loaded (included in multiple
+    //            " "metadata bundles?): " UPB_STRINGVIEW_FORMAT,
+    //            UPB_STRINGVIEW_ARGS(name));
+    return;
+  }
+
+  // The PHP code generator currently special-cases descriptor.proto.  It
+  // doesn't add it as a dependency even if the proto file actually does
+  // depend on it.
+  if (depends_on_descriptor(file)) {
+    google_protobuf_FileDescriptorProto_getmsgdef(symtab);
+  }
+
+  file_def = upb_DefPool_AddFile(symtab, file, &status);
+  CheckUpbStatus(&status, "Unable to load descriptor");
+  add_name_mappings(file_def);
+}
+
+/*
+ * add_descriptor()
+ *
+ * Adds the given descriptor data to this DescriptorPool.
+ */
+static void add_descriptor_set(upb_DefPool* symtab, const char* data,
+                               int data_len, upb_Arena* arena) {
+  size_t i, n;
+  google_protobuf_FileDescriptorSet* set;
+  const google_protobuf_FileDescriptorProto* const* files;
+
+  set = google_protobuf_FileDescriptorSet_parse(data, data_len, arena);
+
+  if (!set) {
+    zend_error(E_ERROR, "Failed to parse binary descriptor\n");
+    return;
+  }
+
+  files = google_protobuf_FileDescriptorSet_file(set, &n);
+
+  for (i = 0; i < n; i++) {
+    const google_protobuf_FileDescriptorProto* file = files[i];
+    add_descriptor(symtab, file);
+  }
+}
+
+bool DescriptorPool_HasFile(const char* filename) {
+  return upb_DefPool_FindFileByName(get_global_symtab(), filename) != NULL;
+}
+
+void DescriptorPool_AddDescriptor(const char* filename, const char* data,
+                                  int size) {
+  upb_Arena* arena = upb_Arena_New();
+  const google_protobuf_FileDescriptorProto* file =
+      google_protobuf_FileDescriptorProto_parse(data, size, arena);
+
+  if (!file) {
+    zend_error(E_ERROR, "Failed to parse binary descriptor for %s\n", filename);
+    return;
+  }
+
+  add_descriptor(get_global_symtab(), file);
+  upb_Arena_Free(arena);
+}
+
+/*
+ * DescriptorPool::internalAddGeneratedFile()
+ *
+ * Adds the given descriptor data to this DescriptorPool.
+ */
+PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
+  DescriptorPool* intern = GetPool(getThis());
+  char* data = NULL;
+  zend_long data_len;
+  zend_bool use_nested_submsg = false;
+  upb_Arena* arena;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|b", &data, &data_len,
+                            &use_nested_submsg) != SUCCESS) {
+    return;
+  }
+
+  arena = upb_Arena_New();
+  add_descriptor_set(intern->symtab, data, data_len, arena);
+  upb_Arena_Free(arena);
+}
+
+// clang-format off
+ZEND_BEGIN_ARG_INFO_EX(arginfo_lookupByName, 0, 0, 1)
+  ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 2)
+  ZEND_ARG_INFO(0, data)
+  ZEND_ARG_INFO(0, data_len)
+ZEND_END_ARG_INFO()
+
+static zend_function_entry DescriptorPool_methods[] = {
+  PHP_ME(DescriptorPool, getGeneratedPool, arginfo_void,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(DescriptorPool, getDescriptorByClassName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getDescriptorByProtoName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getEnumDescriptorByClassName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, internalAddGeneratedFile, arginfo_addgeneratedfile, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+// clang-format on
+
+// -----------------------------------------------------------------------------
+// InternalDescriptorPool
+// -----------------------------------------------------------------------------
+
+// For the C extension, Google\Protobuf\Internal\DescriptorPool is not a
+// separate instantiable object, it just returns a
+// Google\Protobuf\DescriptorPool.
+
+zend_class_entry* InternalDescriptorPool_class_entry;
+
+/*
+ * InternalDescriptorPool::getGeneratedPool()
+ *
+ * Returns the generated DescriptorPool. Note that this is identical to
+ * DescriptorPool::getGeneratedPool(), and in fact returns a DescriptorPool
+ * instance.
+ */
+PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
+  DescriptorPool_CreateWithSymbolTable(return_value, get_global_symtab());
+}
+
+// clang-format off
+static zend_function_entry InternalDescriptorPool_methods[] = {
+  PHP_ME(InternalDescriptorPool, getGeneratedPool, arginfo_void,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  ZEND_FE_END
+};
+// clang-format on
 
 // -----------------------------------------------------------------------------
 // GPBType
@@ -148,867 +1058,96 @@ static void append_map_entry_name(char *result, const char *field_name,
 
 zend_class_entry* gpb_type_type;
 
-static zend_function_entry gpb_type_methods[] = {
-  ZEND_FE_END
-};
+static zend_function_entry gpb_type_methods[] = {ZEND_FE_END};
 
-void gpb_type_init(TSRMLS_D) {
+// -----------------------------------------------------------------------------
+// Module Init
+// -----------------------------------------------------------------------------
+
+void Def_ModuleInit() {
+  zend_class_entry tmp_ce;
+  zend_object_handlers* h;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\OneofDescriptor",
+                   OneofDescriptor_methods);
+  OneofDescriptor_class_entry = zend_register_internal_class(&tmp_ce);
+  OneofDescriptor_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  OneofDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
+  h = &OneofDescriptor_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = &OneofDescriptor_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\EnumValueDescriptor",
+                   EnumValueDescriptor_methods);
+  EnumValueDescriptor_class_entry = zend_register_internal_class(&tmp_ce);
+  EnumValueDescriptor_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  EnumValueDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
+  h = &EnumValueDescriptor_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\EnumDescriptor",
+                   EnumDescriptor_methods);
+  EnumDescriptor_class_entry = zend_register_internal_class(&tmp_ce);
+  EnumDescriptor_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  EnumDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
+  h = &EnumDescriptor_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = &EnumDescriptor_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Descriptor", Descriptor_methods);
+
+  Descriptor_class_entry = zend_register_internal_class(&tmp_ce);
+  Descriptor_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  Descriptor_class_entry->create_object = CreateHandler_ReturnNull;
+  h = &Descriptor_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = Descriptor_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\FieldDescriptor",
+                   FieldDescriptor_methods);
+  FieldDescriptor_class_entry = zend_register_internal_class(&tmp_ce);
+  FieldDescriptor_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  FieldDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
+  h = &FieldDescriptor_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = &FieldDescriptor_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\DescriptorPool",
+                   DescriptorPool_methods);
+  DescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
+  DescriptorPool_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  DescriptorPool_class_entry->create_object = CreateHandler_ReturnNull;
+  h = &DescriptorPool_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = DescriptorPool_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\DescriptorPool",
+                   InternalDescriptorPool_methods);
+  InternalDescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
+
+  // GPBType.
+#define STR(str) (str), strlen(str)
   zend_class_entry class_type;
   INIT_CLASS_ENTRY(class_type, "Google\\Protobuf\\Internal\\GPBType",
                    gpb_type_methods);
-  gpb_type_type = zend_register_internal_class(&class_type TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("DOUBLE"),  1 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("FLOAT"),   2 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("INT64"),   3 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("UINT64"),  4 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("INT32"),   5 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("FIXED64"), 6 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("FIXED32"), 7 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("BOOL"),    8 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("STRING"),  9 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("GROUP"),   10 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("MESSAGE"), 11 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("BYTES"),   12 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("UINT32"),  13 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("ENUM"),    14 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("SFIXED32"),
-                                   15 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("SFIXED64"),
-                                   16 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("SINT32"), 17 TSRMLS_CC);
-  zend_declare_class_constant_long(gpb_type_type, STR("SINT64"), 18 TSRMLS_CC);
-}
-
-// -----------------------------------------------------------------------------
-// Descriptor
-// -----------------------------------------------------------------------------
-
-static zend_function_entry descriptor_methods[] = {
-  PHP_ME(Descriptor, getClass, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getFullName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getField, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getFieldCount, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getOneofDecl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getOneofDeclCount, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-DEFINE_CLASS(Descriptor, descriptor, "Google\\Protobuf\\Descriptor");
-
-static void descriptor_free_c(Descriptor *self TSRMLS_DC) {
-  if (self->layout) {
-    free_layout(self->layout);
-  }
-  if (self->fill_handlers) {
-    upb_handlers_unref(self->fill_handlers, &self->fill_handlers);
-  }
-  if (self->fill_method) {
-    upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
-  }
-  if (self->json_fill_method) {
-    upb_json_parsermethod_unref(self->json_fill_method,
-                                &self->json_fill_method);
-  }
-  if (self->pb_serialize_handlers) {
-    upb_handlers_unref(self->pb_serialize_handlers,
-                       &self->pb_serialize_handlers);
-  }
-  if (self->json_serialize_handlers) {
-    upb_handlers_unref(self->json_serialize_handlers,
-                       &self->json_serialize_handlers);
-  }
-  if (self->json_serialize_handlers_preserve) {
-    upb_handlers_unref(self->json_serialize_handlers_preserve,
-                       &self->json_serialize_handlers_preserve);
-  }
-}
-
-static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
-  desc->msgdef = NULL;
-  desc->layout = NULL;
-  desc->klass = NULL;
-  desc->fill_handlers = NULL;
-  desc->fill_method = NULL;
-  desc->json_fill_method = NULL;
-  desc->pb_serialize_handlers = NULL;
-  desc->json_serialize_handlers = NULL;
-  desc->json_serialize_handlers_preserve = NULL;
-}
-
-PHP_METHOD(Descriptor, getClass) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
-#if PHP_MAJOR_VERSION < 7
-  const char* classname = intern->klass->name;
-#else
-  const char* classname = ZSTR_VAL(intern->klass->name);
-#endif
-  PHP_PROTO_RETVAL_STRINGL(classname, strlen(classname), 1);
-}
-
-PHP_METHOD(Descriptor, getFullName) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
-  const char* fullname = upb_msgdef_fullname(intern->msgdef);
-  PHP_PROTO_RETVAL_STRINGL(fullname, strlen(fullname), 1);
-}
-
-PHP_METHOD(Descriptor, getField) {
-  long index;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
-    zend_error(E_USER_ERROR, "Expect integer for index.\n");
-    return;
-  }
-
-  Descriptor *intern = UNBOX(Descriptor, getThis());
-  int field_num = upb_msgdef_numfields(intern->msgdef);
-  if (index < 0 || index >= field_num) {
-    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
-    return;
-  }
-
-  upb_msg_field_iter iter;
-  int i;
-  for(upb_msg_field_begin(&iter, intern->msgdef), i = 0;
-      !upb_msg_field_done(&iter) && i < index;
-      upb_msg_field_next(&iter), i++);
-  const upb_fielddef *field = upb_msg_iter_field(&iter);
-
-  PHP_PROTO_HASHTABLE_VALUE field_hashtable_value = get_def_obj(field);
-  if (field_hashtable_value == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(field_hashtable_value);
-    ZVAL_OBJ(field_hashtable_value, field_descriptor_type->create_object(
-                                        field_descriptor_type TSRMLS_CC));
-#else
-    field_hashtable_value =
-        field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
-#endif
-    FieldDescriptor *field_php =
-        UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);
-    field_php->fielddef = field;
-    add_def_obj(field, field_hashtable_value);
-  }
-
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(field_hashtable_value, 1, 0);
-#else
-  ++GC_REFCOUNT(field_hashtable_value);
-  RETURN_OBJ(field_hashtable_value);
-#endif
-}
-
-PHP_METHOD(Descriptor, getFieldCount) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
-  RETURN_LONG(upb_msgdef_numfields(intern->msgdef));
-}
-
-PHP_METHOD(Descriptor, getOneofDecl) {
-  long index;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
-    zend_error(E_USER_ERROR, "Expect integer for index.\n");
-    return;
-  }
-
-  Descriptor *intern = UNBOX(Descriptor, getThis());
-  int field_num = upb_msgdef_numoneofs(intern->msgdef);
-  if (index < 0 || index >= field_num) {
-    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
-    return;
-  }
-
-  upb_msg_oneof_iter iter;
-  int i;
-  for(upb_msg_oneof_begin(&iter, intern->msgdef), i = 0;
-      !upb_msg_oneof_done(&iter) && i < index;
-      upb_msg_oneof_next(&iter), i++);
-  upb_oneofdef *oneof = upb_msg_iter_oneof(&iter);
-
-  ZVAL_OBJ(return_value, oneof_descriptor_type->create_object(
-                             oneof_descriptor_type TSRMLS_CC));
-  Oneof *oneof_php = UNBOX(Oneof, return_value);
-  oneof_php->oneofdef = oneof;
-}
-
-PHP_METHOD(Descriptor, getOneofDeclCount) {
-  Descriptor *intern = UNBOX(Descriptor, getThis());
-  RETURN_LONG(upb_msgdef_numoneofs(intern->msgdef));
-}
-
-// -----------------------------------------------------------------------------
-// EnumDescriptor
-// -----------------------------------------------------------------------------
-
-static zend_function_entry enum_descriptor_methods[] = {
-  PHP_ME(EnumDescriptor, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(EnumDescriptor, getValueCount, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-DEFINE_CLASS(EnumDescriptor, enum_descriptor,
-             "Google\\Protobuf\\EnumDescriptor");
-
-static void enum_descriptor_free_c(EnumDescriptor *self TSRMLS_DC) {
-}
-
-static void enum_descriptor_init_c_instance(EnumDescriptor *self TSRMLS_DC) {
-  self->enumdef = NULL;
-  self->klass = NULL;
-}
-
-PHP_METHOD(EnumDescriptor, getValue) {
-  long index;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
-    zend_error(E_USER_ERROR, "Expect integer for index.\n");
-    return;
-  }
-
-  EnumDescriptor *intern = UNBOX(EnumDescriptor, getThis());
-  int field_num = upb_enumdef_numvals(intern->enumdef);
-  if (index < 0 || index >= field_num) {
-    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
-    return;
-  }
-
-  upb_enum_iter iter;
-  int i;
-  for(upb_enum_begin(&iter, intern->enumdef), i = 0;
-      !upb_enum_done(&iter) && i < index;
-      upb_enum_next(&iter), i++);
-
-  ZVAL_OBJ(return_value, enum_value_descriptor_type->create_object(
-                             enum_value_descriptor_type TSRMLS_CC));
-  EnumValueDescriptor *enum_value_php =
-      UNBOX(EnumValueDescriptor, return_value);
-  enum_value_php->name = upb_enum_iter_name(&iter);
-  enum_value_php->number = upb_enum_iter_number(&iter);
-}
-
-PHP_METHOD(EnumDescriptor, getValueCount) {
-  EnumDescriptor *intern = UNBOX(EnumDescriptor, getThis());
-  RETURN_LONG(upb_enumdef_numvals(intern->enumdef));
-}
-
-// -----------------------------------------------------------------------------
-// EnumValueDescriptor
-// -----------------------------------------------------------------------------
-
-static zend_function_entry enum_value_descriptor_methods[] = {
-  PHP_ME(EnumValueDescriptor, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(EnumValueDescriptor, getNumber, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-DEFINE_CLASS(EnumValueDescriptor, enum_value_descriptor,
-             "Google\\Protobuf\\EnumValueDescriptor");
-
-static void enum_value_descriptor_free_c(EnumValueDescriptor *self TSRMLS_DC) {
-}
-
-static void enum_value_descriptor_init_c_instance(EnumValueDescriptor *self TSRMLS_DC) {
-  self->name = NULL;
-  self->number = 0;
-}
-
-PHP_METHOD(EnumValueDescriptor, getName) {
-  EnumValueDescriptor *intern = UNBOX(EnumValueDescriptor, getThis());
-  PHP_PROTO_RETVAL_STRINGL(intern->name, strlen(intern->name), 1);
-}
-
-PHP_METHOD(EnumValueDescriptor, getNumber) {
-  EnumValueDescriptor *intern = UNBOX(EnumValueDescriptor, getThis());
-  RETURN_LONG(intern->number);
-}
-
-// -----------------------------------------------------------------------------
-// FieldDescriptor
-// -----------------------------------------------------------------------------
-
-static zend_function_entry field_descriptor_methods[] = {
-  PHP_ME(FieldDescriptor, getName,   NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(FieldDescriptor, getNumber, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(FieldDescriptor, getLabel,  NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(FieldDescriptor, getType,   NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(FieldDescriptor, isMap,     NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(FieldDescriptor, getEnumType, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(FieldDescriptor, getMessageType, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-DEFINE_CLASS(FieldDescriptor, field_descriptor,
-             "Google\\Protobuf\\FieldDescriptor");
-
-static void field_descriptor_free_c(FieldDescriptor *self TSRMLS_DC) {
-}
-
-static void field_descriptor_init_c_instance(FieldDescriptor *self TSRMLS_DC) {
-  self->fielddef = NULL;
-}
-
-upb_fieldtype_t to_fieldtype(upb_descriptortype_t type) {
-  switch (type) {
-#define CASE(descriptor_type, type)           \
-  case UPB_DESCRIPTOR_TYPE_##descriptor_type: \
-    return UPB_TYPE_##type;
-
-  CASE(FLOAT,    FLOAT);
-  CASE(DOUBLE,   DOUBLE);
-  CASE(BOOL,     BOOL);
-  CASE(STRING,   STRING);
-  CASE(BYTES,    BYTES);
-  CASE(MESSAGE,  MESSAGE);
-  CASE(GROUP,    MESSAGE);
-  CASE(ENUM,     ENUM);
-  CASE(INT32,    INT32);
-  CASE(INT64,    INT64);
-  CASE(UINT32,   UINT32);
-  CASE(UINT64,   UINT64);
-  CASE(SINT32,   INT32);
-  CASE(SINT64,   INT64);
-  CASE(FIXED32,  UINT32);
-  CASE(FIXED64,  UINT64);
-  CASE(SFIXED32, INT32);
-  CASE(SFIXED64, INT64);
-
-#undef CONVERT
-
-  }
-
-  zend_error(E_ERROR, "Unknown field type.");
-  return 0;
-}
-
-PHP_METHOD(FieldDescriptor, getName) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const char* name = upb_fielddef_name(intern->fielddef);
-  PHP_PROTO_RETVAL_STRINGL(name, strlen(name), 1);
-}
-
-PHP_METHOD(FieldDescriptor, getNumber) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  RETURN_LONG(upb_fielddef_number(intern->fielddef));
-}
-
-PHP_METHOD(FieldDescriptor, getLabel) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  RETURN_LONG(upb_fielddef_label(intern->fielddef));
-}
-
-PHP_METHOD(FieldDescriptor, getType) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  RETURN_LONG(upb_fielddef_descriptortype(intern->fielddef));
-}
-
-PHP_METHOD(FieldDescriptor, isMap) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  RETURN_BOOL(upb_fielddef_ismap(intern->fielddef));
-}
-
-PHP_METHOD(FieldDescriptor, getEnumType) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const upb_enumdef *enumdef = upb_fielddef_enumsubdef(intern->fielddef);
-  if (enumdef == NULL) {
-    char error_msg[100];
-    sprintf(error_msg, "Cannot get enum type for non-enum field '%s'",
-            upb_fielddef_name(intern->fielddef));
-    zend_throw_exception(NULL, error_msg, 0 TSRMLS_CC);
-    return;
-  }
-  PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(enumdef);
-
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
-#else
-  ++GC_REFCOUNT(desc);
-  RETURN_OBJ(desc);
-#endif
-}
-
-PHP_METHOD(FieldDescriptor, getMessageType) {
-  FieldDescriptor *intern = UNBOX(FieldDescriptor, getThis());
-  const upb_msgdef *msgdef = upb_fielddef_msgsubdef(intern->fielddef);
-  if (msgdef == NULL) {
-    char error_msg[100];
-    sprintf(error_msg, "Cannot get message type for non-message field '%s'",
-            upb_fielddef_name(intern->fielddef));
-    zend_throw_exception(NULL, error_msg, 0 TSRMLS_CC);
-    return;
-  }
-  PHP_PROTO_HASHTABLE_VALUE desc = get_def_obj(msgdef);
-
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
-#else
-  ++GC_REFCOUNT(desc);
-  RETURN_OBJ(desc);
-#endif
-}
-
-// -----------------------------------------------------------------------------
-// Oneof
-// -----------------------------------------------------------------------------
-
-static zend_function_entry oneof_descriptor_methods[] = {
-  PHP_ME(Oneof, getName,  NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Oneof, getField, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Oneof, getFieldCount, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-DEFINE_CLASS(Oneof, oneof_descriptor,
-             "Google\\Protobuf\\OneofDescriptor");
-
-static void oneof_descriptor_free_c(Oneof *self TSRMLS_DC) {
-}
-
-static void oneof_descriptor_init_c_instance(Oneof *self TSRMLS_DC) {
-  self->oneofdef = NULL;
-}
-
-PHP_METHOD(Oneof, getName) {
-  Oneof *intern = UNBOX(Oneof, getThis());
-  const char *name = upb_oneofdef_name(intern->oneofdef);
-  PHP_PROTO_RETVAL_STRINGL(name, strlen(name), 1);
-}
-
-PHP_METHOD(Oneof, getField) {
-  long index;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
-    zend_error(E_USER_ERROR, "Expect integer for index.\n");
-    return;
-  }
-
-  Oneof *intern = UNBOX(Oneof, getThis());
-  int field_num = upb_oneofdef_numfields(intern->oneofdef);
-  if (index < 0 || index >= field_num) {
-    zend_error(E_USER_ERROR, "Cannot get element at %ld.\n", index);
-    return;
-  }
-
-  upb_oneof_iter iter;
-  int i;
-  for(upb_oneof_begin(&iter, intern->oneofdef), i = 0;
-      !upb_oneof_done(&iter) && i < index;
-      upb_oneof_next(&iter), i++);
-  const upb_fielddef *field = upb_oneof_iter_field(&iter);
-
-  PHP_PROTO_HASHTABLE_VALUE field_hashtable_value = get_def_obj(field);
-  if (field_hashtable_value == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(field_hashtable_value);
-    ZVAL_OBJ(field_hashtable_value, field_descriptor_type->create_object(
-                                        field_descriptor_type TSRMLS_CC));
-#else
-    field_hashtable_value =
-        field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
-#endif
-    FieldDescriptor *field_php =
-        UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);
-    field_php->fielddef = field;
-    add_def_obj(field, field_hashtable_value);
-  }
-
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(field_hashtable_value, 1, 0);
-#else
-  ++GC_REFCOUNT(field_hashtable_value);
-  RETURN_OBJ(field_hashtable_value);
-#endif
-}
-
-PHP_METHOD(Oneof, getFieldCount) {
-  Oneof *intern = UNBOX(Oneof, getThis());
-  RETURN_LONG(upb_oneofdef_numfields(intern->oneofdef));
-}
-
-// -----------------------------------------------------------------------------
-// DescriptorPool
-// -----------------------------------------------------------------------------
-
-static zend_function_entry descriptor_pool_methods[] = {
-  PHP_ME(DescriptorPool, getGeneratedPool, NULL,
-         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(DescriptorPool, getDescriptorByClassName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(DescriptorPool, getEnumDescriptorByClassName, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-static zend_function_entry internal_descriptor_pool_methods[] = {
-  PHP_ME(InternalDescriptorPool, getGeneratedPool, NULL,
-         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(InternalDescriptorPool, internalAddGeneratedFile, NULL, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-DEFINE_CLASS(DescriptorPool, descriptor_pool,
-             "Google\\Protobuf\\DescriptorPool");
-DEFINE_CLASS(InternalDescriptorPool, internal_descriptor_pool,
-             "Google\\Protobuf\\Internal\\DescriptorPool");
-
-// wrapper of generated pool
-#if PHP_MAJOR_VERSION < 7
-zval* generated_pool_php;
-zval* internal_generated_pool_php;
-#else
-zend_object *generated_pool_php;
-zend_object *internal_generated_pool_php;
-#endif
-InternalDescriptorPool *generated_pool;  // The actual generated pool
-
-static void init_generated_pool_once(TSRMLS_D) {
-  if (generated_pool == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(generated_pool_php);
-    MAKE_STD_ZVAL(internal_generated_pool_php);
-    ZVAL_OBJ(internal_generated_pool_php,
-             internal_descriptor_pool_type->create_object(
-                 internal_descriptor_pool_type TSRMLS_CC));
-    generated_pool = UNBOX(InternalDescriptorPool, internal_generated_pool_php);
-    ZVAL_OBJ(generated_pool_php, descriptor_pool_type->create_object(
-                                     descriptor_pool_type TSRMLS_CC));
-#else
-    internal_generated_pool_php = internal_descriptor_pool_type->create_object(
-        internal_descriptor_pool_type TSRMLS_CC);
-    generated_pool = (InternalDescriptorPool *)((char *)internal_generated_pool_php -
-                                        XtOffsetOf(InternalDescriptorPool, std));
-    generated_pool_php =
-        descriptor_pool_type->create_object(descriptor_pool_type TSRMLS_CC);
-#endif
-  }
-}
-
-static void internal_descriptor_pool_init_c_instance(
-    InternalDescriptorPool *pool TSRMLS_DC) {
-  pool->symtab = upb_symtab_new();
-
-  ALLOC_HASHTABLE(pool->pending_list);
-  zend_hash_init(pool->pending_list, 1, NULL, ZVAL_PTR_DTOR, 0);
-}
-
-static void internal_descriptor_pool_free_c(
-    InternalDescriptorPool *pool TSRMLS_DC) {
-  upb_symtab_free(pool->symtab);
-
-  zend_hash_destroy(pool->pending_list);
-  FREE_HASHTABLE(pool->pending_list);
-}
-
-static void descriptor_pool_init_c_instance(DescriptorPool *pool TSRMLS_DC) {
-  assert(generated_pool != NULL);
-  pool->intern = generated_pool;
-}
-
-static void descriptor_pool_free_c(DescriptorPool *pool TSRMLS_DC) {
-}
-
-static void validate_enumdef(const upb_enumdef *enumdef) {
-  // Verify that an entry exists with integer value 0. (This is the default
-  // value.)
-  const char *lookup = upb_enumdef_iton(enumdef, 0);
-  if (lookup == NULL) {
-    zend_error(E_USER_ERROR,
-               "Enum definition does not contain a value for '0'.");
-  }
-}
-
-static void validate_msgdef(const upb_msgdef* msgdef) {
-  // Verify that no required fields exist. proto3 does not support these.
-  upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_label(field) == UPB_LABEL_REQUIRED) {
-      zend_error(E_ERROR, "Required fields are unsupported in proto3.");
-    }
-  }
-}
-
-PHP_METHOD(DescriptorPool, getGeneratedPool) {
-  init_generated_pool_once(TSRMLS_C);
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(generated_pool_php, 1, 0);
-#else
-  ++GC_REFCOUNT(generated_pool_php);
-  RETURN_OBJ(generated_pool_php);
-#endif
-}
-
-PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
-  init_generated_pool_once(TSRMLS_C);
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(internal_generated_pool_php, 1, 0);
-#else
-  ++GC_REFCOUNT(internal_generated_pool_php);
-  RETURN_OBJ(internal_generated_pool_php);
-#endif
-}
-
-static void classname_no_prefix(const char *fullname, const char *package_name,
-                                char *class_name) {
-  size_t i = 0, j;
-  bool first_char = true, is_reserved = false;
-  size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
-  size_t message_name_start = package_name == NULL ? 0 : pkg_name_len + 1;
-  size_t message_len = (strlen(fullname) - message_name_start);
-
-  // Submessage is concatenated with its containing messages by '_'.
-  for (j = message_name_start; j < message_name_start + message_len; j++) {
-    if (fullname[j] == '.') {
-      class_name[i++] = '_';
-    } else {
-      class_name[i++] = fullname[j];
-    }
-  }
-}
-
-static const char *classname_prefix(const char *classname,
-                                    const char *prefix_given,
-                                    const char *package_name) {
-  size_t i;
-  bool is_reserved = false;
-
-  if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
-    return prefix_given;
-  }
-
-  for (i = 0; i < kReservedNamesSize; i++) {
-    if (strcmp(kReservedNames[i], classname) == 0) {
-      is_reserved = true;
-      break;
-    }
-  }
-
-  if (is_reserved) {
-    if (package_name != NULL && strcmp("google.protobuf", package_name) == 0) {
-      return "GPB";
-    } else {
-      return "PB";
-    }
-  }
-
-  return "";
-}
-
-static void convert_to_class_name_inplace(const char *package,
-                                          const char *namespace_given,
-                                          const char *prefix, char *classname) {
-  size_t prefix_len = prefix == NULL ? 0 : strlen(prefix);
-  size_t classname_len = strlen(classname);
-  int i = 0, j;
-  bool first_char = true;
-
-  size_t package_len = package == NULL ? 0 : strlen(package);
-  size_t namespace_given_len =
-      namespace_given == NULL ? 0 : strlen(namespace_given);
-  bool use_namespace_given = namespace_given != NULL;
-  size_t namespace_len =
-      use_namespace_given ? namespace_given_len : package_len;
-
-  int offset = namespace_len != 0 ? 2 : 0;
-
-  for (j = 0; j < classname_len; j++) {
-    classname[namespace_len + prefix_len + classname_len + offset - 1 - j] =
-        classname[classname_len - j - 1];
-  }
-
-  if (namespace_len != 0) {
-    classname[i++] = '\\';
-    for (j = 0; j < namespace_len; j++) {
-      if (use_namespace_given) {
-        classname[i++] = namespace_given[j];
-        continue;
-      }
-      // php packages are divided by '\'.
-      if (package[j] == '.') {
-        classname[i++] = '\\';
-        first_char = true;
-      } else if (first_char) {
-        // PHP package uses camel case.
-        if (package[j] < 'A' || package[j] > 'Z') {
-          classname[i++] = package[j] + 'A' - 'a';
-        } else {
-          classname[i++] = package[j];
-        }
-        first_char = false;
-      } else {
-        classname[i++] = package[j];
-      }
-    }
-    classname[i++] = '\\';
-  }
-
-  memcpy(classname + i, prefix, prefix_len);
-}
-
-PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
-  char *data = NULL;
-  PHP_PROTO_SIZE data_len;
-  upb_filedef **files;
-  size_t i;
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &data, &data_len) ==
-      FAILURE) {
-    return;
-  }
-
-  InternalDescriptorPool *pool = UNBOX(InternalDescriptorPool, getThis());
-  CHECK_UPB(files = upb_loaddescriptor(data, data_len, &pool, &status),
-            "Parse binary descriptors to internal descriptors failed");
-
-  // This method is called only once in each file.
-  assert(files[0] != NULL);
-  assert(files[1] == NULL);
-
-  CHECK_UPB(upb_symtab_addfile(pool->symtab, files[0], &status),
-            "Unable to add file to DescriptorPool");
-
-  // For each enum/message, we need its PHP class, upb descriptor and its PHP
-  // wrapper. These information are needed later for encoding, decoding and type
-  // checking. However, sometimes we just have one of them. In order to find
-  // them quickly, here, we store the mapping for them.
-  for (i = 0; i < upb_filedef_defcount(files[0]); i++) {
-    const upb_def *def = upb_filedef_def(files[0], i);
-    switch (upb_def_type(def)) {
-#define CASE_TYPE(def_type, def_type_lower, desc_type, desc_type_lower)        \
-  case UPB_DEF_##def_type: {                                                   \
-    CREATE_HASHTABLE_VALUE(desc, desc_php, desc_type, desc_type_lower##_type); \
-    const upb_##def_type_lower *def_type_lower =                               \
-        upb_downcast_##def_type_lower(def);                                    \
-    desc->def_type_lower = def_type_lower;                                     \
-    add_def_obj(desc->def_type_lower, desc_php);                               \
-    /* Unlike other messages, MapEntry is shared by all map fields and doesn't \
-     * have generated PHP class.*/                                             \
-    if (upb_def_type(def) == UPB_DEF_MSG &&                                    \
-        upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
-      break;                                                                   \
-    }                                                                          \
-    /* Prepend '.' to package name to make it absolute. In the 5 additional    \
-     * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
-     * given message is google.protobuf.Empty.*/                               \
-    const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
-    const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
-    size_t classname_len = strlen(fullname) + 5;                               \
-    if (prefix_given != NULL) {                                                \
-      classname_len += strlen(prefix_given);                                   \
-    }                                                                          \
-    if (php_namespace != NULL) {                                               \
-      classname_len += strlen(php_namespace);                                  \
-    }                                                                          \
-    char *classname = ecalloc(sizeof(char), classname_len);                    \
-    const char *package = upb_filedef_package(files[0]);                       \
-    classname_no_prefix(fullname, package, classname);                         \
-    const char *prefix = classname_prefix(classname, prefix_given, package);   \
-    convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
-    PHP_PROTO_CE_DECLARE pce;                                                  \
-    if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
-        FAILURE) {                                                             \
-      zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
-                 classname);                                                   \
-      return;                                                                  \
-    } else {                                                                   \
-      desc->klass = PHP_PROTO_CE_UNREF(pce);                                   \
-    }                                                                          \
-    add_ce_obj(desc->klass, desc_php);                                         \
-    efree(classname);                                                          \
-    break;                                                                     \
-  }
-
-      CASE_TYPE(MSG, msgdef, Descriptor, descriptor)
-      CASE_TYPE(ENUM, enumdef, EnumDescriptor, enum_descriptor)
-#undef CASE_TYPE
-
-      default:
-        break;
-    }
-  }
-
-  for (i = 0; i < upb_filedef_defcount(files[0]); i++) {
-    const upb_def *def = upb_filedef_def(files[0], i);
-    if (upb_def_type(def) == UPB_DEF_MSG) {
-      const upb_msgdef *msgdef = upb_downcast_msgdef(def);
-      PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(msgdef);
-      build_class_from_descriptor(desc_php TSRMLS_CC);
-    }
-  }
-
-  upb_filedef_unref(files[0], &pool);
-  upb_gfree(files);
-}
-
-PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
-  DescriptorPool *public_pool = UNBOX(DescriptorPool, getThis());
-  InternalDescriptorPool *pool = public_pool->intern;
-
-  char *classname = NULL;
-  PHP_PROTO_SIZE classname_len;
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &classname,
-                            &classname_len) == FAILURE) {
-    return;
-  }
-
-  PHP_PROTO_CE_DECLARE pce;
-  if (php_proto_zend_lookup_class(classname, classname_len, &pce) ==
-      FAILURE) {
-    RETURN_NULL();
-  }
-
-  PHP_PROTO_HASHTABLE_VALUE desc = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
-  if (desc == NULL) {
-    RETURN_NULL();
-  }
-
-  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc);
-
-  if (!instanceof_function(instance_ce, descriptor_type TSRMLS_CC)) {
-    RETURN_NULL();
-  }
-
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
-#else
-  ++GC_REFCOUNT(desc);
-  RETURN_OBJ(desc);
-#endif
-}
-
-PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
-  DescriptorPool *public_pool = UNBOX(DescriptorPool, getThis());
-  InternalDescriptorPool *pool = public_pool->intern;
-
-  char *classname = NULL;
-  PHP_PROTO_SIZE classname_len;
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &classname,
-                            &classname_len) == FAILURE) {
-    return;
-  }
-
-  PHP_PROTO_CE_DECLARE pce;
-  if (php_proto_zend_lookup_class(classname, classname_len, &pce) ==
-      FAILURE) {
-    RETURN_NULL();
-  }
-
-  PHP_PROTO_HASHTABLE_VALUE desc = get_ce_obj(PHP_PROTO_CE_UNREF(pce));
-  if (desc == NULL) {
-    RETURN_NULL();
-  }
-
-  zend_class_entry* instance_ce = HASHTABLE_VALUE_CE(desc);
-
-  if (!instanceof_function(instance_ce, enum_descriptor_type TSRMLS_CC)) {
-    RETURN_NULL();
-  }
-
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc, 1, 0);
-#else
-  ++GC_REFCOUNT(desc);
-  RETURN_OBJ(desc);
-#endif
+  gpb_type_type = zend_register_internal_class(&class_type);
+  zend_declare_class_constant_long(gpb_type_type, STR("DOUBLE"), 1);
+  zend_declare_class_constant_long(gpb_type_type, STR("FLOAT"), 2);
+  zend_declare_class_constant_long(gpb_type_type, STR("INT64"), 3);
+  zend_declare_class_constant_long(gpb_type_type, STR("UINT64"), 4);
+  zend_declare_class_constant_long(gpb_type_type, STR("INT32"), 5);
+  zend_declare_class_constant_long(gpb_type_type, STR("FIXED64"), 6);
+  zend_declare_class_constant_long(gpb_type_type, STR("FIXED32"), 7);
+  zend_declare_class_constant_long(gpb_type_type, STR("BOOL"), 8);
+  zend_declare_class_constant_long(gpb_type_type, STR("STRING"), 9);
+  zend_declare_class_constant_long(gpb_type_type, STR("GROUP"), 10);
+  zend_declare_class_constant_long(gpb_type_type, STR("MESSAGE"), 11);
+  zend_declare_class_constant_long(gpb_type_type, STR("BYTES"), 12);
+  zend_declare_class_constant_long(gpb_type_type, STR("UINT32"), 13);
+  zend_declare_class_constant_long(gpb_type_type, STR("ENUM"), 14);
+  zend_declare_class_constant_long(gpb_type_type, STR("SFIXED32"), 15);
+  zend_declare_class_constant_long(gpb_type_type, STR("SFIXED64"), 16);
+  zend_declare_class_constant_long(gpb_type_type, STR("SINT32"), 17);
+  zend_declare_class_constant_long(gpb_type_type, STR("SINT64"), 18);
+#undef STR
 }

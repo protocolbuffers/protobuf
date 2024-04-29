@@ -1,0 +1,321 @@
+################################################################################
+# Protocol Buffers Compiler - C++ code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/cpp",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":names_internal",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    srcs = [
+        "helpers.cc",
+    ],
+    hdrs = [
+        "helpers.h",
+        "names.h",
+        "options.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/cpp",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/rust:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "cpp",
+    srcs = [
+        "enum.cc",
+        "extension.cc",
+        "field.cc",
+        "field_generators/cord_field.cc",
+        "field_generators/enum_field.cc",
+        "field_generators/map_field.cc",
+        "field_generators/message_field.cc",
+        "field_generators/primitive_field.cc",
+        "field_generators/string_field.cc",
+        "file.cc",
+        "generator.cc",
+        "message.cc",
+        "padding_optimizer.cc",
+        "parse_function_generator.cc",
+        "service.cc",
+        "tracker.cc",
+    ],
+    hdrs = [
+        "enum.h",
+        "extension.h",
+        "field.h",
+        "field_generators/generators.h",
+        "file.h",
+        "generator.h",
+        "message.h",
+        "message_layout_helper.h",
+        "padding_optimizer.h",
+        "parse_function_generator.h",
+        "service.h",
+        "tracker.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/cpp",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+        "@io_kythe//kythe/cxx/tools:__subpackages__",
+    ],
+    deps = [
+        ":names",
+        ":names_internal",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/compiler:versions",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/container:layout",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+proto_library(
+    name = "test_bad_identifiers_proto",
+    testonly = 1,
+    srcs = ["test_bad_identifiers.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "test_bad_identifiers_cc_proto",
+    testonly = 1,
+    deps = [":test_bad_identifiers_proto"],
+)
+
+proto_library(
+    name = "test_large_enum_value_proto",
+    testonly = 1,
+    srcs = ["test_large_enum_value.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "test_large_enum_value_cc_proto",
+    testonly = 1,
+    deps = [":test_large_enum_value_proto"],
+)
+
+cc_library(
+    name = "unittest_lib",
+    hdrs = [
+        "unittest.h",
+        "unittest.inc",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+)
+
+cc_test(
+    name = "unittest",
+    srcs = ["unittest.cc"],
+    copts = COPTS,
+    data = [
+        "//src/google/protobuf:test_proto_all_srcs",
+        "//src/google/protobuf:testdata",
+    ],
+    deps = [
+        ":cpp",
+        ":test_bad_identifiers_cc_proto",
+        ":unittest_lib",
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "bootstrap_unittest",
+    srcs = ["bootstrap_unittest.cc"],
+    data = [
+        "//:well_known_type_protos",
+        "//src/google/protobuf:cpp_features_cc_srcs",
+        "//src/google/protobuf:cpp_features_proto_srcs",
+        "//src/google/protobuf:descriptor_cc_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf:testdata",
+        "//src/google/protobuf/compiler:plugin_proto_srcs",
+    ],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "file_unittest",
+    srcs = ["file_unittest.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generator_unittest",
+    srcs = ["generator_unittest.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "message_size_unittest",
+    srcs = ["message_size_unittest.cc"],
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "metadata_test",
+    srcs = ["metadata_test.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:annotation_test_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "move_unittest",
+    srcs = ["move_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf/stubs:lite",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "copy_unittest",
+    srcs = ["copy_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf/stubs:lite",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arena_ctor_visibility_test",
+    srcs = ["arena_ctor_visibility_test.cc"],
+    copts = COPTS,
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf:cc_test_protos",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "plugin_unittest",
+    srcs = ["plugin_unittest.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "test_bad_identifiers.proto",
+        "test_large_enum_value.proto",
+    ],
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

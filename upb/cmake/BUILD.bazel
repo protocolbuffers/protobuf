@@ -1,0 +1,108 @@
+# Copyright (c) 2009-2021, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load(
+    "//bazel:build_defs.bzl",
+    "make_shell_script",
+)
+load(
+    ":build_defs.bzl",
+    "staleness_test",
+)
+
+licenses(["notice"])
+
+exports_files(["staleness_test.py"])
+
+py_library(
+    name = "staleness_test_lib",
+    testonly = 1,
+    srcs = ["staleness_test_lib.py"],
+    # This is public only for use by the staleness_test() macro. Please do not
+    # depend on this target directly.
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "make_cmakelists",
+    srcs = ["make_cmakelists.py"],
+)
+
+genrule(
+    name = "gen_cmakelists",
+    srcs = [
+        "//upb:BUILD",
+    ],
+    outs = ["generated-in/CMakeLists.txt"],
+    cmd = "$(location :make_cmakelists) " +
+          "$(location //upb:BUILD) $@",
+    tools = [":make_cmakelists"],
+)
+
+genrule(
+    name = "copy_protos",
+    srcs = [
+        "//upb:descriptor_upb_proto",
+        "//upb:descriptor_upb_minitable_proto",
+    ],
+    outs = [
+        "generated-in/google/protobuf/descriptor.upb.h",
+        "generated-in/google/protobuf/descriptor.upb_minitable.c",
+        "generated-in/google/protobuf/descriptor.upb_minitable.h",
+    ],
+    cmd = "cp $(SRCS) $(@D)/generated-in/google/protobuf",
+)
+
+staleness_test(
+    name = "test_generated_files",
+    outs = [
+        "CMakeLists.txt",
+        "google/protobuf/descriptor.upb.h",
+        "google/protobuf/descriptor.upb_minitable.c",
+        "google/protobuf/descriptor.upb_minitable.h",
+    ],
+    generated_pattern = "generated-in/%s",
+    tags = ["manual"],
+)
+
+# Test the CMake build #########################################################
+
+make_shell_script(
+    name = "gen_run_cmake_build",
+    out = "run_cmake_build.sh",
+    contents = "set -ex\n" +
+               "cd $(dirname $1) && cp -r . .. && cd ../..\n" +
+               "mkdir build && cd build && cmake ../cmake && make -j8 && make test",
+)
+
+sh_test(
+    name = "cmake_build",
+    srcs = ["run_cmake_build.sh"],
+    args = ["$(location :gen_cmakelists)"],
+    data = [
+        ":copy_protos",
+        ":gen_cmakelists",
+        "//upb:source_files",
+        "//upb/base:source_files",
+        "//upb/collections:source_files",
+        "//upb/hash:source_files",
+        "//upb/lex:source_files",
+        "//upb/mem:source_files",
+        "//upb/message:source_files",
+        "//upb/mini_descriptor:source_files",
+        "//upb/mini_table:source_files",
+        "//upb/port:source_files",
+        "//upb/text:source_files",
+        "//upb/wire:source_files",
+        "@utf8_range//:utf8_range_srcs",
+    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)

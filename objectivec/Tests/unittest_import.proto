@@ -1,0 +1,35 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// A proto file which is imported by unittest.proto to test importing.
+
+syntax = "proto2";
+
+package objc.protobuf.tests.import;
+
+// Test public import
+import public "objectivec/Tests/unittest_import_public.proto";
+
+option objc_class_prefix = "Import";
+
+message Message {
+  optional int32 d = 1;
+}
+
+enum Enum {
+  IMPORT_FOO = 7;
+  IMPORT_BAR = 8;
+  IMPORT_BAZ = 9;
+}
+
+
+// To use an enum in a map, it must has the first value as 0.
+enum EnumForMap {
+  UNKNOWN = 0;
+  FOO = 1;
+  BAR = 2;
+}

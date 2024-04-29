@@ -1,0 +1,64 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_ruby//ruby:defs.bzl", "ruby_test")
+load("//:protobuf.bzl", "internal_ruby_proto_library")
+
+internal_ruby_proto_library(
+    name = "test_ruby_protos",
+    srcs = glob(["*.proto"]),
+    includes = ["."],
+    protoc = "//ruby/compatibility_tests/v3.0.0:protoc",
+)
+
+ruby_test(
+    name = "basic",
+    srcs = ["basic.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
+    name = "generated_code_test",
+    srcs = ["generated_code_test.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
+    name = "repeated_field_test",
+    srcs = ["repeated_field_test.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
+    name = "stress",
+    srcs = ["stress.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+################################################################################
+# Distribution files
+############################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "**/*.rb",
+        "**/*.proto",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby/compatibility_tests/v3.0.0:__pkg__"],
+)

@@ -2,33 +2,10 @@
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Adds support for parameterized tests to Python's unittest TestCase class.
 
@@ -37,8 +14,8 @@ argument tuples.
 
 A simple example:
 
-  class AdditionExample(parameterized.ParameterizedTestCase):
-    @parameterized.Parameters(
+  class AdditionExample(_parameterized.TestCase):
+    @_parameterized.parameters(
        (1, 2, 3),
        (4, 5, 9),
        (1, 1, 3))
@@ -51,11 +28,11 @@ like a normal test method, with its own setUp/tearDown cycle. In the
 example above, there are three separate testcases, one of which will
 fail due to an assertion error (1 + 1 != 3).
 
-Parameters for invididual test cases can be tuples (with positional parameters)
+Parameters for individual test cases can be tuples (with positional parameters)
 or dictionaries (with named parameters):
 
-  class AdditionExample(parameterized.ParameterizedTestCase):
-    @parameterized.Parameters(
+  class AdditionExample(_parameterized.TestCase):
+    @_parameterized.parameters(
        {'op1': 1, 'op2': 2, 'result': 3},
        {'op1': 4, 'op2': 5, 'result': 9},
     )
@@ -77,13 +54,13 @@ stay the same across several invocations, object representations like
   '<__main__.Foo object at 0x23d8610>'
 
 are turned into '<__main__.Foo>'. For even more descriptive names,
-especially in test logs, you can use the NamedParameters decorator. In
+especially in test logs, you can use the named_parameters decorator. In
 this case, only tuples are supported, and the first parameters has to
 be a string (or an object that returns an apt name when converted via
 str()):
 
-  class NamedExample(parameterized.ParameterizedTestCase):
-    @parameterized.NamedParameters(
+  class NamedExample(_parameterized.TestCase):
+    @_parameterized.named_parameters(
        ('Normal', 'aa', 'aaa', True),
        ('EmptyPrefix', '', 'abc', True),
        ('BothEmpty', '', '', True))
@@ -103,13 +80,13 @@ from the command line:
 Parameterized Classes
 =====================
 If invocation arguments are shared across test methods in a single
-ParameterizedTestCase class, instead of decorating all test methods
+TestCase class, instead of decorating all test methods
 individually, the class itself can be decorated:
 
-  @parameterized.Parameters(
+  @_parameterized.parameters(
     (1, 2, 3)
     (4, 5, 9))
-  class ArithmeticTest(parameterized.ParameterizedTestCase):
+  class ArithmeticTest(_parameterized.TestCase):
     def testAdd(self, arg1, arg2, result):
       self.assertEqual(arg1 + arg2, result)
 
@@ -122,8 +99,8 @@ If parameters should be shared across several test cases, or are dynamically
 created from other sources, a single non-tuple iterable can be passed into
 the decorator. This iterable will be used to obtain the test cases:
 
-  class AdditionExample(parameterized.ParameterizedTestCase):
-    @parameterized.Parameters(
+  class AdditionExample(_parameterized.TestCase):
+    @_parameterized.parameters(
       c.op1, c.op2, c.result for c in testcases
     )
     def testAddition(self, op1, op2, result):
@@ -135,8 +112,8 @@ Single-Argument Test Methods
 If a test method takes only one argument, the single argument does not need to
 be wrapped into a tuple:
 
-  class NegativeNumberExample(parameterized.ParameterizedTestCase):
-    @parameterized.Parameters(
+  class NegativeNumberExample(_parameterized.TestCase):
+    @_parameterized.parameters(
        -1, -3, -4, -5
     )
     def testIsNegative(self, arg):
@@ -145,17 +122,18 @@ be wrapped into a tuple:
 
 __author__ = 'tmarek@google.com (Torsten Marek)'
 
-import collections
 import functools
 import re
 import types
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+import unittest
 import uuid
 
-import six
+try:
+  # Since python 3
+  import collections.abc as collections_abc
+except ImportError:
+  # Won't work after python 3.8
+  import collections as collections_abc
 
 ADDR_RE = re.compile(r'\<([a-zA-Z0-9_\-\.]+) object at 0x[a-fA-F0-9]+\>')
 _SEPARATOR = uuid.uuid1().hex
@@ -174,12 +152,12 @@ def _StrClass(cls):
 
 
 def _NonStringIterable(obj):
-  return (isinstance(obj, collections.Iterable) and not
-          isinstance(obj, six.string_types))
+  return (isinstance(obj, collections_abc.Iterable) and
+          not isinstance(obj, str))
 
 
 def _FormatParameterList(testcase_params):
-  if isinstance(testcase_params, collections.Mapping):
+  if isinstance(testcase_params, collections_abc.Mapping):
     return ', '.join('%s=%s' % (argname, _CleanRepr(value))
                      for argname, value in testcase_params.items())
   elif _NonStringIterable(testcase_params):
@@ -212,7 +190,7 @@ class _ParameterizedTestIter(object):
   def __call__(self, *args, **kwargs):
     raise RuntimeError('You appear to be running a parameterized test case '
                        'without having inherited from parameterized.'
-                       'ParameterizedTestCase. This is bad because none of '
+                       'TestCase. This is bad because none of '
                        'your test cases are actually being run.')
 
   def __iter__(self):
@@ -222,7 +200,7 @@ class _ParameterizedTestIter(object):
     def MakeBoundParamTest(testcase_params):
       @functools.wraps(test_method)
       def BoundParamTest(self):
-        if isinstance(testcase_params, collections.Mapping):
+        if isinstance(testcase_params, collections_abc.Mapping):
           test_method(self, **testcase_params)
         elif _NonStringIterable(testcase_params):
           test_method(self, *testcase_params)
@@ -263,7 +241,7 @@ def _ModifyClass(class_object, testcases, naming_type):
       'Cannot add parameters to %s,'
       ' which already has parameterized methods.' % (class_object,))
   class_object._id_suffix = id_suffix = {}
-  # We change the size of __dict__ while we iterate over it, 
+  # We change the size of __dict__ while we iterate over it,
   # which Python 3.x will complain about, so use copy().
   for name, obj in class_object.__dict__.copy().items():
     if (name.startswith(unittest.TestLoader.testMethodPrefix)
@@ -291,7 +269,7 @@ def _ParameterDecorator(naming_type, testcases):
     if isinstance(obj, type):
       _ModifyClass(
           obj,
-          list(testcases) if not isinstance(testcases, collections.Sequence)
+          list(testcases) if not isinstance(testcases, collections_abc.Sequence)
           else testcases,
           naming_type)
       return obj
@@ -306,7 +284,7 @@ def _ParameterDecorator(naming_type, testcases):
   return _Apply
 
 
-def Parameters(*testcases):
+def parameters(*testcases):  # pylint: disable=invalid-name
   """A decorator for creating parameterized tests.
 
   See the module docstring for a usage example.
@@ -321,7 +299,7 @@ def Parameters(*testcases):
   return _ParameterDecorator(_ARGUMENT_REPR, testcases)
 
 
-def NamedParameters(*testcases):
+def named_parameters(*testcases):  # pylint: disable=invalid-name
   """A decorator for creating parameterized tests.
 
   See the module docstring for a usage example. The first element of
@@ -348,12 +326,12 @@ class TestGeneratorMetaclass(type):
   up as tests by the unittest framework.
 
   In general, it is supposed to be used in conjunction with the
-  Parameters decorator.
+  parameters decorator.
   """
 
   def __new__(mcs, class_name, bases, dct):
     dct['_id_suffix'] = id_suffix = {}
-    for name, obj in dct.items():
+    for name, obj in dct.copy().items():
       if (name.startswith(unittest.TestLoader.testMethodPrefix) and
           _NonStringIterable(obj)):
         iterator = iter(obj)
@@ -385,9 +363,8 @@ def _UpdateClassDictForParamTestCase(dct, id_suffix, name, iterator):
     id_suffix[new_name] = getattr(func, '__x_extra_id__', '')
 
 
-class ParameterizedTestCase(unittest.TestCase):
-  """Base class for test cases using the Parameters decorator."""
-  __metaclass__ = TestGeneratorMetaclass
+class TestCase(unittest.TestCase, metaclass=TestGeneratorMetaclass):
+  """Base class for test cases using the parameters decorator."""
 
   def _OriginalName(self):
     return self._testMethodName.split(_SEPARATOR)[0]
@@ -409,10 +386,10 @@ class ParameterizedTestCase(unittest.TestCase):
                         self._id_suffix.get(self._testMethodName, ''))
 
 
-def CoopParameterizedTestCase(other_base_class):
+def CoopTestCase(other_base_class):
   """Returns a new base class with a cooperative metaclass base.
 
-  This enables the ParameterizedTestCase to be used in combination
+  This enables the TestCase to be used in combination
   with other base classes that have custom metaclasses, such as
   mox.MoxTestBase.
 
@@ -423,9 +400,9 @@ def CoopParameterizedTestCase(other_base_class):
     import google3
     import mox
 
-    from google3.testing.pybase import parameterized
+    from google.protobuf.internal import _parameterized
 
-    class ExampleTest(parameterized.CoopParameterizedTestCase(mox.MoxTestBase)):
+    class ExampleTest(parameterized.CoopTestCase(mox.MoxTestBase)):
       ...
 
   Args:
@@ -439,5 +416,5 @@ def CoopParameterizedTestCase(other_base_class):
       (other_base_class.__metaclass__,
        TestGeneratorMetaclass), {})
   return metaclass(
-      'CoopParameterizedTestCase',
-      (other_base_class, ParameterizedTestCase), {})
+      'CoopTestCase',
+      (other_base_class, TestCase), {})

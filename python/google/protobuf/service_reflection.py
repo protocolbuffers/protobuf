@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Contains metaclasses used to create protocol service and service stub
 classes from ServiceDescriptor objects at runtime.
@@ -49,14 +26,14 @@ class GeneratedServiceType(type):
 
   The protocol compiler currently uses this metaclass to create protocol service
   classes at runtime. Clients can also manually create their own classes at
-  runtime, as in this example:
+  runtime, as in this example::
 
-  mydescriptor = ServiceDescriptor(.....)
-  class MyProtoService(service.Service):
-    __metaclass__ = GeneratedServiceType
-    DESCRIPTOR = mydescriptor
-  myservice_instance = MyProtoService()
-  ...
+    mydescriptor = ServiceDescriptor(.....)
+    class MyProtoService(service.Service):
+      __metaclass__ = GeneratedServiceType
+      DESCRIPTOR = mydescriptor
+    myservice_instance = MyProtoService()
+    # ...
   """
 
   _DESCRIPTOR_KEY = 'DESCRIPTOR'
@@ -76,9 +53,11 @@ class GeneratedServiceType(type):
     # when a service class is subclassed.
     if GeneratedServiceType._DESCRIPTOR_KEY not in dictionary:
       return
+
     descriptor = dictionary[GeneratedServiceType._DESCRIPTOR_KEY]
     service_builder = _ServiceBuilder(descriptor)
     service_builder.BuildService(cls)
+    cls.DESCRIPTOR = descriptor
 
 
 class GeneratedServiceStubType(GeneratedServiceType):
@@ -106,6 +85,7 @@ class GeneratedServiceStubType(GeneratedServiceType):
     # when a service stub is subclassed.
     if GeneratedServiceStubType._DESCRIPTOR_KEY not in dictionary:
       return
+
     descriptor = dictionary[GeneratedServiceStubType._DESCRIPTOR_KEY]
     service_stub_builder = _ServiceStubBuilder(descriptor)
     service_stub_builder.BuildServiceStub(cls)
@@ -130,7 +110,7 @@ class _ServiceBuilder(object):
     """
     self.descriptor = service_descriptor
 
-  def BuildService(self, cls):
+  def BuildService(builder, cls):
     """Constructs the service class.
 
     Args:
@@ -140,18 +120,26 @@ class _ServiceBuilder(object):
     # CallMethod needs to operate with an instance of the Service class. This
     # internal wrapper function exists only to be able to pass the service
     # instance to the method that does the real CallMethod work.
-    def _WrapCallMethod(srvc, method_descriptor,
-                        rpc_controller, request, callback):
-      return self._CallMethod(srvc, method_descriptor,
-                       rpc_controller, request, callback)
-    self.cls = cls
+    # Making sure to use exact argument names from the abstract interface in
+    # service.py to match the type signature
+    def _WrapCallMethod(self, method_descriptor, rpc_controller, request, done):
+      return builder._CallMethod(self, method_descriptor, rpc_controller,
+                                 request, done)
+
+    def _WrapGetRequestClass(self, method_descriptor):
+      return builder._GetRequestClass(method_descriptor)
+
+    def _WrapGetResponseClass(self, method_descriptor):
+      return builder._GetResponseClass(method_descriptor)
+
+    builder.cls = cls
     cls.CallMethod = _WrapCallMethod
-    cls.GetDescriptor = staticmethod(lambda: self.descriptor)
-    cls.GetDescriptor.__doc__ = "Returns the service descriptor."
-    cls.GetRequestClass = self._GetRequestClass
-    cls.GetResponseClass = self._GetResponseClass
-    for method in self.descriptor.methods:
-      setattr(cls, method.name, self._GenerateNonImplementedMethod(method))
+    cls.GetDescriptor = staticmethod(lambda: builder.descriptor)
+    cls.GetDescriptor.__doc__ = 'Returns the service descriptor.'
+    cls.GetRequestClass = _WrapGetRequestClass
+    cls.GetResponseClass = _WrapGetResponseClass
+    for method in builder.descriptor.methods:
+      setattr(cls, method.name, builder._GenerateNonImplementedMethod(method))
 
   def _CallMethod(self, srvc, method_descriptor,
                   rpc_controller, request, callback):

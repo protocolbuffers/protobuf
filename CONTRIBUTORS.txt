@@ -100,3 +100,8 @@ Patch contributors:
   Andrew Paprocki <andrew@ishiboo.com>
     * Fixed minor IBM xlC compiler build issues
     * Added atomicops for AIX (POWER)
+  Nipunn Koorapati <nipunn1313@gmail.com>
+    * Provide a type alias field ValueType on EnumTypeWrapper
+    * Match service argument names to abstract interface
+
+

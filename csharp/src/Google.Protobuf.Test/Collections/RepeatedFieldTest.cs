@@ -1,33 +1,10 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -58,8 +35,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Add_SingleItem()
         {
-            var list = new RepeatedField<string>();
-            list.Add("foo");
+            var list = new RepeatedField<string> { "foo" };
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("foo", list[0]);
         }
@@ -67,8 +43,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Add_Sequence()
         {
-            var list = new RepeatedField<string>();
-            list.Add(new[] { "foo", "bar" });
+            var list = new RepeatedField<string> { new[] { "foo", "bar" } };
             Assert.AreEqual(2, list.Count);
             Assert.AreEqual("foo", list[0]);
             Assert.AreEqual("bar", list[1]);
@@ -292,15 +267,13 @@ namespace Google.Protobuf.Collections
         public void Enumerator()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            using (var enumerator = list.GetEnumerator())
-            {
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("first", enumerator.Current);
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("second", enumerator.Current);
-                Assert.IsFalse(enumerator.MoveNext());
-                Assert.IsFalse(enumerator.MoveNext());
-            }
+            using var enumerator = list.GetEnumerator();
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("first", enumerator.Current);
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("second", enumerator.Current);
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.IsFalse(enumerator.MoveNext());
         }
 
         [Test]
@@ -594,6 +567,95 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(((SampleEnum)(-5)), values[5]);
         }
 
+        [Test]
+        public void TestPackedRepeatedFieldCollectionNonDivisibleLength()
+        {
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var codec = FieldCodec.ForFixed32(tag);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(tag);
+            output.WriteString("A long string");
+            output.WriteTag(codec.Tag);
+            output.WriteRawVarint32((uint)codec.FixedSize - 1); // Length not divisible by FixedSize
+            output.WriteFixed32(uint.MaxValue);
+            output.Flush();
+            stream.Position = 0;
+
+            var input = new CodedInputStream(stream);
+            input.ReadTag();
+            input.ReadString();
+            input.ReadTag();
+            var field = new RepeatedField<uint>();
+            Assert.Throws<InvalidProtocolBufferException>(() => field.AddEntriesFrom(input, codec));
+
+            // Collection was not pre-initialized
+            Assert.AreEqual(0, field.Count);
+        }
+
+        [Test]
+        public void TestPackedRepeatedFieldCollectionNotAllocatedWhenLengthExceedsBuffer()
+        {
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var codec = FieldCodec.ForFixed32(tag);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(tag);
+            output.WriteString("A long string");
+            output.WriteTag(codec.Tag);
+            output.WriteRawVarint32((uint)codec.FixedSize);
+            // Note that there is no content for the packed field.
+            // The field length exceeds the remaining length of content.
+            output.Flush();
+            stream.Position = 0;
+
+            var input = new CodedInputStream(stream);
+            input.ReadTag();
+            input.ReadString();
+            input.ReadTag();
+            var field = new RepeatedField<uint>();
+            Assert.Throws<InvalidProtocolBufferException>(() => field.AddEntriesFrom(input, codec));
+
+            // Collection was not pre-initialized
+            Assert.AreEqual(0, field.Count);
+        }
+
+        [Test]
+        public void TestPackedRepeatedFieldCollectionNotAllocatedWhenLengthExceedsRemainingData()
+        {
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var codec = FieldCodec.ForFixed32(tag);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(tag);
+            output.WriteString("A long string");
+            output.WriteTag(codec.Tag);
+            output.WriteRawVarint32((uint)codec.FixedSize);
+            // Note that there is no content for the packed field.
+            // The field length exceeds the remaining length of the buffer.
+            output.Flush();
+            stream.Position = 0;
+
+            var sequence = ReadOnlySequenceFactory.CreateWithContent(stream.ToArray());
+            ParseContext.Initialize(sequence, out ParseContext ctx);
+
+            ctx.ReadTag();
+            ctx.ReadString();
+            ctx.ReadTag();
+            var field = new RepeatedField<uint>();
+            try
+            {
+                field.AddEntriesFrom(ref ctx, codec);
+                Assert.Fail();
+            }
+            catch (InvalidProtocolBufferException)
+            {
+            }
+
+            // Collection was not pre-initialized
+            Assert.AreEqual(0, field.Count);
+        }
+
         // Fairly perfunctory tests for the non-generic IList implementation
         [Test]
         public void IList_Indexer()
@@ -741,6 +803,79 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<Struct> { message };
             var text = list.ToString();
             Assert.AreEqual(text, "[ { \"foo\": 20 } ]", message.ToString());
+        }
+
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var list1 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+            var list2 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.PayloadFlipped };
+            var list3 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+
+            // All SampleNaNs have the same hashcode under certain targets (e.g. netcoreapp3.1)
+            EqualityTester.AssertInequality(list1, list2, checkHashcode: false);
+            EqualityTester.AssertEquality(list1, list3);
+            Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        [Test]
+        public void Capacity_Increase()
+        {
+            // Unfortunately this case tests implementation details of RepeatedField.  This is necessary
+
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.AreEqual(3, list.Count);
+
+            list.Capacity = 10; // Set capacity to a larger value to trigger growth
+            Assert.AreEqual(10, list.Capacity, "Capacity increased");
+            Assert.AreEqual(3, list.Count);
+
+            CollectionAssert.AreEqual(new int[] {1, 2, 3}, list.ToArray(), "We didn't lose our data in the resize");
+        }
+
+        [Test]
+        public void Capacity_Decrease()
+        {
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.DoesNotThrow(() => list.Capacity = 5, "Can decrease capacity if new capacity is greater than list.Count");
+            Assert.AreEqual(5, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 3, "Can set capacity exactly to list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 2, "Can't set the capacity smaller than list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 0, "Can't set the capacity to zero" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = -1, "Can't set the capacity to negative" );
+        }
+
+        [Test]
+        public void Capacity_Zero()
+        {
+            var list = new RepeatedField<int>() { 1 };
+            list.RemoveAt(0);
+            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 0, "Can set Capacity to 0");
+            Assert.AreEqual(0, list.Capacity);
+        }
+
+        [Test]
+        public void Clear_CapacityUnaffected()
+        {
+            var list = new RepeatedField<int> { 1 };
+            Assert.AreEqual(1, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+
+            list.Clear();
+            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(8, list.Capacity);
         }
     }
 }

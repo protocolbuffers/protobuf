@@ -4,24 +4,13 @@
 
 namespace Google\Protobuf\Internal;
 
-/**
- * Protobuf enum <code>Google\Protobuf\Internal</code>
- */
-class FieldDescriptorProto_Label
-{
+if (false) {
     /**
-     * 0 is reserved for errors
-     *
-     * Generated from protobuf enum <code>LABEL_OPTIONAL = 1;</code>
+     * This class is deprecated. Use Google\Protobuf\Internal\FieldDescriptorProto\Label instead.
+     * @deprecated
      */
-    const LABEL_OPTIONAL = 1;
-    /**
-     * Generated from protobuf enum <code>LABEL_REQUIRED = 2;</code>
-     */
-    const LABEL_REQUIRED = 2;
-    /**
-     * Generated from protobuf enum <code>LABEL_REPEATED = 3;</code>
-     */
-    const LABEL_REPEATED = 3;
+    class FieldDescriptorProto_Label {}
 }
+class_exists(FieldDescriptorProto\Label::class);
+@trigger_error('Google\Protobuf\Internal\FieldDescriptorProto_Label is deprecated and will be removed in the next major release. Use Google\Protobuf\Internal\FieldDescriptorProto\Label instead', E_USER_DEPRECATED);
 

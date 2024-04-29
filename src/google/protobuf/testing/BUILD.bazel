@@ -1,0 +1,48 @@
+# Protobuf testing support.
+#   This package contains testonly utilities used in C++ unit tests.
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+
+package(default_visibility = ["//:__subpackages__"])
+
+cc_library(
+    name = "testing",
+    testonly = 1,
+    srcs = [
+        "file.cc",
+        "googletest.cc",
+    ],
+    hdrs = [
+        "file.h",
+        "googletest.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/testing",
+    linkopts = LINK_OPTS,
+    deps = [
+        "//:protobuf_lite",  # for ShutdownProtobufLibrary
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs:lite",
+        "@com_google_absl//absl/base:log_severity",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:log_sink",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)

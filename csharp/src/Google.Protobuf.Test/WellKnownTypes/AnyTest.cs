@@ -1,37 +1,17 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+using Google.Protobuf.Reflection;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using System.Linq;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.WellKnownTypes
 {
@@ -42,7 +22,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message);
-            Assert.AreEqual("type.googleapis.com/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual("type.googleapis.com/protobuf_unittest3.TestAllTypes", any.TypeUrl);
             Assert.AreEqual(message.CalculateSize(), any.Value.Length);
         }
 
@@ -51,7 +31,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message, "foo.bar/baz");
-            Assert.AreEqual("foo.bar/baz/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual("foo.bar/baz/protobuf_unittest3.TestAllTypes", any.TypeUrl);
             Assert.AreEqual(message.CalculateSize(), any.Value.Length);
         }
 
@@ -60,7 +40,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message, "foo.bar/baz/");
-            Assert.AreEqual("foo.bar/baz/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual("foo.bar/baz/protobuf_unittest3.TestAllTypes", any.TypeUrl);
             Assert.AreEqual(message.CalculateSize(), any.Value.Length);
         }
 
@@ -123,7 +103,6 @@ namespace Google.Protobuf.WellKnownTypes
         [TestCase("foobar", "")]
         public void GetTypeName(string typeUrl, string expectedTypeName)
         {
-            var any = new Any { TypeUrl = typeUrl };
             Assert.AreEqual(expectedTypeName, Any.GetTypeName(typeUrl));
         }
 
@@ -139,6 +118,43 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = new TestWellKnownTypes { AnyField = new Any() };
             Assert.AreEqual("{ \"anyField\": { \"@type\": \"\", \"@value\": \"\" } }", message.ToString());
+        }
+
+        [Test]
+        public void IsWrongType()
+        {
+            var any = Any.Pack(SampleMessages.CreateFullTestAllTypes());
+            Assert.False(any.Is(TestOneof.Descriptor));
+        }
+
+        [Test]
+        public void IsRightType()
+        {
+            var any = Any.Pack(SampleMessages.CreateFullTestAllTypes());
+            Assert.True(any.Is(TestAllTypes.Descriptor));
+        }
+
+        [Test]
+        public void Unpack_TypeRegistry()
+        {
+            var messages = new IMessage[]
+            {
+                SampleMessages.CreateFullTestAllTypes(),
+                new TestWellKnownTypes { BoolField = true },
+                new MoreString { Data = { "x" } },
+                new MoreBytes { Data = ByteString.CopyFromUtf8("xyz") },
+                new ReservedNames { Descriptor_ = 10 }
+            };
+            var anyMessages = messages.Select(Any.Pack);
+
+            // The type registry handles the first four of the packed messages, but not the final one.
+            var registry = TypeRegistry.FromFiles(
+                UnittestWellKnownTypesReflection.Descriptor,
+                UnittestProto3Reflection.Descriptor);
+            var unpacked = anyMessages.Select(any => any.Unpack(registry)).ToList();
+            var expected = (IMessage[]) messages.Clone();
+            expected[4] = null;
+            Assert.AreEqual(expected, unpacked);
         }
     }
 }

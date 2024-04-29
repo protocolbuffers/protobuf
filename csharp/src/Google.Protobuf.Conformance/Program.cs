@@ -1,33 +1,10 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using Conformance;
@@ -43,12 +20,14 @@ namespace Google.Protobuf.Conformance
     /// </summary>
     class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
-            var typeRegistry = TypeRegistry.FromMessages(ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor);
+            var typeRegistry = TypeRegistry.FromMessages(
+                ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor,
+                ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor);
 
             int count = 0;
             while (RunTest(input, output, typeRegistry))
@@ -81,31 +60,42 @@ namespace Google.Protobuf.Conformance
 
         private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
-            ProtobufTestMessages.Proto3.TestAllTypesProto3 message;
+            ExtensionRegistry proto2ExtensionRegistry = new ExtensionRegistry
+            {
+                ProtobufTestMessages.Proto2.TestMessagesProto2Extensions.ExtensionInt32,
+                ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension1.Extensions.MessageSetExtension,
+                ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.MessageSetCorrectExtension2.Extensions.MessageSetExtension
+            };
+            IMessage message;
             try
             {
                 switch (request.PayloadCase)
                 {
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
+                        if (request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest)
+                        {
+                            return new ConformanceResponse { Skipped = "CSharp doesn't support skipping unknown fields in json parsing." };
+                        }
                         var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
-                        message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload);
+                        message = request.MessageType switch
+                        {
+                            "protobuf_test_messages.proto3.TestAllTypesProto3" => parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload),
+                            "protobuf_test_messages.proto2.TestAllTypesProto2" => parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload),
+                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                        };
                         break;
-                    case ConformanceRequest.PayloadOneofCase.ProtobufPayload: 
-                    {
-                        if (request.MessageType.Equals("protobuf_test_messages.proto3.TestAllTypesProto3"))
+                    case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
+                        message = request.MessageType switch
                         {
-                            message = ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload);
-                        }							
-                        else if (request.MessageType.Equals("protobuf_test_messages.proto2.TestAllTypesProto2")) 
-                        {
-                            return new ConformanceResponse { Skipped = "CSharp doesn't support proto2" };
-                        }
-                        else 
-                        {
-                            throw new Exception(" Protobuf request doesn't have specific payload type");
-                        }
+                            "protobuf_test_messages.proto3.TestAllTypesProto3" => ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload),
+                            "protobuf_test_messages.proto2.TestAllTypesProto2" => ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser
+                                                                .WithExtensionRegistry(proto2ExtensionRegistry)
+                                                                .ParseFrom(request.ProtobufPayload),
+                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                        };
                         break;
-                    }
+					case ConformanceRequest.PayloadOneofCase.TextPayload:
+						return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }
@@ -128,7 +118,7 @@ namespace Google.Protobuf.Conformance
                     case global::Conformance.WireFormat.Protobuf:
                         return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
                     default:
-                        throw new Exception("Unsupported request output format: " + request.PayloadCase);
+                        throw new Exception("Unsupported request output format: " + request.RequestedOutputFormat);
                 }
             }
             catch (InvalidOperationException e)

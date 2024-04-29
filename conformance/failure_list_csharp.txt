@@ -1,7 +1,9 @@
+Recommended.Proto2.JsonInput.FieldNameExtension.Validator
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_0
-Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_1
-Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_2
-Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_3
-
+Required.Proto3.JsonInput.OneofFieldNullFirst.JsonOutput
+Required.Proto3.JsonInput.OneofFieldNullFirst.ProtobufOutput
+Required.Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
+Required.Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
+Recommended.ValueRejectInfNumberValue.JsonOutput
+Recommended.ValueRejectNanNumberValue.JsonOutput

@@ -2,33 +2,10 @@
 
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 namespace Google\Protobuf\Internal;
 
@@ -46,8 +23,11 @@ class FieldDescriptor
     private $message_type;
     private $enum_type;
     private $packed;
-    private $is_map;
     private $oneof_index = -1;
+    private $proto3_optional;
+
+    /** @var OneofDescriptor $containing_oneof */
+    private $containing_oneof;
 
     public function __construct()
     {
@@ -169,6 +149,32 @@ class FieldDescriptor
         return $this->packed;
     }
 
+    public function getProto3Optional()
+    {
+        return $this->proto3_optional;
+    }
+
+    public function setProto3Optional($proto3_optional)
+    {
+        $this->proto3_optional = $proto3_optional;
+    }
+
+    public function getContainingOneof()
+    {
+        return $this->containing_oneof;
+    }
+
+    public function setContainingOneof($containing_oneof)
+    {
+        $this->containing_oneof = $containing_oneof;
+    }
+
+    public function getRealContainingOneof()
+    {
+        return !is_null($this->containing_oneof) && !$this->containing_oneof->isSynthetic()
+            ? $this->containing_oneof : null;
+    }
+
     public function isPackable()
     {
         return $this->isRepeated() && self::isTypePackable($this->type);
@@ -181,6 +187,31 @@ class FieldDescriptor
                $this->getMessageType()->getOptions()->getMapEntry();
     }
 
+    public function isTimestamp()
+    {
+        return $this->getType() == GPBType::MESSAGE &&
+            $this->getMessageType()->getClass() === "Google\Protobuf\Timestamp";
+    }
+
+    public function isWrapperType()
+    {
+        if ($this->getType() == GPBType::MESSAGE) {
+            $class = $this->getMessageType()->getClass();
+            return in_array($class, [
+                "Google\Protobuf\DoubleValue",
+                "Google\Protobuf\FloatValue",
+                "Google\Protobuf\Int64Value",
+                "Google\Protobuf\UInt64Value",
+                "Google\Protobuf\Int32Value",
+                "Google\Protobuf\UInt32Value",
+                "Google\Protobuf\BoolValue",
+                "Google\Protobuf\StringValue",
+                "Google\Protobuf\BytesValue",
+            ]);
+        }
+        return false;
+    }
+
     private static function isTypePackable($field_type)
     {
         return ($field_type !== GPBType::STRING  &&
@@ -189,6 +220,10 @@ class FieldDescriptor
             $field_type !== GPBType::BYTES);
     }
 
+    /**
+     * @param FieldDescriptorProto $proto
+     * @return FieldDescriptor
+     */
     public static function getFieldDescriptor($proto)
     {
         $type_name = null;
@@ -204,7 +239,17 @@ class FieldDescriptor
         }
 
         $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
-        $packed = false;
+        // TODO: once proto2 is supported, this default should be false
+        // for proto2.
+        if ($proto->getLabel() === GPBLabel::REPEATED &&
+            $proto->getType() !== GPBType::MESSAGE &&
+            $proto->getType() !== GPBType::GROUP &&
+            $proto->getType() !== GPBType::STRING &&
+            $proto->getType() !== GPBType::BYTES) {
+          $packed = true;
+        } else {
+          $packed = false;
+        }
         $options = $proto->getOptions();
         if ($options !== null) {
             $packed = $options->getPacked();
@@ -213,8 +258,6 @@ class FieldDescriptor
         $field = new FieldDescriptor();
         $field->setName($proto->getName());
 
-        $json_name = $proto->hasJsonName() ? $proto->getJsonName() :
-            lcfirst(implode('', array_map('ucwords', explode('_', $proto->getName()))));
         if ($proto->hasJsonName()) {
             $json_name = $proto->getJsonName();
         } else {
@@ -234,6 +277,7 @@ class FieldDescriptor
         $field->setLabel($proto->getLabel());
         $field->setPacked($packed);
         $field->setOneofIndex($oneof_index);
+        $field->setProto3Optional($proto->getProto3Optional());
 
         // At this time, the message/enum type may have not been added to pool.
         // So we use the type name as place holder and will replace it with the

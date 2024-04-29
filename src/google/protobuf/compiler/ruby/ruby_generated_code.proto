@@ -1,6 +1,15 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 syntax = "proto3";
 
 package A.B.C;
+
+import "ruby_generated_code_proto2_import.proto";
 
 message TestMessage {
   int32 optional_int32 = 1;
@@ -14,6 +23,7 @@ message TestMessage {
   bytes optional_bytes = 9;
   TestEnum optional_enum = 10;
   TestMessage optional_msg = 11;
+  TestImportedMessage optional_proto2_submessage = 12;
 
   repeated int32 repeated_int32 = 21;
   repeated int64 repeated_int64 = 22;

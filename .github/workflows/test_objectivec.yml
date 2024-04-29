@@ -1,0 +1,129 @@
+name: Objective-C Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  xcode:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        platform: ["macOS", "iOS"]
+        xc_config: ["Debug", "Release"]
+        # The "destination" entries need to match what is available for the selected Xcode.
+        # See `.github/BUILD.bazel` for the Xcode info.
+        include:
+        - platform: "macOS"
+          destination: "platform=macOS"
+          xc_project: "ProtocolBuffers_OSX.xcodeproj"
+        - platform: "iOS"
+          destination: "platform=iOS Simulator,name=iPhone 13,OS=latest"
+          xc_project: "ProtocolBuffers_iOS.xcodeproj"
+
+    name: Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
+    runs-on: macos-12
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup ccache
+        uses: protocolbuffers/protobuf-ci/ccache@v2
+        with:
+          cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
+          support-modules: true
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bash@v2
+        env:
+          CC: ${{ github.workspace }}/ci/clang_wrapper
+          CXX: ${{ github.workspace }}/ci/clang_wrapper++
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            xcodebuild \
+                -project "objectivec/${{ matrix.xc_project }}" \
+                -scheme ProtocolBuffers \
+                -configuration ${{ matrix.xc_config }} \
+                -destination "${{ matrix.destination }}" \
+                test \
+              | xcpretty
+
+      - name: Report ccache stats
+        shell: bash
+        run: ccache -s -v
+
+  pod-lib-lint:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        # Add back 'watchos'. See CocoaPods/CocoaPods#11558
+        PLATFORM: ["ios", "macos", "tvos"]
+        CONFIGURATION: ["Debug", "Release"]
+    name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
+    runs-on: macos-12
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Pod lib lint
+        uses: protocolbuffers/protobuf-ci/bash@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          command: |
+            pod lib lint --verbose \
+              --configuration=${{ matrix.CONFIGURATION }} \
+              --platforms=${{ matrix.PLATFORM }} \
+              Protobuf.podspec
+
+  bazel:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - name: Optimized
+            flags: --config=opt
+            bazel_action: test
+          - name: Debug
+            flags: --config=dbg
+            bazel_action: test
+          # Current github runners are all Intel based, so just build/compile
+          # for Apple Silicon to detect issues there.
+          - name: Apple_Silicon_Optimized
+            flags: --config=opt --cpu=darwin_arm64
+            bazel_action: build
+          - name: Apple_Silicon_Debug
+            flags: --config=dbg --cpu=darwin_arm64
+            bazel_action: build
+        # TODO: Could add iOS to atleast build the objc_library targets for that.
+        platform: ["macOS"]
+        include:
+        - platform: "macOS"
+          bazel_targets: //objectivec/...
+    name: Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: bazel ${{ matrix.config.bazel_action }}
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
+          bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}

@@ -1,33 +1,10 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System.Collections.Generic;
@@ -43,7 +20,7 @@ namespace Google.Protobuf
 #pragma warning disable 0414 // Used by tests via reflection - do not remove!
         private static readonly List<ICodecTestData> Codecs = new List<ICodecTestData>
         {
-            new FieldCodecTestData<bool>(FieldCodec.ForBool(100), true, "Bool"),
+            new FieldCodecTestData<bool>(FieldCodec.ForBool(100), true, "FixedBool"),
             new FieldCodecTestData<string>(FieldCodec.ForString(100), "sample", "String"),
             new FieldCodecTestData<ByteString>(FieldCodec.ForBytes(100), ByteString.CopyFrom(1, 2, 3), "Bytes"),
             new FieldCodecTestData<int>(FieldCodec.ForInt32(100), -1000, "Int32"),
@@ -56,8 +33,8 @@ namespace Google.Protobuf
             new FieldCodecTestData<long>(FieldCodec.ForSFixed64(100), -1000, "SFixed64"),
             new FieldCodecTestData<ulong>(FieldCodec.ForUInt64(100), 1234, "UInt64"),
             new FieldCodecTestData<ulong>(FieldCodec.ForFixed64(100), 1234, "Fixed64"),
-            new FieldCodecTestData<float>(FieldCodec.ForFloat(100), 1234.5f, "Float"),
-            new FieldCodecTestData<double>(FieldCodec.ForDouble(100), 1234567890.5d, "Double"),
+            new FieldCodecTestData<float>(FieldCodec.ForFloat(100), 1234.5f, "FixedFloat"),
+            new FieldCodecTestData<double>(FieldCodec.ForDouble(100), 1234567890.5d, "FixedDouble"),
             new FieldCodecTestData<ForeignEnum>(
                 FieldCodec.ForEnum(100, t => (int) t, t => (ForeignEnum) t), ForeignEnum.ForeignBaz, "Enum"),
             new FieldCodecTestData<ForeignMessage>(
@@ -124,11 +101,21 @@ namespace Google.Protobuf
             {
                 var stream = new MemoryStream();
                 var codedOutput = new CodedOutputStream(stream);
-                codec.ValueWriter(codedOutput, sampleValue);
+                WriteContext.Initialize(codedOutput, out WriteContext ctx);
+                try
+                {
+                    // only write the value using the codec
+                    codec.ValueWriter(ref ctx, sampleValue);
+                }
+                finally
+                {
+                    ctx.CopyStateTo(codedOutput);
+                }
+                
                 codedOutput.Flush();
                 stream.Position = 0;
                 var codedInput = new CodedInputStream(stream);
-                Assert.AreEqual(sampleValue, codec.ValueReader(codedInput));
+                Assert.AreEqual(sampleValue, codec.Read(codedInput));
                 Assert.IsTrue(codedInput.IsAtEnd);
             }
 
@@ -159,7 +146,6 @@ namespace Google.Protobuf
                 // WriteTagAndValue ignores default values
                 var stream = new MemoryStream();
                 CodedOutputStream codedOutput;
-#if !NET35
                 codedOutput = new CodedOutputStream(stream);
                 codec.WriteTagAndValue(codedOutput, codec.DefaultValue);
                 codedOutput.Flush();
@@ -169,19 +155,28 @@ namespace Google.Protobuf
                 {
                     Assert.AreEqual(default(T), codec.DefaultValue);
                 }
-#endif
 
                 // The plain ValueWriter/ValueReader delegates don't.
                 if (codec.DefaultValue != null) // This part isn't appropriate for message types.
                 {
                     codedOutput = new CodedOutputStream(stream);
-                    codec.ValueWriter(codedOutput, codec.DefaultValue);
+                    WriteContext.Initialize(codedOutput, out WriteContext ctx);
+                    try
+                    {
+                        // only write the value using the codec
+                        codec.ValueWriter(ref ctx, codec.DefaultValue);
+                    }
+                    finally
+                    {
+                        ctx.CopyStateTo(codedOutput);
+                    }
+                    
                     codedOutput.Flush();
                     Assert.AreNotEqual(0, stream.Position);
                     Assert.AreEqual(stream.Position, codec.ValueSizeCalculator(codec.DefaultValue));
                     stream.Position = 0;
                     var codedInput = new CodedInputStream(stream);
-                    Assert.AreEqual(codec.DefaultValue, codec.ValueReader(codedInput));
+                    Assert.AreEqual(codec.DefaultValue, codec.Read(codedInput));
                 }
             }
 

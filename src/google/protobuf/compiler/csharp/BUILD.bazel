@@ -1,0 +1,137 @@
+################################################################################
+# Protocol Buffers Compiler - C# code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/csharp",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "csharp",
+    srcs = [
+        "csharp_doc_comment.cc",
+        "csharp_enum.cc",
+        "csharp_enum_field.cc",
+        "csharp_field_base.cc",
+        "csharp_generator.cc",
+        "csharp_helpers.cc",
+        "csharp_map_field.cc",
+        "csharp_message.cc",
+        "csharp_message_field.cc",
+        "csharp_primitive_field.cc",
+        "csharp_reflection_class.cc",
+        "csharp_repeated_enum_field.cc",
+        "csharp_repeated_message_field.cc",
+        "csharp_repeated_primitive_field.cc",
+        "csharp_source_generator_base.cc",
+        "csharp_wrapper_field.cc",
+    ],
+    hdrs = [
+        "csharp_doc_comment.h",
+        "csharp_enum.h",
+        "csharp_enum_field.h",
+        "csharp_field_base.h",
+        "csharp_generator.h",
+        "csharp_helpers.h",
+        "csharp_map_field.h",
+        "csharp_message.h",
+        "csharp_message_field.h",
+        "csharp_options.h",
+        "csharp_primitive_field.h",
+        "csharp_reflection_class.h",
+        "csharp_repeated_enum_field.h",
+        "csharp_repeated_message_field.h",
+        "csharp_repeated_primitive_field.h",
+        "csharp_source_generator_base.h",
+        "csharp_wrapper_field.h",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-Wno-overloaded-virtual"],
+    }),
+    include_prefix = "google/protobuf/compiler/csharp",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":names",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "bootstrap_unittest",
+    srcs = ["csharp_bootstrap_unittest.cc"],
+    data = [
+        "//:well_known_type_protos",
+        "//conformance:all_files",
+        "//conformance:conformance_proto",
+        "//csharp:wkt_cs_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf:testdata",
+    ],
+    deps = [
+        ":csharp",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generator_unittest",
+    srcs = ["csharp_generator_unittest.cc"],
+    deps = [
+        ":csharp",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/io",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

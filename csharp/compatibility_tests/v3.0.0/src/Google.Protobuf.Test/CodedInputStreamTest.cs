@@ -1,33 +1,10 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -201,29 +178,29 @@ namespace Google.Protobuf
         [Test]
         public void DecodeZigZag32()
         {
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag32(0));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag32(1));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag32(2));
-            Assert.AreEqual(-2, CodedInputStream.DecodeZigZag32(3));
-            Assert.AreEqual(0x3FFFFFFF, CodedInputStream.DecodeZigZag32(0x7FFFFFFE));
-            Assert.AreEqual(unchecked((int) 0xC0000000), CodedInputStream.DecodeZigZag32(0x7FFFFFFF));
-            Assert.AreEqual(0x7FFFFFFF, CodedInputStream.DecodeZigZag32(0xFFFFFFFE));
-            Assert.AreEqual(unchecked((int) 0x80000000), CodedInputStream.DecodeZigZag32(0xFFFFFFFF));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag32(0));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag32(1));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag32(2));
+            Assert.AreEqual(-2, ParsingPrimitives.DecodeZigZag32(3));
+            Assert.AreEqual(0x3FFFFFFF, ParsingPrimitives.DecodeZigZag32(0x7FFFFFFE));
+            Assert.AreEqual(unchecked((int) 0xC0000000), ParsingPrimitives.DecodeZigZag32(0x7FFFFFFF));
+            Assert.AreEqual(0x7FFFFFFF, ParsingPrimitives.DecodeZigZag32(0xFFFFFFFE));
+            Assert.AreEqual(unchecked((int) 0x80000000), ParsingPrimitives.DecodeZigZag32(0xFFFFFFFF));
         }
 
         [Test]
         public void DecodeZigZag64()
         {
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag64(0));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag64(1));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag64(2));
-            Assert.AreEqual(-2, CodedInputStream.DecodeZigZag64(3));
-            Assert.AreEqual(0x000000003FFFFFFFL, CodedInputStream.DecodeZigZag64(0x000000007FFFFFFEL));
-            Assert.AreEqual(unchecked((long) 0xFFFFFFFFC0000000L), CodedInputStream.DecodeZigZag64(0x000000007FFFFFFFL));
-            Assert.AreEqual(0x000000007FFFFFFFL, CodedInputStream.DecodeZigZag64(0x00000000FFFFFFFEL));
-            Assert.AreEqual(unchecked((long) 0xFFFFFFFF80000000L), CodedInputStream.DecodeZigZag64(0x00000000FFFFFFFFL));
-            Assert.AreEqual(0x7FFFFFFFFFFFFFFFL, CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFEL));
-            Assert.AreEqual(unchecked((long) 0x8000000000000000L), CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFFL));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag64(0));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag64(1));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag64(2));
+            Assert.AreEqual(-2, ParsingPrimitives.DecodeZigZag64(3));
+            Assert.AreEqual(0x000000003FFFFFFFL, ParsingPrimitives.DecodeZigZag64(0x000000007FFFFFFEL));
+            Assert.AreEqual(unchecked((long) 0xFFFFFFFFC0000000L), ParsingPrimitives.DecodeZigZag64(0x000000007FFFFFFFL));
+            Assert.AreEqual(0x000000007FFFFFFFL, ParsingPrimitives.DecodeZigZag64(0x00000000FFFFFFFEL));
+            Assert.AreEqual(unchecked((long) 0xFFFFFFFF80000000L), ParsingPrimitives.DecodeZigZag64(0x00000000FFFFFFFFL));
+            Assert.AreEqual(0x7FFFFFFFFFFFFFFFL, ParsingPrimitives.DecodeZigZag64(0xFFFFFFFFFFFFFFFEL));
+            Assert.AreEqual(unchecked((long) 0x8000000000000000L), ParsingPrimitives.DecodeZigZag64(0xFFFFFFFFFFFFFFFFL));
         }
         
         [Test]
@@ -313,14 +290,14 @@ namespace Google.Protobuf
         [Test]
         public void MaliciousRecursion()
         {
-            ByteString data64 = MakeRecursiveMessage(64).ToByteString();
-            ByteString data65 = MakeRecursiveMessage(65).ToByteString();
+            ByteString atRecursiveLimit = MakeRecursiveMessage(CodedInputStream.DefaultRecursionLimit).ToByteString();
+            ByteString beyondRecursiveLimit = MakeRecursiveMessage(CodedInputStream.DefaultRecursionLimit + 1).ToByteString();
 
-            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(data64), 64);
+            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(atRecursiveLimit), CodedInputStream.DefaultRecursionLimit);
 
-            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(data65));
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(beyondRecursiveLimit));
 
-            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(data64.ToByteArray()), 1000000, 63);
+            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(atRecursiveLimit.ToByteArray()), 1000000, CodedInputStream.DefaultRecursionLimit - 1);
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
         }
 

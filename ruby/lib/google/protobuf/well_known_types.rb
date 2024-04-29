@@ -1,33 +1,10 @@
 #!/usr/bin/ruby
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 require 'google/protobuf/any_pb'
 require 'google/protobuf/duration_pb'
@@ -39,6 +16,12 @@ module Google
   module Protobuf
 
     Any.class_eval do
+      def self.pack(msg, type_url_prefix='type.googleapis.com/')
+        any = self.new
+        any.pack(msg, type_url_prefix)
+        any
+      end
+
       def pack(msg, type_url_prefix='type.googleapis.com/')
         if type_url_prefix.empty? or type_url_prefix[-1] != '/' then
           self.type_url = "#{type_url_prefix}/#{msg.class.descriptor.name}"
@@ -67,12 +50,17 @@ module Google
 
     Timestamp.class_eval do
       def to_time
-        Time.at(self.to_f)
+        Time.at(seconds, nanos, :nanosecond)
+      end
+
+      def self.from_time(time)
+        new.from_time(time)
       end
 
       def from_time(time)
         self.seconds = time.to_i
         self.nanos = time.nsec
+        self
       end
 
       def to_i
@@ -120,10 +108,14 @@ module Google
         end
       end
 
+      def self.from_ruby(value)
+        self.new.from_ruby(value)
+      end
+
       def from_ruby(value)
         case value
         when NilClass
-          self.null_value = 0
+          self.null_value = :NULL_VALUE
         when Numeric
           self.number_value = value
         when String
@@ -143,12 +135,16 @@ module Google
         else
           raise UnexpectedStructType
         end
+
+        self
       end
     end
 
     Struct.class_eval do
       def [](key)
         self.fields[key].to_ruby
+      rescue NoMethodError
+        nil
       end
 
       def []=(key, value)
@@ -169,6 +165,10 @@ module Google
         ret = Struct.new
         hash.each { |key, val| ret[key] = val }
         ret
+      end
+
+      def has_key?(key)
+        self.fields.has_key?(key)
       end
     end
 
@@ -207,6 +207,5 @@ module Google
         ret
       end
     end
-
   end
 end

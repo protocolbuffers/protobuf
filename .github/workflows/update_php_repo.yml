@@ -1,0 +1,49 @@
+name: Update protobuf-php Repo
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+
+      - v[0-9]+.[0-9]+-rc[0-9]+
+
+permissions:
+  contents: read  #  to fetch code in 'Clone protobuf' (actions/checkout)
+
+jobs:
+  update-repo:
+    name: Update PHP Repo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout protobuf-php
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          repository: protocolbuffers/protobuf-php
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
+      - name: Clone protobuf
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          path: protobuf
+      - name: Configure Git Bot
+        run: |
+          git config user.name "Protobuf Team Bot"
+          git config user.email "protobuf-team-bot@google.com"
+      - name: Get PHP Version
+        run: |
+          unformatted_version=$( cat protobuf/version.json | jq -r '.[].languages.php' )
+          version=${unformatted_version/-rc/RC}
+          version_tag=v$version
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "VERSION_TAG=$version_tag" >> $GITHUB_ENV
+      - name: Copy files
+        run: |
+          rm -rf src
+          cp -r protobuf/php/src .
+          cp protobuf/php/composer.json.dist composer.json
+          rm -rf protobuf
+      - name: Push Changes
+        run: |
+          git add --all
+          git commit --allow-empty -m "${{ env.VERSION }} sync"
+          git push --force origin master
+          git tag -a ${{ env.VERSION_TAG }} -m "Tag release ${{ env.VERSION_TAG }}"
+          git push origin ${{ env.VERSION_TAG }}

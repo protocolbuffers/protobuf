@@ -1,0 +1,253 @@
+syntax = "proto3";
+
+package basic_test;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "test_import_proto2.proto";
+
+message Foo {
+  Bar bar = 1;
+  repeated Baz baz = 2;
+}
+
+message Bar {
+  string msg = 1;
+}
+
+message Baz {
+  string msg = 1;
+}
+
+message TestMessage {
+  optional int32 optional_int32 = 1;
+  optional int64 optional_int64 = 2;
+  optional uint32 optional_uint32 = 3;
+  optional uint64 optional_uint64 = 4;
+  optional bool optional_bool = 5;
+  optional float optional_float = 6;
+  optional double optional_double = 7;
+  optional string optional_string = 8;
+  optional bytes optional_bytes = 9;
+  optional TestMessage2 optional_msg = 10;
+  optional TestEnum optional_enum = 11;
+  optional foo_bar.proto2.TestImportedMessage optional_proto2_submessage = 24;
+
+  repeated int32 repeated_int32 = 12;
+  repeated int64 repeated_int64 = 13;
+  repeated uint32 repeated_uint32 = 14;
+  repeated uint64 repeated_uint64 = 15;
+  repeated bool repeated_bool = 16;
+  repeated float repeated_float = 17;
+  repeated double repeated_double = 18;
+  repeated string repeated_string = 19;
+  repeated bytes repeated_bytes = 20;
+  repeated TestMessage2 repeated_msg = 21;
+  repeated TestEnum repeated_enum = 22;
+
+  optional TestSingularFields optional_msg2 = 23;
+}
+
+message TestSingularFields {
+  int32 singular_int32 = 1;
+  int64 singular_int64 = 2;
+  uint32 singular_uint32 = 3;
+  uint64 singular_uint64 = 4;
+  bool singular_bool = 5;
+  float singular_float = 6;
+  double singular_double = 7;
+  string singular_string = 8;
+  bytes singular_bytes = 9;
+  TestMessage2 singular_msg = 10;
+  TestEnum singular_enum = 11;
+}
+
+message TestMessage2 {
+  optional int32 foo = 1;
+}
+
+enum TestEnum {
+  Default = 0;
+  A = 1;
+  B = 2;
+  C = 3;
+  v0 = 4;
+}
+
+message TestEmbeddedMessageParent {
+  TestEmbeddedMessageChild child_msg = 1;
+  int32 number = 2;
+
+  repeated TestEmbeddedMessageChild repeated_msg = 3;
+  repeated int32 repeated_number = 4;
+}
+
+message TestEmbeddedMessageChild {
+  TestMessage sub_child = 1;
+}
+
+message Recursive1 {
+  Recursive2 foo = 1;
+}
+
+message Recursive2 {
+  Recursive1 foo = 1;
+}
+
+message MapMessage {
+  map<string, int32> map_string_int32 = 1;
+  map<string, TestMessage2> map_string_msg = 2;
+  map<string, TestEnum> map_string_enum = 3;
+}
+
+message MapMessageWireEquiv {
+  repeated MapMessageWireEquiv_entry1 map_string_int32 = 1;
+  repeated MapMessageWireEquiv_entry2 map_string_msg = 2;
+}
+
+message MapMessageWireEquiv_entry1 {
+  string key = 1;
+  int32 value = 2;
+}
+
+message MapMessageWireEquiv_entry2 {
+  string key = 1;
+  TestMessage2 value = 2;
+}
+
+message OneofMessage {
+  oneof my_oneof {
+    string a = 1;
+    int32 b = 2;
+    TestMessage2 c = 3;
+    TestEnum d = 4;
+  }
+}
+
+message Outer {
+  map<int32, Inner> items = 1;
+}
+
+message Inner {
+}
+
+message Wrapper {
+  google.protobuf.DoubleValue double = 1;
+  google.protobuf.FloatValue float = 2;
+  google.protobuf.Int32Value int32 = 3;
+  google.protobuf.Int64Value int64 = 4;
+  google.protobuf.UInt32Value uint32 = 5;
+  google.protobuf.UInt64Value uint64 = 6;
+  google.protobuf.BoolValue bool = 7;
+  google.protobuf.StringValue string = 8;
+  google.protobuf.BytesValue bytes = 9;
+  string real_string = 100;
+  oneof a_oneof {
+    string string_in_oneof = 10;
+  }
+
+  // Repeated wrappers don't make sense, but we still need to make sure they
+  // work and don't crash.
+  repeated google.protobuf.DoubleValue repeated_double = 11;
+  repeated google.protobuf.FloatValue repeated_float = 12;
+  repeated google.protobuf.Int32Value repeated_int32 = 13;
+  repeated google.protobuf.Int64Value repeated_int64 = 14;
+  repeated google.protobuf.UInt32Value repeated_uint32 = 15;
+  repeated google.protobuf.UInt64Value repeated_uint64 = 16;
+  repeated google.protobuf.BoolValue repeated_bool = 17;
+  repeated google.protobuf.StringValue repeated_string = 18;
+  repeated google.protobuf.BytesValue repeated_bytes = 19;
+
+  // Wrappers as map keys don't make sense, but we still need to make sure they
+  // work and don't crash.
+  map<int32, google.protobuf.DoubleValue> map_double = 21;
+  map<int32, google.protobuf.FloatValue> map_float = 22;
+  map<int32, google.protobuf.Int32Value> map_int32 = 23;
+  map<int32, google.protobuf.Int64Value> map_int64 = 24;
+  map<int32, google.protobuf.UInt32Value> map_uint32 = 25;
+  map<int32, google.protobuf.UInt64Value> map_uint64 = 26;
+  map<int32, google.protobuf.BoolValue> map_bool = 27;
+  map<int32, google.protobuf.StringValue> map_string = 28;
+  map<int32, google.protobuf.BytesValue> map_bytes = 29;
+
+  // Wrappers in oneofs don't make sense, but we still need to make sure they
+  // work and don't crash.
+  oneof wrapper_oneof {
+    google.protobuf.DoubleValue oneof_double = 31;
+    google.protobuf.FloatValue oneof_float = 32;
+    google.protobuf.Int32Value oneof_int32 = 33;
+    google.protobuf.Int64Value oneof_int64 = 34;
+    google.protobuf.UInt32Value oneof_uint32 = 35;
+    google.protobuf.UInt64Value oneof_uint64 = 36;
+    google.protobuf.BoolValue oneof_bool = 37;
+    google.protobuf.StringValue oneof_string = 38;
+    google.protobuf.BytesValue oneof_bytes = 39;
+    string oneof_plain_string = 101;
+  }
+}
+
+message TimeMessage {
+  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Duration duration = 2;
+}
+
+message Enumer {
+  TestEnum optional_enum = 1;
+  repeated TestEnum repeated_enum = 2;
+  string a_const = 3;
+  oneof a_oneof {
+    string str = 10;
+    TestEnum const = 11;
+  }
+}
+
+message MyRepeatedStruct {
+  repeated MyStruct structs = 1;
+}
+
+message MyStruct {
+  string string = 1;
+  google.protobuf.Struct struct = 2;
+}
+
+message WithJsonName {
+  optional int32 foo_bar = 1 [json_name="jsonFooBar"];
+  repeated WithJsonName baz = 2 [json_name="jsonBaz"];
+}
+
+message HelloRequest {
+  optional uint32 id = 1;
+  optional uint32 random_name_a0 = 2;
+  optional uint32 random_name_a1 = 3;
+  optional uint32 random_name_a2 = 4;
+  optional uint32 random_name_a3 = 5;
+  optional uint32 random_name_a4 = 6;
+  optional uint32 random_name_a5 = 7;
+  optional uint32 random_name_a6 = 8;
+  optional uint32 random_name_a7 = 9;
+  optional uint32 random_name_a8 = 10;
+  optional uint32 random_name_a9 = 11;
+  optional uint32 random_name_b0 = 12;
+  optional uint32 random_name_b1 = 13;
+  optional uint32 random_name_b2 = 14;
+  optional uint32 random_name_b3 = 15;
+  optional uint32 random_name_b4 = 16;
+  optional uint32 random_name_b5 = 17;
+  optional uint32 random_name_b6 = 18;
+  optional uint32 random_name_b7 = 19;
+  optional uint32 random_name_b8 = 20;
+  optional uint32 random_name_b9 = 21;
+  optional uint32 random_name_c0 = 22;
+  optional uint32 random_name_c1 = 23;
+  optional uint32 random_name_c2 = 24;
+  optional uint32 random_name_c3 = 25;
+  optional uint32 random_name_c4 = 26;
+  optional uint32 random_name_c5 = 27;
+  optional uint32 random_name_c6 = 28;
+  optional uint32 random_name_c7 = 29;
+  optional uint32 random_name_c8 = 30;
+  optional uint32 random_name_c9 = 31;
+  optional string version = 32;
+}

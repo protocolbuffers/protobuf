@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import <Foundation/Foundation.h>
 
@@ -34,17 +11,19 @@
 
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionRegistry;
+@protocol GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 
 @protocol GPBDictionaryInternalsProtocol
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
                          asField:(GPBFieldDescriptor *)field;
-- (void)setGPBGenericValue:(GPBGenericValue *)value
-     forGPBGenericValueKey:(GPBGenericValue *)key;
+- (void)setGPBGenericValue:(GPBGenericValue *)value forGPBGenericValueKey:(GPBGenericValue *)key;
 - (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
 @end
+
+// Disable clang-format for the macros.
+// clang-format off
 
 //%PDDM-DEFINE DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(KEY_NAME)
 //%DICTIONARY_POD_PRIV_INTERFACES_FOR_KEY(KEY_NAME)
@@ -451,10 +430,12 @@
 
 //%PDDM-EXPAND-END (6 expansions)
 
+// clang-format on
+
 #pragma mark - NSDictionary Subclass
 
 @interface GPBAutocreatedDictionary : NSMutableDictionary {
-  @package
+ @package
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 @end
@@ -465,24 +446,20 @@ CF_EXTERN_C_BEGIN
 
 // Helper to compute size when an NSDictionary is used for the map instead
 // of a custom type.
-size_t GPBDictionaryComputeSizeInternalHelper(NSDictionary *dict,
-                                              GPBFieldDescriptor *field);
+size_t GPBDictionaryComputeSizeInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field);
 
 // Helper to write out when an NSDictionary is used for the map instead
 // of a custom type.
-void GPBDictionaryWriteToStreamInternalHelper(
-    GPBCodedOutputStream *outputStream, NSDictionary *dict,
-    GPBFieldDescriptor *field);
+void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream,
+                                              NSDictionary *dict, GPBFieldDescriptor *field);
 
 // Helper to check message initialization when an NSDictionary is used for
 // the map instead of a custom type.
-BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict,
-                                              GPBFieldDescriptor *field);
+BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field);
 
 // Helper to read a map instead.
 void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
-                            GPBExtensionRegistry *registry,
-                            GPBFieldDescriptor *field,
+                            id<GPBExtensionRegistry> registry, GPBFieldDescriptor *field,
                             GPBMessage *parentMessage);
 
 CF_EXTERN_C_END

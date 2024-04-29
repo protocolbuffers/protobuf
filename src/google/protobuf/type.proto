@@ -35,13 +35,13 @@ package google.protobuf;
 import "google/protobuf/any.proto";
 import "google/protobuf/source_context.proto";
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TypeProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
-option go_package = "google.golang.org/genproto/protobuf/ptype;ptype";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option go_package = "google.golang.org/protobuf/types/known/typepb";
 
 // A protocol buffer message type.
 message Type {
@@ -57,6 +57,8 @@ message Type {
   SourceContext source_context = 5;
   // The source syntax.
   Syntax syntax = 6;
+  // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+  string edition = 7;
 }
 
 // A single field of a message type.
@@ -64,44 +66,44 @@ message Field {
   // Basic field types.
   enum Kind {
     // Field type unknown.
-    TYPE_UNKNOWN        = 0;
+    TYPE_UNKNOWN = 0;
     // Field type double.
-    TYPE_DOUBLE         = 1;
+    TYPE_DOUBLE = 1;
     // Field type float.
-    TYPE_FLOAT          = 2;
+    TYPE_FLOAT = 2;
     // Field type int64.
-    TYPE_INT64          = 3;
+    TYPE_INT64 = 3;
     // Field type uint64.
-    TYPE_UINT64         = 4;
+    TYPE_UINT64 = 4;
     // Field type int32.
-    TYPE_INT32          = 5;
+    TYPE_INT32 = 5;
     // Field type fixed64.
-    TYPE_FIXED64        = 6;
+    TYPE_FIXED64 = 6;
     // Field type fixed32.
-    TYPE_FIXED32        = 7;
+    TYPE_FIXED32 = 7;
     // Field type bool.
-    TYPE_BOOL           = 8;
+    TYPE_BOOL = 8;
     // Field type string.
-    TYPE_STRING         = 9;
+    TYPE_STRING = 9;
     // Field type group. Proto2 syntax only, and deprecated.
-    TYPE_GROUP          = 10;
+    TYPE_GROUP = 10;
     // Field type message.
-    TYPE_MESSAGE        = 11;
+    TYPE_MESSAGE = 11;
     // Field type bytes.
-    TYPE_BYTES          = 12;
+    TYPE_BYTES = 12;
     // Field type uint32.
-    TYPE_UINT32         = 13;
+    TYPE_UINT32 = 13;
     // Field type enum.
-    TYPE_ENUM           = 14;
+    TYPE_ENUM = 14;
     // Field type sfixed32.
-    TYPE_SFIXED32       = 15;
+    TYPE_SFIXED32 = 15;
     // Field type sfixed64.
-    TYPE_SFIXED64       = 16;
+    TYPE_SFIXED64 = 16;
     // Field type sint32.
-    TYPE_SINT32         = 17;
+    TYPE_SINT32 = 17;
     // Field type sint64.
-    TYPE_SINT64         = 18;
-  };
+    TYPE_SINT64 = 18;
+  }
 
   // Whether a field is optional, required, or repeated.
   enum Cardinality {
@@ -113,7 +115,7 @@ message Field {
     CARDINALITY_REQUIRED = 2;
     // For repeated fields.
     CARDINALITY_REPEATED = 3;
-  };
+  }
 
   // The field type.
   Kind kind = 1;
@@ -151,6 +153,8 @@ message Enum {
   SourceContext source_context = 4;
   // The source syntax.
   Syntax syntax = 5;
+  // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+  string edition = 6;
 }
 
 // Enum value definition.
@@ -184,4 +188,6 @@ enum Syntax {
   SYNTAX_PROTO2 = 0;
   // Syntax `proto3`.
   SYNTAX_PROTO3 = 1;
+  // Syntax `editions`.
+  SYNTAX_EDITIONS = 2;
 }

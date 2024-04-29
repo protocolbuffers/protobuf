@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBCodedInputStream_PackagePrivate.h"
 
@@ -36,8 +13,7 @@
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
-NSString *const GPBCodedInputStreamException =
-    GPBNSStringifySymbol(GPBCodedInputStreamException);
+NSString *const GPBCodedInputStreamException = GPBNSStringifySymbol(GPBCodedInputStreamException);
 
 NSString *const GPBCodedInputStreamUnderlyingErrorKey =
     GPBNSStringifySymbol(GPBCodedInputStreamUnderlyingErrorKey);
@@ -46,26 +22,42 @@ NSString *const GPBCodedInputStreamErrorDomain =
     GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
 
 // Matching:
-// https://github.com/google/protobuf/blob/master/java/core/src/main/java/com/google/protobuf/CodedInputStream.java#L62
+// https://github.com/protocolbuffers/protobuf/blob/main/java/core/src/main/java/com/google/protobuf/CodedInputStream.java#L62
 //  private static final int DEFAULT_RECURSION_LIMIT = 100;
-// https://github.com/google/protobuf/blob/master/src/google/protobuf/io/coded_stream.cc#L86
+// https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/io/coded_stream.cc#L86
 //  int CodedInputStream::default_recursion_limit_ = 100;
 static const NSUInteger kDefaultRecursionLimit = 100;
 
 static void RaiseException(NSInteger code, NSString *reason) {
   NSDictionary *errorInfo = nil;
   if ([reason length]) {
-    errorInfo = @{ GPBErrorReasonKey: reason };
+    errorInfo = @{GPBErrorReasonKey : reason};
   }
   NSError *error = [NSError errorWithDomain:GPBCodedInputStreamErrorDomain
                                        code:code
                                    userInfo:errorInfo];
 
-  NSDictionary *exceptionInfo =
-      @{ GPBCodedInputStreamUnderlyingErrorKey: error };
-  [[[NSException alloc] initWithName:GPBCodedInputStreamException
-                              reason:reason
-                            userInfo:exceptionInfo] raise];
+  NSDictionary *exceptionInfo = @{GPBCodedInputStreamUnderlyingErrorKey : error};
+  [[NSException exceptionWithName:GPBCodedInputStreamException reason:reason
+                         userInfo:exceptionInfo] raise];
+}
+
+GPB_INLINE void CheckRecursionLimit(GPBCodedInputStreamState *state) {
+  if (state->recursionDepth >= kDefaultRecursionLimit) {
+    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
+  }
+}
+
+GPB_INLINE void CheckFieldSize(uint64_t size) {
+  // Bytes and Strings have a max size of 2GB. And since messages are on the wire as bytes/length
+  // delimited, they also have a 2GB size limit. The C++ does the same sort of enforcement (see
+  // parse_context, delimited_message_util, message_lite, etc.).
+  // https://protobuf.dev/programming-guides/encoding/#cheat-sheet
+  if (size > 0x7fffffff) {
+    // TODO: Maybe a different error code for this, but adding one is a breaking
+    // change so reuse an existing one.
+    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
+  }
 }
 
 static void CheckSize(GPBCodedInputStreamState *state, size_t size) {
@@ -87,51 +79,24 @@ static int8_t ReadRawByte(GPBCodedInputStreamState *state) {
 
 static int32_t ReadRawLittleEndian32(GPBCodedInputStreamState *state) {
   CheckSize(state, sizeof(int32_t));
-  int32_t value = OSReadLittleInt32(state->bytes, state->bufferPos);
+  // Not using OSReadLittleInt32 because it has undocumented dependency
+  // on reads being aligned.
+  int32_t value;
+  memcpy(&value, state->bytes + state->bufferPos, sizeof(int32_t));
+  value = OSSwapLittleToHostInt32(value);
   state->bufferPos += sizeof(int32_t);
   return value;
 }
 
 static int64_t ReadRawLittleEndian64(GPBCodedInputStreamState *state) {
   CheckSize(state, sizeof(int64_t));
-  int64_t value = OSReadLittleInt64(state->bytes, state->bufferPos);
+  // Not using OSReadLittleInt64 because it has undocumented dependency
+  // on reads being aligned.
+  int64_t value;
+  memcpy(&value, state->bytes + state->bufferPos, sizeof(int64_t));
+  value = OSSwapLittleToHostInt64(value);
   state->bufferPos += sizeof(int64_t);
   return value;
-}
-
-static int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
-  int8_t tmp = ReadRawByte(state);
-  if (tmp >= 0) {
-    return tmp;
-  }
-  int32_t result = tmp & 0x7f;
-  if ((tmp = ReadRawByte(state)) >= 0) {
-    result |= tmp << 7;
-  } else {
-    result |= (tmp & 0x7f) << 7;
-    if ((tmp = ReadRawByte(state)) >= 0) {
-      result |= tmp << 14;
-    } else {
-      result |= (tmp & 0x7f) << 14;
-      if ((tmp = ReadRawByte(state)) >= 0) {
-        result |= tmp << 21;
-      } else {
-        result |= (tmp & 0x7f) << 21;
-        result |= (tmp = ReadRawByte(state)) << 28;
-        if (tmp < 0) {
-          // Discard upper 32 bits.
-          for (int i = 0; i < 5; i++) {
-            if (ReadRawByte(state) >= 0) {
-              return result;
-            }
-          }
-          RaiseException(GPBCodedInputStreamErrorInvalidVarInt,
-                         @"Invalid VarInt32");
-        }
-      }
-    }
-  }
-  return result;
 }
 
 static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
@@ -139,7 +104,7 @@ static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
   int64_t result = 0;
   while (shift < 64) {
     int8_t b = ReadRawByte(state);
-    result |= (int64_t)(b & 0x7F) << shift;
+    result |= (int64_t)((uint64_t)(b & 0x7F) << shift);
     if ((b & 0x80) == 0) {
       return result;
     }
@@ -147,6 +112,10 @@ static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
   }
   RaiseException(GPBCodedInputStreamErrorInvalidVarInt, @"Invalid VarInt64");
   return 0;
+}
+
+static int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
+  return (int32_t)ReadRawVarint64(state);
 }
 
 static void SkipRawData(GPBCodedInputStreamState *state, size_t size) {
@@ -220,7 +189,7 @@ int64_t GPBCodedInputStreamReadSInt64(GPBCodedInputStreamState *state) {
 }
 
 BOOL GPBCodedInputStreamReadBool(GPBCodedInputStreamState *state) {
-  return ReadRawVarint32(state) != 0;
+  return ReadRawVarint64(state) != 0;
 }
 
 int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
@@ -232,8 +201,7 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
   state->lastTag = ReadRawVarint32(state);
   // Tags have to include a valid wireformat.
   if (!GPBWireFormatIsValidTag(state->lastTag)) {
-    RaiseException(GPBCodedInputStreamErrorInvalidTag,
-                   @"Invalid wireformat in tag.");
+    RaiseException(GPBCodedInputStreamErrorInvalidTag, @"Invalid wireformat in tag.");
   }
   // Zero is not a valid field number.
   if (GPBWireFormatGetTagFieldNumber(state->lastTag) == 0) {
@@ -243,16 +211,17 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
   return state->lastTag;
 }
 
-NSString *GPBCodedInputStreamReadRetainedString(
-    GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
+NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state) {
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  CheckFieldSize(size);
+  NSUInteger ns_size = (NSUInteger)size;
   NSString *result;
   if (size == 0) {
     result = @"";
   } else {
     CheckSize(state, size);
     result = [[NSString alloc] initWithBytes:&state->bytes[state->bufferPos]
-                                      length:size
+                                      length:ns_size
                                     encoding:NSUTF8StringEncoding];
     state->bufferPos += size;
     if (!result) {
@@ -268,31 +237,29 @@ NSString *GPBCodedInputStreamReadRetainedString(
 }
 
 NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
-  if (size < 0) return nil;
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  CheckFieldSize(size);
+  NSUInteger ns_size = (NSUInteger)size;
   CheckSize(state, size);
-  NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos
-                                          length:size];
+  NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos length:ns_size];
   state->bufferPos += size;
   return result;
 }
 
-NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(
-    GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
-  if (size < 0) return nil;
+NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state) {
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  CheckFieldSize(size);
+  NSUInteger ns_size = (NSUInteger)size;
   CheckSize(state, size);
   // Cast is safe because freeWhenDone is NO.
-  NSData *result = [[NSData alloc]
-      initWithBytesNoCopy:(void *)(state->bytes + state->bufferPos)
-                   length:size
-             freeWhenDone:NO];
+  NSData *result = [[NSData alloc] initWithBytesNoCopy:(void *)(state->bytes + state->bufferPos)
+                                                length:ns_size
+                                          freeWhenDone:NO];
   state->bufferPos += size;
   return result;
 }
 
-size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state,
-                                    size_t byteLimit) {
+size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state, size_t byteLimit) {
   byteLimit += state->bufferPos;
   size_t oldLimit = state->currentLimit;
   if (byteLimit > oldLimit) {
@@ -302,8 +269,7 @@ size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state,
   return oldLimit;
 }
 
-void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state,
-                                 size_t oldLimit) {
+void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state, size_t oldLimit) {
   state->currentLimit = oldLimit;
 }
 
@@ -312,12 +278,10 @@ size_t GPBCodedInputStreamBytesUntilLimit(GPBCodedInputStreamState *state) {
 }
 
 BOOL GPBCodedInputStreamIsAtEnd(GPBCodedInputStreamState *state) {
-  return (state->bufferPos == state->bufferSize) ||
-         (state->bufferPos == state->currentLimit);
+  return (state->bufferPos == state->bufferSize) || (state->bufferPos == state->currentLimit);
 }
 
-void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
-                                        int32_t value) {
+void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t value) {
   if (state->lastTag != value) {
     RaiseException(GPBCodedInputStreamErrorInvalidTag, @"Unexpected tag read");
   }
@@ -371,14 +335,17 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
     case GPBWireFormatFixed64:
       SkipRawData(&state_, sizeof(int64_t));
       return YES;
-    case GPBWireFormatLengthDelimited:
-      SkipRawData(&state_, ReadRawVarint32(&state_));
+    case GPBWireFormatLengthDelimited: {
+      uint64_t size = GPBCodedInputStreamReadUInt64(&state_);
+      CheckFieldSize(size);
+      SkipRawData(&state_, size);
       return YES;
+    }
     case GPBWireFormatStartGroup:
       [self skipMessage];
       GPBCodedInputStreamCheckLastTagWas(
-          &state_, GPBWireFormatMakeTag(GPBWireFormatGetTagFieldNumber(tag),
-                                        GPBWireFormatEndGroup));
+          &state_,
+          GPBWireFormatMakeTag(GPBWireFormatGetTagFieldNumber(tag), GPBWireFormatEndGroup));
       return YES;
     case GPBWireFormatEndGroup:
       return NO;
@@ -451,35 +418,29 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 
 - (void)readGroup:(int32_t)fieldNumber
               message:(GPBMessage *)message
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
-  if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
-  }
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
+  CheckRecursionLimit(&state_);
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
-  GPBCodedInputStreamCheckLastTagWas(
-      &state_, GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
+  GPBCodedInputStreamCheckLastTagWas(&state_,
+                                     GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
   --state_.recursionDepth;
 }
 
-- (void)readUnknownGroup:(int32_t)fieldNumber
-                 message:(GPBUnknownFieldSet *)message {
-  if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
-  }
+- (void)readUnknownGroup:(int32_t)fieldNumber message:(GPBUnknownFieldSet *)message {
+  CheckRecursionLimit(&state_);
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self];
-  GPBCodedInputStreamCheckLastTagWas(
-      &state_, GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
+  GPBCodedInputStreamCheckLastTagWas(&state_,
+                                     GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
   --state_.recursionDepth;
 }
 
 - (void)readMessage:(GPBMessage *)message
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
-  int32_t length = ReadRawVarint32(&state_);
-  if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
-  }
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
+  CheckRecursionLimit(&state_);
+  uint64_t length = GPBCodedInputStreamReadUInt64(&state_);
+  CheckFieldSize(length);
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
@@ -489,17 +450,15 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (void)readMapEntry:(id)mapDictionary
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                 field:(GPBFieldDescriptor *)field
         parentMessage:(GPBMessage *)parentMessage {
-  int32_t length = ReadRawVarint32(&state_);
-  if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
-  }
+  CheckRecursionLimit(&state_);
+  uint64_t length = GPBCodedInputStreamReadUInt64(&state_);
+  CheckFieldSize(length);
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
   ++state_.recursionDepth;
-  GPBDictionaryReadEntry(mapDictionary, self, extensionRegistry, field,
-                         parentMessage);
+  GPBDictionaryReadEntry(mapDictionary, self, extensionRegistry, field, parentMessage);
   GPBCodedInputStreamCheckLastTagWas(&state_, 0);
   --state_.recursionDepth;
   GPBCodedInputStreamPopLimit(&state_, oldLimit);

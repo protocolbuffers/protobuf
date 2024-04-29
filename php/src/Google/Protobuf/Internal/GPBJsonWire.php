@@ -2,33 +2,10 @@
 
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 namespace Google\Protobuf\Internal;
 
@@ -38,19 +15,26 @@ class GPBJsonWire
     public static function serializeFieldToStream(
         $value,
         $field,
-        &$output)
+        &$output, $has_field_name = true)
     {
-        $output->writeRaw("\"", 1);
-        $field_name = GPBJsonWire::formatFieldName($field);
-        $output->writeRaw($field_name, strlen($field_name));
-        $output->writeRaw("\":", 2);
-        return static::serializeFieldValueToStream($value, $field, $output);
+        if ($has_field_name) {
+            $output->writeRaw("\"", 1);
+            $field_name = GPBJsonWire::formatFieldName($field);
+            $output->writeRaw($field_name, strlen($field_name));
+            $output->writeRaw("\":", 2);
+        }
+        return static::serializeFieldValueToStream(
+            $value,
+            $field,
+            $output,
+            !$has_field_name);
     }
 
-    private static function serializeFieldValueToStream(
+    public static function serializeFieldValueToStream(
         $values,
         $field,
-        &$output)
+        &$output,
+        $is_well_known = false)
     {
         if ($field->isMap()) {
             $output->writeRaw("{", 1);
@@ -84,7 +68,8 @@ class GPBJsonWire
                 if (!static::serializeSingularFieldValueToStream(
                     $key,
                     $key_field,
-                    $output)) {
+                    $output,
+                    $is_well_known)) {
                     return false;
                 }
                 if ($additional_quote) {
@@ -94,7 +79,8 @@ class GPBJsonWire
                 if (!static::serializeSingularFieldValueToStream(
                     $value,
                     $value_field,
-                    $output)) {
+                    $output,
+                    $is_well_known)) {
                     return false;
                 }
             }
@@ -112,7 +98,8 @@ class GPBJsonWire
                 if (!static::serializeSingularFieldValueToStream(
                     $value,
                     $field,
-                    $output)) {
+                    $output,
+                    $is_well_known)) {
                     return false;
                 }
             }
@@ -122,14 +109,15 @@ class GPBJsonWire
             return static::serializeSingularFieldValueToStream(
                 $values,
                 $field,
-                $output);
+                $output,
+                $is_well_known);
         }
     }
 
     private static function serializeSingularFieldValueToStream(
         $value,
         $field,
-        &$output)
+        &$output, $is_well_known = false)
     {
         switch ($field->getType()) {
             case GPBType::SFIXED32:
@@ -186,6 +174,10 @@ class GPBJsonWire
                 break;
             case GPBType::ENUM:
                 $enum_desc = $field->getEnumType();
+                if ($enum_desc->getClass() === "Google\Protobuf\NullValue") {
+                    $output->writeRaw("null", 4);
+                    break;
+                }
                 $enum_value_desc = $enum_desc->getValueByNumber($value);
                 if (!is_null($enum_value_desc)) {
                     $str_value = $enum_value_desc->getName();
@@ -205,9 +197,13 @@ class GPBJsonWire
                 }
                 break;
             case GPBType::BYTES:
-                $value = base64_encode($value);
+                $bytes_value = base64_encode($value);
+                $output->writeRaw("\"", 1);
+                $output->writeRaw($bytes_value, strlen($bytes_value));
+                $output->writeRaw("\"", 1);
+                break;
             case GPBType::STRING:
-                $value = json_encode($value);
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE);
                 $output->writeRaw($value, strlen($value));
                 break;
             //    case GPBType::GROUP:

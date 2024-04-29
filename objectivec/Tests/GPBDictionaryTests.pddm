@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 //%PDDM-DEFINE TEST_FOR_POD_KEY(KEY_NAME, KEY_TYPE, KEY1, KEY2, KEY3, KEY4)
 //%TESTS_FOR_POD_VALUES(KEY_NAME, KEY_TYPE, , , KEY1, KEY2, KEY3, KEY4)
@@ -70,15 +47,15 @@
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 0U);
 //%VALUE_NOT_FOUND##VHELPER(VALUE_NAME, dict, KEY1)
-//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u, stop)
+//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u, __unused BOOL *stop) {
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [dict release];
 //%}
 //%
 //%- (void)testOne {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWith##VALUE_NAME$u##:VAL1 forKey:KEY1];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
+//%  [dict set##VALUE_NAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 1U);
 //%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY1, VAL1)
@@ -88,6 +65,7 @@
 //%    XCTAssertEqual##VSUFFIX(a##VNAME$u, VAL1);
 //%    XCTAssertNotEqual(stop, NULL);
 //%  }];
+//%  [dict release];
 //%}
 //%
 //%- (void)testBasics {
@@ -129,8 +107,7 @@
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u)
+//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u, BOOL *stop) {
 //%    if (idx == 1) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -223,17 +200,18 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict2 =
-//%      [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithDictionary:dict];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithDictionary:dict];
 //%  XCTAssertNotNil(dict2);
 //%
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(dict, dict2);
 //%  XCTAssertEqualObjects(dict, dict2);
+//%  [dict2 release];
 //%  [dict release];
 //%}
 //%
 //%- (void)testAdds {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionary];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
@@ -255,6 +233,7 @@
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY3, VAL3)
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY4, VAL4)
 //%  [dict2 release];
+//%  [dict release];
 //%}
 //%
 //%- (void)testRemove {
@@ -421,8 +400,7 @@
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAndRawValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
-//%    #pragma unused(aKey, aValue)
+//%  [dict enumerateKeysAndRawValuesUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE aValue, BOOL *stop) {
 //%    if (idx == 1) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -522,19 +500,20 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict2 =
-//%      [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithDictionary:dict];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithDictionary:dict];
 //%  XCTAssertNotNil(dict2);
 //%
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(dict, dict2);
 //%  XCTAssertEqualObjects(dict, dict2);
 //%  XCTAssertEqual(dict.validationFunc, dict2.validationFunc);  // Pointer comparison
+//%  [dict2 release];
 //%  [dict release];
 //%}
 //%
 //%- (void)testUnknownAdds {
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict =
-//%    [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithValidationFunction:TestingEnum_IsValidValue];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue];
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
@@ -561,6 +540,7 @@
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, value, KEY4, kGPBUnrecognizedEnumeratorValue)
 //%TEST_RAW_VALUE##VHELPER(dict, value, KEY4, VAL4)
 //%  [dict2 release];
+//%  [dict release];
 //%}
 //%
 //%- (void)testUnknownRemove {
@@ -729,7 +709,6 @@
 //%PDDM-DEFINE TEST_HELPERS(KEY_NAME, KEY_TYPE, KisP)
 //%// To let the testing macros work, add some extra methods to simplify things.
 //%@interface GPB##KEY_NAME##EnumDictionary (TestingTweak)
-//%+ (instancetype)dictionaryWithEnum:(int32_t)value forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%- (instancetype)initWithEnums:(const int32_t [])values
 //%                      forKeys:(const KEY_TYPE##KisP$S##KisP [])keys
 //%                        count:(NSUInteger)count;
@@ -748,14 +727,6 @@
 //%}
 //%
 //%@implementation GPB##KEY_NAME##EnumDictionary (TestingTweak)
-//%+ (instancetype)dictionaryWithEnum:(int32_t)value forKey:(KEY_TYPE##KisP$S##KisP)key {
-//%  // Cast is needed to compiler knows what class we are invoking initWithValues: on to get the
-//%  // type correct.
-//%  return [[(GPB##KEY_NAME##EnumDictionary*)[self alloc] initWithValidationFunction:TestingEnum_IsValidValue
-//%                KEY_NAME$S                                             rawValues:&value
-//%                KEY_NAME$S                                               forKeys:&key
-//%                KEY_NAME$S                                                 count:1] autorelease];
-//%}
 //%- (instancetype)initWithEnums:(const int32_t [])values
 //%                      forKeys:(const KEY_TYPE##KisP$S##KisP [])keys
 //%                        count:(NSUInteger)count {
@@ -772,7 +743,7 @@
 //
 // BOOL test macros
 //
-//TODO(thomasvl): enum tests
+//TODO: enum tests
 
 //%PDDM-DEFINE BOOL_TESTS_FOR_POD_VALUE(VALUE_NAME, VALUE_TYPE, VAL1, VAL2)
 //%BOOL_TESTS_COMMON(Bool, BOOL, , , YES, NO, VALUE_NAME, VALUE_TYPE, , value, POD, VAL1, VAL2)
@@ -793,15 +764,15 @@
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 0U);
 //%VALUE_NOT_FOUND##VHELPER(VALUE_NAME, dict, KEY1)
-//%  [dict enumerateKeysAnd##VALUE_NAME##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u##, stop)
+//%  [dict enumerateKeysAnd##VALUE_NAME##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u##, __unused BOOL *stop) {
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [dict release];
 //%}
 //%
 //%- (void)testOne {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWith##VALUE_NAME$u##:VAL1 forKey:KEY1];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
+//%  [dict set##VALUE_NAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 1U);
 //%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY1, VAL1)
@@ -811,6 +782,7 @@
 //%    XCTAssertEqual##VSUFFIX(a##VNAME$u, VAL1);
 //%    XCTAssertNotEqual(stop, NULL);
 //%  }];
+//%  [dict release];
 //%}
 //%
 //%- (void)testBasics {
@@ -850,8 +822,7 @@
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u)
+//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u##, BOOL *stop) {
 //%    if (idx == 0) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -944,17 +915,18 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict2 =
-//%      [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithDictionary:dict];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithDictionary:dict];
 //%  XCTAssertNotNil(dict2);
 //%
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(dict, dict2);
 //%  XCTAssertEqualObjects(dict, dict2);
+//%  [dict2 release];
 //%  [dict release];
 //%}
 //%
 //%- (void)testAdds {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionary];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
@@ -974,6 +946,7 @@
 //%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY1, VAL1)
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY2, VAL2)
 //%  [dict2 release];
+//%  [dict release];
 //%}
 //%
 //%- (void)testRemove {

@@ -1,0 +1,22 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// A regression test for b/74087933
+syntax = "proto2";
+
+package protobuf_unittest;
+
+import "google/protobuf/unittest.proto";
+import "google/protobuf/unittest_proto3.proto";
+
+option optimize_for = CODE_SIZE;
+option java_multiple_files = true;
+
+message TestCachedFieldSizeMessage {
+  optional protobuf_unittest.TestPackedTypes proto2_child = 1;
+  optional proto3_unittest.TestPackedTypes proto3_child = 2;
+}

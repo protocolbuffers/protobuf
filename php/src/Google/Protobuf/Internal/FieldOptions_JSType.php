@@ -4,28 +4,13 @@
 
 namespace Google\Protobuf\Internal;
 
-/**
- * Protobuf enum <code>Google\Protobuf\Internal</code>
- */
-class FieldOptions_JSType
-{
+if (false) {
     /**
-     * Use the default type.
-     *
-     * Generated from protobuf enum <code>JS_NORMAL = 0;</code>
+     * This class is deprecated. Use Google\Protobuf\Internal\FieldOptions\JSType instead.
+     * @deprecated
      */
-    const JS_NORMAL = 0;
-    /**
-     * Use JavaScript strings.
-     *
-     * Generated from protobuf enum <code>JS_STRING = 1;</code>
-     */
-    const JS_STRING = 1;
-    /**
-     * Use JavaScript numbers.
-     *
-     * Generated from protobuf enum <code>JS_NUMBER = 2;</code>
-     */
-    const JS_NUMBER = 2;
+    class FieldOptions_JSType {}
 }
+class_exists(FieldOptions\JSType::class);
+@trigger_error('Google\Protobuf\Internal\FieldOptions_JSType is deprecated and will be removed in the next major release. Use Google\Protobuf\Internal\FieldOptions\JSType instead', E_USER_DEPRECATED);
 

@@ -1,0 +1,102 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package upb_test;
+
+message MapTest {
+  map<string, double> map_string_double = 1;
+}
+
+message MessageName {
+  optional int32 field1 = 1;
+  optional int32 field2 = 2;
+}
+
+message HelloRequest {
+  optional uint32 id = 1;
+  optional uint32 random_name_a0 = 2;
+  optional uint32 random_name_a1 = 3;
+  optional uint32 random_name_a2 = 4;
+  optional uint32 random_name_a3 = 5;
+  optional uint32 random_name_a4 = 6;
+  optional uint32 random_name_a5 = 7;
+  optional uint32 random_name_a6 = 8;
+  optional uint32 random_name_a7 = 9;
+  optional uint32 random_name_a8 = 10;
+  optional uint32 random_name_a9 = 11;
+  optional uint32 random_name_b0 = 12;
+  optional uint32 random_name_b1 = 13;
+  optional uint32 random_name_b2 = 14;
+  optional uint32 random_name_b3 = 15;
+  optional uint32 random_name_b4 = 16;
+  optional uint32 random_name_b5 = 17;
+  optional uint32 random_name_b6 = 18;
+  optional uint32 random_name_b7 = 19;
+  optional uint32 random_name_b8 = 20;
+  optional uint32 random_name_b9 = 21;
+  optional uint32 random_name_c0 = 22;
+  optional uint32 random_name_c1 = 23;
+  optional uint32 random_name_c2 = 24;
+  optional uint32 random_name_c3 = 25;
+  optional uint32 random_name_c4 = 26;
+  optional uint32 random_name_c5 = 27;
+  optional uint32 random_name_c6 = 28;
+  optional uint32 random_name_c7 = 29;
+  optional uint32 random_name_c8 = 30;
+  optional uint32 random_name_c9 = 31;
+  optional string version = 32;
+}
+
+message EmptyMessageWithExtensions {
+  // Reserved for unknown fields/extensions test.
+  reserved 1000 to max;
+}
+
+message ModelWithExtensions {
+  optional int32 random_int32 = 3;
+  optional string random_name = 4;
+  repeated int32 repeated_int32 = 5;
+  // Reserved for unknown fields/extensions test.
+  extensions 1000 to max;
+}
+
+message ModelExtension1 {
+  extend ModelWithExtensions {
+    optional ModelExtension1 model_ext = 1547;
+  }
+  optional string str = 25;
+}
+
+message ModelExtension2 {
+  extend ModelWithExtensions {
+    optional ModelExtension2 model_ext = 4135;
+    optional ModelExtension2 model_ext_2 = 4136;
+    optional ModelExtension2 model_ext_3 = 4137;
+    optional ModelExtension2 model_ext_4 = 4138;
+    optional ModelExtension2 model_ext_5 = 4139;
+  }
+  optional int32 i = 9;
+}
+
+message ModelWithSubMessages {
+  optional int32 id = 4;
+  optional ModelWithExtensions optional_child = 5;
+  repeated ModelWithExtensions items = 6;
+}
+
+message ModelWithMaps {
+  optional int32 id = 1;
+  map<string, string> map_ss = 3;
+  map<int32, int32> map_ii = 4;
+  map<int32, ModelWithExtensions> map_im = 5;
+}
+
+message ExtremeDefaults {
+  optional int64 int64_min = 1 [default = -9223372036854775808];
+}

@@ -32,13 +32,13 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option cc_enable_arenas = true;
-option go_package = "github.com/golang/protobuf/ptypes/duration";
+option go_package = "google.golang.org/protobuf/types/known/durationpb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DurationProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 
 // A Duration represents a signed, fixed-length span of time represented
 // as a count of seconds and fractions of seconds at nanosecond
@@ -61,7 +61,7 @@ option objc_class_prefix = "GPB";
 //     if (duration.seconds < 0 && duration.nanos > 0) {
 //       duration.seconds += 1;
 //       duration.nanos -= 1000000000;
-//     } else if (durations.seconds > 0 && duration.nanos < 0) {
+//     } else if (duration.seconds > 0 && duration.nanos < 0) {
 //       duration.seconds -= 1;
 //       duration.nanos += 1000000000;
 //     }
@@ -99,9 +99,7 @@ option objc_class_prefix = "GPB";
 // be expressed in JSON format as "3.000000001s", and 3 seconds and 1
 // microsecond should be expressed in JSON format as "3.000001s".
 //
-//
 message Duration {
-
   // Signed seconds of the span of time. Must be from -315,576,000,000
   // to +315,576,000,000 inclusive. Note: these bounds are computed from:
   // 60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years

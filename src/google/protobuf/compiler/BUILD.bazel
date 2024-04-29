@@ -1,0 +1,511 @@
+################################################################################
+# Protocol Buffers Compiler
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "cc_test")
+load(
+    "@rules_pkg//:mappings.bzl",
+    "pkg_attributes",
+    "pkg_files",
+    "strip_prefix",
+)
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+load("test_plugin_injection.bzl", "inject_plugin_paths")
+
+proto_library(
+    name = "plugin_proto",
+    srcs = ["plugin.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "plugin_cc_proto",
+    visibility = ["//visibility:public"],
+    deps = [":plugin_proto"],
+)
+
+cc_library(
+    name = "importer",
+    srcs = [
+        "importer.cc",
+        "parser.cc",
+    ],
+    hdrs = [
+        "importer.h",
+        "parser.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "code_generator",
+    srcs = [
+        "code_generator.cc",
+        "plugin.cc",
+        "plugin.pb.cc",
+    ],
+    hdrs = [
+        "code_generator.h",
+        "plugin.h",
+        "plugin.pb.h",
+        "scc.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/io:io_win32",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "versions",
+    hdrs = [
+        "versions.h",
+        "versions_suffix.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler",
+    visibility = [
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = ["@com_google_absl//absl/strings"],
+)
+
+cc_library(
+    name = "command_line_interface",
+    srcs = [
+        "command_line_interface.cc",
+        "subprocess.cc",
+        "zip_writer.cc",
+    ],
+    hdrs = [
+        "command_line_interface.h",
+        "subprocess.h",
+        "zip_writer.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":code_generator",
+        ":importer",
+        ":retention",
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/allowlists",
+        "@com_google_absl//absl/algorithm",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "protoc_lib",
+    srcs = [
+        "main.cc",
+    ],
+    copts = COPTS,
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        ":importer",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler/cpp",
+        "//src/google/protobuf/compiler/csharp",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python",
+        "//src/google/protobuf/compiler/ruby",
+        "//src/google/protobuf/compiler/rust",
+        "@com_google_absl//absl/log:initialize",
+    ],
+)
+
+# Note: this is an alias for now. In the future, this rule will become the
+# cc_binary for protoc, and //:protoc will become an alias.
+alias(
+    name = "protoc",
+    actual = "//:protoc",
+    visibility = ["//visibility:public"],
+)
+
+# Test that the protoc binary is built for the correct architecture.
+aarch64_test(
+    name = "protoc_aarch64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
+x86_64_test(
+    name = "protoc_x86_64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
+################################################################################
+# Tests and support libraries
+################################################################################
+
+cc_library(
+    name = "annotation_test_util",
+    testonly = 1,
+    srcs = ["annotation_test_util.cc"],
+    hdrs = ["annotation_test_util.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        "//:protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/testing",
+    ],
+)
+
+################################################################################
+# Tests
+################################################################################
+
+filegroup(
+    name = "plugin_proto_srcs",
+    testonly = 1,
+    srcs = [
+        "plugin.pb.cc",
+        "plugin.pb.h",
+        "plugin.proto",
+    ],
+    visibility = [
+        "//src/google/protobuf/compiler/cpp:__pkg__",
+    ],
+)
+
+filegroup(
+    name = "plugin_proto_src",
+    srcs = ["plugin.proto"],
+    visibility = [
+        "//upb_generator:__subpackages__",
+        # For compatibility with workspaces that still use the old upb repo
+        "@upb//:__subpackages__",
+    ],
+)
+
+exports_files(
+    srcs = ["plugin.proto"],
+    visibility = [
+        "//:__pkg__",
+        "//python:__pkg__",
+    ],
+)
+
+cc_library(
+    name = "mock_code_generator",
+    testonly = 1,
+    srcs = ["mock_code_generator.cc"],
+    hdrs = ["mock_code_generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        ":code_generator",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:descriptor_visitor",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_binary(
+    name = "test_plugin",
+    testonly = 1,
+    srcs = ["test_plugin.cc"],
+    copts = COPTS,
+    deps = [
+        ":code_generator",
+        ":mock_code_generator",
+    ],
+)
+
+cc_binary(
+    name = "fake_plugin",
+    testonly = True,
+    srcs = ["fake_plugin.cc"],
+    deps = [
+        ":plugin_cc_proto",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "code_generator_unittest",
+    srcs = ["code_generator_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":code_generator",
+        ":importer",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/testing",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+inject_plugin_paths("test_plugin_paths")
+
+cc_test(
+    name = "command_line_interface_unittest",
+    srcs = ["command_line_interface_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated",
+            "-Wno-deprecated-declarations",
+        ],
+    }) + [
+        # Note: This only works on Windows with symlinks and runfiles enabled.
+        # "-DGOOGLE_PROTOBUF_FAKE_PLUGIN_PATH=\\\"$(rootpath :fake_plugin)\\\"",
+        # "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
+        # Workaround for https://github.com/bazelbuild/bazel/issues/19124.
+        "-DGOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS=1",
+    ],
+    data = [
+        ":fake_plugin",
+        ":test_plugin",
+        "//:test_proto_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf:testdata",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        ":command_line_interface_tester",
+        ":mock_code_generator",
+        ":test_plugin_paths",
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "command_line_interface_tester",
+    testonly = True,
+    srcs = ["command_line_interface_tester.cc"],
+    hdrs = ["command_line_interface_tester.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":code_generator",
+        ":command_line_interface",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "importer_unittest",
+    srcs = ["importer_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":importer",
+        "//:protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "parser_unittest",
+    srcs = ["parser_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated",
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":importer",
+        "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "retention",
+    srcs = ["retention.cc"],
+    hdrs = ["retention.h"],
+    include_prefix = "google/protobuf/compiler",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "retention_unittest",
+    srcs = ["retention_unittest.cc"],
+    deps = [
+        ":importer",
+        ":retention",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/log:die_if_null",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Generates protoc release artifacts.
+################################################################################
+
+genrule(
+    name = "protoc_readme",
+    outs = ["readme.txt"],
+    cmd = """
+echo "Protocol Buffers - Google's data interchange format
+Copyright 2008 Google Inc.
+https://developers.google.com/protocol-buffers/
+This package contains a precompiled binary version of the protocol buffer
+compiler (protoc). This binary is intended for users who want to use Protocol
+Buffers in languages other than C++ but do not want to compile protoc
+themselves. To install, simply place this binary somewhere in your PATH.
+If you intend to use the included well known types then don't forget to
+copy the contents of the 'include' directory somewhere as well, for example
+into '/usr/local/include/'.
+Please refer to our official github site for more installation instructions:
+  https://github.com/protocolbuffers/protobuf" > $@
+    """,
+    visibility = ["//:__pkg__"],
+)
+
+pkg_files(
+    name = "compiler_plugin_protos_files",
+    srcs = ["plugin.proto"],
+    prefix = "include/google/protobuf/compiler",
+    visibility = ["//pkg:__pkg__"],
+)
+
+pkg_files(
+    name = "protoc_files",
+    srcs = [":protoc"],
+    attributes = pkg_attributes(mode = "0555"),
+    prefix = "bin/",
+    visibility = ["//:__pkg__"],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ) + [
+        "//src/google/protobuf/compiler/allowlists:test_srcs",
+        "//src/google/protobuf/compiler/cpp:test_srcs",
+        "//src/google/protobuf/compiler/csharp:test_srcs",
+        "//src/google/protobuf/compiler/java:test_srcs",
+        "//src/google/protobuf/compiler/objectivec:test_srcs",
+        "//src/google/protobuf/compiler/php:test_srcs",
+        "//src/google/protobuf/compiler/python:test_srcs",
+        "//src/google/protobuf/compiler/ruby:test_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "fake_plugin_srcs",
+    srcs = ["fake_plugin.cc"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_plugin_srcs",
+    srcs = ["test_plugin.cc"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "//src/google/protobuf/compiler/cpp:test_proto_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)

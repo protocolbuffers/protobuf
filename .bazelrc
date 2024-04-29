@@ -1,0 +1,32 @@
+build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+
+build:dbg --compilation_mode=dbg
+
+build:opt --compilation_mode=opt
+
+build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
+
+build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
+build:asan --copt=-DADDRESS_SANITIZER=1
+# ASAN hits ODR violations with shared linkage due to rules_proto.
+build:asan --dynamic_mode=off
+
+build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
+build:msan --copt=-fsanitize-memory-track-origins
+build:msan --copt=-fsanitize-memory-use-after-dtor
+build:msan --action_env=MSAN_OPTIONS=poison_in_dtor=1
+build:msan --copt=-DMEMORY_SANITIZER=1
+
+build:tsan --config=san-common --copt=-fsanitize=thread --linkopt=-fsanitize=thread
+build:tsan --copt=-DTHREAD_SANITIZER=1
+
+build:ubsan --config=san-common --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined
+build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+build:ubsan --copt=-DUNDEFINED_SANITIZER=1
+# Workaround for the fact that Bazel links with $CC, not $CXX
+# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
+build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://github.com/protocolbuffers/protobuf/issues/14313
+common --noenable_bzlmod

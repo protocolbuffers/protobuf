@@ -2,12 +2,14 @@ require "rubygems"
 require "rubygems/package_task"
 require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
+import 'lib/google/tasks/ffi.rake'
 
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
 well_known_protos = %w[
   google/protobuf/any.proto
   google/protobuf/api.proto
+  google/protobuf/descriptor.proto
   google/protobuf/duration.proto
   google/protobuf/empty.proto
   google/protobuf/field_mask.proto
@@ -18,91 +20,170 @@ well_known_protos = %w[
   google/protobuf/wrappers.proto
 ]
 
+test_protos = %w[
+  tests/basic_test.proto
+  tests/basic_test_proto2.proto
+  tests/generated_code.proto
+  tests/generated_code_proto2.proto
+  tests/multi_level_nesting_test.proto
+  tests/test_import.proto
+  tests/test_import_proto2.proto
+  tests/test_ruby_package.proto
+  tests/test_ruby_package_proto2.proto
+]
+
 # These are omitted for now because we don't support proto2.
 proto2_protos = %w[
   google/protobuf/descriptor.proto
   google/protobuf/compiler/plugin.proto
 ]
 
+if !ENV['PROTOC'].nil?
+  protoc_command = ENV['PROTOC']
+elsif system('../bazel-bin/protoc --version')
+  protoc_command = '../bazel-bin/protoc'
+else
+  protoc_command = 'protoc'
+end
+
 genproto_output = []
 
 # We won't have access to .. from within docker, but the proto files
 # will be there, thanks to the :genproto rule dependency for gem:native.
-unless ENV['IN_DOCKER'] == 'true'
+unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
     genproto_output << output_file
     file output_file => input_file do |file_task|
-      sh "../src/protoc -I../src --ruby_out=lib #{input_file}"
+      sh "#{protoc_command} -I../src --ruby_out=lib #{input_file}"
+    end
+  end
+
+  test_protos.each do |proto_file|
+    output_file = proto_file.sub(/\.proto$/, "_pb.rb")
+    genproto_output << output_file
+    file output_file => proto_file do |file_task|
+      sh "#{protoc_command} -I../src -I. -I./tests --ruby_out=.  #{proto_file}"
+    end
+  end
+end
+
+task :copy_third_party do
+  unless File.exist? 'ext/google/protobuf_c/third_party/utf8_range'
+    FileUtils.mkdir_p 'ext/google/protobuf_c/third_party/utf8_range'
+    # We need utf8_range in-tree.
+    if  ENV['BAZEL'] == 'true'
+      utf8_root = '../external/utf8_range'
+    else
+      utf8_root = '../third_party/utf8_range'
+    end
+    %w[
+      utf8_range.h naive.c range2-neon.c range2-neon.c range2-sse.c LICENSE
+    ].each do |file|
+      FileUtils.cp File.join(utf8_root, file),
+                   "ext/google/protobuf_c/third_party/utf8_range"
     end
   end
 end
 
 if RUBY_PLATFORM == "java"
-  if `which mvn` == ''
-    raise ArgumentError, "maven needs to be installed"
-  end
-  task :clean do
+  task :clean => :require_mvn do
     system("mvn --batch-mode clean")
   end
 
-  task :compile do
+  task :compile => :require_mvn do
     system("mvn --batch-mode package")
   end
+
+  task :require_mvn do
+    raise ArgumentError, "maven needs to be installed" if `which mvn` == ''
+  end
+
 else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
+    unless RUBY_PLATFORM =~ /darwin/
+      # TODO: also set "no_native to true" for mac if possible. As is,
+      # "no_native" can only be set if the RUBY_PLATFORM doing
+      # cross-compilation is contained in the "ext.cross_platform" array.
+      ext.no_native = true
+    end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
     ext.cross_compile = true
     ext.cross_platform = [
-      'x86-mingw32', 'x64-mingw32',
+      'x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt',
       'x86_64-linux', 'x86-linux',
-      'universal-darwin'
+      'x86_64-darwin', 'arm64-darwin',
     ]
   end
 
-  task 'gem:windows' do
+  task 'gem:java' do
+    sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.4.0:2.3.0:2.2.2:2.1.5:2.0.0"
+    # Specify the repo root as the working and mount directory to provide access
+    # to the java directory
+    repo_root = File.realdirpath File.join(Dir.pwd, '..')
+    RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby, mountdir: repo_root, workdir: repo_root
+      sudo apt-get install maven -y && \
+      cd java && mvn install -Dmaven.test.skip=true && cd ../ruby && \
+      bundle && \
+      IN_DOCKER=true rake compile gem
+    EOT
+  end
+
+  task 'gem:windows' do
+    sh "rm Gemfile.lock"
+    require 'rake_compiler_dock'
+    ['x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
+      RakeCompilerDock.sh <<-"EOT", platform: plat
+        bundle && \
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0
+      EOT
+    end
   end
 
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=2.4.0:2.3.0:2.2.2:2.1.5:2.0.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0"
     end
   else
-    task 'gem:native' => [:genproto, 'gem:windows']
+    task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
   end
-end
-
-
-# Proto for tests.
-genproto_output << "tests/generated_code.rb"
-genproto_output << "tests/test_import.rb"
-file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/generated_code.proto"
-end
-
-file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_import.proto"
 end
 
 task :genproto => genproto_output
 
 task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
+  sh "rm -f google-protobuf-*gem"
+  sh "rm -f Gemfile.lock"
+  sh "rm -rf pkg"
+  sh "rm -rf tmp"
+  # Handles third_party and any platform specific directories built by FFI
+  Pathname('ext/google/protobuf_c').children.select(&:directory?).each do |dir|
+    sh "rm -rf #{dir}"
+  end
 end
 
 Gem::PackageTask.new(spec) do |pkg|
 end
 
-Rake::TestTask.new(:test => :build) do |t|
-  t.test_files = FileList["tests/*.rb"]
+# Skip build/genproto in Bazel builds, where we expect this to
+# be done already.
+Rake::TestTask.new(:test => ENV['BAZEL'] == 'true' ? [] : [:build, :genproto]) do |t|
+  t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
 end
 
-task :build => [:clean, :compile, :genproto]
+# gc_test needs to be split out to ensure the generated file hasn't been
+# imported by other tests.
+Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
+  t.test_files = FileList["tests/gc_test.rb"]
+end
+
+task :build => [:clean, :genproto, :copy_third_party, :compile, :"ffi-protobuf:default"]
+Rake::Task[:gem].enhance [:copy_third_party, :genproto]
 task :default => [:build]
 
 # vim:sw=2:et

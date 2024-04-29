@@ -1,0 +1,140 @@
+1: 101  # [UnittestRoot_optionalInt32Extension]
+2: 102  # [UnittestRoot_optionalInt64Extension]
+3: 103  # [UnittestRoot_optionalUint32Extension]
+4: 104  # [UnittestRoot_optionalUint64Extension]
+5: 105  # [UnittestRoot_optionalSint32Extension]
+6: 106  # [UnittestRoot_optionalSint64Extension]
+7: 107  # [UnittestRoot_optionalFixed32Extension]
+8: 108  # [UnittestRoot_optionalFixed64Extension]
+9: 109  # [UnittestRoot_optionalSfixed32Extension]
+10: 110  # [UnittestRoot_optionalSfixed64Extension]
+11: 111  # [UnittestRoot_optionalFloatExtension]
+12: 112  # [UnittestRoot_optionalDoubleExtension]
+13: true  # [UnittestRoot_optionalBoolExtension]
+14: "115"  # [UnittestRoot_optionalStringExtension]
+15: "\001\000\002\003\000\005"  # [UnittestRoot_optionalBytesExtension]
+16 {  # [UnittestRoot_optionalGroupExtension]
+  a: 117
+}
+18 {  # [UnittestRoot_optionalNestedMessageExtension]
+  bb: 118
+}
+19 {  # [UnittestRoot_optionalForeignMessageExtension]
+  c: 119
+}
+20 {  # [UnittestRoot_optionalImportMessageExtension]
+  d: 120
+}
+21: 3  # [UnittestRoot_optionalNestedEnumExtension]
+22: 6  # [UnittestRoot_optionalForeignEnumExtension]
+23: 9  # [UnittestRoot_optionalImportEnumExtension]
+24: "124"  # [UnittestRoot_optionalStringPieceExtension]
+25: "125"  # [UnittestRoot_optionalCordExtension]
+# [UnittestRoot_repeatedInt32Extension]
+31: 201
+31: 301
+# [UnittestRoot_repeatedInt64Extension]
+32: 202
+32: 302
+# [UnittestRoot_repeatedUint32Extension]
+33: 203
+33: 303
+# [UnittestRoot_repeatedUint64Extension]
+34: 204
+34: 304
+# [UnittestRoot_repeatedSint32Extension]
+35: 205
+35: 305
+# [UnittestRoot_repeatedSint64Extension]
+36: 206
+36: 306
+# [UnittestRoot_repeatedFixed32Extension]
+37: 207
+37: 307
+# [UnittestRoot_repeatedFixed64Extension]
+38: 208
+38: 308
+# [UnittestRoot_repeatedSfixed32Extension]
+39: 209
+39: 309
+# [UnittestRoot_repeatedSfixed64Extension]
+40: 210
+40: 310
+# [UnittestRoot_repeatedFloatExtension]
+41: 211
+41: 311
+# [UnittestRoot_repeatedDoubleExtension]
+42: 212
+42: 312
+# [UnittestRoot_repeatedBoolExtension]
+43: false
+43: true
+# [UnittestRoot_repeatedStringExtension]
+44: "215"
+44: "315"
+# [UnittestRoot_repeatedBytesExtension]
+45: "\330\000\000\000"
+45: "<\001\000\000"
+# [UnittestRoot_repeatedGroupExtension]
+46 {
+  a: 217
+}
+46 {
+  a: 317
+}
+# [UnittestRoot_repeatedNestedMessageExtension]
+48 {
+  bb: 218
+}
+48 {
+  bb: 318
+}
+# [UnittestRoot_repeatedForeignMessageExtension]
+49 {
+  c: 219
+}
+49 {
+  c: 319
+}
+# [UnittestRoot_repeatedImportMessageExtension]
+50 {
+  d: 220
+}
+50 {
+  d: 320
+}
+# [UnittestRoot_repeatedNestedEnumExtension]
+51: 3
+51: 2
+# [UnittestRoot_repeatedForeignEnumExtension]
+52: 6
+52: 5
+# [UnittestRoot_repeatedImportEnumExtension]
+53: 9
+53: 8
+# [UnittestRoot_repeatedStringPieceExtension]
+54: "224"
+54: "324"
+# [UnittestRoot_repeatedCordExtension]
+55: "225"
+55: "325"
+61: 401  # [UnittestRoot_defaultInt32Extension]
+62: 402  # [UnittestRoot_defaultInt64Extension]
+63: 403  # [UnittestRoot_defaultUint32Extension]
+64: 404  # [UnittestRoot_defaultUint64Extension]
+65: 405  # [UnittestRoot_defaultSint32Extension]
+66: 406  # [UnittestRoot_defaultSint64Extension]
+67: 407  # [UnittestRoot_defaultFixed32Extension]
+68: 408  # [UnittestRoot_defaultFixed64Extension]
+69: 409  # [UnittestRoot_defaultSfixed32Extension]
+70: 410  # [UnittestRoot_defaultSfixed64Extension]
+71: 411  # [UnittestRoot_defaultFloatExtension]
+72: 412  # [UnittestRoot_defaultDoubleExtension]
+73: false  # [UnittestRoot_defaultBoolExtension]
+74: "415"  # [UnittestRoot_defaultStringExtension]
+75: "\240\001\000\000"  # [UnittestRoot_defaultBytesExtension]
+81: 1  # [UnittestRoot_defaultNestedEnumExtension]
+82: 4  # [UnittestRoot_defaultForeignEnumExtension]
+83: 7  # [UnittestRoot_defaultImportEnumExtension]
+84: "424"  # [UnittestRoot_defaultStringPieceExtension]
+85: "425"  # [UnittestRoot_defaultCordExtension]

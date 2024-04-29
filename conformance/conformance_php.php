@@ -3,40 +3,25 @@
 require_once("Conformance/WireFormat.php");
 require_once("Conformance/ConformanceResponse.php");
 require_once("Conformance/ConformanceRequest.php");
-require_once("Google/Protobuf/Any.php");
-require_once("Google/Protobuf/Duration.php");
-require_once("Google/Protobuf/FieldMask.php");
-require_once("Google/Protobuf/Struct.php");
-require_once("Google/Protobuf/Value.php");
-require_once("Google/Protobuf/ListValue.php");
-require_once("Google/Protobuf/NullValue.php");
-require_once("Google/Protobuf/Timestamp.php");
-require_once("Google/Protobuf/DoubleValue.php");
-require_once("Google/Protobuf/BytesValue.php");
-require_once("Google/Protobuf/FloatValue.php");
-require_once("Google/Protobuf/Int64Value.php");
-require_once("Google/Protobuf/UInt32Value.php");
-require_once("Google/Protobuf/BoolValue.php");
-require_once("Google/Protobuf/DoubleValue.php");
-require_once("Google/Protobuf/Int32Value.php");
-require_once("Google/Protobuf/StringValue.php");
-require_once("Google/Protobuf/UInt64Value.php");
+require_once("Conformance/FailureSet.php");
+require_once("Conformance/JspbEncodingConfig.php");
+require_once("Conformance/TestCategory.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedMessage.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedEnum.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
-require_once("GPBMetadata/Google/Protobuf/Any.php");
-require_once("GPBMetadata/Google/Protobuf/Duration.php");
-require_once("GPBMetadata/Google/Protobuf/FieldMask.php");
-require_once("GPBMetadata/Google/Protobuf/Struct.php");
-require_once("GPBMetadata/Google/Protobuf/Timestamp.php");
-require_once("GPBMetadata/Google/Protobuf/Wrappers.php");
-require_once("GPBMetadata/Google/Protobuf/TestMessagesProto3.php");
+require_once("GPBMetadata/TestMessagesProto3.php");
 
+use  \Conformance\TestCategory;
 use  \Conformance\WireFormat;
+
+if (!ini_get("date.timezone")) {
+  ini_set("date.timezone", "UTC");
+}
 
 $test_count = 0;
 
@@ -45,7 +30,10 @@ function doTest($request)
     $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
-      if ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
+      if ($request->getMessageType() == "conformance.FailureSet") {
+        $response->setProtobufPayload("");
+        return $response;
+      } elseif ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
         try {
           $test_message->mergeFromString($request->getProtobufPayload());
         } catch (Exception $e) {
@@ -53,19 +41,26 @@ function doTest($request)
           return $response;
         }
       } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
-	$response->setSkipped("PHP doesn't support proto2");
-	return $response;
+        $response->setSkipped("PHP doesn't support proto2");
+        return $response;
       } else {
-	trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
+        trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
       }
     } elseif ($request->getPayload() == "json_payload") {
+      $ignore_json_unknown =
+          ($request->getTestCategory() ==
+              TestCategory::JSON_IGNORE_UNKNOWN_PARSING_TEST);
       try {
-          $test_message->mergeFromJsonString($request->getJsonPayload());
+          $test_message->mergeFromJsonString($request->getJsonPayload(),
+                                             $ignore_json_unknown);
       } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
       }
-    } else {
+	} elseif ($request->getPayload() == "text_payload") {
+		$response->setSkipped("PHP doesn't support text format yet");
+        return $response;
+	} else {
       trigger_error("Request didn't have payload.", E_USER_ERROR);
     }
 
@@ -74,7 +69,12 @@ function doTest($request)
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->serializeToString());
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
-      $response->setJsonPayload($test_message->serializeToJsonString());
+      try {
+          $response->setJsonPayload($test_message->serializeToJsonString());
+      } catch (Exception $e) {
+          $response->setSerializeError($e->getMessage());
+          return $response;
+      }
     }
 
     return $response;
@@ -113,7 +113,7 @@ function doTestIO()
 while(true){
   if (!doTestIO()) {
       fprintf(STDERR,
-             "conformance_php: received EOF from test runner " +
+             "conformance_php: received EOF from test runner " .
              "after %d tests, exiting\n", $test_count);
       exit;
   }

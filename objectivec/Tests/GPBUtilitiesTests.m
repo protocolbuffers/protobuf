@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import <XCTest/XCTest.h>
 
@@ -41,9 +18,9 @@
 #import "GPBMessage.h"
 #import "GPBUnknownField_PackagePrivate.h"
 
-#import "google/protobuf/MapUnittest.pbobjc.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
 
 @interface UtilitiesTests : GPBTestCase
 @end
@@ -52,16 +29,17 @@
 
 - (void)testRightShiftFunctions {
   XCTAssertEqual((1UL << 31) >> 31, 1UL);
-  XCTAssertEqual((1 << 31) >> 31, -1);
+  XCTAssertEqual((int32_t)(1U << 31) >> 31, -1);
   XCTAssertEqual((1ULL << 63) >> 63, 1ULL);
-  XCTAssertEqual((1LL << 63) >> 63, -1LL);
+  XCTAssertEqual((int64_t)(1ULL << 63) >> 63, -1LL);
 
-  XCTAssertEqual(GPBLogicalRightShift32((1 << 31), 31), 1);
-  XCTAssertEqual(GPBLogicalRightShift64((1LL << 63), 63), 1LL);
+  XCTAssertEqual(GPBLogicalRightShift32((1U << 31), 31), 1);
+  XCTAssertEqual(GPBLogicalRightShift64((1ULL << 63), 63), 1LL);
 }
 
 - (void)testGPBDecodeTextFormatName {
   uint8_t decodeData[] = {
+      // clang-format off
     0x6,
     // An inlined string (first to make sure the leading null is handled
     // correctly, and with a key of zero to check that).
@@ -80,6 +58,7 @@
     //   underscore, lower + 30 (01 op), as is + 30 (00 op), as is + 13 (00 op),
     //   underscore, as is + 3 (00 op)
     0xE8, 0x07, 0x04, 0xA5, 0xA4, 0xA2, 0xBF, 0x1F, 0x0E, 0x84, 0x0,
+      // clang-format on
   };
   NSString *inputStr = @"abcdefghIJ";
 
@@ -104,10 +83,12 @@
   // An inlined string (and key of zero).
   XCTAssertEqualObjects(GPBDecodeTextFormatName(decodeData, 0, inputStr), @"zbcdefghIJ");
 
+  // clang-format off
   // Long name so multiple decode ops are needed.
   inputStr = @"longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
   XCTAssertEqualObjects(GPBDecodeTextFormatName(decodeData, 1000, inputStr),
                         @"long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000");
+  // clang-format on
 }
 
 - (void)testTextFormat {
@@ -121,10 +102,8 @@
 
   NSString *fileName = @"text_format_unittest_data.txt";
   NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
-  NSData *expectedData =
-      [self getDataFileNamed:fileName dataToWrite:resultData];
-  NSString *expected = [[NSString alloc] initWithData:expectedData
-                                             encoding:NSUTF8StringEncoding];
+  NSData *expectedData = [self getDataFileNamed:fileName dataToWrite:resultData];
+  NSString *expected = [[NSString alloc] initWithData:expectedData encoding:NSUTF8StringEncoding];
   XCTAssertEqualObjects(expected, result);
   [expected release];
 }
@@ -141,12 +120,14 @@
   message.subEnum = self_autorelease_RetainCount;
   message.new_p.copy_p = @"foo";
 
+  // clang-format off
   NSString *expected = @"_cmd: true\n"
                        @"isProxy: true\n"
                        @"SubEnum: retainCount\n"
                        @"New {\n"
                        @"  copy: \"foo\"\n"
                        @"}\n";
+  // clang-format on
   NSString *result = GPBTextFormatForMessage(message, nil);
   XCTAssertEqualObjects(expected, result);
 }
@@ -161,21 +142,37 @@
 
   NSString *fileName = @"text_format_map_unittest_data.txt";
   NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
-  NSData *expectedData =
-      [self getDataFileNamed:fileName dataToWrite:resultData];
-  NSString *expected = [[NSString alloc] initWithData:expectedData
-                                             encoding:NSUTF8StringEncoding];
+  NSData *expectedData = [self getDataFileNamed:fileName dataToWrite:resultData];
+  NSString *expected = [[NSString alloc] initWithData:expectedData encoding:NSUTF8StringEncoding];
   XCTAssertEqualObjects(expected, result);
   [expected release];
 }
 
-// TODO(thomasvl): add test with extensions once those format with correct names.
+- (void)testTextFormatExtensions {
+  TestAllExtensions *message = [TestAllExtensions message];
+
+  // Not kGPBDefaultRepeatCount because we are comparing to golden master file
+  // which was generated with 2.
+  [self setAllExtensions:message repeatedCount:2];
+
+  NSString *result = GPBTextFormatForMessage(message, nil);
+
+  // NOTE: ObjC TextFormat doesn't have the proper extension names so it
+  // uses comments for the ObjC name and raw numbers for the fields instead
+  // of the bracketed extension name.
+  NSString *fileName = @"text_format_extensions_unittest_data.txt";
+  NSData *resultData = [result dataUsingEncoding:NSUTF8StringEncoding];
+  NSData *expectedData = [self getDataFileNamed:fileName dataToWrite:resultData];
+  NSString *expected = [[NSString alloc] initWithData:expectedData encoding:NSUTF8StringEncoding];
+  XCTAssertEqualObjects(expected, result);
+  [expected release];
+}
 
 - (void)testSetRepeatedFields {
   TestAllTypes *message = [TestAllTypes message];
 
   NSDictionary *repeatedFieldValues = @{
-    @"repeatedStringArray" : [@[@"foo", @"bar"] mutableCopy],
+    @"repeatedStringArray" : [@[ @"foo", @"bar" ] mutableCopy],
     @"repeatedBoolArray" : [GPBBoolArray arrayWithValue:YES],
     @"repeatedInt32Array" : [GPBInt32Array arrayWithValue:14],
     @"repeatedInt64Array" : [GPBInt64Array arrayWithValue:15],
@@ -188,23 +185,19 @@
                                          rawValue:TestAllTypes_NestedEnum_Foo],
   };
   for (NSString *fieldName in repeatedFieldValues) {
-    GPBFieldDescriptor *field =
-        [message.descriptor fieldWithName:fieldName];
+    GPBFieldDescriptor *field = [message.descriptor fieldWithName:fieldName];
     XCTAssertNotNil(field, @"No field with name: %@", fieldName);
     id expectedValues = repeatedFieldValues[fieldName];
     GPBSetMessageRepeatedField(message, field, expectedValues);
-    XCTAssertEqualObjects(expectedValues,
-                          [message valueForKeyPath:fieldName]);
+    XCTAssertEqualObjects(expectedValues, [message valueForKeyPath:fieldName]);
   }
 }
 
 // Helper to make an unknown field set with something in it.
 static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
-  GPBUnknownFieldSet *result =
-      [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownFieldSet *result = [[[GPBUnknownFieldSet alloc] init] autorelease];
 
-  GPBUnknownField *field =
-      [[[GPBUnknownField alloc] initWithNumber:num] autorelease];
+  GPBUnknownField *field = [[[GPBUnknownField alloc] initWithNumber:num] autorelease];
   [field addVarint:num];
   [result addField:field];
 
@@ -226,32 +219,26 @@ static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
     OptionalGroup_extension *optionalGroup = [OptionalGroup_extension message];
     optionalGroup.a = 123;
     optionalGroup.unknownFields = UnknownFieldsSetHelper(779);
-    [message setExtension:[UnittestRoot optionalGroupExtension]
-                    value:optionalGroup];
+    [message setExtension:[UnittestRoot optionalGroupExtension] value:optionalGroup];
 
     // Message
-    TestAllTypes_NestedMessage *nestedMessage =
-        [TestAllTypes_NestedMessage message];
+    TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
     nestedMessage.bb = 456;
     nestedMessage.unknownFields = UnknownFieldsSetHelper(778);
-    [message setExtension:[UnittestRoot optionalNestedMessageExtension]
-                    value:nestedMessage];
+    [message setExtension:[UnittestRoot optionalNestedMessageExtension] value:nestedMessage];
 
     // Repeated Group
-    RepeatedGroup_extension *repeatedGroup =
-      [[RepeatedGroup_extension alloc] init];
+    RepeatedGroup_extension *repeatedGroup = [[RepeatedGroup_extension alloc] init];
     repeatedGroup.a = 567;
     repeatedGroup.unknownFields = UnknownFieldsSetHelper(780);
-    [message addExtension:[UnittestRoot repeatedGroupExtension]
-                    value:repeatedGroup];
+    [message addExtension:[UnittestRoot repeatedGroupExtension] value:repeatedGroup];
     [repeatedGroup release];
 
     // Repeated Message
     nestedMessage = [[TestAllTypes_NestedMessage alloc] init];
     nestedMessage.bb = 678;
     nestedMessage.unknownFields = UnknownFieldsSetHelper(781);
-    [message addExtension:[UnittestRoot repeatedNestedMessageExtension]
-                    value:nestedMessage];
+    [message addExtension:[UnittestRoot repeatedNestedMessageExtension] value:nestedMessage];
     [nestedMessage release];
   }
 
@@ -291,7 +278,8 @@ static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
 
   {
     XCTAssertTrue([message hasExtension:[UnittestRoot repeatedNestedMessageExtension]]);
-    NSArray *repeatedNestedMessages = [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
+    NSArray *repeatedNestedMessages =
+        [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
     XCTAssertEqual(repeatedNestedMessages.count, (NSUInteger)1);
     TestAllTypes_NestedMessage *repeatedNestedMessage = repeatedNestedMessages.firstObject;
     XCTAssertNotNil(repeatedNestedMessage);
@@ -338,14 +326,14 @@ static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
 
   {
     XCTAssertTrue([message hasExtension:[UnittestRoot repeatedNestedMessageExtension]]);
-    NSArray *repeatedNestedMessages = [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
+    NSArray *repeatedNestedMessages =
+        [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
     XCTAssertEqual(repeatedNestedMessages.count, (NSUInteger)1);
     TestAllTypes_NestedMessage *repeatedNestedMessage = repeatedNestedMessages.firstObject;
     XCTAssertNotNil(repeatedNestedMessage);
     XCTAssertEqual(repeatedNestedMessage.bb, 678);
     XCTAssertNil(repeatedNestedMessage.unknownFields);
   }
-
 }
 
 - (void)testDropMessageUnknownFieldsRecursively_Maps {
@@ -394,7 +382,6 @@ static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
     XCTAssertNotNil(foreignMessage);
     XCTAssertNil(foreignMessage.unknownFields);
   }
-
 }
 
 @end

@@ -1,0 +1,165 @@
+load(":cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(name = "empty")
+
+bool_flag(
+    name = "release",
+    build_setting_default = False,
+)
+
+TOOLCHAINS = {
+    "osx-x86_64": "cc-compiler-osx-x86_64",
+    "osx-aarch_64": "cc-compiler-osx-aarch_64",
+    "linux-aarch_64": "cc-compiler-linux-aarch_64",
+    "linux-ppcle_64": "cc-compiler-linux-ppcle_64",
+    "linux-s390_64": "cc-compiler-linux-s390_64",
+    "linux-x86_32": "cc-compiler-linux-x86_32",
+    "linux-x86_64": "cc-compiler-linux-x86_64",
+    "win32": "cc-compiler-windows-x86_32",
+    "win64": "cc-compiler-windows-x86_64",
+    "k8": "cc-compiler-k8",
+}
+
+cc_toolchain_suite(
+    name = "clang_suite",
+    toolchains = TOOLCHAINS,
+)
+
+[
+    cc_toolchain(
+        name = toolchain,
+        all_files = ":empty",
+        compiler_files = ":empty",
+        dwp_files = ":empty",
+        dynamic_runtime_lib = ":empty",
+        linker_files = ":empty",
+        objcopy_files = ":empty",
+        output_licenses = ["restricted"],
+        static_runtime_lib = ":empty",
+        strip_files = ":empty",
+        toolchain_config = ":" + cpu + "-config",
+        toolchain_identifier = toolchain,
+    )
+    for cpu, toolchain in TOOLCHAINS.items()
+]
+
+cc_toolchain_config(
+    name = "k8-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/x86_64",
+    target_cpu = "x86_64",
+    target_full_name = "x86_64-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "linux-aarch_64-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/aarch64",
+    target_cpu = "aarch64",
+    target_full_name = "aarch64-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "linux-ppcle_64-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/ppc64le",
+    target_cpu = "ppc64",
+    target_full_name = "powerpc64le-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "linux-s390_64-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/s390x",
+    target_cpu = "systemz",
+    target_full_name = "s390x-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "linux-x86_32-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/i686",
+    target_cpu = "x86_32",
+    target_full_name = "i386-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "linux-x86_64-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/x86_64",
+    target_cpu = "x86_64",
+    target_full_name = "x86_64-linux-gnu",
+)
+
+cc_toolchain_config(
+    name = "osx-aarch_64-config",
+    extra_compiler_flags = [
+        "-I/usr/tools/xcode_14_0/macosx/usr/include/c++/v1",
+        "-I/usr/tools/xcode_14_0/macosx/usr/include",
+        "-F/usr/tools/xcode_14_0/macosx/System/Library/Frameworks",
+        "-Wno-error=nullability-completeness",
+        "-Wno-error=availability",
+        "-Wno-error=elaborated-enum-base",
+    ],
+    extra_linker_flags = ["-framework CoreFoundation"],
+    linker_path = "/usr/tools",
+    sysroot = "/usr/tools/xcode_14_0/macosx",
+    target_cpu = "aarch64",
+    target_full_name = "aarch64-apple-macosx10.9",
+)
+
+cc_toolchain_config(
+    name = "osx-x86_64-config",
+    extra_compiler_flags = [
+        "-I/usr/tools/xcode_14_0/macosx/usr/include/c++/v1",
+        "-I/usr/tools/xcode_14_0/macosx/usr/include",
+        "-F/usr/tools/xcode_14_0/macosx/System/Library/Frameworks",
+        "-Wno-error=nullability-completeness",
+        "-Wno-error=availability",
+        "-Wno-error=elaborated-enum-base",
+    ],
+    extra_linker_flags = ["-framework CoreFoundation"],
+    linker_path = "/usr/tools",
+    sysroot = "/usr/tools/xcode_14_0/macosx",
+    target_cpu = "x86_64",
+    target_full_name = "x86_64-apple-macosx10.9",
+)
+
+cc_toolchain_config(
+    name = "win32-config",
+    extra_compiler_flags = [
+        "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++",
+        "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++/i686-w64-mingw32",
+        "-fsjlj-exceptions",
+    ],
+    extra_include = "/usr/lib/gcc/i686-w64-mingw32",
+    extra_linker_flags = [
+        "-L/usr/lib/gcc/i686-w64-mingw32/8.3-posix",
+        "-ldbghelp",
+        "-pthread",
+    ],
+    linker_path = "/usr/bin/ld",
+    sysroot = "/usr/i686-w64-mingw32",
+    target_cpu = "x86_32",
+    target_full_name = "i686-w64-mingw32",
+)
+
+cc_toolchain_config(
+    name = "win64-config",
+    extra_compiler_flags = [
+        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/",
+        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/x86_64-w64-mingw32",
+    ],
+    extra_include = "/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include",
+    extra_linker_flags = [
+        "-L/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix",
+        "-ldbghelp",
+    ],
+    linker_path = "/usr/bin/ld",
+    sysroot = "/usr/x86_64-w64-mingw32",
+    target_cpu = "x86_64",
+    target_full_name = "x86_64-w64-mingw32",
+)

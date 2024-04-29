@@ -1,0 +1,58 @@
+name: PHP Extension Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Package extension
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: php_ext/${{ matrix.version }}
+          bash: >
+            ./regenerate_stale_files.sh $BAZEL_FLAGS;
+            bazel build //php:release $BAZEL_FLAGS;
+            cp bazel-bin/php/protobuf-*.tgz .
+
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: protobuf-php-release
+          path: protobuf-*.tgz
+
+  build:
+    needs: [package]
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ["8.0", "8.1", "8.2"]
+    name: Build ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        with:
+          name: protobuf-php-release
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          skip-staleness-check: true
+          command: protobuf-*.tgz

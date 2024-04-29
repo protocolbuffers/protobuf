@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -44,9 +21,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * A {@link ByteString} that wraps around a {@link ByteBuffer}.
- */
+/** A {@link ByteString} that wraps around a {@link ByteBuffer}. */
 final class NioByteString extends ByteString.LeafByteString {
   private final ByteBuffer buffer;
 
@@ -60,16 +35,12 @@ final class NioByteString extends ByteString.LeafByteString {
   // =================================================================
   // Serializable
 
-  /**
-   * Magic method that lets us override serialization behavior.
-   */
+  /** Magic method that lets us override serialization behavior. */
   private Object writeReplace() {
     return ByteString.copyFrom(buffer.slice());
   }
 
-  /**
-   * Magic method that lets us override deserialization behavior.
-   */
+  /** Magic method that lets us override deserialization behavior. */
   private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
     throw new InvalidObjectException("NioByteString instances are not to be serialized directly");
   }
@@ -85,6 +56,13 @@ final class NioByteString extends ByteString.LeafByteString {
     } catch (IndexOutOfBoundsException e) {
       throw new ArrayIndexOutOfBoundsException(e.getMessage());
     }
+  }
+
+  @Override
+  public byte internalByteAt(int index) {
+    // it isn't possible to avoid the bounds checking inside of ByteBuffer, so just use the default
+    // implementation.
+    return byteAt(index);
   }
 
   @Override
@@ -108,7 +86,7 @@ final class NioByteString extends ByteString.LeafByteString {
   protected void copyToInternal(
       byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
     ByteBuffer slice = buffer.slice();
-    slice.position(sourceOffset);
+    Java8Compatibility.position(slice, sourceOffset);
     slice.get(target, targetOffset, numberToCopy);
   }
 
@@ -165,7 +143,7 @@ final class NioByteString extends ByteString.LeafByteString {
       offset = buffer.arrayOffset() + buffer.position();
       length = buffer.remaining();
     } else {
-      // TODO(nathanmittler): Can we optimize this?
+      // TODO: Can we optimize this?
       bytes = toByteArray();
       offset = 0;
       length = bytes.length;
@@ -222,7 +200,7 @@ final class NioByteString extends ByteString.LeafByteString {
 
       @Override
       public void mark(int readlimit) {
-        buf.mark();
+        Java8Compatibility.mark(buf);
       }
 
       @Override
@@ -233,7 +211,7 @@ final class NioByteString extends ByteString.LeafByteString {
       @Override
       public void reset() throws IOException {
         try {
-          buf.reset();
+          Java8Compatibility.reset(buf);
         } catch (InvalidMarkException e) {
           throw new IOException(e);
         }
@@ -284,8 +262,8 @@ final class NioByteString extends ByteString.LeafByteString {
     }
 
     ByteBuffer slice = buffer.slice();
-    slice.position(beginIndex - buffer.position());
-    slice.limit(endIndex - buffer.position());
+    Java8Compatibility.position(slice, beginIndex - buffer.position());
+    Java8Compatibility.limit(slice, endIndex - buffer.position());
     return slice;
   }
 }

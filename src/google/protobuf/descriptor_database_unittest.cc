@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,21 +11,18 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include "google/protobuf/descriptor_database.h"
+
 #include <algorithm>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/text_format.h>
-
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/text_format.h"
+
 
 namespace google {
 namespace protobuf {
@@ -62,12 +36,11 @@ static void AddToDatabase(SimpleDescriptorDatabase* database,
 }
 
 static void ExpectContainsType(const FileDescriptorProto& proto,
-                               const string& type_name) {
+                               const std::string& type_name) {
   for (int i = 0; i < proto.message_type_size(); i++) {
     if (proto.message_type(i).name() == type_name) return;
   }
-  ADD_FAILURE() << "\"" << proto.name()
-                << "\" did not contain expected type \""
+  ADD_FAILURE() << "\"" << proto.name() << "\" did not contain expected type \""
                 << type_name << "\".";
 }
 
@@ -80,7 +53,7 @@ static void ExpectContainsType(const FileDescriptorProto& proto,
 // three nearly-identical sets of tests, we use parameterized tests to apply
 // the same code to all three.
 
-// The parameterized test runs against a DescriptarDatabaseTestCase.  We have
+// The parameterized test runs against a DescriptorDatabaseTestCase.  We have
 // implementations for each of the three classes we want to test.
 class DescriptorDatabaseTestCase {
  public:
@@ -102,9 +75,7 @@ class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
 
   virtual ~SimpleDescriptorDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() {
-    return &database_;
-  }
+  virtual DescriptorDatabase* GetDatabase() { return &database_; }
   virtual bool AddToDatabase(const FileDescriptorProto& file) {
     return database_.Add(file);
   }
@@ -122,11 +93,9 @@ class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
 
   virtual ~EncodedDescriptorDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() {
-    return &database_;
-  }
+  virtual DescriptorDatabase* GetDatabase() { return &database_; }
   virtual bool AddToDatabase(const FileDescriptorProto& file) {
-    string data;
+    std::string data;
     file.SerializeToString(&data);
     return database_.AddCopy(data.data(), data.size());
   }
@@ -145,9 +114,7 @@ class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
   DescriptorPoolDatabaseTestCase() : database_(pool_) {}
   virtual ~DescriptorPoolDatabaseTestCase() {}
 
-  virtual DescriptorDatabase* GetDatabase() {
-    return &database_;
-  }
+  virtual DescriptorDatabase* GetDatabase() { return &database_; }
   virtual bool AddToDatabase(const FileDescriptorProto& file) {
     return pool_.BuildFile(file);
   }
@@ -179,17 +146,17 @@ class DescriptorDatabaseTest
     EXPECT_FALSE(test_case_->AddToDatabase(file_proto));
   }
 
-  google::protobuf::scoped_ptr<DescriptorDatabaseTestCase> test_case_;
+  std::unique_ptr<DescriptorDatabaseTestCase> test_case_;
   DescriptorDatabase* database_;
 };
 
 TEST_P(DescriptorDatabaseTest, FindFileByName) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "message_type { name:\"Foo\" }");
+      "name: \"foo.proto\" "
+      "message_type { name:\"Foo\" }");
   AddToDatabase(
-    "name: \"bar.proto\" "
-    "message_type { name:\"Bar\" }");
+      "name: \"bar.proto\" "
+      "message_type { name:\"Bar\" }");
 
   {
     FileDescriptorProto file;
@@ -214,27 +181,26 @@ TEST_P(DescriptorDatabaseTest, FindFileByName) {
 
 TEST_P(DescriptorDatabaseTest, FindFileContainingSymbol) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Foo\" "
-    "  field { name:\"qux\" }"
-    "  nested_type { name: \"Grault\" } "
-    "  enum_type { name: \"Garply\" } "
-    "} "
-    "enum_type { "
-    "  name: \"Waldo\" "
-    "  value { name:\"FRED\" } "
-    "} "
-    "extension { name: \"plugh\" } "
-    "service { "
-    "  name: \"Xyzzy\" "
-    "  method { name: \"Thud\" } "
-    "}"
-    );
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "  field { name:\"qux\" }"
+      "  nested_type { name: \"Grault\" } "
+      "  enum_type { name: \"Garply\" } "
+      "} "
+      "enum_type { "
+      "  name: \"Waldo\" "
+      "  value { name:\"FRED\" } "
+      "} "
+      "extension { name: \"plugh\" } "
+      "service { "
+      "  name: \"Xyzzy\" "
+      "  method { name: \"Thud\" } "
+      "}");
   AddToDatabase(
-    "name: \"bar.proto\" "
-    "package: \"corge\" "
-    "message_type { name: \"Bar\" }");
+      "name: \"bar.proto\" "
+      "package: \"corge\" "
+      "message_type { name: \"Bar\" }");
 
   {
     FileDescriptorProto file;
@@ -247,6 +213,10 @@ TEST_P(DescriptorDatabaseTest, FindFileContainingSymbol) {
     FileDescriptorProto file;
     EXPECT_TRUE(database_->FindFileContainingSymbol("Foo.qux", &file));
     EXPECT_EQ("foo.proto", file.name());
+    // Non-existent field under a valid top level symbol can also be
+    // found.
+    EXPECT_TRUE(
+        database_->FindFileContainingSymbol("Foo.none_field.none", &file));
   }
 
   {
@@ -320,24 +290,25 @@ TEST_P(DescriptorDatabaseTest, FindFileContainingSymbol) {
 
 TEST_P(DescriptorDatabaseTest, FindFileContainingExtension) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Foo\" "
-    "  extension_range { start: 1 end: 1000 } "
-    "  extension { name:\"qux\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 "
-    "              extendee: \".Foo\" }"
-    "}");
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "  extension_range { start: 1 end: 1000 } "
+      "  extension { name:\"qux\" label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "number:5 "
+      "              extendee: \".Foo\" }"
+      "}");
   AddToDatabase(
-    "name: \"bar.proto\" "
-    "package: \"corge\" "
-    "dependency: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Bar\" "
-    "  extension_range { start: 1 end: 1000 } "
-    "} "
-    "extension { name:\"grault\" extendee: \".Foo\"       number:32 } "
-    "extension { name:\"garply\" extendee: \".corge.Bar\" number:70 } "
-    "extension { name:\"waldo\"  extendee: \"Bar\"        number:56 } ");
+      "name: \"bar.proto\" "
+      "package: \"corge\" "
+      "dependency: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Bar\" "
+      "  extension_range { start: 1 end: 1000 } "
+      "} "
+      "extension { name:\"grault\" extendee: \".Foo\"       number:32 } "
+      "extension { name:\"garply\" extendee: \".corge.Bar\" number:70 } "
+      "extension { name:\"waldo\"  extendee: \"Bar\"        number:56 } ");
 
   {
     FileDescriptorProto file;
@@ -389,24 +360,25 @@ TEST_P(DescriptorDatabaseTest, FindFileContainingExtension) {
 
 TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Foo\" "
-    "  extension_range { start: 1 end: 1000 } "
-    "  extension { name:\"qux\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 "
-    "              extendee: \".Foo\" }"
-    "}");
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "  extension_range { start: 1 end: 1000 } "
+      "  extension { name:\"qux\" label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "number:5 "
+      "              extendee: \".Foo\" }"
+      "}");
   AddToDatabase(
-    "name: \"bar.proto\" "
-    "package: \"corge\" "
-    "dependency: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Bar\" "
-    "  extension_range { start: 1 end: 1000 } "
-    "} "
-    "extension { name:\"grault\" extendee: \".Foo\"       number:32 } "
-    "extension { name:\"garply\" extendee: \".corge.Bar\" number:70 } "
-    "extension { name:\"waldo\"  extendee: \"Bar\"        number:56 } ");
+      "name: \"bar.proto\" "
+      "package: \"corge\" "
+      "dependency: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Bar\" "
+      "  extension_range { start: 1 end: 1000 } "
+      "} "
+      "extension { name:\"grault\" extendee: \".Foo\"       number:32 } "
+      "extension { name:\"garply\" extendee: \".corge.Bar\" number:70 } "
+      "extension { name:\"waldo\"  extendee: \"Bar\"        number:56 } ");
 
   {
     std::vector<int> numbers;
@@ -440,47 +412,49 @@ TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
 
 TEST_P(DescriptorDatabaseTest, ConflictingFileError) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Foo\" "
-    "}");
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "}");
   AddToDatabaseWithError(
-    "name: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Bar\" "
-    "}");
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Bar\" "
+      "}");
 }
 
 TEST_P(DescriptorDatabaseTest, ConflictingTypeError) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "message_type { "
-    "  name: \"Foo\" "
-    "}");
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "}");
   AddToDatabaseWithError(
-    "name: \"bar.proto\" "
-    "message_type { "
-    "  name: \"Foo\" "
-    "}");
+      "name: \"bar.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "}");
 }
 
 TEST_P(DescriptorDatabaseTest, ConflictingExtensionError) {
   AddToDatabase(
-    "name: \"foo.proto\" "
-    "extension { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 "
-    "            extendee: \".Foo\" }");
+      "name: \"foo.proto\" "
+      "extension { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 "
+      "            extendee: \".Foo\" }");
   AddToDatabaseWithError(
-    "name: \"bar.proto\" "
-    "extension { name:\"bar\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 "
-    "            extendee: \".Foo\" }");
+      "name: \"bar.proto\" "
+      "extension { name:\"bar\" label:LABEL_OPTIONAL type:TYPE_INT32 number:5 "
+      "            extendee: \".Foo\" }");
 }
 
-INSTANTIATE_TEST_CASE_P(Simple, DescriptorDatabaseTest,
+INSTANTIATE_TEST_CASE_P(
+    Simple, DescriptorDatabaseTest,
     testing::Values(&SimpleDescriptorDatabaseTestCase::New));
-INSTANTIATE_TEST_CASE_P(MemoryConserving, DescriptorDatabaseTest,
+INSTANTIATE_TEST_CASE_P(
+    MemoryConserving, DescriptorDatabaseTest,
     testing::Values(&EncodedDescriptorDatabaseTestCase::New));
 INSTANTIATE_TEST_CASE_P(Pool, DescriptorDatabaseTest,
-    testing::Values(&DescriptorPoolDatabaseTestCase::New));
+                        testing::Values(&DescriptorPoolDatabaseTestCase::New));
 
 #endif  // GTEST_HAS_PARAM_TEST
 
@@ -495,10 +469,10 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   file2b.add_message_type()->set_name("Bar");
 
   // Normal serialization allows our optimization to kick in.
-  string data1 = file1.SerializeAsString();
+  std::string data1 = file1.SerializeAsString();
 
   // Force out-of-order serialization to test slow path.
-  string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
+  std::string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
 
   // Create EncodedDescriptorDatabase containing both files.
   EncodedDescriptorDatabase db;
@@ -506,7 +480,7 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   db.Add(data2.data(), data2.size());
 
   // Test!
-  string filename;
+  std::string filename;
   EXPECT_TRUE(db.FindNameOfFileContainingSymbol("foo.Foo", &filename));
   EXPECT_EQ("foo.proto", filename);
   EXPECT_TRUE(db.FindNameOfFileContainingSymbol("foo.Foo.Blah", &filename));
@@ -518,41 +492,123 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   EXPECT_FALSE(db.FindNameOfFileContainingSymbol("baz.Baz", &filename));
 }
 
+TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  SimpleDescriptorDatabase db;
+  db.Add(f);
+
+  // Test!
+  std::vector<std::string> all_files;
+  db.FindAllFileNames(&all_files);
+  EXPECT_THAT(all_files, testing::ElementsAre("foo.proto"));
+}
+
+TEST(SimpleDescriptorDatabaseExtraTest, FindAllPackageNames) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleDescriptorDatabase db;
+  db.Add(f);
+  db.Add(b);
+
+  std::vector<std::string> packages;
+  EXPECT_TRUE(db.FindAllPackageNames(&packages));
+  EXPECT_THAT(packages, ::testing::UnorderedElementsAre("foo", ""));
+}
+
+TEST(SimpleDescriptorDatabaseExtraTest, FindAllMessageNames) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleDescriptorDatabase db;
+  db.Add(f);
+  db.Add(b);
+
+  std::vector<std::string> messages;
+  EXPECT_TRUE(db.FindAllMessageNames(&messages));
+  EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+}
+
+TEST(SimpleDescriptorDatabaseExtraTest, AddUnowned) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleDescriptorDatabase db;
+  db.AddUnowned(&f);
+  db.AddUnowned(&b);
+
+  std::vector<std::string> packages;
+  EXPECT_TRUE(db.FindAllPackageNames(&packages));
+  EXPECT_THAT(packages, ::testing::UnorderedElementsAre("foo", ""));
+  std::vector<std::string> messages;
+  EXPECT_TRUE(db.FindAllMessageNames(&messages));
+  EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+}
+
 // ===================================================================
 
 class MergedDescriptorDatabaseTest : public testing::Test {
  protected:
   MergedDescriptorDatabaseTest()
-    : forward_merged_(&database1_, &database2_),
-      reverse_merged_(&database2_, &database1_) {}
+      : forward_merged_(&database1_, &database2_),
+        reverse_merged_(&database2_, &database1_) {}
 
-  virtual void SetUp() {
-    AddToDatabase(&database1_,
-      "name: \"foo.proto\" "
-      "message_type { name:\"Foo\" extension_range { start: 1 end: 100 } } "
-      "extension { name:\"foo_ext\" extendee: \".Foo\" number:3 "
-      "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
-    AddToDatabase(&database2_,
-      "name: \"bar.proto\" "
-      "message_type { name:\"Bar\" extension_range { start: 1 end: 100 } } "
-      "extension { name:\"bar_ext\" extendee: \".Bar\" number:5 "
-      "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
+  void SetUp() override {
+    AddToDatabase(
+        &database1_,
+        "name: \"foo.proto\" "
+        "message_type { name:\"Foo\" extension_range { start: 1 end: 100 } } "
+        "extension { name:\"foo_ext\" extendee: \".Foo\" number:3 "
+        "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
+    AddToDatabase(
+        &database2_,
+        "name: \"bar.proto\" "
+        "message_type { name:\"Bar\" extension_range { start: 1 end: 100 } } "
+        "extension { name:\"bar_ext\" extendee: \".Bar\" number:5 "
+        "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
 
     // baz.proto exists in both pools, with different definitions.
-    AddToDatabase(&database1_,
-      "name: \"baz.proto\" "
-      "message_type { name:\"Baz\" extension_range { start: 1 end: 100 } } "
-      "message_type { name:\"FromPool1\" } "
-      "extension { name:\"baz_ext\" extendee: \".Baz\" number:12 "
-      "            label:LABEL_OPTIONAL type:TYPE_INT32 } "
-      "extension { name:\"database1_only_ext\" extendee: \".Baz\" number:13 "
-      "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
-    AddToDatabase(&database2_,
-      "name: \"baz.proto\" "
-      "message_type { name:\"Baz\" extension_range { start: 1 end: 100 } } "
-      "message_type { name:\"FromPool2\" } "
-      "extension { name:\"baz_ext\" extendee: \".Baz\" number:12 "
-      "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
+    AddToDatabase(
+        &database1_,
+        "name: \"baz.proto\" "
+        "message_type { name:\"Baz\" extension_range { start: 1 end: 100 } } "
+        "message_type { name:\"FromPool1\" } "
+        "extension { name:\"baz_ext\" extendee: \".Baz\" number:12 "
+        "            label:LABEL_OPTIONAL type:TYPE_INT32 } "
+        "extension { name:\"database1_only_ext\" extendee: \".Baz\" number:13 "
+        "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
+    AddToDatabase(
+        &database2_,
+        "name: \"baz.proto\" "
+        "message_type { name:\"Baz\" extension_range { start: 1 end: 100 } } "
+        "message_type { name:\"FromPool2\" } "
+        "extension { name:\"baz_ext\" extendee: \".Baz\" number:12 "
+        "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
   }
 
   SimpleDescriptorDatabase database1_;
@@ -646,8 +702,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingSymbol) {
   {
     // Can't find non-existent symbol.
     FileDescriptorProto file;
-    EXPECT_FALSE(
-      forward_merged_.FindFileContainingSymbol("NoSuchType", &file));
+    EXPECT_FALSE(forward_merged_.FindFileContainingSymbol("NoSuchType", &file));
   }
 }
 
@@ -655,8 +710,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingExtension) {
   {
     // Can find file that is only in database1_.
     FileDescriptorProto file;
-    EXPECT_TRUE(
-      forward_merged_.FindFileContainingExtension("Foo", 3, &file));
+    EXPECT_TRUE(forward_merged_.FindFileContainingExtension("Foo", 3, &file));
     EXPECT_EQ("foo.proto", file.name());
     ExpectContainsType(file, "Foo");
   }
@@ -664,8 +718,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingExtension) {
   {
     // Can find file that is only in database2_.
     FileDescriptorProto file;
-    EXPECT_TRUE(
-      forward_merged_.FindFileContainingExtension("Bar", 5, &file));
+    EXPECT_TRUE(forward_merged_.FindFileContainingExtension("Bar", 5, &file));
     EXPECT_EQ("bar.proto", file.name());
     ExpectContainsType(file, "Bar");
   }
@@ -673,8 +726,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingExtension) {
   {
     // In forward_merged_, database1_'s baz.proto takes precedence.
     FileDescriptorProto file;
-    EXPECT_TRUE(
-      forward_merged_.FindFileContainingExtension("Baz", 12, &file));
+    EXPECT_TRUE(forward_merged_.FindFileContainingExtension("Baz", 12, &file));
     EXPECT_EQ("baz.proto", file.name());
     ExpectContainsType(file, "FromPool1");
   }
@@ -682,8 +734,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingExtension) {
   {
     // In reverse_merged_, database2_'s baz.proto takes precedence.
     FileDescriptorProto file;
-    EXPECT_TRUE(
-      reverse_merged_.FindFileContainingExtension("Baz", 12, &file));
+    EXPECT_TRUE(reverse_merged_.FindFileContainingExtension("Baz", 12, &file));
     EXPECT_EQ("baz.proto", file.name());
     ExpectContainsType(file, "FromPool2");
   }
@@ -699,8 +750,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingExtension) {
   {
     // Can't find non-existent extension.
     FileDescriptorProto file;
-    EXPECT_FALSE(
-      forward_merged_.FindFileContainingExtension("Foo", 6, &file));
+    EXPECT_FALSE(forward_merged_.FindFileContainingExtension("Foo", 6, &file));
   }
 }
 
@@ -746,6 +796,14 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
     EXPECT_FALSE(reverse_merged_.FindAllExtensionNumbers("Blah", &numbers));
   }
 }
+
+TEST_F(MergedDescriptorDatabaseTest, FindAllFileNames) {
+  std::vector<std::string> files;
+  EXPECT_TRUE(forward_merged_.FindAllFileNames(&files));
+  EXPECT_THAT(files, ::testing::UnorderedElementsAre("foo.proto", "bar.proto",
+                                                     "baz.proto", "baz.proto"));
+}
+
 
 }  // anonymous namespace
 }  // namespace protobuf

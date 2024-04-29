@@ -27,23 +27,28 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+//
 // Wrappers for primitive (non-message) types. These types are useful
 // for embedding primitives in the `google.protobuf.Any` type and for places
 // where we need to distinguish between the absence of a primitive
 // typed field and its default value.
+//
+// These wrappers have no meaningful use within repeated fields as they lack
+// the ability to detect presence on individual elements.
+// These wrappers have no meaningful use within a map or a oneof since
+// individual entries of a map or fields of a oneof can already detect presence.
 
 syntax = "proto3";
 
 package google.protobuf;
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option cc_enable_arenas = true;
-option go_package = "github.com/golang/protobuf/ptypes/wrappers";
+option go_package = "google.golang.org/protobuf/types/known/wrapperspb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "WrappersProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 
 // Wrapper message for `double`.
 //

@@ -4,30 +4,13 @@
 
 namespace Google\Protobuf\Internal;
 
-/**
- * Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
- * or neither? HTTP based RPC implementation may choose GET verb for safe
- * methods, and PUT verb for idempotent methods instead of the default POST.
- *
- * Protobuf enum <code>Google\Protobuf\Internal</code>
- */
-class MethodOptions_IdempotencyLevel
-{
+if (false) {
     /**
-     * Generated from protobuf enum <code>IDEMPOTENCY_UNKNOWN = 0;</code>
+     * This class is deprecated. Use Google\Protobuf\Internal\MethodOptions\IdempotencyLevel instead.
+     * @deprecated
      */
-    const IDEMPOTENCY_UNKNOWN = 0;
-    /**
-     * implies idempotent
-     *
-     * Generated from protobuf enum <code>NO_SIDE_EFFECTS = 1;</code>
-     */
-    const NO_SIDE_EFFECTS = 1;
-    /**
-     * idempotent, but may have side effects
-     *
-     * Generated from protobuf enum <code>IDEMPOTENT = 2;</code>
-     */
-    const IDEMPOTENT = 2;
+    class MethodOptions_IdempotencyLevel {}
 }
+class_exists(MethodOptions\IdempotencyLevel::class);
+@trigger_error('Google\Protobuf\Internal\MethodOptions_IdempotencyLevel is deprecated and will be removed in the next major release. Use Google\Protobuf\Internal\MethodOptions\IdempotencyLevel instead', E_USER_DEPRECATED);
 

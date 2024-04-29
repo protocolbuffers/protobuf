@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -37,59 +14,361 @@
 #ifndef GOOGLE_PROTOBUF_IO_PRINTER_H__
 #define GOOGLE_PROTOBUF_IO_PRINTER_H__
 
+#include <cstddef>
+#include <functional>
+#include <initializer_list>
 #include <string>
-#include <map>
+#include <type_traits>
+#include <utility>
 #include <vector>
-#include <google/protobuf/stubs/common.h>
+
+#include "absl/cleanup/cleanup.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/functional/function_ref.h"
+#include "absl/log/absl_check.h"
+#include "absl/meta/type_traits.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "absl/types/variant.h"
+#include "google/protobuf/io/zero_copy_sink.h"
+
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace io {
 
-class ZeroCopyOutputStream;     // zero_copy_stream.h
-
 // Records annotations about a Printer's output.
-class LIBPROTOBUF_EXPORT AnnotationCollector {
+class PROTOBUF_EXPORT AnnotationCollector {
  public:
+  // Annotation is a offset range and a payload pair. This payload's layout is
+  // specific to derived types of AnnotationCollector.
+  using Annotation = std::pair<std::pair<size_t, size_t>, std::string>;
+
+  // The semantic meaning of an annotation. This enum mirrors
+  // google.protobuf.GeneratedCodeInfo.Annotation.Semantic, and the enumerator values
+  // should match it.
+  enum Semantic {
+    kNone = 0,
+    kSet = 1,
+    kAlias = 2,
+  };
+
+  virtual ~AnnotationCollector() = default;
+
   // Records that the bytes in file_path beginning with begin_offset and ending
   // before end_offset are associated with the SourceCodeInfo-style path.
   virtual void AddAnnotation(size_t begin_offset, size_t end_offset,
-                             const string& file_path,
+                             const std::string& file_path,
                              const std::vector<int>& path) = 0;
 
-  virtual ~AnnotationCollector() {}
+  virtual void AddAnnotation(size_t begin_offset, size_t end_offset,
+                             const std::string& file_path,
+                             const std::vector<int>& path,
+                             absl::optional<Semantic> semantic) {
+    AddAnnotation(begin_offset, end_offset, file_path, path);
+  }
+
+  // TODO I don't see why we need virtuals here. Just a vector of
+  // range, payload pairs stored in a context should suffice.
+  virtual void AddAnnotationNew(Annotation&) {}
 };
 
-// Records annotations about a Printer's output to the given protocol buffer,
-// assuming that the buffer has an ::Annotation message exposing path,
-// source_file, begin and end fields.
+// Records annotations about a Printer's output to a Protobuf message,
+// assuming that it has a repeated submessage field named `annotation` with
+// fields matching
+//
+// message ??? {
+//   repeated int32 path = 1;
+//   optional string source_file = 2;
+//   optional int32 begin = 3;
+//   optional int32 end = 4;
+//   optional int32 semantic = 5;
+// }
 template <typename AnnotationProto>
 class AnnotationProtoCollector : public AnnotationCollector {
+ private:
+  // Some users of this type use it with a proto that does not have a
+  // "semantic" field. Therefore, we need to detect it with SFINAE.
+
+  // go/ranked-overloads
+  struct Rank0 {};
+  struct Rank1 : Rank0 {};
+
+  template <typename Proto>
+  static auto SetSemantic(Proto* p, int semantic, Rank1)
+      -> decltype(p->set_semantic(
+          static_cast<typename Proto::Semantic>(semantic))) {
+    return p->set_semantic(static_cast<typename Proto::Semantic>(semantic));
+  }
+
+  template <typename Proto>
+  static void SetSemantic(Proto*, int, Rank0) {}
+
  public:
-  // annotation_proto is the protocol buffer to which new Annotations should be
-  // added. It is not owned by the AnnotationProtoCollector.
   explicit AnnotationProtoCollector(AnnotationProto* annotation_proto)
       : annotation_proto_(annotation_proto) {}
 
-  // Override for AnnotationCollector::AddAnnotation.
-  virtual void AddAnnotation(size_t begin_offset, size_t end_offset,
-                             const string& file_path,
-                             const std::vector<int>& path) {
-    typename AnnotationProto::Annotation* annotation =
-        annotation_proto_->add_annotation();
+  void AddAnnotation(size_t begin_offset, size_t end_offset,
+                     const std::string& file_path,
+                     const std::vector<int>& path) override {
+    AddAnnotation(begin_offset, end_offset, file_path, path, absl::nullopt);
+  }
+
+  void AddAnnotation(size_t begin_offset, size_t end_offset,
+                     const std::string& file_path, const std::vector<int>& path,
+                     absl::optional<Semantic> semantic) override {
+    auto* annotation = annotation_proto_->add_annotation();
     for (int i = 0; i < path.size(); ++i) {
       annotation->add_path(path[i]);
     }
     annotation->set_source_file(file_path);
     annotation->set_begin(begin_offset);
     annotation->set_end(end_offset);
+
+    if (semantic.has_value()) {
+      SetSemantic(annotation, *semantic, Rank1{});
+    }
+  }
+
+  void AddAnnotationNew(Annotation& a) override {
+    auto* annotation = annotation_proto_->add_annotation();
+    annotation->ParseFromString(a.second);
+    annotation->set_begin(a.first.first);
+    annotation->set_end(a.first.second);
   }
 
  private:
-  // The protocol buffer to which new annotations should be added.
-  AnnotationProto* const annotation_proto_;
+  AnnotationProto* annotation_proto_;
 };
 
+// A source code printer for assisting in code generation.
+//
+// This type implements a simple templating language for substiting variables
+// into static, user-provided strings, and also tracks indentation
+// automatically.
+//
+// The main entry-point for this type is the Emit function, which can be used
+// thus:
+//
+//   Printer p(output);
+//   p.Emit({{"class", my_class_name}}, R"cc(
+//     class $class$ {
+//      public:
+//       $class$(int x) : x_(x) {}
+//      private:
+//       int x_;
+//     };
+//   )cc");
+//
+// Substitutions are of the form $var$, which is looked up in the map passed in
+// as the first argument. The variable delimiter character, $, can be chosen to
+// be something convenient for the target language. For example, in PHP, which
+// makes heavy use of $, it can be made into something like # instead.
+//
+// A literal $ can be emitted by writing $$.
+//
+// Substitutions may contain spaces around the name of the variable, which will
+// be ignored for the purposes of looking up the variable to substitute in, but
+// which will be reproduced in the output:
+//
+//   p.Emit({{"foo", "bar"}}, "$ foo $");
+//
+// emits the string " bar ". If the substituted-in variable is the empty string,
+// then the surrounding spaces are *not* printed:
+//
+//   p.Emit({{"xzy", xyz}}, "$xyz $Thing");
+//
+// If xyz is "Foo", this will become "Foo Thing", but if it is "", this becomes
+// "Thing", rather than " Thing". This helps minimize awkward whitespace in the
+// output.
+//
+// The value may be any type that can be stringified with `absl::StrCat`:
+//
+//   p.Emit({{"num", 5}}, "x = $num$;");
+//
+// If a variable is referenced in the format string that is missing, the program
+// will crash. Callers must statically know that every variable reference is
+// valid, and MUST NOT pass user-provided strings directly into Emit().
+//
+// Substitutions can be configured to "chomp" a single character after them, to
+// help make indentation work out. This can be configured by passing a
+// io::Printer::Sub().WithSuffix() into Emit's substitution map:
+//   p.Emit({io::Printer::Sub("var", var_decl).WithSuffix(";")}, R"cc(
+//     class $class$ {
+//      public:
+//       $var$;
+//     };
+//   )cc");
+//
+// This will delete the ; after $var$, regardless of whether it was an empty
+// declaration or not. It will also intelligently attempt to clean up
+// empty lines that follow, if it was on an empty line; this promotes cleaner
+// formatting of the output.
+//
+// Any number of different characters can be potentially skipped, but only one
+// will actually be skipped. For example, callback substitutions (see below) use
+// ";," by default as their "chomping set".
+//
+// # Callback Substitution
+//
+// Instead of passing a string into Emit(), it is possible to pass in a callback
+// as a variable mapping. This will take indentation into account, which allows
+// factoring out parts of a formatting string while ensuring braces are
+// balanced:
+//
+//   p.Emit(
+//     {{"methods", [&] {
+//       p.Emit(R"cc(
+//         int Bar() {
+//            return 42;
+//         }
+//       )cc");
+//     }}},
+//     R"cc(
+//       class Foo {
+//        public:
+//         $methods$;
+//       };
+//     )cc"
+//   );
+//
+// This emits
+//
+//   class Foo {
+//    public:
+//     int Bar() {
+//       return 42;
+//     }
+//   };
+//
+// # Comments
+//
+// It may be desirable to place comments in a raw string that are stripped out
+// before printing. The prefix for Printer-ignored comments can be configured
+// in Options. By default, this is `//~`.
+//
+//   p.Emit(R"cc(
+//     // Will be printed in the output.
+//     //~ Won't be.
+//   )cc");
+//
+// # Lookup Frames
+//
+// If many calls to Emit() use the same set of variables, they can be stored
+// in a *variable lookup frame*, like so:
+//
+//   auto vars = p.WithVars({{"class_name", my_class_name}});
+//   p.Emit(R"cc(
+//     class $class_name$ {
+//      public:
+//       $class_name$(int x);
+//       // Etc.
+//     };
+//   )cc");
+//
+// WithVars() returns an RAII object that will "pop" the lookup frame on scope
+// exit, ensuring that the variables remain local. There are a few different
+// overloads of WithVars(); it accepts a map type, like absl::flat_hash_map,
+// either by-value (which will cause the Printer to store a copy), or by
+// pointer (which will cause the Printer to store a pointer, potentially
+// avoiding a copy.)
+//
+// p.Emit(vars, "..."); is effectively syntax sugar for
+//
+//  { auto v = p.WithVars(vars); p.Emit("..."); }
+//
+// NOTE: callbacks are *not* allowed with WithVars; callbacks should be local
+// to a specific Emit() call.
+//
+// # Annotations
+//
+// If Printer is given an AnnotationCollector, it will use it to record which
+// spans of generated code correspond to user-indicated descriptors. There are
+// a few different ways of indicating when to emit annotations.
+//
+// The WithAnnotations() function is like WithVars(), but accepts maps with
+// string keys and descriptor values. It adds an annotation variable frame and
+// returns an RAII object that pops the frame.
+//
+// There are two different ways to annotate code. In the first, when
+// substituting a variable, if there is an annotation with the same name, then
+// the resulting expanded value's span will be annotated with that annotation.
+// For example:
+//
+//   auto v = p.WithVars({{"class_name", my_class_name}});
+//   auto a = p.WithAnnotations({{"class_name", message_descriptor}});
+//   p.Emit(R"cc(
+//     class $class_name$ {
+//      public:
+//       $class_name$(int x);
+//       // Etc.
+//     };
+//   )cc");
+//
+// The span corresponding to whatever $class_name$ expands to will be annotated
+// as having come from message_descriptor.
+//
+// For convenience, this can be done with a single WithVars(), using the special
+// three-argument form:
+//
+//   auto v = p.WithVars({{"class_name", my_class_name, message_descriptor}});
+//   p.Emit(R"cc(
+//     class $class_name$ {
+//      public:
+//       $class_name$(int x);
+//       // Etc.
+//     };
+//   )cc");
+//
+//
+// Alternatively, a range may be given explicitly:
+//
+//   auto a = p.WithAnnotations({{"my_desc", message_descriptor}});
+//   p.Emit(R"cc(
+//     $_start$my_desc$
+//     class Foo {
+//       // Etc.
+//     };
+//     $_end$my_desc$
+//   )cc");
+//
+// The special $_start$ and $_end$ variables indicate the start and end of an
+// annotated span, which is annotated with the variable that follows. This
+// form can produce somewhat unreadable format strings and is not recommended.
+//
+// Note that whitespace after a $_start$ and before an $_end$ is not printed.
+//
+// # Indentation
+//
+// Printer tracks an indentation amount to add to each new line, independent
+// from indentation in an Emit() call's literal. The amount of indentation to
+// add is controlled by the WithIndent() function:
+//
+//   p.Emit("class $class_name$ {");
+//   {
+//     auto indent = p.WithIndent();
+//     p.Emit(R"cc(
+//       public:
+//        $class_name$(int x);
+//     )cc");
+//   }
+//   p.Emit("};");
+//
+// This will automatically add one level of indentation to all code in scope of
+// `indent`, which is an RAII object much like the return value of `WithVars()`.
+//
+// # Old API
+// TODO: Delete this documentation.
+//
+// Printer supports an older-style API that is in the process of being
+// re-written. The old documentation is reproduced here until all use-cases are
+// handled.
+//
 // This simple utility class assists in code generation.  It basically
 // allows the caller to define a set of variables and then output some
 // text with variable substitutions.  Example usage:
@@ -161,203 +440,712 @@ class AnnotationProtoCollector : public AnnotationCollector {
 //
 // This code associates the span covering "call(bar,bar)" in the output with the
 // call_ descriptor.
+class PROTOBUF_EXPORT Printer {
+ private:
+  struct AnnotationRecord;
 
-class LIBPROTOBUF_EXPORT Printer {
  public:
-  // Create a printer that writes text to the given output stream.  Use the
-  // given character as the delimiter for variables.
-  Printer(ZeroCopyOutputStream* output, char variable_delimiter);
+  // This type exists to work around an absl type that has not yet been
+  // released.
+  struct SourceLocation {
+    static SourceLocation current() { return {}; }
+    absl::string_view file_name() { return "<unknown>"; }
+    int line() { return 0; }
+  };
 
-  // Create a printer that writes text to the given output stream.  Use the
-  // given character as the delimiter for variables.  If annotation_collector
-  // is not null, Printer will provide it with annotations about code written
-  // to the stream.  annotation_collector is not owned by Printer.
+  static constexpr char kDefaultVariableDelimiter = '$';
+  static constexpr absl::string_view kProtocCodegenTrace =
+      "PROTOC_CODEGEN_TRACE";
+
+  // Sink type for constructing substitutions to pass to WithVars() and Emit().
+  class Sub;
+
+  // Options for controlling how the output of a Printer is formatted.
+  struct Options {
+    Options() = default;
+    Options(const Options&) = default;
+    Options(Options&&) = default;
+    Options(char variable_delimiter, AnnotationCollector* annotation_collector)
+        : variable_delimiter(variable_delimiter),
+          annotation_collector(annotation_collector) {}
+
+    // The delimiter for variable substitutions, e.g. $foo$.
+    char variable_delimiter = kDefaultVariableDelimiter;
+    // An optional listener the Printer calls whenever it emits a source
+    // annotation; may be null.
+    AnnotationCollector* annotation_collector = nullptr;
+    // The "comment start" token for the language being generated. This is used
+    // to allow the Printer to emit debugging annotations in the source code
+    // output.
+    absl::string_view comment_start = "//";
+    // The token for beginning comments that are discarded by Printer's internal
+    // formatter.
+    absl::string_view ignored_comment_start = "//~";
+    // The number of spaces that a single level of indentation adds by default;
+    // this is the amount that WithIndent() increases indentation by.
+    size_t spaces_per_indent = 2;
+    // Whether to emit a "codegen trace" for calls to Emit(). If true, each call
+    // to Emit() will print a comment indicating where in the source of the
+    // compiler the Emit() call occurred.
+    //
+    // If disengaged, defaults to whether or not the environment variable
+    // `PROTOC_CODEGEN_TRACE` is set.
+    absl::optional<bool> enable_codegen_trace = absl::nullopt;
+  };
+
+  // Constructs a new Printer with the default options to output to
+  // `output`.
+  explicit Printer(ZeroCopyOutputStream* output);
+
+  // Constructs a new printer with the given set of options to output to
+  // `output`.
+  Printer(ZeroCopyOutputStream* output, Options options);
+
+  // Old-style constructor. Avoid in preference to the two constructors above.
+  //
+  // Will eventually be marked as deprecated.
   Printer(ZeroCopyOutputStream* output, char variable_delimiter,
-          AnnotationCollector* annotation_collector);
+          AnnotationCollector* annotation_collector = nullptr);
 
-  ~Printer();
+  Printer(const Printer&) = delete;
+  Printer& operator=(const Printer&) = delete;
 
-  // Link a subsitution variable emitted by the last call to Print to the object
-  // described by descriptor.
-  template <typename SomeDescriptor>
-  void Annotate(const char* varname, const SomeDescriptor* descriptor) {
-    Annotate(varname, varname, descriptor);
+  // Pushes a new variable lookup frame that stores `vars` by reference.
+  //
+  // Returns an RAII object that pops the lookup frame.
+  template <typename Map>
+  auto WithVars(const Map* vars);
+
+  // Pushes a new variable lookup frame that stores `vars` by value.
+  //
+  // Returns an RAII object that pops the lookup frame.
+  template <typename Map = absl::flat_hash_map<std::string, std::string>,
+            typename = std::enable_if_t<!std::is_pointer<Map>::value>,
+            // Prefer the more specific span impl if this could be turned into
+            // a span.
+            typename = std::enable_if_t<
+                !std::is_convertible<Map, absl::Span<const Sub>>::value>>
+  auto WithVars(Map&& vars);
+
+  // Pushes a new variable lookup frame that stores `vars` by value.
+  //
+  // Returns an RAII object that pops the lookup frame.
+  auto WithVars(absl::Span<const Sub> vars);
+
+  // Looks up a variable set with WithVars().
+  //
+  // Will crash if:
+  // - `var` is not present in the lookup frame table.
+  // - `var` is a callback, rather than a string.
+  absl::string_view LookupVar(absl::string_view var);
+
+  // Pushes a new annotation lookup frame that stores `vars` by reference.
+  //
+  // Returns an RAII object that pops the lookup frame.
+  template <typename Map>
+  auto WithAnnotations(const Map* vars);
+
+  // Pushes a new variable lookup frame that stores `vars` by value.
+  //
+  // When writing `WithAnnotations({...})`, this is the overload that will be
+  // called, and it will synthesize an `absl::flat_hash_map`.
+  //
+  // Returns an RAII object that pops the lookup frame.
+  template <typename Map = absl::flat_hash_map<std::string, AnnotationRecord>>
+  auto WithAnnotations(Map&& vars);
+
+  // Increases the indentation by `indent` spaces; when nullopt, increments
+  // indentation by the configured default spaces_per_indent.
+  //
+  // Returns an RAII object that removes this indentation.
+  auto WithIndent(absl::optional<size_t> indent = absl::nullopt) {
+    size_t delta = indent.value_or(options_.spaces_per_indent);
+    indent_ += delta;
+    return absl::MakeCleanup([this, delta] { indent_ -= delta; });
   }
 
-  // Link the output range defined by the substitution variables as emitted by
-  // the last call to Print to the object described by descriptor. The range
-  // begins at begin_varname's value and ends after the last character of the
-  // value substituted for end_varname.
-  template <typename SomeDescriptor>
-  void Annotate(const char* begin_varname, const char* end_varname,
-                const SomeDescriptor* descriptor) {
-    if (annotation_collector_ == NULL) {
-      // Annotations aren't turned on for this Printer, so don't pay the cost
-      // of building the location path.
-      return;
-    }
-    std::vector<int> path;
-    descriptor->GetLocationPath(&path);
-    Annotate(begin_varname, end_varname, descriptor->file()->name(), path);
-  }
+  // Emits formatted source code to the underlying output. See the class
+  // documentation for more details.
+  //
+  // `format` MUST be a string constant.
+  void Emit(absl::string_view format,
+            SourceLocation loc = SourceLocation::current());
 
-  // Link a subsitution variable emitted by the last call to Print to the file
-  // with path file_name.
-  void Annotate(const char* varname, const string& file_name) {
-    Annotate(varname, varname, file_name);
-  }
+  // Emits formatted source code to the underlying output, injecting
+  // additional variables as a lookup frame for just this call. See the class
+  // documentation for more details.
+  //
+  // `format` MUST be a string constant.
+  void Emit(absl::Span<const Sub> vars, absl::string_view format,
+            SourceLocation loc = SourceLocation::current());
 
-  // Link the output range defined by the substitution variables as emitted by
-  // the last call to Print to the file with path file_name. The range begins
-  // at begin_varname's value and ends after the last character of the value
-  // substituted for end_varname.
-  void Annotate(const char* begin_varname, const char* end_varname,
-                const string& file_name) {
-    if (annotation_collector_ == NULL) {
-      // Annotations aren't turned on for this Printer.
-      return;
-    }
-    std::vector<int> empty_path;
-    Annotate(begin_varname, end_varname, file_name, empty_path);
-  }
+  // Write a string directly to the underlying output, performing no formatting
+  // of any sort.
+  void PrintRaw(absl::string_view data) { WriteRaw(data.data(), data.size()); }
 
-  // Print some text after applying variable substitutions.  If a particular
-  // variable in the text is not defined, this will crash.  Variables to be
-  // substituted are identified by their names surrounded by delimiter
-  // characters (as given to the constructor).  The variable bindings are
-  // defined by the given map.
-  void Print(const std::map<string, string>& variables, const char* text);
-
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable, const string& value);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2,
-                               const char* variable3, const string& value3);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2,
-                               const char* variable3, const string& value3,
-                               const char* variable4, const string& value4);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2,
-                               const char* variable3, const string& value3,
-                               const char* variable4, const string& value4,
-                               const char* variable5, const string& value5);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2,
-                               const char* variable3, const string& value3,
-                               const char* variable4, const string& value4,
-                               const char* variable5, const string& value5,
-                               const char* variable6, const string& value6);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2,
-                               const char* variable3, const string& value3,
-                               const char* variable4, const string& value4,
-                               const char* variable5, const string& value5,
-                               const char* variable6, const string& value6,
-                               const char* variable7, const string& value7);
-  // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const string& value1,
-                               const char* variable2, const string& value2,
-                               const char* variable3, const string& value3,
-                               const char* variable4, const string& value4,
-                               const char* variable5, const string& value5,
-                               const char* variable6, const string& value6,
-                               const char* variable7, const string& value7,
-                               const char* variable8, const string& value8);
-
-  // Indent text by two spaces.  After calling Indent(), two spaces will be
-  // inserted at the beginning of each line of text.  Indent() may be called
-  // multiple times to produce deeper indents.
-  void Indent();
-
-  // Reduces the current indent level by two spaces, or crashes if the indent
-  // level is zero.
-  void Outdent();
-
-  // Write a string to the output buffer.
-  // This method does not look for newlines to add indentation.
-  void PrintRaw(const string& data);
-
-  // Write a zero-delimited string to output buffer.
-  // This method does not look for newlines to add indentation.
-  void PrintRaw(const char* data);
-
-  // Write some bytes to the output buffer.
-  // This method does not look for newlines to add indentation.
-  void WriteRaw(const char* data, int size);
+  // Write a string directly to the underlying output, performing no formatting
+  // of any sort.
+  void WriteRaw(const char* data, size_t size);
 
   // True if any write to the underlying stream failed.  (We don't just
   // crash in this case because this is an I/O failure, not a programming
   // error.)
   bool failed() const { return failed_; }
 
- private:
+  // -- Old-style API below; to be deprecated and removed. --
+  // TODO: Deprecate these APIs.
+
+  template <typename Map = absl::flat_hash_map<std::string, std::string>>
+  void Print(const Map& vars, absl::string_view text);
+
+  template <typename... Args>
+  void Print(absl::string_view text, const Args&... args);
+
+  // Link a substitution variable emitted by the last call to Print to the
+  // object described by descriptor.
+  template <typename SomeDescriptor>
+  void Annotate(
+      absl::string_view varname, const SomeDescriptor* descriptor,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
+    Annotate(varname, varname, descriptor, semantic);
+  }
+
   // Link the output range defined by the substitution variables as emitted by
-  // the last call to Print to the object found at the SourceCodeInfo-style path
-  // in a file with path file_path. The range begins at the start of
-  // begin_varname's value and ends after the last character of the value
-  // substituted for end_varname. Note that begin_varname and end_varname
-  // may refer to the same variable.
-  void Annotate(const char* begin_varname, const char* end_varname,
-                const string& file_path, const std::vector<int>& path);
+  // the last call to Print to the object described by descriptor. The range
+  // begins at begin_varname's value and ends after the last character of the
+  // value substituted for end_varname.
+  template <typename Desc>
+  void Annotate(
+      absl::string_view begin_varname, absl::string_view end_varname,
+      const Desc* descriptor,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt);
 
-  // Copy size worth of bytes from data to buffer_.
-  void CopyToBuffer(const char* data, int size);
+  // Link a substitution variable emitted by the last call to Print to the file
+  // with path file_name.
+  void Annotate(
+      absl::string_view varname, absl::string_view file_name,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
+    Annotate(varname, varname, file_name, semantic);
+  }
 
-  const char variable_delimiter_;
+  // Link the output range defined by the substitution variables as emitted by
+  // the last call to Print to the file with path file_name. The range begins
+  // at begin_varname's value and ends after the last character of the value
+  // substituted for end_varname.
+  void Annotate(
+      absl::string_view begin_varname, absl::string_view end_varname,
+      absl::string_view file_name,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt) {
+    if (options_.annotation_collector == nullptr) {
+      return;
+    }
 
-  ZeroCopyOutputStream* const output_;
-  char* buffer_;
-  int buffer_size_;
-  // The current position, in bytes, in the output stream.  This is equivalent
-  // to the total number of bytes that have been written so far.  This value is
-  // used to calculate annotation ranges in the substitutions_ map below.
-  size_t offset_;
+    Annotate(begin_varname, end_varname, file_name, {}, semantic);
+  }
 
-  string indent_;
-  bool at_start_of_line_;
-  bool failed_;
+  // Indent text by `options.spaces_per_indent`; undone by Outdent().
+  void Indent() { indent_ += options_.spaces_per_indent; }
+
+  // Undoes a call to Indent().
+  void Outdent();
+
+  // FormatInternal is a helper function not meant to use directly, use
+  // compiler::cpp::Formatter instead.
+  template <typename Map = absl::flat_hash_map<std::string, std::string>>
+  void FormatInternal(absl::Span<const std::string> args, const Map& vars,
+                      absl::string_view format);
+
+ private:
+  struct PrintOptions;
+  struct Format;
+
+  // Helper type for wrapping a variable substitution expansion result.
+  template <bool owned>
+  struct ValueImpl;
+
+  using ValueView = ValueImpl</*owned=*/false>;
+  using Value = ValueImpl</*owned=*/true>;
+
+  // Provide a helper to use heterogeneous lookup when it's available.
+  template <typename...>
+  using Void = void;
+
+  template <typename Map, typename = void>
+  struct HasHeteroLookup : std::false_type {};
+  template <typename Map>
+  struct HasHeteroLookup<Map, Void<decltype(std::declval<Map>().find(
+                                  std::declval<absl::string_view>()))>>
+      : std::true_type {};
+
+  template <typename Map,
+            typename = std::enable_if_t<HasHeteroLookup<Map>::value>>
+  static absl::string_view ToStringKey(absl::string_view x) {
+    return x;
+  }
+
+  template <typename Map,
+            typename = std::enable_if_t<!HasHeteroLookup<Map>::value>>
+  static std::string ToStringKey(absl::string_view x) {
+    return std::string(x);
+  }
+
+  Format TokenizeFormat(absl::string_view format_string,
+                        const PrintOptions& options);
+
+  // Emit an annotation for the range defined by the given substitution
+  // variables, as set by the most recent call to PrintImpl() that set
+  // `use_substitution_map` to true.
+  //
+  // The range begins at the start of `begin_varname`'s value and ends after the
+  // last byte of `end_varname`'s value.
+  //
+  // `begin_varname` and `end_varname may` refer to the same variable.
+  void Annotate(absl::string_view begin_varname, absl::string_view end_varname,
+                absl::string_view file_path, const std::vector<int>& path,
+                absl::optional<AnnotationCollector::Semantic> semantic);
+
+  // The core printing implementation. There are three public entry points,
+  // which enable different slices of functionality that are controlled by the
+  // `opts` argument.
+  void PrintImpl(absl::string_view format, absl::Span<const std::string> args,
+                 PrintOptions opts);
+
+  // This is a private function only so that it can see PrintOptions.
+  static bool Validate(bool cond, PrintOptions opts,
+                       absl::FunctionRef<std::string()> message);
+  static bool Validate(bool cond, PrintOptions opts, absl::string_view message);
+
+  // Performs calls to `Validate()` to check that `index < current_arg_index`
+  // and `index < args_len`, producing appropriate log lines if the checks fail,
+  // and crashing if necessary.
+  bool ValidateIndexLookupInBounds(size_t index, size_t current_arg_index,
+                                   size_t args_len, PrintOptions opts);
+
+  // Prints indentation if `at_start_of_line_` is true.
+  void IndentIfAtStart();
+
+  // Prints a codegen trace, for the given location in the compiler's source.
+  void PrintCodegenTrace(absl::optional<SourceLocation> loc);
+
+  // The core implementation for "fully-elaborated" variable definitions.
+  auto WithDefs(absl::Span<const Sub> vars, bool allow_callbacks);
+
+  // Returns the start and end of the value that was substituted in place of
+  // the variable `varname` in the last call to PrintImpl() (with
+  // `use_substitution_map` set), if such a variable was substituted exactly
+  // once.
+  absl::optional<std::pair<size_t, size_t>> GetSubstitutionRange(
+      absl::string_view varname, PrintOptions opts);
+
+  google::protobuf::io::zc_sink_internal::ZeroCopyStreamByteSink sink_;
+  Options options_;
+  size_t indent_ = 0;
+  bool at_start_of_line_ = true;
+  bool failed_ = false;
+
+  size_t paren_depth_ = 0;
+  std::vector<size_t> paren_depth_to_omit_;
+
+  std::vector<std::function<absl::optional<ValueView>(absl::string_view)>>
+      var_lookups_;
+
+  std::vector<
+      std::function<absl::optional<AnnotationRecord>(absl::string_view)>>
+      annotation_lookups_;
 
   // A map from variable name to [start, end) offsets in the output buffer.
-  // These refer to the offsets used for a variable after the last call to
-  // Print.  If a variable was used more than once, the entry used in
-  // this map is set to a negative-length span.  For singly-used variables, the
-  // start offset is the beginning of the substitution; the end offset is the
-  // last byte of the substitution plus one (such that (end - start) is the
-  // length of the substituted string).
-  std::map<string, std::pair<size_t, size_t> > substitutions_;
-
-  // Keeps track of the keys in substitutions_ that need to be updated when
+  //
+  // This stores the data looked up by GetSubstitutionRange().
+  absl::flat_hash_map<std::string, std::pair<size_t, size_t>> substitutions_;
+  // Keeps track of the keys in `substitutions_` that need to be updated when
   // indents are inserted. These are keys that refer to the beginning of the
   // current line.
-  std::vector<string> line_start_variables_;
-
-  // Returns true and sets range to the substitution range in the output for
-  // varname if varname was used once in the last call to Print. If varname
-  // was not used, or if it was used multiple times, returns false (and
-  // fails a debug assertion).
-  bool GetSubstitutionRange(const char* varname,
-                            std::pair<size_t, size_t>* range);
-
-  // If non-null, annotation_collector_ is used to store annotations about
-  // generated code.
-  AnnotationCollector* const annotation_collector_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Printer);
+  std::vector<std::string> line_start_variables_;
 };
 
+// Options for PrintImpl().
+struct Printer::PrintOptions {
+  // The callsite of the public entry-point. Only Emit() sets this.
+  absl::optional<SourceLocation> loc;
+  // If set, Validate() calls will not crash the program.
+  bool checks_are_debug_only = false;
+  // If set, the `substitutions_` map will be populated as variables are
+  // substituted.
+  bool use_substitution_map = false;
+  // If set, the ${1$ and $}$ forms will be substituted. These are used for
+  // a slightly janky annotation-insertion mechanism in FormatInternal, that
+  // requires that passed-in substitution variables be serialized protos.
+  bool use_curly_brace_substitutions = false;
+  // If set, the $n$ forms will be substituted, pulling from the `args`
+  // argument to PrintImpl().
+  bool allow_digit_substitutions = true;
+  // If set, when a variable substitution with spaces in it, such as $ var$,
+  // is encountered, the spaces are stripped, so that it is as if it was
+  // $var$. If $var$ substitutes to a non-empty string, the removed spaces are
+  // printed around the substituted value.
+  //
+  // See the class documentation for more information on this behavior.
+  bool strip_spaces_around_vars = true;
+  // If set, leading whitespace will be stripped from the format string to
+  // determine the "extraneous indentation" that is produced when the format
+  // string is a C++ raw string. This is used to remove leading spaces from
+  // a raw string that would otherwise result in erratic indentation in the
+  // output.
+  bool strip_raw_string_indentation = false;
+  // If set, the annotation lookup frames are searched, per the annotation
+  // semantics of Emit() described in the class documentation.
+  bool use_annotation_frames = true;
+};
+
+// Helper type for wrapping a variable substitution expansion result.
+template <bool owned>
+struct Printer::ValueImpl {
+ private:
+  template <typename T>
+  struct IsSubImpl : std::false_type {};
+  template <bool a>
+  struct IsSubImpl<ValueImpl<a>> : std::true_type {};
+
+ public:
+  using StringType = std::conditional_t<owned, std::string, absl::string_view>;
+  // These callbacks return false if this is a recursive call.
+  using Callback = std::function<bool()>;
+  using StringOrCallback = absl::variant<StringType, Callback>;
+
+  ValueImpl() = default;
+
+  // This is a template to avoid colliding with the copy constructor below.
+  template <typename Value,
+            typename = std::enable_if_t<
+                !IsSubImpl<absl::remove_cvref_t<Value>>::value>>
+  ValueImpl(Value&& value)  // NOLINT
+      : value(ToStringOrCallback(std::forward<Value>(value), Rank2{})) {
+    if (absl::holds_alternative<Callback>(this->value)) {
+      consume_after = ";,";
+    }
+  }
+
+  // Copy ctor/assign allow interconversion of the two template parameters.
+  template <bool that_owned>
+  ValueImpl(const ValueImpl<that_owned>& that) {  // NOLINT
+    *this = that;
+  }
+
+  template <bool that_owned>
+  ValueImpl& operator=(const ValueImpl<that_owned>& that);
+
+  const StringType* AsString() const {
+    return absl::get_if<StringType>(&value);
+  }
+
+  const Callback* AsCallback() const { return absl::get_if<Callback>(&value); }
+
+  StringOrCallback value;
+  std::string consume_after;
+  bool consume_parens_if_empty = false;
+
+ private:
+  // go/ranked-overloads
+  struct Rank0 {};
+  struct Rank1 : Rank0 {};
+  struct Rank2 : Rank1 {};
+
+  // Dummy template for delayed instantiation, which is required for the
+  // static assert below to kick in only when this function is called when it
+  // shouldn't.
+  //
+  // This is done to produce a better error message than the "candidate does
+  // not match" SFINAE errors.
+  template <typename Cb, typename = decltype(std::declval<Cb&&>()())>
+  StringOrCallback ToStringOrCallback(Cb&& cb, Rank2);
+
+  // Separate from the AlphaNum overload to avoid copies when taking strings
+  // by value when in `owned` mode.
+  StringOrCallback ToStringOrCallback(StringType s, Rank1) { return s; }
+
+  StringOrCallback ToStringOrCallback(const absl::AlphaNum& s, Rank0) {
+    return StringType(s.Piece());
+  }
+};
+
+template <bool owned>
+template <bool that_owned>
+Printer::ValueImpl<owned>& Printer::ValueImpl<owned>::operator=(
+    const ValueImpl<that_owned>& that) {
+  // Cast to void* is required, since this and that may potentially be of
+  // different types (due to the `that_owned` parameter).
+  if (static_cast<const void*>(this) == static_cast<const void*>(&that)) {
+    return *this;
+  }
+
+  using ThatStringType = typename ValueImpl<that_owned>::StringType;
+
+  if (auto* str = absl::get_if<ThatStringType>(&that.value)) {
+    value = StringType(*str);
+  } else {
+    value = absl::get<Callback>(that.value);
+  }
+
+  consume_after = that.consume_after;
+  consume_parens_if_empty = that.consume_parens_if_empty;
+  return *this;
+}
+
+template <bool owned>
+template <typename Cb, typename /*Sfinae*/>
+auto Printer::ValueImpl<owned>::ToStringOrCallback(Cb&& cb, Rank2)
+    -> StringOrCallback {
+  return Callback(
+      [cb = std::forward<Cb>(cb), is_called = false]() mutable -> bool {
+        if (is_called) {
+          // Catch whether or not this function is being called recursively.
+          return false;
+        }
+        is_called = true;
+        cb();
+        is_called = false;
+        return true;
+      });
+}
+
+struct Printer::AnnotationRecord {
+  std::vector<int> path;
+  std::string file_path;
+  absl::optional<AnnotationCollector::Semantic> semantic;
+
+  // AnnotationRecord's constructors are *not* marked as explicit,
+  // specifically so that it is possible to construct a
+  // map<string, AnnotationRecord> by writing
+  //
+  // {{"foo", my_cool_descriptor}, {"bar", "file.proto"}}
+
+  template <
+      typename String,
+      std::enable_if_t<std::is_convertible<const String&, std::string>::value,
+                       int> = 0>
+  AnnotationRecord(  // NOLINT(google-explicit-constructor)
+      const String& file_path,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt)
+      : file_path(file_path), semantic(semantic) {}
+
+  template <typename Desc,
+            // This SFINAE clause excludes char* from matching this
+            // constructor.
+            std::enable_if_t<std::is_class<Desc>::value, int> = 0>
+  AnnotationRecord(  // NOLINT(google-explicit-constructor)
+      const Desc* desc,
+      absl::optional<AnnotationCollector::Semantic> semantic = absl::nullopt)
+      : file_path(desc->file()->name()), semantic(semantic) {
+    desc->GetLocationPath(&path);
+  }
+};
+
+class Printer::Sub {
+ public:
+  template <typename Value>
+  Sub(std::string key, Value&& value)
+      : key_(std::move(key)),
+        value_(std::forward<Value>(value)),
+        annotation_(absl::nullopt) {}
+
+  Sub AnnotatedAs(AnnotationRecord annotation) && {
+    annotation_ = std::move(annotation);
+    return std::move(*this);
+  }
+
+  Sub WithSuffix(std::string sub_suffix) && {
+    value_.consume_after = std::move(sub_suffix);
+    return std::move(*this);
+  }
+
+  Sub ConditionalFunctionCall() && {
+    value_.consume_parens_if_empty = true;
+    return std::move(*this);
+  }
+
+  absl::string_view key() const { return key_; }
+
+  absl::string_view value() const {
+    const auto* str = value_.AsString();
+    ABSL_CHECK(str != nullptr)
+        << "could not find " << key() << "; found callback instead";
+    return *str;
+  }
+
+ private:
+  friend class Printer;
+
+  std::string key_;
+  Value value_;
+  absl::optional<AnnotationRecord> annotation_;
+};
+
+template <typename Map>
+auto Printer::WithVars(const Map* vars) {
+  var_lookups_.emplace_back(
+      [vars](absl::string_view var) -> absl::optional<ValueView> {
+        auto it = vars->find(ToStringKey<Map>(var));
+        if (it == vars->end()) {
+          return absl::nullopt;
+        }
+        return ValueView(it->second);
+      });
+  return absl::MakeCleanup([this] { var_lookups_.pop_back(); });
+}
+
+template <typename Map, typename, typename /*Sfinae*/>
+auto Printer::WithVars(Map&& vars) {
+  var_lookups_.emplace_back(
+      [vars = std::forward<Map>(vars)](
+          absl::string_view var) -> absl::optional<ValueView> {
+        auto it = vars.find(ToStringKey<Map>(var));
+        if (it == vars.end()) {
+          return absl::nullopt;
+        }
+        return ValueView(it->second);
+      });
+  return absl::MakeCleanup([this] { var_lookups_.pop_back(); });
+}
+
+template <typename Map>
+auto Printer::WithAnnotations(const Map* vars) {
+  annotation_lookups_.emplace_back(
+      [vars](absl::string_view var) -> absl::optional<AnnotationRecord> {
+        auto it = vars->find(ToStringKey<Map>(var));
+        if (it == vars->end()) {
+          return absl::nullopt;
+        }
+        return AnnotationRecord(it->second);
+      });
+  return absl::MakeCleanup([this] { annotation_lookups_.pop_back(); });
+}
+
+template <typename Map>
+auto Printer::WithAnnotations(Map&& vars) {
+  annotation_lookups_.emplace_back(
+      [vars = std::forward<Map>(vars)](
+          absl::string_view var) -> absl::optional<AnnotationRecord> {
+        auto it = vars.find(ToStringKey<Map>(var));
+        if (it == vars.end()) {
+          return absl::nullopt;
+        }
+        return AnnotationRecord(it->second);
+      });
+  return absl::MakeCleanup([this] { annotation_lookups_.pop_back(); });
+}
+
+inline void Printer::Emit(absl::string_view format, SourceLocation loc) {
+  Emit({}, format, loc);
+}
+
+template <typename Map>
+void Printer::Print(const Map& vars, absl::string_view text) {
+  PrintOptions opts;
+  opts.checks_are_debug_only = true;
+  opts.use_substitution_map = true;
+  opts.allow_digit_substitutions = false;
+
+  auto pop = WithVars(&vars);
+  PrintImpl(text, {}, opts);
+}
+
+template <typename... Args>
+void Printer::Print(absl::string_view text, const Args&... args) {
+  static_assert(sizeof...(args) % 2 == 0, "");
+
+  // Include an extra arg, since a zero-length array is ill-formed, and
+  // MSVC complains.
+  absl::string_view vars[] = {args..., ""};
+  absl::flat_hash_map<absl::string_view, absl::string_view> map;
+  map.reserve(sizeof...(args) / 2);
+  for (size_t i = 0; i < sizeof...(args); i += 2) {
+    map.emplace(vars[i], vars[i + 1]);
+  }
+
+  Print(map, text);
+}
+
+template <typename Desc>
+void Printer::Annotate(absl::string_view begin_varname,
+                       absl::string_view end_varname, const Desc* descriptor,
+                       absl::optional<AnnotationCollector::Semantic> semantic) {
+  if (options_.annotation_collector == nullptr) {
+    return;
+  }
+
+  std::vector<int> path;
+  descriptor->GetLocationPath(&path);
+  Annotate(begin_varname, end_varname, descriptor->file()->name(), path,
+           semantic);
+}
+
+template <typename Map>
+void Printer::FormatInternal(absl::Span<const std::string> args,
+                             const Map& vars, absl::string_view format) {
+  PrintOptions opts;
+  opts.use_curly_brace_substitutions = true;
+  opts.strip_spaces_around_vars = true;
+
+  auto pop = WithVars(&vars);
+  PrintImpl(format, args, opts);
+}
+
+inline auto Printer::WithDefs(absl::Span<const Sub> vars,
+                              bool allow_callbacks) {
+  absl::flat_hash_map<std::string, Value> var_map;
+  var_map.reserve(vars.size());
+
+  absl::flat_hash_map<std::string, AnnotationRecord> annotation_map;
+
+  for (const auto& var : vars) {
+    ABSL_CHECK(allow_callbacks || var.value_.AsCallback() == nullptr)
+        << "callback arguments are not permitted in this position";
+    auto result = var_map.insert({var.key_, var.value_});
+    ABSL_CHECK(result.second)
+        << "repeated variable in Emit() or WithVars() call: \"" << var.key_
+        << "\"";
+    if (var.annotation_.has_value()) {
+      annotation_map.insert({var.key_, *var.annotation_});
+    }
+  }
+
+  var_lookups_.emplace_back([map = std::move(var_map)](absl::string_view var)
+                                -> absl::optional<ValueView> {
+    auto it = map.find(var);
+    if (it == map.end()) {
+      return absl::nullopt;
+    }
+    return ValueView(it->second);
+  });
+
+  bool has_annotations = !annotation_map.empty();
+  if (has_annotations) {
+    annotation_lookups_.emplace_back(
+        [map = std::move(annotation_map)](
+            absl::string_view var) -> absl::optional<AnnotationRecord> {
+          auto it = map.find(var);
+          if (it == map.end()) {
+            return absl::nullopt;
+          }
+          return it->second;
+        });
+  }
+
+  return absl::MakeCleanup([this, has_annotations] {
+    var_lookups_.pop_back();
+    if (has_annotations) {
+      annotation_lookups_.pop_back();
+    }
+  });
+}
+
+inline auto Printer::WithVars(absl::Span<const Sub> vars) {
+  return WithDefs(vars, /*allow_callbacks=*/false);
+}
 }  // namespace io
 }  // namespace protobuf
-
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
+
 #endif  // GOOGLE_PROTOBUF_IO_PRINTER_H__

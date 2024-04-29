@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_SAFE_NUMERICS_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_SAFE_NUMERICS_H__
@@ -34,8 +11,7 @@
 
 #include <limits>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "absl/log/absl_check.h"
 
 namespace google {
 namespace protobuf {
@@ -132,10 +108,10 @@ template <class Dest, class Source>
 inline bool IsValidNumericCast(Source source) {
   typedef std::numeric_limits<Source> SourceLimits;
   typedef std::numeric_limits<Dest> DestLimits;
-  GOOGLE_COMPILE_ASSERT(SourceLimits::is_specialized, argument_must_be_numeric);
-  GOOGLE_COMPILE_ASSERT(SourceLimits::is_integer, argument_must_be_integral);
-  GOOGLE_COMPILE_ASSERT(DestLimits::is_specialized, result_must_be_numeric);
-  GOOGLE_COMPILE_ASSERT(DestLimits::is_integer, result_must_be_integral);
+  static_assert(SourceLimits::is_specialized, "argument must be numeric");
+  static_assert(SourceLimits::is_integer, "argument must be integral");
+  static_assert(DestLimits::is_specialized, "result must be numeric");
+  static_assert(DestLimits::is_integer, "result must be integral");
 
   return IsValidNumericCastImpl<
       sizeof(Dest) == sizeof(Source),
@@ -150,15 +126,15 @@ inline bool IsValidNumericCast(Source source) {
 // checked_numeric_cast<> is analogous to static_cast<> for numeric types,
 // except that it CHECKs that the specified numeric conversion will not
 // overflow or underflow. Floating point arguments are not currently allowed
-// (this is COMPILE_ASSERTd), though this could be supported if necessary.
+// (this is static_asserted), though this could be supported if necessary.
 template <class Dest, class Source>
 inline Dest checked_numeric_cast(Source source) {
-  GOOGLE_CHECK(IsValidNumericCast<Dest>(source));
+  ABSL_CHECK(IsValidNumericCast<Dest>(source));
   return static_cast<Dest>(source);
 }
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SAFE_NUMERICS_H__
