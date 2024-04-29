@@ -56,6 +56,12 @@ message EvilNamesProto3 {
   oneof _leading_underscore_oneof {
     int32 option = 34;
   }
+
+  optional string DEPRECATED_foo = 35;
+  optional string ID = 36;
+  optional string a_b_notification = 37;
+  optional string __DEPRECATED_Bar = 38;
+  optional string not_DEPRECATED_foo = 39;
 }
 
 message HardKeywordsAllTypesProto3 {
