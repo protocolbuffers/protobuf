@@ -102,6 +102,10 @@ public final class UnknownFieldSet implements MessageLite {
   /** Serializes the set and writes it to {@code output}. */
   @Override
   public void writeTo(CodedOutputStream output) throws IOException {
+    if (fields.isEmpty()) {
+      // Avoid allocating an iterator.
+      return;
+    }
     for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
       Field field = entry.getValue();
       field.writeTo(entry.getKey(), output);
@@ -174,16 +178,22 @@ public final class UnknownFieldSet implements MessageLite {
   @Override
   public int getSerializedSize() {
     int result = 0;
-    if (!fields.isEmpty()) {
-      for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-        result += entry.getValue().getSerializedSize(entry.getKey());
-      }
+    if (fields.isEmpty()) {
+      // Avoid allocating an iterator.
+      return result;
+    }
+    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+      result += entry.getValue().getSerializedSize(entry.getKey());
     }
     return result;
   }
 
   /** Serializes the set and writes it to {@code output} using {@code MessageSet} wire format. */
   public void writeAsMessageSetTo(CodedOutputStream output) throws IOException {
+    if (fields.isEmpty()) {
+      // Avoid allocating an iterator.
+      return;
+    }
     for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
       entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), output);
     }
@@ -191,6 +201,10 @@ public final class UnknownFieldSet implements MessageLite {
 
   /** Serializes the set and writes it to {@code writer}. */
   void writeTo(Writer writer) throws IOException {
+    if (fields.isEmpty()) {
+      // Avoid allocating an iterator.
+      return;
+    }
     if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
       // Write fields in descending order.
       for (Map.Entry<Integer, Field> entry : fields.descendingMap().entrySet()) {
@@ -206,6 +220,10 @@ public final class UnknownFieldSet implements MessageLite {
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
   void writeAsMessageSetTo(Writer writer) throws IOException {
+    if (fields.isEmpty()) {
+      // Avoid allocating an iterator.
+      return;
+    }
     if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
       // Write fields in descending order.
       for (Map.Entry<Integer, Field> entry : fields.descendingMap().entrySet()) {
@@ -222,6 +240,10 @@ public final class UnknownFieldSet implements MessageLite {
   /** Get the number of bytes required to encode this set using {@code MessageSet} wire format. */
   public int getSerializedSizeAsMessageSet() {
     int result = 0;
+    if (fields.isEmpty()) {
+      // Avoid allocating an iterator.
+      return result;
+    }
     for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
       result += entry.getValue().getSerializedSizeAsMessageSetExtension(entry.getKey());
     }
