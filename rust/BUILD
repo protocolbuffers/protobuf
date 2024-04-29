@@ -192,3 +192,10 @@ config_setting(
         ":rust_proto_library_kernel": "upb",
     },
 )
+
+# Files specifically required to be present in Nitro integration tests.
+filegroup(
+    name = "for_bazel_tests",
+    srcs = glob(["**"]),
+    visibility = ["//testing/utp/ios:__subpackages__"],
+)
