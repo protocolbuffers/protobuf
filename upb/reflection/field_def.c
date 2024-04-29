@@ -714,6 +714,11 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
               f->full_name, (int)f->type_);
         }
     }
+  } else {
+    if (syntax == kUpb_Syntax_Editions) {
+      _upb_DefBuilder_Errf(ctx, "Editions proto cannot lack type for field %s",
+                           f->full_name);
+    }
   }
 
   if (!has_type && has_type_name) {
