@@ -48,7 +48,6 @@ rust_library(
 PROTOBUF_SHARED = [
     "enum.rs",
     "internal.rs",
-    "macros.rs",
     "optional.rs",
     "primitive.rs",
     "proxied.rs",

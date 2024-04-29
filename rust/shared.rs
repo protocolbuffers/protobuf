@@ -56,7 +56,6 @@ pub mod __runtime;
 
 #[path = "enum.rs"]
 mod r#enum;
-mod macros;
 mod map;
 mod optional;
 mod primitive;

@@ -13,7 +13,6 @@ use crate::__internal::Private;
 use crate::__runtime::{
     BytesAbsentMutData, BytesPresentMutData, InnerBytesMut, PtrAndLen, RawMessage,
 };
-use crate::macros::impl_forwarding_settable_value;
 use crate::{
     AbsentField, FieldEntry, Mut, MutProxied, MutProxy, Optional, PresentField, Proxied,
     ProxiedWithPresence, SettableValue, View, ViewProxy,
