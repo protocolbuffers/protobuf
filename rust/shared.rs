@@ -25,7 +25,6 @@ pub mod __public {
     pub use crate::r#enum::UnknownEnumValue;
     pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
     pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
-    pub use crate::primitive::PrimitiveMut;
     pub use crate::proto;
     pub use crate::proxied::{
         IntoProxied, Mut, MutProxied, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View,
