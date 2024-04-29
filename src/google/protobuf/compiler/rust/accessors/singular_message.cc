@@ -69,39 +69,34 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 }
               )rs");
              }},
+            {"getter_mut_body",
+             [&] {
+               if (ctx.is_cpp()) {
+                 ctx.Emit({}, R"rs(
+                  let raw_msg = unsafe { $getter_mut_thunk$(self.raw_msg()) };
+                  $msg_type$Mut::from_parent($pbi$::Private,
+                  self.as_mutator_message_ref($pbi$::Private), raw_msg)
+                 )rs");
+               } else {
+                 ctx.Emit({}, R"rs(
+                  let raw_msg = unsafe { 
+                    $getter_mut_thunk$(self.raw_msg(), self.arena().raw())
+                  };
+                  $msg_type$Mut::from_parent($pbi$::Private,
+                    self.as_mutator_message_ref($pbi$::Private), raw_msg)
+                )rs");
+               }
+             }},
             {"getter_mut",
              [&] {
                if (accessor_case == AccessorCase::VIEW) {
                  return;
                }
+
                ctx.Emit({}, R"rs(
-                  pub fn $raw_field_name$_mut(&mut self) -> $msg_type$Mut<'_> {
-                    self.$raw_field_name$_entry().or_default()
-                  }
-                )rs");
-             }},
-            {"private_getter_entry",
-             [&] {
-               if (accessor_case == AccessorCase::VIEW) {
-                 return;
-               }
-               ctx.Emit({}, R"rs(
-                fn $raw_field_name$_entry(&mut self)
-                    -> $pb$::FieldEntry<'_, $msg_type$> {
-                  static VTABLE: $pbr$::MessageVTable =
-                    $pbr$::MessageVTable::new($pbi$::Private,
-                                              $getter_thunk$,
-                                              $getter_mut_thunk$,
-                                              $clearer_thunk$);
-                  unsafe {
-                    let has = self.has_$raw_field_name$();
-                    $pbi$::new_vtable_field_entry($pbi$::Private,
-                      self.as_mutator_message_ref($pbi$::Private),
-                      &VTABLE,
-                      has)
-                  }
-                }
-                )rs");
+                 pub fn $raw_field_name$_mut(&mut self) -> $msg_type$Mut<'_> {
+                    $getter_mut_body$
+               })rs");
              }},
             {"getter_opt",
              [&] {
@@ -172,7 +167,6 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            R"rs(
             $getter$
             $getter_mut$
-            $private_getter_entry$
             $getter_opt$
             $setter$
             $hazzer$
