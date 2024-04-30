@@ -372,10 +372,10 @@ void ImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "$kt_deprecation$public var $kt_name$: kotlin.String\n"
                  "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
-                 "  get() = $kt_dsl_builder$.${$$kt_safe_name$$}$\n"
+                 "  get() = $kt_dsl_builder$.${$get$capitalized_name$$}$()\n"
                  "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
                  "  set(value) {\n"
-                 "    $kt_dsl_builder$.${$$kt_safe_name$$}$ = value\n"
+                 "    $kt_dsl_builder$.${$set$capitalized_name$$}$(value)\n"
                  "  }\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
@@ -992,7 +992,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
                  "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>\n"
                  "  @kotlin.jvm.JvmSynthetic\n"
                  "  get() = com.google.protobuf.kotlin.DslList(\n"
-                 "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
+                 "    $kt_dsl_builder$.${$get$capitalized_name$List$}$()\n"
                  "  )\n");
 
   // List<String>.add(String)

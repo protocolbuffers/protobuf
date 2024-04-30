@@ -981,7 +981,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       "  @kotlin.jvm.JvmSynthetic\n"
       "  @JvmName(\"get$kt_capitalized_name$Map\")\n"
       "  get() = com.google.protobuf.kotlin.DslMap(\n"
-      "    $kt_dsl_builder$.${$$kt_property_name$Map$}$\n"
+      "    $kt_dsl_builder$.${$get$capitalized_name$Map$}$()\n"
       "  )\n");
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
