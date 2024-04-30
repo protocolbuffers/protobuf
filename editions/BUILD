@@ -260,7 +260,7 @@ upb_proto_reflection_library(
     deps = ["test_messages_proto3_editions_proto"],
 )
 
-# Export these for conformance tests for ruby codegen.
+# Export these for conformance tests for ruby and C# codegen.
 exports_files(
     [
         "golden/test_messages_proto2_editions.proto",
@@ -268,6 +268,7 @@ exports_files(
     ],
     visibility = [
         "//ruby:__pkg__",
+        "//src/google/protobuf/csharp:__pkg__",
     ],
 )
 
