@@ -615,6 +615,25 @@ public class CodedInputStreamTest {
     }
   }
 
+  @Test
+  public void testReadBytesWithAlmostMaxintLength_throwsInvalidProtocolBufferException()
+      throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(tag);
+    output.writeUInt32NoTag(0x7FFFFFFD); // Almost Integer.MAX_VALUE.
+    output.writeRawBytes(new byte[32]); // Pad with a few random bytes.
+    output.flush();
+    byte[] data = rawOutput.toByteString().toByteArray();
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      assertThat(input.readTag()).isEqualTo(tag);
+      assertThrows(InvalidProtocolBufferException.class, input::readBytes);
+    }
+  }
+
   /**
    * Test we can do messages that are up to CodedInputStream#DEFAULT_SIZE_LIMIT in size (2G or
    * Integer#MAX_SIZE).
