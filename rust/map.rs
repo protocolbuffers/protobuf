@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    Mut, MutProxied, MutProxy, Proxied, SettableValue, View, ViewProxy,
+    Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
@@ -99,17 +99,6 @@ impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxied for Map<K, V
 
 impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MutProxied for Map<K, V> {
     type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
-}
-
-impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> SettableValue<Map<K, V>>
-    for MapView<'msg, K, V>
-{
-    fn set_on<'b>(self, _private: Private, mut mutator: Mut<'b, Map<K, V>>)
-    where
-        Map<K, V>: 'b,
-    {
-        mutator.copy_from(self);
-    }
 }
 
 impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg>

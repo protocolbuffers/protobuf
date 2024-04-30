@@ -924,64 +924,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
-        impl $pbi$::ProxiedWithRawVTable for $Msg$ {
-          type VTable = $pbr$::MessageVTable;
-
-          fn make_view(_private: $pbi$::Private,
-                      mut_inner: $pbi$::RawVTableMutator<'_, Self>)
-                      -> $pb$::View<'_, Self> {
-            let msg = unsafe {
-              (mut_inner.vtable().getter)(mut_inner.msg_ref().msg())
-            };
-            $Msg$View::new($pbi$::Private, msg$unwrap_upb$)
-          }
-
-          fn make_mut(_private: $pbi$::Private,
-                      inner: $pbi$::RawVTableMutator<'_, Self>)
-                      -> $pb$::Mut<'_, Self> {
-            let raw_submsg = unsafe {
-              (inner.vtable().mut_getter)(inner.msg_ref().msg()$upb_arena$)
-            };
-            $Msg$Mut::from_parent($pbi$::Private, inner.msg_ref(), raw_submsg)
-          }
-        }
-
-        impl $pbi$::ProxiedWithRawOptionalVTable for $Msg$ {
-          type OptionalVTable = $pbr$::MessageVTable;
-
-          fn upcast_vtable(_private: $pbi$::Private,
-                           optional_vtable: &'static Self::OptionalVTable)
-                          -> &'static Self::VTable {
-            &optional_vtable
-          }
-        }
-
-        impl $pb$::ProxiedWithPresence for $Msg$ {
-          type PresentMutData<'a> = $pbr$::MessagePresentMutData<'a, $Msg$>;
-          type AbsentMutData<'a> = $pbr$::MessageAbsentMutData<'a, $Msg$>;
-
-          fn clear_present_field(present_mutator: Self::PresentMutData<'_>)
-             -> Self::AbsentMutData<'_> {
-             // SAFETY: The raw ptr msg_ref is valid
-            unsafe {
-              (present_mutator.optional_vtable().clearer)(present_mutator.msg_ref().msg());
-
-             $pbi$::RawVTableOptionalMutatorData::new($pbi$::Private,
-               present_mutator.msg_ref(),
-               present_mutator.optional_vtable())
-            }
-          }
-
-          fn set_absent_to_default(absent_mutator: Self::AbsentMutData<'_>)
-             -> Self::PresentMutData<'_> {
-           unsafe {
-             $pbi$::RawVTableOptionalMutatorData::new($pbi$::Private,
-               absent_mutator.msg_ref(),
-               absent_mutator.optional_vtable())
-           }
-          }
-        }
-
         $into_proxied_impl$
 
         $repeated_impl$

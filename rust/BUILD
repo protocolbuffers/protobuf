@@ -54,7 +54,6 @@ PROTOBUF_SHARED = [
     "repeated.rs",
     "shared.rs",
     "string.rs",
-    "vtable.rs",
     "map.rs",
     "proto_macro.rs",
 ]

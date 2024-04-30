@@ -13,10 +13,6 @@
 pub use paste::paste;
 
 pub use crate::r#enum::Enum;
-pub use crate::vtable::{
-    new_vtable_field_entry, ProxiedWithRawOptionalVTable, ProxiedWithRawVTable, RawVTableMutator,
-    RawVTableOptionalMutatorData,
-};
 pub use crate::ProtoStr;
 
 // TODO: Temporarily re-export these symbols which are now under

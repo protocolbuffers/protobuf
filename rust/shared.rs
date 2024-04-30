@@ -24,12 +24,9 @@ use std::fmt;
 pub mod __public {
     pub use crate::r#enum::UnknownEnumValue;
     pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
-    pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
+    pub use crate::optional::Optional;
     pub use crate::proto;
-    pub use crate::proxied::{
-        IntoProxied, Mut, MutProxied, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View,
-        ViewProxy,
-    };
+    pub use crate::proxied::{IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy};
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
@@ -63,7 +60,6 @@ mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
-mod vtable;
 
 /// An error that happened during deserialization.
 #[derive(Debug, Clone)]

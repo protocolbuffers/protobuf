@@ -233,30 +233,7 @@ pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'
     write!(f, "{dbg_str}")
 }
 
-pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
 pub type RawMapIter = UntypedMapIterator;
-
-#[derive(Debug)]
-pub struct MessageVTable {
-    pub getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-    pub mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-    pub clearer: unsafe extern "C" fn(msg: RawMessage),
-}
-
-impl MessageVTable {
-    pub const fn new(
-        _private: Private,
-        getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-        mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-        clearer: unsafe extern "C" fn(msg: RawMessage),
-    ) -> Self {
-        MessageVTable { getter, mut_getter, clearer }
-    }
-}
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
