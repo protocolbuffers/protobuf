@@ -207,7 +207,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SizedPtr Free(size_t* space_allocated);
+  SizedPtr Free();
 
   // ThreadCache is accessed very frequently, so we align it such that it's
   // located within a single cache line.

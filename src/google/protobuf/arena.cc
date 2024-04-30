@@ -85,9 +85,8 @@ SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr, size_t last_size,
 
 class GetDeallocator {
  public:
-  GetDeallocator(const AllocationPolicy* policy, size_t* space_allocated)
-      : dealloc_(policy ? policy->block_dealloc : nullptr),
-        space_allocated_(space_allocated) {}
+  explicit GetDeallocator(const AllocationPolicy* policy)
+      : dealloc_(policy ? policy->block_dealloc : nullptr) {}
 
   void operator()(SizedPtr mem) const {
     if (dealloc_) {
@@ -95,14 +94,10 @@ class GetDeallocator {
     } else {
       internal::SizedDelete(mem.p, mem.n);
     }
-    AddSpaceAllocated(mem.n);
   }
-
-  void AddSpaceAllocated(size_t n) const { *space_allocated_ += n; }
 
  private:
   void (*dealloc_)(void*, size_t);
-  size_t* space_allocated_;
 };
 
 }  // namespace
@@ -179,7 +174,7 @@ SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
 
 template <typename Deallocator>
 SizedPtr SerialArena::Free(Deallocator deallocator) {
-  deallocator.AddSpaceAllocated(FreeStringBlocks());
+  FreeStringBlocks();
 
   ArenaBlock* b = head();
   SizedPtr mem = {b, b->size};
@@ -692,19 +687,17 @@ ThreadSafeArena::~ThreadSafeArena() {
   // refer to memory in other blocks.
   CleanupList();
 
-  size_t space_allocated = 0;
-  auto mem = Free(&space_allocated);
+  auto mem = Free();
   if (alloc_policy_.is_user_owned_initial_block()) {
     // Unpoison the initial block, now that it's going back to the user.
     PROTOBUF_UNPOISON_MEMORY_REGION(mem.p, mem.n);
-    space_allocated += mem.n;
   } else if (mem.n > 0) {
-    GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
+    GetDeallocator(alloc_policy_.get())(mem);
   }
 }
 
-SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
-  auto deallocator = GetDeallocator(alloc_policy_.get(), space_allocated);
+SizedPtr ThreadSafeArena::Free() {
+  auto deallocator = GetDeallocator(alloc_policy_.get());
 
   WalkSerialArenaChunk([&](SerialArenaChunk* chunk) {
     absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
@@ -730,15 +723,15 @@ SizedPtr ThreadSafeArena::Free(size_t* space_allocated) {
 }
 
 uint64_t ThreadSafeArena::Reset() {
+  const size_t space_allocated = SpaceAllocated();
+
   // Have to do this in a first pass, because some of the destructors might
   // refer to memory in other blocks.
   CleanupList();
 
   // Discard all blocks except the first one. Whether it is user-provided or
   // allocated, always reuse the first block for the first arena.
-  size_t space_allocated = 0;
-  auto mem = Free(&space_allocated);
-  space_allocated += mem.n;
+  auto mem = Free();
 
   // Reset the first arena with the first block. This avoids redundant
   // free / allocation and re-allocating for AllocationPolicy. Adjust offset if
