@@ -1374,8 +1374,8 @@ class TextFormat::Parser::ParserImpl {
     return result;
   }
 
-  // Attempts to consume the supplied value. Returns false if a the
-  // token found does not match the value specified.
+  // Attempts to consume the supplied value. Returns false if the token found
+  // does not match the value specified.
   bool TryConsume(const std::string& value) {
     if (tokenizer_.current().text == value) {
       tokenizer_.Next();
