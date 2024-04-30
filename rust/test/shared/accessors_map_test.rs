@@ -157,6 +157,23 @@ fn test_bytes_and_string_copied() {
     assert_that!(msg.map_int32_bytes_mut().get(1).unwrap(), eq(b"world"));
 }
 
+#[test]
+fn test_map_setter() {
+    let mut msg = TestMap::new();
+    msg.map_string_string_mut().insert("hello", "world");
+    msg.map_string_string_mut().insert("fizz", "buzz");
+
+    let mut msg2 = TestMap::new();
+    msg2.set_map_string_string(msg.map_string_string());
+    assert_that!(
+        msg2.map_string_string().iter().collect::<Vec<_>>(),
+        unordered_elements_are![
+            eq(("hello".into(), "world".into())),
+            eq(("fizz".into(), "buzz".into()))
+        ]
+    );
+}
+
 macro_rules! generate_map_with_msg_values_tests {
     (
         $(($k_field:ident, $k_nonzero:expr, $k_other:expr $(,)?)),*

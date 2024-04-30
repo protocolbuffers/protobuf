@@ -55,16 +55,17 @@ macro_rules! generate_repeated_numeric_test {
           #[test]
           fn [< test_repeated_ $field _set >]() {
               let mut msg = TestAllTypes::new();
-              let mut mutator = msg.[<repeated_ $field _mut>]();
               let mut msg2 = TestAllTypes::new();
               let mut mutator2 = msg2.[<repeated_ $field _mut>]();
               for i in 0..5 {
                   mutator2.push(i as $t);
               }
-              protobuf::MutProxy::set(&mut mutator, mutator2.as_view());
 
+              msg.[<set_repeated_ $field >](mutator2.as_view());
+
+              let view = msg.[<repeated_ $field>]();
               assert_that!(
-                  mutator.iter().collect::<Vec<_>>(),
+                view.iter().collect::<Vec<_>>(),
                   eq(mutator2.iter().collect::<Vec<_>>())
               );
           }
@@ -177,15 +178,16 @@ fn test_repeated_enum_accessors() {
 #[test]
 fn test_repeated_bool_set() {
     let mut msg = TestAllTypes::new();
-    let mut mutator = msg.repeated_bool_mut();
     let mut msg2 = TestAllTypes::new();
     let mut mutator2 = msg2.repeated_bool_mut();
     for _ in 0..5 {
         mutator2.push(true);
     }
-    protobuf::MutProxy::set(&mut mutator, mutator2.as_view());
 
-    assert_that!(mutator.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
+    msg.set_repeated_bool(mutator2.as_view());
+
+    let view = msg.repeated_bool();
+    assert_that!(view.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
 }
 
 #[test]

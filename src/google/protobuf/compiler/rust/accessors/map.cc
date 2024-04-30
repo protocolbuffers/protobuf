@@ -42,6 +42,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   std::string field_name = FieldNameWithCollisionAvoidance(field);
 
   ctx.Emit({{"field", RsSafeName(field_name)},
+            {"raw_field_name", field_name},  // Never r# prefixed
             {"Key", RsTypePath(ctx, key_type)},
             {"Value", RsTypePath(ctx, value_type)},
             {"view_lifetime", ViewLifetime(accessor_case)},
@@ -99,10 +100,23 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe { $pb$::MapMut::from_inner($pbi$::Private, inner) }
                     })rs");
                }
+             }},
+            {"setter",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) {
+                 return;
+               }
+               ctx.Emit({}, R"rs(
+                pub fn set_$raw_field_name$(&mut self, src: $pb$::MapView<'_, $Key$, $Value$>) {
+                  // TODO: Implement IntoProxied and avoid copying.
+                  self.$field$_mut().copy_from(src);
+                }
+              )rs");
              }}},
            R"rs(
     $getter$
     $getter_mut$
+    $setter$
     )rs");
 }
 
