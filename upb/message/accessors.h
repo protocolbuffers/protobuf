@@ -68,9 +68,11 @@ UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,
                                              const upb_MiniTableExtension* e,
                                              const void* val, upb_Arena* a);
 
-UPB_API_INLINE void upb_Message_ClearOneof(upb_Message* msg,
-                                           const upb_MiniTable* m,
-                                           const upb_MiniTableField* f);
+UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
+    const upb_Message* message, const upb_MiniTableField* oneof_field) {
+  UPB_ASSUME(upb_MiniTableField_IsInOneof(oneof_field));
+  return UPB_PRIVATE(_upb_Message_GetOneofCase)(message, oneof_field);
+}
 
 // NOTE: The default_val is only used for fields that support presence.
 // For repeated/map fields, the resulting upb_Array*/upb_Map* can be NULL if a
