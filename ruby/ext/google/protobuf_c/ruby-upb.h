@@ -3539,6 +3539,7 @@ UPB_API_INLINE upb_Message* upb_Message_GetOrCreateMutableMessage(
     const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(field) == kUpb_CType_Message);
+  UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
   upb_Message* sub_message =
       *UPB_PTR_AT(msg, field->UPB_ONLYBITS(offset), upb_Message*);
   if (!sub_message) {
