@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/log/absl_log.h"
@@ -558,6 +559,95 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
     (this->*test_method)(absl::StrCat(field_type, "FieldBadUTF8Hex"), REQUIRED,
                          absl::StrCat(field_name, ": '\\xc0'"));
   }
+
+  // Separators
+  for (const auto& test_case : std::vector<std::pair<std::string, std::string>>{
+           {"string", "\"abc\""},
+           {"bytes", "\"abc\""},
+           {"int32", "123"},
+           {"bool", "true"},
+           {"double", "1.23"},
+           {"fixed32", "0x123"},
+       }) {
+    // Optional Field Separators
+    for (const auto& field_type :
+         std::vector<std::string>{"Single", "Repeated"}) {
+      std::string field_name, field_value;
+      if (field_type == "Single") {
+        field_name = absl::StrCat("optional_", test_case.first);
+        field_value = test_case.second;
+      } else {
+        field_name = absl::StrCat("repeated_", test_case.first);
+        field_value = absl::StrCat("[", test_case.second, "]");
+      }
+
+      RunValidTextFormatTest(absl::StrCat("FieldSeparatorCommaTopLevel",
+                                          field_type, "_", test_case.first),
+                             REQUIRED,
+                             absl::StrCat(field_name, ": ", field_value, ","));
+      RunValidTextFormatTest(absl::StrCat("FieldSeparatorSemiTopLevelSingle",
+                                          field_type, "_", test_case.first),
+                             REQUIRED,
+                             absl::StrCat(field_name, ": ", field_value, ";"));
+
+      ExpectParseFailure(
+          absl::StrCat("FieldSeparatorCommaTopLevelDuplicatesFails", field_type,
+                       "_", test_case.first),
+          REQUIRED, absl::StrCat(field_name, ": ", field_value, ",,"));
+      ExpectParseFailure(
+          absl::StrCat("FieldSeparatorSemiTopLevelDuplicateFails", field_type,
+                       "_", test_case.first),
+          REQUIRED, absl::StrCat(field_name, ": ", field_value, ";;"));
+    }
+
+    // Required List Separators
+    RunValidTextFormatTest(
+        absl::StrCat("ListSeparator_", test_case.first), REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second, ",",
+                     test_case.second, "]"));
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorSemiFails_", test_case.first), REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second, ";",
+                     test_case.second, "]"));
+    // For string and bytes, if we skip the separator, the parser will treat
+    // the two values as a single value.
+    if (test_case.first == "string" || test_case.first == "bytes") {
+      RunValidTextFormatTest(
+          absl::StrCat("ListSeparatorMissingIsOneValue_", test_case.first),
+          REQUIRED,
+          absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                       " ", test_case.second, "]"));
+    } else {
+      ExpectParseFailure(
+          absl::StrCat("ListSeparatorMissingFails_", test_case.first), REQUIRED,
+          absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                       " ", test_case.second, "]"));
+    }
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorDuplicateFails_", test_case.first), REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                     ",,", test_case.second, "]"));
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorSingleTrailingFails_", test_case.first),
+        REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second,
+                     ",]"));
+    ExpectParseFailure(
+        absl::StrCat("ListSeparatorTwoValuesTrailingFails_", test_case.first),
+        REQUIRED,
+        absl::StrCat("repeated_", test_case.first, ": [", test_case.second, ",",
+                     test_case.second, ",]"));
+  }
+  // The test message don't really have all types nested, so just check one
+  // data type for the nested field separator support
+  RunValidTextFormatTest("FieldSeparatorCommaNested", REQUIRED,
+                         "optional_nested_message: { a: 123, }");
+  RunValidTextFormatTest("FieldSeparatorSemiNested", REQUIRED,
+                         "optional_nested_message: { a: 123; }");
+  ExpectParseFailure("FieldSeparatorCommaNestedDuplicates", REQUIRED,
+                     "optional_nested_message: { a: 123,, }");
+  ExpectParseFailure("FieldSeparatorSemiNestedDuplicates", REQUIRED,
+                     "optional_nested_message: { a: 123;; }");
 
   // Unknown Fields
   UnknownToTestAllTypes message;
