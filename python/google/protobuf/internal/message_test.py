@@ -22,6 +22,7 @@ import operator
 import pickle
 import pydoc
 import sys
+import types
 import unittest
 from unittest import mock
 import warnings
@@ -30,6 +31,7 @@ cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import encoder
+from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
@@ -1313,6 +1315,26 @@ class MessageTest(unittest.TestCase):
     m.optional_string = 'bar'
     self.assertNotEqual(m, ComparesWithFoo())
     self.assertNotEqual(ComparesWithFoo(), m)
+
+  def testTypeUnion(self, message_module):
+    # Below python 3.10 you cannot create union types with the | operator, so we
+    # skip testing for unions with old versions.
+    if sys.version_info < (3, 10):
+      return
+    enum_type = enum_type_wrapper.EnumTypeWrapper(
+        message_module.TestAllTypes.NestedEnum.DESCRIPTOR
+    )
+    union_type = enum_type | int
+    self.assertIsInstance(union_type, types.UnionType)
+
+    def get_union() -> union_type:
+      return enum_type
+
+    union = get_union()
+    self.assertIsInstance(union, enum_type_wrapper.EnumTypeWrapper)
+    self.assertEqual(
+        union.DESCRIPTOR, message_module.TestAllTypes.NestedEnum.DESCRIPTOR
+    )
 
 
 # Class to test proto2-only features (required, extensions, etc.)
