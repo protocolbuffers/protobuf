@@ -13035,7 +13035,7 @@ TEST_F(LazilyBuildDependenciesTest, Type) {
 
   const FileDescriptor* file = pool_.FindFileByName("foo.proto");
 
-  // Verify calling type() on a field that is a message type will
+  // Verify calling type() on a field that is a message type will _not_
   // build the type defined in another file.
   EXPECT_FALSE(pool_.InternalIsFileLoaded("message1.proto"));
   const Descriptor* desc = file->FindMessageTypeByName("Lazy");
@@ -13043,31 +13043,31 @@ TEST_F(LazilyBuildDependenciesTest, Type) {
   const FieldDescriptor* field = desc->FindFieldByName("message1");
   EXPECT_TRUE(field != nullptr);
   EXPECT_EQ(field->type(), FieldDescriptor::TYPE_MESSAGE);
-  EXPECT_TRUE(pool_.InternalIsFileLoaded("message1.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message1.proto"));
 
-  // Verify calling cpp_type() on a field that is a message type will
+  // Verify calling cpp_type() on a field that is a message type will _not_
   // build the type defined in another file.
   EXPECT_FALSE(pool_.InternalIsFileLoaded("message2.proto"));
   field = desc->FindFieldByName("message2");
   EXPECT_TRUE(field != nullptr);
   EXPECT_EQ(field->cpp_type(), FieldDescriptor::CPPTYPE_MESSAGE);
-  EXPECT_TRUE(pool_.InternalIsFileLoaded("message2.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message2.proto"));
 
-  // Verify calling type() on a field that is an enum type will
+  // Verify calling type() on a field that is an enum type will _not_
   // build the type defined in another file.
   EXPECT_FALSE(pool_.InternalIsFileLoaded("enum1.proto"));
   field = desc->FindFieldByName("enum1");
   EXPECT_TRUE(field != nullptr);
   EXPECT_EQ(field->type(), FieldDescriptor::TYPE_ENUM);
-  EXPECT_TRUE(pool_.InternalIsFileLoaded("enum1.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("enum1.proto"));
 
-  // Verify calling cpp_type() on a field that is an enum type will
+  // Verify calling cpp_type() on a field that is an enum type will _not_
   // build the type defined in another file.
   EXPECT_FALSE(pool_.InternalIsFileLoaded("enum2.proto"));
   field = desc->FindFieldByName("enum2");
   EXPECT_TRUE(field != nullptr);
   EXPECT_EQ(field->cpp_type(), FieldDescriptor::CPPTYPE_ENUM);
-  EXPECT_TRUE(pool_.InternalIsFileLoaded("enum2.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("enum2.proto"));
 }
 
 TEST_F(LazilyBuildDependenciesTest, Extension) {

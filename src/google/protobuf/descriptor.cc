@@ -2808,7 +2808,7 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
 // ===================================================================
 
 bool FieldDescriptor::is_map_message_type() const {
-  return type_descriptor_.message_type->options().map_entry();
+  return message_type()->options().map_entry();
 }
 
 std::string FieldDescriptor::DefaultValueAsString(
@@ -6503,12 +6503,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 
   result->has_json_name_ = proto.has_json_name();
 
-  // Some compilers do not allow static_cast directly between two enum types,
-  // so we must cast to int first.
-  result->type_ = static_cast<FieldDescriptor::Type>(
-      absl::implicit_cast<int>(proto.type()));
-  result->label_ = static_cast<FieldDescriptor::Label>(
-      absl::implicit_cast<int>(proto.label()));
+  result->type_ = proto.type();
+  result->label_ = proto.label();
   result->is_repeated_ = result->label_ == FieldDescriptor::LABEL_REPEATED;
 
   if (result->label() == FieldDescriptor::LABEL_REQUIRED) {
@@ -7388,6 +7384,10 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
 
     if (type.IsNull()) {
       if (is_lazy) {
+        ABSL_CHECK(field->type_ == FieldDescriptor::TYPE_MESSAGE ||
+                   field->type_ == FieldDescriptor::TYPE_GROUP ||
+                   field->type_ == FieldDescriptor::TYPE_ENUM)
+            << proto;
         // Save the symbol names for later for lookup, and allocate the once
         // object needed for the accessors.
         const std::string& name = proto.type_name();
@@ -9584,19 +9584,23 @@ void FieldDescriptor::TypeOnceInit(const FieldDescriptor* to_init) {
 // all share the same absl::call_once init path to do lazy
 // import building and cross linking of a field of a message.
 const Descriptor* FieldDescriptor::message_type() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+  if (type_ == TYPE_MESSAGE || type_ == TYPE_GROUP) {
+    if (type_once_) {
+      absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+    }
+    return type_descriptor_.message_type;
   }
-  return type_ == TYPE_MESSAGE || type_ == TYPE_GROUP
-             ? type_descriptor_.message_type
-             : nullptr;
+  return nullptr;
 }
 
 const EnumDescriptor* FieldDescriptor::enum_type() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+  if (type_ == TYPE_ENUM) {
+    if (type_once_) {
+      absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+    }
+    return type_descriptor_.enum_type;
   }
-  return type_ == TYPE_ENUM ? type_descriptor_.enum_type : nullptr;
+  return nullptr;
 }
 
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
