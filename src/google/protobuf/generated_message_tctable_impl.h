@@ -1002,7 +1002,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
   while (!ctx->Done(&ptr)) {
 #if defined(__GNUC__)
     // Note: this asm prevents the compiler (clang, specifically) from
-    // believing (thanks to CSE) that it needs to dedicate a registeer both
+    // believing (thanks to CSE) that it needs to dedicate a register both
     // to "table" and "&table->fast_entries".
     // TODO: remove this asm
     asm("" : "+r"(table));
