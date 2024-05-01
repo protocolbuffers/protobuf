@@ -335,6 +335,27 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   }
 }
 
+UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
+    const struct upb_Message* message, const upb_MiniTableField* oneof_field) {
+  UPB_ASSUME(upb_MiniTableField_IsInOneof(oneof_field));
+  return UPB_PRIVATE(_upb_Message_GetOneofCase)(message, oneof_field);
+}
+
+UPB_API_INLINE void upb_Message_ClearOneof(struct upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           const upb_MiniTableField* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  uint32_t field_number = upb_Message_WhichOneofFieldNumber(msg, f);
+  if (field_number == 0) {
+    // No field in the oneof is set.
+    return;
+  }
+
+  const upb_MiniTableField* field =
+      upb_MiniTable_FindFieldByNumber(m, field_number);
+  upb_Message_ClearBaseField(msg, field);
+}
+
 UPB_INLINE void _upb_Message_AssertMapIsUntagged(
     const struct upb_Message* msg, const upb_MiniTableField* field) {
   UPB_UNUSED(msg);
