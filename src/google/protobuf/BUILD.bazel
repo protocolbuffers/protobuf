@@ -1185,6 +1185,7 @@ cc_test(
     }),
     deps = [
         ":arena",
+        ":arena_cleanup",
         ":cc_test_protos",
         ":lite_test_util",
         ":port",
