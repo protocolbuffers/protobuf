@@ -321,6 +321,44 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
                          "optional_int64: -9223372036854775808");
   RunValidTextFormatTest("Uint64FieldMaxValue", REQUIRED,
                          "optional_uint64: 18446744073709551615");
+  // Integer fields - Hex
+  RunValidTextFormatTestWithExpected("Int32FieldMaxValueHex", REQUIRED,
+                                     "optional_int32: 0x7FFFFFFF",
+                                     "optional_int32: 2147483647");
+  RunValidTextFormatTestWithExpected("Int32FieldMinValueHex", REQUIRED,
+                                     "optional_int32: -0x80000000",
+                                     "optional_int32: -2147483648");
+  RunValidTextFormatTestWithExpected("Uint32FieldMaxValueHex", REQUIRED,
+                                     "optional_uint32: 0xFFFFFFFF",
+                                     "optional_uint32: 4294967295");
+  RunValidTextFormatTestWithExpected("Int64FieldMaxValueHex", REQUIRED,
+                                     "optional_int64: 0x7FFFFFFFFFFFFFFF",
+                                     "optional_int64: 9223372036854775807");
+  RunValidTextFormatTestWithExpected("Int64FieldMinValueHex", REQUIRED,
+                                     "optional_int64: -0x8000000000000000",
+                                     "optional_int64: -9223372036854775808");
+  RunValidTextFormatTestWithExpected("Uint64FieldMaxValueHex", REQUIRED,
+                                     "optional_uint64: 0xFFFFFFFFFFFFFFFF",
+                                     "optional_uint64: 18446744073709551615");
+  // Integer fields - Octal
+  RunValidTextFormatTestWithExpected("Int32FieldMaxValueOctal", REQUIRED,
+                                     "optional_int32: 017777777777",
+                                     "optional_int32: 2147483647");
+  RunValidTextFormatTestWithExpected("Int32FieldMinValueOctal", REQUIRED,
+                                     "optional_int32: -020000000000",
+                                     "optional_int32: -2147483648");
+  RunValidTextFormatTestWithExpected("Uint32FieldMaxValueOctal", REQUIRED,
+                                     "optional_uint32: 037777777777",
+                                     "optional_uint32: 4294967295");
+  RunValidTextFormatTestWithExpected("Int64FieldMaxValueOctal", REQUIRED,
+                                     "optional_int64: 0777777777777777777777",
+                                     "optional_int64: 9223372036854775807");
+  RunValidTextFormatTestWithExpected("Int64FieldMinValueOctal", REQUIRED,
+                                     "optional_int64: -01000000000000000000000",
+                                     "optional_int64: -9223372036854775808");
+  RunValidTextFormatTestWithExpected("Uint64FieldMaxValueOctal", REQUIRED,
+                                     "optional_uint64: 01777777777777777777777",
+                                     "optional_uint64: 18446744073709551615");
 
   // Parsers reject out-of-bound integer values.
   ExpectParseFailure("Int32FieldTooLarge", REQUIRED,
@@ -335,6 +373,32 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
                      "optional_int64: -9223372036854775809");
   ExpectParseFailure("Uint64FieldTooLarge", REQUIRED,
                      "optional_uint64: 18446744073709551616");
+  // Parsers reject out-of-bound integer values - Hex
+  ExpectParseFailure("Int32FieldTooLargeHex", REQUIRED,
+                     "optional_int32: 0x80000000");
+  ExpectParseFailure("Int32FieldTooSmallHex", REQUIRED,
+                     "optional_int32: -0x80000001");
+  ExpectParseFailure("Uint32FieldTooLargeHex", REQUIRED,
+                     "optional_uint32: 0x100000000");
+  ExpectParseFailure("Int64FieldTooLargeHex", REQUIRED,
+                     "optional_int64: 0x8000000000000000");
+  ExpectParseFailure("Int64FieldTooSmallHex", REQUIRED,
+                     "optional_int64: -0x8000000000000001");
+  ExpectParseFailure("Uint64FieldTooLargeHex", REQUIRED,
+                     "optional_uint64: 0x10000000000000000");
+  // Parsers reject out-of-bound integer values - Octal
+  ExpectParseFailure("Int32FieldTooLargeOctal", REQUIRED,
+                     "optional_int32: 020000000000");
+  ExpectParseFailure("Int32FieldTooSmallOctal", REQUIRED,
+                     "optional_int32: -020000000001");
+  ExpectParseFailure("Uint32FieldTooLargeOctal", REQUIRED,
+                     "optional_uint32: 040000000000");
+  ExpectParseFailure("Int64FieldTooLargeOctal", REQUIRED,
+                     "optional_int64: 01000000000000000000000");
+  ExpectParseFailure("Int64FieldTooSmallOctal", REQUIRED,
+                     "optional_int64: -01000000000000000000001");
+  ExpectParseFailure("Uint64FieldTooLargeOctal", REQUIRED,
+                     "optional_uint64: 02000000000000000000000");
 
   // Floating point fields
   RunValidTextFormatTest("FloatField", REQUIRED, "optional_float: 3.192837");
