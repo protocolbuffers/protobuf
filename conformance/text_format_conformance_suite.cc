@@ -401,28 +401,85 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
                      "optional_uint64: 02000000000000000000000");
 
   // Floating point fields
-  RunValidTextFormatTest("FloatField", REQUIRED, "optional_float: 3.192837");
-  RunValidTextFormatTest("FloatFieldWithVeryPreciseNumber", REQUIRED,
-                         "optional_float: 3.123456789123456789");
-  RunValidTextFormatTest("FloatFieldMaxValue", REQUIRED,
-                         "optional_float: 3.4028235e+38");
-  RunValidTextFormatTest("FloatFieldMinValue", REQUIRED,
-                         "optional_float: 1.17549e-38");
-  RunValidTextFormatTest("FloatFieldNaNValue", REQUIRED, "optional_float: NaN");
-  RunValidTextFormatTest("FloatFieldPosInfValue", REQUIRED,
-                         "optional_float: inf");
-  RunValidTextFormatTest("FloatFieldNegInfValue", REQUIRED,
-                         "optional_float: -inf");
-  RunValidTextFormatTest("FloatFieldWithInt32Max", REQUIRED,
-                         "optional_float: 4294967296");
-  RunValidTextFormatTest("FloatFieldLargerThanInt64", REQUIRED,
-                         "optional_float: 9223372036854775808");
-  RunValidTextFormatTest("FloatFieldTooLarge", REQUIRED,
-                         "optional_float: 3.4028235e+39");
-  RunValidTextFormatTest("FloatFieldTooSmall", REQUIRED,
-                         "optional_float: 1.17549e-39");
-  RunValidTextFormatTest("FloatFieldLargerThanUint64", REQUIRED,
-                         "optional_float: 18446744073709551616");
+  for (const auto& suffix : std::vector<std::string>{"", "f", "F"}) {
+    const std::string name_suffix =
+        suffix.empty() ? "" : absl::StrCat("_", suffix);
+
+    RunValidTextFormatTest(absl::StrCat("FloatField", name_suffix), REQUIRED,
+                           absl::StrCat("optional_float: 3.192837", suffix));
+    RunValidTextFormatTestWithExpected(
+        absl::StrCat("FloatFieldZero", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 0", suffix),
+        "" /* implicit presence, so zero means unset*/);
+    RunValidTextFormatTest(absl::StrCat("FloatFieldNegative", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: -3.192837", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldWithVeryPreciseNumber", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 3.123456789123456789", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldMaxValue", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 3.4028235e+38", suffix));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldMinValue", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: 1.17549e-38", suffix));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldWithInt32Max", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: 4294967296", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldLargerThanInt64", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 9223372036854775808", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldTooLarge", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 3.4028235e+39", suffix));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldTooSmall", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: 1.17549e-39", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldLargerThanUint64", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: 18446744073709551616", suffix));
+    // https://protobuf.dev/reference/protobuf/textformat-spec/#literals says
+    // "-0" is a valid float literal.
+    // TODO: Figure out if this should count as not setting
+    // presence or if -0 should be reflected back.
+    // RunValidTextFormatTestWithExpected(
+    //     absl::StrCat("FloatFieldNegativeZero", name_suffix), REQUIRED,
+    //     absl::StrCat("optional_float: -0", suffix),
+    //     "" /* implicit presence, so zero means unset*/);
+    // https://protobuf.dev/reference/protobuf/textformat-spec/#literals says
+    // ".123", "-.123", ".123e2" are a valid float literal.
+    RunValidTextFormatTest(absl::StrCat("FloatFieldNoLeadingZero", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: .123", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldNegativeNoLeadingZero", name_suffix), REQUIRED,
+        absl::StrCat("optional_float: -.123", suffix));
+    RunValidTextFormatTest(
+        absl::StrCat("FloatFieldNoLeadingZeroWithExponent", name_suffix),
+        REQUIRED, absl::StrCat("optional_float: .123e2", suffix));
+  }
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#value say case
+  // doesn't matter for special values, test a few
+  for (const auto& value : std::vector<std::string>{"nan", "NaN", "nAn"}) {
+    RunValidTextFormatTest(absl::StrCat("FloatFieldValue_", value), REQUIRED,
+                           absl::StrCat("optional_float: ", value));
+  }
+  for (const auto& value : std::vector<std::string>{
+           "inf", "infinity", "INF", "INFINITY", "iNF", "inFINITY"}) {
+    RunValidTextFormatTest(absl::StrCat("FloatFieldValue_Pos", value), REQUIRED,
+                           absl::StrCat("optional_float: ", value));
+    RunValidTextFormatTest(absl::StrCat("FloatFieldValue_Neg", value), REQUIRED,
+                           absl::StrCat("optional_float: -", value));
+  }
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#numeric and
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#value says
+  // hex or octal float literals are invalid.
+  ExpectParseFailure("FloatFieldNoHex", REQUIRED, "optional_float: 0x1");
+  ExpectParseFailure("FloatFieldNoNegativeHex", REQUIRED,
+                     "optional_float: -0x1");
+  ExpectParseFailure("FloatFieldNoOctal", REQUIRED, "optional_float: 012");
+  ExpectParseFailure("FloatFieldNoNegativeOctal", REQUIRED,
+                     "optional_float: -012");
 
   // String literals x {Strings, Bytes}
   for (const auto& field_type : std::vector<std::string>{"String", "Bytes"}) {
