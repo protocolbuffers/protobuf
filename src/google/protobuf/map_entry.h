@@ -85,19 +85,20 @@ class MapEntry : public Message {
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
  public:
-  constexpr MapEntry()
-      : key_(KeyTypeHandler::Constinit()),
+  explicit constexpr MapEntry(const ClassData* data)
+      : Message(data),
+        key_(KeyTypeHandler::Constinit()),
         value_(ValueTypeHandler::Constinit()) {}
 
-  explicit MapEntry(Arena* arena)
-      : Message(arena),
+  explicit MapEntry(Arena* arena, const ClassData* data)
+      : Message(arena, data),
         key_(KeyTypeHandler::Constinit()),
         value_(ValueTypeHandler::Constinit()) {}
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
 
-  ~MapEntry() override {
+  ~MapEntry() PROTOBUF_OVERRIDE {
     if (GetArena() != nullptr) return;
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
     KeyTypeHandler::DeleteNoArena(key_);
@@ -107,7 +108,7 @@ class MapEntry : public Message {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  Message* New(Arena* arena) const final {
+  Message* New(Arena* arena) const PROTOBUF_FINAL {
     return Arena::Create<Derived>(arena);
   }
 

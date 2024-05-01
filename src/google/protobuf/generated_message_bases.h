@@ -29,18 +29,17 @@ namespace internal {
 // rather than Message.
 class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  size_t ByteSizeLong() const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-  ::uint8_t* _InternalSerialize(::uint8_t* target,
-                                io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, io::EpsCopyOutputStream* stream) const PROTOBUF_FINAL;
 
  protected:
-  constexpr ZeroFieldsBase() {}
-  explicit ZeroFieldsBase(Arena* arena) : Message(arena) {}
+  using Message::Message;
   ZeroFieldsBase(const ZeroFieldsBase&) = delete;
   ZeroFieldsBase& operator=(const ZeroFieldsBase&) = delete;
-  ~ZeroFieldsBase() override;
+  ~ZeroFieldsBase() PROTOBUF_OVERRIDE;
 
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void CopyImpl(Message& to, const Message& from);

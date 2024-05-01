@@ -162,14 +162,14 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
       case kValueIsProto:
         loop([size_info = input.size_info](NodeBase* node) {
           static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->~MessageLite();
+              ->DestroyInstance();
         });
         break;
       case kKeyIsString | kValueIsProto:
         loop([size_info = input.size_info](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
           static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->~MessageLite();
+              ->DestroyInstance();
         });
         break;
       case kUseDestructFunc:

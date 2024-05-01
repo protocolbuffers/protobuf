@@ -246,7 +246,6 @@ inline void MaybePoisonAfterClear(Message* root);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() = default;
   Message(const Message&) = delete;
   Message& operator=(const Message&) = delete;
 
@@ -259,7 +258,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  Message* New(Arena* arena) const {
+    return static_cast<Message*>(MessageLite::New(arena));
+  }
+#else   // PROTOBUF_CUSTOM_VTABLE
   Message* New(Arena* arena) const override = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.
@@ -342,12 +347,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
-
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
   void Clear() override;
 
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // Introspection ---------------------------------------------------
 
@@ -364,6 +370,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
+  using MessageLite::MessageLite;
+
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
@@ -372,7 +380,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
 
-  inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
@@ -380,6 +387,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
+  static void ClearImpl(MessageLite& msg);
+  static size_t ByteSizeLongImpl(const MessageLite& msg);
+  static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream);
 
   static const internal::TcParseTableBase* GetTcParseTableImpl(
       const MessageLite& msg);
@@ -1487,6 +1499,17 @@ inline const Message& DownCastToMessage(const MessageLite& lite) {
 }
 inline Message& DownCastToMessage(MessageLite& lite) {
   return *DownCastToMessage(&lite);
+}
+
+// Specializations to make the generic function also work when `Message` is the
+// target.
+template <>
+inline const Message* DynamicCastToGenerated(const MessageLite* from) {
+  return DynamicCastToMessage(from);
+}
+template <>
+inline const Message* DownCastToGenerated(const MessageLite* from) {
+  return DownCastToMessage(from);
 }
 
 // =============================================================================

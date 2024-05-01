@@ -33,7 +33,8 @@ inline constexpr JavaFeatures::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct JavaFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~JavaFeaturesDefaultTypeInternal() {}
@@ -150,7 +151,7 @@ class JavaFeatures::_Internal {
 };
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
@@ -183,25 +184,31 @@ inline void JavaFeatures::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-JavaFeatures::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &JavaFeatures::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
-              false,
-          },
-          &JavaFeatures::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    JavaFeatures::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &JavaFeatures::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<JavaFeatures>(),
+            ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
+            ::google::protobuf::Message::GetClearImpl<JavaFeatures>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<JavaFeatures>(),
+                ::google::protobuf::Message::GetSerializeImpl<JavaFeatures>(),
+            PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
+            false,
+        },
+        &JavaFeatures::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* JavaFeatures::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {

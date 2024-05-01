@@ -33,7 +33,8 @@ inline constexpr CppFeatures::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct CppFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesDefaultTypeInternal() {}
@@ -145,7 +146,7 @@ class CppFeatures::_Internal {
 };
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
@@ -178,25 +179,31 @@ inline void CppFeatures::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-CppFeatures::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &CppFeatures::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
-              false,
-          },
-          &CppFeatures::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    CppFeatures::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &CppFeatures::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<CppFeatures>(),
+            ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+            ::google::protobuf::Message::GetClearImpl<CppFeatures>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<CppFeatures>(),
+                ::google::protobuf::Message::GetSerializeImpl<CppFeatures>(),
+            PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+            false,
+        },
+        &CppFeatures::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* CppFeatures::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 1, 0, 2> CppFeatures::_table_ = {
