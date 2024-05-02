@@ -404,7 +404,8 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
  *     google/protobuf/descriptor.proto
  *
  * Do not edit -- your changes will be discarded when the file is
- * regenerated. */
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
 
 #include <stddef.h>
 
