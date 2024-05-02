@@ -62,7 +62,7 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/java:__subpackages__"],
     deps = [
-        ":helpers",
+        ":names_internal",
         ":java_features_bootstrap",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
