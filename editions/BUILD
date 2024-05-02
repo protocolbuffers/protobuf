@@ -239,6 +239,7 @@ java_lite_proto_library(
 internal_php_proto_library(
     name = "test_messages_proto3_editions_php_proto",
     testonly = 1,
+    enable_editions = True,
     srcs = ["golden/test_messages_proto3_editions.proto"],
     outs = [
         "GPBMetadata/TestMessagesProto3Editions.php",
