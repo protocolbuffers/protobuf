@@ -16,8 +16,6 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/java/generator.h"
-#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -344,18 +342,6 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return internal::cpp::HasHasbit(descriptor);
 }
 
-// Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
-// but in the message and can be queried using additional getters that return
-// ints.
-inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  if (JavaGenerator::GetResolvedSourceFeatures(*field)
-          .GetExtension(pb::java)
-          .legacy_closed_enum()) {
-    return false;
-  }
-  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
-}
-
 // Check whether a message has repeated fields.
 bool HasRepeatedFields(const Descriptor* descriptor);
 
@@ -375,18 +361,6 @@ inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
   return descriptor->name() == "google/protobuf/wrappers.proto";
 }
 
-inline bool CheckUtf8(const FieldDescriptor* descriptor) {
-  if (JavaGenerator::GetResolvedSourceFeatures(*descriptor)
-          .GetExtension(pb::java)
-          .utf8_validation() == pb::JavaFeatures::VERIFY) {
-    return true;
-  }
-  return JavaGenerator::GetResolvedSourceFeatures(*descriptor)
-                 .utf8_validation() == FeatureSet::VERIFY ||
-         // For legacy syntax. This is not allowed under Editions.
-         descriptor->file()->options().java_string_check_utf8();
-}
-
 void WriteUInt32ToUtf16CharSequence(uint32_t number,
                                     std::vector<uint16_t>* output);
 
@@ -397,16 +371,6 @@ inline void WriteIntToUtf16CharSequence(int value,
 
 // Escape a UTF-16 character so it can be embedded in a Java string literal.
 void EscapeUtf16ToString(uint16_t code, std::string* output);
-
-// Only the lowest two bytes of the return value are used. The lowest byte
-// is the integer value of a j/c/g/protobuf/FieldType enum. For the other
-// byte:
-//    bit 0: whether the field is required.
-//    bit 1: whether the field requires UTF-8 validation.
-//    bit 2: whether the field needs isInitialized check.
-//    bit 3: whether the field is a map field with proto2 enum value.
-//    bits 4-7: unused
-int GetExperimentalJavaFieldType(const FieldDescriptor* field);
 
 // To get the total number of entries need to be built for experimental runtime
 // and the first field number that are not in the table part

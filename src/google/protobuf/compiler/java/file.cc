@@ -12,22 +12,23 @@
 #include "google/protobuf/compiler/java/file.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/context.h"
-#include "google/protobuf/compiler/java/enum.h"
-#include "google/protobuf/compiler/java/enum_lite.h"
-#include "google/protobuf/compiler/java/extension.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
-#include "google/protobuf/compiler/java/message.h"
+#include "google/protobuf/compiler/java/immutable/generator_factory.h"
+#include "google/protobuf/compiler/java/lite/generator_factory.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/compiler/java/service.h"
+#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/versions.h"
@@ -35,6 +36,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -165,6 +167,18 @@ void MaybeRestartJavaMethod(io::Printer* printer, int* bytecode_estimate,
     *bytecode_estimate = 0;
   }
 }
+
+std::unique_ptr<GeneratorFactory> CreateGeneratorFactory(
+    const FileDescriptor* file, const Options& options, Context* context,
+    bool immutable_api) {
+  ABSL_CHECK(immutable_api)
+      << "Open source release does not support the mutable API";
+  if (HasDescriptorMethods(file, context->EnforceLite())) {
+    return MakeImmutableGeneratorFactory(context);
+  } else {
+    return MakeImmutableLiteGeneratorFactory(context);
+  }
+}
 }  // namespace
 
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
@@ -174,18 +188,19 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
       message_generators_(file->message_type_count()),
       extension_generators_(file->extension_count()),
       context_(new Context(file, options)),
+      generator_factory_(
+          CreateGeneratorFactory(file, options, context_.get(), immutable_api)),
       name_resolver_(context_->GetNameResolver()),
       options_(options),
       immutable_api_(immutable_api) {
   classname_ = name_resolver_->GetFileClassName(file, immutable_api);
-    generator_factory_.reset(new ImmutableGeneratorFactory(context_.get()));
   for (int i = 0; i < file_->message_type_count(); ++i) {
-    message_generators_[i].reset(
-        generator_factory_->NewMessageGenerator(file_->message_type(i)));
+    message_generators_[i] =
+        generator_factory_->NewMessageGenerator(file_->message_type(i));
   }
   for (int i = 0; i < file_->extension_count(); ++i) {
-    extension_generators_[i].reset(
-        generator_factory_->NewExtensionGenerator(file_->extension(i)));
+    extension_generators_[i] =
+        generator_factory_->NewExtensionGenerator(file_->extension(i));
   }
 }
 
@@ -322,13 +337,8 @@ void FileGenerator::Generate(io::Printer* printer) {
 
   if (!MultipleJavaFiles(file_, immutable_api_)) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
-      if (HasDescriptorMethods(file_, context_->EnforceLite())) {
-        EnumGenerator(file_->enum_type(i), immutable_api_, context_.get())
-            .Generate(printer);
-      } else {
-        EnumLiteGenerator(file_->enum_type(i), immutable_api_, context_.get())
-            .Generate(printer);
-      }
+      generator_factory_->NewEnumGenerator(file_->enum_type(i))
+          ->Generate(printer);
     }
     for (int i = 0; i < file_->message_type_count(); i++) {
       message_generators_[i]->GenerateInterface(printer);
@@ -556,21 +566,12 @@ void FileGenerator::GenerateSiblings(
     std::vector<std::string>* annotation_list) {
   if (MultipleJavaFiles(file_, immutable_api_)) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
-      if (HasDescriptorMethods(file_, context_->EnforceLite())) {
-        EnumGenerator generator(file_->enum_type(i), immutable_api_,
-                                context_.get());
-        GenerateSibling<EnumGenerator>(
-            package_dir, java_package_, file_->enum_type(i), context, file_list,
-            options_.annotate_code, annotation_list, "", &generator,
-            options_.opensource_runtime, &EnumGenerator::Generate);
-      } else {
-        EnumLiteGenerator generator(file_->enum_type(i), immutable_api_,
-                                    context_.get());
-        GenerateSibling<EnumLiteGenerator>(
-            package_dir, java_package_, file_->enum_type(i), context, file_list,
-            options_.annotate_code, annotation_list, "", &generator,
-            options_.opensource_runtime, &EnumLiteGenerator::Generate);
-      }
+      std::unique_ptr<EnumGenerator> generator(
+          generator_factory_->NewEnumGenerator(file_->enum_type(i)));
+      GenerateSibling<EnumGenerator>(
+          package_dir, java_package_, file_->enum_type(i), context, file_list,
+          options_.annotate_code, annotation_list, "", generator.get(),
+          options_.opensource_runtime, &EnumGenerator::Generate);
     }
     for (int i = 0; i < file_->message_type_count(); i++) {
       if (immutable_api_) {
