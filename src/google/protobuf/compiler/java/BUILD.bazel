@@ -26,7 +26,8 @@ cc_library(
         "names.cc",
     ],
     hdrs = [
-        "generator.h",
+        "context.h",
+        "doc_comment.h",
         "helpers.h",
         "name_resolver.h",
         "names.h",
@@ -36,7 +37,6 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        ":java_features_bootstrap",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
@@ -49,6 +49,25 @@ cc_library(
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "internal_helpers",
+    srcs = ["internal_helpers.cc"],
+    hdrs = [
+        "generator.h",
+        "internal_helpers.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/java:__subpackages__"],
+    deps = [
+        ":helpers",
+        ":java_features_bootstrap",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
