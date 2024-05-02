@@ -158,6 +158,7 @@ cc_library(
         ":java_features_bootstrap",
         ":names",
         ":names_internal",
+        ":internal_helpers",
         "//src/google/protobuf",
         "//src/google/protobuf:arena",
         "//src/google/protobuf:port",
