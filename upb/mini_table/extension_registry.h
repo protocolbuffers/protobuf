@@ -8,6 +8,7 @@
 #ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 #define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 
+#include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
@@ -53,7 +54,10 @@ extern "C" {
  * reflection do not need to populate a upb_ExtensionRegistry directly.
  */
 
-typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
+typedef struct upb_ExtensionRegistry {
+  upb_Arena* arena;
+  upb_strtable exts;  // Key is upb_MiniTable* concatenated with fieldnum.
+} upb_ExtensionRegistry;
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.

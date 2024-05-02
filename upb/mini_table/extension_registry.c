@@ -21,11 +21,6 @@
 
 #define EXTREG_KEY_SIZE (sizeof(upb_MiniTable*) + sizeof(uint32_t))
 
-struct upb_ExtensionRegistry {
-  upb_Arena* arena;
-  upb_strtable exts;  // Key is upb_MiniTable* concatenated with fieldnum.
-};
-
 static void extreg_key(char* buf, const upb_MiniTable* l, uint32_t fieldnum) {
   memcpy(buf, &l, sizeof(l));
   memcpy(buf + sizeof(l), &fieldnum, sizeof(fieldnum));
