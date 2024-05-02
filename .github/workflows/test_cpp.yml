@@ -7,6 +7,10 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      presubmit_tag:
+        required: true
+        description: "This tag is set to indicate presubmit. Otherwise, empty"
+        type: string
 
 permissions:
   contents: read
@@ -365,10 +369,11 @@ jobs:
       matrix:
         include:
           # TODO: investigate and fix
-          # - name: MacOS CMake
-          #   os: macos-12
-          #   flags: -DCMAKE_CXX_STANDARD=14
-          #   cache-prefix: macos-cmake
+          - name: MacOS CMake ${{ inputs.presubmit_tag }}
+            os: macos-12
+            flags: -DCMAKE_CXX_STANDARD=14
+            cache-prefix: macos-cmake
+            # should_skip: ${{ inputs.presubmit_tag }}
           - name: Windows CMake
             os: windows-2022
             flags: >-
@@ -410,6 +415,8 @@ jobs:
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
+        exclude:
+          - should_skip: presubmit
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:

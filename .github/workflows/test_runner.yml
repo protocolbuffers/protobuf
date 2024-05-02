@@ -77,6 +77,7 @@ jobs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
+      presubmit_tag: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'presubmit' || '' }}
     steps:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
@@ -123,6 +124,7 @@ jobs:
     uses: ./.github/workflows/test_cpp.yml
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      presubmit_tag: ${{ needs.check-tag.outputs.presubmit_tag }}
     secrets: inherit
 
   java:
