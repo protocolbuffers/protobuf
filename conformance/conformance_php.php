@@ -26,6 +26,7 @@ require_once('GPBMetadata/TestMessagesProto3.php');
 require_once('GPBMetadata/TestMessagesProto3Editions.php');
 
 use Conformance\ConformanceRequest;
+use Conformance\ConformanceResponse;
 use Conformance\TestCategory;
 use Conformance\WireFormat;
 use Protobuf_test_messages\Proto3\TestAllTypesProto3;
@@ -113,6 +114,9 @@ function doTest($request)
     }
 
     switch ($request->getRequestedOutputFormat()) {
+        case WireFormat::TEXT_FORMAT:
+            $response->setSkipped('PHP doesn\'t support text format yet');
+            return $response;
         case WireFormat::UNSPECIFIED:
             trigger_error('Unspecified output format.', E_USER_ERROR);
         case WireFormat::PROTOBUF:
