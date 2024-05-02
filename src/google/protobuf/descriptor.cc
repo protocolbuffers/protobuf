@@ -8074,16 +8074,16 @@ void DescriptorBuilder::ValidateFieldFeatures(
   }
 
   // Validate fully resolved features.
-  if (field->has_default_value() &&
-      field->features().field_presence() == FeatureSet::IMPLICIT) {
-    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Implicit presence fields can't specify defaults.");
-  }
-  if (field->enum_type() != nullptr &&
-      field->enum_type()->features().enum_type() != FeatureSet::OPEN &&
-      field->features().field_presence() == FeatureSet::IMPLICIT) {
-    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Implicit presence enum fields must always be open.");
+  if (!field->is_repeated() && !field->has_presence()) {
+    if (field->has_default_value()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Implicit presence fields can't specify defaults.");
+    }
+    if (field->enum_type() != nullptr &&
+        field->enum_type()->features().enum_type() != FeatureSet::OPEN) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Implicit presence enum fields must always be open.");
+    }
   }
   if (field->is_extension() &&
       field->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
