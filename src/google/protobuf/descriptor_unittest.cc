@@ -9830,7 +9830,62 @@ TEST_F(FeaturesTest, InvalidFieldImplicitDefault) {
       "defaults.\n");
 }
 
-TEST_F(FeaturesTest, InvalidFieldImplicitOpen) {
+TEST_F(FeaturesTest, ValidExtensionFieldImplicitDefault) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          extension_range { start: 1 end: 100 }
+        }
+        extension {
+          name: "bar"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          default_value: "Hello world"
+          extendee: "Foo"
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_TRUE(file->extension(0)->has_presence());
+  EXPECT_EQ(file->extension(0)->default_value_string(), "Hello world");
+}
+
+TEST_F(FeaturesTest, ValidOneofFieldImplicitDefault) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            default_value: "Hello world"
+            oneof_index: 0
+          }
+          oneof_decl { name: "_foo" }
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_TRUE(file->message_type(0)->field(0)->has_presence());
+  EXPECT_EQ(file->message_type(0)->field(0)->default_value_string(),
+            "Hello world");
+}
+
+TEST_F(FeaturesTest, InvalidFieldImplicitClosed) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
       R"pb(
@@ -9856,6 +9911,68 @@ TEST_F(FeaturesTest, InvalidFieldImplicitOpen) {
       )pb",
       "foo.proto: Foo.bar: NAME: Implicit presence enum fields must always "
       "be open.\n");
+}
+
+TEST_F(FeaturesTest, ValidRepeatedFieldImplicitClosed) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_ENUM
+            type_name: "Enum"
+          }
+        }
+        enum_type {
+          name: "Enum"
+          value { name: "BAR" number: 0 }
+          options { features { enum_type: CLOSED } }
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_FALSE(file->message_type(0)->field(0)->has_presence());
+  EXPECT_TRUE(file->enum_type(0)->is_closed());
+}
+
+TEST_F(FeaturesTest, ValidOneofFieldImplicitClosed) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Enum"
+            oneof_index: 0
+          }
+          oneof_decl { name: "_foo" }
+        }
+        enum_type {
+          name: "Enum"
+          value { name: "BAR" number: 0 }
+          options { features { enum_type: CLOSED } }
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_TRUE(file->message_type(0)->field(0)->has_presence());
+  EXPECT_TRUE(file->enum_type(0)->is_closed());
 }
 
 TEST_F(FeaturesTest, InvalidFieldRequiredExtension) {
