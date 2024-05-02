@@ -270,7 +270,7 @@ _proto_gen = rule(
     implementation = _proto_gen_impl,
 )
 
-def _internal_gen_well_known_protos_java_impl(ctx):
+def _internal_gen_protos_java_impl(ctx):
     args = ctx.actions.args()
 
     deps = [d[ProtoInfo] for d in ctx.attr.deps]
@@ -301,7 +301,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
             args.add_all([src.path[offset:] for src in dep.direct_sources])
 
     ctx.actions.run(
-        executable = ctx.executable._protoc,
+        executable = ctx.executable.protoc,
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
@@ -315,8 +315,8 @@ def _internal_gen_well_known_protos_java_impl(ctx):
         ),
     ]
 
-internal_gen_well_known_protos_java = rule(
-    implementation = _internal_gen_well_known_protos_java_impl,
+internal_gen_protos_java = rule(
+    implementation = _internal_gen_protos_java_impl,
     attrs = {
         "deps": attr.label_list(
             mandatory = True,
@@ -325,7 +325,7 @@ internal_gen_well_known_protos_java = rule(
         "javalite": attr.bool(
             default = False,
         ),
-        "_protoc": attr.label(
+        "protoc": attr.label(
             executable = True,
             cfg = "exec",
             default = "//:protoc",

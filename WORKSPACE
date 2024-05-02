@@ -226,3 +226,11 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+# For testing against old gencode from a previous major version.
+http_archive(
+    name = "com_google_protobuf_v25",
+    # sha256 = "",
+    strip_prefix = "protobuf-25.0",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+)

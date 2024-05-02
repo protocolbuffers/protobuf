@@ -1,6 +1,6 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
+load("//:protobuf.bzl", "internal_gen_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
@@ -116,7 +116,7 @@ FULL_SRCS = glob(
     ":gen_well_known_protos_java",
 ]
 
-internal_gen_well_known_protos_java(
+internal_gen_protos_java(
     name = "gen_well_known_protos_javalite",
     javalite = True,
     deps = [
@@ -226,7 +226,7 @@ staleness_test(
     target_files = ["src/main/java/com/google/protobuf/JavaEditionDefaults.java"],
 )
 
-internal_gen_well_known_protos_java(
+internal_gen_protos_java(
     name = "gen_well_known_protos_java",
     deps = [
         "//:any_proto",
@@ -431,6 +431,42 @@ junit_tests(
         ":generic_test_protos_java_proto",
         ":java_test_protos_java_proto",
         ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+internal_gen_protos_java(
+    name = "gen_v25_test_protos_java",
+    protoc = Label("@com_google_protobuf_v25//:protoc"),
+    deps = [
+        ":generic_test_protos_java_proto",
+        ":java_test_protos",
+        ":lite_test_protos",
+    ],
+)
+
+junit_tests(
+    name = "v25_core_tests",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+        ],
+    ),
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        ":core",
+        ":gen_v25_test_protos_java",
+        ":generic_test_protos_editions_java_proto",
         ":test_util",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
