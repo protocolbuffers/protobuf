@@ -481,6 +481,27 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
   ExpectParseFailure("FloatFieldNoOctal", REQUIRED, "optional_float: 012");
   ExpectParseFailure("FloatFieldNoNegativeOctal", REQUIRED,
                      "optional_float: -012");
+  // https://protobuf.dev/reference/protobuf/textformat-spec/#value says
+  // overflows are mapped to infinity/-infinity.
+  RunValidTextFormatTestWithExpected("FloatFieldOverflowInfinity", REQUIRED,
+                                     "optional_float: 1e50",
+                                     "optional_float: inf");
+  RunValidTextFormatTestWithExpected("FloatFieldOverflowNegativeInfinity",
+                                     REQUIRED, "optional_float: -1e50",
+                                     "optional_float: -inf");
+  RunValidTextFormatTestWithExpected("DoubleFieldOverflowInfinity", REQUIRED,
+                                     "optional_double: 1e9999",
+                                     "optional_double: inf");
+  RunValidTextFormatTestWithExpected("DoubleFieldOverflowNegativeInfinity",
+                                     REQUIRED, "optional_double: -1e9999",
+                                     "optional_double: -inf");
+  // Exponent is one more than uint64 max.
+  RunValidTextFormatTestWithExpected(
+      "FloatFieldOverflowInfinityHugeExponent", REQUIRED,
+      "optional_float: 1e18446744073709551616", "optional_float: inf");
+  RunValidTextFormatTestWithExpected(
+      "DoubleFieldOverflowInfinityHugeExponent", REQUIRED,
+      "optional_double: 1e18446744073709551616", "optional_double: inf");
 
   // String literals x {Strings, Bytes}
   for (const auto& field_type : std::vector<std::string>{"String", "Bytes"}) {
