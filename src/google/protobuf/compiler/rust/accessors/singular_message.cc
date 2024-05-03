@@ -10,7 +10,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
+#include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"

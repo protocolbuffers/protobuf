@@ -15,12 +15,12 @@
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
-#include "google/protobuf/compiler/java/immutable/enum_field.h"
-#include "google/protobuf/compiler/java/immutable/field_generator.h"
-#include "google/protobuf/compiler/java/immutable/map_field.h"
-#include "google/protobuf/compiler/java/immutable/message_field.h"
-#include "google/protobuf/compiler/java/immutable/primitive_field.h"
-#include "google/protobuf/compiler/java/immutable/string_field.h"
+#include "google/protobuf/compiler/java/full/enum_field.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
+#include "google/protobuf/compiler/java/full/map_field.h"
+#include "google/protobuf/compiler/java/full/message_field.h"
+#include "google/protobuf/compiler/java/full/primitive_field.h"
+#include "google/protobuf/compiler/java/full/string_field.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {

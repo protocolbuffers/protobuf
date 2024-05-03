@@ -12,10 +12,10 @@
 #include <memory>
 
 #include "google/protobuf/compiler/java/context.h"
-#include "google/protobuf/compiler/java/immutable/enum.h"
-#include "google/protobuf/compiler/java/immutable/extension.h"
-#include "google/protobuf/compiler/java/immutable/message.h"
-#include "google/protobuf/compiler/java/immutable/service.h"
+#include "google/protobuf/compiler/java/full/enum.h"
+#include "google/protobuf/compiler/java/full/extension.h"
+#include "google/protobuf/compiler/java/full/message.h"
+#include "google/protobuf/compiler/java/full/service.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
