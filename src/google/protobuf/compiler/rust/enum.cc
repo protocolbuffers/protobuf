@@ -325,23 +325,21 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
           // The default value of an enum is the first listed value.
           // The compiler checks that this is equal to 0 for open enums.
           {"default_int_value", absl::StrCat(desc.value(0)->number())},
+          {"known_values_pattern",
+           // TODO: Check validity in UPB/C++.
+           absl::StrJoin(values, "|",
+                         [](std::string* o, const RustEnumValue& val) {
+                           absl::StrAppend(o, val.number);
+                         })},
           {"impl_from_i32",
            [&] {
              if (desc.is_closed()) {
-               ctx.Emit({{"name", name},
-                         {"known_values_pattern",
-                          // TODO: Check validity in UPB/C++.
-                          absl::StrJoin(
-                              values, "|",
-                              [](std::string* o, const RustEnumValue& val) {
-                                absl::StrAppend(o, val.number);
-                              })}},
-                        R"rs(
+               ctx.Emit(R"rs(
               impl $std$::convert::TryFrom<i32> for $name$ {
                 type Error = $pb$::UnknownEnumValue<Self>;
 
                 fn try_from(val: i32) -> Result<$name$, Self::Error> {
-                  if matches!(val, $known_values_pattern$) {
+                  if <Self as $pbi$::Enum>::is_known(val) {
                     Ok(Self(val))
                   } else {
                     Err($pb$::UnknownEnumValue::new($pbi$::Private, val))
@@ -350,7 +348,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
               }
             )rs");
              } else {
-               ctx.Emit({{"name", name}}, R"rs(
+               ctx.Emit(R"rs(
               impl $std$::convert::From<i32> for $name$ {
                 fn from(val: i32) -> $name$ {
                   Self(val)
@@ -457,6 +455,10 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
       // SAFETY: this is an enum type
       unsafe impl $pbi$::Enum for $name$ {
         const NAME: &'static str = "$name$";
+
+        fn is_known(value: i32) -> bool {
+          matches!(value, $known_values_pattern$)
+        }
       }
 
       $impl_proxied_in_map$

@@ -9,6 +9,7 @@
 
 use enums_proto::*;
 use googletest::prelude::*;
+use protobuf::Enum;
 use unittest_proto::*;
 
 #[test]
@@ -166,4 +167,25 @@ fn test_enum_conversion_failure_display() {
 fn test_enum_conversion_failure_impls_std_error() {
     let err = TestSparseEnum::try_from(1).unwrap_err();
     let _test_compiles: &dyn std::error::Error = &err;
+}
+
+#[test]
+fn test_is_known_for_closed_enum() {
+    assert_that!(test_all_types::NestedEnum::is_known(-2), eq(false));
+    assert_that!(test_all_types::NestedEnum::is_known(-1), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(0), eq(false));
+    assert_that!(test_all_types::NestedEnum::is_known(1), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(2), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(3), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(4), eq(false));
+}
+
+#[test]
+fn test_is_known_for_open_enum() {
+    assert_that!(TestEnumWithNumericNames::is_known(-1), eq(false));
+    assert_that!(TestEnumWithNumericNames::is_known(0), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(1), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(2), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(3), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(4), eq(false));
 }
