@@ -215,7 +215,8 @@ crates_repository(
     lockfile = "//:Cargo.bazel.lock",
     packages = {
         "googletest": crate.spec(
-            version = ">0.0.0",
+            git = "https://github.com/google/googletest-rust",
+            rev = "471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f",
         ),
         "paste": crate.spec(
           version = ">=1",

@@ -479,8 +479,7 @@ mod tests {
                     assert_that!(r.len(), eq(expected_len));
 
                 )*
-                assert_that!(
-                    r.iter().collect::<Vec<$t>>(), elements_are![$(eq($vals)),*]);
+                assert_that!(r, elements_are![$(eq($vals)),*]);
                 r.set(0, <$t as Default>::default());
                 assert_that!(r.get(0).expect("elem 0"), eq(<$t as Default>::default()));
 
@@ -507,15 +506,12 @@ mod tests {
         assert_that!(r.as_mut().len(), eq(0));
 
         r.as_mut().extend([0, 1]);
-        assert_that!(r.as_mut().iter().collect::<Vec<_>>(), elements_are![eq(0), eq(1)]);
+        assert_that!(r.as_mut(), elements_are![eq(0), eq(1)]);
         let mut x = Repeated::<i32>::new();
         x.as_mut().extend([2, 3]);
 
         r.as_mut().extend(&x.as_mut());
 
-        assert_that!(
-            r.as_mut().iter().collect::<Vec<_>>(),
-            elements_are![eq(0), eq(1), eq(2), eq(3)]
-        );
+        assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 }

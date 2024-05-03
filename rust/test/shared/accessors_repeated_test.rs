@@ -35,20 +35,20 @@ macro_rules! generate_repeated_numeric_test {
               mutator.set(2, 0 as $t);
 
               assert_that!(
-                  mutator.iter().collect::<Vec<_>>(),
-                  elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
+                mutator,
+                elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
               );
               assert_that!(
-                  mutator.as_view().into_iter().collect::<Vec<_>>(),
-                  elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
+                mutator.as_view(),
+                elements_are![eq(2 as $t), eq(1 as $t), eq(0 as $t)]
               );
 
               for i in 0..mutator.len() {
                   mutator.set(i, 0 as $t);
               }
               assert_that!(
-                  msg.[<repeated_ $field _mut >]().iter().collect::<Vec<_>>(),
-                  each(eq(0 as $t))
+                msg.[<repeated_ $field _mut >](),
+                each(eq(0 as $t))
               );
           }
 
@@ -66,7 +66,7 @@ macro_rules! generate_repeated_numeric_test {
               let view = msg.[<repeated_ $field>]();
               assert_that!(
                 view.iter().collect::<Vec<_>>(),
-                  eq(mutator2.iter().collect::<Vec<_>>())
+                eq(&mutator2.iter().collect::<Vec<_>>())
               );
           }
 
@@ -125,16 +125,13 @@ fn test_repeated_bool_accessors() {
     mutator.set(2, false);
     assert_that!(mutator.get(2), some(eq(false)));
 
-    assert_that!(mutator.iter().collect::<Vec<_>>(), elements_are![eq(false), eq(true), eq(false)]);
-    assert_that!(
-        mutator.as_view().into_iter().collect::<Vec<_>>(),
-        elements_are![eq(false), eq(true), eq(false)]
-    );
+    assert_that!(mutator, elements_are![eq(false), eq(true), eq(false)]);
+    assert_that!(mutator.as_view(), elements_are![eq(false), eq(true), eq(false)]);
 
     for i in 0..mutator.len() {
         mutator.set(i, false);
     }
-    assert_that!(msg.repeated_bool().iter().collect::<Vec<_>>(), each(eq(false)));
+    assert_that!(msg.repeated_bool(), each(eq(false)));
 }
 
 #[test]
@@ -161,18 +158,18 @@ fn test_repeated_enum_accessors() {
     assert_that!(mutator.get(2), some(eq(NestedEnum::Foo)));
 
     assert_that!(
-        mutator.iter().collect::<Vec<_>>(),
+        mutator,
         elements_are![eq(NestedEnum::Bar), eq(NestedEnum::Baz), eq(NestedEnum::Foo)]
     );
     assert_that!(
-        mutator.as_view().into_iter().collect::<Vec<_>>(),
+        mutator.as_view(),
         elements_are![eq(NestedEnum::Bar), eq(NestedEnum::Baz), eq(NestedEnum::Foo)]
     );
 
     for i in 0..mutator.len() {
         mutator.set(i, NestedEnum::Foo);
     }
-    assert_that!(msg.repeated_nested_enum().iter().collect::<Vec<_>>(), each(eq(NestedEnum::Foo)));
+    assert_that!(msg.repeated_nested_enum(), each(eq(NestedEnum::Foo)));
 }
 
 #[test]
@@ -187,7 +184,7 @@ fn test_repeated_bool_set() {
     msg.set_repeated_bool(mutator2.as_view());
 
     let view = msg.repeated_bool();
-    assert_that!(view.iter().collect::<Vec<_>>(), eq(mutator2.iter().collect::<Vec<_>>()));
+    assert_that!(&view.iter().collect::<Vec<_>>(), eq(&mutator2.iter().collect::<Vec<_>>()));
 }
 
 #[test]
@@ -211,8 +208,8 @@ fn test_repeated_message() {
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(2));
 
     assert_that!(
-        msg.repeated_nested_message().iter().map(|m| m.bb()).collect::<Vec<_>>(),
-        eq(vec![2]),
+        msg.repeated_nested_message(),
+        elements_are![predicate(|m: protobuf::View<NestedMessage>| m.bb() == 2)],
     );
 
     drop(msg);
@@ -243,7 +240,7 @@ fn test_repeated_strings() {
         assert_that!(msg.repeated_string().get(0).unwrap(), eq("set from Mut"));
         assert_that!(msg.repeated_string().get(1).unwrap(), eq("set second str"));
         assert_that!(
-            msg.repeated_string().iter().collect::<Vec<_>>(),
+            msg.repeated_string(),
             elements_are![eq("set from Mut"), eq("set second str")]
         );
         older_msg.repeated_string_mut().copy_from(msg.repeated_string());
@@ -251,7 +248,7 @@ fn test_repeated_strings() {
 
     assert_that!(older_msg.repeated_string().len(), eq(2));
     assert_that!(
-        older_msg.repeated_string().iter().collect::<Vec<_>>(),
+        older_msg.repeated_string(),
         elements_are![eq("set from Mut"), eq("set second str")]
     );
 
