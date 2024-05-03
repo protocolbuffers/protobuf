@@ -50,6 +50,7 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
          descriptor->file()->options().java_string_check_utf8();
 }
 
+
 // Only the lowest two bytes of the return value are used. The lowest byte
 // is the integer value of a j/c/g/protobuf/FieldType enum. For the other
 // byte:

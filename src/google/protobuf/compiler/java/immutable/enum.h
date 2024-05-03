@@ -71,6 +71,7 @@ class EnumNonLiteGenerator : public EnumGenerator {
   ClassNameResolver* name_resolver_;
 
   bool CanUseEnumValues();
+
 };
 
 }  // namespace java
