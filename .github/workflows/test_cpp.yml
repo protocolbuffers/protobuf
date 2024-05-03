@@ -43,11 +43,11 @@ jobs:
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -63,11 +63,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -83,24 +83,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
       - name: Cross compile protoc for ${{ matrix.arch }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-release-${{ matrix.arch }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -135,18 +135,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -160,19 +160,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-install
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -193,18 +193,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-examples
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -233,19 +233,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-gcc
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -264,19 +264,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-submodules
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -289,19 +289,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-32-bit
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v2
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:8275360dc5d676f3470872d79087901c0e4153453976bea908a92c82e8d209ea
           platform: linux/386
@@ -348,11 +348,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v2
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
@@ -414,7 +414,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
@@ -438,7 +438,7 @@ jobs:
         shell: bash
 
       - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v2
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: ${{ matrix.cache-prefix }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -446,7 +446,7 @@ jobs:
       # Install phase.
       - name: Configure CMake for install
         if: matrix.install-flags
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
@@ -468,7 +468,7 @@ jobs:
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
-        uses: protocolbuffers/protobuf-ci/bash@v2
+        uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON 
