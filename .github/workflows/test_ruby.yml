@@ -20,17 +20,42 @@ jobs:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
           - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
           - { name: Ruby 3.2, ruby: ruby-3.2.0 }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 1 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 1 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 1 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 2 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 2 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 2 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 3 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 3 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 3 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 4 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 4 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 4 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 5 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 5 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 5 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 6 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 6 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 6 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 7 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 7 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 7 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 8 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 8 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 8 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, iteration: 9 }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, iteration: 9 }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, iteration: 9 }
 
-    name: Linux ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: Linux ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}${{ matrix.iteration == '' && '' || ' ' }}${{ matrix.iteration }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -40,10 +65,15 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-a6940b1421a71325ef4c7828ec72d404f56bbf30', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+      - name: Archive log artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}${{ matrix.iteration == '' && '' || '-' }}${{ matrix.iteration }}
+          path: logs
 
   linux-32bit:
     name: Linux 32-bit
@@ -116,15 +146,31 @@ jobs:
         # Ruby versions for CRuby, but only on Bazel 5.x.
         # Quote versions numbers otherwise 3.0 will render as 3
         - { version: "3.0", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.0", ffi: FFI }
+        - { version: "3.0", ffi: FFI }
         - { version: "3.1" }
         - { version: "3.2" }
         - { version: "3.3", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.3", ffi: FFI }
+        - { version: "3.3", ffi: FFI }
+        - { version: "3.0", ffi: FFI, iteration: 1 }
+        - { version: "3.3", ffi: FFI, iteration: 1 }
+        - { version: "3.0", ffi: FFI, iteration: 2 }
+        - { version: "3.3", ffi: FFI, iteration: 2 }
+        - { version: "3.0", ffi: FFI, iteration: 3 }
+        - { version: "3.3", ffi: FFI, iteration: 3 }
+        - { version: "3.0", ffi: FFI, iteration: 4 }
+        - { version: "3.3", ffi: FFI, iteration: 4 }
+        - { version: "3.0", ffi: FFI, iteration: 5 }
+        - { version: "3.3", ffi: FFI, iteration: 5 }
+        - { version: "3.0", ffi: FFI, iteration: 6 }
+        - { version: "3.3", ffi: FFI, iteration: 6 }
+        - { version: "3.0", ffi: FFI, iteration: 7 }
+        - { version: "3.3", ffi: FFI, iteration: 7 }
+        - { version: "3.0", ffi: FFI, iteration: 8 }
+        - { version: "3.3", ffi: FFI, iteration: 8 }
+        - { version: "3.0", ffi: FFI, iteration: 9 }
+        - { version: "3.3", ffi: FFI, iteration: 9 }
 
-    name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}${{ matrix.iteration == '' && '' || ' ' }}${{ matrix.iteration }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
@@ -172,7 +218,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-a6940b1421a71325ef4c7828ec72d404f56bbf30
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >

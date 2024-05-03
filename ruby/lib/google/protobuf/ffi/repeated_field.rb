@@ -24,12 +24,14 @@ module Google
   module Protobuf
     class FFI
       # Array
-      attach_function :append_array, :upb_Array_Append,        [:Array, MessageValue.by_value, Internal::Arena], :bool
-      attach_function :get_msgval_at,:upb_Array_Get,           [:Array, :size_t], MessageValue.by_value
-      attach_function :create_array, :upb_Array_New,           [Internal::Arena, CType], :Array
-      attach_function :array_resize, :upb_Array_Resize,        [:Array, :size_t, Internal::Arena], :bool
-      attach_function :array_set,    :upb_Array_Set,           [:Array, :size_t, MessageValue.by_value], :void
-      attach_function :array_size,   :upb_Array_Size,          [:Array], :size_t
+      attach_function :append_array,  :upb_Array_Append,   [:Array, MessageValue.by_value, Internal::Arena], :bool
+      attach_function :get_msgval_at, :upb_Array_Get,      [:Array, :size_t], MessageValue.by_value
+      attach_function :create_array,  :upb_Array_New,      [Internal::Arena, CType], :Array
+      attach_function :array_resize,  :upb_Array_Resize,   [:Array, :size_t, Internal::Arena], :bool
+      attach_function :array_set,     :upb_Array_Set,      [:Array, :size_t, MessageValue.by_value], :void
+      attach_function :array_size,    :upb_Array_Size,     [:Array], :size_t
+      attach_function :array_freeze,  :upb_Array_Freeze,   [:Array, MiniTable.by_ref], :void
+      attach_function :array_frozen?, :upb_Array_IsFrozen, [:Array], :bool
     end
 
     class RepeatedField
@@ -174,14 +176,44 @@ module Google
       end
       alias size :length
 
+      ##
+      # Is this object frozen?
+      # Returns true if either this Ruby wrapper or the underlying
+      # representation are frozen. Freezes the wrapper if the underlying
+      # representation is already frozen but this wrapper isn't.
+      def frozen?
+        ruby_frozen = super
+        upb_frozen = Google::Protobuf::FFI.array_frozen?(array)
+        return true if ruby_frozen and upb_frozen
+        # Underlying representation is frozen but _self is not.
+        if upb_frozen
+          method(:freeze).super_method.call
+          return true
+        end
+        raise RuntimeError.new "Ruby frozen RepeatedField with mutable representation" if ruby_frozen
+        false
+      end
+
+      ##
+      # Freezes the RepeatedField object. We have to intercept this so we can
+      # freeze the underlying representation, not just the Ruby wrapper. Returns
+      # self.
       def freeze
-        return self if frozen?
-        super
-        @arena.pin self
-        if type == :message
-          each do |element|
-            element.freeze
-          end
+        ruby_frozen = method(:frozen?).super_method.call
+        upb_frozen = Google::Protobuf::FFI.array_frozen?(array)
+        return self if ruby_frozen and upb_frozen
+        if !upb_frozen
+          mini_table = (type == :message) ? Google::Protobuf::FFI.get_mini_table(@descriptor) : nil
+          Google::Protobuf::FFI.array_freeze(array, mini_table)
+        end
+        if !ruby_frozen
+          super
+        end
+        unless Google::Protobuf::FFI.array_frozen?(array)
+          raise RuntimeError.new "Underlying representation of repeated field still mutable after freeze"
+        end
+        unless method(:frozen?).super_method.call
+          raise RuntimeError.new "Ruby RepeatedFields still mutable after freeze"
         end
         self
       end
@@ -348,10 +380,14 @@ module Google
         OBJECT_CACHE.try_add(@array.address, self)
       end
 
-      # @param field [FieldDescriptor] Descriptor of the field where the RepeatedField will be assigned
-      # @param values [Enumerable] Initial values; may be nil or empty
+      ##
+      # Constructor that uses the type information from the given
+      # FieldDescriptor to configure the new RepeatedField instance.
+      # @param field [FieldDescriptor] Type information for the new RepeatedField
       # @param arena [Arena] Owning message's arena
-      def self.construct_for_field(field, arena, values: nil, array: nil)
+      # @param values [Enumerable] Initial values
+      # @param array [::FFI::Pointer] Existing upb_Array
+      def self.construct_for_field(field, arena: nil, values: nil, array: nil)
         instance = allocate
         options = {initial_values: values, name: field.name, arena: arena, array: array}
         if [:enum, :message].include? field.type

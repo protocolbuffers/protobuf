@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
                                    BUILD\.bazel|extconf\.rb|wrap_memcpy\.c)$/x
       end
     s.extensions = ["ext/google/protobuf_c/Rakefile"]
+    # OK ffi version doesn't match the version used by CRuby, JRuby bundles FFI.
     s.add_dependency "ffi", "~>1"
     s.add_dependency "ffi-compiler", "~>1"
   else
@@ -39,7 +40,7 @@ Gem::Specification.new do |s|
   # more details:
   # https://github.com/protocolbuffers/protobuf/pull/15203
   s.add_dependency "rake", ">= 13"
-  s.add_development_dependency "ffi", "~>1"
+  s.add_development_dependency "ffi", "~>1.17.0.rc2"
   s.add_development_dependency "ffi-compiler", "~>1"
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
