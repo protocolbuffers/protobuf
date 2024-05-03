@@ -20,6 +20,10 @@
 // serialization).
 // -----------------------------------------------------------------------------
 
+#define PBRUBY_CHECK_FROZEN_MAP(map_rb) \
+  PBRUBY_CHECK_FROZEN( \
+    RB_OBJ_FROZEN(map_rb)||upb_Map_IsFrozen(ruby_to_Map(map_rb)->map), map_rb)
+
 // -----------------------------------------------------------------------------
 // Map container type.
 // -----------------------------------------------------------------------------
@@ -63,7 +67,7 @@ static VALUE Map_alloc(VALUE klass) {
   return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
-VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
+VALUE Map_GetRubyWrapper(const upb_Map* map, upb_CType key_type, TypeInfo value_type,
                          VALUE arena) {
   PBRUBY_ASSERT(map);
 
@@ -83,7 +87,9 @@ VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
     }
     return ObjectCache_TryAdd(map, val);
   }
-
+  if (upb_Map_IsFrozen(map) && !RB_OBJ_FROZEN(val)) {
+    RB_OBJ_FREEZE(val);
+  }
   return val;
 }
 
@@ -105,7 +111,7 @@ static TypeInfo Map_keyinfo(Map* self) {
 }
 
 static upb_Map* Map_GetMutable(VALUE _self) {
-  rb_check_frozen(_self);
+  PBRUBY_CHECK_FROZEN_MAP(_self);
   return (upb_Map*)ruby_to_Map(_self)->map;
 }
 
@@ -440,7 +446,7 @@ static VALUE Map_has_key(VALUE _self, VALUE key) {
  */
 static VALUE Map_delete(VALUE _self, VALUE key) {
   Map* self = ruby_to_Map(_self);
-  rb_check_frozen(_self);
+  PBRUBY_CHECK_FROZEN_MAP(_self);
 
   upb_MessageValue key_upb =
       Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
@@ -560,29 +566,84 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
 
 /*
  * call-seq:
- *     Message.freeze => self
+ *     Map.frozen? => bool
  *
- * Freezes the message object. We have to intercept this so we can pin the
- * Ruby object into memory so we don't forget it's frozen.
+ * Returns true if the map is frozen in either Ruby or the underlying
+ * representation. Freezes the Ruby map object if it is not already frozen in
+ * Ruby but it is frozen in the underlying representation.
+ */
+VALUE Map_frozen(VALUE _self) {
+  Map* self = ruby_to_Map(_self);
+  bool ruby_frozen = RB_OBJ_FROZEN(_self);
+  bool upb_frozen = upb_Map_IsFrozen(self->map);
+  if (ruby_frozen && upb_frozen) {
+    return Qtrue;
+  }
+  // Underlying representation is frozen but _self is not.
+  if (upb_frozen) {
+    RB_OBJ_FREEZE(_self);
+    return Qtrue;
+  }
+  PBRUBY_ASSERT(!ruby_frozen);
+  return Qfalse;
+}
+
+/*
+ * call-seq:
+ *     Map.freeze => self
+ *
+ * Freezes the map object. We have to intercept this so we can freeze the
+ * underlying representation, not just the Ruby wrapper.
  */
 VALUE Map_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
+  bool ruby_frozen = RB_OBJ_FROZEN(_self);
+  bool upb_frozen = upb_Map_IsFrozen(self->map);
+  if (ruby_frozen && upb_frozen) {
+    return _self;
+  }
 
-  if (RB_OBJ_FROZEN(_self)) return _self;
-  Arena_Pin(self->arena, _self);
-  RB_OBJ_FREEZE(_self);
-
-  if (self->value_type_info.type == kUpb_CType_Message) {
-    size_t iter = kUpb_Map_Begin;
-    upb_MessageValue key, val;
-
-    while (upb_Map_Next(self->map, &key, &val, &iter)) {
-      VALUE val_val =
-          Convert_UpbToRuby(val, self->value_type_info, self->arena);
-      Message_freeze(val_val);
+  if (!upb_frozen) {
+    if (self->value_type_info.type == kUpb_CType_Message) {
+      upb_Map_Freeze(Map_GetMutable(_self), upb_MessageDef_MiniTable(self->value_type_info.def.msgdef));
+    } else {
+      upb_Map_Freeze(Map_GetMutable(_self), NULL);
     }
   }
+  if (!ruby_frozen) {
+    RB_OBJ_FREEZE(_self);
+  }
+  PBRUBY_ASSERT(RB_OBJ_FROZEN(_self));
+  PBRUBY_ASSERT(upb_Map_IsFrozen(self->map));
   return _self;
+}
+
+VALUE Map_EmptyFrozen(const upb_FieldDef* f) {
+  const upb_MessageDef * msgdef = upb_FieldDef_MessageSubDef(f);
+  VALUE val = ObjectCache_Get(msgdef);
+
+  if (val == Qnil) {
+    const upb_FieldDef* key_f = map_field_key(f);
+    const upb_FieldDef* val_f = map_field_value(f);
+    upb_CType key_type = upb_FieldDef_CType(key_f);
+    TypeInfo value_type_info = TypeInfo_get(val_f);
+    val = Map_alloc(cMap);
+    Map* self;
+    TypedData_Get_Struct(val, Map, &Map_type, self);
+    self->arena = Arena_new();
+    self->map = upb_Map_New(Arena_get(self->arena), key_type,
+                            value_type_info.type);
+    self->key_type = key_type;
+    self->value_type_info = value_type_info;
+    if (self->value_type_info.type == kUpb_CType_Message) {
+      const upb_MessageDef* val_m = value_type_info.def.msgdef;
+      self->value_type_class = Descriptor_DefToClass(val_m);
+    }
+    return ObjectCache_TryAdd(msgdef, Map_freeze(val));
+  }
+  PBRUBY_ASSERT(RB_OBJ_FROZEN(val));
+  PBRUBY_ASSERT(upb_Map_IsFrozen(ruby_to_Map(val)->map));
+  return val;
 }
 
 /*
@@ -671,6 +732,7 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "clone", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "freeze", Map_freeze, 0);
+  rb_define_method(klass, "frozen?", Map_frozen, 0);
   rb_define_method(klass, "hash", Map_hash, 0);
   rb_define_method(klass, "to_h", Map_to_h, 0);
   rb_define_method(klass, "inspect", Map_inspect, 0);

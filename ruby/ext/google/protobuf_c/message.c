@@ -14,6 +14,11 @@
 #include "repeated_field.h"
 #include "shared_message.h"
 
+#define PBRUBY_CHECK_FROZEN_MESSAGE(msg_rb) \
+  PBRUBY_CHECK_FROZEN( \
+    RB_OBJ_FROZEN(msg_rb)||upb_Message_IsFrozen(ruby_to_Message(msg_rb)->msg), \
+    msg_rb)
+
 static VALUE cParseError = Qnil;
 static VALUE cAbstractMessage = Qnil;
 static ID descriptor_instancevar_interned;
@@ -80,11 +85,11 @@ const upb_Message* Message_Get(VALUE msg_rb, const upb_MessageDef** m) {
 }
 
 upb_Message* Message_GetMutable(VALUE msg_rb, const upb_MessageDef** m) {
-  rb_check_frozen(msg_rb);
+  PBRUBY_CHECK_FROZEN_MESSAGE(msg_rb);
   return (upb_Message*)Message_Get(msg_rb, m);
 }
 
-void Message_InitPtr(VALUE self_, upb_Message* msg, VALUE arena) {
+void Message_InitPtr(VALUE self_, const upb_Message* msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
   RB_OBJ_WRITE(self_, &self->arena, arena);
@@ -105,7 +110,7 @@ void Message_CheckClass(VALUE klass) {
   }
 }
 
-VALUE Message_GetRubyWrapper(upb_Message* msg, const upb_MessageDef* m,
+VALUE Message_GetRubyWrapper(const upb_Message* msg, const upb_MessageDef* m,
                              VALUE arena) {
   if (msg == NULL) return Qnil;
 
@@ -116,7 +121,9 @@ VALUE Message_GetRubyWrapper(upb_Message* msg, const upb_MessageDef* m,
     val = Message_alloc(klass);
     Message_InitPtr(val, msg, arena);
   }
-
+  if (upb_Message_IsFrozen(msg) && !RB_OBJ_FROZEN(val)) {
+    RB_OBJ_FREEZE(val);
+  }
   return val;
 }
 
@@ -288,14 +295,43 @@ static void Message_setfield(upb_Message* msg, const upb_FieldDef* f, VALUE val,
   upb_Message_SetFieldByDef(msg, f, msgval, arena);
 }
 
+VALUE Message_getfield_frozen(const upb_Message* msg, const upb_FieldDef* f,
+                              VALUE arena) {
+  upb_MessageValue msgval = upb_Message_GetFieldByDef(msg, f);
+  if (upb_FieldDef_IsMap(f)) {
+    if (msgval.map_val == NULL) {
+      return Map_EmptyFrozen(f);
+    }
+    const upb_FieldDef* key_f = map_field_key(f);
+    const upb_FieldDef* val_f = map_field_value(f);
+    upb_CType key_type = upb_FieldDef_CType(key_f);
+    TypeInfo value_type_info = TypeInfo_get(val_f);
+    return Map_GetRubyWrapper(msgval.map_val, key_type, value_type_info, Qnil);
+  }
+  if (upb_FieldDef_IsRepeated(f)) {
+    if (msgval.array_val == NULL) {
+      return RepeatedField_EmptyFrozen(TypeInfo_get(f));
+    }
+    return RepeatedField_GetRubyWrapper(msgval.array_val, TypeInfo_get(f), Qnil);
+  }
+  VALUE ret;
+  if (upb_FieldDef_IsSubMessage(f)) {
+    const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
+    ret = Message_GetRubyWrapper(msgval.msg_val, m, arena);
+  } else {
+    ret = Convert_UpbToRuby(msgval, TypeInfo_get(f), Qnil);
+  }
+  RB_OBJ_FREEZE(ret);
+  return ret;
+}
+
 VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
   Message* self = ruby_to_Message(_self);
-  // This is a special-case: upb_Message_Mutable() for map & array are logically
-  // const (they will not change what is serialized) but physically
-  // non-const, as they do allocate a repeated field or map. The logical
-  // constness means it's ok to do even if the message is frozen.
   upb_Message* msg = (upb_Message*)self->msg;
   upb_Arena* arena = Arena_get(self->arena);
+  if (upb_Message_IsFrozen(msg)) {
+    return Message_getfield_frozen(msg, f, self->arena);
+  }
   if (upb_FieldDef_IsMap(f)) {
     upb_Map* map = upb_Message_Mutable(msg, f, arena).map;
     const upb_FieldDef* key_f = map_field_key(f);
@@ -307,12 +343,12 @@ VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
     return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), self->arena);
   } else if (upb_FieldDef_IsSubMessage(f)) {
-    if (!upb_Message_HasFieldByDef(self->msg, f)) return Qnil;
+    if (!upb_Message_HasFieldByDef(msg, f)) return Qnil;
     upb_Message* submsg = upb_Message_Mutable(msg, f, arena).msg;
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     return Message_GetRubyWrapper(submsg, m, self->arena);
   } else {
-    upb_MessageValue msgval = upb_Message_GetFieldByDef(self->msg, f);
+    upb_MessageValue msgval = upb_Message_GetFieldByDef(msg, f);
     return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
   }
 }
@@ -436,7 +472,7 @@ static VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
       if (argc != 2) {
         rb_raise(rb_eArgError, "Expected 2 arguments, received %d", argc);
       }
-      rb_check_frozen(_self);
+      PBRUBY_CHECK_FROZEN_MESSAGE(_self);
       break;
     default:
       if (argc != 1) {
@@ -812,33 +848,52 @@ static VALUE Message_to_h(VALUE _self) {
 
 /*
  * call-seq:
+ *     Message.frozen? => bool
+ *
+ * Returns true if the message is frozen in either Ruby or the underlying
+ * representation. Freezes the Ruby message object if it is not already frozen
+ * in Ruby but it is frozen in the underlying representation.
+ */
+VALUE Message_frozen(VALUE _self) {
+  Message* self = ruby_to_Message(_self);
+  bool ruby_frozen = RB_OBJ_FROZEN(_self);
+  bool upb_frozen = upb_Message_IsFrozen(self->msg);
+  if (ruby_frozen && upb_frozen) {
+    return Qtrue;
+  }
+  // Underlying representation is frozen but _self is not.
+  if (upb_frozen) {
+    RB_OBJ_FREEZE(_self);
+    return Qtrue;
+  }
+  PBRUBY_ASSERT(!ruby_frozen);
+  return Qfalse;
+}
+
+/*
+ * call-seq:
  *     Message.freeze => self
  *
- * Freezes the message object. We have to intercept this so we can pin the
- * Ruby object into memory so we don't forget it's frozen.
+ * Freezes the message object. We have to intercept this so we can freeze the
+ * underlying representation, not just the Ruby wrapper.
  */
 VALUE Message_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
+  bool ruby_frozen = RB_OBJ_FROZEN(_self);
+  bool upb_frozen = upb_Message_IsFrozen(self->msg);
 
-  if (RB_OBJ_FROZEN(_self)) return _self;
-  Arena_Pin(self->arena, _self);
-  RB_OBJ_FREEZE(_self);
-
-  int n = upb_MessageDef_FieldCount(self->msgdef);
-  for (int i = 0; i < n; i++) {
-    const upb_FieldDef* f = upb_MessageDef_Field(self->msgdef, i);
-    VALUE field = Message_getfield(_self, f);
-
-    if (field != Qnil) {
-      if (upb_FieldDef_IsMap(f)) {
-        Map_freeze(field);
-      } else if (upb_FieldDef_IsRepeated(f)) {
-        RepeatedField_freeze(field);
-      } else if (upb_FieldDef_IsSubMessage(f)) {
-        Message_freeze(field);
-      }
-    }
+  if (ruby_frozen && upb_frozen) {
+    return _self;
   }
+
+  if (!upb_frozen) {
+    upb_Message_Freeze(Message_GetMutable(_self, NULL), upb_MessageDef_MiniTable(self->msgdef));
+  }
+  if (!ruby_frozen) {
+    RB_OBJ_FREEZE(_self);
+  }
+  PBRUBY_ASSERT(RB_OBJ_FROZEN(_self));
+  PBRUBY_ASSERT(upb_Message_IsFrozen(self->msg));
   return _self;
 }
 
@@ -1352,6 +1407,7 @@ static void Message_define_class(VALUE klass) {
   rb_define_method(klass, "==", Message_eq, 1);
   rb_define_method(klass, "eql?", Message_eq, 1);
   rb_define_method(klass, "freeze", Message_freeze, 0);
+  rb_define_method(klass, "frozen?", Message_frozen, 0);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);

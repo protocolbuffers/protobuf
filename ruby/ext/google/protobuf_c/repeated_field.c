@@ -25,6 +25,12 @@ typedef struct {
 
 VALUE cRepeatedField;
 
+#define PBRUBY_CHECK_FROZEN_ARRAY(array_rb) \
+  PBRUBY_CHECK_FROZEN( \
+    RB_OBJ_FROZEN(array_rb) || \
+      upb_Array_IsFrozen(ruby_to_RepeatedField(array_rb)->array), \
+    array_rb)
+
 static void RepeatedField_mark(void* _self) {
   RepeatedField* self = (RepeatedField*)_self;
   rb_gc_mark(self->type_class);
@@ -44,7 +50,7 @@ static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
 }
 
 static upb_Array* RepeatedField_GetMutable(VALUE _self) {
-  rb_check_frozen(_self);
+  PBRUBY_CHECK_FROZEN_ARRAY(_self);
   return (upb_Array*)ruby_to_RepeatedField(_self)->array;
 }
 
@@ -56,7 +62,27 @@ VALUE RepeatedField_alloc(VALUE klass) {
   return TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
 }
 
-VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
+VALUE RepeatedField_EmptyFrozen(TypeInfo type_info) {
+  VALUE val = ObjectCache_Get(type_info.def.msgdef);
+
+  if (val == Qnil) {
+    val = RepeatedField_alloc(cRepeatedField);
+    RepeatedField* self;
+    TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
+    self->arena = Arena_new();
+    self->array = upb_Array_New(Arena_get(self->arena), type_info.type);
+    self->type_info = type_info;
+    if (self->type_info.type == kUpb_CType_Message) {
+      self->type_class = Descriptor_DefToClass(type_info.def.msgdef);
+    }
+    val = ObjectCache_TryAdd(type_info.def.msgdef, RepeatedField_freeze(val));
+  }
+  PBRUBY_ASSERT(RB_OBJ_FROZEN(val));
+  PBRUBY_ASSERT(upb_Array_IsFrozen(ruby_to_RepeatedField(val)->array));
+  return val;
+}
+
+VALUE RepeatedField_GetRubyWrapper(const upb_Array* array, TypeInfo type_info,
                                    VALUE arena) {
   PBRUBY_ASSERT(array);
   VALUE val = ObjectCache_Get(array);
@@ -78,7 +104,9 @@ VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->type_info.def.msgdef ==
                 type_info.def.msgdef);
   PBRUBY_ASSERT(ruby_to_RepeatedField(val)->array == array);
-
+  if (upb_Array_IsFrozen(array) && !RB_OBJ_FROZEN(val)) {
+    RB_OBJ_FREEZE(val);
+  }
   return val;
 }
 
@@ -473,27 +501,55 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
 
 /*
  * call-seq:
+ *     RepeatedField.frozen? => bool
+ *
+ * Returns true if the repeated field is frozen in either Ruby or the underlying
+ * representation. Freezes the Ruby repeated field object if it is not already
+ * frozen in Ruby but it is frozen in the underlying representation.
+ */
+VALUE RepeatedField_frozen(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  bool ruby_frozen = RB_OBJ_FROZEN(_self);
+  bool upb_frozen = upb_Array_IsFrozen(self->array);
+  if (ruby_frozen && upb_frozen) {
+    return Qtrue;
+  }
+  // Underlying representation is frozen but _self is not.
+  if (upb_frozen) {
+    RB_OBJ_FREEZE(_self);
+    return Qtrue;
+  }
+  PBRUBY_ASSERT(!ruby_frozen);
+  return Qfalse;
+}
+
+/*
+ * call-seq:
  *     RepeatedField.freeze => self
  *
- * Freezes the repeated field. We have to intercept this so we can pin the Ruby
- * object into memory so we don't forget it's frozen.
+ * Freezes the repeated field object. We have to intercept this so we can freeze
+ * the underlying representation, not just the Ruby wrapper.
  */
 VALUE RepeatedField_freeze(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
+  bool ruby_frozen = RB_OBJ_FROZEN(_self);
+  bool upb_frozen = upb_Array_IsFrozen(self->array);
+  if (ruby_frozen && upb_frozen) {
+    return _self;
+  }
 
-  if (RB_OBJ_FROZEN(_self)) return _self;
-  Arena_Pin(self->arena, _self);
-  RB_OBJ_FREEZE(_self);
-
-  if (self->type_info.type == kUpb_CType_Message) {
-    int size = upb_Array_Size(self->array);
-    int i;
-    for (i = 0; i < size; i++) {
-      upb_MessageValue msgval = upb_Array_Get(self->array, i);
-      VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
-      Message_freeze(val);
+  if (!upb_frozen) {
+    if (self->type_info.type == kUpb_CType_Message) {
+      upb_Array_Freeze(RepeatedField_GetMutable(_self), upb_MessageDef_MiniTable(self->type_info.def.msgdef));
+    } else {
+      upb_Array_Freeze(RepeatedField_GetMutable(_self), NULL);
     }
   }
+  if (!ruby_frozen) {
+    RB_OBJ_FREEZE(_self);
+  }
+  PBRUBY_ASSERT(RB_OBJ_FROZEN(_self));
+  PBRUBY_ASSERT(upb_Array_IsFrozen(self->array));
   return _self;
 }
 
@@ -640,6 +696,7 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "==", RepeatedField_eq, 1);
   rb_define_method(klass, "to_ary", RepeatedField_to_ary, 0);
   rb_define_method(klass, "freeze", RepeatedField_freeze, 0);
+  rb_define_method(klass, "frozen?", RepeatedField_frozen, 0);
   rb_define_method(klass, "hash", RepeatedField_hash, 0);
   rb_define_method(klass, "+", RepeatedField_plus, 1);
   rb_define_method(klass, "concat", RepeatedField_concat, 1);

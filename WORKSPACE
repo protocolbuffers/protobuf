@@ -105,11 +105,11 @@ kt_register_toolchains()
 
 http_archive(
     name = "rules_ruby",
+    sha256 = "ecf2bbdd7fdaccefe5eef68e800f529503f942da3acb2e8a32d96fb2f8e176f2",
+    strip_prefix = "rules_ruby-4f05aac363689551acb6d13fa015e51352af3960",
     urls = [
-      "https://github.com/protocolbuffers/rules_ruby/archive/b7f3e9756f3c45527be27bc38840d5a1ba690436.zip"
+        "https://github.com/protocolbuffers/rules_ruby/archive/4f05aac363689551acb6d13fa015e51352af3960.zip",
     ],
-    strip_prefix = "rules_ruby-b7f3e9756f3c45527be27bc38840d5a1ba690436",
-    sha256 = "347927fd8de6132099fcdc58e8f7eab7bde4eb2fd424546b9cd4f1c6f8f8bad8",
 )
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")

@@ -65,6 +65,7 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   UPB_UNPOISON_MEMORY_REGION(ret, size);
 
   a->UPB_ONLYBITS(ptr) += span;
+  UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)(a->UPB_ONLYBITS(ptr))) == (uintptr_t)(a->UPB_ONLYBITS(ptr)));
 
   return ret;
 }
@@ -80,6 +81,7 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
     ptrdiff_t diff = size - oldsize;
     if ((ptrdiff_t)UPB_PRIVATE(_upb_ArenaHas)(a) >= diff) {
       a->UPB_ONLYBITS(ptr) += diff;
+      UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)(a->UPB_ONLYBITS(ptr))) == (uintptr_t)(a->UPB_ONLYBITS(ptr)));
       return ptr;
     }
   } else if (size <= oldsize) {
@@ -104,6 +106,7 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
              a->UPB_ONLYBITS(ptr) - UPB_ASAN_GUARD_SIZE);
   UPB_ASSERT(size <= oldsize);
   a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
+  UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)(a->UPB_ONLYBITS(ptr))) == (uintptr_t)(a->UPB_ONLYBITS(ptr)));
 }
 
 #ifdef __cplusplus

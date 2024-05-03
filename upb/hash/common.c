@@ -452,7 +452,7 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
   lookupkey_t key;
   upb_tabkey tabkey;
   uint32_t hash;
-
+  UPB_ASSERT(t);
   if (isfull(&t->t)) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     if (!upb_strtable_resize(t, t->t.size_lg2 + 1, a)) {

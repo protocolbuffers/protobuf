@@ -247,6 +247,7 @@ static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t size) {
   upb_Atomic_Store(&ai->blocks, block, memory_order_release);
 
   a->UPB_PRIVATE(ptr) = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+  UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)(a->UPB_ONLYBITS(ptr))) == (uintptr_t)(a->UPB_ONLYBITS(ptr)));
   a->UPB_PRIVATE(end) = UPB_PTR_AT(block, size, char);
 
   UPB_POISON_MEMORY_REGION(a->UPB_PRIVATE(ptr),

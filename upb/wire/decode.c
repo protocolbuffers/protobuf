@@ -133,6 +133,8 @@ static void _upb_Decoder_VerifyUtf8(upb_Decoder* d, const char* buf, int len) {
 }
 
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
+  UPB_ASSERT(d);
+  UPB_ASSERT(arr);
   bool need_realloc =
       arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
   if (need_realloc && !UPB_PRIVATE(_upb_Array_Realloc)(
@@ -423,6 +425,8 @@ const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
                                            upb_Array* arr, wireval* val,
                                            const upb_MiniTableField* field,
                                            int lg2) {
+  UPB_ASSERT(d);
+  UPB_ASSERT(arr);
   int mask = (1 << lg2) - 1;
   size_t count = val->size >> lg2;
   if ((val->size & mask) != 0) {
@@ -528,6 +532,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
   void* mem;
 
   if (arr) {
+    UPB_ASSERT(d);
     _upb_Decoder_Reserve(d, arr, 1);
   } else {
     arr = _upb_Decoder_CreateArray(d, field);
